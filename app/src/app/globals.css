@@ -1,0 +1,75 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+/* ============================================================
+   ГЛОБАЛЬНЫЕ СТИЛИ
+   Capsule Zero — glass morphism на wallpaper
+   ============================================================ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100%;
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  line-height: var(--leading-normal);
+  overflow-x: hidden;
+}
+
+/* Wallpaper фон — grayscale + gradient overlay */
+.wallpaper-bg {
+  position: fixed;
+  inset: 0;
+  background: url('/wall.png') center / cover no-repeat;
+  filter: grayscale(100%);
+  z-index: var(--z-bg);
+}
+
+.wallpaper-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    var(--color-overlay-start) 0%,
+    var(--color-overlay-mid) 50%,
+    var(--color-overlay-end) 100%
+  );
+  z-index: var(--z-overlay);
+}
+
+/* Editorial типографика */
+h1, h2 {
+  font-weight: 300;
+  letter-spacing: var(--tracking-tight);
+}
+
+h1 strong, h2 strong {
+  font-weight: 600;
+}
+
+h3, h4, h5, h6 {
+  font-weight: 500;
+}
+
+/* Плавные переходы для интерактивных элементов */
+button, a, input, textarea {
+  transition: all var(--transition-fast);
+}
+
+/* Focus visible — кастомный outline */
+:focus-visible {
+  outline: 2px solid rgba(255,255,255,.40);
+  outline-offset: 2px;
+}
