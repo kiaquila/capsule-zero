@@ -1,0 +1,305 @@
+/* ============================================================
+   CAPSULE ZERO — Design Tokens
+   Tailwind v4 @theme — все токены определяются здесь
+   Источник: design-system.html + финальные hi-fi прототипы
+   Принцип: ахроматный glass morphism, 8px grid, wall.png фон
+   ============================================================ */
+
+@theme {
+  /* ----------------------------------------------------------
+     ЦВЕТА — ахроматная палитра
+     Цвет приходит через вещи пользователя, не через UI
+  ---------------------------------------------------------- */
+
+  /* Нейтральные (основа) */
+  --color-black:    #0A0A0A;
+  --color-white:    #FAFAFA;
+
+  /* Серая шкала — 10 шагов */
+  --color-gray-50:  #F5F5F5;
+  --color-gray-100: #EBEBEB;
+  --color-gray-200: #D6D6D6;
+  --color-gray-300: #C2C2C2;
+  --color-gray-400: #ADADAD;
+  --color-gray-500: #999999;
+  --color-gray-600: #757575;
+  --color-gray-700: #525252;
+  --color-gray-800: #2E2E2E;
+  --color-gray-900: #1A1A1A;
+
+  /* Семантические */
+  --color-error:    #FFD600;
+  --color-fav:      rgba(220,30,50,.90);
+  --color-fav-border: rgba(255,60,80,.70);
+
+  /* ----------------------------------------------------------
+     ФОН — wallpaper + gradient overlay
+     wall.png (grayscale) + трёхточечный градиент
+  ---------------------------------------------------------- */
+
+  --color-overlay-start: rgba(0,0,0,.58);
+  --color-overlay-mid:   rgba(0,0,0,.40);
+  --color-overlay-end:   rgba(0,0,0,.68);
+
+  /* ----------------------------------------------------------
+     GLASS SURFACES — матовое стекло поверх wallpaper
+     Все панели строятся на rgba + backdrop-filter: blur
+  ---------------------------------------------------------- */
+
+  /* Основная панель (карточки, модалки, формы) */
+  --glass-bg:           rgba(255,255,255,0.22);
+  --glass-blur:         40px;
+  --glass-border:       rgba(255,255,255,.58);
+  --glass-highlight:    rgba(255,255,255,.72);   /* inset 0 1px 0 */
+  --glass-shadow:       0 8px 32px rgba(0,0,0,.22);
+
+  /* Сайдбар / Bottom nav */
+  --glass-nav-bg:       rgba(255,255,255,0.13);
+  --glass-nav-blur:     44px;
+  --glass-nav-border:   rgba(255,255,255,.20);
+
+  /* More sheet / модальное дно */
+  --glass-sheet-bg:     rgba(255,255,255,0.22);
+  --glass-sheet-blur:   44px;
+  --glass-sheet-border: rgba(255,255,255,.58);
+  --glass-sheet-shadow: 0 -8px 32px rgba(0,0,0,.22);
+
+  /* Language switcher / cookie */
+  --glass-popup-bg:     rgba(255,255,255,0.28);
+  --glass-popup-blur:   32px;
+
+  /* ----------------------------------------------------------
+     ТЕКСТ НА СТЕКЛЕ — белый, три уровня прозрачности
+  ---------------------------------------------------------- */
+
+  --color-text-primary:   rgba(255,255,255,.95);
+  --color-text-secondary: rgba(255,255,255,.70);
+  --color-text-placeholder: rgba(255,255,255,.38);
+
+  /* ----------------------------------------------------------
+     КНОПКИ
+  ---------------------------------------------------------- */
+
+  --btn-primary-bg:     rgba(255,255,255,.36);
+  --btn-primary-border: rgba(255,255,255,.52);
+  --btn-ghost-bg:       rgba(255,255,255,.10);
+  --btn-ghost-border:   rgba(255,255,255,.22);
+  --btn-social-bg:      rgba(255,255,255,.28);
+  --btn-danger-bg:      rgba(255,80,60,.10);
+  --btn-danger-border:  rgba(255,80,60,.25);
+  --btn-danger-color:   rgba(255,120,100,.85);
+
+  /* ----------------------------------------------------------
+     ИНТЕРАКТИВНЫЕ ЭЛЕМЕНТЫ
+  ---------------------------------------------------------- */
+
+  /* Карточки вещей */
+  --card-bg:           rgba(255,255,255,.10);
+  --card-border:       rgba(255,255,255,.22);
+  --card-hover-bg:     rgba(255,255,255,.18);
+  --card-hover-border: rgba(255,255,255,.38);
+
+  /* Инпуты */
+  --input-bg:           rgba(255,255,255,.08);
+  --input-border:       rgba(255,255,255,.18);
+  --input-focus-bg:     rgba(255,255,255,.12);
+  --input-focus-border: rgba(255,255,255,.36);
+
+  /* Тогглы */
+  --toggle-bg:         rgba(255,255,255,.12);
+  --toggle-border:     rgba(255,255,255,.22);
+  --toggle-on-bg:      rgba(255,255,255,.32);
+  --toggle-on-border:  rgba(255,255,255,.48);
+  --toggle-knob:       rgba(255,255,255,.60);
+  --toggle-knob-on:    rgba(255,255,255,.95);
+
+  /* Табы / фильтры — активное состояние */
+  --tab-active-bg:     rgba(255,255,255,.22);
+  --tab-active-border: rgba(255,255,255,.40);
+
+  /* Навигация — активный индикатор */
+  --nav-active-indicator: rgba(255,255,255,.65);
+  --nav-active-bg:        rgba(255,255,255,.10);
+
+  /* Apple icon — всегда чёрный */
+  --icon-apple:        rgba(0,0,0,.82);
+
+  /* ----------------------------------------------------------
+     ТИПОГРАФИКА
+     Helvetica Neue — основной шрифт прототипов
+  ---------------------------------------------------------- */
+
+  --font-sans:    'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Шкала размеров */
+  --text-2xs:  9px;     /* bnav label, badge */
+  --text-xs:   10.5px;  /* label, caption */
+  --text-sm:   13px;    /* nav item, body small */
+  --text-base: 15px;    /* body */
+  --text-lg:   18px;    /* section title */
+  --text-xl:   24px;    /* page subtitle */
+  --text-2xl:  30px;    /* stat number */
+  --text-3xl:  36px;    /* page title */
+  --text-4xl:  64px;    /* hero OPR */
+  --text-hero: 42px;    /* landing hero */
+
+  /* Интерлиньяж */
+  --leading-tight:   1.1;
+  --leading-snug:    1.2;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.75;
+
+  /* Трекинг */
+  --tracking-tight:   -0.035em;  /* крупные числа */
+  --tracking-normal:  0.01em;    /* body */
+  --tracking-wide:    0.06em;    /* nav labels */
+  --tracking-wider:   0.11em;    /* section labels */
+  --tracking-widest:  0.26em;    /* logo */
+
+  /* ----------------------------------------------------------
+     SPACING — 8px grid
+  ---------------------------------------------------------- */
+
+  --spacing-0:   0;
+  --spacing-0_5: 0.25rem;  /* 4px */
+  --spacing-1:   0.5rem;   /* 8px */
+  --spacing-1_5: 0.75rem;  /* 12px */
+  --spacing-2:   1rem;      /* 16px */
+  --spacing-2_5: 1.25rem;  /* 20px */
+  --spacing-3:   1.5rem;   /* 24px */
+  --spacing-3_5: 1.75rem;  /* 28px */
+  --spacing-4:   2rem;     /* 32px */
+  --spacing-5:   2.5rem;   /* 40px */
+  --spacing-6:   3rem;     /* 48px */
+  --spacing-8:   4rem;     /* 64px */
+  --spacing-10:  5rem;     /* 80px */
+  --spacing-12:  6rem;     /* 96px */
+  --spacing-16:  8rem;     /* 128px */
+
+  /* ----------------------------------------------------------
+     BORDER RADIUS
+  ---------------------------------------------------------- */
+
+  --radius-xs:     6px;
+  --radius-sm:     8px;
+  --radius-md:     14px;
+  --radius-lg:     20px;
+  --radius-pill:   50px;
+  --radius-circle: 50%;
+
+  /* ----------------------------------------------------------
+     ТЕНИ — glass morphism
+  ---------------------------------------------------------- */
+
+  --shadow-glass:     0 8px 32px rgba(0,0,0,.22);
+  --shadow-glass-up:  0 -8px 32px rgba(0,0,0,.22);
+  --shadow-glass-sm:  0 4px 16px rgba(0,0,0,.16);
+  --shadow-card:      0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+
+  /* ----------------------------------------------------------
+     ПЕРЕХОДЫ
+  ---------------------------------------------------------- */
+
+  --transition-fast:   140ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   400ms ease;
+  --transition-spring: 300ms cubic-bezier(.32,.72,.24,1);
+
+  /* ----------------------------------------------------------
+     Z-INDEX
+  ---------------------------------------------------------- */
+
+  --z-bg:       -2;
+  --z-overlay:  -1;
+  --z-base:      0;
+  --z-raised:   10;
+  --z-nav:      50;
+  --z-sheet:    60;
+  --z-modal:    70;
+  --z-dropdown: 100;
+  --z-toast:    300;
+  --z-tooltip:  400;
+
+  /* ----------------------------------------------------------
+     LAYOUT
+  ---------------------------------------------------------- */
+
+  --sidebar-w:       248px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+}
+
+/* ----------------------------------------------------------
+   УТИЛИТАРНЫЕ КЛАССЫ — glass morphism
+---------------------------------------------------------- */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow);
+  border-radius: var(--radius-lg);
+}
+
+.glass-nav {
+  background: var(--glass-nav-bg);
+  backdrop-filter: blur(var(--glass-nav-blur));
+  -webkit-backdrop-filter: blur(var(--glass-nav-blur));
+  border: 1px solid var(--glass-nav-border);
+}
+
+.glass-sheet {
+  background: var(--glass-sheet-bg);
+  backdrop-filter: blur(var(--glass-sheet-blur));
+  -webkit-backdrop-filter: blur(var(--glass-sheet-blur));
+  border-top: 1px solid var(--glass-sheet-border);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-sheet-shadow);
+}
+
+/* ----------------------------------------------------------
+   ТИПОГРАФИЧЕСКИЕ УТИЛИТЫ
+---------------------------------------------------------- */
+
+.text-editorial {
+  font-weight: 300;
+  letter-spacing: var(--tracking-tight);
+}
+
+.text-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
+
+.text-logo {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+}
+
+/* ----------------------------------------------------------
+   SCROLLBAR — минималистичный
+---------------------------------------------------------- */
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.20);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,.35);
+}

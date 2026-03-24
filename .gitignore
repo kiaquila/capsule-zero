@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# env files
+.env*
+
+# IDE
+.idea/
+.vscode/
+
+# logs
+*.log
+
+# local agent/tool state
+.omc/
+.playwright-mcp/

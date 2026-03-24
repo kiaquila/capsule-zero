@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capsule Zero — New Capsule</title>
+  <style>
+    :root {
+      --glass-bg:     rgba(255,255,255,0.22);
+      --glass-blur:   40px;
+      --glass-border: rgba(255,255,255,.58);
+      --glass-hi:     inset 0 1px 0 rgba(255,255,255,.72);
+      --gt-p:  rgba(255,255,255,.95);
+      --gt-s:  rgba(255,255,255,.70);
+      --gt-ph: rgba(255,255,255,.38);
+      --radius-s: 8px;
+      --radius-m: 14px;
+      --radius-l: 20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── Background ── */
+    .hero-bg {
+      position: fixed; inset: 0;
+      background: url('wall.png') center / cover no-repeat;
+      filter: grayscale(100%);
+      z-index: -2;
+    }
+    .hero-overlay {
+      position: fixed; inset: 0;
+      background: linear-gradient(
+        160deg,
+        rgba(0,0,0,.58) 0%,
+        rgba(0,0,0,.40) 50%,
+        rgba(0,0,0,.68) 100%
+      );
+      z-index: -1;
+    }
+
+    /* ── App shell ── */
+    .app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ══════════════════════════════
+       LOGO
+    ══════════════════════════════ */
+    .logo {
+      font-size: 11.5px; font-weight: 700;
+      letter-spacing: .26em; text-transform: uppercase;
+      color: var(--gt-p); text-decoration: none;
+      transition: opacity .15s;
+    }
+    .logo:hover { opacity: .75; }
+    /* ══════════════════════════════
+       LANG DROPDOWN
+    ══════════════════════════════ */
+    .lang-dropdown { position: relative; }
+    .lang-trigger {
+      display: flex; align-items: center; gap: 6px;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: rgba(255,255,255,.88); padding: 8px 4px; transition: color .15s;
+    }
+    .lang-trigger:hover { color: #fff; }
+    .lang-chevron { font-size: 8px; opacity: .8; transition: transform .2s; }
+    .lang-dropdown.open .lang-chevron { transform: rotate(180deg); }
+    .lang-menu {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: rgba(255,255,255,0.28);
+      backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+      border-radius: var(--radius-m);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,.20), var(--glass-hi);
+      padding: 8px; min-width: 164px;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-6px);
+      transition: opacity .2s ease, transform .2s ease; z-index: 100;
+    }
+    .lang-dropdown.open .lang-menu { opacity: 1; pointer-events: all; transform: translateY(0); }
+    .lang-option {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 10px 12px;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; letter-spacing: .06em;
+      color: var(--gt-s); border-radius: var(--radius-s); transition: all .15s;
+    }
+    .lang-option:hover { background: rgba(255,255,255,.12); color: var(--gt-p); }
+    .lang-option.active { color: #fff; font-weight: 600; }
+    .lang-code { font-size: 11px; font-weight: 600; letter-spacing: .1em; color: inherit; opacity: .7; }
+
+    /* ══════════════════════════════
+       MAIN
+    ══════════════════════════════ */
+    .main {
+      flex: 1; overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.16) transparent;
+      display: flex; flex-direction: column;
+    }
+    .main::-webkit-scrollbar { width: 4px; }
+    .main::-webkit-scrollbar-track { background: transparent; }
+    .main::-webkit-scrollbar-thumb { background: rgba(255,255,255,.16); border-radius: 10px; }
+
+    /* Topbar */
+    .topbar {
+      padding: 30px 40px 0;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .topbar-left { display: flex; flex-direction: column; gap: 4px; }
+    .topbar-title {
+      font-size: 25px; font-weight: 300; letter-spacing: -.01em;
+      color: var(--gt-p); line-height: 1.2;
+    }
+    .topbar-title strong { font-weight: 600; }
+    .topbar-sub {
+      font-size: 11.5px; letter-spacing: .10em; text-transform: uppercase;
+      color: var(--gt-s); margin-top: 2px;
+    }
+    .topbar-right {
+      display: flex; align-items: center; gap: 16px; padding-top: 4px;
+    }
+
+    /* Glass card */
+    .gc {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-l);
+      box-shadow: var(--glass-hi), 0 8px 36px rgba(0,0,0,.16);
+    }
+
+    .btn-ghost {
+      padding: 9px 18px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: 50px;
+      font-family: inherit; font-size: 11.5px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-p); cursor: pointer;
+      transition: background .14s;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.20); }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 12px 28px;
+      background: rgba(255,255,255,.26);
+      border: 1px solid rgba(255,255,255,.52);
+      border-radius: 50px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      cursor: pointer;
+      font-family: inherit; font-size: 12px; font-weight: 700;
+      letter-spacing: .09em; text-transform: uppercase;
+      color: var(--gt-p);
+      transition: background .14s, transform .10s;
+    }
+    .btn-primary:hover { background: rgba(255,255,255,.36); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled {
+      opacity: .35; cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* ══════════════════════════════
+       PROGRESS DOTS
+    ══════════════════════════════ */
+    .progress-bar {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; padding: 24px 40px 8px;
+      flex-shrink: 0;
+    }
+    .progress-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; letter-spacing: .02em;
+      color: var(--gt-ph);
+      background: rgba(255,255,255,.06);
+      border: 1.5px solid rgba(255,255,255,.18);
+      transition: all .25s ease;
+      flex-shrink: 0;
+    }
+    .progress-dot.active {
+      color: var(--gt-p);
+      background: rgba(255,255,255,.22);
+      border-color: rgba(255,255,255,.65);
+    }
+    .progress-dot.done {
+      color: var(--gt-p);
+      background: rgba(255,255,255,.16);
+      border-color: rgba(255,255,255,.48);
+    }
+    .progress-line {
+      width: 48px; height: 1.5px;
+      background: rgba(255,255,255,.14);
+      transition: background .25s ease;
+    }
+    .progress-line.done { background: rgba(255,255,255,.48); }
+    .progress-labels {
+      display: flex; align-items: center; justify-content: center;
+      gap: 42px; padding: 4px 40px 16px;
+      flex-shrink: 0;
+    }
+    .progress-label {
+      font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--gt-ph); text-align: center;
+      transition: color .25s;
+    }
+    .progress-label.active { color: var(--gt-s); }
+
+    /* ══════════════════════════════
+       CONTENT
+    ══════════════════════════════ */
+    .content {
+      padding: 0 40px 52px;
+      display: flex; flex-direction: column; gap: 16px;
+      flex: 1; min-height: 0;
+    }
+
+    .step { display: none; }
+    .step.visible { display: block; }
+
+    /* ── STEP 1: Wardrobe Type ── */
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .type-card {
+      padding: 40px 28px;
+      text-align: center; cursor: pointer;
+      transition: background .18s, border-color .18s, transform .14s;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .type-card:hover {
+      background: rgba(255,255,255,.30);
+      transform: translateY(-2px);
+    }
+    .type-card.selected {
+      background: rgba(255,255,255,.32);
+      border-color: rgba(255,255,255,.82);
+    }
+    .type-icon {
+      width: 52px; height: 52px; margin: 0 auto 16px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 14px;
+    }
+    .type-name {
+      font-size: 18px; font-weight: 500; letter-spacing: .01em;
+      color: var(--gt-p); margin-bottom: 8px;
+    }
+    .type-desc {
+      font-size: 12px; color: var(--gt-s); line-height: 1.5;
+      letter-spacing: .02em;
+    }
+
+    /* Step 1 — fill viewport on desktop */
+    #step1.visible {
+      display: flex !important;
+      flex-direction: column;
+      flex: 1;
+    }
+    .type-grid { flex: 1; }
+
+    .step-back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 20px;
+      font-size: 12px; letter-spacing: .06em;
+      color: var(--gt-s); text-decoration: none;
+      cursor: pointer; transition: color .14s;
+    }
+    .step-back-link:hover { color: var(--gt-p); }
+
+    /* ── STEP 2: Categories ── */
+    .step2-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .capsule-size {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .size-count {
+      font-size: 28px; font-weight: 200; letter-spacing: -.03em;
+      color: var(--gt-p);
+    }
+    .size-label {
+      font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--gt-s);
+    }
+    .size-tag {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 20px;
+      font-size: 10px; font-weight: 600; letter-spacing: .10em;
+      text-transform: uppercase; color: var(--gt-s);
+    }
+    .cat-panel {
+      padding: 20px 28px;
+      column-count: 3;
+      column-gap: 32px;
+    }
+
+    .cat-group {
+      break-inside: avoid;
+      margin-bottom: 14px;
+    }
+    .cat-group:last-child { margin-bottom: 0; }
+    .cat-group-title {
+      font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--gt-ph); margin-bottom: 4px; padding-left: 2px;
+    }
+    .cat-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 5px 4px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      transition: background .1s;
+    }
+    .cat-row:hover { background: rgba(255,255,255,.04); }
+    .cat-row:last-child { border-bottom: none; }
+
+    /* Checkbox */
+    .cat-check {
+      width: 18px; height: 18px; flex-shrink: 0;
+      appearance: none; -webkit-appearance: none;
+      background: rgba(255,255,255,.08);
+      border: 1.5px solid rgba(255,255,255,.32);
+      border-radius: 4px; cursor: pointer;
+      position: relative; transition: all .14s;
+    }
+    .cat-check:checked {
+      background: rgba(255,255,255,.28);
+      border-color: rgba(255,255,255,.65);
+    }
+    .cat-check:checked::after {
+      content: '';
+      position: absolute; top: 2px; left: 5px;
+      width: 5px; height: 9px;
+      border: solid var(--gt-p); border-width: 0 1.5px 1.5px 0;
+      transform: rotate(45deg);
+    }
+    .cat-name {
+      flex: 1; font-size: 13px; color: var(--gt-p);
+      letter-spacing: .01em;
+    }
+
+    /* Qty stepper */
+    .qty-stepper {
+      display: flex; align-items: center; gap: 0;
+      opacity: 0; transition: opacity .14s;
+    }
+    .cat-row.checked .qty-stepper { opacity: 1; }
+    .qty-btn {
+      width: 26px; height: 26px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.20);
+      border-radius: 6px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 300; color: var(--gt-s);
+      transition: background .12s;
+    }
+    .qty-btn:hover { background: rgba(255,255,255,.18); color: var(--gt-p); }
+    .qty-val {
+      width: 28px; text-align: center;
+      font-size: 13px; font-weight: 600; color: var(--gt-p);
+      letter-spacing: .02em;
+    }
+
+    /* Add custom */
+    .add-custom-row {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 16px; padding: 8px 4px;
+    }
+    .add-custom-input {
+      flex: 1; padding: 9px 14px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: var(--radius-s);
+      font-family: inherit; font-size: 13px; color: var(--gt-p);
+      outline: none; transition: border-color .14s;
+    }
+    .add-custom-input::placeholder { color: var(--gt-ph); }
+    .add-custom-input:focus { border-color: rgba(255,255,255,.52); }
+
+    .add-custom-btn {
+      padding: 9px 16px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: var(--radius-s);
+      font-family: inherit; font-size: 11px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--gt-s); cursor: pointer; transition: all .14s;
+    }
+    .add-custom-btn:hover { background: rgba(255,255,255,.22); color: var(--gt-p); }
+
+    /* Validation msg */
+    .cat-validation {
+      font-size: 11.5px; color: var(--gt-ph);
+      letter-spacing: .03em; margin-top: 4px;
+      transition: color .14s;
+    }
+    .cat-validation.warn { color: #FF4D00; }
+
+    /* Step nav */
+    .step-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    /* ── STEP 3: Colors + Add Items ── */
+    .step3-sections {
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .color-section { padding: 24px 28px; }
+    .section-title {
+      font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--gt-s); margin-bottom: 14px;
+    }
+    .section-subtitle {
+      font-size: 11px; color: var(--gt-ph); margin-top: -8px; margin-bottom: 14px;
+      letter-spacing: .02em;
+    }
+
+    /* Color circles */
+    .color-grid {
+      display: flex; flex-wrap: wrap; gap: 12px;
+    }
+    .color-item {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      cursor: pointer; user-select: none;
+    }
+    .color-circle {
+      width: 38px; height: 38px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.18);
+      transition: all .16s;
+      position: relative;
+    }
+    .color-item:hover .color-circle {
+      border-color: rgba(255,255,255,.45);
+      transform: scale(1.08);
+    }
+    .color-item.selected .color-circle {
+      border-color: rgba(255,255,255,.85);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.20);
+    }
+    .color-item.selected .color-circle::after {
+      content: '';
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -55%) rotate(45deg);
+      width: 8px; height: 14px;
+      border: solid white; border-width: 0 2.5px 2.5px 0;
+    }
+    /* For light colors use dark check */
+    .color-item.selected.light .color-circle::after {
+      border-color: rgba(0,0,0,.60);
+    }
+    .color-label {
+      font-size: 9.5px; letter-spacing: .06em; color: var(--gt-ph);
+      text-align: center; max-width: 52px;
+    }
+    .color-item.selected .color-label { color: var(--gt-s); }
+
+    /* Color selection guidance */
+    .color-hint {
+      font-size: 10.5px; color: var(--gt-ph); letter-spacing: .03em;
+      margin-bottom: 12px;
+    }
+    .color-item.disabled {
+      cursor: not-allowed;
+      opacity: .28;
+      pointer-events: none;
+    }
+    .color-item.disabled .color-circle {
+      border-color: rgba(255,255,255,.12);
+      box-shadow: none;
+      transform: none;
+    }
+    .compatibility-note {
+      margin-top: 14px;
+      font-size: 11px;
+      color: var(--gt-ph);
+      letter-spacing: .02em;
+      line-height: 1.5;
+    }
+
+    /* Add Items section */
+    .add-section { padding: 24px 28px; }
+
+    /* Tab switcher */
+    .tab-bar {
+      display: flex; gap: 0;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      background: none; border: none;
+      border-bottom: 2px solid transparent;
+      font-family: inherit; font-size: 12px; font-weight: 500;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-ph); cursor: pointer;
+      transition: all .14s;
+    }
+    .tab-btn:hover { color: var(--gt-s); }
+    .tab-btn.active {
+      color: var(--gt-p); font-weight: 600;
+      border-bottom-color: rgba(255,255,255,.65);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.visible { display: block; }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed rgba(255,255,255,.22);
+      border-radius: var(--radius-m);
+      padding: 40px 24px;
+      text-align: center;
+      transition: border-color .14s, background .14s;
+      cursor: pointer;
+    }
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      border-color: rgba(255,255,255,.50);
+      background: rgba(255,255,255,.06);
+    }
+    .upload-icon { margin-bottom: 12px; }
+    .upload-text {
+      font-size: 14px; color: var(--gt-s);
+      letter-spacing: .02em; margin-bottom: 4px;
+    }
+    .upload-text strong { color: var(--gt-p); font-weight: 600; }
+    .upload-hint {
+      font-size: 11px; color: var(--gt-ph); letter-spacing: .03em;
+    }
+    .upload-input { display: none; }
+
+    /* Link input */
+    .link-input-row {
+      display: flex; gap: 10px; margin-bottom: 16px;
+    }
+    .link-input {
+      flex: 1; padding: 12px 16px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: var(--radius-m);
+      font-family: inherit; font-size: 14px; color: var(--gt-p);
+      outline: none; transition: border-color .14s;
+    }
+    .link-input::placeholder { color: var(--gt-ph); }
+    .link-input:focus { border-color: rgba(255,255,255,.52); }
+    .link-hint {
+      font-size: 11px; color: var(--gt-ph); letter-spacing: .02em;
+    }
+
+    /* Search */
+    .search-row { margin-bottom: 16px; }
+    .search-input {
+      width: 100%; padding: 12px 16px 12px 38px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: var(--radius-m);
+      font-family: inherit; font-size: 14px; color: var(--gt-p);
+      outline: none; transition: border-color .14s;
+    }
+    .search-input::placeholder { color: var(--gt-ph); }
+    .search-input:focus { border-color: rgba(255,255,255,.52); }
+    .search-wrap {
+      position: relative;
+    }
+    .search-wrap svg {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      pointer-events: none;
+    }
+    .search-results {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 12px; margin-top: 16px;
+    }
+    .search-item {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: var(--radius-s);
+      padding: 16px 12px; text-align: center;
+      cursor: pointer; transition: all .14s;
+    }
+    .search-item:hover {
+      background: rgba(255,255,255,.16);
+      border-color: rgba(255,255,255,.32);
+    }
+    .search-item-icon {
+      width: 40px; height: 40px; margin: 0 auto 8px;
+      background: rgba(255,255,255,.06);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .search-item-name {
+      font-size: 11.5px; color: var(--gt-s); letter-spacing: .02em;
+    }
+
+    /* Added items grid */
+    .added-items {
+      margin-top: 20px; padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+    .added-items-title {
+      font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--gt-s); margin-bottom: 12px;
+    }
+    .added-grid {
+      display: flex; flex-wrap: wrap; gap: 10px;
+    }
+    .added-thumb {
+      width: 64px; height: 64px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.20);
+      border-radius: var(--radius-s);
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .added-remove {
+      position: absolute; top: -6px; right: -6px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: rgba(255,77,0,.80);
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: white; font-weight: 600;
+      opacity: 0; transition: opacity .14s;
+    }
+    .added-thumb:hover .added-remove { opacity: 1; }
+
+    /* Create CTA */
+    .create-section {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 8px;
+    }
+
+    /* ══════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════ */
+    @media (max-width: 1024px) {
+      .topbar { padding: 24px 24px 0; }
+      .content { padding: 0 24px 40px; flex: initial; }
+      .progress-bar { padding: 20px 24px 6px; }
+      .progress-labels { padding: 4px 24px 12px; }
+      .cat-panel { column-count: 2; }
+      #step1.visible { display: block !important; }
+      .type-grid { grid-template-columns: 1fr; gap: 12px; flex: initial; }
+      .type-card { padding: 24px 20px; }
+      .search-results { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .cat-panel { column-count: 1; }
+      .type-grid { grid-template-columns: 1fr; }
+      .search-results { grid-template-columns: repeat(2, 1fr); }
+      .color-grid { gap: 8px; }
+      .color-circle { width: 32px; height: 32px; }
+    }
+    @media (max-width: 480px) {
+      .search-results { grid-template-columns: 1fr 1fr; }
+      .link-input-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero-bg"></div>
+<div class="hero-overlay"></div>
+
+<div class="app">
+
+  <!-- ══════════════════════════════
+       MAIN
+  ══════════════════════════════ -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <a class="logo" href="dashboard.html">Capsule Zero</a>
+        <div class="topbar-title" id="stepTitle">Choose <strong>Wardrobe Type</strong></div>
+        <div class="topbar-sub" id="stepSub">Step 1 of 3</div>
+      </div>
+      <div class="topbar-right">
+        <div class="lang-dropdown" id="langDropdown">
+          <button class="lang-trigger" onclick="toggleLang(event)" aria-label="Select language">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span id="currentLang">EN</span>
+            <span class="lang-chevron">&#9662;</span>
+          </button>
+          <div class="lang-menu">
+            <button class="lang-option active" data-code="EN" onclick="setLang(this)"><span>English</span><span class="lang-code">EN</span></button>
+            <button class="lang-option" data-code="RU" onclick="setLang(this)"><span>&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</span><span class="lang-code">RU</span></button>
+            <button class="lang-option" data-code="ES" onclick="setLang(this)"><span>Espa&#241;ol</span><span class="lang-code">ES</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress dots -->
+    <div class="progress-bar">
+      <div class="progress-dot active" id="dot1">1</div>
+      <div class="progress-line" id="line1"></div>
+      <div class="progress-dot" id="dot2">2</div>
+      <div class="progress-line" id="line2"></div>
+      <div class="progress-dot" id="dot3">3</div>
+    </div>
+    <div class="progress-labels">
+      <span class="progress-label active" id="lbl1">Type</span>
+      <span class="progress-label" id="lbl2">Categories</span>
+      <span class="progress-label" id="lbl3">Items &amp; Colors</span>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- ══════════════════════════════
+           STEP 1 — Wardrobe Type
+      ══════════════════════════════ -->
+      <div class="step visible" id="step1">
+        <div class="type-grid">
+
+          <div class="gc type-card" onclick="selectType('women')">
+            <div class="type-icon">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
+                <path d="M12 2C9.5 2 7.5 4 7.5 6.5C7.5 9 9.5 11 12 11C14.5 11 16.5 9 16.5 6.5C16.5 4 14.5 2 12 2Z" stroke="white" stroke-width="1.5"/>
+                <path d="M6 22V15C6 13.3 7.3 12 9 12H15C16.7 12 18 13.3 18 15V22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M8 22L12 16L16 22" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="type-name">Women's</div>
+            <div class="type-desc">Dresses, skirts, blouses, heels and more feminine essentials</div>
+          </div>
+
+          <div class="gc type-card" onclick="selectType('men')">
+            <div class="type-icon">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
+                <path d="M12 2C9.5 2 7.5 4 7.5 6.5C7.5 9 9.5 11 12 11C14.5 11 16.5 9 16.5 6.5C16.5 4 14.5 2 12 2Z" stroke="white" stroke-width="1.5"/>
+                <path d="M6 22V15C6 13.3 7.3 12 9 12H15C16.7 12 18 13.3 18 15V22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M10 12V22M14 12V22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="type-name">Men's</div>
+            <div class="type-desc">Suits, chinos, polos, loafers and classic masculine wardrobe</div>
+          </div>
+
+          <div class="gc type-card" onclick="selectType('mixed')">
+            <div class="type-icon">
+              <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
+                <circle cx="8" cy="6" r="3.5" stroke="white" stroke-width="1.5"/>
+                <circle cx="16" cy="6" r="3.5" stroke="white" stroke-width="1.5"/>
+                <path d="M4 22V16C4 14.3 5.3 13 7 13H9" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M20 22V16C20 14.3 18.7 13 17 13H15" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M12 13V22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="type-name">Mixed</div>
+            <div class="type-desc">All categories combined for a universal wardrobe approach</div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ══════════════════════════════
+           STEP 2 — Categories
+      ══════════════════════════════ -->
+      <div class="step" id="step2">
+        <div class="step2-header">
+          <div class="capsule-size">
+            <div>
+              <div class="size-count" id="totalItems">0</div>
+              <div class="size-label">items selected</div>
+            </div>
+            <div class="size-tag" id="sizeTag">---</div>
+          </div>
+          <div class="cat-validation" id="catValidation">Select at least 8 categories to continue</div>
+        </div>
+
+        <div class="gc cat-panel" id="catPanel">
+          <!-- Categories rendered by JS -->
+        </div>
+
+        <div class="add-custom-row">
+          <input class="add-custom-input" id="customCatInput" type="text" placeholder="Add your own category..." />
+          <button class="add-custom-btn" onclick="addCustomCategory()">+ Add</button>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn-ghost" onclick="goToStep(1)">
+            <svg width="12" height="12" fill="none" viewBox="0 0 14 14" style="vertical-align:-1px;margin-right:4px;"><path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Back
+          </button>
+          <button class="btn-primary" id="step2Continue" onclick="goToStep(3)" disabled>Continue</button>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════
+           STEP 3 — Add Items + Colors
+      ══════════════════════════════ -->
+      <div class="step" id="step3">
+        <div class="step3-sections">
+
+          <!-- Add Items (first — so uploaded items can highlight colors below) -->
+          <div class="gc add-section">
+            <div class="section-title">Add Items to Your Capsule</div>
+
+            <div class="tab-bar">
+              <button class="tab-btn active" onclick="switchTab('upload')">Upload Photos</button>
+              <button class="tab-btn" onclick="switchTab('links')">Paste Links</button>
+              <button class="tab-btn" onclick="switchTab('search')">Search Catalog</button>
+            </div>
+
+            <!-- Upload tab -->
+            <div class="tab-panel visible" id="tab-upload">
+              <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">
+                  <svg width="36" height="36" fill="none" viewBox="0 0 24 24">
+                    <path d="M21 15V19C21 20.1 20.1 21 19 21H5C3.9 21 3 20.1 3 19V15" stroke="rgba(255,255,255,.45)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 8L12 3L7 8" stroke="rgba(255,255,255,.45)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 3V15" stroke="rgba(255,255,255,.45)" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="upload-text">Drag photos here or <strong>browse</strong></div>
+                <div class="upload-hint">PNG, JPG up to 10 MB each</div>
+              </div>
+              <input class="upload-input" id="fileInput" type="file" accept="image/*" multiple onchange="handleFiles(this.files)" />
+            </div>
+
+            <!-- Links tab -->
+            <div class="tab-panel" id="tab-links">
+              <div class="link-input-row">
+                <input class="link-input" id="linkInput" type="url" placeholder="Paste a product URL..." />
+                <button class="btn-ghost" onclick="addLink()">Add</button>
+              </div>
+              <div class="link-hint">Supported: Zara, H&amp;M, COS, ARKET, Massimo Dutti, Uniqlo, Mango</div>
+            </div>
+
+            <!-- Search tab -->
+            <div class="tab-panel" id="tab-search">
+              <div class="search-row">
+                <div class="search-wrap">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.38)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <input class="search-input" type="text" placeholder="Search by name, brand or category..." />
+                </div>
+              </div>
+              <div class="search-results">
+                <div class="search-item" onclick="addSearchItem(this)">
+                  <div class="search-item-icon"><svg width="18" height="18" fill="none" viewBox="0 0 18 18"><path d="M9 3.5C9 3.5 6.2 5 6.2 7.4L2.5 9.4V15H15.5V9.4L11.8 7.4C11.8 5 9 3.5 9 3.5Z" stroke="rgba(255,255,255,.45)" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+                  <div class="search-item-name">White T-Shirt</div>
+                </div>
+                <div class="search-item" onclick="addSearchItem(this)">
+                  <div class="search-item-icon"><svg width="18" height="18" fill="none" viewBox="0 0 18 18"><path d="M5.5 4H12.5V11H5.5Z" stroke="rgba(255,255,255,.45)" stroke-width="1.2" stroke-linejoin="round"/><path d="M4 11H14V15H4Z" stroke="rgba(255,255,255,.45)" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+                  <div class="search-item-name">Straight Jeans</div>
+                </div>
+                <div class="search-item" onclick="addSearchItem(this)">
+                  <div class="search-item-icon"><svg width="18" height="18" fill="none" viewBox="0 0 18 18"><path d="M9 3.5C9 3.5 6.2 5 6.2 7.4L2.5 9.4V15H15.5V9.4L11.8 7.4C11.8 5 9 3.5 9 3.5Z" stroke="rgba(255,255,255,.45)" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+                  <div class="search-item-name">Black Blazer</div>
+                </div>
+                <div class="search-item" onclick="addSearchItem(this)">
+                  <div class="search-item-icon"><svg width="18" height="18" fill="none" viewBox="0 0 18 18"><ellipse cx="9" cy="6" rx="4.5" ry="3" stroke="rgba(255,255,255,.45)" stroke-width="1.2"/><path d="M4.5 6V13C4.5 14.1 6.6 15 9 15C11.4 15 13.5 14.1 13.5 13V6" stroke="rgba(255,255,255,.45)" stroke-width="1.2"/></svg></div>
+                  <div class="search-item-name">Ankle Boots</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Added items -->
+            <div class="added-items" id="addedItemsSection" style="display:none;">
+              <div class="added-items-title">Added Items (<span id="addedCount">0</span>)</div>
+              <div class="added-grid" id="addedGrid"></div>
+            </div>
+          </div>
+
+          <!-- Color Palette -->
+          <div class="gc color-section">
+            <div class="section-title">Color Palette</div>
+            <div class="color-hint">Choose any number of colors. Incompatible ones are blocked automatically.</div>
+            <div class="color-grid" id="paletteColors">
+              <!-- rendered by JS -->
+            </div>
+            <div class="compatibility-note" id="compatibilityNote">Colors combine when they match either by temperature or by saturation. Achromats combine with everything.</div>
+          </div>
+
+        </div>
+
+        <!-- Navigation -->
+        <div class="create-section">
+          <button class="btn-ghost" onclick="goToStep(2)">
+            <svg width="12" height="12" fill="none" viewBox="0 0 14 14" style="vertical-align:-1px;margin-right:4px;"><path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Back
+          </button>
+          <button class="btn-primary" onclick="createCapsule()">
+            <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M7 1V13M1 7H13" stroke="white" stroke-width="1.9" stroke-linecap="round"/></svg>
+            Create Capsule
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+
+</div><!-- /app -->
+
+<script>
+// ══════════════════════════════
+//  DATA
+// ══════════════════════════════
+
+const CATEGORIES = [
+  // Tops
+  { name: 'T-Shirt',          group: 'Tops',        for: ['women','men','mixed'] },
+  { name: 'Long Sleeve Tee',  group: 'Tops',        for: ['women','men','mixed'] },
+  { name: 'Button-Down Shirt', group: 'Tops',       for: ['women','men','mixed'] },
+  { name: 'Blouse',           group: 'Tops',        for: ['women','mixed'] },
+  { name: 'Polo Shirt',       group: 'Tops',        for: ['men','mixed'] },
+  { name: 'Knit Sweater',     group: 'Tops',        for: ['women','men','mixed'] },
+  { name: 'Turtleneck',       group: 'Tops',        for: ['women','men','mixed'] },
+  { name: 'Tank Top',         group: 'Tops',        for: ['women','mixed'] },
+  { name: 'Cardigan',         group: 'Tops',        for: ['women','men','mixed'] },
+  { name: 'Hoodie',           group: 'Tops',        for: ['women','men','mixed'] },
+  { name: 'Crop Top',         group: 'Tops',        for: ['women','mixed'] },
+  { name: 'Henley',           group: 'Tops',        for: ['men','mixed'] },
+  // Bottoms
+  { name: 'Straight Jeans',   group: 'Bottoms',     for: ['women','men','mixed'] },
+  { name: 'Slim Jeans',       group: 'Bottoms',     for: ['women','men','mixed'] },
+  { name: 'Wide-Leg Trousers', group: 'Bottoms',    for: ['women','mixed'] },
+  { name: 'Chinos',           group: 'Bottoms',     for: ['men','mixed'] },
+  { name: 'Tailored Trousers', group: 'Bottoms',    for: ['women','men','mixed'] },
+  { name: 'Shorts',           group: 'Bottoms',     for: ['women','men','mixed'] },
+  { name: 'Mini Skirt',       group: 'Bottoms',     for: ['women','mixed'] },
+  { name: 'Midi Skirt',       group: 'Bottoms',     for: ['women','mixed'] },
+  { name: 'Maxi Skirt',       group: 'Bottoms',     for: ['women','mixed'] },
+  { name: 'Leggings',         group: 'Bottoms',     for: ['women','mixed'] },
+  // Dresses & Jumpsuits
+  { name: 'Midi Dress',       group: 'Dresses',     for: ['women','mixed'] },
+  { name: 'Maxi Dress',       group: 'Dresses',     for: ['women','mixed'] },
+  { name: 'Shirt Dress',      group: 'Dresses',     for: ['women','mixed'] },
+  { name: 'Slip Dress',       group: 'Dresses',     for: ['women','mixed'] },
+  { name: 'Jumpsuit',         group: 'Dresses',     for: ['women','mixed'] },
+  // Outerwear
+  { name: 'Blazer',           group: 'Outerwear',   for: ['women','men','mixed'] },
+  { name: 'Trench Coat',      group: 'Outerwear',   for: ['women','men','mixed'] },
+  { name: 'Wool Coat',        group: 'Outerwear',   for: ['women','men','mixed'] },
+  { name: 'Leather Jacket',   group: 'Outerwear',   for: ['women','men','mixed'] },
+  { name: 'Puffer Jacket',    group: 'Outerwear',   for: ['women','men','mixed'] },
+  { name: 'Denim Jacket',     group: 'Outerwear',   for: ['women','men','mixed'] },
+  { name: 'Bomber Jacket',    group: 'Outerwear',   for: ['men','mixed'] },
+  // Shoes
+  { name: 'Sneakers',         group: 'Shoes',       for: ['women','men','mixed'] },
+  { name: 'Ankle Boots',      group: 'Shoes',       for: ['women','men','mixed'] },
+  { name: 'Loafers',          group: 'Shoes',       for: ['women','men','mixed'] },
+  { name: 'Heels',            group: 'Shoes',       for: ['women','mixed'] },
+  { name: 'Sandals',          group: 'Shoes',       for: ['women','men','mixed'] },
+  { name: 'Ballet Flats',     group: 'Shoes',       for: ['women','mixed'] },
+  { name: 'Derby Shoes',      group: 'Shoes',       for: ['men','mixed'] },
+  // Bags
+  { name: 'Tote Bag',         group: 'Bags',        for: ['women','men','mixed'] },
+  { name: 'Crossbody Bag',    group: 'Bags',        for: ['women','mixed'] },
+  { name: 'Backpack',         group: 'Bags',        for: ['women','men','mixed'] },
+  { name: 'Clutch',           group: 'Bags',        for: ['women','mixed'] },
+  { name: 'Briefcase',        group: 'Bags',        for: ['men','mixed'] },
+  // Accessories
+  { name: 'Belt',             group: 'Accessories',  for: ['women','men','mixed'] },
+  { name: 'Scarf',            group: 'Accessories',  for: ['women','men','mixed'] },
+  { name: 'Watch',            group: 'Accessories',  for: ['women','men','mixed'] },
+  { name: 'Sunglasses',       group: 'Accessories',  for: ['women','men','mixed'] },
+  { name: 'Hat',              group: 'Accessories',  for: ['women','men','mixed'] },
+  { name: 'Jewelry Set',      group: 'Accessories',  for: ['women','mixed'] },
+];
+
+const ACHROMATIC_COLORS = [
+  { name: 'White', hex: '#F5F5F0', temp: 'neutral', shade: 'neutral', hue: 'achromatic', light: true },
+  { name: 'Grey',  hex: '#8C8C8C', temp: 'neutral', shade: 'neutral', hue: 'achromatic' },
+  { name: 'Black', hex: '#1A1A1A', temp: 'neutral', shade: 'neutral', hue: 'achromatic' },
+];
+
+const PALETTE_COLORS = [
+  // ── WARM: Red ──
+  { name: 'Scarlet',      hex: '#E23D28', temp: 'warm', shade: 'bright',   hue: 'red' },
+  { name: 'Coral',        hex: '#E87461', temp: 'warm', shade: 'light',    hue: 'red' },
+  { name: 'Rose Quartz',  hex: '#F5C4C0', temp: 'warm', shade: 'lightest', hue: 'red', light: true },
+  { name: 'Burgundy',     hex: '#722F37', temp: 'warm', shade: 'dark',     hue: 'red' },
+  { name: 'Oxblood',      hex: '#4A1520', temp: 'warm', shade: 'darkest',  hue: 'red' },
+
+  // ── WARM: Red-Orange ──
+  { name: 'Vermillion',   hex: '#E8441A', temp: 'warm', shade: 'bright',   hue: 'red-orange' },
+  { name: 'Terracotta',   hex: '#CC6644', temp: 'warm', shade: 'light',    hue: 'red-orange' },
+  { name: 'Peach',        hex: '#F7C8A8', temp: 'warm', shade: 'lightest', hue: 'red-orange', light: true },
+  { name: 'Rust',         hex: '#9C3A1E', temp: 'warm', shade: 'dark',     hue: 'red-orange' },
+  { name: 'Mahogany',     hex: '#5C1A08', temp: 'warm', shade: 'darkest',  hue: 'red-orange' },
+
+  // ── WARM: Orange ──
+  { name: 'Tangerine',    hex: '#F0761A', temp: 'warm', shade: 'bright',   hue: 'orange' },
+  { name: 'Apricot',      hex: '#F4A56A', temp: 'warm', shade: 'light',    hue: 'orange' },
+  { name: 'Cream Orange', hex: '#FAD9BA', temp: 'warm', shade: 'lightest', hue: 'orange', light: true },
+  { name: 'Burnt Orange', hex: '#A84E10', temp: 'warm', shade: 'dark',     hue: 'orange' },
+  { name: 'Cognac',       hex: '#6A2800', temp: 'warm', shade: 'darkest',  hue: 'orange' },
+
+  // ── WARM: Yellow-Orange ──
+  { name: 'Amber',        hex: '#F0A820', temp: 'warm', shade: 'bright',   hue: 'yellow-orange' },
+  { name: 'Marigold',     hex: '#F4C060', temp: 'warm', shade: 'light',    hue: 'yellow-orange', light: true },
+  { name: 'Champagne',    hex: '#F7E2B0', temp: 'warm', shade: 'lightest', hue: 'yellow-orange', light: true },
+  { name: 'Ochre',        hex: '#B07A10', temp: 'warm', shade: 'dark',     hue: 'yellow-orange' },
+  { name: 'Bronze',       hex: '#6E4A00', temp: 'warm', shade: 'darkest',  hue: 'yellow-orange' },
+
+  // ── WARM: Yellow ──
+  { name: 'Canary',       hex: '#F5E020', temp: 'warm', shade: 'bright',   hue: 'yellow', light: true },
+  { name: 'Butter',       hex: '#F7E870', temp: 'warm', shade: 'light',    hue: 'yellow', light: true },
+  { name: 'Ivory',        hex: '#FAF4C0', temp: 'warm', shade: 'lightest', hue: 'yellow', light: true },
+  { name: 'Mustard',      hex: '#B89010', temp: 'warm', shade: 'dark',     hue: 'yellow' },
+  { name: 'Goldenrod',    hex: '#7A5C00', temp: 'warm', shade: 'darkest',  hue: 'yellow' },
+
+  // ── WARM: Yellow-Green ──
+  { name: 'Chartreuse',   hex: '#8CC820', temp: 'warm', shade: 'bright',   hue: 'yellow-green' },
+  { name: 'Pistachio',    hex: '#AACC6C', temp: 'warm', shade: 'light',    hue: 'yellow-green', light: true },
+  { name: 'Honeydew',     hex: '#D8F0B0', temp: 'warm', shade: 'lightest', hue: 'yellow-green', light: true },
+  { name: 'Olive',        hex: '#5C7018', temp: 'warm', shade: 'dark',     hue: 'yellow-green' },
+  { name: 'Moss',         hex: '#384010', temp: 'warm', shade: 'darkest',  hue: 'yellow-green' },
+
+  // ── COOL: Green ──
+  { name: 'Emerald',      hex: '#28A868', temp: 'cool', shade: 'bright',   hue: 'green' },
+  { name: 'Sage',         hex: '#80B894', temp: 'cool', shade: 'light',    hue: 'green', light: true },
+  { name: 'Celadon',      hex: '#C0E8D0', temp: 'cool', shade: 'lightest', hue: 'green', light: true },
+  { name: 'Forest',       hex: '#1C6838', temp: 'cool', shade: 'dark',     hue: 'green' },
+  { name: 'Bottle Green', hex: '#0C3820', temp: 'cool', shade: 'darkest',  hue: 'green' },
+
+  // ── COOL: Blue-Green ──
+  { name: 'Teal',         hex: '#1A9090', temp: 'cool', shade: 'bright',   hue: 'blue-green' },
+  { name: 'Seafoam',      hex: '#70C0B0', temp: 'cool', shade: 'light',    hue: 'blue-green', light: true },
+  { name: 'Mint',         hex: '#B8E8E0', temp: 'cool', shade: 'lightest', hue: 'blue-green', light: true },
+  { name: 'Petrol',       hex: '#1A5C5C', temp: 'cool', shade: 'dark',     hue: 'blue-green' },
+  { name: 'Deep Teal',    hex: '#0A3030', temp: 'cool', shade: 'darkest',  hue: 'blue-green' },
+
+  // ── COOL: Blue ──
+  { name: 'Cobalt',       hex: '#2050C8', temp: 'cool', shade: 'bright',   hue: 'blue' },
+  { name: 'Cornflower',   hex: '#6898E0', temp: 'cool', shade: 'light',    hue: 'blue' },
+  { name: 'Powder Blue',  hex: '#B8D4F0', temp: 'cool', shade: 'lightest', hue: 'blue', light: true },
+  { name: 'Navy',         hex: '#18287A', temp: 'cool', shade: 'dark',     hue: 'blue' },
+  { name: 'Midnight',     hex: '#0C1848', temp: 'cool', shade: 'darkest',  hue: 'blue' },
+
+  // ── COOL: Blue-Violet ──
+  { name: 'Periwinkle',   hex: '#6878D8', temp: 'cool', shade: 'bright',   hue: 'blue-violet' },
+  { name: 'Lavender',     hex: '#A8B4E8', temp: 'cool', shade: 'light',    hue: 'blue-violet', light: true },
+  { name: 'Pale Lilac',   hex: '#D8DCF8', temp: 'cool', shade: 'lightest', hue: 'blue-violet', light: true },
+  { name: 'Indigo',       hex: '#3C3898', temp: 'cool', shade: 'dark',     hue: 'blue-violet' },
+  { name: 'Ultramarine',  hex: '#201858', temp: 'cool', shade: 'darkest',  hue: 'blue-violet' },
+
+  // ── COOL: Violet ──
+  { name: 'Amethyst',     hex: '#8848B8', temp: 'cool', shade: 'bright',   hue: 'violet' },
+  { name: 'Wisteria',     hex: '#B890D0', temp: 'cool', shade: 'light',    hue: 'violet', light: true },
+  { name: 'Orchid Mist',  hex: '#E0C8F0', temp: 'cool', shade: 'lightest', hue: 'violet', light: true },
+  { name: 'Grape',        hex: '#5C2878', temp: 'cool', shade: 'dark',     hue: 'violet' },
+  { name: 'Aubergine',    hex: '#300840', temp: 'cool', shade: 'darkest',  hue: 'violet' },
+
+  // ── COOL: Red-Violet ──
+  { name: 'Fuchsia',      hex: '#C02888', temp: 'cool', shade: 'bright',   hue: 'red-violet' },
+  { name: 'Blush Pink',   hex: '#E080B0', temp: 'cool', shade: 'light',    hue: 'red-violet', light: true },
+  { name: 'Petal',        hex: '#F5C8E0', temp: 'cool', shade: 'lightest', hue: 'red-violet', light: true },
+  { name: 'Plum',         hex: '#7A1850', temp: 'cool', shade: 'dark',     hue: 'red-violet' },
+  { name: 'Bordeaux',     hex: '#440028', temp: 'cool', shade: 'darkest',  hue: 'red-violet' },
+];
+
+// ══════════════════════════════
+//  STATE
+// ══════════════════════════════
+
+let currentStep = 1;
+let selectedType = null;
+let categoryState = {};  // { name: { checked, qty } }
+let selectedColors = new Set();
+let addedItems = [];
+
+// ══════════════════════════════
+//  STEP NAVIGATION
+// ══════════════════════════════
+
+function goToStep(n) {
+  if (n === 2 && !selectedType) return;
+  if (n === 3) {
+    const checked = Object.values(categoryState).filter(c => c.checked).length;
+    if (checked < 8) {
+      document.getElementById('catValidation').classList.add('warn');
+      return;
+    }
+  }
+  currentStep = n;
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('visible'));
+  document.getElementById('step' + n).classList.add('visible');
+  updateProgress();
+  // scroll to top
+  document.querySelector('.main').scrollTop = 0;
+}
+
+function updateProgress() {
+  const titles = [
+    { t: 'Choose <strong>Wardrobe Type</strong>', s: 'Step 1 of 3' },
+    { t: 'Select <strong>Categories</strong>',    s: 'Step 2 of 3' },
+    { t: 'Add Items &amp; <strong>Colors</strong>', s: 'Step 3 of 3' },
+  ];
+  document.getElementById('stepTitle').innerHTML = titles[currentStep-1].t;
+  document.getElementById('stepSub').textContent = titles[currentStep-1].s;
+
+  for (let i = 1; i <= 3; i++) {
+    const dot = document.getElementById('dot' + i);
+    const lbl = document.getElementById('lbl' + i);
+    dot.className = 'progress-dot';
+    lbl.className = 'progress-label';
+    if (i < currentStep) {
+      dot.classList.add('done');
+      dot.innerHTML = '<svg width="12" height="12" fill="none" viewBox="0 0 14 14"><path d="M2 7L5.5 10.5L12 4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    } else if (i === currentStep) {
+      dot.classList.add('active');
+      lbl.classList.add('active');
+      dot.textContent = i;
+    } else {
+      dot.textContent = i;
+    }
+  }
+  // Lines
+  document.getElementById('line1').className = 'progress-line' + (currentStep > 1 ? ' done' : '');
+  document.getElementById('line2').className = 'progress-line' + (currentStep > 2 ? ' done' : '');
+}
+
+// ══════════════════════════════
+//  STEP 1 — Type Selection
+// ══════════════════════════════
+
+function selectType(type) {
+  selectedType = type;
+  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  // Build categories then auto-advance
+  buildCategories(type);
+  setTimeout(() => goToStep(2), 350);
+}
+
+// ══════════════════════════════
+//  STEP 2 — Categories
+// ══════════════════════════════
+
+function buildCategories(type) {
+  const panel = document.getElementById('catPanel');
+  const filtered = CATEGORIES.filter(c => c.for.includes(type));
+
+  // Group by group name
+  const groups = {};
+  filtered.forEach(c => {
+    if (!groups[c.group]) groups[c.group] = [];
+    groups[c.group].push(c);
+  });
+
+  // Preserve existing state
+  const oldState = { ...categoryState };
+  categoryState = {};
+  filtered.forEach(c => {
+    categoryState[c.name] = oldState[c.name] || { checked: false, qty: 1 };
+  });
+  // Keep custom categories
+  Object.keys(oldState).forEach(k => {
+    if (!categoryState[k] && oldState[k].custom) {
+      categoryState[k] = oldState[k];
+    }
+  });
+
+  let html = '';
+  for (const [group, items] of Object.entries(groups)) {
+    html += `<div class="cat-group">`;
+    html += `<div class="cat-group-title">${group}</div>`;
+    items.forEach(item => {
+      const st = categoryState[item.name];
+      const checkedClass = st.checked ? ' checked' : '';
+      const checkedAttr = st.checked ? ' checked' : '';
+      html += `<div class="cat-row${checkedClass}" data-cat="${item.name}">
+        <input type="checkbox" class="cat-check"${checkedAttr} onchange="updateCategory(this, '${item.name.replace(/'/g, "\\'")}')">
+        <span class="cat-name">${item.name}</span>
+        <div class="qty-stepper">
+          <button class="qty-btn" onclick="adjustQty('${item.name.replace(/'/g, "\\'")}', -1)">-</button>
+          <span class="qty-val">${st.qty}</span>
+          <button class="qty-btn" onclick="adjustQty('${item.name.replace(/'/g, "\\'")}', 1)">+</button>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Custom categories
+  Object.keys(categoryState).forEach(k => {
+    if (categoryState[k].custom) {
+      const st = categoryState[k];
+      const checkedClass = st.checked ? ' checked' : '';
+      const checkedAttr = st.checked ? ' checked' : '';
+      html += `<div class="cat-group"><div class="cat-group-title">Custom</div>`;
+      html += `<div class="cat-row${checkedClass}" data-cat="${k}">
+        <input type="checkbox" class="cat-check"${checkedAttr} onchange="updateCategory(this, '${k.replace(/'/g, "\\'")}')">
+        <span class="cat-name">${k}</span>
+        <div class="qty-stepper">
+          <button class="qty-btn" onclick="adjustQty('${k.replace(/'/g, "\\'")}', -1)">-</button>
+          <span class="qty-val">${st.qty}</span>
+          <button class="qty-btn" onclick="adjustQty('${k.replace(/'/g, "\\'")}', 1)">+</button>
+        </div>
+      </div>`;
+      html += `</div>`;
+    }
+  });
+
+  panel.innerHTML = html;
+  updateTotalItems();
+}
+
+function updateCategory(checkbox, name) {
+  categoryState[name].checked = checkbox.checked;
+  const row = checkbox.closest('.cat-row');
+  row.classList.toggle('checked', checkbox.checked);
+  updateTotalItems();
+}
+
+function adjustQty(name, delta) {
+  const st = categoryState[name];
+  st.qty = Math.max(1, Math.min(10, st.qty + delta));
+  const row = document.querySelector(`.cat-row[data-cat="${name}"]`);
+  if (row) row.querySelector('.qty-val').textContent = st.qty;
+  updateTotalItems();
+}
+
+function updateTotalItems() {
+  let total = 0;
+  let checkedCount = 0;
+  Object.values(categoryState).forEach(st => {
+    if (st.checked) {
+      total += st.qty;
+      checkedCount++;
+    }
+  });
+
+  document.getElementById('totalItems').textContent = total;
+
+  // Size tag
+  let sizeLabel = '---';
+  if (total > 0 && total <= 15) sizeLabel = 'Basic';
+  else if (total <= 25) sizeLabel = 'Standard';
+  else if (total <= 35) sizeLabel = 'Large';
+  else if (total > 35) sizeLabel = 'Extra Large';
+  document.getElementById('sizeTag').textContent = sizeLabel;
+
+  // Validation
+  const valEl = document.getElementById('catValidation');
+  const btn = document.getElementById('step2Continue');
+  if (checkedCount >= 8) {
+    valEl.textContent = checkedCount + ' categories selected';
+    valEl.classList.remove('warn');
+    btn.disabled = false;
+  } else {
+    valEl.textContent = 'Select at least 8 categories (' + checkedCount + '/8)';
+    valEl.classList.remove('warn');
+    btn.disabled = true;
+  }
+}
+
+function addCustomCategory() {
+  const input = document.getElementById('customCatInput');
+  const name = input.value.trim();
+  if (!name || categoryState[name]) { input.value = ''; return; }
+  categoryState[name] = { checked: true, qty: 1, custom: true };
+  input.value = '';
+  buildCategories(selectedType);
+}
+
+// ══════════════════════════════
+//  STEP 3 — Colors
+// ══════════════════════════════
+
+function initColors() {
+  const grid = document.getElementById('paletteColors');
+  const colors = [...ACHROMATIC_COLORS, ...PALETTE_COLORS];
+  grid.innerHTML = colors.map(c => {
+    const light = c.light ? ' light' : '';
+    return `<div class="color-item${light}" data-color="${c.name}" data-temp="${c.temp}" data-shade="${c.shade}" data-hue="${c.hue}" onclick="toggleColor(this, '${c.name.replace(/'/g, "\\'")}')">
+      <div class="color-circle" style="background:${c.hex};"></div>
+      <span class="color-label">${c.name}</span>
+    </div>`;
+  }).join('');
+  updateColorAvailability();
+}
+
+function toggleColor(el, name) {
+  if (selectedColors.has(name)) {
+    selectedColors.delete(name);
+    el.classList.remove('selected');
+  } else {
+    selectedColors.add(name);
+    el.classList.add('selected');
+  }
+  updateColorAvailability();
+}
+
+function areColorsCompatible(a, b) {
+  if (a.hue === 'achromatic' || b.hue === 'achromatic') return true;
+  return a.temp === b.temp || a.shade === b.shade;
+}
+
+function updateColorAvailability() {
+  const allColors = [...ACHROMATIC_COLORS, ...PALETTE_COLORS];
+  const selected = allColors.filter(c => selectedColors.has(c.name));
+  document.querySelectorAll('#paletteColors .color-item').forEach(el => {
+    const color = allColors.find(c => c.name === el.dataset.color);
+    const compatible = selected.every(sel => areColorsCompatible(sel, color));
+    const isSelected = selectedColors.has(color.name);
+    el.classList.toggle('disabled', !compatible && !isSelected);
+  });
+}
+
+// ══════════════════════════════
+//  STEP 3 — Add Items
+// ══════════════════════════════
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('visible'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('visible');
+}
+
+// Upload
+const uploadZone = document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+
+function handleFiles(files) {
+  Array.from(files).forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      addItemThumb(e.target.result, file.name);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function addLink() {
+  const input = document.getElementById('linkInput');
+  const url = input.value.trim();
+  if (!url) return;
+  // Mock: create a placeholder item
+  addItemThumb(null, url.substring(0, 30) + '...');
+  input.value = '';
+}
+
+function addSearchItem(el) {
+  const name = el.querySelector('.search-item-name').textContent;
+  addItemThumb(null, name);
+}
+
+function addItemThumb(src, title) {
+  addedItems.push({ src, title });
+  renderAddedItems();
+}
+
+function removeItem(idx) {
+  addedItems.splice(idx, 1);
+  renderAddedItems();
+}
+
+function renderAddedItems() {
+  const section = document.getElementById('addedItemsSection');
+  const grid = document.getElementById('addedGrid');
+  const count = document.getElementById('addedCount');
+
+  if (addedItems.length === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  count.textContent = addedItems.length;
+
+  grid.innerHTML = addedItems.map((item, i) => `
+    <div class="added-thumb" title="${item.title}">
+      ${item.src
+        ? `<img src="${item.src}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-s);" />`
+        : `<svg width="20" height="20" fill="none" viewBox="0 0 18 18"><path d="M9 3.5C9 3.5 6.2 5 6.2 7.4L2.5 9.4V15H15.5V9.4L11.8 7.4C11.8 5 9 3.5 9 3.5Z" stroke="rgba(255,255,255,.35)" stroke-width="1.2" stroke-linejoin="round"/></svg>`
+      }
+      <button class="added-remove" onclick="removeItem(${i})">&#215;</button>
+    </div>
+  `).join('');
+}
+
+function createCapsule() {
+  const checkedCats = Object.entries(categoryState).filter(([,v]) => v.checked).length;
+  const totalItems = Object.values(categoryState).filter(s => s.checked).reduce((a, s) => a + s.qty, 0);
+
+  alert(
+    'Capsule Created!\n\n' +
+    'Type: ' + selectedType + '\n' +
+    'Categories: ' + checkedCats + '\n' +
+    'Total items: ' + totalItems + '\n' +
+    'Selected colors: ' + ([...selectedColors].join(', ') || 'none') + '\n' +
+    'Added items: ' + addedItems.length
+  );
+}
+
+// ══════════════════════════════
+//  LANGUAGE
+// ══════════════════════════════
+
+function toggleLang(e) {
+  e.stopPropagation();
+  document.getElementById('langDropdown').classList.toggle('open');
+}
+function setLang(btn) {
+  document.getElementById('currentLang').textContent = btn.dataset.code;
+  document.querySelectorAll('.lang-option').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('langDropdown').classList.remove('open');
+}
+document.addEventListener('click', () => {
+  document.getElementById('langDropdown').classList.remove('open');
+});
+
+// ══════════════════════════════
+//  INIT
+// ══════════════════════════════
+
+initColors();
+</script>
+
+</body>
+</html>
