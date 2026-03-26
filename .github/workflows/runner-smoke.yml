@@ -1,6 +1,9 @@
 name: Runner Smoke
 
 on:
+  push:
+    branches:
+      - chore/import-ai-orchestration-workflow
   workflow_dispatch:
 
 jobs:
