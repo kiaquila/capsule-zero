@@ -1,0 +1,46 @@
+name: Runner Smoke
+
+on:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: smoke
+    runs-on:
+      - self-hosted
+      - macOS
+      - ai-runner
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "runner_name=$RUNNER_NAME"
+          echo "runner_os=$RUNNER_OS"
+          echo "runner_arch=$RUNNER_ARCH"
+          sw_vers
+          uname -a
+
+      - name: Verify tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          which git
+          git --version
+          which gh
+          gh --version
+          /opt/homebrew/bin/codex --version
+          /opt/homebrew/bin/pwsh -NoProfile -NonInteractive -Command '$PSVersionTable.PSVersion.ToString()'
+
+      - name: Verify workspace access
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f AGENTS.md
+          test -f CLAUDE.md
+          test -d app
+          echo "workspace_ok"

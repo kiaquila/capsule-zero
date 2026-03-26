@@ -55,8 +55,9 @@ This project uses spec-kit for structured development. **Always read the relevan
 ```bash
 cd app
 npm run dev          # Development server
+npm run typecheck    # TypeScript validation
 npm run build        # Production build
-npm run lint         # ESLint
+npm run ci:check     # CI baseline checks
 ```
 
 ## Design Principles (NON-NEGOTIABLE)
@@ -103,6 +104,8 @@ Pixel-perfect Phase 3 prototypes in `html-prototypes/` (pure HTML+CSS). This fol
 - `docs_capsule_zero/ux/ux-validation.md` — Competitor UX analysis, 6 critical insights
 - `docs_capsule_zero/marketing/go-to-market.md` — TAM/SAM/SOM, competitors, pricing
 - `docs_capsule_zero/launch/launch-plan.md` — Full launch plan, phases 0-7
+- `docs_capsule_zero/project/devops/ai-pr-workflow.md` — PR loop and merge gates
+- `docs_capsule_zero/project/devops/ai-runner.md` — self-hosted AI review runner setup
 
 ## Feature & Screen Specs
 

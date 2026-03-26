@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to validate
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  baseline-checks:
+    name: baseline-checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Verify repository structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f AGENTS.md
+          test -f CLAUDE.md
+          test -f .specify/memory/constitution.md
+          test -d .specify/specs
+          test -d docs_capsule_zero
+          test -d html-prototypes
+          test -d app
+          test -f app/package.json
+
+  app-checks:
+    name: app-checks
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run typecheck
+        run: npm run typecheck
+
+      - name: Run build
+        run: npm run build

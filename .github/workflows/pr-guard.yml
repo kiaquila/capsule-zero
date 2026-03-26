@@ -1,0 +1,82 @@
+name: PR Guard
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to validate
+        required: true
+        type: string
+      head_ref:
+        description: PR head branch name
+        required: true
+        type: string
+      base_ref:
+        description: PR base branch name
+        required: true
+        type: string
+
+jobs:
+  guard:
+    name: guard
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Check context coverage for code changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base_ref="${{ github.event.pull_request.base.sha }}"
+            head_ref="${{ github.sha }}"
+          else
+            git fetch --no-tags origin "${{ inputs.base_ref }}"
+            git fetch --no-tags origin "${{ inputs.head_ref }}"
+            base_ref="origin/${{ inputs.base_ref }}"
+            head_ref="origin/${{ inputs.head_ref }}"
+          fi
+
+          changed_files="$(git diff --name-only "$base_ref" "$head_ref")"
+          echo "$changed_files"
+
+          code_changed=0
+          context_changed=0
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            case "$file" in
+              app/*|scripts/*)
+                code_changed=1
+                ;;
+              docs_capsule_zero/*|.specify/*|html-prototypes/*|AGENTS.md|CLAUDE.md|.github/*)
+                context_changed=1
+                ;;
+            esac
+          done <<< "$changed_files"
+
+          if [ "$code_changed" -eq 1 ] && [ "$context_changed" -ne 1 ]; then
+            echo "Code changed without any docs, spec, prototype, agent-context, or workflow update."
+            echo "Update docs_capsule_zero/, .specify/, html-prototypes/, AGENTS.md, CLAUDE.md, or .github/ when scope, behavior, architecture, or delivery process changes."
+            exit 1
+          fi
+
+      - name: Require baseline documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f docs_capsule_zero/README.md
+          test -f docs_capsule_zero/project/frontend/styling.md
+          test -f docs_capsule_zero/project/frontend/frontend-docs.md
+          test -f docs_capsule_zero/project/backend/backend-docs.md
+          test -f docs_capsule_zero/project/devops/ai-pr-workflow.md
+          test -f docs_capsule_zero/project/devops/ai-runner.md
+          test -f .specify/specs/001-capsule-zero-mvp/spec.md
+          test -d app

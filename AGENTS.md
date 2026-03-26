@@ -149,6 +149,14 @@ When assigned to implement a specific feature, read in this order:
 - `app/src/styles/tokens.css` — Tailwind v4 @theme tokens (from design system)
 - `app/public/` — static assets
 
+## Delivery Workflow
+
+- Product code lands through pull requests only.
+- Required GitHub checks are `baseline-checks`, `guard`, and `AI Review`.
+- Durable workflow docs live under `docs_capsule_zero/project/devops/`.
+- Local worker orchestration scripts live under `scripts/`.
+- AI review runner setup is documented in `docs_capsule_zero/project/devops/ai-runner.md`.
+
 ---
 
 ## Phase 4 — Technical Architecture (IN PROGRESS)

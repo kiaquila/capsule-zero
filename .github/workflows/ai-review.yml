@@ -1,0 +1,79 @@
+name: AI Review
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to review
+        required: true
+        type: string
+      pr_number:
+        description: Pull request number
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: ai-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ai-review:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
+    name: AI Review
+    runs-on:
+      - self-hosted
+      - macOS
+      - ai-runner
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Run local AI review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          AI_REVIEW_AGENT: ${{ vars.AI_REVIEW_AGENT }}
+          CODEX_CLI_PATH: ${{ vars.CODEX_CLI_PATH }}
+        shell: bash
+        run: /opt/homebrew/bin/pwsh -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ./scripts/run-ai-pr-review.ps1
+
+      - name: Print review diagnostics
+        if: always()
+        shell: bash
+        run: |
+          /opt/homebrew/bin/pwsh -NoProfile -NonInteractive -Command '
+            $tempRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { $env:TEMP }
+            $diagnosticPath = Join-Path $tempRoot "ai-review-diagnostics.log"
+            $transcriptPath = Join-Path $tempRoot "ai-review-transcript.log"
+            $rawOutputPath = Join-Path $tempRoot "ai-review-raw-output.log"
+
+            if (Test-Path $diagnosticPath) {
+              Write-Host "--- ai-review-diagnostics.log ---"
+              Get-Content $diagnosticPath
+            }
+
+            if (Test-Path $transcriptPath) {
+              Write-Host "--- ai-review-transcript.log ---"
+              Get-Content $transcriptPath
+            }
+
+            if (Test-Path $rawOutputPath) {
+              Write-Host "--- ai-review-raw-output.log ---"
+              Get-Content $rawOutputPath
+            }
+          '
