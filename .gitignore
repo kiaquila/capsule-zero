@@ -15,3 +15,19 @@
 # local agent/tool state
 .omc/
 .playwright-mcp/
+.codex/
+
+# core product documentation
+docs_capsule_zero/README.md
+docs_capsule_zero/features/
+docs_capsule_zero/glossary.md
+docs_capsule_zero/i18n/
+docs_capsule_zero/launch/
+docs_capsule_zero/marketing/
+docs_capsule_zero/project/frontend/styling.md
+docs_capsule_zero/project/methodology/
+docs_capsule_zero/screens/
+docs_capsule_zero/ux/
+.specify/memory/
+.specify/specs/
+html-prototypes/
