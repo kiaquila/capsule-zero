@@ -47,3 +47,58 @@ jobs:
           test -f CLAUDE.md
           test -d app
           echo "workspace_ok"
+
+      - name: Verify sanitized diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          /opt/homebrew/bin/pwsh -NoProfile -NonInteractive -Command '
+            function Sanitize-Text {
+              param(
+                [AllowNull()]
+                [string]$Value,
+                [string[]]$ExactPaths = @()
+              )
+
+              if ($null -eq $Value) {
+                return ""
+              }
+
+              $sanitized = $Value
+
+              foreach ($path in ($ExactPaths | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })) {
+                $escapedPath = [Regex]::Escape($path)
+                $sanitized = [Regex]::Replace($sanitized, $escapedPath, "[redacted-path]")
+              }
+
+              $patterns = @(
+                @{ Pattern = "(?i)/Users/[^/\s]+"; Replacement = "/Users/xxxx" },
+                @{ Pattern = "(?i)/home/[^/\s]+"; Replacement = "/home/xxxx" },
+                @{ Pattern = "(?i)C:\\Users\\[^\\\s]+"; Replacement = "C:\Users\xxxx" },
+                @{ Pattern = "(?i)(Bearer\s+)[A-Za-z0-9_\-\.]+"; Replacement = "`$1[redacted]" },
+                @{ Pattern = "(?i)\b(gh[pousr]_[A-Za-z0-9_]+)\b"; Replacement = "[redacted-token]" },
+                @{ Pattern = "(?i)\bgithub_pat_[A-Za-z0-9_]+\b"; Replacement = "[redacted-token]" },
+                @{ Pattern = "(?i)\bsk-[A-Za-z0-9_\-]+\b"; Replacement = "[redacted-token]" },
+                @{ Pattern = "(?i)[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}"; Replacement = "[redacted-email]" }
+              )
+
+              foreach ($pattern in $patterns) {
+                $sanitized = [Regex]::Replace($sanitized, $pattern.Pattern, $pattern.Replacement)
+              }
+
+              return $sanitized
+            }
+
+            $sample = @"
+            repo=/Users/kristina.kurashova/projects/capsule-zero
+            home=/Users/kristina.kurashova
+            linux=/home/kristina/workspace
+            windows=C:\Users\Kristina\runner
+            token=ghp_abcdefghijklmnopqrstuvwxyz
+            bearer=Bearer abcdefghijklmnopqrstuvwxyz
+            email=test.user@example.com
+            "@
+
+            $sanitized = Sanitize-Text -Value $sample -ExactPaths @("/Users/kristina.kurashova/projects/capsule-zero")
+            Write-Host $sanitized
+          '

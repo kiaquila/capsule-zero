@@ -5,6 +5,62 @@ $diagnosticPath = Join-Path $tempRoot 'ai-review-diagnostics.log'
 $transcriptPath = Join-Path $tempRoot 'ai-review-transcript.log'
 $rawOutputPath = Join-Path $tempRoot 'ai-review-raw-output.log'
 $outputPath = Join-Path $tempRoot 'ai-review-output.json'
+$publicDiagnosticPath = Join-Path $tempRoot 'ai-review-public-diagnostics.log'
+$publicRawExcerptPath = Join-Path $tempRoot 'ai-review-public-raw-excerpt.log'
+
+function Sanitize-Text {
+    param(
+        [AllowNull()]
+        [string]$Value,
+        [string[]]$ExactPaths = @()
+    )
+
+    if ($null -eq $Value) {
+        return ''
+    }
+
+    $sanitized = $Value
+
+    foreach ($path in ($ExactPaths | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })) {
+        $escapedPath = [Regex]::Escape($path)
+        $sanitized = [Regex]::Replace($sanitized, $escapedPath, '[redacted-path]')
+    }
+
+    $patterns = @(
+        @{ Pattern = '(?i)/Users/[^/\s]+'; Replacement = '/Users/xxxx' },
+        @{ Pattern = '(?i)/home/[^/\s]+'; Replacement = '/home/xxxx' },
+        @{ Pattern = '(?i)C:\\Users\\[^\\\s]+'; Replacement = 'C:\Users\xxxx' },
+        @{ Pattern = '(?i)(Bearer\s+)[A-Za-z0-9_\-\.]+'; Replacement = '$1[redacted]' },
+        @{ Pattern = '(?i)\b(gh[pousr]_[A-Za-z0-9_]+)\b'; Replacement = '[redacted-token]' },
+        @{ Pattern = '(?i)\bgithub_pat_[A-Za-z0-9_]+\b'; Replacement = '[redacted-token]' },
+        @{ Pattern = '(?i)\bsk-[A-Za-z0-9_\-]+\b'; Replacement = '[redacted-token]' },
+        @{ Pattern = '(?i)[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}'; Replacement = '[redacted-email]' }
+    )
+
+    foreach ($pattern in $patterns) {
+        $sanitized = [Regex]::Replace($sanitized, $pattern.Pattern, $pattern.Replacement)
+    }
+
+    return $sanitized
+}
+
+function Write-SanitizedFile {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SourcePath,
+        [Parameter(Mandatory = $true)]
+        [string]$DestinationPath,
+        [string[]]$ExactPaths = @()
+    )
+
+    if (-not (Test-Path $SourcePath)) {
+        return
+    }
+
+    $content = Get-Content $SourcePath -Raw
+    $sanitized = Sanitize-Text -Value $content -ExactPaths $ExactPaths
+    Set-Content -Path $DestinationPath -Value $sanitized
+}
 
 function Write-Diagnostic {
     param(
@@ -26,7 +82,7 @@ function Escape-Json {
 }
 
 try {
-    Remove-Item $diagnosticPath, $transcriptPath, $rawOutputPath, $outputPath -Force -ErrorAction SilentlyContinue
+    Remove-Item $diagnosticPath, $transcriptPath, $rawOutputPath, $outputPath, $publicDiagnosticPath, $publicRawExcerptPath -Force -ErrorAction SilentlyContinue
     New-Item -ItemType File -Path $diagnosticPath -Force | Out-Null
     Start-Transcript -Path $transcriptPath -Force | Out-Null
 
@@ -184,6 +240,20 @@ $findingsBlock
     }
 }
 finally {
+    $exactPaths = @($repoRoot, $tempRoot, $eventPath)
+
+    if (Test-Path $diagnosticPath) {
+        Write-SanitizedFile -SourcePath $diagnosticPath -DestinationPath $publicDiagnosticPath -ExactPaths $exactPaths
+    }
+
+    if (Test-Path $rawOutputPath) {
+        $rawContent = Get-Content $rawOutputPath -Raw
+        $excerptLines = @($rawContent -split "`r?`n" | Select-Object -Last 40)
+        $excerpt = $excerptLines -join [Environment]::NewLine
+        $sanitizedExcerpt = Sanitize-Text -Value $excerpt -ExactPaths $exactPaths
+        Set-Content -Path $publicRawExcerptPath -Value $sanitizedExcerpt
+    }
+
     if ($transcriptPath -and (Test-Path $transcriptPath)) {
         Stop-Transcript | Out-Null
     }

@@ -58,22 +58,16 @@ jobs:
         run: |
           /opt/homebrew/bin/pwsh -NoProfile -NonInteractive -Command '
             $tempRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { $env:TEMP }
-            $diagnosticPath = Join-Path $tempRoot "ai-review-diagnostics.log"
-            $transcriptPath = Join-Path $tempRoot "ai-review-transcript.log"
-            $rawOutputPath = Join-Path $tempRoot "ai-review-raw-output.log"
+            $publicDiagnosticPath = Join-Path $tempRoot "ai-review-public-diagnostics.log"
+            $publicRawExcerptPath = Join-Path $tempRoot "ai-review-public-raw-excerpt.log"
 
-            if (Test-Path $diagnosticPath) {
-              Write-Host "--- ai-review-diagnostics.log ---"
-              Get-Content $diagnosticPath
+            if (Test-Path $publicDiagnosticPath) {
+              Write-Host "--- ai-review-public-diagnostics.log ---"
+              Get-Content $publicDiagnosticPath
             }
 
-            if (Test-Path $transcriptPath) {
-              Write-Host "--- ai-review-transcript.log ---"
-              Get-Content $transcriptPath
-            }
-
-            if (Test-Path $rawOutputPath) {
-              Write-Host "--- ai-review-raw-output.log ---"
-              Get-Content $rawOutputPath
+            if (Test-Path $publicRawExcerptPath) {
+              Write-Host "--- ai-review-public-raw-excerpt.log ---"
+              Get-Content $publicRawExcerptPath
             }
           '
