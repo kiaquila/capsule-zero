@@ -24,9 +24,7 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = (git rev-parse --show-toplevel).Trim()
 $featurePath = Join-Path $repoRoot ".specify\specs\$FeatureFolder"
-if (-not (Test-Path $featurePath)) {
-    throw "Feature folder not found: $featurePath"
-}
+$featurePathExists = Test-Path $featurePath
 
 if (-not (Test-Path $WorktreePath)) {
     throw "Worktree path not found: $WorktreePath"
@@ -57,11 +55,18 @@ else {
     'Do not open a pull request automatically unless Codex asks in a follow-up step.'
 }
 
+$taskArtifactGuidance = if ($featurePathExists) {
+    "If the feature folder contains `tasks.md` or notes that track task state, update them when the implementation status changes."
+}
+else {
+    'There is no tracked `.specify/specs/<feature-id>/` folder in this checkout, so use the runtime task summary and tracked durable docs as the governing scope.'
+}
+
 $runtimeSection = @"
 
 ## Runtime Worker Context
 
-- Active feature folder: $FeatureFolder
+- Active feature scope: $FeatureFolder
 - Assigned branch: $currentBranch
 - Assigned worktree: $WorktreePath
 - Task id: $(if ($TaskId) { $TaskId } else { 'not provided' })
@@ -71,7 +76,7 @@ $runtimeSection = @"
 
 - Stay inside the assigned worktree and branch only
 - Keep the change scoped to this task
-- Update `.specify/specs/$FeatureFolder/tasks.md` if task state needs to move
+- $taskArtifactGuidance
 - Run relevant validation before finishing
 - Commit your changes locally when the task is complete
 - $publishGuidance

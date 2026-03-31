@@ -2,9 +2,9 @@
 
 <!-- What changed and why? -->
 
-## Spec
-- Feature folder: `.specify/specs/<feature-id>/`
-- Spec/plan/tasks updated: yes or no
+## Scope Context
+- Scope id or feature name:
+- Durable docs updated: yes or no
 
 ## Validation
 - Checks run:

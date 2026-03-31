@@ -4,7 +4,7 @@ This is the canonical PR loop for implementation, AI review, and merge readiness
 
 ## Roles
 
-- The selected implementation agent writes product code and updates the active feature folder under `.specify/specs/<feature-id>/`.
+- The selected implementation agent writes product code and updates any tracked durable docs needed for the change.
 - Codex owns architecture enforcement, review policy, and workflow health.
 - GitHub Actions runs required checks.
 - A human remains the final merge authority.
@@ -12,9 +12,9 @@ This is the canonical PR loop for implementation, AI review, and merge readiness
 ## Standard Loop
 
 1. Start from current `main`.
-2. Work from an active `.specify/specs/<feature-id>/` folder.
+2. Work from a scoped task brief, issue, or PR summary with enough implementation context to review the change.
 3. The implementation agent works on a feature branch, manually or through local worker orchestration.
-4. The PR updates `tasks.md`, validation notes, and any required durable docs.
+4. The PR updates validation notes and any required durable docs.
 5. GitHub runs `baseline-checks`, `guard`, and `AI Review`.
 6. The selected reviewer posts or updates one sticky review comment marked `<!-- ai-review -->`.
 7. If follow-up is needed, continue on the same branch and update the same PR.

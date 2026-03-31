@@ -4,19 +4,18 @@ Read before making changes:
 
 1. `AGENTS.md`
 2. `CLAUDE.md`
-3. `docs_capsule_zero/README.md`
-4. Relevant ADRs under `docs_capsule_zero/adr/`
-5. The active feature folder under `.specify/specs/<feature-id>/`:
-   - `spec.md`
-   - `plan.md` if present
-   - `tasks.md` if present
+3. `docs_capsule_zero/project/frontend/frontend-docs.md`
+4. `docs_capsule_zero/project/backend/backend-docs.md`
+5. `docs_capsule_zero/project/devops/ai-pr-workflow.md`
+6. Relevant ADRs under `docs_capsule_zero/adr/`
+7. The runtime task brief appended below
 
 Operating rules:
 
 - Work only inside the current git worktree and current branch
 - Implement only the scoped task described in the runtime section
 - Keep changes small and reviewable
-- Update tests, docs, and spec artifacts when needed
+- Update tests, durable docs, and workflow artifacts when needed
 - Do not create another branch or worktree
 - Do not merge to `main`
 - If a pull request already exists for the current branch, update it instead of opening a replacement PR

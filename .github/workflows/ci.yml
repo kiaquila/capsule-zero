@@ -30,10 +30,14 @@ jobs:
           set -euo pipefail
           test -f AGENTS.md
           test -f CLAUDE.md
-          test -f .specify/memory/constitution.md
-          test -d .specify/specs
           test -d docs_capsule_zero
-          test -d html-prototypes
+          test -d docs_capsule_zero/adr
+          test -d docs_capsule_zero/project
+          test -f docs_capsule_zero/project/frontend/frontend-docs.md
+          test -f docs_capsule_zero/project/backend/backend-docs.md
+          test -f docs_capsule_zero/project/devops/ai-pr-workflow.md
+          test -f docs_capsule_zero/project/devops/ai-runner.md
+          test -d .github/workflows
           test -d app
           test -f app/package.json
 

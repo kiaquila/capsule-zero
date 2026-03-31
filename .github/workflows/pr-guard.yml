@@ -63,8 +63,8 @@ jobs:
           done <<< "$changed_files"
 
           if [ "$code_changed" -eq 1 ] && [ "$context_changed" -ne 1 ]; then
-            echo "Code changed without any docs, spec, prototype, agent-context, or workflow update."
-            echo "Update docs_capsule_zero/, .specify/, html-prototypes/, AGENTS.md, CLAUDE.md, or .github/ when scope, behavior, architecture, or delivery process changes."
+            echo "Code changed without any durable docs, agent-context, or workflow update."
+            echo "Update docs_capsule_zero/, AGENTS.md, CLAUDE.md, or .github/ when scope, behavior, architecture, or delivery process changes."
             exit 1
           fi
 
@@ -72,11 +72,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -f docs_capsule_zero/README.md
-          test -f docs_capsule_zero/project/frontend/styling.md
+          test -f AGENTS.md
+          test -f CLAUDE.md
           test -f docs_capsule_zero/project/frontend/frontend-docs.md
           test -f docs_capsule_zero/project/backend/backend-docs.md
           test -f docs_capsule_zero/project/devops/ai-pr-workflow.md
           test -f docs_capsule_zero/project/devops/ai-runner.md
-          test -f .specify/specs/001-capsule-zero-mvp/spec.md
+          test -f docs_capsule_zero/adr/adr-004-ai-development-workflow.md
+          test -f docs_capsule_zero/adr/adr-005-local-worker-orchestration.md
           test -d app
