@@ -49,7 +49,7 @@ $outputFile = Join-Path $promptDir "worker-$timestamp.out.txt"
 
 $publishGuidance = if ($OpenPullRequest) {
     $draftArg = if ($DraftPullRequest) { ' -Draft' } else { '' }
-    "When implementation is complete, publish or reuse the PR with:`n`npowershell -ExecutionPolicy Bypass -File scripts\publish-codex-branch.ps1 -Title '$PullRequestTitle' -FeatureFolder '$FeatureFolder'$draftArg"
+    "When implementation is complete, publish or reuse the PR with:`n`npowershell -ExecutionPolicy Bypass -File scripts\publish-worker-branch.ps1 -Title '$PullRequestTitle' -FeatureFolder '$FeatureFolder'$draftArg"
 }
 else {
     'Do not open a pull request automatically unless Codex asks in a follow-up step.'

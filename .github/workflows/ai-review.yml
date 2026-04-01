@@ -49,6 +49,8 @@ jobs:
           PR_NUMBER: ${{ inputs.pr_number }}
           AI_REVIEW_AGENT: ${{ vars.AI_REVIEW_AGENT }}
           CODEX_CLI_PATH: ${{ vars.CODEX_CLI_PATH }}
+          CLAUDE_CLI_PATH: ${{ vars.CLAUDE_CLI_PATH }}
+          CLAUDE_REVIEW_MODEL: ${{ vars.CLAUDE_REVIEW_MODEL }}
         shell: bash
         run: /opt/homebrew/bin/pwsh -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ./scripts/run-ai-pr-review.ps1
 
