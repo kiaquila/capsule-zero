@@ -7,6 +7,7 @@ $rawOutputPath = Join-Path $tempRoot 'ai-review-raw-output.log'
 $publicDiagnosticPath = Join-Path $tempRoot 'ai-review-public-diagnostics.log'
 $publicRawExcerptPath = Join-Path $tempRoot 'ai-review-public-raw-excerpt.log'
 $claudeStderrPath = Join-Path $tempRoot 'ai-review-claude-stderr.log'
+$claudeDebugPath = Join-Path $tempRoot 'ai-review-claude-debug.log'
 
 . (Join-Path $PSScriptRoot 'ai-review-policy.ps1')
 . (Join-Path $PSScriptRoot 'ai-review-comment.ps1')
@@ -96,7 +97,7 @@ function Write-Diagnostic {
 }
 
 try {
-    Remove-Item $diagnosticPath, $transcriptPath, $rawOutputPath, $publicDiagnosticPath, $publicRawExcerptPath, $claudeStderrPath -Force -ErrorAction SilentlyContinue
+    Remove-Item $diagnosticPath, $transcriptPath, $rawOutputPath, $publicDiagnosticPath, $publicRawExcerptPath, $claudeStderrPath, $claudeDebugPath -Force -ErrorAction SilentlyContinue
     New-Item -ItemType File -Path $diagnosticPath -Force | Out-Null
     Start-Transcript -Path $transcriptPath -Force | Out-Null
 
@@ -217,6 +218,7 @@ $diffBlock
 "@
     Set-Content -Path $runtimePrompt -Value ($template + $runtimeSection)
     $promptText = (Get-Content $runtimePrompt -Raw).Trim()
+    Write-Diagnostic "Claude review prompt bytes=$([Text.Encoding]::UTF8.GetByteCount($promptText))"
 
     $claudeArgs = @(
         '-p',
@@ -236,11 +238,17 @@ $diffBlock
         $claudeArgs += @('--model', $env:CLAUDE_MODEL)
     }
 
-    Write-Diagnostic 'Running local Claude CLI review'
-    $resultText = $promptText | & $claudeCommand @claudeArgs 2>$claudeStderrPath
-    if ($LASTEXITCODE -ne 0) {
-        throw "Claude CLI review failed with exit code $LASTEXITCODE."
+    if ($env:CLAUDE_REVIEW_MAX_BUDGET_USD) {
+        $claudeArgs += @('--max-budget-usd', $env:CLAUDE_REVIEW_MAX_BUDGET_USD)
     }
+
+    if ($env:CLAUDE_REVIEW_DEBUG -eq '1') {
+        $claudeArgs += @('--debug-file', $claudeDebugPath)
+    }
+
+    Write-Diagnostic 'Running local Claude CLI review'
+    Write-Diagnostic ("Claude args: " + (($claudeArgs | ForEach-Object { [string]$_ }) -join ' '))
+    $resultText = $promptText | & $claudeCommand @claudeArgs 2>$claudeStderrPath
 
     if ($resultText -is [System.Array]) {
         $resultText = ($resultText | ForEach-Object { [string]$_ }) -join [Environment]::NewLine
@@ -250,6 +258,21 @@ $diffBlock
     }
 
     Set-Content -Path $rawOutputPath -Value $resultText
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Diagnostic ("Claude failure output preview: " + (Get-ClaudeReviewOutputPreview -Text $resultText))
+        if (Test-Path $claudeStderrPath) {
+            $stderrPreview = Get-Content $claudeStderrPath -Raw
+            if ($stderrPreview) {
+                Write-Diagnostic ("Claude stderr preview: " + (Get-ClaudeReviewOutputPreview -Text $stderrPreview))
+            }
+        }
+        if (Test-Path $claudeDebugPath) {
+            Write-Diagnostic "Claude debug file: $claudeDebugPath"
+        }
+        throw "Claude CLI review failed with exit code $LASTEXITCODE."
+    }
+
     Write-Diagnostic ("Claude output preview: " + (Get-ClaudeReviewOutputPreview -Text $resultText))
 
     $parsedOutput = ConvertFrom-ClaudeReviewOutput -RawText $resultText
@@ -348,6 +371,17 @@ finally {
             $sanitizedStderr = Sanitize-Text -Value $stderrContent -ExactPaths $exactPaths
             Write-Host '--- claude-stderr (sanitized) ---'
             Write-Host $sanitizedStderr
+        }
+    }
+
+    if (Test-Path $claudeDebugPath) {
+        $debugContent = Get-Content $claudeDebugPath -Raw
+        if ($debugContent) {
+            $sanitizedDebug = Sanitize-Text -Value $debugContent -ExactPaths $exactPaths
+            $debugExcerptLines = @($sanitizedDebug -split "`r?`n" | Select-Object -Last 80)
+            $debugExcerpt = $debugExcerptLines -join [Environment]::NewLine
+            Write-Host '--- claude-debug (sanitized excerpt) ---'
+            Write-Host $debugExcerpt
         }
     }
 
