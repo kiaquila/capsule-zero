@@ -50,7 +50,10 @@ jobs:
           AI_REVIEW_AGENT: ${{ vars.AI_REVIEW_AGENT }}
           CODEX_CLI_PATH: ${{ vars.CODEX_CLI_PATH }}
           CLAUDE_CLI_PATH: ${{ vars.CLAUDE_CLI_PATH }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_REVIEW_MODEL: ${{ vars.CLAUDE_REVIEW_MODEL }}
+          CLAUDE_REVIEW_DEBUG: ${{ vars.CLAUDE_REVIEW_DEBUG }}
         shell: bash
         run: /opt/homebrew/bin/pwsh -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ./scripts/run-ai-pr-review.ps1
 
