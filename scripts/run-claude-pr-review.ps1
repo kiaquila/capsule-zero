@@ -219,6 +219,7 @@ $diffBlock
     Set-Content -Path $runtimePrompt -Value ($template + $runtimeSection)
     $promptText = (Get-Content $runtimePrompt -Raw).Trim()
     Write-Diagnostic "Claude review prompt bytes=$([Text.Encoding]::UTF8.GetByteCount($promptText))"
+    Write-Diagnostic "Claude auth env: oauthToken=$([int](-not [string]::IsNullOrWhiteSpace($env:CLAUDE_CODE_OAUTH_TOKEN))); apiKey=$([int](-not [string]::IsNullOrWhiteSpace($env:ANTHROPIC_API_KEY)))"
 
     $claudeArgs = @(
         '-p',
@@ -260,7 +261,8 @@ $diffBlock
     Set-Content -Path $rawOutputPath -Value $resultText
 
     if ($LASTEXITCODE -ne 0) {
-        Write-Diagnostic ("Claude failure output preview: " + (Get-ClaudeReviewOutputPreview -Text $resultText))
+        $failurePreview = Get-ClaudeReviewOutputPreview -Text $resultText
+        Write-Diagnostic ("Claude failure output preview: " + $failurePreview)
         if (Test-Path $claudeStderrPath) {
             $stderrPreview = Get-Content $claudeStderrPath -Raw
             if ($stderrPreview) {
@@ -269,6 +271,9 @@ $diffBlock
         }
         if (Test-Path $claudeDebugPath) {
             Write-Diagnostic "Claude debug file: $claudeDebugPath"
+        }
+        if ($failurePreview -match '(?i)not logged in|please run /login') {
+            throw 'Claude CLI review failed authentication. Configure GitHub secret CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY for the AI Review workflow.'
         }
         throw "Claude CLI review failed with exit code $LASTEXITCODE."
     }

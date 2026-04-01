@@ -12,7 +12,9 @@ Automated AI review runs on a self-hosted GitHub Actions runner labeled `ai-runn
 3. Install the Codex CLI and Claude Code CLI for the same macOS user that runs the service.
 4. Install PowerShell (`pwsh`) on the machine.
 5. Ensure `git`, `gh`, `pwsh`, `codex`, and `claude` are available in `PATH`.
-6. Ensure Claude Code is already authenticated for that macOS user if `AI_REVIEW_AGENT=claude` will be used.
+6. Configure Claude authentication for the runner if `AI_REVIEW_AGENT=claude` will be used.
+   - Preferred for CI: add GitHub secret `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY`
+   - Local fallback: interactive `claude auth login` for the macOS user that runs the service
 
 ## Required Repository Variables
 
@@ -25,6 +27,16 @@ Automated AI review runs on a self-hosted GitHub Actions runner labeled `ai-runn
   - optional override for the Claude executable path on the runner, for example `/opt/homebrew/bin/claude`
 - `CLAUDE_REVIEW_MODEL`
   - optional Claude model override for the review adapter, if you want the runner to pin a specific Claude model
+- `CLAUDE_REVIEW_DEBUG`
+  - optional debug switch for the Claude review adapter, set to `1` while diagnosing runner issues
+
+## Optional Repository Secrets
+
+- `CLAUDE_CODE_OAUTH_TOKEN`
+  - recommended for self-hosted runner automation when using a Claude subscription login
+  - generate it with `claude setup-token` and store it as a GitHub Actions secret
+- `ANTHROPIC_API_KEY`
+  - alternative CI auth path if you want the runner to use direct API-key authentication instead of Claude subscription OAuth
 
 ## Review Flow
 
@@ -35,6 +47,7 @@ Automated AI review runs on a self-hosted GitHub Actions runner labeled `ai-runn
 
 ## Troubleshooting
 
+- If Claude review fails with `Not logged in` on the runner while local `claude auth status` looks healthy, the runner service is missing non-interactive auth. Add `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY` as a repository secret and rerun `AI Review`.
 - If local `pwsh` crashes immediately with `System.IO.FileLoadException` mentioning `Microsoft.Management.Infrastructure` and a truncated `Culture` field, clear the PowerShell startup caches and retry:
   - `mkdir -p ~/.cache/powershell-backup && mv ~/.cache/powershell/StartupProfileData-NonInteractive ~/.cache/powershell-backup/ 2>/dev/null`
   - `mv ~/.cache/powershell/ModuleAnalysisCache-* ~/.cache/powershell-backup/ 2>/dev/null`
