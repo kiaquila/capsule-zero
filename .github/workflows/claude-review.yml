@@ -27,6 +27,11 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: Bootstrap checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - name: Resolve PR context
         id: pr
         env:
