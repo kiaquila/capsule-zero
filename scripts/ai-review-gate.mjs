@@ -288,13 +288,16 @@ const classifyCodexReview = async (review) => {
   const parsedPriorities = commentsForReview
     .map((comment) => extractCodexPriority(comment.body || ""))
     .filter((priority) => priority !== null);
+  const untaggedComments = commentsForReview.filter(
+    (comment) => extractCodexPriority(comment.body || "") === null,
+  );
 
-  if (parsedPriorities.length === 0) {
+  if (untaggedComments.length > 0) {
     return {
-      outcome: "pending",
+      outcome: "fail",
       reason:
-        "Codex submitted review comments, but none exposed a recognized P0-P3 severity badge.",
-      details: commentsForReview.map((comment) => comment.html_url),
+        "Codex submitted inline findings without recognized P0-P3 severity badges.",
+      details: untaggedComments.map((comment) => comment.html_url),
     };
   }
 
@@ -358,10 +361,12 @@ while (Date.now() < deadline) {
   const recentReviews = reviews.filter(
     (review) => new Date(review.submitted_at || 0).getTime() >= triggerTime,
   );
+  const candidateReviews =
+    selectedAgent === "codex" && triggerMode === "skip" ? reviews : recentReviews;
   const recentMatchingReview =
     selectedAgent === "codex"
-      ? pickLatestCodexReview(recentReviews)
-      : pickLatestMatchingReview(recentReviews);
+      ? pickLatestCodexReview(candidateReviews)
+      : pickLatestMatchingReview(candidateReviews);
 
   if (recentMatchingReview) {
     matchedReview = recentMatchingReview;

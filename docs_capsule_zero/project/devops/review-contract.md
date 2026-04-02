@@ -28,7 +28,8 @@ The gate matches a Codex review when all of the following are true:
 
 - the review is submitted by `chatgpt-codex-connector[bot]`
 - the review targets the current PR head SHA
-- the review is created after the routing trigger for the current gate cycle
+- on a fresh gate cycle, the review is created after the routing trigger for that cycle
+- on a rerun with no new routing trigger, the gate may reuse an already-published valid Codex review for the same PR head SHA
 
 Codex currently publishes:
 
@@ -63,12 +64,13 @@ Any other state is treated as unverifiable and fails closed.
 - Missing durable-doc updates are blocking when the PR changes architecture, workflow, or behavior and the repo docs were not updated accordingly.
 - For Codex native review comments, Capsule Zero maps `P0`, `P1`, and `P2` to blocking findings.
 - For Codex native review comments, Capsule Zero maps `P3` to advisory findings.
-- If Codex submits inline review comments without recognized `P0-P3` severity badges, the gate fails closed.
+- If Codex submits any inline review finding without a recognized `P0-P3` severity badge, the gate fails closed.
 
 ## Routing and Validation
 
 - `AI Review` reads `AI_REVIEW_AGENT`.
 - It routes the selected native review backend.
 - It waits for a matching GitHub review on the current PR head SHA.
+- On reruns of the same head, Codex validation may reuse the latest valid native Codex review already attached to that head SHA.
 - It validates the reviewer-specific contract and review state.
 - If no valid selected-reviewer output is found before timeout, the check fails closed.
