@@ -71,6 +71,6 @@ Any other state is treated as unverifiable and fails closed.
 - `AI Review` reads `AI_REVIEW_AGENT`.
 - It routes the selected native review backend.
 - It waits for a matching GitHub review on the current PR head SHA.
-- On reruns of the same head, Codex validation may reuse the latest valid native Codex review already attached to that head SHA.
+- On reruns of the same head, validation may reuse the latest valid native review already attached to that head SHA.
 - It validates the reviewer-specific contract and review state.
 - If no valid selected-reviewer output is found before timeout, the check fails closed.

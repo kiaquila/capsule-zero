@@ -361,8 +361,7 @@ while (Date.now() < deadline) {
   const recentReviews = reviews.filter(
     (review) => new Date(review.submitted_at || 0).getTime() >= triggerTime,
   );
-  const candidateReviews =
-    selectedAgent === "codex" && triggerMode === "skip" ? reviews : recentReviews;
+  const candidateReviews = triggerMode === "skip" ? reviews : recentReviews;
   const recentMatchingReview =
     selectedAgent === "codex"
       ? pickLatestCodexReview(candidateReviews)
