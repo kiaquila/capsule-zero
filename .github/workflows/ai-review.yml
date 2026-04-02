@@ -56,11 +56,7 @@ jobs:
             selected="codex"
           fi
 
-          if [ "$selected" = "codex" ]; then
-            trigger_mode="comment"
-          else
-            trigger_mode="skip"
-          fi
+          trigger_mode="skip"
 
           echo "selected_agent=$selected" >> "$GITHUB_OUTPUT"
           echo "trigger_mode=$trigger_mode" >> "$GITHUB_OUTPUT"

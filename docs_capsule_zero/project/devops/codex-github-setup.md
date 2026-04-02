@@ -33,6 +33,7 @@ Automatic reviews must stay disabled because Capsule Zero keeps reviewer selecti
   - `@codex <task brief>`
 
 Codex receives repository context from the PR, the triggering comment, and repository guidance files such as `AGENTS.md`.
+The comment must be posted by a connected human account. Comments authored by `github-actions[bot]` are acknowledged by the connector but do not start a real Codex review task.
 
 ## Expected Review Behavior
 

@@ -74,7 +74,7 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - Native vendor review happens first.
 - `AI Review` routes the selected native review backend.
 - Claude review is invoked directly inside the gate workflow because workflow-authored comments do not trigger another Actions workflow.
-- Codex review is routed through a top-level PR comment because Codex executes outside Actions as a GitHub App integration.
+- Codex review must be initiated from a connected human Codex account on a top-level PR comment because workflow-authored comments do not start a real Codex review task.
 - Claude review does not run on untrusted fork-triggered `pull_request` events because repository secrets are unavailable there.
 - The repository-owned `AI Review` gate then:
   - reads `AI_REVIEW_AGENT`
