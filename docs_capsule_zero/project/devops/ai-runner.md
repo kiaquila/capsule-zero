@@ -1,57 +1,66 @@
-# Self-Hosted AI Review Runner
+# Cloud AI Integrations and Review Gate
 
-Automated AI review runs on a self-hosted GitHub Actions runner labeled `ai-runner`.
+This document replaces the old self-hosted runner contract. The file path is retained so existing repository references continue to resolve during migration.
 
-## Setup
+## Canonical Model
 
-1. Create a self-hosted runner in GitHub for this repository.
-2. Register it with labels:
-   - `self-hosted`
-   - `macOS`
-   - `ai-runner`
-3. Install the Codex CLI and Claude Code CLI for the same macOS user that runs the service.
-4. Install PowerShell (`pwsh`) on the machine.
-5. Ensure `git`, `gh`, `pwsh`, `codex`, and `claude` are available in `PATH`.
-6. Configure Claude authentication for the runner if `AI_REVIEW_AGENT=claude` will be used.
-   - Preferred for CI: add GitHub secret `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY`
-   - Local fallback: interactive `claude auth login` for the macOS user that runs the service
+- There is no self-hosted AI review runner in the target architecture.
+- GitHub is the control plane.
+- Native Claude GitHub Actions workflows handle Claude execution.
+- Native Codex GitHub integration handles Codex execution.
+- Repository-owned GitHub Actions workflows enforce routing policy and the `AI Review` gate.
+
+See `docs_capsule_zero/project/devops/ai-orchestration-protocol.md` for the routing contract.
+See `docs_capsule_zero/project/devops/codex-github-setup.md` for Codex integration setup.
+See `docs_capsule_zero/project/devops/validation-matrix.md` for the migration exit criteria.
 
 ## Required Repository Variables
 
+- `AI_IMPLEMENTATION_AGENT`
+  - supported values: `claude`, `codex`
+  - recommended default: `claude`
 - `AI_REVIEW_AGENT`
-  - supported values: `codex`, `claude`
+  - supported values: `claude`, `codex`
   - recommended default: `codex`
-- `CODEX_CLI_PATH`
-  - optional override for the Codex executable path on the runner, for example `/opt/homebrew/bin/codex`
-- `CLAUDE_CLI_PATH`
-  - optional override for the Claude executable path on the runner, for example `/opt/homebrew/bin/claude`
-- `CLAUDE_REVIEW_MODEL`
-  - optional Claude model override for the review adapter, if you want the runner to pin a specific Claude model
-- `CLAUDE_REVIEW_DEBUG`
-  - optional debug switch for the Claude review adapter, set to `1` while diagnosing runner issues
 
-## Optional Repository Secrets
+## Required Repository Secrets
 
-- `CLAUDE_CODE_OAUTH_TOKEN`
-  - recommended for self-hosted runner automation when using a Claude subscription login
-  - generate it with `claude setup-token` and store it as a GitHub Actions secret
 - `ANTHROPIC_API_KEY`
-  - alternative CI auth path if you want the runner to use direct API-key authentication instead of Claude subscription OAuth
+  - required for native Claude GitHub Actions workflows
+
+## Required Workflow Permissions
+
+- `contents: read`
+  - required for checkout and repository context
+- `pull-requests: write`
+  - required for comment-driven automation and PR interaction
+- `issues: write`
+  - required for issue and PR comment routing
+- `id-token: write`
+  - required for native Claude GitHub Actions workflows that use OIDC-backed setup
+
+Repository default workflow permissions may remain `read` so long as individual workflows request the additional permissions they need.
 
 ## Review Flow
 
-- `.github/workflows/ai-review.yml` passes `AI_REVIEW_AGENT` to `scripts/run-ai-pr-review.ps1`.
-- The selector dispatches to the configured reviewer adapter.
-- The adapter posts one sticky `<!-- ai-review -->` PR comment and fails only on effective `request_changes`.
-- Per-run diagnostics and transcript logs are always printed for debugging.
+- Native review runs through the selected vendor backend.
+- `AI_REVIEW_AGENT` determines which reviewer is canonical for the current repository state.
+- The repository-owned `AI Review` workflow routes the selected native review backend, validates that the selected native reviewer ran, and normalizes the result to Capsule Zero policy.
+- Claude review is invoked directly inside the repository-owned workflow because workflow-authored comments do not trigger another GitHub Actions workflow.
+- Claude review is blocked on untrusted fork-triggered `pull_request` runs because secrets are not exposed there; the workflow fails with an explicit explanation instead of attempting a secret-backed run.
+- Codex review is routed through a top-level PR comment because Codex executes as a GitHub App integration.
+- Codex validation uses native PR review output from `chatgpt-codex-connector[bot]` plus Codex severity badges in inline review comments.
+- `AI Review` fails closed when the selected reviewer does not run or its result cannot be validated.
+- Codex Automatic reviews should remain disabled so repository policy keeps owning reviewer selection.
+- Validation details are defined in `docs_capsule_zero/project/devops/review-contract.md`.
 
-## Troubleshooting
+## Implementation Flow
 
-- If Claude review fails with `Not logged in` on the runner while local `claude auth status` looks healthy, the runner service is missing non-interactive auth. Add `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY` as a repository secret and rerun `AI Review`.
-- If local `pwsh` crashes immediately with `System.IO.FileLoadException` mentioning `Microsoft.Management.Infrastructure` and a truncated `Culture` field, clear the PowerShell startup caches and retry:
-  - `mkdir -p ~/.cache/powershell-backup && mv ~/.cache/powershell/StartupProfileData-NonInteractive ~/.cache/powershell-backup/ 2>/dev/null`
-  - `mv ~/.cache/powershell/ModuleAnalysisCache-* ~/.cache/powershell-backup/ 2>/dev/null`
-- This failure is outside the repository scripts themselves; the current Capsule Zero scripts work again once the corrupted cache entries are removed.
+- Native implementation runs through the selected vendor backend.
+- `AI_IMPLEMENTATION_AGENT` determines which implementation backend is canonical for the current repository state.
+- Canonical triggers are GitHub comments addressed to the selected agent.
+- Only trusted repository actors may trigger repository AI workflows.
+- The repository may use policy workflows to reject mismatched agent triggers.
 
 ## Required GitHub Settings
 
@@ -60,3 +69,8 @@ Automated AI review runs on a self-hosted GitHub Actions runner labeled `ai-runn
 - require status checks `baseline-checks`, `guard`, and `AI Review`
 - require at least one human approval
 - restrict direct pushes to `main`
+
+## Migration Status
+
+- Legacy PowerShell review adapters and local worktree scripts still exist only as migration artifacts.
+- They are not canonical and must be removed after the validation matrix passes.

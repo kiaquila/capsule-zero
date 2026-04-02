@@ -3,27 +3,64 @@ name: Claude Agent
 on:
   issue_comment:
     types: [created]
-  pull_request_review_comment:
-    types: [created]
-  issues:
-    types: [opened, assigned]
 
 permissions:
   contents: write
   pull-requests: write
   issues: write
+  id-token: write
+
+concurrency:
+  group: claude-agent-${{ github.event.comment.id }}
+  cancel-in-progress: false
 
 jobs:
   claude:
-    if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'issues' && contains(github.event.issue.body, '@claude'))
+    if: >
+      contains(github.event.comment.body, '@claude') &&
+      !contains(github.event.comment.body, '@claude review once') &&
+      contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) &&
+      (vars.AI_IMPLEMENTATION_AGENT == '' || vars.AI_IMPLEMENTATION_AGENT == 'claude')
     name: Claude Agent
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
-      - uses: anthropics/claude-code-action@v1
+      - name: Resolve PR context
+        id: pr
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/resolve-pr-context.mjs
+
+      - name: Checkout PR head
+        if: steps.pr.outputs.is_pull_request == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.pr.outputs.head_ref }}
+
+      - name: Checkout default branch
+        if: steps.pr.outputs.is_pull_request != 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude implementation agent
+        uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          claude_args: "--max-turns 15 --model claude-sonnet-4-6"
+          prompt: |
+            Act as the selected implementation agent for this repository.
+
+            Follow repository guidance from `CLAUDE.md`, `AGENTS.md`, `docs_capsule_zero/project/devops/ai-pr-workflow.md`, and `docs_capsule_zero/project/devops/ai-orchestration-protocol.md`.
+
+            Treat the triggering GitHub comment as the scoped assignment. Stay within one branch and one pull request for that task.
+
+            If this command was posted on pull request #${{ steps.pr.outputs.pr_number }}, work against head commit `${{ steps.pr.outputs.head_sha }}` and keep all changes on that PR branch.
+
+            Update durable docs and workflow artifacts when the change affects architecture, process, or behavior.
+
+            Do not perform pull-request review in this workflow unless the user explicitly asks for review instead of implementation.
+          claude_args: |
+            --max-turns 20
+            --model claude-opus-4-6

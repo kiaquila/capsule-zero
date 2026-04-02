@@ -1,0 +1,67 @@
+name: Claude Review
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+concurrency:
+  group: claude-review-${{ github.event.comment.id }}
+  cancel-in-progress: false
+
+jobs:
+  review:
+    if: >
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '@claude review once') &&
+      contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) &&
+      vars.AI_REVIEW_AGENT == 'claude'
+    name: Claude Review
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Resolve PR context
+        id: pr
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/resolve-pr-context.mjs
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.pr.outputs.checkout_ref }}
+
+      - name: Run Claude review agent
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Act as the selected pull-request reviewer for this repository.
+
+            Follow repository guidance from `CLAUDE.md`, `AGENTS.md`, `docs_capsule_zero/project/devops/ai-pr-workflow.md`, and `docs_capsule_zero/project/devops/ai-orchestration-protocol.md`.
+
+            Review pull request #${{ steps.pr.outputs.pr_number }} at head commit `${{ steps.pr.outputs.head_sha }}` using GitHub's native pull-request review flow.
+
+            Begin the top-level review summary with exactly these two lines:
+            AI_REVIEW_AGENT: claude
+            AI_REVIEW_SHA: ${{ steps.pr.outputs.head_sha }}
+
+            Review rules:
+            - Approve only when there are no material findings.
+            - Use comment-only review output for advisory findings that should not block merge.
+            - Request changes only when at least one blocking issue exists.
+            - Treat low-severity-only findings as advisory and non-blocking.
+            - Focus on correctness, regressions, architectural alignment, missing tests, workflow risk, and missing durable-doc updates.
+
+            Do not implement fixes in this workflow unless the user explicitly asked for implementation instead of review.
+          claude_args: |
+            --max-turns 10
+            --model claude-opus-4-6

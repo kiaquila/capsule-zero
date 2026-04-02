@@ -9,8 +9,8 @@ on:
       - ready_for_review
   workflow_dispatch:
     inputs:
-      ref:
-        description: Git ref to review
+      pr_number:
+        description: Pull request number to route and validate
         required: true
         type: string
 
@@ -18,44 +18,151 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
+  id-token: write
 
 concurrency:
-  group: ai-review-${{ github.event.pull_request.number || github.ref }}
+  group: ai-review-${{ github.event.pull_request.number || inputs.pr_number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   ai-review:
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.draft == false
     name: AI Review
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 1
 
-      - name: Run Claude review
+      - name: Resolve PR context
+        id: pr
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AI_REVIEW_PR_NUMBER: ${{ inputs.pr_number }}
+        run: node scripts/resolve-pr-context.mjs
+
+      - name: Resolve selected review policy
+        id: policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          selected="${{ vars.AI_REVIEW_AGENT }}"
+          if [ -z "$selected" ]; then
+            selected="codex"
+          fi
+
+          if [ "$selected" = "codex" ]; then
+            trigger_mode="comment"
+          else
+            trigger_mode="skip"
+          fi
+
+          echo "selected_agent=$selected" >> "$GITHUB_OUTPUT"
+          echo "trigger_mode=$trigger_mode" >> "$GITHUB_OUTPUT"
+
+      - name: Mark native review start
+        id: start
+        run: echo "triggered_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve Claude review safety
+        id: safety
+        shell: bash
+        env:
+          HAS_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        run: |
+          set -euo pipefail
+
+          is_fork="false"
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            is_fork="true"
+          fi
+
+          claude_review_permitted="true"
+          block_reason=""
+
+          if [ "${{ steps.policy.outputs.selected_agent }}" = "claude" ]; then
+            if [ "$HAS_ANTHROPIC_API_KEY" != "true" ]; then
+              claude_review_permitted="false"
+              block_reason="ANTHROPIC_API_KEY is unavailable to this workflow run."
+            elif [ "$is_fork" = "true" ]; then
+              claude_review_permitted="false"
+              block_reason="Claude review is disabled for fork-triggered pull_request runs because repository secrets are not exposed to untrusted forks."
+            fi
+          fi
+
+          echo "is_fork=$is_fork" >> "$GITHUB_OUTPUT"
+          echo "claude_review_permitted=$claude_review_permitted" >> "$GITHUB_OUTPUT"
+          echo "block_reason=$block_reason" >> "$GITHUB_OUTPUT"
+
+      - name: Explain unavailable Claude review path
+        if: steps.policy.outputs.selected_agent == 'claude' && steps.safety.outputs.claude_review_permitted != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const message = [
+              "AI Review could not run the selected Claude backend.",
+              "",
+              `Reason: ${process.env.BLOCK_REASON}`,
+              "",
+              "This repository keeps `AI Review` fail-closed.",
+              "For forked PRs, switch `AI_REVIEW_AGENT` to `codex` or rerun review from a trusted repository-owned branch after inspection.",
+            ].join("\n");
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: Number(process.env.PR_NUMBER),
+              body: message,
+            });
+        env:
+          BLOCK_REASON: ${{ steps.safety.outputs.block_reason }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+
+      - name: Fail unavailable Claude review path
+        if: steps.policy.outputs.selected_agent == 'claude' && steps.safety.outputs.claude_review_permitted != 'true'
+        shell: bash
+        run: |
+          echo "${{ steps.safety.outputs.block_reason }}"
+          exit 1
+
+      - name: Run native Claude review backend
+        if: steps.policy.outputs.selected_agent == 'claude' && steps.safety.outputs.claude_review_permitted == 'true'
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          claude_args: "--max-turns 10 --model claude-sonnet-4-6"
           prompt: |
-            Review this pull request following the project standards defined in CLAUDE.md.
+            Act as the selected pull-request reviewer for this repository.
 
-            Check for:
-            - Code correctness, TypeScript types, React patterns (Next.js 14+ App Router)
-            - Design system compliance: glassmorphism tokens, 8px grid, achromatic palette (no hardcoded colors)
-            - i18n completeness: all UI strings must exist in EN, ES-AR, and RU
-            - Accessibility: semantic HTML, ARIA labels, keyboard navigation, Lighthouse 95+
-            - Performance: no blocking imports, images optimized, page load < 2s on 4G
-            - Security: no XSS, no secrets in code, safe data handling (OWASP Top 10)
+            Follow repository guidance from `CLAUDE.md`, `AGENTS.md`, `docs_capsule_zero/project/devops/ai-pr-workflow.md`, `docs_capsule_zero/project/devops/ai-orchestration-protocol.md`, and `docs_capsule_zero/project/devops/review-contract.md`.
 
-            Verdict rules:
-            - Use "approve" if no issues found
-            - Use "comment" if findings are advisory only (low severity)
-            - Use "request_changes" only for blocking issues (incorrect logic, broken types, missing i18n keys, security vulnerabilities)
+            Review pull request #${{ steps.pr.outputs.pr_number }} at head commit `${{ steps.pr.outputs.head_sha }}` using GitHub's native pull-request review flow.
 
-            Post your findings as a single review comment on the PR.
-            Start the comment with the HTML tag: <!-- ai-review -->
+            Begin the top-level review summary with exactly these two lines:
+            AI_REVIEW_AGENT: claude
+            AI_REVIEW_SHA: ${{ steps.pr.outputs.head_sha }}
+
+            Review rules:
+            - Approve only when there are no material findings.
+            - Use comment-only review output for advisory findings that should not block merge.
+            - Request changes only when there is at least one blocking issue.
+            - Treat low-severity-only findings as advisory and non-blocking.
+            - Focus on correctness, regressions, architecture, workflow risk, missing tests, and missing durable-doc updates.
+          claude_args: |
+            --max-turns 10
+            --model claude-opus-4-6
+
+      - name: Route and validate selected native review
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AI_REVIEW_AGENT: ${{ steps.policy.outputs.selected_agent }}
+          AI_REVIEW_PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          AI_REVIEW_TRIGGER_MODE: ${{ steps.policy.outputs.trigger_mode }}
+          AI_REVIEW_TRIGGERED_AT: ${{ steps.start.outputs.triggered_at }}
+          AI_REVIEW_WAIT_MS: "900000"
+          AI_REVIEW_POLL_MS: "15000"
+        run: node scripts/ai-review-gate.mjs
