@@ -13,10 +13,6 @@ on:
         description: Git ref to review
         required: true
         type: string
-      pr_number:
-        description: Pull request number
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -31,10 +27,7 @@ jobs:
   ai-review:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
     name: AI Review
-    runs-on:
-      - self-hosted
-      - macOS
-      - ai-runner
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -43,36 +36,26 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.ref || github.ref }}
 
-      - name: Run local AI review
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ inputs.pr_number }}
-          AI_REVIEW_AGENT: ${{ vars.AI_REVIEW_AGENT }}
-          CODEX_CLI_PATH: ${{ vars.CODEX_CLI_PATH }}
-          CLAUDE_CLI_PATH: ${{ vars.CLAUDE_CLI_PATH }}
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          CLAUDE_REVIEW_MODEL: ${{ vars.CLAUDE_REVIEW_MODEL }}
-          CLAUDE_REVIEW_DEBUG: ${{ vars.CLAUDE_REVIEW_DEBUG }}
-        shell: bash
-        run: /opt/homebrew/bin/pwsh -NoProfile -NonInteractive -ExecutionPolicy Bypass -File ./scripts/run-ai-pr-review.ps1
+      - name: Run Claude review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--max-turns 10 --model claude-sonnet-4-6"
+          prompt: |
+            Review this pull request following the project standards defined in CLAUDE.md.
 
-      - name: Print review diagnostics
-        if: always()
-        shell: bash
-        run: |
-          /opt/homebrew/bin/pwsh -NoProfile -NonInteractive -Command '
-            $tempRoot = if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { $env:TEMP }
-            $publicDiagnosticPath = Join-Path $tempRoot "ai-review-public-diagnostics.log"
-            $publicRawExcerptPath = Join-Path $tempRoot "ai-review-public-raw-excerpt.log"
+            Check for:
+            - Code correctness, TypeScript types, React patterns (Next.js 14+ App Router)
+            - Design system compliance: glassmorphism tokens, 8px grid, achromatic palette (no hardcoded colors)
+            - i18n completeness: all UI strings must exist in EN, ES-AR, and RU
+            - Accessibility: semantic HTML, ARIA labels, keyboard navigation, Lighthouse 95+
+            - Performance: no blocking imports, images optimized, page load < 2s on 4G
+            - Security: no XSS, no secrets in code, safe data handling (OWASP Top 10)
 
-            if (Test-Path $publicDiagnosticPath) {
-              Write-Host "--- ai-review-public-diagnostics.log ---"
-              Get-Content $publicDiagnosticPath
-            }
+            Verdict rules:
+            - Use "approve" if no issues found
+            - Use "comment" if findings are advisory only (low severity)
+            - Use "request_changes" only for blocking issues (incorrect logic, broken types, missing i18n keys, security vulnerabilities)
 
-            if (Test-Path $publicRawExcerptPath) {
-              Write-Host "--- ai-review-public-raw-excerpt.log ---"
-              Get-Content $publicRawExcerptPath
-            }
-          '
+            Post your findings as a single review comment on the PR.
+            Start the comment with the HTML tag: <!-- ai-review -->
