@@ -105,7 +105,24 @@ Pixel-perfect Phase 3 prototypes in `html-prototypes/` (pure HTML+CSS). This fol
 - `docs_capsule_zero/marketing/go-to-market.md` — TAM/SAM/SOM, competitors, pricing
 - `docs_capsule_zero/launch/launch-plan.md` — Full launch plan, phases 0-7
 - `docs_capsule_zero/project/devops/ai-pr-workflow.md` — PR loop and merge gates
-- `docs_capsule_zero/project/devops/ai-runner.md` — self-hosted AI review runner setup
+- `docs_capsule_zero/project/devops/ai-orchestration-protocol.md` — cloud-native agent routing and policy contract
+- `docs_capsule_zero/project/devops/ai-runner.md` — cloud AI integrations and `AI Review` gate contract
+
+## Repository Delivery Protocol
+
+- Product code lands through pull requests only.
+- Required GitHub checks are `baseline-checks`, `guard`, and `AI Review`.
+- Claude is the default implementation agent, selected through `AI_IMPLEMENTATION_AGENT`.
+- Review selection is separate and controlled through `AI_REVIEW_AGENT`.
+- Canonical execution is comment-driven through native vendor integrations:
+  - `@claude ...`
+  - `@codex ...`
+  - `@claude review once` on a top-level PR comment
+  - `@codex review` on a top-level PR comment
+- Only trusted repository actors may trigger repository AI workflows.
+- `AI Review` is a repository-owned fail-closed gate that normalizes native review output to Capsule Zero policy.
+- Native review normalization rules live in `docs_capsule_zero/project/devops/review-contract.md`.
+- Follow `docs_capsule_zero/project/devops/ai-pr-workflow.md` and `docs_capsule_zero/project/devops/ai-orchestration-protocol.md` for workflow behavior; this file is Claude's repository context, not the orchestration source of truth.
 
 ## Feature & Screen Specs
 

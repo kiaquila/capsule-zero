@@ -36,7 +36,11 @@ jobs:
           test -f docs_capsule_zero/project/frontend/frontend-docs.md
           test -f docs_capsule_zero/project/backend/backend-docs.md
           test -f docs_capsule_zero/project/devops/ai-pr-workflow.md
+          test -f docs_capsule_zero/project/devops/ai-orchestration-protocol.md
           test -f docs_capsule_zero/project/devops/ai-runner.md
+          test -f docs_capsule_zero/project/devops/review-contract.md
+          test -f docs_capsule_zero/project/devops/codex-github-setup.md
+          test -f docs_capsule_zero/project/devops/validation-matrix.md
           test -d .github/workflows
           test -d app
           test -f app/package.json
