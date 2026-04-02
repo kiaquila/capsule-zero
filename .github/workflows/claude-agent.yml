@@ -32,6 +32,54 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/resolve-pr-context.mjs
 
+      - name: Resolve Claude agent safety
+        id: safety
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          claude_agent_permitted="true"
+          block_reason=""
+
+          if [ "${{ steps.pr.outputs.is_pull_request }}" = "true" ] && [ "${{ steps.pr.outputs.is_fork }}" = "true" ]; then
+            claude_agent_permitted="false"
+            block_reason="Claude implementation is disabled for fork PRs because this issue_comment workflow runs with repository secrets."
+          fi
+
+          echo "claude_agent_permitted=$claude_agent_permitted" >> "$GITHUB_OUTPUT"
+          echo "block_reason=$block_reason" >> "$GITHUB_OUTPUT"
+
+      - name: Explain unavailable Claude agent path
+        if: steps.safety.outputs.claude_agent_permitted != 'true' && steps.pr.outputs.is_pull_request == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const message = [
+              "Claude implementation could not run for the selected PR context.",
+              "",
+              `Reason: ${process.env.BLOCK_REASON}`,
+              "",
+              "This repository keeps comment-driven Claude automation fail-closed for fork PRs.",
+              "Use Codex for this PR, or move the change onto a trusted repository-owned branch before invoking `@claude`.",
+            ].join("\n");
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: Number(process.env.PR_NUMBER),
+              body: message,
+            });
+        env:
+          BLOCK_REASON: ${{ steps.safety.outputs.block_reason }}
+          PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+
+      - name: Fail unavailable Claude agent path
+        if: steps.safety.outputs.claude_agent_permitted != 'true'
+        shell: bash
+        run: |
+          echo "${{ steps.safety.outputs.block_reason }}"
+          exit 1
+
       - name: Checkout PR head
         if: steps.pr.outputs.is_pull_request == 'true'
         uses: actions/checkout@v4

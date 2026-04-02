@@ -77,6 +77,7 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - Claude review is invoked directly inside the gate workflow because workflow-authored comments do not trigger another Actions workflow.
 - Codex review must be initiated from a connected human Codex account on a top-level PR comment because workflow-authored comments do not start a real Codex review task.
 - Claude review does not run on untrusted fork-triggered `pull_request` events because repository secrets are unavailable there.
+- Comment-driven `@claude` implementation and `@claude review once` also fail closed for fork PRs because `issue_comment` workflows run with repository secrets.
 - The repository-owned `AI Review` gate then:
   - reads `AI_REVIEW_AGENT`
   - verifies that the selected native reviewer actually ran

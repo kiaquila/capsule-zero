@@ -71,7 +71,10 @@ const result = {
   prNumber: String(pull.number),
   headRef: pull.head.ref,
   headSha: pull.head.sha,
+  headRepository: pull.head.repo.full_name,
   baseRef: pull.base.ref,
+  baseRepository: pull.base.repo.full_name,
+  isFork: pull.head.repo.full_name !== `${owner}/${repo}`,
   checkoutRef: `refs/pull/${pull.number}/head`,
 };
 
@@ -79,7 +82,10 @@ setOutput("is_pull_request", "true");
 setOutput("pr_number", result.prNumber);
 setOutput("head_ref", result.headRef);
 setOutput("head_sha", result.headSha);
+setOutput("head_repository", result.headRepository);
 setOutput("base_ref", result.baseRef);
+setOutput("base_repository", result.baseRepository);
+setOutput("is_fork", result.isFork ? "true" : "false");
 setOutput("checkout_ref", result.checkoutRef);
 
 console.log(JSON.stringify(result));
