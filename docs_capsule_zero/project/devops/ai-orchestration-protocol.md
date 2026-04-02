@@ -76,6 +76,7 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - Native vendor review happens first.
 - `AI Review` routes the selected native review backend.
 - Claude review is invoked directly inside the gate workflow because workflow-authored comments do not trigger another Actions workflow.
+- Claude-native PR review also depends on the active `AI Review` workflow file already being present on the default branch with identical contents, so the first rollout must bootstrap that workflow onto the default branch before follow-up PR validation.
 - Codex review must be initiated from a connected human Codex account on a top-level PR comment because workflow-authored comments do not start a real Codex review task.
 - Claude review does not run on untrusted fork-triggered `pull_request` events because repository secrets are unavailable there.
 - Comment-driven `@claude` implementation and `@claude review once` also fail closed for fork PRs because `issue_comment` workflows run with repository secrets.

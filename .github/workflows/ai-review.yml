@@ -82,10 +82,28 @@ jobs:
           block_reason=""
 
           if [ "${{ steps.policy.outputs.selected_agent }}" = "claude" ]; then
-            if [ "$HAS_ANTHROPIC_API_KEY" != "true" ]; then
+            default_branch="${{ steps.pr.outputs.base_ref }}"
+            workflow_path=".github/workflows/ai-review.yml"
+
+            git fetch --no-tags --depth=1 origin "$default_branch"
+
+            if ! git cat-file -e "origin/${default_branch}:${workflow_path}" 2>/dev/null; then
+              claude_review_permitted="false"
+              block_reason="Claude native review requires ${workflow_path} to exist on the default branch ${default_branch} before PR validation can run."
+            else
+              current_workflow_hash="$(git hash-object "$workflow_path")"
+              default_workflow_hash="$(git show "origin/${default_branch}:${workflow_path}" | git hash-object --stdin)"
+
+              if [ "$current_workflow_hash" != "$default_workflow_hash" ]; then
+                claude_review_permitted="false"
+                block_reason="Claude native review requires ${workflow_path} to match the version on the default branch ${default_branch}. Merge the workflow bootstrap first, then rerun Claude review on a follow-up PR."
+              fi
+            fi
+
+            if [ "$claude_review_permitted" = "true" ] && [ "$HAS_ANTHROPIC_API_KEY" != "true" ]; then
               claude_review_permitted="false"
               block_reason="ANTHROPIC_API_KEY is unavailable to this workflow run."
-            elif [ "$is_fork" = "true" ]; then
+            elif [ "$claude_review_permitted" = "true" ] && [ "$is_fork" = "true" ]; then
               claude_review_permitted="false"
               block_reason="Claude review is disabled for fork-triggered pull_request runs because repository secrets are not exposed to untrusted forks."
             fi
@@ -106,6 +124,7 @@ jobs:
               `Reason: ${process.env.BLOCK_REASON}`,
               "",
               "This repository keeps `AI Review` fail-closed.",
+              "If this PR is introducing or changing the Claude review workflow itself, merge the workflow bootstrap to the default branch first and rerun Claude review on a follow-up PR.",
               "For forked PRs, switch `AI_REVIEW_AGENT` to `codex` or rerun review from a trusted repository-owned branch after inspection.",
             ].join("\n");
 
