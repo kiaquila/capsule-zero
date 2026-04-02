@@ -212,6 +212,30 @@ const pickLatestCodexReview = (reviews) =>
         new Date(right.submitted_at).getTime() - new Date(left.submitted_at).getTime(),
     )[0] || null;
 
+const classifyCodexSetupReply = (comment) => {
+  const body = (comment.body || "").trim();
+
+  if (/create an environment for this repo/i.test(body)) {
+    return {
+      outcome: "fail",
+      reason:
+        "Codex could not start the selected review because no Codex cloud environment is configured for this repository.",
+      details: [comment.html_url],
+    };
+  }
+
+  if (/create a codex account and connect to github/i.test(body)) {
+    return {
+      outcome: "fail",
+      reason:
+        "Codex could not start the selected review because the trigger did not come from a connected human Codex account.",
+      details: [comment.html_url],
+    };
+  }
+
+  return null;
+};
+
 const extractCodexPriority = (body) => {
   const match = body.match(/\bP([0-3])\b/i);
   if (!match) {
@@ -373,6 +397,51 @@ while (Date.now() < deadline) {
 
       console.log(mapped.reason);
       process.exit(0);
+    }
+  }
+
+  if (selectedAgent === "codex") {
+    const issueComments = await listPaginated(
+      `/repos/${owner}/${repo}/issues/${prNumber}/comments?per_page=100`,
+    );
+    const recentConnectorReply =
+      issueComments
+        .filter(
+          (comment) =>
+            codexReviewerLogins.has(comment.user?.login || "") &&
+            new Date(comment.created_at || 0).getTime() >= triggerTime,
+        )
+        .sort(
+          (left, right) =>
+            new Date(right.created_at).getTime() - new Date(left.created_at).getTime(),
+        )
+        .map((comment) => ({
+          comment,
+          classification: classifyCodexSetupReply(comment),
+        }))
+        .find((entry) => entry.classification) || null;
+
+    if (recentConnectorReply) {
+      const { comment, classification } = recentConnectorReply;
+
+      setOutput("review_agent", selectedAgent);
+      setOutput("review_state", "SETUP_REQUIRED");
+      setOutput("review_url", comment.html_url);
+      setOutput("review_id", comment.id);
+
+      appendSummary([
+        "## AI Review Gate",
+        "",
+        `- Selected reviewer: \`${selectedAgent}\``,
+        `- Trigger source: ${
+          triggerComment ? triggerComment.html_url : "inline native workflow invocation"
+        }`,
+        `- Connector reply: ${comment.html_url}`,
+        `- Review state: \`SETUP_REQUIRED\``,
+        `- Result: ${classification.reason}`,
+      ]);
+
+      throw new Error(classification.reason);
     }
   }
 

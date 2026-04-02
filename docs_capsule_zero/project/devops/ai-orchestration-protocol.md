@@ -67,6 +67,7 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - Codex review guidance is defined in `AGENTS.md`.
 - The repository gate validates Codex review using native GitHub review output from `chatgpt-codex-connector[bot]`, the PR head SHA, and Codex severity badges as defined in `docs_capsule_zero/project/devops/review-contract.md`.
 - Codex Automatic reviews stay disabled because reviewer routing is repository-owned.
+- Comment-driven Codex tasks require a Codex cloud environment for the repository. If it is missing, the connector emits a setup reply and `AI Review` fails closed.
 
 ## AI Review Gate
 

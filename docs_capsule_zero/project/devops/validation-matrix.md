@@ -9,6 +9,7 @@ Legacy migration artifacts may be removed only after all scenarios below pass.
 - `baseline-checks`, `guard`, and `AI Review` are green on the current migration branch.
 - Claude GitHub Actions workflows are enabled and can access `ANTHROPIC_API_KEY`.
 - Codex GitHub integration is enabled for `kiaquila/capsule-zero`.
+- A Codex cloud environment exists for `kiaquila/capsule-zero`.
 - Codex `Code review` is enabled for the repository.
 - Codex `Automatic reviews` remains disabled.
 - `AGENTS.md`, `CLAUDE.md`, `ai-orchestration-protocol.md`, and `review-contract.md` are current.
@@ -30,7 +31,7 @@ Legacy migration artifacts may be removed only after all scenarios below pass.
 - Set `AI_REVIEW_AGENT=codex`
 - Post `@claude <task brief>`
 - Confirm Claude implementation runs normally
-- Confirm `AI Review` routes review to Codex through a top-level PR comment
+- Post `@codex review` from a connected human Codex account on the PR head under test
 - Confirm Codex posts a matching GitHub review
 - Confirm the gate validates the review result
 
@@ -49,7 +50,7 @@ Legacy migration artifacts may be removed only after all scenarios below pass.
 - Set `AI_REVIEW_AGENT=codex`
 - Post `@codex <task brief>`
 - Confirm Codex starts a native cloud task with PR context
-- Confirm `AI Review` routes review to Codex through a top-level PR comment
+- Post `@codex review` from a connected human Codex account on the PR head under test
 - Confirm Codex posts a matching GitHub review
 - Confirm the gate validates the review result
 

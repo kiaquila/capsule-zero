@@ -50,6 +50,7 @@ Repository default workflow permissions may remain `read` so long as individual 
 - Claude review is blocked on untrusted fork-triggered `pull_request` runs because secrets are not exposed there; the workflow fails with an explicit explanation instead of attempting a secret-backed run.
 - Codex review must be triggered by a connected human Codex account through a top-level PR comment such as `@codex review`.
 - Workflow-authored comments from `github-actions[bot]` do not start a real Codex review task and are not used for the canonical path.
+- Comment-driven Codex review also requires a Codex cloud environment for the repository. Without it, the connector replies with a setup error and `AI Review` fails closed.
 - Codex validation uses native PR review output from `chatgpt-codex-connector[bot]` plus Codex severity badges in inline review comments.
 - `AI Review` fails closed when the selected reviewer does not run or its result cannot be validated.
 - Codex Automatic reviews should remain disabled so repository policy keeps owning reviewer selection.
