@@ -47,7 +47,8 @@ Repository default workflow permissions may remain `read` so long as individual 
 - `AI_REVIEW_AGENT` determines which reviewer is canonical for the current repository state.
 - The repository-owned `AI Review` workflow routes the selected native review backend, validates that the selected native reviewer ran, and normalizes the result to Capsule Zero policy.
 - Claude review must be triggered by a connected trusted actor through a top-level PR comment such as `@claude review once`.
-- `AI Review` does not invoke Claude directly; it validates the native output published by `.github/workflows/claude-review.yml`.
+- `AI Review` does not invoke Claude directly; it validates the marker comment published by `.github/workflows/claude-review.yml`.
+- Claude GitHub Actions does not submit formal GitHub PR reviews in this repository contract; instead it updates a single `claude[bot]` comment that begins with `AI_REVIEW_AGENT`, `AI_REVIEW_SHA`, and `AI_REVIEW_OUTCOME` marker lines.
 - Claude review is blocked on untrusted fork-triggered `pull_request` runs because secrets are not exposed there; the workflow fails with an explicit explanation instead of attempting a secret-backed run.
 - Codex review must be triggered by a connected human Codex account through a top-level PR comment such as `@codex review`.
 - Workflow-authored comments from `github-actions[bot]` do not start a real Codex review task and are not used for the canonical path.

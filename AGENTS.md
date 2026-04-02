@@ -171,12 +171,13 @@ When assigned to implement a specific feature, read in this order:
 
 ## Review guidelines
 
-- Use GitHub's standard pull-request review states.
-- Approve only when there are no material findings.
-- Use a comment review for advisory-only findings that should not block merge.
-- Request changes only when at least one finding should block merge.
+- Codex review uses native GitHub PR review output plus `P0-P3` inline severity badges.
+- Claude review uses a top-level `claude[bot]` comment with marker lines, not a formal GitHub PR review.
+- When a Claude review request includes `AI_REVIEW_AGENT`, `AI_REVIEW_SHA`, and `AI_REVIEW_OUTCOME`, preserve those lines exactly at the start of the final top-level Claude comment.
+- `AI_REVIEW_OUTCOME=pass` means no material findings.
+- `AI_REVIEW_OUTCOME=advisory` means advisory-only findings that should not block merge.
+- `AI_REVIEW_OUTCOME=block` means at least one finding should block merge.
 - Treat low-severity-only findings as advisory and non-blocking.
-- When a review request includes `AI_REVIEW_AGENT` and `AI_REVIEW_SHA` lines, preserve those two lines exactly at the start of the top-level review summary.
 
 ---
 

@@ -57,7 +57,8 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - Implementation and review run through native Claude GitHub Actions workflows.
 - Canonical commands are comment-driven and handled through `anthropics/claude-code-action@v1`.
 - Review runs with the repository-selected model, currently pinned to `claude-opus-4-6`.
-- Claude review output must follow `docs_capsule_zero/project/devops/review-contract.md` so the repository gate can validate the result.
+- Claude review output is comment-driven, not a formal GitHub PR review.
+- Claude review must follow `docs_capsule_zero/project/devops/review-contract.md` so the repository gate can validate the result.
 
 ### Codex
 
@@ -76,7 +77,7 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - Native vendor review happens first.
 - `AI Review` routes the selected native review backend.
 - Claude review must be initiated from a trusted top-level PR comment using `@claude review once`.
-- `AI Review` does not invoke Claude directly; it validates the native review emitted by the dedicated Claude review workflow.
+- `AI Review` does not invoke Claude directly; it validates the marker comment emitted by the dedicated Claude review workflow.
 - Codex review must be initiated from a connected human Codex account on a top-level PR comment because workflow-authored comments do not start a real Codex review task.
 - Claude review does not run on untrusted fork-triggered `pull_request` events because repository secrets are unavailable there.
 - Comment-driven `@claude` implementation and `@claude review once` also fail closed for fork PRs because `issue_comment` workflows run with repository secrets.

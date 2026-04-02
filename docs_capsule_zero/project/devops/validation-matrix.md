@@ -23,8 +23,8 @@ Legacy migration artifacts may be removed only after all scenarios below pass.
 - Post `@claude <task brief>` on a PR or issue
 - Confirm Claude implementation runs on the expected branch or PR head
 - Post `@claude review once` from a trusted actor on the PR head under test
-- Confirm `.github/workflows/claude-review.yml` publishes a native Claude review
-- Confirm the gate validates the matching review output
+- Confirm `.github/workflows/claude-review.yml` updates a `claude[bot]` top-level PR comment with `AI_REVIEW_AGENT`, `AI_REVIEW_SHA`, and `AI_REVIEW_OUTCOME`
+- Confirm the gate validates the matching Claude comment output
 
 ### 2. implement=claude, review=codex
 
@@ -43,8 +43,8 @@ Legacy migration artifacts may be removed only after all scenarios below pass.
 - Post `@codex <task brief>`
 - Confirm Codex starts a native cloud task with PR context
 - Post `@claude review once` from a trusted actor on the PR head under test
-- Confirm `.github/workflows/claude-review.yml` publishes a native Claude review
-- Confirm the gate validates the review result
+- Confirm `.github/workflows/claude-review.yml` updates a `claude[bot]` top-level PR comment with `AI_REVIEW_AGENT`, `AI_REVIEW_SHA`, and `AI_REVIEW_OUTCOME`
+- Confirm the gate validates the Claude review result
 
 ### 4. implement=codex, review=codex
 

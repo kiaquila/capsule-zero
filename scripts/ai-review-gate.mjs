@@ -13,6 +13,7 @@ const triggerMode = (process.env.AI_REVIEW_TRIGGER_MODE || "comment").trim().toL
 const triggeredAt = process.env.AI_REVIEW_TRIGGERED_AT;
 const outputPath = process.env.GITHUB_OUTPUT;
 const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+const claudeReviewerLogins = new Set(["claude[bot]"]);
 const codexReviewerLogins = new Set(["chatgpt-codex-connector[bot]"]);
 
 if (!token) {
@@ -128,6 +129,7 @@ const headSha = pull.head.sha;
 const markerAgentLine = `AI_REVIEW_AGENT: ${selectedAgent}`;
 const markerShaLine = `AI_REVIEW_SHA: ${headSha}`;
 const metadataMarker = `<!-- ai-review-gate:agent=${selectedAgent};sha=${headSha} -->`;
+const claudeOutcomePrefix = "AI_REVIEW_OUTCOME:";
 
 const buildTriggerComment = () => {
   if (selectedAgent === "codex") {
@@ -145,14 +147,13 @@ const buildTriggerComment = () => {
     "",
     `Please review PR #${prNumber} at head commit \`${headSha}\`.`,
     "",
-    "Begin the top-level review summary with exactly these two lines:",
+    "In your final top-level Claude comment, begin with exactly these three lines:",
     markerAgentLine,
     markerShaLine,
+    `${claudeOutcomePrefix} pass|advisory|block`,
     "",
-    "Use GitHub's standard pull-request review states:",
-    "- Approve only when there are no material findings.",
-    "- Use a comment review for advisory-only findings that should not block merge.",
-    "- Request changes only when at least one finding should block merge.",
+    "This repository validates Claude review via marker comments instead of formal GitHub PR review states.",
+    "Use inline PR comments for concrete findings when practical, and do not modify code in this workflow.",
     "",
     metadataMarker,
   ].join("\n");
@@ -196,6 +197,26 @@ const matchesCodexReview = (review) =>
   codexReviewerLogins.has(review.user?.login || "") &&
   (review.body || "").includes("Codex Review");
 
+const extractClaudeOutcome = (body) => {
+  const match = body.match(/^AI_REVIEW_OUTCOME:\s*(pass|advisory|block)\s*$/im);
+  if (!match) {
+    return null;
+  }
+
+  return match[1].toLowerCase();
+};
+
+const matchesClaudeComment = (comment) => {
+  const body = comment.body || "";
+
+  return (
+    claudeReviewerLogins.has(comment.user?.login || "") &&
+    body.includes("AI_REVIEW_AGENT: claude") &&
+    body.includes(markerShaLine) &&
+    extractClaudeOutcome(body) !== null
+  );
+};
+
 const pickLatestMatchingReview = (reviews) =>
   reviews
     .filter((review) => review.submitted_at && matchesMarker(review))
@@ -210,6 +231,15 @@ const pickLatestCodexReview = (reviews) =>
     .sort(
       (left, right) =>
         new Date(right.submitted_at).getTime() - new Date(left.submitted_at).getTime(),
+    )[0] || null;
+
+const pickLatestClaudeComment = (comments) =>
+  comments
+    .filter((comment) => matchesClaudeComment(comment))
+    .sort(
+      (left, right) =>
+        new Date(right.updated_at || right.created_at || 0).getTime() -
+        new Date(left.updated_at || left.created_at || 0).getTime(),
     )[0] || null;
 
 const classifyCodexSetupReply = (comment) => {
@@ -318,6 +348,37 @@ const classifyCodexReview = async (review) => {
   };
 };
 
+const classifyClaudeComment = (comment) => {
+  const outcome = extractClaudeOutcome(comment.body || "");
+
+  switch (outcome) {
+    case "pass":
+      return {
+        outcome: "pass",
+        reason: "Claude reported no material findings.",
+        details: [comment.html_url],
+      };
+    case "advisory":
+      return {
+        outcome: "pass",
+        reason: "Claude reported advisory-only findings.",
+        details: [comment.html_url],
+      };
+    case "block":
+      return {
+        outcome: "fail",
+        reason: "Claude reported blocking findings.",
+        details: [comment.html_url],
+      };
+    default:
+      return {
+        outcome: "pending",
+        reason: "Claude comment did not include a valid AI_REVIEW_OUTCOME marker.",
+        details: [comment.html_url],
+      };
+  }
+};
+
 const mapReviewState = (review) => {
   switch (review.state) {
     case "APPROVED":
@@ -355,52 +416,94 @@ const deadline = Date.now() + maxWaitMs;
 let matchedReview = null;
 
 while (Date.now() < deadline) {
-  const reviews = await listPaginated(
-    `/repos/${owner}/${repo}/pulls/${prNumber}/reviews?per_page=100`,
-  );
-  const recentReviews = reviews.filter(
-    (review) => new Date(review.submitted_at || 0).getTime() >= triggerTime,
-  );
-  const candidateReviews = triggerMode === "skip" ? reviews : recentReviews;
-  const recentMatchingReview =
-    selectedAgent === "codex"
-      ? pickLatestCodexReview(candidateReviews)
-      : pickLatestMatchingReview(candidateReviews);
+  if (selectedAgent === "claude") {
+    const issueComments = await listPaginated(
+      `/repos/${owner}/${repo}/issues/${prNumber}/comments?per_page=100`,
+    );
+    const recentComments = issueComments.filter(
+      (comment) =>
+        Math.max(
+          new Date(comment.created_at || 0).getTime(),
+          new Date(comment.updated_at || 0).getTime(),
+        ) >= triggerTime,
+    );
+    const candidateComments = triggerMode === "skip" ? issueComments : recentComments;
+    const recentMatchingComment = pickLatestClaudeComment(candidateComments);
 
-  if (recentMatchingReview) {
-    matchedReview = recentMatchingReview;
-    const mapped =
-      selectedAgent === "codex"
-        ? await classifyCodexReview(matchedReview)
-        : mapReviewState(matchedReview);
+    if (recentMatchingComment) {
+      const mapped = classifyClaudeComment(recentMatchingComment);
 
-    if (mapped.outcome !== "pending") {
-      setOutput("review_agent", selectedAgent);
-      setOutput("review_state", matchedReview.state);
-      setOutput("review_url", matchedReview.html_url);
-      setOutput("review_id", matchedReview.id);
+      if (mapped.outcome !== "pending") {
+        setOutput("review_agent", selectedAgent);
+        setOutput("review_state", extractClaudeOutcome(recentMatchingComment.body || ""));
+        setOutput("review_url", recentMatchingComment.html_url);
+        setOutput("review_id", recentMatchingComment.id);
 
-      appendSummary([
-        "## AI Review Gate",
-        "",
-        `- Selected reviewer: \`${selectedAgent}\``,
-        `- Trigger source: ${
-          triggerComment ? triggerComment.html_url : "inline native workflow invocation"
-        }`,
-        `- Matched review: ${matchedReview.html_url}`,
-        `- Review state: \`${matchedReview.state}\``,
-        `- Result: ${mapped.reason}`,
-        ...(mapped.details?.length
-          ? [`- Evidence: ${mapped.details.join(", ")}`]
-          : []),
-      ]);
+        appendSummary([
+          "## AI Review Gate",
+          "",
+          `- Selected reviewer: \`${selectedAgent}\``,
+          `- Trigger source: ${
+            triggerComment ? triggerComment.html_url : "inline native workflow invocation"
+          }`,
+          `- Matched reviewer comment: ${recentMatchingComment.html_url}`,
+          `- Review state: \`${extractClaudeOutcome(recentMatchingComment.body || "")}\``,
+          `- Result: ${mapped.reason}`,
+          ...(mapped.details?.length
+            ? [`- Evidence: ${mapped.details.join(", ")}`]
+            : []),
+        ]);
 
-      if (mapped.outcome === "fail") {
-        throw new Error(mapped.reason);
+        if (mapped.outcome === "fail") {
+          throw new Error(mapped.reason);
+        }
+
+        console.log(mapped.reason);
+        process.exit(0);
       }
+    }
+  } else {
+    const reviews = await listPaginated(
+      `/repos/${owner}/${repo}/pulls/${prNumber}/reviews?per_page=100`,
+    );
+    const recentReviews = reviews.filter(
+      (review) => new Date(review.submitted_at || 0).getTime() >= triggerTime,
+    );
+    const candidateReviews = triggerMode === "skip" ? reviews : recentReviews;
+    const recentMatchingReview = pickLatestCodexReview(candidateReviews);
 
-      console.log(mapped.reason);
-      process.exit(0);
+    if (recentMatchingReview) {
+      matchedReview = recentMatchingReview;
+      const mapped = await classifyCodexReview(matchedReview);
+
+      if (mapped.outcome !== "pending") {
+        setOutput("review_agent", selectedAgent);
+        setOutput("review_state", matchedReview.state);
+        setOutput("review_url", matchedReview.html_url);
+        setOutput("review_id", matchedReview.id);
+
+        appendSummary([
+          "## AI Review Gate",
+          "",
+          `- Selected reviewer: \`${selectedAgent}\``,
+          `- Trigger source: ${
+            triggerComment ? triggerComment.html_url : "inline native workflow invocation"
+          }`,
+          `- Matched review: ${matchedReview.html_url}`,
+          `- Review state: \`${matchedReview.state}\``,
+          `- Result: ${mapped.reason}`,
+          ...(mapped.details?.length
+            ? [`- Evidence: ${mapped.details.join(", ")}`]
+            : []),
+        ]);
+
+        if (mapped.outcome === "fail") {
+          throw new Error(mapped.reason);
+        }
+
+        console.log(mapped.reason);
+        process.exit(0);
+      }
     }
   }
 
