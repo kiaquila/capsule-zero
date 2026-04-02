@@ -154,8 +154,29 @@ When assigned to implement a specific feature, read in this order:
 - Product code lands through pull requests only.
 - Required GitHub checks are `baseline-checks`, `guard`, and `AI Review`.
 - Durable workflow docs live under `docs_capsule_zero/project/devops/`.
-- Local worker orchestration scripts live under `scripts/`.
-- AI review runner setup is documented in `docs_capsule_zero/project/devops/ai-runner.md`.
+- The canonical orchestration contract is documented in `docs_capsule_zero/project/devops/ai-orchestration-protocol.md`.
+- Cloud AI integration and review-gate requirements are documented in `docs_capsule_zero/project/devops/ai-runner.md`.
+- Agent selection is policy-driven through repository variables:
+  - `AI_IMPLEMENTATION_AGENT`
+  - `AI_REVIEW_AGENT`
+- Canonical execution is comment-driven through native vendor integrations:
+  - `@claude ...`
+  - `@codex ...`
+  - `@claude review once` on a top-level PR comment
+  - `@codex review` on a top-level PR comment
+- Only trusted repository actors may trigger AI workflows.
+- Trusted actors are `OWNER`, `MEMBER`, and `COLLABORATOR`.
+- Native review normalization is documented in `docs_capsule_zero/project/devops/review-contract.md`.
+- Local PowerShell and worktree scripts may remain temporarily during migration, but they are not part of the canonical process and will be removed after the validation matrix passes.
+
+## Review guidelines
+
+- Use GitHub's standard pull-request review states.
+- Approve only when there are no material findings.
+- Use a comment review for advisory-only findings that should not block merge.
+- Request changes only when at least one finding should block merge.
+- Treat low-severity-only findings as advisory and non-blocking.
+- When a review request includes `AI_REVIEW_AGENT` and `AI_REVIEW_SHA` lines, preserve those two lines exactly at the start of the top-level review summary.
 
 ---
 
