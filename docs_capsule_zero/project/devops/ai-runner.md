@@ -64,11 +64,14 @@ Repository default workflow permissions may remain `read` so long as individual 
 
 - Native implementation runs through the selected vendor backend.
 - `AI_IMPLEMENTATION_AGENT` determines which implementation backend is canonical for the current repository state.
-- Canonical triggers are GitHub comments addressed to the selected agent.
 - Comment-driven Claude implementation uses native tag mode plus repository-specific system instructions so Claude can edit files directly on the active PR branch without falling back to interactive tool approval.
+- Canonical Claude implementation is started from a trusted GitHub comment such as `@claude <task brief>`.
+- Canonical Codex implementation is started from Codex app or Codex web as a native cloud task that opens or updates a Codex-owned pull request.
+- Comment-driven `@codex <task brief>` on an existing pull request may still be used for orchestration or bounded PR-context tasks, but Capsule Zero does not rely on it as the canonical branch-mutating Codex implementation path.
 - Comment-driven Claude implementation and manual Claude review fail closed on fork PRs because `issue_comment` workflows run with repository secrets.
 - Only trusted repository actors may trigger repository AI workflows.
 - The repository may use policy workflows to reject mismatched agent triggers.
+- Current migration evidence showed Codex review works natively from GitHub comments, but Codex implementation write-back from GitHub-triggered cloud tasks can fail when the task environment has no configured remote push destination. The supported remote-first fallback is to launch the Codex implementation task from Codex cloud and let Codex create its own PR.
 
 ## Required GitHub Settings
 

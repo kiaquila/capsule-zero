@@ -28,11 +28,11 @@ These variables are the only source of truth for agent selection. Comments, labe
 
 ## Canonical Triggers
 
-Canonical execution is comment-driven.
+Canonical execution uses the selected vendor's native remote surface.
 
 - Implementation
   - `@claude <task brief>`
-  - `@codex <task brief>`
+  - Codex app or Codex web task for Codex-owned implementation PRs
 - Review
   - `@claude review once` on a top-level PR comment
   - `@codex review` on a top-level PR comment
@@ -41,7 +41,7 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 
 ## Routing Rules
 
-- The implementation trigger must match `AI_IMPLEMENTATION_AGENT`.
+- The implementation entrypoint must match `AI_IMPLEMENTATION_AGENT`.
 - The review trigger must match `AI_REVIEW_AGENT`.
 - Only trusted repository actors may trigger AI workflows.
 - Trusted actors are `OWNER`, `MEMBER`, and `COLLABORATOR`.
@@ -64,13 +64,16 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 ### Codex
 
 - Implementation and review run through native Codex GitHub integration and Codex cloud surfaces.
-- Codex receives task and review requests through canonical GitHub comments.
+- Codex review is requested through canonical GitHub comments.
+- Codex implementation is canonical when it is started from Codex app or Codex web as a native cloud task and Codex opens or updates its own pull request.
+- `@codex <task brief>` on an existing pull request remains useful for bounded PR-context analysis or follow-up work, but it is not the repository's canonical branch-mutating implementation contract.
 - Codex remains the orchestration surface used to steer work remotely, including from Codex cloud and mobile-capable ChatGPT surfaces where available.
 - Codex review guidance is defined in `AGENTS.md`.
 - The repository gate validates Codex review using native GitHub review output from `chatgpt-codex-connector[bot]`, the PR head SHA, and Codex severity badges as defined in `docs_capsule_zero/project/devops/review-contract.md`.
 - Any untagged Codex inline finding fails the gate closed, and reruns may reuse an already-published valid Codex review for the same head SHA.
 - Codex Automatic reviews stay disabled because reviewer routing is repository-owned.
 - Comment-driven Codex tasks require a Codex cloud environment for the repository. If it is missing, the connector emits a setup reply and `AI Review` fails closed.
+- Validation on April 3, 2026 showed that GitHub-triggered `@codex <task brief>` cloud tasks can complete without updating the active PR branch when no remote push destination is configured in the task environment. Capsule Zero therefore standardizes on Codex-owned PR creation from Codex app or web for canonical Codex implementation cycles.
 
 ## AI Review Gate
 

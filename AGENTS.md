@@ -159,9 +159,9 @@ When assigned to implement a specific feature, read in this order:
 - Agent selection is policy-driven through repository variables:
   - `AI_IMPLEMENTATION_AGENT`
   - `AI_REVIEW_AGENT`
-- Canonical execution is comment-driven through native vendor integrations:
-  - `@claude ...`
-  - `@codex ...`
+- Canonical execution uses the selected vendor's native remote surface:
+  - `@claude ...` for Claude implementation
+  - Codex app or Codex web task for Codex-owned implementation PRs
   - `@claude review once` on a top-level PR comment
   - `@codex review` on a top-level PR comment
 - Only trusted repository actors may trigger AI workflows.

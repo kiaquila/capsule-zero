@@ -40,19 +40,20 @@ Legacy migration artifacts may be removed only after all scenarios below pass.
 
 - Set `AI_IMPLEMENTATION_AGENT=codex`
 - Set `AI_REVIEW_AGENT=claude`
-- Post `@codex <task brief>`
-- Confirm Codex starts a native cloud task with PR context
-- Post `@claude review once` from a trusted actor on the PR head under test
+- Start a Codex cloud implementation task from Codex app or Codex web against `kiaquila/capsule-zero`
+- Confirm Codex opens or updates the expected pull request for that task
+- Post `@claude review once` from a trusted actor on the Codex-authored PR head under test
 - Confirm `.github/workflows/claude-review.yml` updates a `claude[bot]` top-level PR comment with `AI_REVIEW_AGENT`, `AI_REVIEW_SHA`, and `AI_REVIEW_OUTCOME`
 - Confirm the gate validates the Claude review result
+- GitHub-triggered `@codex <task brief>` comments on an existing PR may be used as an exploratory signal during migration, but they do not count as pass criteria for this row unless the task demonstrably updates the active PR branch
 
 ### 4. implement=codex, review=codex
 
 - Set `AI_IMPLEMENTATION_AGENT=codex`
 - Set `AI_REVIEW_AGENT=codex`
-- Post `@codex <task brief>`
-- Confirm Codex starts a native cloud task with PR context
-- Post `@codex review` from a connected human Codex account on the PR head under test
+- Start a Codex cloud implementation task from Codex app or Codex web against `kiaquila/capsule-zero`
+- Confirm Codex opens or updates the expected pull request for that task
+- Post `@codex review` from a connected human Codex account on the Codex-authored PR head under test
 - Confirm Codex posts a matching GitHub review
 - Confirm the gate validates the review result
 
@@ -61,12 +62,20 @@ Legacy migration artifacts may be removed only after all scenarios below pass.
 Each matrix row passes only when all of the following are true:
 
 - no local machine is required
-- canonical trigger is a native GitHub comment addressed to the selected agent
-- mismatched trigger comments are rejected by repository policy
+- canonical trigger uses the selected vendor's native remote surface
+- mismatched GitHub comment triggers are rejected by repository policy when comments are the selected control surface
 - `AI Review` remains the only required review check
 - `AI Review` fails closed when the selected reviewer does not produce a valid result
 - the selected reviewer result is matched to the current PR head SHA
 - the PR remains within the existing Capsule Zero PR-first workflow contract
+
+## Current Evidence
+
+- `implement=claude, review=claude` validated on PR `#3`
+- `implement=claude, review=codex` validated on PR `#7`
+- `review=claude` validated again on fresh PR `#9`
+- GitHub-triggered `@codex <task brief>` on PRs `#7` and `#9` started native Codex cloud tasks but did not update the active PR branch; Codex summary output reported `git push` failure because no remote push destination was configured in the task environment
+- Until Codex app or web is used to create the implementation PR directly, rows 3 and 4 remain open by design
 
 ## Removal Gate
 

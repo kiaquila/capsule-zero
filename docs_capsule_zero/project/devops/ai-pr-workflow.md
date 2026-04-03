@@ -43,9 +43,9 @@ The workflow may change tools, integrations, and automation layers, but these ru
 - Review selection comes from the repository variable `AI_REVIEW_AGENT`.
 - Supported values are `claude` and `codex`.
 - Capsule Zero defaults to `claude` for implementation and `codex` for review.
-- Canonical execution is comment-driven:
+- Canonical execution uses the selected vendor's native remote surface:
   - `@claude ...` for Claude implementation tasks
-  - `@codex ...` for Codex implementation or orchestration tasks
+  - Codex app or Codex web task for Codex-owned implementation PRs
   - `@claude review once` for Claude review on a top-level PR comment
   - `@codex review` for Codex review on a top-level PR comment
 - Only trusted repository actors may trigger AI workflows.

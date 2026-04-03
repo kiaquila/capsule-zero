@@ -11,8 +11,11 @@ permissions:
 jobs:
   policy:
     if: >
-      contains(github.event.comment.body, '@claude') ||
-      contains(github.event.comment.body, '@codex')
+      github.event.comment.user.type == 'User' &&
+      (
+        contains(github.event.comment.body, '@claude') ||
+        contains(github.event.comment.body, '@codex')
+      )
     name: ai-command-policy
     runs-on: ubuntu-latest
 
@@ -109,7 +112,7 @@ jobs:
 
             const expectedCommand = kind === "review"
               ? (selectedAgent === "claude" ? "@claude review once" : "@codex review")
-              : (selectedAgent === "claude" ? "@claude <task brief>" : "@codex <task brief>");
+              : (selectedAgent === "claude" ? "@claude <task brief>" : "start the Codex task from Codex app or Codex web");
 
             const scopeLabel = kind === "review" ? "review" : "implementation";
             const message = [
@@ -118,7 +121,7 @@ jobs:
               `Requested ${scopeLabel} agent: \`${requestedAgent}\``,
               `Selected ${scopeLabel} agent from repository policy: \`${selectedAgent}\``,
               "",
-              `Use \`${expectedCommand}\` or update the repository variable before rerunning the command.`,
+              `Use ${selectedAgent === "codex" && kind === "implementation" ? expectedCommand : `\`${expectedCommand}\``} or update the repository variable before rerunning the command.`,
             ].join("\n");
 
             await github.rest.issues.createComment({
