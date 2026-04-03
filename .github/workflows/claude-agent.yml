@@ -102,18 +102,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          prompt: |
-            Act as the selected implementation agent for this repository.
-
-            Follow repository guidance from `CLAUDE.md`, `AGENTS.md`, `docs_capsule_zero/project/devops/ai-pr-workflow.md`, and `docs_capsule_zero/project/devops/ai-orchestration-protocol.md`.
-
-            Treat the triggering GitHub comment as the scoped assignment. Stay within one branch and one pull request for that task.
-
-            If this command was posted on pull request #${{ steps.pr.outputs.pr_number }}, work against head commit `${{ steps.pr.outputs.head_sha }}` and keep all changes on that PR branch.
-
-            Update durable docs and workflow artifacts when the change affects architecture, process, or behavior.
-
-            Do not perform pull-request review in this workflow unless the user explicitly asks for review instead of implementation.
           claude_args: |
             --max-turns 20
             --model claude-opus-4-6
+            --allowedTools "Bash(node:*),Bash(npm:*),Bash(npx:*),Bash(pnpm:*),Bash(yarn:*),Bash(bun:*),Bash(tsc:*),Bash(eslint:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*)"
+            --system-prompt "Act as the selected implementation agent for this repository. Follow repository guidance from CLAUDE.md, AGENTS.md, docs_capsule_zero/project/devops/ai-pr-workflow.md, and docs_capsule_zero/project/devops/ai-orchestration-protocol.md. Treat the triggering GitHub comment as the scoped assignment. Stay within one branch and one pull request for that task. If this command was posted on pull request #${{ steps.pr.outputs.pr_number }}, work against head commit ${{ steps.pr.outputs.head_sha }} and keep all changes on that PR branch. Update durable docs and workflow artifacts when the change affects architecture, workflow, or behavior. In this repository you may modify workflow files when the scoped task requires it. Do not perform pull-request review in this workflow unless the user explicitly asks for review instead of implementation."

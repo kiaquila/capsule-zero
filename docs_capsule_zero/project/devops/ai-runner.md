@@ -65,6 +65,7 @@ Repository default workflow permissions may remain `read` so long as individual 
 - Native implementation runs through the selected vendor backend.
 - `AI_IMPLEMENTATION_AGENT` determines which implementation backend is canonical for the current repository state.
 - Canonical triggers are GitHub comments addressed to the selected agent.
+- Comment-driven Claude implementation uses native tag mode plus repository-specific system instructions so Claude can edit files directly on the active PR branch without falling back to interactive tool approval.
 - Comment-driven Claude implementation and manual Claude review fail closed on fork PRs because `issue_comment` workflows run with repository secrets.
 - Only trusted repository actors may trigger repository AI workflows.
 - The repository may use policy workflows to reject mismatched agent triggers.
