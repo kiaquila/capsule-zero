@@ -43,6 +43,7 @@ Codex currently publishes:
 - a top-level GitHub pull-request review
 - inline review comments tied to that review
 - severity badges in inline comments such as `P1` or `P2`
+- or, when there are no concrete inline findings, a top-level PR comment from `chatgpt-codex-connector[bot]` beginning with `Codex Review:`
 
 Codex may publish a `COMMENTED` top-level review even when some inline findings should block merge. Capsule Zero therefore evaluates the associated severity badges instead of relying on the top-level review state alone for Codex.
 
@@ -62,6 +63,8 @@ Capsule Zero normalizes vendor-native output as follows:
   - `AI Review` passes
 - Codex `COMMENTED` with only `P3` findings or no inline findings
   - `AI Review` passes
+- Codex top-level bot comment `Codex Review: Didn't find any major issues`
+  - `AI Review` passes for the active review cycle
 - Codex `CHANGES_REQUESTED`
   - `AI Review` fails
 - Codex `COMMENTED` with any `P0`, `P1`, or `P2`
@@ -83,5 +86,6 @@ Any other state is treated as unverifiable and fails closed.
 - `AI Review` reads `AI_REVIEW_AGENT`.
 - It validates the selected reviewer output against the current PR head SHA.
 - On reruns of the same head, validation may reuse the latest valid native reviewer output already attached to that head SHA.
+- For Codex no-findings summary comments, reuse is not assumed across unrelated cycles because that summary comment does not carry the PR head SHA explicitly; the gate matches it only within the active review cycle.
 - It validates the reviewer-specific contract and normalized result.
 - If no valid selected-reviewer output is found before timeout, the check fails closed.

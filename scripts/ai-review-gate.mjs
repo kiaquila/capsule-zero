@@ -197,6 +197,10 @@ const matchesCodexReview = (review) =>
   codexReviewerLogins.has(review.user?.login || "") &&
   (review.body || "").includes("Codex Review");
 
+const matchesCodexSummaryComment = (comment) =>
+  codexReviewerLogins.has(comment.user?.login || "") &&
+  /^Codex Review:/i.test((comment.body || "").trim());
+
 const extractClaudeOutcome = (body) => {
   const match = body.match(/^AI_REVIEW_OUTCOME:\s*(pass|advisory|block)\s*$/im);
   if (!match) {
@@ -264,6 +268,24 @@ const classifyCodexSetupReply = (comment) => {
   }
 
   return null;
+};
+
+const classifyCodexSummaryComment = (comment) => {
+  const body = (comment.body || "").trim();
+
+  if (/did(?:\s+not|\s*n['’]?t)\s+find\s+any\s+major\s+issues/i.test(body)) {
+    return {
+      outcome: "pass",
+      reason: "Codex completed review with no major issues.",
+      details: [comment.html_url],
+    };
+  }
+
+  return {
+    outcome: "pending",
+    reason: "Codex summary comment did not match a recognized no-findings reply.",
+    details: [comment.html_url],
+  };
 };
 
 const extractCodexPriority = (body) => {
@@ -500,6 +522,49 @@ while (Date.now() < deadline) {
         if (mapped.outcome === "fail") {
           throw new Error(mapped.reason);
         }
+
+        console.log(mapped.reason);
+        process.exit(0);
+      }
+    }
+
+    const issueComments = await listPaginated(
+      `/repos/${owner}/${repo}/issues/${prNumber}/comments?per_page=100`,
+    );
+    const recentIssueComments = issueComments.filter(
+      (comment) => new Date(comment.created_at || 0).getTime() >= triggerTime,
+    );
+    const summaryComment =
+      recentIssueComments
+        .filter((comment) => matchesCodexSummaryComment(comment))
+        .sort(
+          (left, right) =>
+            new Date(right.created_at).getTime() - new Date(left.created_at).getTime(),
+        )[0] || null;
+
+    if (summaryComment) {
+      const mapped = classifyCodexSummaryComment(summaryComment);
+
+      if (mapped.outcome !== "pending") {
+        setOutput("review_agent", selectedAgent);
+        setOutput("review_state", "COMMENTED_NO_FINDINGS");
+        setOutput("review_url", summaryComment.html_url);
+        setOutput("review_id", summaryComment.id);
+
+        appendSummary([
+          "## AI Review Gate",
+          "",
+          `- Selected reviewer: \`${selectedAgent}\``,
+          `- Trigger source: ${
+            triggerComment ? triggerComment.html_url : "inline native workflow invocation"
+          }`,
+          `- Matched reviewer comment: ${summaryComment.html_url}`,
+          "- Review state: `COMMENTED_NO_FINDINGS`",
+          `- Result: ${mapped.reason}`,
+          ...(mapped.details?.length
+            ? [`- Evidence: ${mapped.details.join(", ")}`]
+            : []),
+        ]);
 
         console.log(mapped.reason);
         process.exit(0);
