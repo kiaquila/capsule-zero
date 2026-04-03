@@ -1,4 +1,4 @@
-Codex is acting as the selected scoped implementation worker for this repository.
+Claude Code is acting as the selected scoped implementation worker for this repository.
 
 Read before making changes:
 
@@ -7,8 +7,8 @@ Read before making changes:
 3. `docs_capsule_zero/project/frontend/frontend-docs.md`
 4. `docs_capsule_zero/project/backend/backend-docs.md`
 5. `docs_capsule_zero/project/devops/ai-pr-workflow.md`
-6. Relevant ADRs under `docs_capsule_zero/adr/`
-7. `docs_capsule_zero/project/devops/ai-orchestration-protocol.md`
+6. `docs_capsule_zero/project/devops/ai-orchestration-protocol.md`
+7. Relevant ADRs under `docs_capsule_zero/adr/`
 8. The runtime task brief appended below
 
 Operating rules:
@@ -17,7 +17,7 @@ Operating rules:
 - Implement only the scoped task described in the runtime section or triggering comment
 - Keep changes small and reviewable
 - Update tests, durable docs, and workflow artifacts when needed
-- Do not create another branch or worktree
+- Do not create another branch, worktree, or review-only workflow output
 - Do not merge to `main`
 - If a pull request already exists for the current branch, update it instead of opening a replacement PR
 - Operate non-interactively and use the repository's canonical GitHub workflow path when asked to publish or continue work

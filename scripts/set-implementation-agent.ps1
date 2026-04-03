@@ -4,6 +4,9 @@ param(
     [ValidateSet('claude', 'codex')]
     [string]$Agent,
 
+    [ValidateSet('claude', 'codex')]
+    [string]$ReviewAgent,
+
     [string]$Repo
 )
 
@@ -23,8 +26,15 @@ if ($PSCmdlet.ShouldProcess($agentFile, "Write implementation agent '$Agent'")) 
     Write-Host "Implementation agent set to '$Agent' in $agentFile"
 }
 
-if ($PSCmdlet.ShouldProcess('AI_REVIEW_AGENT', "Set repo variable to '$Agent'")) {
-    $ghArgs = @('variable', 'set', 'AI_REVIEW_AGENT', '--body', $Agent)
+$effectiveReviewAgent = if ($PSBoundParameters.ContainsKey('ReviewAgent')) {
+    $ReviewAgent
+}
+else {
+    $Agent
+}
+
+if ($PSCmdlet.ShouldProcess('AI_REVIEW_AGENT', "Set repo variable to '$effectiveReviewAgent'")) {
+    $ghArgs = @('variable', 'set', 'AI_REVIEW_AGENT', '--body', $effectiveReviewAgent)
     if ($Repo) {
         $ghArgs += '--repo'
         $ghArgs += $Repo
@@ -33,5 +43,5 @@ if ($PSCmdlet.ShouldProcess('AI_REVIEW_AGENT', "Set repo variable to '$Agent'"))
     if ($LASTEXITCODE -ne 0) {
         throw "gh variable set failed with exit code $LASTEXITCODE"
     }
-    Write-Host "Repo variable AI_REVIEW_AGENT set to '$Agent'"
+    Write-Host "Repo variable AI_REVIEW_AGENT set to '$effectiveReviewAgent'"
 }

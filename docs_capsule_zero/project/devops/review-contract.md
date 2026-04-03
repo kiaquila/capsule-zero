@@ -4,21 +4,28 @@ This document defines the machine-readable contract used by Capsule Zero's repos
 
 ## Purpose
 
-Native reviewer backends remain vendor-specific, but the repository gate normalizes them to one merge policy. To make that reliable, the selected reviewer must emit a standard GitHub pull-request review for the current PR head commit in a format the gate can validate.
+Native reviewer backends remain vendor-specific, but the repository gate normalizes them to one merge policy. To make that reliable, the selected reviewer must emit machine-readable output for the current PR head commit in a format the gate can validate.
 
 ## Claude Review Contract
 
-Claude review must begin the top-level review summary with exactly two lines:
+Claude review is validated from the top-level comment published by `claude[bot]` through `.github/workflows/claude-review.yml`.
+
+That Claude comment must begin with exactly three lines:
 
 ```text
-AI_REVIEW_AGENT: <agent>
+AI_REVIEW_AGENT: claude
 AI_REVIEW_SHA: <head-sha>
+AI_REVIEW_OUTCOME: pass|advisory|block
 ```
 
-- `<agent>` is `claude`.
 - `<head-sha>` is the current PR head commit SHA routed by the gate.
+- `pass` means no material findings.
+- `advisory` means low-severity-only findings that do not block merge.
+- `block` means at least one finding should block merge.
 
-The repository-owned `AI Review` workflow injects these values into the Claude review prompt.
+The repository-owned Claude review workflow injects these values through the native Claude action system prompt.
+
+Claude may also publish inline PR comments for concrete findings, but the top-level marker comment is the machine-readable contract that the gate validates.
 
 ## Codex Review Contract
 
@@ -39,20 +46,25 @@ Codex currently publishes:
 
 Codex may publish a `COMMENTED` top-level review even when some inline findings should block merge. Capsule Zero therefore evaluates the associated severity badges instead of relying on the top-level review state alone for Codex.
 
-Capsule Zero treats those native severity badges as the machine-readable contract for Codex.
+Capsule Zero treats those native severity badges plus the top-level Codex review as the machine-readable contract for Codex.
 
-## Required Review State Mapping
+## Required Result Mapping
 
-The selected reviewer must use GitHub's standard pull-request review states:
+Capsule Zero normalizes vendor-native output as follows:
 
-- `APPROVED`
-  - no blocking findings
+- Claude `AI_REVIEW_OUTCOME=pass`
   - `AI Review` passes
-- `COMMENTED`
-  - advisory-only findings
+- Claude `AI_REVIEW_OUTCOME=advisory`
   - `AI Review` passes
-- `CHANGES_REQUESTED`
-  - at least one blocking finding
+- Claude `AI_REVIEW_OUTCOME=block`
+  - `AI Review` fails
+- Codex `APPROVED`
+  - `AI Review` passes
+- Codex `COMMENTED` with only `P3` findings or no inline findings
+  - `AI Review` passes
+- Codex `CHANGES_REQUESTED`
+  - `AI Review` fails
+- Codex `COMMENTED` with any `P0`, `P1`, or `P2`
   - `AI Review` fails
 
 Any other state is treated as unverifiable and fails closed.
@@ -69,8 +81,7 @@ Any other state is treated as unverifiable and fails closed.
 ## Routing and Validation
 
 - `AI Review` reads `AI_REVIEW_AGENT`.
-- It routes the selected native review backend.
-- It waits for a matching GitHub review on the current PR head SHA.
-- On reruns of the same head, Codex validation may reuse the latest valid native Codex review already attached to that head SHA.
-- It validates the reviewer-specific contract and review state.
+- It validates the selected reviewer output against the current PR head SHA.
+- On reruns of the same head, validation may reuse the latest valid native reviewer output already attached to that head SHA.
+- It validates the reviewer-specific contract and normalized result.
 - If no valid selected-reviewer output is found before timeout, the check fails closed.

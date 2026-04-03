@@ -21,8 +21,9 @@ Review goals:
 
 Output rules:
 
-- Return JSON matching the provided schema and nothing else
-- Keep the summary short and high-signal
+- Use GitHub's native pull-request review flow
+- Start the top-level review summary with any `AI_REVIEW_AGENT` and `AI_REVIEW_SHA` lines supplied by the workflow or routing comment
+- Keep the summary short and high-signal after the marker lines
 - Use `approve` only when there are no material findings
 - Use `comment` for minor risks or follow-ups that should not block merge
 - Treat `low` severity findings as advisory and non-blocking

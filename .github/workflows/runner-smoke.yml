@@ -37,6 +37,7 @@ jobs:
           which gh
           gh --version
           /opt/homebrew/bin/codex --version
+          /opt/homebrew/bin/claude --version
           /opt/homebrew/bin/pwsh -NoProfile -NonInteractive -Command '$PSVersionTable.PSVersion.ToString()'
 
       - name: Verify workspace access

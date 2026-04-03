@@ -57,7 +57,8 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - Implementation and review run through native Claude GitHub Actions workflows.
 - Canonical commands are comment-driven and handled through `anthropics/claude-code-action@v1`.
 - Review runs with the repository-selected model, currently pinned to `claude-opus-4-6`.
-- Claude review output must follow `docs_capsule_zero/project/devops/review-contract.md` so the repository gate can validate the result.
+- Claude review output is comment-driven, not a formal GitHub PR review.
+- Claude review must follow `docs_capsule_zero/project/devops/review-contract.md` so the repository gate can validate the result.
 
 ### Codex
 
@@ -75,8 +76,8 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - `AI Review` is the single required review check.
 - Native vendor review happens first.
 - `AI Review` routes the selected native review backend.
-- Claude review is invoked directly inside the gate workflow because workflow-authored comments do not trigger another Actions workflow.
-- Claude-native PR review also depends on the active `AI Review` workflow file already being present on the default branch with identical contents, so the first rollout must bootstrap that workflow onto the default branch before follow-up PR validation.
+- Claude review must be initiated from a trusted top-level PR comment using `@claude review once`.
+- `AI Review` does not invoke Claude directly; it validates the marker comment emitted by the dedicated Claude review workflow.
 - Codex review must be initiated from a connected human Codex account on a top-level PR comment because workflow-authored comments do not start a real Codex review task.
 - Claude review does not run on untrusted fork-triggered `pull_request` events because repository secrets are unavailable there.
 - Comment-driven `@claude` implementation and `@claude review once` also fail closed for fork PRs because `issue_comment` workflows run with repository secrets.
