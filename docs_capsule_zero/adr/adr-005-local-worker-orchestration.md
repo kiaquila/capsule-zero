@@ -11,12 +11,15 @@ Capsule Zero needs a safe way to route scoped implementation and review work acr
 ## Decision
 
 - One scoped task maps to one branch and one pull request.
-- Canonical execution is launched through GitHub comments addressed to the selected agent, not through local worktree scripts.
+- Canonical execution uses the selected vendor's native remote surface, not local worktree scripts.
+- Claude implementation is launched through trusted GitHub comments addressed to `@claude`.
+- Codex implementation is launched from Codex app or Codex web and published through Codex-owned pull requests.
+- Review stays GitHub-native through `@claude review once` and `@codex review`.
 - The active implementation agent is stored in the repository variable `AI_IMPLEMENTATION_AGENT`.
 - The active review agent is stored in the repository variable `AI_REVIEW_AGENT`.
 - Comment triggers must match the selected repository policy; mismatched triggers are policy violations rather than implicit overrides.
 - Workers must start from an approved `.specify/specs/<feature-id>/` folder and stay scoped to that task.
-- Local worktree and PowerShell orchestration scripts are migration artifacts only and will be removed after the validation matrix passes.
+- Local worktree and PowerShell orchestration scripts are removed from the canonical repository path after validation completes.
 
 ## Consequences
 

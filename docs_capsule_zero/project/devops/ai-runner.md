@@ -1,6 +1,6 @@
 # Cloud AI Integrations and Review Gate
 
-This document replaces the old self-hosted runner contract. The file path is retained so existing repository references continue to resolve during migration.
+This document defines Capsule Zero's cloud AI integration and `AI Review` gate contract.
 
 ## Canonical Model
 
@@ -12,7 +12,7 @@ This document replaces the old self-hosted runner contract. The file path is ret
 
 See `docs_capsule_zero/project/devops/ai-orchestration-protocol.md` for the routing contract.
 See `docs_capsule_zero/project/devops/codex-github-setup.md` for Codex integration setup.
-See `docs_capsule_zero/project/devops/validation-matrix.md` for the migration exit criteria.
+See `docs_capsule_zero/project/devops/validation-matrix.md` for the completed validation record.
 
 ## Required Repository Variables
 
@@ -65,8 +65,10 @@ Repository default workflow permissions may remain `read` so long as individual 
 
 - Native implementation runs through the selected vendor backend.
 - `AI_IMPLEMENTATION_AGENT` determines which implementation backend is canonical for the current repository state.
-- Canonical triggers are GitHub comments addressed to the selected agent.
+- Canonical Claude implementation is started from a trusted GitHub comment such as `@claude <task brief>`.
 - Comment-driven Claude implementation uses native tag mode plus repository-specific system instructions so Claude can edit files directly on the active PR branch without falling back to interactive tool approval.
+- Canonical Codex implementation is started from Codex app or Codex web as a native cloud task that opens or updates a Codex-owned pull request.
+- Comment-driven `@codex <task brief>` on an existing pull request may still be used for orchestration or bounded PR-context tasks, but Capsule Zero does not rely on it as the canonical branch-mutating Codex implementation path.
 - Comment-driven Claude implementation and manual Claude review fail closed on fork PRs because `issue_comment` workflows run with repository secrets.
 - Only trusted repository actors may trigger repository AI workflows.
 - The repository may use policy workflows to reject mismatched agent triggers.
@@ -76,10 +78,13 @@ Repository default workflow permissions may remain `read` so long as individual 
 - protect `main`
 - require pull requests before merge
 - require status checks `baseline-checks`, `guard`, and `AI Review`
-- require at least one human approval
+- require conversation resolution
+- enforce admins
 - restrict direct pushes to `main`
 
-## Migration Status
+## Validation Status
 
-- Legacy PowerShell review adapters and local worktree scripts still exist only as migration artifacts.
-- They are not canonical and must be removed after the validation matrix passes.
+- The cloud-native validation matrix is complete.
+- Legacy PowerShell review adapters are removed.
+- Legacy local worktree scripts are removed.
+- The self-hosted runner smoke workflow is removed.
