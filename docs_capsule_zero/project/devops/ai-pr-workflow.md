@@ -35,7 +35,7 @@ The workflow may change tools, integrations, and automation layers, but these ru
 7. Route review to the selected reviewer using the native review trigger for that agent.
 8. Let the repository-owned `AI Review` gate validate the selected native review result against the review contract.
 9. If follow-up is needed, continue on the same branch and update the same PR.
-10. A human merges only after required checks are green, no blocking findings remain, and approval is present.
+10. A human merges only after required checks are green, no blocking findings remain, and branch protection conditions are satisfied.
 
 ## Agent Selection Contract
 
@@ -43,9 +43,9 @@ The workflow may change tools, integrations, and automation layers, but these ru
 - Review selection comes from the repository variable `AI_REVIEW_AGENT`.
 - Supported values are `claude` and `codex`.
 - Capsule Zero defaults to `claude` for implementation and `codex` for review.
-- Canonical execution is comment-driven:
+- Canonical execution uses the selected vendor's native remote surface:
   - `@claude ...` for Claude implementation tasks
-  - `@codex ...` for Codex implementation or orchestration tasks
+  - Codex app or Codex web task for Codex-owned implementation PRs
   - `@claude review once` for Claude review on a top-level PR comment
   - `@codex review` for Codex review on a top-level PR comment
 - Only trusted repository actors may trigger AI workflows.
@@ -76,4 +76,4 @@ The loop is still active while any of these are true:
 - the PR has merge conflicts
 - workflow, integration, or routing issues remain unresolved
 
-A task is done only when the current PR head SHA has green required checks, no blocking findings, no conflicts, and only human approval or final merge remaining.
+A task is done only when the current PR head SHA has green required checks, no blocking findings, no conflicts, and only final merge mechanics remain.

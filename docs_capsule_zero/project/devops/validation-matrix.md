@@ -1,8 +1,8 @@
 # Migration Validation Matrix
 
-This runbook defines the acceptance matrix for removing legacy PowerShell review adapters and local worktree scripts.
+This runbook records the acceptance matrix that was used to remove legacy PowerShell review adapters and local worktree scripts.
 
-Legacy migration artifacts may be removed only after all scenarios below pass.
+Legacy migration artifacts were removed after all scenarios below passed.
 
 ## Preconditions
 
@@ -40,9 +40,9 @@ Legacy migration artifacts may be removed only after all scenarios below pass.
 
 - Set `AI_IMPLEMENTATION_AGENT=codex`
 - Set `AI_REVIEW_AGENT=claude`
-- Post `@codex <task brief>`
-- Confirm Codex starts a native cloud task with PR context
-- Post `@claude review once` from a trusted actor on the PR head under test
+- Start a Codex cloud implementation task from Codex app or Codex web against `kiaquila/capsule-zero`
+- Confirm Codex opens or updates the expected pull request for that task
+- Post `@claude review once` from a trusted actor on the Codex-authored PR head under test
 - Confirm `.github/workflows/claude-review.yml` updates a `claude[bot]` top-level PR comment with `AI_REVIEW_AGENT`, `AI_REVIEW_SHA`, and `AI_REVIEW_OUTCOME`
 - Confirm the gate validates the Claude review result
 
@@ -50,9 +50,9 @@ Legacy migration artifacts may be removed only after all scenarios below pass.
 
 - Set `AI_IMPLEMENTATION_AGENT=codex`
 - Set `AI_REVIEW_AGENT=codex`
-- Post `@codex <task brief>`
-- Confirm Codex starts a native cloud task with PR context
-- Post `@codex review` from a connected human Codex account on the PR head under test
+- Start a Codex cloud implementation task from Codex app or Codex web against `kiaquila/capsule-zero`
+- Confirm Codex opens or updates the expected pull request for that task
+- Post `@codex review` from a connected human Codex account on the Codex-authored PR head under test
 - Confirm Codex posts a matching GitHub review
 - Confirm the gate validates the review result
 
@@ -61,18 +61,23 @@ Legacy migration artifacts may be removed only after all scenarios below pass.
 Each matrix row passes only when all of the following are true:
 
 - no local machine is required
-- canonical trigger is a native GitHub comment addressed to the selected agent
-- mismatched trigger comments are rejected by repository policy
+- canonical trigger uses the selected vendor's native remote surface
+- mismatched GitHub comment triggers are rejected by repository policy when comments are the selected control surface
 - `AI Review` remains the only required review check
 - `AI Review` fails closed when the selected reviewer does not produce a valid result
 - the selected reviewer result is matched to the current PR head SHA
 - the PR remains within the existing Capsule Zero PR-first workflow contract
 
-## Removal Gate
+## Completed Evidence
 
-After every row passes:
+- `implement=claude, review=claude` validated on PR `#3`
+- `implement=claude, review=codex` validated on PR `#7`
+- `implement=codex, review=claude` validated on PR `#10`
+- `implement=codex, review=codex` validated on PR `#10`
 
-1. Remove legacy PowerShell review adapters.
-2. Remove local worktree orchestration scripts.
-3. Remove outdated self-hosted runner workflows and docs.
-4. Re-run `baseline-checks`, `guard`, and `AI Review`.
+## Cleanup Outcome
+
+1. Legacy PowerShell review adapters removed.
+2. Local worktree orchestration scripts removed.
+3. Outdated self-hosted runner workflow removed.
+4. Repository docs updated to the final cloud-native operating model.

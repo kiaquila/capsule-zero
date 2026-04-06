@@ -31,7 +31,8 @@ Automatic reviews must stay disabled because Capsule Zero keeps reviewer selecti
 - Review
   - `@codex review`
 - Implementation or orchestration work
-  - `@codex <task brief>`
+  - start the task from Codex app or Codex web and let Codex open or update its own PR
+  - `@codex <task brief>` on an existing PR is optional follow-up orchestration, not the canonical branch-mutating implementation path
 
 Codex receives repository context from the PR, the triggering comment, and repository guidance files such as `AGENTS.md`.
 The comment must be posted by a connected human account. Comments authored by `github-actions[bot]` are acknowledged by the connector but do not start a real Codex review task.
@@ -68,8 +69,20 @@ If Codex does not emit that contract, `AI Review` fails closed by design.
 7. Confirm the gate turns green for `APPROVED` or `COMMENTED`, and red for `CHANGES_REQUESTED`.
 8. Repeat once after pushing a new commit to verify SHA-sensitive rerouting.
 
+## Current Implementation Constraint
+
+Live validation on April 3, 2026 showed the following behavior for GitHub-triggered `@codex <task brief>` cloud tasks on PRs:
+
+- the connector accepted the task
+- Codex completed the cloud task and produced a summary comment
+- the summary reported `git push` failure because no remote push destination was configured in that task environment
+- the active PR branch did not update
+
+Capsule Zero therefore treats Codex app or Codex web as the canonical remote-first implementation entrypoint. In that model, Codex owns branch creation and PR publication for implementation work, while GitHub comments remain the canonical native trigger for Codex review.
+
 ## Residual Risks
 
 - Codex review is native, but the canonical trigger must come from a connected human account rather than `github-actions[bot]`.
 - Missing Codex cloud environment now fails fast in `AI Review`, but it still blocks review until the external setup is fixed.
 - Codex GitHub review natively focuses on high-severity issues. Repository guidance in `AGENTS.md` may need tuning if Capsule Zero wants specific workflow or documentation misses treated as blocking.
+- Comment-driven Codex task behavior on existing PR branches may improve over time, but it is not relied on for Capsule Zero's canonical implementation loop unless a future validation pass proves stable GitHub write-back.
