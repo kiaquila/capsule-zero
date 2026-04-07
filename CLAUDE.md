@@ -19,8 +19,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ❌ Backend stack not decided (Supabase vs custom)
 - ❌ Auth provider not decided (Supabase Auth / Clerk)
 - ❌ File storage not decided (Supabase Storage / Cloudflare R2)
-- ❌ ADRs not written (`docs_capsule_zero/adr/` is empty)
-- ❌ CI/CD not configured
+- ❌ Phase 4 stack ADRs not written yet (`docs_capsule_zero/adr/` already contains devops ADRs)
+- ✅ CI/CD baseline configured via GitHub Actions (`baseline-checks`, `guard`, `AI Review`)
 - ❌ API spec not written
 
 **See AGENTS.md → "Phase 4" section** for full task list and deliverables.
