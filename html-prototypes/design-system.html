@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capsule Zero — Design System</title>
+  <style>
+    /* ══════════════════════════════
+       DESIGN TOKENS
+    ══════════════════════════════ */
+    :root {
+      /* ── Background ── */
+      --bg-overlay-start: rgba(0,0,0,.58);
+      --bg-overlay-mid:   rgba(0,0,0,.40);
+      --bg-overlay-end:   rgba(0,0,0,.68);
+
+      /* ── Glass ── */
+      --glass-bg:      rgba(255,255,255,0.22);
+      --glass-blur:    40px;
+      --glass-border:  rgba(255,255,255,.58);
+      --glass-hi:      inset 0 1px 0 rgba(255,255,255,.72);
+      --glass-shadow:  0 8px 32px rgba(0,0,0,.22);
+
+      --glass-sidebar: rgba(255,255,255,0.13);
+      --glass-sidebar-blur: 44px;
+      --glass-sidebar-border: rgba(255,255,255,.20);
+
+      --glass-panel:       rgba(30,30,30,0.82);
+      --glass-panel-blur:  48px;
+      --glass-panel-border: rgba(255,255,255,.12);
+
+      --glass-lang:    rgba(255,255,255,0.28);
+      --glass-lang-blur: 32px;
+
+      /* ── Text ── */
+      --gt-p:  rgba(255,255,255,.95);
+      --gt-s:  rgba(255,255,255,.70);
+      --gt-ph: rgba(255,255,255,.38);
+
+      /* ── Buttons ── */
+      --btn-primary-bg:     rgba(255,255,255,.36);
+      --btn-primary-border: rgba(255,255,255,.52);
+      --btn-ghost-bg:       rgba(255,255,255,.10);
+      --btn-ghost-border:   rgba(255,255,255,.22);
+      --btn-social-bg:      rgba(255,255,255,.28);
+      --btn-danger-bg:      rgba(255,80,60,.10);
+      --btn-danger-border:  rgba(255,80,60,.25);
+      --btn-danger-color:   rgba(255,120,100,.85);
+
+      /* ── Interactive ── */
+      --card-bg:       rgba(255,255,255,.10);
+      --card-border:   rgba(255,255,255,.22);
+      --card-hover-bg: rgba(255,255,255,.18);
+      --card-hover-border: rgba(255,255,255,.38);
+
+      --input-bg:        rgba(255,255,255,.08);
+      --input-border:    rgba(255,255,255,.18);
+      --input-focus-bg:  rgba(255,255,255,.12);
+      --input-focus-border: rgba(255,255,255,.36);
+
+      --toggle-bg:      rgba(255,255,255,.12);
+      --toggle-border:  rgba(255,255,255,.22);
+      --toggle-on-bg:   rgba(255,255,255,.32);
+      --toggle-on-border: rgba(255,255,255,.48);
+      --toggle-knob:    rgba(255,255,255,.60);
+      --toggle-knob-on: rgba(255,255,255,.95);
+
+      --fav-bg:     rgba(220,30,50,.90);
+      --fav-border: rgba(255,60,80,.70);
+
+      /* ── Status ── */
+      --error: #FFD600;
+
+      /* ── Spacing (8px grid) ── */
+      --sp-1: 4px;
+      --sp-2: 8px;
+      --sp-3: 12px;
+      --sp-4: 16px;
+      --sp-5: 20px;
+      --sp-6: 24px;
+      --sp-7: 28px;
+      --sp-8: 32px;
+      --sp-10: 40px;
+      --sp-12: 48px;
+      --sp-16: 64px;
+
+      /* ── Radius ── */
+      --radius-xs: 6px;
+      --radius-s:  8px;
+      --radius-m:  14px;
+      --radius-l:  20px;
+      --radius-pill: 50px;
+      --radius-circle: 50%;
+
+      /* ── Sidebar ── */
+      --sidebar-w: 248px;
+
+      /* ── Typography ── */
+      --font: 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    body {
+      min-height: 100%;
+      font-family: var(--font);
+      color: var(--gt-p);
+      overflow-x: hidden;
+    }
+
+    .hero-bg { position: fixed; inset: 0; background: url('wall.png') center / cover no-repeat; filter: grayscale(100%); z-index: -2; }
+    .hero-overlay { position: fixed; inset: 0; background: linear-gradient(160deg, var(--bg-overlay-start) 0%, var(--bg-overlay-mid) 50%, var(--bg-overlay-end) 100%); z-index: -1; }
+
+    /* ── Layout ── */
+    .ds-page { max-width: 1120px; margin: 0 auto; padding: 48px 40px 80px; position: relative; }
+
+    .ds-header { margin-bottom: 56px; }
+    .ds-logo { font-size: 11.5px; font-weight: 700; letter-spacing: .26em; text-transform: uppercase; color: var(--gt-p); margin-bottom: 8px; }
+    .ds-title { font-size: 32px; font-weight: 300; letter-spacing: -.01em; color: var(--gt-p); line-height: 1.2; }
+    .ds-title strong { font-weight: 600; }
+    .ds-subtitle { font-size: 13px; color: var(--gt-s); margin-top: 8px; letter-spacing: .02em; }
+
+    /* ── Section ── */
+    .ds-section { margin-bottom: 64px; }
+    .ds-section-title {
+      font-size: 18px; font-weight: 600; letter-spacing: .01em;
+      color: var(--gt-p); margin-bottom: 8px; padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+    }
+    .ds-section-desc { font-size: 13px; color: var(--gt-s); margin-bottom: 24px; letter-spacing: .02em; }
+    .ds-label {
+      font-size: 10px; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--gt-ph); margin-bottom: 12px; display: block;
+    }
+    .ds-sub-section { margin-bottom: 32px; }
+
+    /* ── Color Swatches ── */
+    .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+    .swatch {
+      border-radius: var(--radius-m); overflow: hidden;
+      border: 1px solid rgba(255,255,255,.18);
+    }
+    .swatch-color {
+      height: 72px; display: flex; align-items: flex-end; padding: 10px 14px;
+    }
+    .swatch-info { padding: 10px 14px; background: rgba(0,0,0,.30); }
+    .swatch-name { font-size: 12px; font-weight: 600; color: var(--gt-p); letter-spacing: .02em; }
+    .swatch-value { font-size: 11px; color: var(--gt-s); margin-top: 2px; font-family: 'SF Mono', 'Menlo', monospace; letter-spacing: .01em; }
+
+    /* ── Glass Panels ── */
+    .glass-demo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .glass-demo {
+      padding: 24px; border-radius: var(--radius-m);
+      min-height: 120px; display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .glass-demo-label { font-size: 12px; font-weight: 600; color: var(--gt-p); margin-bottom: 4px; }
+    .glass-demo-value { font-size: 11px; color: var(--gt-s); font-family: 'SF Mono', 'Menlo', monospace; }
+
+    /* ── Typography Specimens ── */
+    .type-specimen { margin-bottom: 20px; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .type-specimen:last-child { border-bottom: none; }
+    .type-sample { margin-bottom: 6px; }
+    .type-meta { font-size: 11px; color: var(--gt-ph); font-family: 'SF Mono', 'Menlo', monospace; }
+
+    /* ── Spacing ── */
+    .spacing-row { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+    .spacing-bar { height: 24px; background: rgba(255,255,255,.15); border-radius: 4px; border: 1px solid rgba(255,255,255,.20); }
+    .spacing-label { font-size: 12px; color: var(--gt-s); min-width: 60px; font-family: 'SF Mono', 'Menlo', monospace; }
+    .spacing-px { font-size: 11px; color: var(--gt-ph); min-width: 40px; }
+
+    /* ── Radius ── */
+    .radius-grid { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; }
+    .radius-item { text-align: center; }
+    .radius-box {
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.28);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .radius-name { font-size: 11px; color: var(--gt-s); margin-top: 8px; }
+    .radius-val { font-size: 10px; color: var(--gt-ph); font-family: 'SF Mono', 'Menlo', monospace; }
+
+    /* ── Component Row ── */
+    .comp-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+    .comp-col { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      padding: 12px 32px;
+      background: var(--btn-primary-bg); border: 1px solid var(--btn-primary-border);
+      border-radius: var(--radius-pill); font-family: var(--font);
+      font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-p); cursor: pointer; transition: background .14s, transform .10s;
+    }
+    .btn-primary:hover { background: rgba(255,255,255,.48); transform: translateY(-1px); }
+
+    .btn-ghost {
+      padding: 12px 32px;
+      background: var(--btn-ghost-bg); border: 1px solid var(--btn-ghost-border);
+      border-radius: var(--radius-pill); font-family: var(--font);
+      font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-p); cursor: pointer; transition: background .14s, transform .10s;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.20); transform: translateY(-1px); }
+
+    .btn-social {
+      padding: 12px 32px;
+      background: var(--btn-social-bg); border: 1px solid rgba(255,255,255,.38);
+      border-radius: var(--radius-pill); font-family: var(--font);
+      font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-p); cursor: pointer; display: inline-flex; align-items: center; gap: 10px;
+      transition: background .14s, transform .10s;
+    }
+    .btn-social:hover { background: rgba(255,255,255,.38); transform: translateY(-1px); }
+
+    .btn-danger {
+      padding: 12px 32px;
+      background: var(--btn-danger-bg); border: 1px solid var(--btn-danger-border);
+      border-radius: var(--radius-pill); font-family: var(--font);
+      font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--btn-danger-color); cursor: pointer; transition: background .14s, transform .10s;
+    }
+    .btn-danger:hover { background: rgba(255,80,60,.20); transform: translateY(-1px); }
+
+    .btn-disabled {
+      padding: 12px 32px;
+      background: var(--btn-primary-bg); border: 1px solid var(--btn-primary-border);
+      border-radius: var(--radius-pill); font-family: var(--font);
+      font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-p); opacity: .35; cursor: not-allowed;
+    }
+
+    /* ── Inputs ── */
+    .ds-input {
+      width: 100%; max-width: 360px; padding: 12px 16px;
+      background: var(--input-bg); border: 1px solid var(--input-border);
+      border-radius: var(--radius-s); font-family: var(--font);
+      font-size: 14px; color: var(--gt-p); outline: none;
+      transition: border-color .15s, background .15s;
+    }
+    .ds-input:focus { background: var(--input-focus-bg); border-color: var(--input-focus-border); }
+    .ds-input::placeholder { color: var(--gt-ph); }
+
+    .ds-input-error {
+      width: 100%; max-width: 360px; padding: 12px 16px;
+      background: var(--input-bg); border: 1px solid var(--error);
+      border-radius: var(--radius-s); font-family: var(--font);
+      font-size: 14px; color: var(--gt-p); outline: none;
+    }
+    .ds-input-error::placeholder { color: var(--gt-ph); }
+    .ds-error-text { font-size: 11px; color: var(--error); margin-top: 6px; letter-spacing: .02em; }
+
+    .ds-textarea {
+      width: 100%; max-width: 360px; min-height: 100px; padding: 12px 16px;
+      background: var(--input-bg); border: 1px solid var(--input-border);
+      border-radius: var(--radius-s); font-family: var(--font);
+      font-size: 14px; color: var(--gt-p); outline: none; resize: vertical; line-height: 1.5;
+      transition: border-color .15s, background .15s;
+    }
+    .ds-textarea:focus { background: var(--input-focus-bg); border-color: var(--input-focus-border); }
+    .ds-textarea::placeholder { color: var(--gt-ph); }
+
+    /* ── Cards ── */
+    .card-demo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .card-demo {
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: var(--radius-m); padding: 16px; cursor: pointer;
+      position: relative; transition: background .14s, border-color .14s;
+    }
+    .card-demo:hover { background: var(--card-hover-bg); border-color: var(--card-hover-border); }
+    .card-demo-thumb {
+      width: 100%; aspect-ratio: 1; background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius-s);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 12px;
+    }
+    .card-demo-thumb svg { opacity: .35; }
+    .card-demo-name { font-size: 13px; font-weight: 500; color: var(--gt-p); letter-spacing: .01em; }
+    .card-demo-cat-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+    .card-demo-cat { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--gt-ph); }
+    .card-demo-color { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255,255,255,.22); }
+    .card-demo-brand { font-size: 10px; letter-spacing: .04em; color: var(--gt-ph); margin-top: 3px; }
+
+    /* Hover buttons on card */
+    .card-demo-fav {
+      position: absolute; top: 8px; right: 8px;
+      width: 28px; height: 28px;
+      background: rgba(0,0,0,.40); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.20); border-radius: var(--radius-xs);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity .14s, background .12s;
+    }
+    .card-demo:hover .card-demo-fav { opacity: 1; }
+    .card-demo-actions {
+      position: absolute; top: 8px; right: 40px;
+      display: flex; gap: 4px; opacity: 0; transition: opacity .14s;
+    }
+    .card-demo:hover .card-demo-actions { opacity: 1; }
+    .card-demo-action {
+      width: 28px; height: 28px;
+      background: rgba(0,0,0,.40); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.20); border-radius: var(--radius-xs);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .12s;
+    }
+
+    /* Add card */
+    .card-add {
+      background: rgba(255,255,255,.06); border: 1.5px dashed rgba(255,255,255,.22);
+      border-radius: var(--radius-m); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px;
+      cursor: pointer; min-height: 180px; transition: background .14s, border-color .14s;
+    }
+    .card-add:hover { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.35); }
+    .card-add-label { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--gt-ph); }
+
+    /* ── Toggle ── */
+    .toggle-demo {
+      position: relative; width: 40px; height: 22px;
+      background: var(--toggle-bg); border: 1px solid var(--toggle-border);
+      border-radius: 11px; cursor: pointer; transition: background .2s, border-color .2s;
+      flex-shrink: 0;
+    }
+    .toggle-demo.on { background: var(--toggle-on-bg); border-color: var(--toggle-on-border); }
+    .toggle-demo-knob {
+      position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--toggle-knob); transition: transform .2s, background .2s;
+    }
+    .toggle-demo.on .toggle-demo-knob { transform: translateX(18px); background: var(--toggle-knob-on); }
+
+    /* ── Badge ── */
+    .badge {
+      font-size: 10.5px; font-weight: 600; color: var(--gt-ph);
+      background: rgba(255,255,255,.08); border-radius: 20px;
+      padding: 2px 7px; min-width: 22px; text-align: center; display: inline-block;
+    }
+
+    /* ── Toast ── */
+    .toast-demo {
+      padding: 12px 24px;
+      background: rgba(255,255,255,.18); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+      border: 1px solid rgba(255,255,255,.32); border-radius: var(--radius-pill);
+      font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--gt-p);
+      box-shadow: 0 8px 24px rgba(0,0,0,.25); display: inline-block;
+    }
+
+    /* ── Avatar ── */
+    .avatar-demo {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,.18); border: 1.5px solid rgba(255,255,255,.40);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--gt-p); letter-spacing: .04em;
+    }
+    .avatar-demo-lg {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(255,255,255,.18); border: 2px solid rgba(255,255,255,.40);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 700; color: var(--gt-p); letter-spacing: .04em;
+    }
+
+    /* ── Nav Item ── */
+    .nav-demo { display: flex; flex-direction: column; gap: 0; max-width: 248px; }
+    .nav-item-demo {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 24px 10px 22px; cursor: pointer;
+      border-left: 2px solid transparent; transition: background .14s;
+    }
+    .nav-item-demo:hover { background: rgba(255,255,255,.06); }
+    .nav-item-demo.active { background: rgba(255,255,255,.10); border-left-color: rgba(255,255,255,.65); }
+    .nav-ico-demo { width: 17px; height: 17px; display: flex; align-items: center; justify-content: center; opacity: .65; }
+    .nav-item-demo.active .nav-ico-demo { opacity: 1; }
+    .nav-lbl-demo { flex: 1; font-size: 13px; font-weight: 500; letter-spacing: .01em; color: var(--gt-s); }
+    .nav-item-demo.active .nav-lbl-demo { color: var(--gt-p); font-weight: 600; }
+
+    /* ── Tab Bar ── */
+    .tab-bar-demo { display: flex; gap: 0; border-bottom: 1px solid rgba(255,255,255,.12); margin-bottom: 16px; }
+    .tab-btn-demo {
+      padding: 10px 20px; background: none; border: none; border-bottom: 2px solid transparent;
+      font-family: var(--font); font-size: 12px; font-weight: 600; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--gt-ph); cursor: pointer; transition: color .14s, border-color .14s;
+    }
+    .tab-btn-demo:hover { color: var(--gt-s); }
+    .tab-btn-demo.active { color: var(--gt-p); border-bottom-color: rgba(255,255,255,.70); }
+
+    /* ── Color Dots ── */
+    .color-dots-row { display: flex; gap: 8px; align-items: center; }
+    .color-dot-demo { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,.28); }
+    .color-dot-sm { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255,255,255,.22); }
+
+    /* ── Icons ── */
+    .icon-grid { display: flex; flex-wrap: wrap; gap: 16px; }
+    .icon-item {
+      width: 64px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .icon-box {
+      width: 44px; height: 44px; background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18); border-radius: var(--radius-s);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .icon-name { font-size: 9px; color: var(--gt-ph); text-align: center; letter-spacing: .04em; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .ds-page { padding: 32px 20px 60px; }
+      .glass-demo-grid { grid-template-columns: 1fr; }
+      .card-demo-grid { grid-template-columns: repeat(2, 1fr); }
+      .swatch-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero-bg"></div>
+<div class="hero-overlay"></div>
+
+<div class="ds-page">
+
+  <!-- ── HEADER ── -->
+  <div class="ds-header">
+    <div class="ds-logo">Capsule Zero</div>
+    <div class="ds-title">Design <strong>System</strong></div>
+    <div class="ds-subtitle">Tokens, components and patterns. Achromatic interface &mdash; color comes from the user's items.</div>
+  </div>
+
+  <!-- ══════════════════════════════
+       1. COLORS
+  ══════════════════════════════ -->
+  <div class="ds-section">
+    <div class="ds-section-title">Colors</div>
+    <div class="ds-section-desc">Achromatic palette. Black, white, grey. The only color in the UI comes from the user's clothing items.</div>
+
+    <div class="ds-sub-section">
+      <span class="ds-label">Text on Glass</span>
+      <div class="swatch-grid">
+        <div class="swatch">
+          <div class="swatch-color" style="background:rgba(255,255,255,.95);"></div>
+          <div class="swatch-info"><div class="swatch-name">Primary</div><div class="swatch-value">--gt-p: rgba(255,255,255,.95)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:rgba(255,255,255,.70);"></div>
+          <div class="swatch-info"><div class="swatch-name">Secondary</div><div class="swatch-value">--gt-s: rgba(255,255,255,.70)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:rgba(255,255,255,.38);"></div>
+          <div class="swatch-info"><div class="swatch-name">Placeholder</div><div class="swatch-value">--gt-ph: rgba(255,255,255,.38)</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ds-sub-section">
+      <span class="ds-label">Status &amp; Accent</span>
+      <div class="swatch-grid">
+        <div class="swatch">
+          <div class="swatch-color" style="background:#FFD600;"></div>
+          <div class="swatch-info"><div class="swatch-name">Error / Warning</div><div class="swatch-value">--error: #FFD600</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:rgba(220,30,50,.90);"></div>
+          <div class="swatch-info"><div class="swatch-name">Favorite Active</div><div class="swatch-value">--fav-bg: rgba(220,30,50,.90)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:rgba(255,120,100,.85);"></div>
+          <div class="swatch-info"><div class="swatch-name">Danger Text</div><div class="swatch-value">--btn-danger-color</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ds-sub-section">
+      <span class="ds-label">Surfaces &amp; Buttons</span>
+      <div class="swatch-grid">
+        <div class="swatch">
+          <div class="swatch-color" style="background:rgba(255,255,255,.36);"></div>
+          <div class="swatch-info"><div class="swatch-name">Button Primary</div><div class="swatch-value">rgba(255,255,255,.36)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:rgba(255,255,255,.28);"></div>
+          <div class="swatch-info"><div class="swatch-name">Button Social</div><div class="swatch-value">rgba(255,255,255,.28)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:rgba(255,255,255,.10);"></div>
+          <div class="swatch-info"><div class="swatch-name">Button Ghost / Card</div><div class="swatch-value">rgba(255,255,255,.10)</div></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:rgba(255,255,255,.08);"></div>
+          <div class="swatch-info"><div class="swatch-name">Input</div><div class="swatch-value">rgba(255,255,255,.08)</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       2. GLASS PANELS
+  ══════════════════════════════ -->
+  <div class="ds-section">
+    <div class="ds-section-title">Glass Panels</div>
+    <div class="ds-section-desc">Frosted glass is the core surface treatment. White glass for content, dark glass for detail panels.</div>
+
+    <div class="glass-demo-grid">
+      <div class="glass-demo" style="background:var(--glass-bg); backdrop-filter:blur(var(--glass-blur)); -webkit-backdrop-filter:blur(var(--glass-blur)); border:1px solid var(--glass-border); box-shadow:var(--glass-shadow),var(--glass-hi);">
+        <div class="glass-demo-label">White Glass</div>
+        <div class="glass-demo-value">bg: rgba(255,255,255,.22)<br>blur: 40px</div>
+      </div>
+      <div class="glass-demo" style="background:var(--glass-sidebar); backdrop-filter:blur(var(--glass-sidebar-blur)); -webkit-backdrop-filter:blur(var(--glass-sidebar-blur)); border:1px solid var(--glass-sidebar-border);">
+        <div class="glass-demo-label">Sidebar</div>
+        <div class="glass-demo-value">bg: rgba(255,255,255,.13)<br>blur: 44px</div>
+      </div>
+      <div class="glass-demo" style="background:var(--glass-panel); backdrop-filter:blur(var(--glass-panel-blur)); -webkit-backdrop-filter:blur(var(--glass-panel-blur)); border:1px solid var(--glass-panel-border);">
+        <div class="glass-demo-label">Detail Panel</div>
+        <div class="glass-demo-value">bg: rgba(30,30,30,.82)<br>blur: 48px</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       3. TYPOGRAPHY
+  ══════════════════════════════ -->
+  <div class="ds-section">
+    <div class="ds-section-title">Typography</div>
+    <div class="ds-section-desc">Helvetica Neue / Arial. Clean, precise, editorial.</div>
+
+    <div class="type-specimen">
+      <div class="type-sample" style="font-size:11.5px; font-weight:700; letter-spacing:.26em; text-transform:uppercase;">Capsule Zero</div>
+      <div class="type-meta">Logo &mdash; 11.5px / 700 / ls: .26em / uppercase</div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-sample" style="font-size:25px; font-weight:300; letter-spacing:-.01em;">Page <strong style="font-weight:600;">Title</strong></div>
+      <div class="type-meta">Page Title &mdash; 25px / 300 (strong: 600) / ls: -.01em</div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-sample" style="font-size:16px; font-weight:500; letter-spacing:-.01em;">Panel Title</div>
+      <div class="type-meta">Panel Title &mdash; 16px / 500 / ls: -.01em</div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-sample" style="font-size:14px; color:var(--gt-p);">Body text — The quick brown fox jumps over the lazy dog.</div>
+      <div class="type-meta">Body &mdash; 14px / 400 / color: --gt-p</div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-sample" style="font-size:13px; font-weight:500; letter-spacing:.01em; color:var(--gt-s);">Navigation / Card Name</div>
+      <div class="type-meta">Nav Label &mdash; 13px / 500 (active: 600) / ls: .01em</div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-sample" style="font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase;">Button Label</div>
+      <div class="type-meta">Button &mdash; 12px / 600 / ls: .06em / uppercase</div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-sample" style="font-size:11.5px; letter-spacing:.10em; text-transform:uppercase; color:var(--gt-s);">Subtitle / Topbar Sub</div>
+      <div class="type-meta">Subtitle &mdash; 11.5px / 400 / ls: .10em / uppercase</div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-sample" style="font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--gt-ph);">Field Label</div>
+      <div class="type-meta">Label &mdash; 10px / 600 / ls: .14em / uppercase / color: --gt-ph</div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-sample" style="font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--gt-ph);">Section Label</div>
+      <div class="type-meta">Section &mdash; 9.5px / 400 / ls: .18em / uppercase / color: --gt-ph</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       4. SPACING & GRID
+  ══════════════════════════════ -->
+  <div class="ds-section">
+    <div class="ds-section-title">Spacing</div>
+    <div class="ds-section-desc">8px base grid. All spacing values are multiples of 4px.</div>
+
+    <div class="spacing-row"><span class="spacing-label">--sp-1</span><div class="spacing-bar" style="width:4px;"></div><span class="spacing-px">4px</span></div>
+    <div class="spacing-row"><span class="spacing-label">--sp-2</span><div class="spacing-bar" style="width:8px;"></div><span class="spacing-px">8px</span></div>
+    <div class="spacing-row"><span class="spacing-label">--sp-3</span><div class="spacing-bar" style="width:12px;"></div><span class="spacing-px">12px</span></div>
+    <div class="spacing-row"><span class="spacing-label">--sp-4</span><div class="spacing-bar" style="width:16px;"></div><span class="spacing-px">16px</span></div>
+    <div class="spacing-row"><span class="spacing-label">--sp-5</span><div class="spacing-bar" style="width:20px;"></div><span class="spacing-px">20px</span></div>
+    <div class="spacing-row"><span class="spacing-label">--sp-6</span><div class="spacing-bar" style="width:24px;"></div><span class="spacing-px">24px</span></div>
+    <div class="spacing-row"><span class="spacing-label">--sp-8</span><div class="spacing-bar" style="width:32px;"></div><span class="spacing-px">32px</span></div>
+    <div class="spacing-row"><span class="spacing-label">--sp-10</span><div class="spacing-bar" style="width:40px;"></div><span class="spacing-px">40px</span></div>
+    <div class="spacing-row"><span class="spacing-label">--sp-12</span><div class="spacing-bar" style="width:48px;"></div><span class="spacing-px">48px</span></div>
+    <div class="spacing-row"><span class="spacing-label">--sp-16</span><div class="spacing-bar" style="width:64px;"></div><span class="spacing-px">64px</span></div>
+  </div>
+
+  <!-- ══════════════════════════════
+       5. BORDER RADIUS
+  ══════════════════════════════ -->
+  <div class="ds-section">
+    <div class="ds-section-title">Border Radius</div>
+
+    <div class="radius-grid">
+      <div class="radius-item">
+        <div class="radius-box" style="width:56px;height:56px;border-radius:var(--radius-xs);"></div>
+        <div class="radius-name">XS</div>
+        <div class="radius-val">6px</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="width:56px;height:56px;border-radius:var(--radius-s);"></div>
+        <div class="radius-name">Small</div>
+        <div class="radius-val">8px</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="width:56px;height:56px;border-radius:var(--radius-m);"></div>
+        <div class="radius-name">Medium</div>
+        <div class="radius-val">14px</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="width:56px;height:56px;border-radius:var(--radius-l);"></div>
+        <div class="radius-name">Large</div>
+        <div class="radius-val">20px</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="width:96px;height:40px;border-radius:var(--radius-pill);"></div>
+        <div class="radius-name">Pill</div>
+        <div class="radius-val">50px</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="width:56px;height:56px;border-radius:var(--radius-circle);"></div>
+        <div class="radius-name">Circle</div>
+        <div class="radius-val">50%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       6. BUTTONS
+  ══════════════════════════════ -->
+  <div class="ds-section">
+    <div class="ds-section-title">Buttons</div>
+    <div class="ds-section-desc">Pill-shaped, uppercase, 12px/600. Always full-width in panels, inline elsewhere.</div>
+
+    <div class="ds-sub-section">
+      <span class="ds-label">Variants</span>
+      <div class="comp-row">
+        <button class="btn-primary">Primary</button>
+        <button class="btn-ghost">Ghost</button>
+        <button class="btn-social">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Google
+        </button>
+        <button class="btn-social">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="rgba(0,0,0,.82)"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          Apple
+        </button>
+        <button class="btn-danger">Delete</button>
+        <button class="btn-disabled" disabled>Disabled</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       7. INPUTS
+  ══════════════════════════════ -->
+  <div class="ds-section">
+    <div class="ds-section-title">Inputs</div>
+
+    <div class="ds-sub-section">
+      <span class="ds-label">Text Input</span>
+      <div class="comp-col">
+        <input class="ds-input" type="text" placeholder="Placeholder text..." />
+        <input class="ds-input" type="text" value="Filled value" />
+        <div>
+          <input class="ds-input-error" type="text" value="invalid@" />
+          <div class="ds-error-text">Please enter a valid email address</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ds-sub-section">
+      <span class="ds-label">Textarea</span>
+      <textarea class="ds-textarea" placeholder="Describe what needs to be repaired..."></textarea>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       8. CARDS
+  ══════════════════════════════ -->
+  <div class="ds-section">
+    <div class="ds-section-title">Item Cards</div>
+    <div class="ds-section-desc">Hover to reveal action buttons (edit, delete, favorite). Color dots show item colors.</div>
+
+    <div class="card-demo-grid">
+      <div class="card-demo">
+        <button class="card-demo-fav">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="card-demo-actions">
+          <button class="card-demo-action"><svg width="12" height="12" fill="none" viewBox="0 0 12 12"><path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="card-demo-action"><svg width="12" height="12" fill="none" viewBox="0 0 12 12"><path d="M2 3H10M4.5 3V1.5H7.5V3M4.5 5V9M7.5 5V9M3 3V10.5H9V3" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <div class="card-demo-thumb">
+          <svg width="28" height="28" fill="none" viewBox="0 0 28 28"><path d="M14 5C14 5 9.5 8 9.5 12L4 15V24H24V15L18.5 12C18.5 8 14 5 14 5Z" stroke="rgba(255,255,255,.35)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="card-demo-name">White Oxford Shirt</div>
+        <div class="card-demo-cat-row">
+          <span class="card-demo-cat">Top</span>
+          <div style="display:flex;gap:3px;"><div class="card-demo-color" style="background:#FFFFFF;"></div></div>
+        </div>
+        <div class="card-demo-brand">COS</div>
+      </div>
+
+      <div class="card-demo">
+        <button class="card-demo-fav" style="opacity:1;background:rgba(220,30,50,.90);border-color:rgba(255,60,80,.70);">
+          <svg width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="card-demo-thumb">
+          <svg width="28" height="28" fill="none" viewBox="0 0 28 28"><path d="M14 5C14 5 9.5 8 9.5 12L4 15V24H24V15L18.5 12C18.5 8 14 5 14 5Z" stroke="rgba(255,255,255,.35)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="card-demo-name">Navy Blazer</div>
+        <div class="card-demo-cat-row">
+          <span class="card-demo-cat">Outerwear</span>
+          <div style="display:flex;gap:3px;"><div class="card-demo-color" style="background:#1B2A4A;"></div></div>
+        </div>
+        <div class="card-demo-brand">Massimo Dutti</div>
+      </div>
+
+      <div class="card-demo">
+        <div class="card-demo-thumb">
+          <svg width="28" height="28" fill="none" viewBox="0 0 28 28"><path d="M14 5C14 5 9.5 8 9.5 12L4 15V24H24V15L18.5 12C18.5 8 14 5 14 5Z" stroke="rgba(255,255,255,.35)" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="card-demo-name">Beige Chinos</div>
+        <div class="card-demo-cat-row">
+          <span class="card-demo-cat">Bottom</span>
+          <div style="display:flex;gap:3px;"><div class="card-demo-color" style="background:#D4C5A9;"></div><div class="card-demo-color" style="background:#8B7D6B;"></div></div>
+        </div>
+        <div class="card-demo-brand">Arket</div>
+      </div>
+
+      <div class="card-add">
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M12 4V20M4 12H20" stroke="rgba(255,255,255,.35)" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="card-add-label">Add Item</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       9. NAVIGATION
+  ══════════════════════════════ -->
+  <div class="ds-section">
+    <div class="ds-section-title">Navigation</div>
+
+    <div class="ds-sub-section">
+      <span class="ds-label">Sidebar Nav Items</span>
+      <div class="nav-demo" style="background:rgba(255,255,255,.08);border-radius:var(--radius-m);overflow:hidden;">
+        <div class="nav-item-demo active">
+          <span class="nav-ico-demo"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="1.5" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/></svg></span>
+          <span class="nav-lbl-demo" style="color:var(--gt-p);font-weight:600;">Dashboard</span>
+        </div>
+        <div class="nav-item-demo">
+          <span class="nav-ico-demo"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><rect x="2.5" y="6" width="12" height="9" rx="1" stroke="white" stroke-width="1.3"/><path d="M2.5 6L5 2.5H8.5M14.5 6L12 2.5H8.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+          <span class="nav-lbl-demo">My Items</span>
+          <span class="badge">24</span>
+        </div>
+        <div class="nav-item-demo">
+          <span class="nav-ico-demo"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><path d="M8.5 2.5L10.2 7.2H15.2L11.2 10L12.8 14.8L8.5 11.8L4.2 14.8L5.8 10L1.8 7.2H6.8Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+          <span class="nav-lbl-demo">Favorites</span>
+          <span class="badge">3</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ds-sub-section">
+      <span class="ds-label">Tabs</span>
+      <div class="tab-bar-demo">
+        <button class="tab-btn-demo active">Upload Photos</button>
+        <button class="tab-btn-demo">Paste Links</button>
+        <button class="tab-btn-demo">Search Catalog</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       10. TOGGLES, BADGES, AVATARS
+  ══════════════════════════════ -->
+  <div class="ds-section">
+    <div class="ds-section-title">Controls</div>
+
+    <div class="ds-sub-section">
+      <span class="ds-label">Toggle</span>
+      <div class="comp-row">
+        <div class="toggle-demo" onclick="this.classList.toggle('on')"><div class="toggle-demo-knob"></div></div>
+        <span style="font-size:13px;color:var(--gt-s);">Off</span>
+        <div class="toggle-demo on" onclick="this.classList.toggle('on')"><div class="toggle-demo-knob"></div></div>
+        <span style="font-size:13px;color:var(--gt-s);">On</span>
+      </div>
+    </div>
+
+    <div class="ds-sub-section">
+      <span class="ds-label">Badges</span>
+      <div class="comp-row">
+        <span class="badge">24</span>
+        <span class="badge">3</span>
+        <span class="badge">96</span>
+      </div>
+    </div>
+
+    <div class="ds-sub-section">
+      <span class="ds-label">Avatars</span>
+      <div class="comp-row">
+        <div class="avatar-demo">AK</div>
+        <div class="avatar-demo-lg">AK</div>
+      </div>
+    </div>
+
+    <div class="ds-sub-section">
+      <span class="ds-label">Color Dots</span>
+      <div class="comp-row">
+        <div class="color-dots-row">
+          <div class="color-dot-demo" style="background:#1B2A4A;"></div>
+          <div class="color-dot-demo" style="background:#FFFFFF;"></div>
+          <div class="color-dot-demo" style="background:#8C8C8C;"></div>
+          <div class="color-dot-demo" style="background:#C19A6B;"></div>
+        </div>
+        <span style="font-size:11px;color:var(--gt-ph);margin-left:8px;">28px (detail)</span>
+      </div>
+      <div class="comp-row" style="margin-top:8px;">
+        <div style="display:flex;gap:3px;">
+          <div class="color-dot-sm" style="background:#1B2A4A;"></div>
+          <div class="color-dot-sm" style="background:#FFFFFF;"></div>
+          <div class="color-dot-sm" style="background:#8C8C8C;"></div>
+        </div>
+        <span style="font-size:11px;color:var(--gt-ph);margin-left:8px;">10px (grid card)</span>
+      </div>
+    </div>
+
+    <div class="ds-sub-section">
+      <span class="ds-label">Toast</span>
+      <div class="comp-row">
+        <div class="toast-demo">Changes saved</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       11. ICONS
+  ══════════════════════════════ -->
+  <div class="ds-section">
+    <div class="ds-section-title">Icons</div>
+    <div class="ds-section-desc">17x17px for navigation, 12-14px for action buttons. Stroke-based, white, 1.3-1.8px stroke width.</div>
+
+    <div class="icon-grid">
+      <div class="icon-item">
+        <div class="icon-box"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="1.5" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/></svg></div>
+        <div class="icon-name">Dashboard</div>
+      </div>
+      <div class="icon-item">
+        <div class="icon-box"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><rect x="2.5" y="6" width="12" height="9" rx="1" stroke="white" stroke-width="1.3"/><path d="M2.5 6L5 2.5H8.5M14.5 6L12 2.5H8.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+        <div class="icon-name">Items</div>
+      </div>
+      <div class="icon-item">
+        <div class="icon-box"><svg width="17" height="17" fill="none" viewBox="0 0 24 24"><path d="M6.5 3.5H9.5C9.5 4.88 10.62 6 12 6C13.38 6 14.5 4.88 14.5 3.5H17.5L22 8L19 11L17 9V21H7V9L5 11L2 8L6.5 3.5Z" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="icon-name">Outfits</div>
+      </div>
+      <div class="icon-item">
+        <div class="icon-box"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><path d="M2.5 3.5H7C7 2 6 .5 8 .5C10 .5 9 2 9 3.5H13V7C14.5 7 16 6 16 8C16 10 14.5 9 13 9V14H9C9 12.5 10 11 8 11C6 11 7 12.5 7 14H2.5V9C4 9 5 10 5 8C5 6 4 7 2.5 7Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></div>
+        <div class="icon-name">Capsules</div>
+      </div>
+      <div class="icon-item">
+        <div class="icon-box"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><circle cx="8.5" cy="8.5" r="6" stroke="white" stroke-width="1.3"/><path d="M4.26 4.26L12.74 12.74" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+        <div class="icon-name">Uncapsulated</div>
+      </div>
+      <div class="icon-item">
+        <div class="icon-box"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><path d="M8.5 2.5L10.2 7.2H15.2L11.2 10L12.8 14.8L8.5 11.8L4.2 14.8L5.8 10L1.8 7.2H6.8Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></div>
+        <div class="icon-name">Favorites</div>
+      </div>
+      <div class="icon-item">
+        <div class="icon-box"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><path d="M8.5 1.5V13.5" stroke="white" stroke-width="1.3" stroke-linecap="round"/><path d="M11.5 4.5C11.5 3.5 10.1 3 8.5 3C6.9 3 5.5 3.8 5.5 5.2C5.5 6.6 8.5 7.2 8.5 7.2C8.5 7.2 11.5 7.8 11.5 9.5C11.5 11.2 10.1 11.8 8.5 11.8C6.9 11.8 5.5 11.3 5.5 10.3" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+        <div class="icon-name">For Sale</div>
+      </div>
+      <div class="icon-item">
+        <div class="icon-box"><svg width="17" height="17" fill="none" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="icon-name">Repair</div>
+      </div>
+      <div class="icon-item">
+        <div class="icon-box"><svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="icon-name">Heart</div>
+      </div>
+      <div class="icon-item">
+        <div class="icon-box"><svg width="12" height="12" fill="none" viewBox="0 0 12 12"><path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="icon-name">Edit</div>
+      </div>
+      <div class="icon-item">
+        <div class="icon-box"><svg width="12" height="12" fill="none" viewBox="0 0 12 12"><path d="M2 3H10M4.5 3V1.5H7.5V3M4.5 5V9M7.5 5V9M3 3V10.5H9V3" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="icon-name">Delete</div>
+      </div>
+      <div class="icon-item">
+        <div class="icon-box"><svg width="12" height="12" fill="none" viewBox="0 0 12 12"><path d="M2 2L10 10M10 2L2 10" stroke="rgba(255,255,255,.70)" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <div class="icon-name">Close</div>
+      </div>
+      <div class="icon-item">
+        <div class="icon-box"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><path d="M2.5 5H14.5M2.5 8.5H11.5M2.5 12H9.5" stroke="white" stroke-width="1.35" stroke-linecap="round"/></svg></div>
+        <div class="icon-name">List</div>
+      </div>
+      <div class="icon-item">
+        <div class="icon-box"><svg width="17" height="17" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="white" stroke-width="1.8"/></svg></div>
+        <div class="icon-name">Settings</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
