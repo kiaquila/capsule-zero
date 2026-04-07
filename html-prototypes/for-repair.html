@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capsule Zero — For Repair</title>
+  <style>
+    :root {
+      --glass-bg:     rgba(255,255,255,0.22);
+      --glass-blur:   40px;
+      --glass-border: rgba(255,255,255,.58);
+      --glass-hi:     inset 0 1px 0 rgba(255,255,255,.72);
+      --gt-p:  rgba(255,255,255,.95);
+      --gt-s:  rgba(255,255,255,.70);
+      --gt-ph: rgba(255,255,255,.38);
+      --sidebar-w: 248px;
+      --radius-s: 8px;
+      --radius-m: 14px;
+      --radius-l: 20px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'Helvetica Neue', Arial, sans-serif; overflow: hidden; }
+
+    .hero-bg { position: fixed; inset: 0; background: url('wall.png') center / cover no-repeat; filter: grayscale(100%); z-index: -2; }
+    .hero-overlay { position: fixed; inset: 0; background: linear-gradient(160deg, rgba(0,0,0,.58) 0%, rgba(0,0,0,.40) 50%, rgba(0,0,0,.68) 100%); z-index: -1; }
+    .app { display: flex; height: 100vh; overflow: hidden; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { width: var(--sidebar-w); flex-shrink: 0; display: flex; flex-direction: column; background: rgba(255,255,255,0.13); backdrop-filter: blur(44px); -webkit-backdrop-filter: blur(44px); border-right: 1px solid rgba(255,255,255,.20); overflow-y: auto; scrollbar-width: none; }
+    .sidebar::-webkit-scrollbar { display: none; }
+    .sidebar-head { padding: 32px 24px 22px; border-bottom: 1px solid rgba(255,255,255,.10); }
+    .logo { font-size: 11.5px; font-weight: 700; letter-spacing: .26em; text-transform: uppercase; color: var(--gt-p); text-decoration: none; display: block; margin-bottom: 26px; }
+    .user-row { display: flex; align-items: center; gap: 11px; }
+    .avatar { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,.18); border: 1.5px solid rgba(255,255,255,.40); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--gt-p); letter-spacing: .04em; flex-shrink: 0; }
+    .user-name { font-size: 13px; font-weight: 600; color: var(--gt-p); letter-spacing: .01em; }
+    .nav { flex: 1; padding: 12px 0 8px; }
+    .nav-section-label { font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--gt-ph); padding: 16px 24px 6px; }
+    .nav-item { display: flex; align-items: center; gap: 11px; padding: 10px 24px 10px 22px; cursor: pointer; text-decoration: none; border-left: 2px solid transparent; transition: background .14s; user-select: none; }
+    .nav-item:hover { background: rgba(255,255,255,.06); }
+    .nav-item.active { background: rgba(255,255,255,.10); border-left-color: rgba(255,255,255,.65); }
+    .nav-ico { width: 17px; height: 17px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; opacity: .65; }
+    .nav-item.active .nav-ico { opacity: 1; }
+    .nav-lbl { flex: 1; font-size: 13px; font-weight: 500; letter-spacing: .01em; color: var(--gt-s); }
+    .nav-item.active .nav-lbl { color: var(--gt-p); font-weight: 600; }
+    .nav-badge { font-size: 10.5px; font-weight: 600; color: var(--gt-ph); background: rgba(255,255,255,.08); border-radius: 20px; padding: 2px 7px; min-width: 22px; text-align: center; }
+    .nav-item.active .nav-badge { color: var(--gt-s); }
+    .sidebar-foot { padding: 12px 0 28px; border-top: 1px solid rgba(255,255,255,.10); }
+
+    /* ── LANG ── */
+    .lang-dropdown { position: relative; }
+    .lang-trigger { display: flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.88); padding: 8px 4px; transition: color .15s; }
+    .lang-trigger:hover { color: #fff; }
+    .lang-chevron { font-size: 8px; opacity: .8; transition: transform .2s; }
+    .lang-dropdown.open .lang-chevron { transform: rotate(180deg); }
+    .lang-menu { position: absolute; top: calc(100% + 8px); right: 0; background: rgba(255,255,255,0.28); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px); border-radius: var(--radius-m); border: 1px solid var(--glass-border); box-shadow: 0 8px 32px rgba(0,0,0,.20), var(--glass-hi); padding: 8px; min-width: 164px; opacity: 0; pointer-events: none; transform: translateY(-6px); transition: opacity .2s ease, transform .2s ease; z-index: 100; }
+    .lang-dropdown.open .lang-menu { opacity: 1; pointer-events: all; transform: translateY(0); }
+    .lang-option { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 10px 12px; background: none; border: none; cursor: pointer; font-family: inherit; font-size: 13px; letter-spacing: .06em; color: var(--gt-s); border-radius: var(--radius-s); transition: all .15s; }
+    .lang-option:hover { background: rgba(255,255,255,.12); color: var(--gt-p); }
+    .lang-option.active { color: #fff; font-weight: 600; }
+    .lang-code { font-size: 11px; font-weight: 600; letter-spacing: .1em; color: inherit; opacity: .7; }
+
+    /* ── MAIN ── */
+    .main { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.16) transparent; display: flex; flex-direction: column; }
+    .main::-webkit-scrollbar { width: 4px; }
+    .main::-webkit-scrollbar-track { background: transparent; }
+    .main::-webkit-scrollbar-thumb { background: rgba(255,255,255,.16); border-radius: 10px; }
+    .topbar { padding: 30px 40px 0; display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0; }
+    .topbar-title { font-size: 25px; font-weight: 300; letter-spacing: -.01em; color: var(--gt-p); line-height: 1.2; }
+    .topbar-title strong { font-weight: 600; }
+    .topbar-sub { font-size: 11.5px; letter-spacing: .10em; text-transform: uppercase; color: var(--gt-s); margin-top: 5px; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; padding-top: 4px; }
+    .content { padding: 24px 40px 52px; display: flex; flex-direction: column; gap: 0; }
+
+    /* ── ITEM GRID ── */
+    .item-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .item-card {
+      background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.22);
+      border-radius: var(--radius-m); padding: 16px; cursor: pointer;
+      position: relative; transition: background .14s, border-color .14s;
+    }
+    .item-card:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.38); }
+    .item-thumb {
+      width: 100%; aspect-ratio: 1; background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius-s);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 12px;
+    }
+    .item-thumb svg { opacity: .35; }
+    .item-name { font-size: 13px; font-weight: 500; color: var(--gt-p); letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-cat-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+    .item-cat { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--gt-ph); }
+    .item-colors { display: flex; gap: 3px; align-items: center; }
+    .item-color { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255,255,255,.22); flex-shrink: 0; }
+    .item-brand { font-size: 10px; letter-spacing: .04em; color: var(--gt-ph); margin-top: 3px; }
+
+    /* Card action buttons (edit, delete) */
+    .item-actions {
+      position: absolute; top: 8px; right: 40px;
+      display: flex; gap: 4px;
+      opacity: 0;
+      transition: opacity .14s;
+    }
+    .item-card:hover .item-actions { opacity: 1; }
+    .item-action-btn {
+      width: 28px; height: 28px;
+      background: rgba(0,0,0,.40);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.20);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .12s;
+    }
+    .item-action-btn:hover { background: rgba(0,0,0,.60); }
+    .item-action-btn.delete:hover { background: rgba(180,40,20,.60); }
+
+    /* Favorite heart */
+    .item-fav {
+      position: absolute; top: 8px; right: 8px;
+      width: 28px; height: 28px;
+      background: rgba(0,0,0,.40);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.20);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transition: opacity .14s, background .12s;
+      z-index: 3;
+    }
+    .item-card:hover .item-fav { opacity: 1; }
+    .item-fav.active { opacity: 1; background: rgba(220,30,50,.90); border-color: rgba(255,60,80,.70); }
+    .item-fav:hover { background: rgba(0,0,0,.60); }
+    .item-fav.active:hover { background: rgba(220,40,60,.65); }
+
+    /* ── DETAIL PANEL ── */
+    .item-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 500; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+    .item-overlay.open { opacity: 1; pointer-events: all; }
+    .item-detail-panel {
+      position: fixed; top: 0; bottom: 0; right: 0; width: 440px;
+      background: rgba(30,30,30,0.82); backdrop-filter: blur(48px); -webkit-backdrop-filter: blur(48px);
+      border-left: 1px solid rgba(255,255,255,.12); z-index: 510;
+      display: flex; flex-direction: column;
+      transform: translateX(100%); transition: transform .3s cubic-bezier(.4,0,.2,1); overflow: hidden;
+    }
+    .item-overlay.open .item-detail-panel { transform: translateX(0); }
+    .id-header { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,.10); display: flex; align-items: center; justify-content: space-between; }
+    .id-title { font-size: 16px; font-weight: 500; letter-spacing: -.01em; color: var(--gt-p); }
+    .id-close { width: 32px; height: 32px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .15s; }
+    .id-close:hover { background: rgba(255,255,255,.16); }
+    .id-body { flex: 1; overflow-y: auto; padding: 20px 24px 28px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.12) transparent; }
+
+    .id-photo { width: 100%; aspect-ratio: 1; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius-m); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+    .id-photo svg { opacity: .30; }
+    .id-field { margin-bottom: 16px; }
+    .id-label { font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--gt-ph); margin-bottom: 7px; display: block; }
+    .id-value { font-size: 14px; color: var(--gt-p); padding: 4px 0; }
+    .id-colors-row { display: flex; align-items: center; gap: 8px; }
+    .id-color-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,.28); }
+    .id-input { width: 100%; padding: 10px 14px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); border-radius: var(--radius-s); font-family: inherit; font-size: 14px; color: var(--gt-p); outline: none; transition: border-color .15s, background .15s; }
+    .id-input:focus { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.36); }
+    .id-input::placeholder { color: var(--gt-ph); }
+    .id-textarea {
+      width: 100%; min-height: 100px; padding: 10px 14px;
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18);
+      border-radius: var(--radius-s); font-family: inherit; font-size: 14px;
+      color: var(--gt-p); outline: none; resize: vertical; line-height: 1.5;
+      transition: border-color .15s, background .15s;
+    }
+    .id-textarea:focus { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.36); }
+    .id-textarea::placeholder { color: var(--gt-ph); }
+    .id-divider { width: 100%; height: 1px; background: rgba(255,255,255,.08); margin: 16px 0; }
+
+    .id-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.08); }
+    .id-action-btn {
+      width: 100%; padding: 12px 20px;
+      background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.22);
+      border-radius: 50px; font-family: inherit; font-size: 12px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase; color: var(--gt-p);
+      cursor: pointer; text-align: center; transition: background .14s, transform .10s;
+    }
+    .id-action-btn:hover { background: rgba(255,255,255,.20); transform: translateY(-1px); }
+    .id-action-btn.primary {
+      background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.42);
+    }
+    .id-action-btn.primary:hover { background: rgba(255,255,255,.32); }
+
+    /* Toast */
+    .toast-container { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 700; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+    .toast { padding: 12px 24px; background: rgba(255,255,255,.18); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px); border: 1px solid rgba(255,255,255,.32); border-radius: 50px; font-family: inherit; font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--gt-p); box-shadow: 0 8px 24px rgba(0,0,0,.25); opacity: 0; transform: translateY(12px); transition: opacity .25s ease, transform .25s ease; pointer-events: auto; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ── Bottom Navigation (mobile) ── */
+    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: rgba(255,255,255,0.13); backdrop-filter: blur(44px); -webkit-backdrop-filter: blur(44px); border-top: 1px solid rgba(255,255,255,.20); padding: 0; padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+    .bnav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 12px 6px; text-decoration: none; cursor: pointer; transition: opacity .14s, border-color .2s; opacity: .5; border-top: 2px solid transparent; }
+    .bnav-item.active { opacity: 1; border-top-color: rgba(255,255,255,.65); }
+    .bnav-item:hover { opacity: .8; }
+    .bnav-ico { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+    .bnav-lbl { font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--gt-p); }
+    .bnav-dot { display: none; }
+
+    /* ── More sheet ── */
+    .more-overlay {
+      display: none; position: fixed; inset: 0; z-index: 60;
+      background: rgba(0,0,0,.40);
+      opacity: 0; transition: opacity .25s;
+    }
+    .more-overlay.open { display: block; opacity: 1; }
+    .more-sheet {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 70;
+      background: rgba(255,255,255,0.22);
+      backdrop-filter: blur(44px); -webkit-backdrop-filter: blur(44px);
+      border-top: 1px solid rgba(255,255,255,.58);
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -8px 32px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.72);
+      padding: 12px 20px;
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.32,.72,.24,1);
+    }
+    .more-sheet.open { transform: translateY(0); }
+    .more-handle {
+      width: 36px; height: 4px; border-radius: 2px;
+      background: rgba(255,255,255,.30);
+      margin: 0 auto 16px;
+    }
+    .more-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+    }
+    .more-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; padding: 14px 8px;
+      text-decoration: none; border-radius: 12px;
+      transition: background .14s;
+    }
+    .more-item:hover { background: rgba(255,255,255,.10); }
+    .more-item-ico {
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .more-item-lbl {
+      font-size: 9.5px; font-weight: 600;
+      letter-spacing: .04em; color: var(--gt-p);
+      text-align: center;
+    }
+    .more-item-badge {
+      font-size: 9px; font-weight: 600;
+      color: var(--gt-ph); background: rgba(255,255,255,.10);
+      border-radius: 20px; padding: 1px 6px; margin-top: -3px;
+    }
+    @media (min-width: 1025px) {
+      .more-overlay, .more-sheet { display: none !important; }
+    }
+
+    @media (max-width: 1024px) { .sidebar { display: none; } .bottom-nav { display: flex; justify-content: space-around; align-items: center; } .item-grid { grid-template-columns: repeat(3, 1fr); } .item-detail-panel { width: 380px; } .content { padding: 24px 28px 88px; } }
+    @media (max-width: 768px) { .item-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } .item-detail-panel { width: 100%; } .topbar { padding: 24px 24px 0; } .content { padding: 20px 24px 48px; } }
+    @media (max-width: 480px) { .topbar { flex-direction: column; gap: 12px; } .content { padding: 16px 16px 40px; } }
+  </style>
+</head>
+<body>
+
+<div class="hero-bg"></div>
+<div class="hero-overlay"></div>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <a class="logo" href="index.html">Capsule Zero</a>
+      <div class="user-row">
+        <a href="profile.html" style="text-decoration:none;flex-shrink:0;border-radius:50%;transition:transform .14s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform=''"><div class="avatar">AK</div></a>
+        <div><div class="user-name">Anna Kozlova</div></div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section-label">Overview</div>
+      <a class="nav-item" href="dashboard.html"><span class="nav-ico"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="1.5" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/></svg></span><span class="nav-lbl">Dashboard</span></a>
+      <div class="nav-section-label">Wardrobe</div>
+      <a class="nav-item" href="my-items.html"><span class="nav-ico"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><rect x="2.5" y="6" width="12" height="9" rx="1" stroke="white" stroke-width="1.3"/><path d="M2.5 6L5 2.5H8.5M14.5 6L12 2.5H8.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span><span class="nav-lbl">My Items</span><span class="nav-badge">24</span></a>
+      <a class="nav-item" href="#"><span class="nav-ico"><svg width="17" height="17" fill="none" viewBox="0 0 24 24"><path d="M6.5 3.5H9.5C9.5 4.88 10.62 6 12 6C13.38 6 14.5 4.88 14.5 3.5H17.5L22 8L19 11L17 9V21H7V9L5 11L2 8L6.5 3.5Z" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="nav-lbl">Outfits</span><span class="nav-badge">96</span></a>
+      <a class="nav-item" href="capsule-result.html"><span class="nav-ico"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><path d="M2.5 3.5H7C7 2 6 .5 8 .5C10 .5 9 2 9 3.5H13V7C14.5 7 16 6 16 8C16 10 14.5 9 13 9V14H9C9 12.5 10 11 8 11C6 11 7 12.5 7 14H2.5V9C4 9 5 10 5 8C5 6 4 7 2.5 7Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></span><span class="nav-lbl">Capsules</span><span class="nav-badge">3</span></a>
+      <a class="nav-item" href="uncapsulated.html"><span class="nav-ico"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><circle cx="8.5" cy="8.5" r="6" stroke="white" stroke-width="1.3"/><path d="M4.26 4.26L12.74 12.74" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span><span class="nav-lbl">Uncapsulated</span><span class="nav-badge">6</span></a>
+      <div class="nav-section-label">Lists</div>
+      <a class="nav-item" href="favorites.html"><span class="nav-ico"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><path d="M8.5 2.5L10.2 7.2H15.2L11.2 10L12.8 14.8L8.5 11.8L4.2 14.8L5.8 10L1.8 7.2H6.8Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></span><span class="nav-lbl">Favorites</span><span class="nav-badge">3</span></a>
+      <a class="nav-item" href="#"><span class="nav-ico"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><path d="M2.5 5H14.5M2.5 8.5H11.5M2.5 12H9.5" stroke="white" stroke-width="1.35" stroke-linecap="round"/></svg></span><span class="nav-lbl">Shopping List</span><span class="nav-badge">4</span></a>
+      <a class="nav-item" href="for-sale.html"><span class="nav-ico"><svg width="17" height="17" fill="none" viewBox="0 0 17 17"><path d="M8.5 1.5V13.5" stroke="white" stroke-width="1.3" stroke-linecap="round"/><path d="M11.5 4.5C11.5 3.5 10.1 3 8.5 3C6.9 3 5.5 3.8 5.5 5.2C5.5 6.6 8.5 7.2 8.5 7.2C8.5 7.2 11.5 7.8 11.5 9.5C11.5 11.2 10.1 11.8 8.5 11.8C6.9 11.8 5.5 11.3 5.5 10.3" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span><span class="nav-lbl">For Sale</span><span class="nav-badge">2</span></a>
+      <a class="nav-item active" href="for-repair.html"><span class="nav-ico"><svg width="17" height="17" fill="none" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="nav-lbl">For Repair</span><span class="nav-badge">1</span></a>
+    </nav>
+    <div class="sidebar-foot">
+      <a class="nav-item" href="profile.html"><span class="nav-ico"><svg width="17" height="17" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="white" stroke-width="1.8"/></svg></span><span class="nav-lbl">Settings</span></a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">For <strong>Repair</strong></div>
+        <div class="topbar-sub" id="topbarSub">1 item needs attention</div>
+      </div>
+      <div class="topbar-right">
+        <div class="lang-dropdown" id="langDropdown">
+          <button class="lang-trigger" onclick="toggleLang(event)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span id="currentLang">EN</span><span class="lang-chevron">&#9662;</span></button>
+          <div class="lang-menu">
+            <button class="lang-option active" data-code="EN" onclick="setLang(this)"><span>English</span><span class="lang-code">EN</span></button>
+            <button class="lang-option" data-code="RU" onclick="setLang(this)"><span>&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</span><span class="lang-code">RU</span></button>
+            <button class="lang-option" data-code="ES" onclick="setLang(this)"><span>Espa&ntilde;ol</span><span class="lang-code">ES</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="item-grid" id="itemGrid"></div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="bnav-item" href="dashboard.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="1.5" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/></svg></span>
+      <span class="bnav-lbl">Dashboard</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="my-items.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><rect x="2.5" y="6" width="12" height="9" rx="1" stroke="white" stroke-width="1.3"/><path d="M2.5 6L5 2.5H8.5M14.5 6L12 2.5H8.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+      <span class="bnav-lbl">My Items</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="capsule-result.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><path d="M2.5 3.5H7C7 2 6 0.5 8 0.5C10 0.5 9 2 9 3.5H13V7C14.5 7 16 6 16 8C16 10 14.5 9 13 9V14H9C9 12.5 10 11 8 11C6 11 7 12.5 7 14H2.5V9C4 9 5 10 5 8C5 6 4 7 2.5 7Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+      <span class="bnav-lbl">Capsules</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="favorites.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><path d="M8.5 2.5L10.2 7.2H15.2L11.2 10L12.8 14.8L8.5 11.8L4.2 14.8L5.8 10L1.8 7.2H6.8Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+      <span class="bnav-lbl">Favorites</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item active" onclick="toggleMore(event)">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8" fill="white"/><circle cx="12" cy="12" r="1.8" fill="white"/><circle cx="19" cy="12" r="1.8" fill="white"/></svg></span>
+      <span class="bnav-lbl">More</span>
+      <span class="bnav-dot"></span>
+    </a>
+  </nav>
+
+  <!-- ── More sheet ── -->
+  <div class="more-overlay" id="moreOverlay" onclick="closeMore()"></div>
+  <div class="more-sheet" id="moreSheet">
+    <div class="more-handle"></div>
+    <div class="more-grid">
+      <a class="more-item" href="capsule-result.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M6.5 3.5H9.5C9.5 4.88 10.62 6 12 6C13.38 6 14.5 4.88 14.5 3.5H17.5L22 8L19 11L17 9V21H7V9L5 11L2 8L6.5 3.5Z" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Outfits</span>
+        <span class="more-item-badge">96</span>
+      </a>
+      <a class="more-item" href="uncapsulated.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><circle cx="8.5" cy="8.5" r="6" stroke="white" stroke-width="1.3"/><path d="M4.26 4.26L12.74 12.74" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">Uncapsulated</span>
+        <span class="more-item-badge">6</span>
+      </a>
+      <a class="more-item" href="#">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><path d="M2.5 5H14.5M2.5 8.5H11.5M2.5 12H9.5" stroke="white" stroke-width="1.35" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">Shopping List</span>
+        <span class="more-item-badge">4</span>
+      </a>
+      <a class="more-item" href="for-sale.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><path d="M8.5 1.5V13.5" stroke="white" stroke-width="1.3" stroke-linecap="round"/><path d="M11.5 4.5C11.5 3.5 10.1 3 8.5 3C6.9 3 5.5 3.8 5.5 5.2C5.5 6.6 8.5 7.2 8.5 7.2C8.5 7.2 11.5 7.8 11.5 9.5C11.5 11.2 10.1 11.8 8.5 11.8C6.9 11.8 5.5 11.3 5.5 10.3" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">For Sale</span>
+        <span class="more-item-badge">2</span>
+      </a>
+      <a class="more-item" href="for-repair.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">For Repair</span>
+        <span class="more-item-badge">1</span>
+      </a>
+      <a class="more-item" href="profile.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Profile</span>
+      </a>
+      <a class="more-item" href="profile.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Settings</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Detail overlay -->
+<div class="item-overlay" id="itemOverlay" onclick="closeDetail()">
+  <div class="item-detail-panel" onclick="event.stopPropagation()">
+    <div class="id-header">
+      <span class="id-title" id="idTitle">Repair Details</span>
+      <button class="id-close" onclick="closeDetail()"><svg width="12" height="12" fill="none" viewBox="0 0 12 12"><path d="M2 2L10 10M10 2L2 10" stroke="rgba(255,255,255,.70)" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="id-body" id="idBody"></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const REPAIR_ITEMS = [
+  { name: 'Camel belt', category: 'Accessory', colors: ['#C19A6B'], brand: "Anderson's", materials: ['Leather'], note: 'Buckle is loose and needs re-stitching. Leather near the third hole is starting to crack.' },
+];
+
+const ICON = '<svg width="36" height="36" fill="none" viewBox="0 0 36 36"><path d="M18 8C18 8 13 11 13 15L7 18V28H29V18L23 15C23 8 18 8 18 8Z" stroke="rgba(255,255,255,.48)" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+
+const favorites = new Set();
+
+function renderGrid() {
+  const grid = document.getElementById('itemGrid');
+  grid.innerHTML = REPAIR_ITEMS.map((item, i) => {
+    const isFav = favorites.has(i);
+    return `
+    <div class="item-card" onclick="openDetail(${i})">
+      <button class="item-fav${isFav ? ' active' : ''}" onclick="event.stopPropagation(); toggleFavorite(${i})" title="Favorite">
+        <svg width="14" height="14" fill="${isFav ? 'white' : 'none'}" viewBox="0 0 24 24">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="item-actions">
+        <button class="item-action-btn" title="Edit" onclick="event.stopPropagation(); openDetail(${i})">
+          <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+            <path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="item-action-btn delete" title="Delete" onclick="event.stopPropagation(); deleteItem(${i})">
+          <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+            <path d="M2 3H10M4.5 3V1.5H7.5V3M4.5 5V9M7.5 5V9M3 3V10.5H9V3" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="item-thumb">${ICON}</div>
+      <div class="item-name">${item.name}</div>
+      <div class="item-cat-row">
+        <span class="item-cat">${item.category}</span>
+        <div class="item-colors">${item.colors.map(c => `<div class="item-color" style="background:${c};"></div>`).join('')}</div>
+      </div>
+      <div class="item-brand">${item.brand}</div>
+    </div>`;
+  }).join('');
+  const n = REPAIR_ITEMS.length;
+  document.getElementById('topbarSub').textContent = n === 0 ? 'All items in good condition' : n + (n === 1 ? ' item needs attention' : ' items need attention');
+}
+
+function toggleFavorite(idx) {
+  if (favorites.has(idx)) favorites.delete(idx);
+  else favorites.add(idx);
+  renderGrid();
+}
+
+function deleteItem(idx) {
+  REPAIR_ITEMS.splice(idx, 1);
+  favorites.delete(idx);
+  renderGrid();
+  showToast('Item removed');
+}
+
+function openDetail(idx) {
+  const item = REPAIR_ITEMS[idx];
+  const body = document.getElementById('idBody');
+  document.getElementById('idTitle').textContent = item.name;
+
+  body.innerHTML = `
+    <div class="id-photo">${ICON.replace(/36/g,'60')}</div>
+
+    <div class="id-field">
+      <span class="id-label">Name</span>
+      <input class="id-input" id="idName" type="text" value="${item.name}" placeholder="Item name..." />
+    </div>
+    <div class="id-field">
+      <span class="id-label">Category</span>
+      <input class="id-input" id="idCategory" type="text" value="${item.category}" placeholder="Category..." />
+    </div>
+    <div class="id-field">
+      <span class="id-label">Brand</span>
+      <input class="id-input" id="idBrand" type="text" value="${item.brand}" placeholder="Brand..." />
+    </div>
+    <div class="id-field">
+      <span class="id-label">Materials</span>
+      <input class="id-input" id="idMaterials" type="text" value="${item.materials.join(', ')}" placeholder="Materials..." />
+    </div>
+    <div class="id-field">
+      <span class="id-label">Colors</span>
+      <div class="id-colors-row">${item.colors.map(c => `<div class="id-color-dot" style="background:${c};"></div>`).join('')}</div>
+    </div>
+
+    <div class="id-divider"></div>
+
+    <div class="id-field">
+      <span class="id-label">Repair Notes</span>
+      <textarea class="id-textarea" placeholder="Describe what needs to be repaired...">${item.note || ''}</textarea>
+    </div>
+
+    <div class="id-actions">
+      <button class="id-action-btn" onclick="saveAndClose(${idx})">Save</button>
+      <button class="id-action-btn primary" onclick="markRepaired(${idx})">Mark as Repaired</button>
+    </div>
+  `;
+
+  document.getElementById('itemOverlay').classList.add('open');
+}
+
+function closeDetail() { document.getElementById('itemOverlay').classList.remove('open'); }
+
+function markRepaired(idx) {
+  REPAIR_ITEMS.splice(idx, 1);
+  closeDetail(); renderGrid();
+  showToast('Repaired — returned to wardrobe');
+}
+
+function saveAndClose(idx) {
+  const item = REPAIR_ITEMS[idx];
+  item.name = document.getElementById('idName').value || item.name;
+  item.category = document.getElementById('idCategory').value || item.category;
+  item.brand = document.getElementById('idBrand').value || item.brand;
+  item.materials = document.getElementById('idMaterials').value.split(',').map(s => s.trim()).filter(Boolean);
+  const textarea = document.querySelector('.id-textarea');
+  if (textarea) item.note = textarea.value;
+  closeDetail(); renderGrid();
+  showToast('Changes saved');
+}
+
+function showToast(msg) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  c.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2200);
+}
+
+function toggleLang(e) { e.stopPropagation(); document.getElementById('langDropdown').classList.toggle('open'); }
+function setLang(btn) { document.getElementById('currentLang').textContent = btn.dataset.code; document.querySelectorAll('.lang-option').forEach(b => b.classList.remove('active')); btn.classList.add('active'); document.getElementById('langDropdown').classList.remove('open'); }
+document.addEventListener('click', () => document.getElementById('langDropdown').classList.remove('open'));
+
+renderGrid();
+
+  function toggleMore(e) {
+    if (e) e.preventDefault();
+    document.getElementById('moreOverlay').classList.toggle('open');
+    document.getElementById('moreSheet').classList.toggle('open');
+  }
+  function closeMore() {
+    document.getElementById('moreOverlay').classList.remove('open');
+    document.getElementById('moreSheet').classList.remove('open');
+  }
+</script>
+</body>
+</html>
