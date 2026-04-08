@@ -12,7 +12,7 @@ Capsule Zero preserves its existing PR loop, merge gates, and review policy whil
 - Codex is the orchestrator and architecture owner.
 - Claude is the default implementation backend.
 - Codex is the default review backend.
-- Gemini is an optional temporary overflow reviewer for quota relief.
+- Gemini is an optional temporary review backend for quota relief.
 - Native vendor integrations execute work.
 - Repository-owned workflows enforce policy and merge gates.
 
@@ -22,12 +22,12 @@ Capsule Zero preserves its existing PR loop, merge gates, and review policy whil
   - supported values: `claude`, `codex`
   - default: `claude`
 - `AI_REVIEW_AGENT`
-  - supported values: `claude`, `codex`
+  - supported values: `claude`, `codex`, `gemini`
   - default: `codex`
 
 These variables are the only source of truth for agent selection. Comments, labels, or workflow dispatches do not silently override them.
 
-Gemini is currently outside this selector set. Until Gemini review is validated in the repository gate, keep `AI_REVIEW_AGENT` on `claude` or `codex`.
+Gemini is supported only as a temporary review backend for Codex quota exhaustion. It is not the default reviewer.
 
 ## Canonical Triggers
 
@@ -39,8 +39,7 @@ Canonical execution uses the selected vendor's native remote surface.
 - Review
   - `@claude review once` on a top-level PR comment
   - `@codex review` on a top-level PR comment
-
-Temporary supplementary overflow review may also use `/gemini review` on a top-level PR comment, but that path does not replace the canonical selected reviewer.
+  - `/gemini review` on a top-level PR comment
 
 Administrative workflows may use `workflow_dispatch`, but that path is operational fallback only.
 
@@ -83,12 +82,12 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 
 ### Gemini
 
-- Gemini Code Assist on GitHub is approved only as a temporary manual overflow reviewer.
+- Gemini Code Assist on GitHub is approved as a temporary native review backend for Codex quota exhaustion.
 - Gemini review is requested with `/gemini review` on a top-level PR comment.
 - Repository-local behavior is configured through `.gemini/config.yaml` and `.gemini/styleguide.md`.
 - Automatic review on PR open must remain disabled so reviewer routing stays repository-owned.
-- Gemini is not currently a supported value for `AI_REVIEW_AGENT`.
-- When Codex review quota is exhausted, temporarily switch the canonical gating reviewer to Claude and use Gemini as supplementary review signal on the same PR.
+- Gemini is a supported temporary value for `AI_REVIEW_AGENT`.
+- When Codex review quota is exhausted, Capsule Zero may temporarily switch the canonical gating reviewer to Gemini.
 - Operational setup details live in `docs_capsule_zero/project/devops/gemini-github-setup.md`.
 
 ## AI Review Gate
@@ -96,11 +95,11 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - `AI Review` is the single required review check.
 - Native vendor review happens first.
 - `AI Review` routes the selected native review backend.
-- `AI Review` currently validates only Claude and Codex.
+- `AI Review` currently validates Claude, Codex, and Gemini.
 - Claude review must be initiated from a trusted top-level PR comment using `@claude review once`.
 - `AI Review` does not invoke Claude directly; it validates the marker comment emitted by the dedicated Claude review workflow.
 - Codex review must be initiated from a connected human Codex account on a top-level PR comment because workflow-authored comments do not start a real Codex review task.
-- Gemini reviews are currently supplementary only and do not satisfy the required `AI Review` check.
+- Gemini review may satisfy the required `AI Review` check when `AI_REVIEW_AGENT=gemini`.
 - Claude review does not run on untrusted fork-triggered `pull_request` events because repository secrets are unavailable there.
 - Comment-driven `@claude` implementation and `@claude review once` also fail closed for fork PRs because `issue_comment` workflows run with repository secrets.
 - The repository-owned `AI Review` gate then:

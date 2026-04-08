@@ -45,7 +45,7 @@ jobs:
               kind = "review";
               requestedAgent = "codex";
             } else if (body.includes("/gemini review")) {
-              kind = "supplementary-review";
+              kind = "review";
               requestedAgent = "gemini";
             } else if (body.includes("/gemini summary")) {
               kind = "supplementary-review";
@@ -129,7 +129,13 @@ jobs:
             }
 
             const expectedCommand = kind === "review"
-              ? (selectedAgent === "claude" ? "@claude review once" : "@codex review")
+              ? (
+                  selectedAgent === "claude"
+                    ? "@claude review once"
+                    : selectedAgent === "codex"
+                      ? "@codex review"
+                      : "/gemini review"
+                )
               : (selectedAgent === "claude" ? "@claude <task brief>" : "start the Codex task from Codex app or Codex web");
 
             const scopeLabel = kind === "review" ? "review" : "implementation";

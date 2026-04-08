@@ -2,7 +2,7 @@
 
 This runbook defines Capsule Zero's temporary Gemini Code Assist on GitHub setup.
 
-Gemini is approved only as a temporary native overflow reviewer for the periods when Codex review quota is exhausted. It is supplementary and non-canonical until Capsule Zero validates a machine-readable Gemini contract for `AI Review`.
+Gemini is approved as a temporary native review backend for the periods when Codex review quota is exhausted. It is not the default reviewer, but it can satisfy `AI Review` when `AI_REVIEW_AGENT=gemini`.
 
 ## Scope
 
@@ -13,12 +13,12 @@ Gemini is approved only as a temporary native overflow reviewer for the periods 
   - `/gemini summary`
   - `/gemini help`
 - not used as an implementation backend
-- not used as the required `AI Review` backend yet
+- may be used as the required `AI Review` backend when `AI_REVIEW_AGENT=gemini`
 
 ## Why This Is Temporary
 
 - the free consumer version currently provides `33` pull request reviews per day
-- Capsule Zero's required `AI Review` gate currently validates only Claude and Codex
+- Capsule Zero keeps Codex as the default reviewer even though Gemini is available
 - the consumer path is useful for quota relief, but it is not the long-term enterprise privacy and governance target for commercial source code
 
 ## Repository Files
@@ -70,21 +70,20 @@ Before the team relies on Gemini overflow review, confirm all of the following:
 
 ### Codex Quota Exhausted
 
-- switch the canonical gating reviewer to `claude`
-- request `/gemini review` manually on the target PR as a supplementary native overflow review
+- switch the canonical gating reviewer to `gemini`
+- request `/gemini review` manually on the target PR
 - use `/gemini summary` for navigation or quick triage only, not as the merge decision signal
 
 ## Quota-Exhaustion Playbook
 
 Use this exact sequence when Codex review quota is exhausted for the day:
 
-1. In GitHub repository variables, change `AI_REVIEW_AGENT` from `codex` to `claude`.
-2. On the target pull request, post `@claude review once` from a trusted actor.
-3. On the same pull request, post `/gemini review` from a trusted actor.
-4. Wait for the canonical Claude review result and the supplementary Gemini result.
-5. If the `AI Review` check is still tied to the old reviewer cycle, rerun it after the variable change.
-6. Merge only when:
-   - `AI Review` is green under the Claude path
+1. In GitHub repository variables, change `AI_REVIEW_AGENT` from `codex` to `gemini`.
+2. On the target pull request, post `/gemini review` from a trusted actor.
+3. Wait for the canonical Gemini review result.
+4. If the `AI Review` check is still tied to the old reviewer cycle, rerun it after the variable change.
+5. Merge only when:
+   - `AI Review` is green under the Gemini path
    - any material Gemini findings are resolved or consciously dismissed by a human
    - the normal required checks remain green
 
@@ -106,13 +105,6 @@ The rerun step above is an inference from Capsule Zero's current workflows: `AI 
 - style-only feedback remains advisory
 - workflow-only pull requests and changes under `.github/workflows/**` should continue to rely on the canonical reviewer because Gemini's GitHub review feature is not a strong fit for that class of change
 
-## Graduation Criteria
+## Temporary Status
 
-Gemini may become a canonical `AI_REVIEW_AGENT` only after all of the following are complete:
-
-1. Capture stable samples of `gemini-code-assist[bot]` output on current PR heads.
-2. Define a machine-readable no-findings contract.
-3. Define a severity mapping from Gemini review comments to `pass`, `advisory`, and `block`.
-4. Extend `docs_capsule_zero/project/devops/review-contract.md`.
-5. Extend `scripts/ai-review-gate.mjs`.
-6. Add and pass a Gemini row in `docs_capsule_zero/project/devops/validation-matrix.md`.
+Gemini remains a temporary backend even after gate support is enabled. Codex stays the default review backend, and Gemini is intended only for quota relief until Codex review capacity is available again or a longer-term enterprise Gemini posture is approved.

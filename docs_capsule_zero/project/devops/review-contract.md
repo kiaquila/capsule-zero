@@ -49,17 +49,24 @@ Codex may publish a `COMMENTED` top-level review even when some inline findings 
 
 Capsule Zero treats those native severity badges plus the top-level Codex review as the machine-readable contract for Codex.
 
-## Gemini Review Status
+## Gemini Review Contract
 
-Google documents Gemini Code Assist on GitHub as a native reviewer that can be requested with `/gemini review`. The documented behavior is that `gemini-code-assist[bot]` is added as a reviewer, posts an issue comment in the pull request conversation, and may add comments on modified code with `Critical`, `High`, `Medium`, or `Low` severities.
+Gemini review is validated using native GitHub PR review output from `gemini-code-assist[bot]`.
 
-Capsule Zero has not yet validated a stable machine-readable Gemini contract for:
+The gate matches a Gemini review when all of the following are true:
 
-- matching the review result to the current PR head SHA
-- distinguishing a no-findings result from a summary-only response
-- normalizing Gemini severity output into `pass`, `advisory`, and `block`
+- the review is submitted by `gemini-code-assist[bot]`
+- the review targets the current PR head SHA
+- on a fresh gate cycle, the review is created after the routing trigger for that cycle
+- on a rerun with no new routing trigger, the gate may reuse an already-published valid Gemini review for the same head SHA
 
-Gemini is therefore supplementary only for now. It is excluded from `AI Review` routing and from required-check pass or fail normalization until a future validation pass upgrades it into the canonical contract.
+Gemini currently publishes:
+
+- a top-level GitHub pull-request review
+- inline review comments tied to that review
+- inline severity markers such as `Critical`, `High`, `Medium`, or `Low`
+
+Capsule Zero treats those native severity markers plus the top-level Gemini review as the machine-readable contract for Gemini.
 
 ## Required Result Mapping
 
@@ -81,6 +88,14 @@ Capsule Zero normalizes vendor-native output as follows:
   - `AI Review` fails
 - Codex `COMMENTED` with any `P0`, `P1`, or `P2`
   - `AI Review` fails
+- Gemini `APPROVED`
+  - `AI Review` passes
+- Gemini `COMMENTED` with only `Low` findings or no inline findings
+  - `AI Review` passes
+- Gemini `CHANGES_REQUESTED`
+  - `AI Review` fails
+- Gemini `COMMENTED` with any `Critical`, `High`, or `Medium`
+  - `AI Review` fails
 
 Any other state is treated as unverifiable and fails closed.
 
@@ -92,11 +107,14 @@ Any other state is treated as unverifiable and fails closed.
 - For Codex native review comments, Capsule Zero maps `P0`, `P1`, and `P2` to blocking findings.
 - For Codex native review comments, Capsule Zero maps `P3` to advisory findings.
 - If Codex submits any inline review finding without a recognized `P0-P3` severity badge, the gate fails closed.
+- For Gemini native review comments, Capsule Zero maps `Critical`, `High`, and `Medium` to blocking findings.
+- For Gemini native review comments, Capsule Zero maps `Low` to advisory findings.
+- If Gemini submits any inline review finding without a recognized severity marker, the gate fails closed.
 
 ## Routing and Validation
 
 - `AI Review` reads `AI_REVIEW_AGENT`.
-- Supported canonical reviewers are currently `claude` and `codex`.
+- Supported canonical reviewers are currently `claude`, `codex`, and `gemini`.
 - It validates the selected reviewer output against the current PR head SHA.
 - On reruns of the same head, validation may reuse the latest valid native reviewer output already attached to that head SHA.
 - For Codex no-findings summary comments, reuse is not assumed across unrelated cycles because that summary comment does not carry the PR head SHA explicitly; the gate matches it only within the active review cycle.

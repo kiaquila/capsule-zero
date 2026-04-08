@@ -57,14 +57,14 @@ Legacy migration artifacts were removed after all scenarios below passed.
 - Confirm Codex posts a matching GitHub review
 - Confirm the gate validates the review result
 
-### 5. temporary gemini overflow review
+### 5. temporary review=gemini
 
 - Keep `AI_IMPLEMENTATION_AGENT` on the selected canonical implementation backend
-- Keep `AI_REVIEW_AGENT` on `claude` or `codex`
+- Set `AI_REVIEW_AGENT=gemini`
 - Request `/gemini review` manually on the PR under test
-- Confirm `gemini-code-assist[bot]` responds on the PR
-- Confirm Gemini feedback is supplementary only and does not replace the canonical `AI Review` result
-- Capture representative Gemini output before attempting any future gate integration
+- Confirm `gemini-code-assist[bot]` posts a matching GitHub review on the current head SHA
+- Confirm Gemini inline comments carry recognized severity markers
+- Confirm the gate validates the Gemini review result
 
 ## Pass Criteria
 
@@ -77,7 +77,7 @@ Each matrix row passes only when all of the following are true:
 - `AI Review` fails closed when the selected reviewer does not produce a valid result
 - the selected reviewer result is matched to the current PR head SHA
 - the PR remains within the existing Capsule Zero PR-first workflow contract
-- supplementary Gemini use never weakens the fail-closed canonical gate
+- temporary Gemini use never weakens the fail-closed canonical gate
 
 ## Completed Evidence
 
@@ -85,7 +85,7 @@ Each matrix row passes only when all of the following are true:
 - `implement=claude, review=codex` validated on PR `#7`
 - `implement=codex, review=claude` validated on PR `#10`
 - `implement=codex, review=codex` validated on PR `#10`
-- temporary Gemini overflow review is documented but not yet promoted into the canonical matrix
+- `review=gemini` validation in progress on PR `#14`
 
 ## Cleanup Outcome
 
