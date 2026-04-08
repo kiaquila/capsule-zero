@@ -59,7 +59,7 @@ Multiple apps attempt automatic color detection. Results are consistently frustr
 
 No competitor achieves fashion-editorial visual standards. Cladwell is "dated" and "functional". Stylebook "won't win any design awards". Acloset "didn't feel exciting or inspiring". Even Whering, the best-designed competitor, is "cutesy" rather than premium. Indyx comes closest with "clean, user-friendly interface" but still lacks editorial sophistication.
 
-> **CZ Implication:** The "Aesop of wardrobe apps" position remains completely unoccupied. Capsule Zero's neumorphic, achromatic, editorial-quality design is the single most visible differentiator at first impression. This is the screenshot test.
+> **CZ Implication:** The "Aesop of wardrobe apps" position remains completely unoccupied. Capsule Zero's glassmorphic, achromatic, editorial-quality design is the single most visible differentiator at first impression. This is the screenshot test.
 
 ## 3. UX Benchmark — Best-in-Class Features
 

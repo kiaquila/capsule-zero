@@ -57,7 +57,7 @@ Prototype: `html-prototypes/my-items.html`
 - **Filter Bar:** Category dropdown + color filter
 - **Item Cards:** Photo + name (header) + color dots + capsule badge + favorite heart
 - **Detail View:** Large photo + all fields + action buttons
-- **Edit Mode:** Inline editable fields (name, photo, category, color dots, brand, material, price)
+- **Edit Mode:** Inline editable fields (name, photo, category, color dots, brand, material/composition, price)
 
 ## Interactivity
 - Click card → detail view

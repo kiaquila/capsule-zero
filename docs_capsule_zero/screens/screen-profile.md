@@ -50,7 +50,7 @@ Prototype: `html-prototypes/profile.html`
 - **Save:** Glass primary button
 
 ## Interactivity
-- Click [Change] avatar → file picker (JPEG/PNG)
+- Click [Change] avatar → file picker (JPEG, PNG, WebP)
 - Click [Remove] avatar → revert to default
 - Change language → instant UI update (no page reload)
 - Click [Save Changes] → persist to backend

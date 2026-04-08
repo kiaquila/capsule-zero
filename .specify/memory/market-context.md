@@ -74,7 +74,7 @@ No existing player combines premium editorial aesthetics, methodology-driven cap
 
 ### Marketplace Link Import (US-011)
 - Paste product URLs from supported web stores with best-effort parsing
-- System parses: name, category, colors, all photos, brand, material, source URL
+- System parses: name, category, colors, all photos, brand, material/composition, source URL
 - No competitor offers automated parsing from marketplace URLs
 - Turns upload friction (pain point #1) into a feature advantage
 - Items feed into shared database for semantic search

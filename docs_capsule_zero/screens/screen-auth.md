@@ -39,7 +39,7 @@ Prototype: `html-prototypes/auth.html`, `html-prototypes/index.html` (popup)
 ```
 
 ## Elements
-> Token values: `project/frontend/styling.md`
+> Token values: `docs_capsule_zero/project/frontend/styling.md`
 
 - **Glass Panel:** Main glass panel variant, centered
 - **Inputs:** Glass input style

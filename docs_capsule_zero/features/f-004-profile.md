@@ -25,7 +25,7 @@
 
 ## Acceptance Criteria
 1. Default avatar assigned on registration
-2. Profile settings allow JPEG/PNG upload
+2. Profile settings allow JPEG, PNG, and WebP upload
 3. Image auto-crops to circle
 4. Replace or delete (revert to default) options available
 5. Avatar appears in navigation and profile

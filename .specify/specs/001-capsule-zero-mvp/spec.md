@@ -97,7 +97,7 @@ As a user, I want to upload my avatar to personalize my profile.
 
 **Acceptance Scenarios:**
 1. **Given** registration, **When** account created, **Then** default avatar assigned
-2. **Given** profile settings, **When** user uploads JPEG/PNG, **Then** image auto-crops to circle
+2. **Given** profile settings, **When** user uploads JPEG, PNG, or WebP, **Then** image auto-crops to circle
 3. **Given** an uploaded avatar, **When** user wants to change, **Then** replace or delete (revert to default) options available
 4. **Given** an avatar, **When** displayed, **Then** it appears in navigation and profile
 
@@ -428,7 +428,7 @@ As a system, I want imported marketplace items to populate the shared database f
 
 - **User**: Profile, avatar, language preference, coin balance
 - **Capsule**: Name, wardrobe type, color palette (locked), categories, items, OPR
-- **Item**: Name, photo(s), category, color dots (1-3), brand, material, price, source URL, capsule membership, basicity score
+- **Item**: Name, photo(s), category, color dots (1-3), brand, material/composition, price, source URL, capsule membership, basicity score
 - **Outfit**: Generated combination of items following layer rules and color harmony
 - **Palette**: User-selected achromatic and chromatic colors, ordered with achromats first in UI, governed by temperature-or-saturation compatibility rules
 - **Shopping List Item**: Category, recommended color, priority, impact (+N outfits)

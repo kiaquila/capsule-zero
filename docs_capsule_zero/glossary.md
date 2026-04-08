@@ -5,12 +5,12 @@
 ## A
 
 ### Achromat / Achromatic Color
-A color without a hue: Black, Gray, White (3 colors). Achromats are universal connectors — always compatible with each other and with any chromatic color. → Full color IDs and HEX: `project/methodology/colors.md`
+A color without a hue: Black, Gray, White (3 colors). Achromats are universal connectors — always compatible with each other and with any chromatic color. → Full color IDs and HEX: `docs_capsule_zero/project/methodology/colors.md`
 - **RU:** Ахроматический цвет
 - **ES-AR:** Color acromático
 
 ### Auto-tagging
-AI-driven classification of items upon addition: name, category, color dots, basicity score. User-editable. Extended fields (brand, material, source URL) parsed automatically on import from marketplace links.
+AI-driven classification of items upon addition: name, category, color dots, basicity score. User-editable. Extended fields (brand, material/composition, source URL) parsed automatically on import from marketplace links.
 - **RU:** Авторазметка
 - **ES-AR:** Etiquetado automático
 
@@ -40,7 +40,7 @@ Classification of color undertone: Warm (yellow/orange), Cool (blue/pink), or Ne
 - **RU:** Цветовая температура
 
 ### Compatibility Rules
-The rules governing which colors can coexist in a palette: achromatics are always compatible with everything; chromatic colors are compatible when they match by temperature or saturation. → Full rules: `project/methodology/capsule-methodology.md`
+The rules governing which colors can coexist in a palette: achromatics are always compatible with everything; chromatic colors are compatible when they match by temperature or saturation. → Full rules: `docs_capsule_zero/project/methodology/capsule-methodology.md`
 
 ## E
 
@@ -58,7 +58,7 @@ Detection of missing items that would increase the capsule's outfit potential. F
 The UI design language used throughout Capsule Zero: frosted glass surfaces with `backdrop-filter: blur`, translucent layers, subtle borders. Defines the premium aesthetic.
 
 ### Glass Panel
-The primary container component: translucent frosted glass surface. Two variants: main panels (blur 40px) and nav/bottom sheets (blur 44px). → Exact token values: `project/frontend/styling.md`
+The primary container component: translucent frosted glass surface. Two variants: main panels (blur 40px) and nav/bottom sheets (blur 44px). → Exact token values: `docs_capsule_zero/project/frontend/styling.md`
 
 ### Guided Journey
 The 3-step capsule creation flow: Step 1 (wardrobe type) → Step 2 (categories) → Step 3 (colors + items).

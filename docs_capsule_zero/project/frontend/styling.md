@@ -123,7 +123,7 @@ color: rgba(255, 255, 255, 0.95);
 
 These are NOT interface colors — they are the wardrobe color system used in capsule building.
 
-3 achromatics (Black, Gray, White) + 48 chromatic colors in 4 groups (Brights, Pastels, Desaturated, Darks). → Full table with HEX, IDs, and roles: `project/methodology/colors.md`
+3 achromatics (Black, Gray, White) + 48 chromatic colors in 4 groups (Brights, Pastels, Desaturated, Darks). → Full table with HEX, IDs, and roles: `docs_capsule_zero/project/methodology/colors.md`
 
 ## Navigation
 
