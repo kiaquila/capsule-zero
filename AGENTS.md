@@ -164,15 +164,18 @@ When assigned to implement a specific feature, read in this order:
   - Codex app or Codex web task for Codex-owned implementation PRs
   - `@claude review once` on a top-level PR comment
   - `@codex review` on a top-level PR comment
+- Temporary overflow review may also use `/gemini review` on a top-level PR comment when Codex quota is exhausted. This path is supplementary only until Gemini is validated in the repository `AI Review` contract.
 - Only trusted repository actors may trigger AI workflows.
 - Trusted actors are `OWNER`, `MEMBER`, and `COLLABORATOR`.
 - Native review normalization is documented in `docs_capsule_zero/project/devops/review-contract.md`.
+- Temporary Gemini operating rules are documented in `docs_capsule_zero/project/devops/gemini-github-setup.md`.
 - Local PowerShell and worktree orchestration scripts are no longer part of the repository.
 
 ## Review guidelines
 
 - Codex review uses native GitHub PR review output plus `P0-P3` inline severity badges.
 - Claude review uses a top-level `claude[bot]` comment with marker lines, not a formal GitHub PR review.
+- Gemini review is a temporary supplementary path through `gemini-code-assist[bot]` and `/gemini review`; it is not part of the canonical required-check contract yet.
 - When a Claude review request includes `AI_REVIEW_AGENT`, `AI_REVIEW_SHA`, and `AI_REVIEW_OUTCOME`, preserve those lines exactly at the start of the final top-level Claude comment.
 - `AI_REVIEW_OUTCOME=pass` means no material findings.
 - `AI_REVIEW_OUTCOME=advisory` means advisory-only findings that should not block merge.

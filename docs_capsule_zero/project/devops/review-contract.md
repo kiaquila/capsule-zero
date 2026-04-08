@@ -49,6 +49,18 @@ Codex may publish a `COMMENTED` top-level review even when some inline findings 
 
 Capsule Zero treats those native severity badges plus the top-level Codex review as the machine-readable contract for Codex.
 
+## Gemini Review Status
+
+Google documents Gemini Code Assist on GitHub as a native reviewer that can be requested with `/gemini review`. The documented behavior is that `gemini-code-assist[bot]` is added as a reviewer, posts an issue comment in the pull request conversation, and may add comments on modified code with `Critical`, `High`, `Medium`, or `Low` severities.
+
+Capsule Zero has not yet validated a stable machine-readable Gemini contract for:
+
+- matching the review result to the current PR head SHA
+- distinguishing a no-findings result from a summary-only response
+- normalizing Gemini severity output into `pass`, `advisory`, and `block`
+
+Gemini is therefore supplementary only for now. It is excluded from `AI Review` routing and from required-check pass or fail normalization until a future validation pass upgrades it into the canonical contract.
+
 ## Required Result Mapping
 
 Capsule Zero normalizes vendor-native output as follows:
@@ -84,6 +96,7 @@ Any other state is treated as unverifiable and fails closed.
 ## Routing and Validation
 
 - `AI Review` reads `AI_REVIEW_AGENT`.
+- Supported canonical reviewers are currently `claude` and `codex`.
 - It validates the selected reviewer output against the current PR head SHA.
 - On reruns of the same head, validation may reuse the latest valid native reviewer output already attached to that head SHA.
 - For Codex no-findings summary comments, reuse is not assumed across unrelated cycles because that summary comment does not carry the PR head SHA explicitly; the gate matches it only within the active review cycle.

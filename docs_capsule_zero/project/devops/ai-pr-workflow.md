@@ -10,6 +10,7 @@ This is the canonical PR loop for implementation, AI review, and merge readiness
 - Codex acts as the repository orchestrator and architecture owner.
 - Claude is the default implementation agent.
 - Codex is the default review agent unless repository policy overrides it.
+- Gemini may be used as a temporary supplementary overflow reviewer when Codex quota is exhausted.
 - Low-severity-only findings remain advisory.
 - A human remains the final merge authority.
 
@@ -19,6 +20,7 @@ The workflow may change tools, integrations, and automation layers, but these ru
 
 - The selected implementation agent writes product code and updates any required durable docs.
 - The selected review agent performs repository review using its native cloud integration.
+- Gemini may add supplementary native review comments, but it is not a canonical selected reviewer yet.
 - Codex owns orchestration, architecture enforcement, review policy, and workflow health.
 - GitHub is the control plane for agent routing, pull requests, and required checks.
 - GitHub Actions runs the repository-owned policy and gate workflows.
@@ -48,6 +50,7 @@ The workflow may change tools, integrations, and automation layers, but these ru
   - Codex app or Codex web task for Codex-owned implementation PRs
   - `@claude review once` for Claude review on a top-level PR comment
   - `@codex review` for Codex review on a top-level PR comment
+- Temporary supplementary overflow review may use `/gemini review`, but it does not replace the selected reviewer for `AI Review`.
 - Only trusted repository actors may trigger AI workflows.
 - Trusted actors are `OWNER`, `MEMBER`, and `COLLABORATOR`.
 - Canonical triggers must match repository policy. A mismatched trigger is a policy failure, not an implicit override.
@@ -61,11 +64,20 @@ Routing details live in `docs_capsule_zero/project/devops/ai-orchestration-proto
 - `AI Review` is a repository-owned gate, not the vendor-native review engine itself.
 - Native vendor review still runs through the selected agent's own cloud integration.
 - `AI Review` reads the selected reviewer policy, routes the selected native review backend, validates that the selected native review actually ran, and normalizes the outcome to Capsule Zero policy.
+- Gemini review is currently supplementary only and does not satisfy the required `AI Review` check.
 - Advisory-only findings must not fail `AI Review`.
 - Blocking findings must fail `AI Review`.
 - If the selected reviewer does not run or its result cannot be validated, `AI Review` fails closed.
 - Claude review on untrusted fork-triggered `pull_request` events is blocked explicitly because repository secrets are unavailable to that event model.
 - Validation details are defined in `docs_capsule_zero/project/devops/review-contract.md`.
+
+## Temporary Overflow Mode
+
+When Codex review quota is exhausted:
+
+1. Temporarily switch the canonical gating reviewer to Claude.
+2. Request `/gemini review` on the same PR for additional native review coverage.
+3. Merge only after the canonical `AI Review` check is green and any material Gemini findings are addressed or consciously dismissed by a human.
 
 ## Merge-Ready Rule
 

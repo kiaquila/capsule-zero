@@ -8,10 +8,12 @@ This document defines Capsule Zero's cloud AI integration and `AI Review` gate c
 - GitHub is the control plane.
 - Native Claude GitHub Actions workflows handle Claude execution.
 - Native Codex GitHub integration handles Codex execution.
+- Gemini Code Assist on GitHub may be installed as a temporary manual overflow reviewer.
 - Repository-owned GitHub Actions workflows enforce routing policy and the `AI Review` gate.
 
 See `docs_capsule_zero/project/devops/ai-orchestration-protocol.md` for the routing contract.
 See `docs_capsule_zero/project/devops/codex-github-setup.md` for Codex integration setup.
+See `docs_capsule_zero/project/devops/gemini-github-setup.md` for the temporary Gemini overflow setup.
 See `docs_capsule_zero/project/devops/validation-matrix.md` for the completed validation record.
 
 ## Required Repository Variables
@@ -22,6 +24,8 @@ See `docs_capsule_zero/project/devops/validation-matrix.md` for the completed va
 - `AI_REVIEW_AGENT`
   - supported values: `claude`, `codex`
   - recommended default: `codex`
+
+Gemini is not yet a supported `AI_REVIEW_AGENT` value because the repository gate does not validate Gemini output yet.
 
 ## Required Repository Secrets
 
@@ -46,6 +50,7 @@ Repository default workflow permissions may remain `read` so long as individual 
 - Native review runs through the selected vendor backend.
 - `AI_REVIEW_AGENT` determines which reviewer is canonical for the current repository state.
 - The repository-owned `AI Review` workflow routes the selected native review backend, validates that the selected native reviewer ran, and normalizes the result to Capsule Zero policy.
+- `AI Review` currently validates only Claude and Codex.
 - Claude review must be triggered by a connected trusted actor through a top-level PR comment such as `@claude review once`.
 - `AI Review` does not invoke Claude directly; it validates the marker comment published by `.github/workflows/claude-review.yml`.
 - Claude GitHub Actions does not submit formal GitHub PR reviews in this repository contract; instead it updates a single `claude[bot]` comment that begins with `AI_REVIEW_AGENT`, `AI_REVIEW_SHA`, and `AI_REVIEW_OUTCOME` marker lines.
@@ -59,6 +64,8 @@ Repository default workflow permissions may remain `read` so long as individual 
 - On reruns for the same head SHA, `AI Review` may reuse the latest valid native review already published for that head instead of requiring a brand-new review.
 - `AI Review` fails closed when the selected reviewer does not run or its result cannot be validated.
 - Codex Automatic reviews should remain disabled so repository policy keeps owning reviewer selection.
+- Gemini may be requested manually with `/gemini review` when Codex quota is exhausted, but Gemini is currently supplementary and non-gating.
+- During Codex quota exhaustion, the safe canonical fallback is to switch `AI_REVIEW_AGENT=claude` and use Gemini as an extra native review signal on the same PR.
 - Validation details are defined in `docs_capsule_zero/project/devops/review-contract.md`.
 
 ## Implementation Flow
@@ -81,6 +88,7 @@ Repository default workflow permissions may remain `read` so long as individual 
 - require conversation resolution
 - enforce admins
 - restrict direct pushes to `main`
+- keep Gemini auto-review on PR open disabled through `.gemini/config.yaml`
 
 ## Validation Status
 

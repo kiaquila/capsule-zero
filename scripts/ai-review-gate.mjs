@@ -29,6 +29,12 @@ if (!eventPath) {
 }
 
 if (!["claude", "codex"].includes(selectedAgent)) {
+  if (selectedAgent === "gemini") {
+    throw new Error(
+      'AI_REVIEW_AGENT="gemini" is not supported yet. Gemini is currently a temporary supplementary overflow reviewer only. Keep AI_REVIEW_AGENT on "claude" or "codex" and use /gemini review manually as documented in docs_capsule_zero/project/devops/gemini-github-setup.md.',
+    );
+  }
+
   throw new Error(
     `AI_REVIEW_AGENT must be one of "claude" or "codex", received "${selectedAgent}"`,
   );

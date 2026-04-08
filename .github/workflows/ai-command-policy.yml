@@ -14,7 +14,8 @@ jobs:
       github.event.comment.user.type == 'User' &&
       (
         contains(github.event.comment.body, '@claude') ||
-        contains(github.event.comment.body, '@codex')
+        contains(github.event.comment.body, '@codex') ||
+        contains(github.event.comment.body, '/gemini')
       )
     name: ai-command-policy
     runs-on: ubuntu-latest
@@ -43,6 +44,18 @@ jobs:
             } else if (body.includes("@codex review")) {
               kind = "review";
               requestedAgent = "codex";
+            } else if (body.includes("/gemini review")) {
+              kind = "supplementary-review";
+              requestedAgent = "gemini";
+            } else if (body.includes("/gemini summary")) {
+              kind = "supplementary-review";
+              requestedAgent = "gemini";
+            } else if (body.includes("/gemini help")) {
+              kind = "supplementary-review";
+              requestedAgent = "gemini";
+            } else if (body.includes("/gemini")) {
+              kind = "supplementary-review";
+              requestedAgent = "gemini";
             } else if (body.includes("@claude")) {
               kind = "implementation";
               requestedAgent = "claude";
@@ -62,7 +75,7 @@ jobs:
                 "AI command rejected.",
                 "",
                 `Comments from \`${authorAssociation}\` are not allowed to trigger repository AI workflows.`,
-                "Use a trusted repository actor account (owner, member, or collaborator) to run `@claude ...`, `@codex ...`, `@claude review once`, or `@codex review`.",
+                "Use a trusted repository actor account (owner, member, or collaborator) to run `@claude ...`, `@codex ...`, `@claude review once`, `@codex review`, or `/gemini ...` on a pull request.",
               ].join("\n");
 
               await github.rest.issues.createComment({
@@ -80,12 +93,12 @@ jobs:
               context.eventName === "issue_comment" &&
               Boolean(context.payload.issue?.pull_request);
 
-            if (kind === "review" && !isPullRequestContext) {
+            if ((kind === "review" || kind === "supplementary-review") && !isPullRequestContext) {
               const message = [
                 "Invalid review command context.",
                 "",
                 "Review commands are only valid as top-level pull request comments.",
-                "Use `@claude review once` or `@codex review` on the target pull request.",
+                "Use `@claude review once`, `@codex review`, or `/gemini review` on the target pull request.",
               ].join("\n");
 
               await github.rest.issues.createComment({
@@ -96,6 +109,11 @@ jobs:
               });
 
               core.setFailed(message);
+              return;
+            }
+
+            if (kind === "supplementary-review") {
+              core.info("Gemini supplementary review command allowed for trusted pull request context");
               return;
             }
 
