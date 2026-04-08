@@ -74,8 +74,9 @@ Routing details live in `docs_capsule_zero/project/devops/ai-orchestration-proto
 When Codex review quota is exhausted:
 
 1. Temporarily switch `AI_REVIEW_AGENT` to `gemini`.
-2. Request `/gemini review` on the target PR.
-3. Merge only after the canonical `AI Review` check is green and any material Gemini findings are addressed or consciously dismissed by a human.
+2. Let the repository-owned `AI Review` workflow post its native `/gemini review` trigger on the PR event that starts the review cycle.
+3. If you need to retrigger Gemini on an already-open PR, request `/gemini review` manually from a trusted actor.
+4. Merge only after the canonical `AI Review` check is green and any material Gemini findings are addressed or consciously dismissed by a human.
 
 ## Merge-Ready Rule
 

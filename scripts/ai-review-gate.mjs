@@ -143,6 +143,16 @@ const buildTriggerComment = () => {
     ].join("\n");
   }
 
+  if (selectedAgent === "gemini") {
+    return [
+      "/gemini review",
+      "",
+      `Please review PR #${prNumber} at head commit \`${headSha}\`.`,
+      "",
+      metadataMarker,
+    ].join("\n");
+  }
+
   return [
     "@claude review once",
     "",

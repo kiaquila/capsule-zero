@@ -79,10 +79,11 @@ Before the team relies on Gemini overflow review, confirm all of the following:
 Use this exact sequence when Codex review quota is exhausted for the day:
 
 1. In GitHub repository variables, change `AI_REVIEW_AGENT` from `codex` to `gemini`.
-2. On the target pull request, post `/gemini review` from a trusted actor.
-3. Wait for the canonical Gemini review result.
-4. If the `AI Review` check is still tied to the old reviewer cycle, rerun it after the variable change.
-5. Merge only when:
+2. Start a fresh PR review cycle by pushing a commit or rerunning `AI Review`; the repository-owned workflow will post a metadata-marked `/gemini review` trigger automatically.
+3. If you need to retrigger Gemini on an already-open PR, post `/gemini review` manually from a trusted actor.
+4. Wait for the canonical Gemini review result.
+5. If the `AI Review` check is still tied to the old reviewer cycle, rerun it after the variable change.
+6. Merge only when:
    - `AI Review` is green under the Gemini path
    - any material Gemini findings are resolved or consciously dismissed by a human
    - the normal required checks remain green

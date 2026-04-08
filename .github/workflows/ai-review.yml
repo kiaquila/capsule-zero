@@ -56,6 +56,9 @@ jobs:
           fi
 
           trigger_mode="skip"
+          if [ "$selected" = "gemini" ]; then
+            trigger_mode="comment"
+          fi
 
           echo "selected_agent=$selected" >> "$GITHUB_OUTPUT"
           echo "trigger_mode=$trigger_mode" >> "$GITHUB_OUTPUT"

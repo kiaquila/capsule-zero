@@ -62,7 +62,8 @@ Repository default workflow permissions may remain `read` so long as individual 
 - On reruns for the same head SHA, `AI Review` may reuse the latest valid native review already published for that head instead of requiring a brand-new review.
 - `AI Review` fails closed when the selected reviewer does not run or its result cannot be validated.
 - Codex Automatic reviews should remain disabled so repository policy keeps owning reviewer selection.
-- Gemini review is triggered by a trusted actor through a top-level PR comment such as `/gemini review`.
+- When `AI_REVIEW_AGENT=gemini`, the repository-owned `AI Review` workflow posts a metadata-marked `/gemini review` trigger comment on PR open and synchronize cycles.
+- A trusted actor may still post `/gemini review` manually to retrigger review on an already-open PR.
 - Gemini validation uses native PR review output from `gemini-code-assist[bot]`, the PR head SHA, and inline severity markers such as `Critical`, `High`, `Medium`, and `Low`.
 - During Codex quota exhaustion, Capsule Zero may temporarily switch `AI_REVIEW_AGENT=gemini`.
 - Validation details are defined in `docs_capsule_zero/project/devops/review-contract.md`.
