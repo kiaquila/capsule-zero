@@ -48,7 +48,8 @@ The interface is strictly achromatic. Color enters ONLY through the user's garme
 | Element | Background | Blur | Border | Shadow |
 |---------|-----------|------|--------|--------|
 | Main panels | `rgba(255,255,255,0.22)` | `blur(40px)` | `1px solid rgba(255,255,255,.58)` | `0 8px 32px rgba(0,0,0,.22)` |
-| Nav / Bottom sheets | `rgba(255,255,255,0.13/.22)` | `blur(44px)` | — / `1px solid rgba(255,255,255,.58)` | — |
+| Nav | `rgba(255,255,255,0.13)` | `blur(44px)` | — | — |
+| Bottom sheets | `rgba(255,255,255,0.22)` | `blur(44px)` | `1px solid rgba(255,255,255,.58)` | — |
 | Language menu | `rgba(255,255,255,0.28)` | `blur(32px)` | — | — |
 | Cookie banner | `rgba(255,255,255,0.22)` | `blur(32px)` | — | — |
 | Inner highlight | — | — | `inset 0 1px 0 rgba(255,255,255,.72)` | — |

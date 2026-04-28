@@ -60,7 +60,7 @@
 | Moving | Item being moved | Loading indicator, item disappears from grid |
 
 ## Key Components
-- **WardobeGrid** — reusable grid with section-specific actions
+- **WardrobeGrid** — reusable grid with section-specific actions
 - **ItemActions** — context-specific action buttons per section
 - **MoveConfirmation** — confirmation when moving between sections
 - **CategoryFilter** — filter dropdown/chips

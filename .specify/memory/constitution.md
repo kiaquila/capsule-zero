@@ -22,8 +22,8 @@ Capsule Zero proprietary color circle methodology.
 
 ### Color Architecture
 - **Temperature axis:** Warm / Cool / Neutral
-- **Saturation axis:** Muted (dusty) / Bright (vivid) / Deep (dark saturated)
-- **Achromatic axis:** Yes / No
+- **Group taxonomy:** 4 chromatic groups — Brights (vivid), Pastels (light), Desaturated (muted), Darks (deep). Full table and compatibility matrix: `docs_capsule_zero/project/methodology/colors.md`.
+- **Achromatic axis:** Yes / No (3 universal connectors — Black, Gray, White)
 
 ### Immutable Palette Rules
 - Capsule color palette is **locked at creation**. Changing palette = new capsule.

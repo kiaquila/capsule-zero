@@ -127,6 +127,8 @@ Brights + dark added (low lightness, moderate saturation). Compatible with: **Da
 
 **Key rule:** Cross-group mixing (e.g. Brights + Pastels, Brights + Darks, Pastels + Desaturated) is **not compatible**. The system blocks these combinations and suggests creating a separate capsule.
 
+> ⚠️ **Prototype discrepancy (follow-up).** The current prototype `html-prototypes/guided-journey.html` (function `areColorsCompatible`, ~line 1315) implements a permissive runtime check `same temperature OR same shade` based on per-color `temp` and `shade` attributes. That check allows some combinations this matrix forbids (e.g. warm Brights with warm Pastels). Production implementation MUST follow the matrix above; the prototype's compatibility function will be tightened as part of imp work to match. Until then, treat the matrix as canonical specification and the prototype as an approximation for layout/interaction only.
+
 ---
 
 ## Palette Picker — UI Behavior
