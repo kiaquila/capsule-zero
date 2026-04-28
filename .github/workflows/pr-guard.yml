@@ -23,28 +23,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout trusted gate logic from default branch
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
-          ref: ${{ inputs.ref || github.ref }}
 
-      - name: Check context coverage for code changes
+      - name: Resolve PR base and head SHAs
+        id: refs
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BASE_REF_NAME: ${{ github.event.pull_request.base.ref }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          INPUT_BASE_REF: ${{ inputs.base_ref }}
+          INPUT_HEAD_REF: ${{ inputs.head_ref }}
         run: |
           set -euo pipefail
 
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            base_ref="${{ github.event.pull_request.base.sha }}"
-            head_ref="${{ github.sha }}"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git fetch --no-tags origin "$PR_BASE_REF_NAME"
+            git fetch --no-tags origin "+refs/pull/${PR_NUMBER}/head:refs/remotes/origin/pr/${PR_NUMBER}/head"
+            base_sha="$PR_BASE_SHA"
+            head_sha="$PR_HEAD_SHA"
           else
-            git fetch --no-tags origin "${{ inputs.base_ref }}"
-            git fetch --no-tags origin "${{ inputs.head_ref }}"
-            base_ref="origin/${{ inputs.base_ref }}"
-            head_ref="origin/${{ inputs.head_ref }}"
+            git fetch --no-tags origin "$INPUT_BASE_REF"
+            git fetch --no-tags origin "$INPUT_HEAD_REF"
+            base_sha="$(git rev-parse "origin/$INPUT_BASE_REF")"
+            head_sha="$(git rev-parse "origin/$INPUT_HEAD_REF")"
           fi
 
-          changed_files="$(git diff --name-only "$base_ref" "$head_ref")"
+          echo "base_sha=$base_sha" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Check context coverage for code changes
+        shell: bash
+        env:
+          BASE_SHA: ${{ steps.refs.outputs.base_sha }}
+          HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
+        run: |
+          set -euo pipefail
+
+          merge_base="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+          changed_files="$(git diff --name-only "$merge_base" "$HEAD_SHA")"
           echo "$changed_files"
 
           code_changed=0
@@ -70,18 +93,37 @@ jobs:
 
       - name: Require baseline documentation
         shell: bash
+        env:
+          HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
         run: |
           set -euo pipefail
-          test -f AGENTS.md
-          test -f CLAUDE.md
-          test -f docs_capsule_zero/project/frontend/frontend-docs.md
-          test -f docs_capsule_zero/project/backend/backend-docs.md
-          test -f docs_capsule_zero/project/devops/ai-pr-workflow.md
-          test -f docs_capsule_zero/project/devops/ai-orchestration-protocol.md
-          test -f docs_capsule_zero/project/devops/ai-runner.md
-          test -f docs_capsule_zero/project/devops/review-contract.md
-          test -f docs_capsule_zero/project/devops/codex-github-setup.md
-          test -f docs_capsule_zero/project/devops/validation-matrix.md
-          test -f docs_capsule_zero/adr/adr-004-ai-development-workflow.md
-          test -f docs_capsule_zero/adr/adr-005-local-worker-orchestration.md
-          test -d app
+
+          head_tree="$(git ls-tree -r --name-only "$HEAD_SHA")"
+
+          require_path() {
+            if ! grep -Fxq "$1" <<< "$head_tree"; then
+              echo "Missing required path in PR head: $1"
+              exit 1
+            fi
+          }
+
+          require_dir() {
+            if ! grep -E "^$1/" <<< "$head_tree" > /dev/null; then
+              echo "Missing required directory in PR head: $1"
+              exit 1
+            fi
+          }
+
+          require_path AGENTS.md
+          require_path CLAUDE.md
+          require_path docs_capsule_zero/project/frontend/frontend-docs.md
+          require_path docs_capsule_zero/project/backend/backend-docs.md
+          require_path docs_capsule_zero/project/devops/ai-pr-workflow.md
+          require_path docs_capsule_zero/project/devops/ai-orchestration-protocol.md
+          require_path docs_capsule_zero/project/devops/ai-runner.md
+          require_path docs_capsule_zero/project/devops/review-contract.md
+          require_path docs_capsule_zero/project/devops/codex-github-setup.md
+          require_path docs_capsule_zero/project/devops/validation-matrix.md
+          require_path docs_capsule_zero/adr/adr-004-ai-development-workflow.md
+          require_path docs_capsule_zero/adr/adr-005-local-worker-orchestration.md
+          require_dir app
