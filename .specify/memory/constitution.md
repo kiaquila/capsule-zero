@@ -1,0 +1,149 @@
+# Capsule Zero Constitution
+
+## I. Product Vision & Positioning
+
+**Capsule Zero** is a premium fashion-tech platform — "the Aesop of wardrobe apps". It transforms closet chaos into a curated system where every piece works harder.
+
+**Core proposition:** Create maximally productive wardrobes from minimum items, maximum outfits with the WOW effect. The product turns a closet into a thoughtful system where every item is in its place and works for the user.
+
+**Emotional positioning:** "Finally, a beautiful tool that will help me organize my wardrobe."
+
+**Pain:** Too many items, too few outfits. Cognitive load every morning.
+
+**Value:** Fewer items — more style. Optimal number of favorite items → maximum outfits per person.
+
+**Business model (v0.1):** Freemium + coins. No subscription. Free tier includes all basic features + 1 capsule. Revenue streams: (1) coins — each additional capsule (2+) costs coins, editorial photo enhancement costs coins; (2) brand commission from a separate brand platform in Product v2.0. Coins are architecturally planned from Day 1.
+
+**Psychotype:** "New money mindset meets old money taste" — affluent but rational. Not luxury for show, but comfort and aesthetics. Slow fashion, sustainability as natural outcome.
+
+## II. Capsule Zero Proprietary Methodology
+
+Capsule Zero proprietary color circle methodology.
+
+### Color Architecture
+- **Temperature axis:** Warm / Cool / Neutral
+- **Group taxonomy:** 4 chromatic groups — Brights (vivid), Pastels (light), Desaturated (muted), Darks (deep). Full table and compatibility matrix: `docs_capsule_zero/project/methodology/colors.md`.
+- **Achromatic axis:** Yes / No (3 universal connectors — Black, Gray, White)
+
+### Immutable Palette Rules
+- Capsule color palette is **locked at creation**. Changing palette = new capsule.
+- Compatible colors can be added via item addition/replacement.
+- Incompatible items are **blocked** with recommendation to create a separate capsule.
+- Achromatics (Black, Gray, White — 3 colors, IDs A1–A3) are **universal connectors** — always compatible with every color in the system. → Full color table: `docs_capsule_zero/project/methodology/colors.md`
+
+### Compatibility Rules
+| Combination | Verdict |
+|---|---|
+| Achromat + Achromat | ALWAYS compatible |
+| Achromat + Any color | ALWAYS compatible |
+| Same temperature | Compatible |
+| Same saturation group | Compatible |
+| Different temperature and different saturation group | BLOCKED — separate capsule recommended |
+
+### Outfit Productivity Ratio (OPR)
+**Formula:** number of generated outfits / number of items in capsule.
+A good capsule of 30 items yields 80–150+ unique outfits. OPR is the hero metric displayed on capsule cards in the dashboard. Updated on every capsule change. Shows delta: "+0.3 from last change".
+
+### Item Categories
+Only **basic cuts** — simple, non-designer, guaranteeing universal combinability. Three wardrobe types: Women's (F), Men's (M), Mixed. TypeScript enum: `FEMALE | MALE | MIXED`. Min 8 categories to create a capsule. No upper limit. Category system with 7 groups: Tops, Dresses & Skirts, Bottoms, Outerwear, Shoes, Bags, Accessories.
+
+### Auto-tagging
+Every item must have: name, category, color palette (color dots). Auto-tagging is AI-generated on addition, user-editable. Extended fields (brand, material/composition, source URL) parsed automatically on import. Basis for capsule assembly, compatibility validation, gap analysis, and recommendations.
+
+## III. Design Principles
+
+### Visual Identity
+- **Achromatic interface** — black / white / grey. Color comes ONLY from the user's own items.
+- **Glassmorphism UI language** — frosted glass surfaces, backdrop blur, translucent layers, subtle borders on glass elements.
+  - Glass panels: `rgba(255,255,255,0.22)` + `backdrop-filter: blur(40px)` (main panels) / `blur(44px)` (nav, bottom sheets)
+  - Border: `1px solid rgba(255,255,255,.58)` + highlight `inset 0 1px 0 rgba(255,255,255,.72)`
+  - Shadow: `0 8px 32px rgba(0,0,0,.22)`
+- **Background:** `wall.png` grayscale + gradient overlay
+- **8px grid** for all spacing
+- **Typography:** Helvetica Neue / Arial, thin wide headings, grotesque body
+- **Error color:** `#FFD600` (yellow, not red)
+- **Favorite active:** `rgba(220,30,50,.90)` — saturated opaque red
+
+### Editorial Aesthetics
+- References: Zara.com, COS, Massimo Dutti — editorial minimalism, typography as hero
+- Full-screen B&W editorial photography on landing
+- Manifesto headline as brand statement
+- Interface must be worthy of standing next to Aesop / ZARA / COS
+- Photo enhancement target standard: ZARA / Farfetch / COS editorial photography
+- Monetization reference: Canva credit model — users buy coin packs for premium features (not subscription)
+
+### Red Lines — Do Not Ship If:
+- Interface feels cheap or dated (fails "Aesop test")
+- Any critical bug is present or error surfaces to user
+- Interface is confusing — maximum simplicity is non-negotiable
+- Service is unavailable or unreliable
+
+### Animation Principles
+- Transitions — instant. Completion — quiet and elegant (checkmark, soft glow).
+- Zero "dead zones" — every user action gets visual feedback.
+- Soft animation, highlight, quiet checkmark.
+
+### Tone of Voice
+Restrained, confident. Like a smart stylist: suggests, explains, does not impose. Blocks — with explanation and alternative.
+
+## IV. UX Philosophy
+
+### "Direct, Not Dictate"
+The platform guides the user through methodology without imposing. It suggests, explains, and offers alternatives. The user chooses color, the platform highlights compatible items.
+
+### Guided 3-Step Journey
+1. **Choose wardrobe type** (women's / men's / mixed)
+2. **Select categories** (checklist, min 8)
+3. **Choose colors + add items** (palette selection, three upload methods: photo, marketplace links, semantic search)
+
+### Emotional Arc
+**Attraction → Trust → Creativity → Satisfaction**
+
+| Phase | Screens | User's Inner Voice |
+|---|---|---|
+| ATTRACTION | Landing page | "This is not another clothes app — this is something else" |
+| TRUST | Registration, Dashboard | "Fast, beautiful, they respect my time" |
+| CREATIVITY | Journey 1-3, Import, Search | "I'm building my style system!" |
+| SATISFACTION | Result, Dashboard (filled), My Items | "My wardrobe finally works" |
+
+### Cross-cutting Emotional Principles
+- **Silence over noise.** Every screen must "breathe". Empty space is not emptiness but confidence.
+- **Instant feedback.** Every user action gets visual response.
+- **Screenshot test.** Main quality criterion: "Will the user screenshot this and send to a friend?" If not — back to revision.
+- **Emotion = function.** Beauty of interface is not decoration but an instrument. Premium design reduces anxiety, increases trust, motivates return.
+
+## V. Technology Decisions
+
+- **Frontend:** Next.js 14+ App Router, React, TypeScript
+- **Styling:** Tailwind CSS v4 with custom @theme tokens
+- **Languages:** EN (primary), ES-AR, RU — i18n from Day 1, switching without reload
+- **Responsive:** iPhone 14+ (375px), iPad (768px), Desktop 1280px+
+- **Performance targets:** Page load < 2 sec on 4G, Upload + bg removal < 5 sec
+- **Supported upload formats:** JPEG, PNG, WebP (max 10 MB)
+- **Supported import sources:** Best-effort generic product URL parsing, with retailer-specific adapters added where needed for higher accuracy
+
+## VI. Code Quality Standards
+
+### Quality Gates
+- Every screen: minimum 3 states (default, loading, empty/error)
+- Typography hierarchy: clear and uniform
+- Contrast: WCAG AA while preserving aesthetics
+- Micro-interactions: specified for all elements
+- Screens = designs to 2px precision
+- Animations per specification (timing, easing)
+- Empty/loading/error states implemented
+- Adaptive: iPhone 14+, iPad, Desktop 1280px+
+- Zero console errors, zero FOUC
+- Lighthouse: Performance 90+, Accessibility 95+
+
+### Red Lines (never ship if violated)
+- Cheap design — interface must be worthy next to Aesop / ZARA / COS
+- Bad stylist recommendations — better fewer, but more accurate
+- Complex interface — maximum simplicity and intuitiveness
+- Critical bugs or surfacing errors
+- Service unavailability
+
+### Premium Test
+"Will the target user screenshot this screen and send to a friend?" If not — back to revision.
+
+**Version**: 1.0 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-03-17
