@@ -73,6 +73,13 @@ Repository default workflow permissions may remain `read` so long as individual 
 - Only trusted repository actors may trigger repository AI workflows.
 - The repository may use policy workflows to reject mismatched agent triggers.
 
+## Gate Trust Boundary
+
+- Gate workflows that publish required checks (`AI Review`, `guard`) check out the repository default branch, not the pull request ref, so the gate logic and any helper scripts under `scripts/` come from trusted `main`.
+- Gate workflows operate on the pull request by reading `github.event.pull_request.*` metadata and by fetching PR refs explicitly via `git fetch +refs/pull/N/head`, then comparing through `git diff` and inspecting the head tree through `git ls-tree`.
+- A contributor cannot bypass a required check by editing `scripts/ai-review-gate.mjs`, `scripts/resolve-pr-context.mjs`, or any other gate helper inside their pull request, because those files are loaded from the default branch at gate run time.
+- Native vendor agent jobs (`claude-agent.yml`, `claude-review.yml`) run on the `issue_comment` event whose `github.ref` is already the default branch, so the bootstrap checkout there is trusted by event semantics.
+
 ## Required GitHub Settings
 
 - protect `main`
