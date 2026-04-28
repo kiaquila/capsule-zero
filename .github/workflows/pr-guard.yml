@@ -66,7 +66,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          changed_files="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          merge_base="$(git merge-base "$BASE_SHA" "$HEAD_SHA")"
+          changed_files="$(git diff --name-only "$merge_base" "$HEAD_SHA")"
           echo "$changed_files"
 
           code_changed=0
