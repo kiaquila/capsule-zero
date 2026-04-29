@@ -47,7 +47,7 @@ function git(commandArgs, options = {}) {
 function changedFiles() {
   const output = inspectWorktree
     ? git(["ls-files", "--modified", "--others", "--exclude-standard"])
-    : git(["diff", "--name-only", baseRef, headRef]);
+    : git(["diff", "--name-only", "--merge-base", baseRef, headRef]);
 
   return output.split("\n").filter(Boolean);
 }
