@@ -1,0 +1,233 @@
+openapi: 3.1.0
+info:
+  title: Capsule Zero MVP API
+  version: 0.1.0
+  description: >
+    Sprint 0 implementation contract scaffold. Before product feature work,
+    every route listed in docs_capsule_zero/adr/api-spec.md must be expanded
+    here with request schemas, response schemas, auth requirements, and error
+    responses, then used to generate TypeScript and Dart clients.
+x-status: sprint-0-required
+servers:
+  - url: https://{host}
+    variables:
+      host:
+        default: app.capsule-zero.local
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Supabase JWT
+    lavaWebhookKey:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+              additionalProperties: true
+    ColorDot:
+      type: object
+      required: [id, name, hex, group]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        hex:
+          type: string
+          pattern: "^#[0-9A-Fa-f]{6}$"
+        group:
+          type: string
+    Item:
+      type: object
+      required: [id, name, categoryId, colorIds, sourceType, visibility, imageUrl, fromCatalog]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+        colorIds:
+          type: array
+          items:
+            type: string
+        brand:
+          type: string
+          nullable: true
+        material:
+          type: string
+          nullable: true
+        price:
+          type: number
+          nullable: true
+        sourceType:
+          type: string
+          enum: [photo_upload, marketplace, catalog]
+        visibility:
+          type: string
+          enum: [private, moderation_pending, public]
+        imageUrl:
+          type: string
+        fromCatalog:
+          type: boolean
+    Capsule:
+      type: object
+      required: [id, name, wardrobeType, paletteColorIds, paletteLocked, itemCount, outfitCount, opr]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        wardrobeType:
+          type: string
+          enum: [women, men, mixed]
+        paletteColorIds:
+          type: array
+          items:
+            type: string
+        paletteLocked:
+          type: boolean
+        itemCount:
+          type: integer
+        outfitCount:
+          type: integer
+        opr:
+          type: number
+    LavaInvoiceRequest:
+      type: object
+      required: [coinPackId]
+      properties:
+        coinPackId:
+          type: string
+          enum: [coins_5, coins_15, coins_30]
+    LavaInvoiceResponse:
+      type: object
+      required: [invoiceId, paymentUrl]
+      properties:
+        invoiceId:
+          type: string
+        paymentUrl:
+          type: string
+          format: uri
+    LavaStatusResponse:
+      type: object
+      required: [invoiceId, status]
+      properties:
+        invoiceId:
+          type: string
+        status:
+          type: string
+          enum: [pending, paid, failed, expired, refunded]
+        coinDelta:
+          type: integer
+          nullable: true
+paths:
+  /api/health:
+    get:
+      security: []
+      summary: Deployment health check
+      responses:
+        "200":
+          description: Healthy deployment
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/billing/lava/invoice:
+    post:
+      x-client-availability: web
+      summary: Create a Lava.top invoice for a web coin-pack purchase
+      description: Web-only in v0.1; native mobile apps must not expose this as a purchase CTA.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LavaInvoiceRequest"
+      responses:
+        "200":
+          description: Lava.top invoice/payment link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LavaInvoiceResponse"
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/billing/lava/status/{invoiceId}:
+    get:
+      summary: Read Lava.top invoice status
+      parameters:
+        - in: path
+          name: invoiceId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invoice status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LavaStatusResponse"
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/webhooks/lava:
+    post:
+      security:
+        - lavaWebhookKey: []
+      summary: Fulfill Lava.top payment webhook into coin ledger
+      responses:
+        "200":
+          description: Webhook accepted idempotently
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"

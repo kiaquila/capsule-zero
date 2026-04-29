@@ -1,12 +1,12 @@
 # Launch Plan — Capsule Zero MVP v0.1
 
-> Source: Capsule Zero Launch Plan RU.pdf (February 2026). From idea to first commercial sales in 10-12 weeks.
+> Original source: Capsule Zero Launch Plan RU.pdf (February 2026). Updated in April 2026 for Flutter mobile apps and Lava.top payments; current path to first commercial sales is 13-14 weeks.
 
 ## Overview
 
 | Parameter | Value |
 |-----------|-------|
-| **Timeline** | 10-12 weeks (2-3 months) |
+| **Timeline** | 13-14 weeks (about 3 months) |
 | **Priority** | Premium quality > speed |
 | **MVP philosophy** | Minimum features, maximum quality |
 | **Team** | AI-native + founder as creative director |
@@ -17,7 +17,8 @@
 ### What's IN v0.1
 - Landing page with premium brand identity (hero, value proposition, CTA)
 - Multilingual support (EN, ES-AR, RU from launch)
-- Mobile-responsive design
+- Mobile-first web design
+- Native Flutter apps for iOS and Android
 - User profile / personal cabinet
 - Onboarding — guided capsule creation (3-step journey: wardrobe type → categories → colors + items)
 - Item upload with auto-categorization
@@ -32,7 +33,8 @@
 - Outfit constructor / builder
 - Outfit saving and browsing
 - Advanced wardrobe analytics and insights
-- Native mobile apps (web-first, responsive)
+- Full offline mobile mode
+- Native watch/tablet-specific experiences
 
 ## Master Plan — Phase Overview
 
@@ -43,11 +45,11 @@
 | 2 | Product Definition & UX Research | W2 (5 days) | MVP scope, personas, user stories, UX validation, styling expertise | PRD + Styling Guide |
 | 3 | UX/UI Design | W3-4 (10 days) | UI kit, hi-fi prototypes, micro-interactions, brand system | Design Package + UI Kit |
 | 4 | Technical Architecture | W4-5 (5 days) | Tech stack, architecture, repository, CI/CD | ADR + Boilerplate |
-| 5 | Development Sprint | W5-9 (20 days) | Implement all MVP features with premium frontend | Product on staging |
-| 6 | QA & Soft Launch | W9-11 (10 days) | Bug fix, polishing, beta test, premium audit | Release candidate + QA report |
-| 7 | Commercial Launch | W11-12 (5 days) | Go-live, marketing, first paying users | Live product + assets |
+| 5 | Development Sprint | W5-11 (30 days) | Sprint 0 readiness, then MVP web, shared backend, and Flutter core flows | Product on staging/TestFlight/internal testing |
+| 6 | QA & Soft Launch | W11-13 (10 days) | Bug fix, polishing, beta test, premium audit across web and mobile | Release candidate + QA report |
+| 7 | Commercial Launch | W13-14 (5 days) | Go-live, marketing, first paying users | Live product + assets |
 
-> Total timeline: 10-12 weeks. Phases 0-1 overlap in Week 1. Phase 4 starts in parallel with Phase 3. Buffer +1 week for UX/UI polishing.
+> Total timeline: 13-14 weeks after the Flutter mobile scope addition and Sprint 0 readiness gate. Phases 0-1 overlap in Week 1. Phase 4 starts in parallel with Phase 3. Buffer +1 week for UX/UI polishing and mobile release readiness.
 
 ## Phases 0–3 — COMPLETE ✅
 
@@ -62,50 +64,56 @@
 
 **Goal:** Tech stack, repository, CI/CD, development environment.
 **Timeline:** Weeks 4-5, parallel with Phase 3 (5 days)
-**AI roles:** Tech Architect AI (lead), Programmer AI (setup), DevOps Consultant
+**AI roles:** Tech Architect AI (lead), Programmer AI (setup), DevOps Consultant, Mobile Architect AI
 
 | Task | Days | Description | Result |
 |------|------|-------------|--------|
-| Stack selection | D1-2 | Frontend (Next.js/React), Backend (Node.js/Python), DB, storage, hosting. | ADR |
+| Stack selection | D1-2 | Web (Next.js/React), mobile (Flutter), backend/BaaS, DB, storage, hosting/distribution, Lava.top payments. | ADR |
 | Repository | D2-3 | Mono/multi-repo. Linting, formatting, commit hooks, folder structure. | Clean repo |
 | CI/CD | D3-4 | Auto-tests, build, deploy. Staging. Preview deployments. | CI/CD pipeline |
-| API design | D4-5 | REST/GraphQL endpoints, schemas, authentication. | API spec |
+| API design | D4-5 | Shared web/mobile backend contract, REST/RPC endpoints, schemas, authentication, Lava.top webhook contract. | API spec |
 | Dev documentation | D5 | Env variables, local DB, seed data, tests. | Setup guide |
 
 ## Phase 5 — Development Sprint
 
-**Goal:** Implement all MVP features to production quality per approved design.
-**Timeline:** Weeks 5-9 (20 working days)
-**AI roles:** Programmer AI (lead), Tech Architect (review), QA AI, UX/UI Designer, AI Stylist-Consultant
+**Goal:** Convert architecture into implementation-ready contracts, then implement MVP features to production quality across web and mobile.
+**Timeline:** Weeks 5-11 (30 working days)
+**AI roles:** Programmer AI (lead), Mobile Engineer AI, Tech Architect (review), QA AI, UX/UI Designer, AI Stylist-Consultant
 
 | Sprint | Days | Focus | Result |
 |--------|------|-------|--------|
-| 1: Foundation | D1-5 (W5) | Landing pixel-perfect, navigation, adaptive, brand components. | Landing on staging |
-| 2: Onboarding | D6-10 (W6) | Guided journey (wardrobe type, categories, colors + items), auth, profile, transitions. | Onboarding on staging |
-| 3: Core | D11-15 (W7-8) | Photo upload, background removal, auto-categorization, grid, filtering. | Upload + grid |
-| 4: Capsule Experience | D16-20 (W8-9) | Capsule result, dashboard, shopping list, favorites, wardrobe states, all animations. | Full MVP on staging |
+| 0: Readiness Gate | D1-5 (W5) | OpenAPI/RPC contract, Supabase migrations/RLS/storage tests, Flutter scaffold, Lava.top web setup, Photoroom spike, lint/hooks, founder approval. | Phase 5 entrance checklist complete |
+| 1: Foundation | D6-10 (W6) | Landing pixel-perfect, navigation, mobile-first layout system, shared tokens, Supabase setup. | Landing + backend foundation on staging |
+| 2: Shared Contract + Mobile Shell | D11-15 (W7) | Auth, profile, generated clients, Flutter routing, deep links, shared domain models. | Web auth + Flutter shell |
+| 3: Onboarding | D16-20 (W8) | Guided journey (wardrobe type, categories, colors + items), profile, transitions across web and mobile. | Onboarding on staging/internal mobile build |
+| 4: Core Wardrobe | D21-25 (W9-10) | Photo upload, background removal, auto-categorization, grid, filtering, mobile camera/gallery flow. | Upload + grid across clients |
+| 5: Capsule + Web Payments | D26-30 (W10-11) | Capsule result, dashboard, shopping list, favorites, wardrobe states, Lava.top web coin purchase flow, mobile balance display, all animations. | Full MVP on staging/TestFlight/internal testing |
 
 ### Quality Gate: Implementation Completeness
 - Screens = designs to 2px precision
 - Animations per spec (timing, easing)
 - Empty/loading/error states implemented
-- Adaptive: iPhone 14+, iPad, desktop 1280px+
+- Mobile-first web: iPhone 14+ 375px, iPad/tablet, desktop 1280px+
+- Flutter: iOS and Android smoke-tested on small and standard phone sizes
 - Page load < 2 sec on 4G
 - Upload + background removal < 5 sec
 - Guided journey content verified against approved prototype
+- Shared web/mobile API contract verified by tests or generated types
+- Lava.top web purchase/webhook flow tested in sandbox or controlled test mode before launch
+- Mobile purchase CTAs absent in iOS/Android builds; mobile only displays coin balance/status
 - Zero console errors, zero FOUC
 
 ## Phase 6 — QA, Polishing & Soft Launch
 
 **Goal:** Release candidate. Beta test. Polish to premium standard.
-**Timeline:** Weeks 9-11 (10 days)
+**Timeline:** Weeks 11-13 (10 days)
 **AI roles:** QA AI (lead), Programmer AI, UX/UI Designer (audit), Marketing Promotion AI
 
 | Task | Days | Description | Result |
 |------|------|-------------|--------|
-| QA testing | D1-3 | Functional, cross-browser, cross-device, edge cases. | Bug report |
+| QA testing | D1-3 | Functional, cross-browser, web/mobile cross-device, edge cases. | Bug report |
 | Visual audit | D3-4 | Pixel check: alignment, spacing, colors, animations. | Audit report |
-| Performance | D4-5 | Lighthouse 90+ perf, 95+ a11y. Lazy loading, code splitting. | Perf report |
+| Performance | D4-5 | Lighthouse 90+ perf, 95+ a11y, mobile app startup smoke. Lazy loading, code splitting. | Perf report |
 | Bug fix & polish | D5-7 | Critical/major bugs, visual fixes, animation polishing. | Release candidate |
 | Beta (soft launch) | D7-9 | 10-20 target audience users. First impression, WTP, 3-5 interviews. | Beta feedback |
 | Final preparation | D9-10 | Critical feedback, final QA, DNS, SSL, analytics. | Production-ready |
@@ -118,17 +126,19 @@
 - Founder — written approval
 - Legal requirements met (privacy, terms)
 - Analytics and error tracking working
+- Internal mobile builds install and complete auth/onboarding/upload smoke flow
+- Mobile builds contain no purchase CTAs or external payment links unless later policy approval exists
 
 ## Phase 7 — Commercial Launch
 
 **Goal:** Public launch, marketing, first paying users.
-**Timeline:** Weeks 11-12 (5 days)
+**Timeline:** Weeks 13-14 (5 days)
 **AI roles:** Marketing Promotion AI (lead), Product AI, UX/UI Designer
 
 | Task | Days | Description | Result |
 |------|------|-------------|--------|
 | Marketing assets | D1-2 | Product Hunt, social media, email waitlist, press kit. | Marketing package |
-| Production deploy | D1 | Deploy, Stripe, monitoring 2 hours. | Live product |
+| Production deploy | D1 | Deploy web/backend, Lava.top web payment verification, mobile release channel readiness, monitoring 2 hours. | Live product |
 | Launch day | D2-3 | Product Hunt, social media, email, outreach to 50+ early adopters. | Launch campaign |
 | First 48 hours | D3-4 | Monitoring: registrations, conversion, errors. Response within 2 hours. | Metrics dashboard |
 | Retrospective | D4-5 | Analyze 1 week of data: activation, retention, revenue, NPS. Priorities for v0.2. | Report + roadmap v0.2 |
@@ -152,7 +162,8 @@
 | UX/UI Researcher | UX validation, competitor benchmarks, emotion map, first-impression audits, beta testing. | Phases 0-3, 6 | UX insights, emotion map |
 | UX/UI Designer | Design system, hi-fi screens, components, micro-interactions, visual QA. | Phases 3, 5-6 | Design package, audit |
 | Tech Architect AI | Stack, architecture, API, code review. | Phases 4-5 | ADR, API spec |
-| Programmer AI | Frontend + backend, components, API, optimization. | Phases 5-6 | Codebase, staging |
+| Programmer AI | Web frontend + backend, components, API, optimization. | Phases 5-6 | Codebase, staging |
+| Mobile Engineer AI | Flutter app, iOS/Android builds, mobile auth/deep links, app-store readiness. | Phases 4-6 | Mobile app builds |
 | QA AI | Tests, cross-browser, regression, bug reports. | Phases 5-6 | Reports, release sign-off |
 | DevOps Consultant | CI/CD, hosting, production, monitoring. | Phases 4, 6-7 | Pipeline, production |
 | Marketing Promotion AI | Launch, copywriting, social media, Product Hunt, press kit. | Phases 6-7 | Launch assets |
@@ -163,7 +174,7 @@
 |------|-------|----------|
 | Claude.ai (Opus/Sonnet) | Product AI, Marketing, UX/UI Researcher, UX/UI Designer (specs), Tech Architect, AI Stylist-Consultant | Strategy, research, specifications, styling expertise |
 | Claude Code | Programmer AI, QA AI, DevOps | Code, testing, CI/CD, deploy, optimization |
-| External APIs | remove.bg/rembg, Cloudflare R2/S3, Clerk/Supabase Auth | Specialized services |
+| External APIs | Photoroom/remove.bg, Supabase Auth/Storage, Lava.top | Specialized services |
 
 ### Artifact Handoff Protocol
 
@@ -194,9 +205,9 @@ The founder operates as creative director and final decision-maker. Taste, intui
 | Phase | Gate | Criteria | Approvers |
 |-------|------|----------|-----------|
 | 3 (Design) | Premium design | 3+ states per screen. Consistent typography. Palette confirmed by AI stylist. "Aesop/Notion" test. Founder approved. | Designer + Stylist + Founder |
-| 5 (Development) | Implementation completeness | Screens = design to 2px. Animations per spec. < 2 sec load. Adaptive. Guided journey content correct. 0 errors. | QA + Designer |
+| 5 (Development) | Implementation completeness | Screens = design to 2px. Animations per spec. < 2 sec load. Mobile-first web + Flutter phone smoke tests. Guided journey content correct. 0 errors. | QA + Designer |
 | 6 (QA) | Release candidate | 0 critical/major. Lighthouse 90+/95+. Beta 4.5+/5. 60%+ completion. Founder approved. Legal. | QA + Founder |
-| 7 (Launch) | Go-Live | Stripe tested. Analytics working. Monitoring 2 hours. Legal pages. | DevOps + Founder |
+| 7 (Launch) | Go-Live | Lava.top web purchases tested. Mobile purchase CTAs absent unless later policy approval exists. Analytics working. Monitoring 2 hours. Legal pages. | DevOps + Founder |
 
 > **The premium test across all phases:** "Will the target user screenshot this screen and send it to a friend?" If the answer is not a confident "yes" — back to revision.
 

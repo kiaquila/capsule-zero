@@ -12,16 +12,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current Phase
 
-**Phase 4 — Technical Architecture (IN PROGRESS).** Phase 3 (UX/UI Design) is complete. All 16 MVP logical screens have approved hi-fi prototypes, implemented across 12 HTML files (some files contain multiple screens as tabs/modals).
+**Phase 4 — Technical Architecture (DECISIONS DOCUMENTED).** Phase 3 (UX/UI Design) is complete. All 16 MVP logical screens have approved hi-fi prototypes, implemented across 12 HTML files (some files contain multiple screens as tabs/modals). Phase 5 feature work requires Sprint 0 entrance-gate completion first.
 
 **Phase 4 status:**
-- ✅ Frontend: Next.js 14+ App Router, React, TypeScript, Tailwind v4 initialized (`/app`)
-- ❌ Backend stack not decided (Supabase vs custom)
-- ❌ Auth provider not decided (Supabase Auth / Clerk)
-- ❌ File storage not decided (Supabase Storage / Cloudflare R2)
-- ❌ Phase 4 stack ADRs not written yet (`docs_capsule_zero/adr/` already contains devops ADRs)
+- ✅ Web: Next.js 14+ App Router, React, TypeScript, Tailwind v4 initialized (`/app`)
+- ✅ Mobile decision: Flutter + Dart for iOS and Android
+- ✅ Backend stack decided: Supabase
+- ✅ Auth provider decided: Supabase Auth
+- ✅ File storage decided: Supabase Storage
+- ✅ Payments decided: Lava.top web purchases + Postgres coin ledger; mobile read-only balance for v0.1
+- ✅ Phase 4 stack ADRs written under `docs_capsule_zero/adr/`
 - ✅ CI/CD baseline configured via GitHub Actions (`baseline-checks`, `guard`, `AI Review`)
-- ❌ API spec not written
+- ✅ API spec written
+- ⚠️ Remaining Sprint 0 gate: founder approval, OpenAPI/generated clients, Supabase migrations/RLS/storage tests, Flutter scaffold, Lava.top web setup, Photoroom spike, linting + local hooks
 
 **See AGENTS.md → "Phase 4" section** for full task list and deliverables.
 
@@ -45,8 +48,11 @@ This project uses spec-kit for structured development. **Always read the relevan
 
 ## Tech Stack
 
-- **Frontend:** Next.js 14+ App Router (`/app` directory)
-- **Language:** React, TypeScript
+- **Web:** Next.js 14+ App Router (`/app` directory)
+- **Mobile:** Flutter + Dart for iOS and Android
+- **Backend:** Supabase Auth, PostgreSQL/RLS, Storage, Edge Functions/RPC
+- **Payments:** Lava.top web purchases, fulfilled by webhooks into coin ledger; mobile read-only balance in v0.1
+- **Languages:** TypeScript/React for web, Dart for Flutter
 - **Styling:** Tailwind CSS v4 with custom @theme tokens
 - **Tokens:** `app/src/styles/tokens.css` (from design system)
 
@@ -107,6 +113,10 @@ Pixel-perfect Phase 3 prototypes in `html-prototypes/` (pure HTML+CSS). This fol
 - `docs_capsule_zero/project/devops/ai-pr-workflow.md` — PR loop and merge gates
 - `docs_capsule_zero/project/devops/ai-orchestration-protocol.md` — cloud-native agent routing and policy contract
 - `docs_capsule_zero/project/devops/ai-runner.md` — cloud AI integrations and `AI Review` gate contract
+- `docs_capsule_zero/project/architecture/phase-4-council.md` — architecture decision register
+- `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` — required Sprint 0 gate before feature work
+- `docs_capsule_zero/adr/` — ADRs for stack, auth, storage, and API contract
+- `docs_capsule_zero/project/mobile/mobile-docs.md` — Flutter app architecture and mobile constraints
 
 ## Repository Delivery Protocol
 
@@ -150,6 +160,7 @@ Pixel-perfect Phase 3 prototypes in `html-prototypes/` (pure HTML+CSS). This fol
 - Lighthouse: Performance 90+, Accessibility 95+
 - Page load < 2 sec on 4G
 - Upload + bg removal < 5 sec
-- Adaptive: iPhone 14+ (375px), iPad (768px), Desktop 1280px+
+- Mobile-first web: iPhone 14+ (375px), iPad (768px), Desktop 1280px+
+- Flutter smoke tests: iOS and Android small/standard phone sizes
 - Zero console errors, zero FOUC
 - Every screen: min 3 states (default, loading, empty/error)
