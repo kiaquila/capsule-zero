@@ -48,6 +48,7 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - A mismatched trigger is a policy violation.
 - One scoped task maps to one branch and one pull request.
 - A task must stay scoped to an approved `.specify/specs/<feature-id>/` folder.
+- Product code changes under `app/` must include complete feature memory: `spec.md`, `plan.md`, and `tasks.md` in one `.specify/specs/<feature-id>/` folder.
 - Durable docs remain part of the delivery contract for any change that affects architecture, workflow, or behavior.
 
 ## Native Backends
@@ -97,6 +98,13 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - Missing or unverifiable selected-reviewer output fails the check.
 
 This is a fail-closed system by design.
+
+## CI And Security Gates
+
+- `baseline-checks` is the required CI check for repository baseline validation, app typecheck, app build, and optional app tests.
+- `guard` is the required policy check for feature-memory coverage and baseline-file validation.
+- `osv-scan` runs dependency vulnerability scanning on pull requests, pushes to `main`, a weekly schedule, and manual dispatch.
+- Required gate scripts are loaded from trusted default-branch code when available, so pull requests cannot weaken the checks that judge them.
 
 ## Cleanup Status
 
