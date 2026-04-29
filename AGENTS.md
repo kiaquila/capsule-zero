@@ -6,7 +6,7 @@
 
 **Capsule Zero** is a premium fashion-tech platform — "the Aesop of wardrobe apps". It helps affluent users (25–40 yo) build maximally productive capsule wardrobes using a proprietary color and wardrobe methodology. Core metric: **Outfit Productivity Ratio** (outfits / items).
 
-**Tech stack:** Next.js 14+ App Router, React, TypeScript, Tailwind CSS v4
+**Tech stack:** Next.js 14+ App Router, React, TypeScript, Tailwind CSS v4, Flutter mobile app (iOS + Android), Supabase backend
 **Languages:** EN (primary), ES-AR, RU — i18n from Day 1
 **Target:** Buenos Aires-based startup, global premium segment
 
@@ -18,7 +18,7 @@
 | 1. Market Research | COMPLETE — `docs_capsule_zero/marketing/go-to-market.md` |
 | 2. Product Definition | COMPLETE — `.specify/specs/001-capsule-zero-mvp/spec.md`, `docs_capsule_zero/project/methodology/`, `docs_capsule_zero/ux/emotion-map.md`, `docs_capsule_zero/ux/ux-validation.md` |
 | 3. UX/UI Design | COMPLETE — 16 logical screens across 12 HTML files + `html-prototypes/design-system.html`, `html-prototypes/color-system.html` — all in `html-prototypes/` |
-| **4. Technical Architecture** | **IN PROGRESS** — see section below |
+| **4. Technical Architecture** | **DECISIONS DOCUMENTED** — Sprint 0 entrance gate pending before Phase 5 feature work |
 | 5. Development Sprint | Upcoming |
 | 6. QA & Soft Launch | Upcoming |
 | 7. Commercial Launch | Upcoming |
@@ -104,6 +104,13 @@ Photo upload, marketplace link import, semantic search from shared DB. All three
 | `docs_capsule_zero/project/methodology/outfit-generation.md` | 7-layer outfit structure, OPR formula, combination algorithm |
 | `docs_capsule_zero/project/methodology/gap-analysis.md` | Gap detection rules, shopping list format, validation constraints |
 | `docs_capsule_zero/project/frontend/styling.md` | Glass tokens, colors, typography, component patterns (source of truth for visual tokens and component styling) |
+| `docs_capsule_zero/project/frontend/frontend-docs.md` | Web frontend architecture, libraries, state management, env vars |
+| `docs_capsule_zero/project/frontend/components.md` | Component conventions, glass patterns, mobile-first rules |
+| `docs_capsule_zero/project/backend/backend-docs.md` | Backend stack, API structure, DB schema, env vars |
+| `docs_capsule_zero/project/mobile/mobile-docs.md` | Flutter app architecture, mobile auth/deep links, mobile payment constraints |
+| `docs_capsule_zero/project/architecture/phase-4-council.md` | Architecture council decision register and validation notes |
+| `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` | Required Sprint 0 gate before product feature implementation |
+| `docs_capsule_zero/adr/` | ADRs for stack, auth, storage, and API contract |
 | `docs_capsule_zero/glossary.md` | Domain terminology with RU/ES-AR equivalents |
 | `docs_capsule_zero/i18n/ui-texts.md` | i18n content (EN, ES-AR, RU) — all 16 screens |
 | `docs_capsule_zero/ux/emotion-map.md` | Emotional targets per screen, UX principles |
@@ -181,9 +188,9 @@ When assigned to implement a specific feature, read in this order:
 
 ---
 
-## Phase 4 — Technical Architecture (IN PROGRESS)
+## Phase 4 — Technical Architecture (DECISIONS DOCUMENTED)
 
-**Your task as the assigned agent:** Make all remaining architecture decisions, document them as ADRs, and produce the artifacts listed below so Phase 5 (Development Sprint) can begin.
+Architecture decisions have been made through an Architectura-style council and documented in the repository. Before Phase 5 feature work begins, complete the Sprint 0 entrance gate and get founder approval on the stack.
 
 ### What's already done
 | Item | Status | Location |
@@ -192,42 +199,56 @@ When assigned to implement a specific feature, read in this order:
 | Styling | ✅ Tailwind CSS v4 with custom @theme tokens | `app/src/styles/tokens.css` |
 | Design tokens | ✅ Glass tokens, colors, typography | `docs_capsule_zero/project/frontend/styling.md` |
 | Folder structure | ✅ Basic boilerplate (`/app/src/`) | `/app/src/` |
+| Architecture council | ✅ Decisions + validation | `docs_capsule_zero/project/architecture/phase-4-council.md` |
+| Phase 5 entrance checklist | ✅ Required Sprint 0 gate documented | `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` |
+| ADR-001: Stack Overview | ✅ Accepted | `docs_capsule_zero/adr/adr-001-stack.md` |
+| ADR-002: Auth | ✅ Accepted | `docs_capsule_zero/adr/adr-002-auth.md` |
+| ADR-003: Storage | ✅ Accepted | `docs_capsule_zero/adr/adr-003-storage.md` |
+| API spec | ✅ MVP planning contract | `docs_capsule_zero/adr/api-spec.md` |
+| Backend docs | ✅ Stack, API structure, DB schema | `docs_capsule_zero/project/backend/backend-docs.md` |
+| Frontend docs | ✅ Libraries, state management, env vars | `docs_capsule_zero/project/frontend/frontend-docs.md` |
+| Components guide | ✅ Component conventions, glass patterns | `docs_capsule_zero/project/frontend/components.md` |
+| Mobile docs | ✅ Flutter stack, deep links, mobile QA | `docs_capsule_zero/project/mobile/mobile-docs.md` |
 
-### What's NOT done — decisions needed
-| Decision | Options | Notes |
-|---|---|---|
-| **Backend / BaaS** | Supabase (recommended for solo/AI team) · Node.js/NestJS · Python/FastAPI | Supabase gives Auth + DB + Storage + API in one |
-| **Database** | Supabase PostgreSQL · standalone PostgreSQL · PlanetScale | Must support: users, items, capsules, palettes, shared item DB |
-| **Auth** | Supabase Auth · Clerk · NextAuth.js | Google + Apple OAuth required (see US-002, US-003) |
-| **File Storage** | Supabase Storage · Cloudflare R2 · AWS S3 | Stores original + bg-removed item photos |
-| **Background Removal** | remove.bg API · rembg (self-hosted) · Photoroom | < 5 sec SLA per spec |
-| **Hosting** | Vercel (frontend) + Supabase (backend) · Railway · Render | Vercel recommended for Next.js |
-| **State Management** | Zustand · TanStack Query · React Context | Already have `journeyStore.ts` with Zustand |
-| **API Client** | TanStack Query · SWR · fetch | |
-| **Forms** | React Hook Form + Zod · | |
+### Accepted Phase 4 decisions
+| Decision | Accepted option |
+|---|---|
+| **Backend / BaaS** | Supabase |
+| **Database** | Supabase PostgreSQL with RLS, pgvector, and Postgres full-text search |
+| **Auth** | Supabase Auth with Email, Google OAuth, and Apple Sign-In |
+| **File Storage** | Supabase Storage |
+| **Background Removal** | Photoroom API behind an adapter, with remove.bg fallback if SLA/quality fails |
+| **Hosting** | Vercel frontend + Supabase backend services |
+| **State Management** | Zustand for local Journey/UI state; TanStack Query for interactive server-state |
+| **API Client** | Server Components/Actions + typed fetch/TanStack Query; Route Handlers for explicit API boundaries |
+| **Forms** | React Hook Form + Zod |
+| **i18n** | next-intl |
+| **Payments** | Lava.top web purchases + Postgres coin ledger; mobile read-only balance in v0.1 |
+| **Mobile App** | Flutter + Dart for iOS and Android |
 
-### Phase 4 deliverables (artifacts to produce)
-| Artifact | Where to create | Template |
-|---|---|---|
-| ADR-001: Stack Overview | `docs_capsule_zero/adr/adr-001-stack.md` | Decision · Context · Consequences |
-| ADR-002: Auth | `docs_capsule_zero/adr/adr-002-auth.md` | |
-| ADR-003: Storage | `docs_capsule_zero/adr/adr-003-storage.md` | |
-| Backend docs | `docs_capsule_zero/project/backend/backend-docs.md` | Stack, API structure, DB schema |
-| Frontend docs | `docs_capsule_zero/project/frontend/frontend-docs.md` | Libraries, state management, env vars |
-| Components guide | `docs_capsule_zero/project/frontend/components.md` | Component conventions, glass patterns |
-| API spec | `docs_capsule_zero/adr/api-spec.md` | REST endpoints, auth, schemas |
+### Required Sprint 0 follow-ups before Phase 5 feature work
+- Founder approval on the accepted stack.
+- Configure linting and local commit hooks before first Phase 5 product-code PR.
+- Create Supabase project/local stack, migrations, storage buckets, RLS policies, and seed data.
+- Configure Google and Apple OAuth providers in Supabase/provider dashboards.
+- Configure Lava.top products/API key/webhook for web purchases.
+- Scaffold Flutter app and shared web/mobile domain contract.
+- Run a real-image Photoroom latency/quality test against the < 5 sec background removal gate.
+- Generate TypeScript and Dart API clients from `docs_capsule_zero/adr/openapi.yaml`.
 
 ### Phase 4 quality gate (from launch-plan.md)
-- All stack decisions documented as ADRs
-- Repository has linting + commit hooks configured
-- CI/CD pipeline set up (auto-build, preview deployments)
-- Local dev setup documented (env vars, seed data)
-- Founder approval on stack
+- All stack decisions documented as ADRs: ✅ done
+- CI/CD pipeline set up (auto-build, preview deployments): ✅ baseline GitHub checks documented and configured
+- Local dev setup documented (env vars, seed data): ✅ documented in backend/frontend docs
+- Repository has linting + commit hooks configured: pending Sprint 0 follow-up
+- Founder approval on stack: pending
 
 ### Key constraints for architecture decisions
-- **No subscription model** — coins only (Stripe one-time purchases)
+- **No subscription model** — coins only (Lava.top one-time purchases)
 - **3 upload methods:** photo upload · marketplace link import · semantic search (shared DB)
 - **Background removal < 5 sec** per quality gate
 - **Multilingual from Day 1:** EN, ES-AR, RU — use `next-intl` or `react-i18next`
 - **i18n strings:** `docs_capsule_zero/i18n/ui-texts.md`
-- **Mobile-first:** iPhone 14+ (375px), iPad (768px), Desktop 1280px+
+- **Mobile-first:** phone UX first on web and Flutter; iPhone 14+ (375px), Android small/standard, iPad/tablet (768px), Desktop 1280px+
+- **Native mobile MVP:** Flutter app for iOS and Android uses the same Supabase backend and documented API contract
+- **Mobile payments:** Lava.top is canonical for web purchases; iOS/Android v0.1 must not expose purchase CTAs or external payment links, only balance/status
