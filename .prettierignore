@@ -1,0 +1,12 @@
+node_modules/
+app/node_modules/
+app/.next/
+app/out/
+app/src/lib/api/generated/
+mobile/lib/api/generated/
+coverage/
+.omc/
+.omx/
+.codex/
+.claude/
+.playwright-mcp/

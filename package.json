@@ -9,10 +9,22 @@
   },
   "scripts": {
     "check:feature-memory": "node scripts/check-feature-memory.mjs",
+    "check:api-contract": "node scripts/check-api-contract.mjs && node scripts/generate-api-clients.mjs --check",
     "check:repo": "node scripts/check-repo-baseline.mjs",
+    "generate:api": "node scripts/generate-api-clients.mjs",
+    "lint": "npm --prefix app run lint",
+    "format": "prettier --write .",
     "typecheck": "npm --prefix app run typecheck",
     "build": "npm --prefix app run build",
     "test": "npm --prefix app run test --if-present",
-    "preflight": "npm run check:feature-memory -- --worktree && npm run check:repo && npm run typecheck && npm run build && npm run test"
+    "prepare": "husky",
+    "precommit": "npm run check:feature-memory -- --worktree && lint-staged",
+    "preflight": "npm run check:feature-memory -- --worktree && npm run check:repo && npm run check:api-contract && npm run lint && npm run typecheck && npm run build && npm run test"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3",
+    "yaml": "^2.8.3"
   }
 }

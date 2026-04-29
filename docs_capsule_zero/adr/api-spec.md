@@ -19,13 +19,13 @@ Accepted for MVP planning. Before feature implementation, Sprint 0 must create t
 
 Sprint 0 must create and verify these artifacts before product feature work:
 
-| Artifact | Location | Purpose |
-|---|---|---|
-| OpenAPI contract | `docs_capsule_zero/adr/openapi.yaml` | Authoritative REST path, auth, request, response, and error schemas |
-| TypeScript client/types | `app/src/lib/api/generated/` | Web client/server API types generated from OpenAPI |
-| Dart client/types | `mobile/lib/api/generated/` | Flutter API types generated from OpenAPI |
-| Supabase schema/RPC | `supabase/migrations/` | Tables, indexes, RLS, storage policies, and RPC signatures |
-| Contract tests | `app/tests/contract/` or equivalent CI target | Auth/error conventions and representative endpoint schema verification |
+| Artifact                | Location                                      | Purpose                                                                |
+| ----------------------- | --------------------------------------------- | ---------------------------------------------------------------------- |
+| OpenAPI contract        | `docs_capsule_zero/adr/openapi.yaml`          | Authoritative REST path, auth, request, response, and error schemas    |
+| TypeScript client/types | `app/src/lib/api/generated/`                  | Web client/server API types generated from OpenAPI                     |
+| Dart client/types       | `mobile/lib/api/generated/`                   | Flutter API types generated from OpenAPI                               |
+| Supabase schema/RPC     | `supabase/migrations/`                        | Tables, indexes, RLS, storage policies, and RPC signatures             |
+| Contract tests          | `app/tests/contract/` or equivalent CI target | Auth/error conventions and representative endpoint schema verification |
 
 Endpoint names may change only with the OpenAPI contract, generated clients, and contract tests updated in the same PR.
 
@@ -103,104 +103,126 @@ Clients request paid app actions through a server endpoint instead of writing to
 
 The server derives the coin amount from the reason, verifies the user's balance, validates the target resource, applies idempotency, and writes the negative `coin_ledger` row.
 
+`targetId` is reason-specific and must be enforced by the server:
+
+- `reason=extra_capsule` requires the capsule UUID receiving the paid expansion.
+- `reason=photo_enhancement` requires the item UUID or upload job UUID being enhanced.
+- `targetId=null` is invalid for both MVP spend reasons unless a future server-owned reason explicitly documents that null target.
+
+## Error Contract
+
+Every REST operation returns the common `ErrorResponse` shape for failures. The OpenAPI contract is authoritative for operation-specific status codes, but the MVP taxonomy is:
+
+| HTTP | `ErrorResponse.error.code`   | Meaning                                                                                                    |
+| ---: | ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
+|  400 | `VALIDATION_ERROR`           | Request syntax, shape, enum, file metadata, or query validation failed                                     |
+|  401 | `UNAUTHENTICATED`            | Supabase session is missing, expired, or invalid                                                           |
+|  402 | `INSUFFICIENT_BALANCE`       | Coin balance is too low for a paid action                                                                  |
+|  403 | `FORBIDDEN`                  | User is authenticated but cannot access the resource or webhook key is invalid                             |
+|  404 | `NOT_FOUND`                  | Resource does not exist or is intentionally hidden by ownership rules                                      |
+|  409 | `IDEMPOTENCY_CONFLICT`       | Idempotency key, invoice, webhook replay, or optimistic version conflict                                   |
+|  422 | `SEMANTIC_VALIDATION_FAILED` | Capsule methodology, palette compatibility, basicity, target correlation, or status-transition rule failed |
+
+Server logs may include provider/raw details, but client responses must keep messages safe for end users and never expose service-role credentials, Lava.top secrets, or private storage paths.
+
 ## Auth
 
 Supabase Auth endpoints handle sign-up, login, OAuth, session refresh, and password recovery.
 
-| Route | Method | Auth | Purpose |
-|---|---:|---|---|
-| `/auth/callback` | GET | Public | Web OAuth callback; exchanges code and redirects to dashboard |
-| `/auth/mobile-callback` | GET | Public | Mobile OAuth callback; redirects into Flutter deep link |
-| `/api/profile` | GET | User | Read current profile |
-| `/api/profile` | PATCH | User | Update display name, language, country, city |
-| `/api/profile/avatar` | POST | User | Upload or replace avatar metadata after storage upload |
-| `/api/profile/avatar` | DELETE | User | Remove custom avatar |
+| Route                   | Method | Auth   | Purpose                                                       |
+| ----------------------- | -----: | ------ | ------------------------------------------------------------- |
+| `/auth/callback`        |    GET | Public | Web OAuth callback; exchanges code and redirects to dashboard |
+| `/auth/mobile-callback` |    GET | Public | Mobile OAuth callback; redirects into Flutter deep link       |
+| `/api/profile`          |    GET | User   | Read current profile                                          |
+| `/api/profile`          |  PATCH | User   | Update display name, language, country, city                  |
+| `/api/profile/avatar`   |   POST | User   | Upload or replace avatar metadata after storage upload        |
+| `/api/profile/avatar`   | DELETE | User   | Remove custom avatar                                          |
 
 ## Journey
 
-| Route | Method | Auth | Purpose |
-|---|---:|---|---|
-| `/api/journey/categories` | GET | User | List categories filtered by wardrobe type |
-| `/api/journey/custom-category/validate` | POST | User | Validate custom category basicity |
-| `/api/palette/validate` | POST | User | Validate selected color IDs and return blocked colors |
-| `/api/capsules` | POST | User | Create capsule from journey selections |
+| Route                                   | Method | Auth | Purpose                                               |
+| --------------------------------------- | -----: | ---- | ----------------------------------------------------- |
+| `/api/journey/categories`               |    GET | User | List categories filtered by wardrobe type             |
+| `/api/journey/custom-category/validate` |   POST | User | Validate custom category basicity                     |
+| `/api/palette/validate`                 |   POST | User | Validate selected color IDs and return blocked colors |
+| `/api/capsules`                         |   POST | User | Create capsule from journey selections                |
 
 ## Capsules
 
-| Route | Method | Auth | Purpose |
-|---|---:|---|---|
-| `/api/capsules/current` | GET | User | Read active capsule for dashboard |
-| `/api/capsules/:capsuleId` | GET | User | Read capsule detail |
-| `/api/capsules/:capsuleId` | PATCH | User | Rename capsule or update non-palette metadata |
-| `/api/capsules/:capsuleId/items` | POST | User | Add wardrobe entry to capsule after compatibility check |
-| `/api/capsules/:capsuleId/items/:entryId` | DELETE | User | Remove item from capsule and recompute |
-| `/api/capsules/:capsuleId/items/:entryId/replace` | POST | User | Replace item and recompute |
-| `/api/capsules/:capsuleId/outfits` | GET | User | Read generated outfits |
-| `/api/capsules/:capsuleId/gaps` | GET | User | Read gap analysis |
-| `/api/capsules/:capsuleId/shopping-list` | GET | User | Read shopping list |
+| Route                                             | Method | Auth | Purpose                                                 |
+| ------------------------------------------------- | -----: | ---- | ------------------------------------------------------- |
+| `/api/capsules/current`                           |    GET | User | Read active capsule for dashboard                       |
+| `/api/capsules/:capsuleId`                        |    GET | User | Read capsule detail                                     |
+| `/api/capsules/:capsuleId`                        |  PATCH | User | Rename capsule or update non-palette metadata           |
+| `/api/capsules/:capsuleId/items`                  |   POST | User | Add wardrobe entry to capsule after compatibility check |
+| `/api/capsules/:capsuleId/items/:entryId`         | DELETE | User | Remove item from capsule and recompute                  |
+| `/api/capsules/:capsuleId/items/:entryId/replace` |   POST | User | Replace item and recompute                              |
+| `/api/capsules/:capsuleId/outfits`                |    GET | User | Read generated outfits                                  |
+| `/api/capsules/:capsuleId/gaps`                   |    GET | User | Read gap analysis                                       |
+| `/api/capsules/:capsuleId/shopping-list`          |    GET | User | Read shopping list                                      |
 
 ## Wardrobe Items
 
-| Route | Method | Auth | Purpose |
-|---|---:|---|---|
-| `/api/items` | GET | User | List user's wardrobe entries with filters |
-| `/api/items` | POST | User | Create item metadata from confirmed upload/import/catalog result |
-| `/api/items/:itemId` | GET | User | Read item detail |
-| `/api/items/:itemId` | PATCH | User | Edit name, category, colors, brand, material, price |
-| `/api/items/:itemId` | DELETE | User | Delete private item or remove user's wardrobe entry |
-| `/api/items/:itemId/favorite` | POST | User | Toggle favorite |
-| `/api/items/:itemId/status` | PATCH | User | Move to active, uncapsulated, for sale, or for repair |
+| Route                         | Method | Auth | Purpose                                                          |
+| ----------------------------- | -----: | ---- | ---------------------------------------------------------------- |
+| `/api/items`                  |    GET | User | List user's wardrobe entries with filters                        |
+| `/api/items`                  |   POST | User | Create item metadata from confirmed upload/import/catalog result |
+| `/api/items/:itemId`          |    GET | User | Read item detail                                                 |
+| `/api/items/:itemId`          |  PATCH | User | Edit name, category, colors, brand, material, price              |
+| `/api/items/:itemId`          | DELETE | User | Delete private item or remove user's wardrobe entry              |
+| `/api/items/:itemId/favorite` |   POST | User | Toggle favorite                                                  |
+| `/api/items/:itemId/status`   |  PATCH | User | Move to active, uncapsulated, for sale, or for repair            |
 
 ## Uploads
 
-| Route | Method | Auth | Purpose |
-|---|---:|---|---|
-| `/api/uploads/photo/init` | POST | User | Validate metadata and return storage target/signed upload data if needed |
-| `/api/uploads/photo/complete` | POST | User | Create item asset metadata after upload |
-| `/api/uploads/:jobId/background-removal` | POST | User | Start or retry background removal |
-| `/api/uploads/:jobId` | GET | User | Read processing status |
+| Route                                    | Method | Auth | Purpose                                                                  |
+| ---------------------------------------- | -----: | ---- | ------------------------------------------------------------------------ |
+| `/api/uploads/photo/init`                |   POST | User | Validate metadata and return storage target/signed upload data if needed |
+| `/api/uploads/photo/complete`            |   POST | User | Create item asset metadata after upload                                  |
+| `/api/uploads/:jobId/background-removal` |   POST | User | Start or retry background removal                                        |
+| `/api/uploads/:jobId`                    |    GET | User | Read processing status                                                   |
 
 ## Marketplace Imports
 
-| Route | Method | Auth | Purpose |
-|---|---:|---|---|
-| `/api/imports/marketplace` | POST | User | Submit one or more product URLs |
-| `/api/imports/:importId` | GET | User | Read parse status and parsed candidate data |
-| `/api/imports/:importId/confirm` | POST | User | Confirm selected photo and editable tags, then create item |
+| Route                            | Method | Auth | Purpose                                                    |
+| -------------------------------- | -----: | ---- | ---------------------------------------------------------- |
+| `/api/imports/marketplace`       |   POST | User | Submit one or more product URLs                            |
+| `/api/imports/:importId`         |    GET | User | Read parse status and parsed candidate data                |
+| `/api/imports/:importId/confirm` |   POST | User | Confirm selected photo and editable tags, then create item |
 
 ## Catalog Search
 
-| Route | Method | Auth | Purpose |
-|---|---:|---|---|
-| `/api/catalog/search` | GET | User | Hybrid semantic search over public catalog items |
-| `/api/catalog/items/:itemId` | GET | User | Read public catalog item |
-| `/api/catalog/items/:itemId/add` | POST | User | Add public catalog item to user's wardrobe/capsule |
+| Route                            | Method | Auth | Purpose                                            |
+| -------------------------------- | -----: | ---- | -------------------------------------------------- |
+| `/api/catalog/search`            |    GET | User | Hybrid semantic search over public catalog items   |
+| `/api/catalog/items/:itemId`     |    GET | User | Read public catalog item                           |
+| `/api/catalog/items/:itemId/add` |   POST | User | Add public catalog item to user's wardrobe/capsule |
 
 ## Billing
 
-| Route | Method | Auth | Purpose |
-|---|---:|---|---|
-| `/api/billing/lava/invoice` | POST | User, web only for v0.1 | Create Lava.top invoice/payment link for a coin pack |
-| `/api/billing/lava/status/:invoiceId` | GET | User | Check a Lava.top invoice/payment status |
-| `/api/billing/coins/spend` | POST | User | Spend coins for `extra_capsule` or `photo_enhancement` through a server-validated ledger write |
-| `/api/webhooks/lava` | POST | `X-Api-Key` webhook auth | Fulfill `payment.success` events into `coin_ledger` and record failures |
+| Route                                 | Method | Auth                     | Purpose                                                                                        |
+| ------------------------------------- | -----: | ------------------------ | ---------------------------------------------------------------------------------------------- |
+| `/api/billing/lava/invoice`           |   POST | User, web only for v0.1  | Create Lava.top invoice/payment link for a coin pack                                           |
+| `/api/billing/lava/status/:invoiceId` |    GET | User                     | Check a Lava.top invoice/payment status                                                        |
+| `/api/billing/coins/spend`            |   POST | User                     | Spend coins for `extra_capsule` or `photo_enhancement` through a server-validated ledger write |
+| `/api/webhooks/lava`                  |   POST | `X-Api-Key` webhook auth | Fulfill `payment.success` events into `coin_ledger` and record failures                        |
 
 Mobile apps must not expose a Lava.top purchase CTA, external payment link, or in-app purchase prompt in v0.1. Mobile may read coin balance and invoice/payment status that originated from web purchases after webhook-backed fulfillment.
 
 ## Admin/Internal
 
-| Route | Method | Auth | Purpose |
-|---|---:|---|---|
-| `/api/admin/moderation/items` | GET | Admin | List marketplace items awaiting moderation |
-| `/api/admin/moderation/items/:itemId` | PATCH | Admin | Approve/reject catalog visibility |
-| `/api/health` | GET | Public | Basic deployment health check |
+| Route                                 | Method | Auth   | Purpose                                    |
+| ------------------------------------- | -----: | ------ | ------------------------------------------ |
+| `/api/admin/moderation/items`         |    GET | Admin  | List marketplace items awaiting moderation |
+| `/api/admin/moderation/items/:itemId` |  PATCH | Admin  | Approve/reject catalog visibility          |
+| `/api/health`                         |    GET | Public | Basic deployment health check              |
 
 ## Domain RPC Functions
 
-| Function | Purpose |
-|---|---|
-| `validate_palette(color_ids text[])` | Enforce compatibility matrix and blocked color messaging |
-| `validate_item_for_capsule(item_id uuid, capsule_id uuid)` | Block incompatible item additions |
-| `regenerate_capsule_outputs(capsule_id uuid)` | Recompute outfits, OPR, gaps, and shopping list |
-| `search_catalog_hybrid(query text, filters jsonb)` | Combine full-text and vector ranking for catalog search |
-| `queue_item_embedding(item_id uuid)` | Queue embedding generation/update |
+| Function                                                   | Purpose                                                  |
+| ---------------------------------------------------------- | -------------------------------------------------------- |
+| `validate_palette(color_ids text[])`                       | Enforce compatibility matrix and blocked color messaging |
+| `validate_item_for_capsule(item_id uuid, capsule_id uuid)` | Block incompatible item additions                        |
+| `regenerate_capsule_outputs(capsule_id uuid)`              | Recompute outfits, OPR, gaps, and shopping list          |
+| `search_catalog_hybrid(query text, filters jsonb)`         | Combine full-text and vector ranking for catalog search  |
+| `queue_item_embedding(item_id uuid)`                       | Queue embedding generation/update                        |
