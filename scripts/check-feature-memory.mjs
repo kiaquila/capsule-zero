@@ -92,12 +92,17 @@ for (const file of files) {
   }
 }
 
+const changedFileSet = new Set(files);
+
 for (const featureId of featureIds) {
   const requiredFiles = REQUIRED_FEATURE_FILES.map(
     (name) => `${SPECS_DIR}/${featureId}/${name}`,
   );
 
-  if (requiredFiles.every((file) => hasFileAtRef(headRef, file))) {
+  const allInDiff = requiredFiles.every((file) => changedFileSet.has(file));
+  const allAtHead = requiredFiles.every((file) => hasFileAtRef(headRef, file));
+
+  if (allInDiff && allAtHead) {
     console.log(
       `Feature-memory gate passed via ${SPECS_DIR}/${featureId}/{spec,plan,tasks}.md`,
     );
