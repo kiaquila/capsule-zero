@@ -53,20 +53,34 @@ Implementation rules:
 | Field | Type | Notes |
 |---|---|---|
 | `id` | uuid PK | |
-| `user_id` | uuid | Owner |
+| `user_id` | uuid | References `profiles.id`; canonical ownership column |
 | `delta` | integer | Positive for purchase, negative for spend/refund |
 | `reason` | text | `lava_purchase`, `extra_capsule`, `photo_enhancement`, `refund`, `admin_adjustment` |
-| `lava_event_id` | text nullable | Idempotency |
+| `lava_event_id` | text nullable | References `lava_events.id` when the ledger row came from a Lava.top webhook |
 | `lava_invoice_id` | text nullable | Payment/invoice traceability |
 | `created_at` | timestamptz | |
+
+`lava_events`
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | text PK | Provider event ID, contract ID, or invoice-derived idempotency key |
+| `lava_invoice_id` | text nullable | Invoice/payment traceability |
+| `event_type` | text | Provider event type |
+| `payload_hash` | text | Hash of normalized payload for replay/debug checks |
+| `payload` | jsonb | Raw provider payload for audit/debug |
+| `processing_status` | text | `received`, `processed`, `ignored`, or `failed` |
+| `received_at` | timestamptz | Server-generated |
+| `processed_at` | timestamptz nullable | Set after fulfillment attempt |
+| `error_message` | text nullable | Internal failure detail |
 
 ## RLS Policy Summary
 
 - Users can select and update only their own `profiles` row.
 - Users can select only their own `coin_ledger` rows.
-- Coin ledger inserts are server-only.
+- Coin ledger inserts are server-only through Route Handlers or Edge Functions using server credentials after balance, reason, target, and idempotency validation.
 - Public catalog item reads are allowed only for items with `visibility = 'public'`.
-- Private item, capsule, outfit, upload, and asset rows require `owner_id = auth.uid()` or equivalent ownership through a join.
+- Private item, capsule, outfit, upload, and asset rows require `user_id = auth.uid()` or equivalent ownership through a join such as `wardrobe_entries.user_id`.
 
 ## Consequences
 

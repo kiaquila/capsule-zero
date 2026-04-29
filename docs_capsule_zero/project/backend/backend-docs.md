@@ -37,6 +37,24 @@ Next.js Route Handlers act as the app-facing API boundary for uploads, marketpla
 | `coin_ledger` | Append-only coin purchase/spend/refund log |
 | `lava_events` | Processed Lava.top webhook event IDs or contract/invoice IDs for idempotency |
 
+Canonical ownership column name is `user_id`. Shared items use a two-table ownership pattern: `items.visibility` controls catalog exposure, while `wardrobe_entries.user_id` controls each user's relationship to an item.
+
+`lava_events` must be migration-backed before Lava.top integration:
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | text PK | Lava.top event ID, contract ID, or invoice-derived idempotency key |
+| `lava_invoice_id` | text nullable | Invoice/payment traceability |
+| `event_type` | text | Provider event type, for example `payment.success` |
+| `payload_hash` | text | Hash of normalized payload for replay/debug checks |
+| `payload` | jsonb | Raw provider payload for audit/debug |
+| `processing_status` | text | `received`, `processed`, `ignored`, or `failed` |
+| `received_at` | timestamptz | Server-generated |
+| `processed_at` | timestamptz nullable | Set after idempotent fulfillment attempt |
+| `error_message` | text nullable | Failure detail safe for internal logs |
+
+`coin_ledger.lava_event_id` is nullable for non-Lava spends/refunds, but when present it references `lava_events.id`. Coin spend entries use `reason = 'extra_capsule'` or `reason = 'photo_enhancement'` and are created only by server-side code after balance and idempotency validation.
+
 ### Static Methodology Data
 
 | Table | Purpose |
@@ -72,11 +90,11 @@ Next.js Route Handlers act as the app-facing API boundary for uploads, marketpla
 ## RLS Baseline
 
 - Enable RLS on all application tables.
-- Users can read/write only rows they own.
+- Users can read/write only rows where `user_id = auth.uid()` or where ownership is proven through an explicit join such as `wardrobe_entries.user_id`.
 - Public catalog reads are allowed only when `items.visibility = 'public'`.
 - Personal uploads and their assets are never public in v0.1.
 - Marketplace-imported items start private or moderation-pending, then become public only after approval.
-- Coin ledger inserts and Lava.top event writes are server-only.
+- Coin ledger inserts and Lava.top event writes are server-only through Route Handlers or Edge Functions using server credentials. Client Supabase sessions can read only their own ledger rows.
 - Admin moderation routes use server-only credentials and must not expose service-role keys to the browser.
 
 ## Storage
@@ -89,7 +107,7 @@ Buckets:
 - `marketplace-imports`
 - `catalog-public`
 
-Storage metadata lives in `item_assets`; storage object paths are not the source of truth. Private images are read through signed URLs. Public catalog imagery may use public URLs only after moderation.
+Storage metadata lives in `item_assets`; storage object paths are not the source of truth. Private images are read through signed URLs. `catalog-public` is a public bucket, but only approved shared catalog images may be copied there after moderation.
 
 ## Background Jobs
 
@@ -118,7 +136,7 @@ Feature PRs must not introduce ad hoc schema changes outside migrations.
 | Variable | Scope | Purpose |
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | browser/server | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | browser/server | Supabase publishable key |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser/server | Supabase anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | server only | Admin/server operations |
 | `PHOTOROOM_API_KEY` | server only | Primary background removal provider |
 | `REMOVE_BG_API_KEY` | server only, optional | Fallback background removal provider |
@@ -148,7 +166,7 @@ Seed data must include:
 
 - 51 color records from `docs_capsule_zero/project/methodology/colors.md`
 - garment categories from `docs_capsule_zero/project/methodology/categories.md`
-- compatibility matrix from `capsule-methodology.md`
+- compatibility matrix from `docs_capsule_zero/project/methodology/colors.md`
 - coin pack definitions matching market docs: 5, 15, 30 coin packs
 - a small public catalog fixture for semantic search smoke testing
 

@@ -89,6 +89,20 @@ OpenAPI operations marked `x-client-availability: web` must not be wired into Fl
 }
 ```
 
+### Coin Spend
+
+Clients request paid app actions through a server endpoint instead of writing to the ledger directly:
+
+```json
+{
+  "reason": "extra_capsule|photo_enhancement",
+  "targetId": "uuid|null",
+  "idempotencyKey": "client-generated-string"
+}
+```
+
+The server derives the coin amount from the reason, verifies the user's balance, validates the target resource, applies idempotency, and writes the negative `coin_ledger` row.
+
 ## Auth
 
 Supabase Auth endpoints handle sign-up, login, OAuth, session refresh, and password recovery.
@@ -168,6 +182,7 @@ Supabase Auth endpoints handle sign-up, login, OAuth, session refresh, and passw
 |---|---:|---|---|
 | `/api/billing/lava/invoice` | POST | User, web only for v0.1 | Create Lava.top invoice/payment link for a coin pack |
 | `/api/billing/lava/status/:invoiceId` | GET | User | Check a Lava.top invoice/payment status |
+| `/api/billing/coins/spend` | POST | User | Spend coins for `extra_capsule` or `photo_enhancement` through a server-validated ledger write |
 | `/api/webhooks/lava` | POST | `X-Api-Key` webhook auth | Fulfill `payment.success` events into `coin_ledger` and record failures |
 
 Mobile apps must not expose a Lava.top purchase CTA, external payment link, or in-app purchase prompt in v0.1. Mobile may read coin balance and invoice/payment status that originated from web purchases after webhook-backed fulfillment.

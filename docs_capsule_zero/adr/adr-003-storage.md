@@ -30,7 +30,7 @@ Use private buckets for user-owned and moderation-sensitive files:
 | `item-originals` | private | User-uploaded wardrobe photos |
 | `item-processed` | private | Background-removed and thumbnail variants |
 | `marketplace-imports` | private | Parsed marketplace photos before moderation |
-| `catalog-public` | public or signed-read | Approved catalog imagery for semantic search results |
+| `catalog-public` | public | Approved catalog imagery for semantic search results after moderation |
 
 Use Photoroom API as the primary background removal provider through a server-side adapter. Keep remove.bg as a fallback adapter if Photoroom does not meet the MVP latency/quality target on real wardrobe images.
 
@@ -40,7 +40,7 @@ Use Photoroom API as the primary background removal provider through a server-si
 - Store file metadata in Postgres through `item_assets`.
 - Do not rely on storage paths alone as source of truth.
 - Use signed URLs for private image reads.
-- Use public URLs only for approved shared catalog images.
+- Use public URLs only for approved shared catalog images copied to `catalog-public` after moderation.
 - Keep service-role storage operations server-side only.
 - Enforce upload constraints before storage: JPEG, PNG, WebP; max 10 MB.
 - Normalize processed display images to WebP where quality permits.

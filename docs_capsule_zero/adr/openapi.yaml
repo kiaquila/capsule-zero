@@ -71,14 +71,11 @@ components:
           items:
             type: string
         brand:
-          type: string
-          nullable: true
+          type: [string, "null"]
         material:
-          type: string
-          nullable: true
+          type: [string, "null"]
         price:
-          type: number
-          nullable: true
+          type: [number, "null"]
         sourceType:
           type: string
           enum: [photo_upload, marketplace, catalog]
@@ -139,8 +136,39 @@ components:
           type: string
           enum: [pending, paid, failed, expired, refunded]
         coinDelta:
+          type: [integer, "null"]
+    CoinSpendRequest:
+      type: object
+      required: [reason, idempotencyKey]
+      properties:
+        reason:
+          type: string
+          enum: [extra_capsule, photo_enhancement]
+        targetId:
+          type: [string, "null"]
+          format: uuid
+          description: Capsule, item, or upload job receiving the paid action when applicable.
+        idempotencyKey:
+          type: string
+          minLength: 12
+          maxLength: 128
+          description: Client-generated key used to prevent duplicate coin spends.
+    CoinSpendResponse:
+      type: object
+      required: [ledgerEntryId, coinBalance, coinDelta, reason]
+      properties:
+        ledgerEntryId:
+          type: string
+          format: uuid
+        coinBalance:
           type: integer
-          nullable: true
+          minimum: 0
+        coinDelta:
+          type: integer
+          maximum: -1
+        reason:
+          type: string
+          enum: [extra_capsule, photo_enhancement]
 paths:
   /api/health:
     get:
@@ -203,6 +231,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LavaStatusResponse"
+        default:
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/billing/coins/spend:
+    post:
+      summary: Spend coins for paid app actions
+      description: >
+        Creates a negative coin_ledger entry for an authenticated user after
+        server-side balance, reason, target, price, and idempotency validation.
+        The client never writes directly to coin_ledger.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CoinSpendRequest"
+      responses:
+        "200":
+          description: Coin spend accepted idempotently
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoinSpendResponse"
         default:
           description: Error
           content:
