@@ -6,6 +6,7 @@ This is the canonical PR loop for implementation, AI review, and merge readiness
 
 - Product code lands through pull requests only.
 - The required checks are always `baseline-checks`, `guard`, and `AI Review`.
+- `osv-scan` runs on pull requests as a dependency-security signal and may be promoted to a required check after scanner behavior is validated on real dependency updates.
 - Implementation agent selection and review agent selection are separate decisions.
 - Codex acts as the repository orchestrator and architecture owner.
 - Claude is the default implementation agent.
@@ -31,7 +32,7 @@ The workflow may change tools, integrations, and automation layers, but these ru
 3. Route implementation to the selected agent using the canonical GitHub comment trigger for that agent.
 4. The implementation agent works on one scoped branch and one pull request for that task.
 5. The pull request updates validation notes and any required durable docs.
-6. GitHub runs `baseline-checks`, `guard`, and `AI Review`.
+6. GitHub runs `baseline-checks`, `guard`, `AI Review`, and the `osv-scan` security workflow.
 7. Route review to the selected reviewer using the native review trigger for that agent.
 8. Let the repository-owned `AI Review` gate validate the selected native review result against the review contract.
 9. If follow-up is needed, continue on the same branch and update the same PR.
@@ -66,6 +67,16 @@ Routing details live in `docs_capsule_zero/project/devops/ai-orchestration-proto
 - If the selected reviewer does not run or its result cannot be validated, `AI Review` fails closed.
 - Claude review on untrusted fork-triggered `pull_request` events is blocked explicitly because repository secrets are unavailable to that event model.
 - Validation details are defined in `docs_capsule_zero/project/devops/review-contract.md`.
+
+## CI And Guard Contract
+
+- `baseline-checks` runs repository baseline validation, `app` typecheck, `app` build, and optional app tests.
+- `guard` runs repository-owned gate scripts from the trusted default branch when those scripts are available there.
+- Product code changes under `app/` require complete feature memory in `.specify/specs/<feature-id>/spec.md`, `plan.md`, and `tasks.md`.
+- Infrastructure-only PRs that do not change `app/` are validated through baseline files and durable devops documentation instead of feature memory.
+- Local preflight is `npm run preflight`.
+
+Detailed CI and branch-protection policy lives in `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md`.
 
 ## Merge-Ready Rule
 
