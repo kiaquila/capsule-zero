@@ -380,6 +380,7 @@ values
 on conflict (slug) do nothing;
 
 alter table public.profiles enable row level security;
+alter table public.coin_packs enable row level security;
 alter table public.coin_ledger enable row level security;
 alter table public.lava_events enable row level security;
 alter table public.color_catalog enable row level security;
@@ -416,6 +417,9 @@ create policy "methodology compatibility read" on public.compatibility_rules
   for select to authenticated using (true);
 create policy "methodology categories read" on public.category_catalog
   for select to authenticated using (true);
+
+create policy "coin packs read" on public.coin_packs
+  for select to authenticated using (active = true);
 
 create policy "items owner insert" on public.items
   for insert with check (owner_user_id = auth.uid());
@@ -588,3 +592,20 @@ as $$
   where id = item_id and owner_user_id is not null
   returning id;
 $$;
+
+-- Data API GRANTs.
+-- Required after the Supabase 2026-04-28 Data API change: tables in `public`
+-- are no longer auto-exposed to PostgREST/supabase-js, so privileges must be
+-- granted explicitly. Row-level access is still enforced by the RLS policies
+-- defined above; these GRANTs only let PostgREST reach the relations at all.
+grant usage on schema public to anon, authenticated, service_role;
+grant all on all tables in schema public to anon, authenticated, service_role;
+grant all on all routines in schema public to anon, authenticated, service_role;
+grant all on all sequences in schema public to anon, authenticated, service_role;
+
+alter default privileges for role postgres in schema public
+  grant all on tables to anon, authenticated, service_role;
+alter default privileges for role postgres in schema public
+  grant all on routines to anon, authenticated, service_role;
+alter default privileges for role postgres in schema public
+  grant all on sequences to anon, authenticated, service_role;

@@ -4,12 +4,19 @@
 
 begin;
 
-select plan(11);
+select plan(12);
 
 select has_table('public', 'items', 'items table exists');
 select has_table('public', 'wardrobe_entries', 'wardrobe entries table exists');
 select has_table('public', 'coin_ledger', 'coin ledger table exists');
 select has_table('public', 'lava_events', 'lava events table exists');
+
+select policies_are(
+  'public',
+  'coin_packs',
+  array['coin packs read'],
+  'coin_packs is client-readable only and never client-writable'
+);
 
 select policies_are(
   'public',
