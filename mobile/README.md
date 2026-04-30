@@ -16,6 +16,10 @@ flutter run \
   --dart-define=MOBILE_DEEP_LINK_SCHEME=capsulezero
 ```
 
+The tracked `mobile/.env.example` mirrors these values for local operators. Copy
+it to `mobile/.env.local`, keep real values out of git, and pass them through
+`--dart-define` or the IDE run configuration.
+
 Generated API metadata lives in `lib/api/generated/openapi.dart` and is updated
 from `docs_capsule_zero/adr/openapi.yaml` by running `npm run generate:api` at
 the repository root.

@@ -4,6 +4,10 @@
 
 # env files
 .env*
+!.env.example
+!.env.*.example
+!**/.env.example
+!**/.env.*.example
 
 # IDE
 .idea/
@@ -11,6 +15,9 @@
 
 # logs
 *.log
+
+# runtime validation outputs
+.runtime/
 
 # local agent/tool state
 .omc/
