@@ -45,11 +45,30 @@ function git(commandArgs, options = {}) {
 }
 
 function changedFiles() {
-  const output = inspectWorktree
-    ? git(["ls-files", "--modified", "--others", "--exclude-standard"])
-    : git(["diff", "--name-only", "--merge-base", baseRef, headRef]);
+  if (!inspectWorktree) {
+    return git(["diff", "--name-only", "--merge-base", baseRef, headRef])
+      .split("\n")
+      .filter(Boolean);
+  }
 
-  return output.split("\n").filter(Boolean);
+  const changed = new Set();
+  const cachedOutput = git(["diff", "--name-only", "--cached"], {
+    quiet: true,
+  });
+  const worktreeOutput = git([
+    "ls-files",
+    "--modified",
+    "--others",
+    "--exclude-standard",
+  ]);
+
+  for (const file of `${cachedOutput}\n${worktreeOutput}`.split("\n")) {
+    if (file) {
+      changed.add(file);
+    }
+  }
+
+  return [...changed];
 }
 
 function pathMatches(file, patterns) {
@@ -83,7 +102,9 @@ if (productChanges.length === 0) {
 }
 
 const featureIds = new Set();
-const specsPattern = new RegExp(`^${SPECS_DIR.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\/([^/]+)\\/`);
+const specsPattern = new RegExp(
+  `^${SPECS_DIR.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\/([^/]+)\\/`,
+);
 
 for (const file of files) {
   const match = file.match(specsPattern);
@@ -110,7 +131,9 @@ for (const featureId of featureIds) {
   }
 }
 
-console.error("App product paths changed without a complete feature-memory update.");
+console.error(
+  "App product paths changed without a complete feature-memory update.",
+);
 console.error(`Product changes: ${productChanges.join(", ")}`);
 console.error(
   `Touch one ${SPECS_DIR}/<feature-id>/ folder with spec.md, plan.md, and tasks.md in the same PR.`,

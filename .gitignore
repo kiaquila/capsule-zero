@@ -14,6 +14,10 @@
 
 # local agent/tool state
 .omc/
+.omx/
 .playwright-mcp/
 .codex/
 .claude/
+
+# dependencies
+/node_modules/

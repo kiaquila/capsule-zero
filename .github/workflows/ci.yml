@@ -24,13 +24,24 @@ jobs:
         with:
           node-version: "20"
           cache: npm
-          cache-dependency-path: app/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            app/package-lock.json
+
+      - name: Install repository tooling
+        run: npm ci --ignore-scripts
 
       - name: Install app dependencies
         run: npm ci --prefix app
 
       - name: Run repository baseline
         run: npm run check:repo
+
+      - name: Run API contract checks
+        run: npm run check:api-contract
+
+      - name: Run lint
+        run: npm run lint
 
       - name: Run typecheck
         run: npm run typecheck

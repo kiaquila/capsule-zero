@@ -3,11 +3,9 @@ info:
   title: Capsule Zero MVP API
   version: 0.1.0
   description: >
-    Sprint 0 implementation contract scaffold. Before product feature work,
-    every route listed in docs_capsule_zero/adr/api-spec.md must be expanded
-    here with request schemas, response schemas, auth requirements, and error
-    responses, then used to generate TypeScript and Dart clients.
-x-status: sprint-0-required
+    Sprint 0 implementation contract for the MVP REST boundary. This file is
+    the source for generated web TypeScript and Flutter Dart API metadata.
+x-status: sprint-0-foundation
 servers:
   - url: https://{host}
     variables:
@@ -15,6 +13,18 @@ servers:
         default: app.capsule-zero.local
 security:
   - bearerAuth: []
+tags:
+  - name: Auth
+  - name: Profile
+  - name: Journey
+  - name: Capsules
+  - name: Items
+  - name: Uploads
+  - name: Imports
+  - name: Catalog
+  - name: Billing
+  - name: Admin
+  - name: Health
 components:
   securitySchemes:
     bearerAuth:
@@ -25,7 +35,105 @@ components:
       type: apiKey
       in: header
       name: X-Api-Key
+  parameters:
+    capsuleId:
+      in: path
+      name: capsuleId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    entryId:
+      in: path
+      name: entryId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    itemId:
+      in: path
+      name: itemId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    jobId:
+      in: path
+      name: jobId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    importId:
+      in: path
+      name: importId
+      required: true
+      schema:
+        type: string
+        format: uuid
+    invoiceId:
+      in: path
+      name: invoiceId
+      required: true
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: Validation error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: Supabase session is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InsufficientBalance:
+      description: User does not have enough coins for the requested paid action.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Authenticated user cannot access this resource.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource was not found or is not visible to the user.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Conflict:
+      description: Idempotency, version, or state conflict.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    SemanticValidation:
+      description: Domain rule validation failed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
   schemas:
+    ErrorCode:
+      type: string
+      enum:
+        - VALIDATION_ERROR
+        - UNAUTHENTICATED
+        - FORBIDDEN
+        - NOT_FOUND
+        - IDEMPOTENCY_CONFLICT
+        - SEMANTIC_VALIDATION_FAILED
+        - INSUFFICIENT_BALANCE
+        - WEBHOOK_AUTH_FAILED
+        - RATE_LIMITED
+        - INTERNAL_ERROR
     ErrorResponse:
       type: object
       required: [error]
@@ -35,18 +143,40 @@ components:
           required: [code, message]
           properties:
             code:
-              type: string
+              $ref: "#/components/schemas/ErrorCode"
             message:
               type: string
             details:
               type: object
               additionalProperties: true
+    Locale:
+      type: string
+      enum: [en, es-AR, ru]
+    WardrobeType:
+      type: string
+      enum: [women, men, mixed]
+    ItemStatus:
+      type: string
+      enum: [active, uncapsulated, for_sale, for_repair]
+    SourceType:
+      type: string
+      enum: [photo_upload, marketplace, catalog]
+    Visibility:
+      type: string
+      enum: [private, moderation_pending, public]
+    ModerationStatus:
+      type: string
+      enum: [none, pending, approved, rejected]
+    ProcessingStatus:
+      type: string
+      enum: [queued, processing, completed, failed, retryable]
     ColorDot:
       type: object
       required: [id, name, hex, group]
       properties:
         id:
           type: string
+          pattern: "^[ABPDK][0-9]{1,2}$"
         name:
           type: string
         hex:
@@ -54,41 +184,126 @@ components:
           pattern: "^#[0-9A-Fa-f]{6}$"
         group:
           type: string
-    Item:
+          enum: [achromatic, bright, pastel, desaturated, dark]
+    Category:
       type: object
-      required: [id, name, categoryId, colorIds, sourceType, visibility, imageUrl, fromCatalog]
+      required: [id, name, wardrobeTypes, layer]
       properties:
         id:
           type: string
           format: uuid
         name:
           type: string
-        categoryId:
+        wardrobeTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/WardrobeType"
+        layer:
+          type: string
+          enum:
+            [tops, dresses_skirts, bottoms, outerwear, shoes, bags, accessories]
+    Profile:
+      type: object
+      required: [id, email, language, coinBalance]
+      properties:
+        id:
           type: string
           format: uuid
+        email:
+          type: string
+          format: email
+        displayName:
+          type: [string, "null"]
+        avatarUrl:
+          type: [string, "null"]
+        language:
+          $ref: "#/components/schemas/Locale"
+        country:
+          type: [string, "null"]
+        city:
+          type: [string, "null"]
+        coinBalance:
+          type: integer
+          minimum: 0
+    ProfileUpdateRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 80
+        language:
+          $ref: "#/components/schemas/Locale"
+        country:
+          type: [string, "null"]
+          maxLength: 80
+        city:
+          type: [string, "null"]
+          maxLength: 80
+    AvatarRequest:
+      type: object
+      required: [assetId]
+      properties:
+        assetId:
+          type: string
+          format: uuid
+    PaletteValidationRequest:
+      type: object
+      required: [colorIds]
+      properties:
         colorIds:
+          type: array
+          minItems: 1
+          maxItems: 8
+          items:
+            type: string
+    PaletteValidationResponse:
+      type: object
+      required: [compatible, blockedColorIds, explanation]
+      properties:
+        compatible:
+          type: boolean
+        blockedColorIds:
           type: array
           items:
             type: string
-        brand:
+        explanation:
           type: [string, "null"]
-        material:
-          type: [string, "null"]
-        price:
-          type: [number, "null"]
-        sourceType:
+    CustomCategoryValidationRequest:
+      type: object
+      required: [name, wardrobeType]
+      properties:
+        name:
           type: string
-          enum: [photo_upload, marketplace, catalog]
-        visibility:
-          type: string
-          enum: [private, moderation_pending, public]
-        imageUrl:
-          type: string
-        fromCatalog:
+          minLength: 2
+          maxLength: 80
+        wardrobeType:
+          $ref: "#/components/schemas/WardrobeType"
+    CustomCategoryValidationResponse:
+      type: object
+      required: [accepted, explanation, alternatives]
+      properties:
+        accepted:
           type: boolean
+        explanation:
+          type: string
+        alternatives:
+          type: array
+          items:
+            type: string
     Capsule:
       type: object
-      required: [id, name, wardrobeType, paletteColorIds, paletteLocked, itemCount, outfitCount, opr]
+      required:
+        [
+          id,
+          name,
+          wardrobeType,
+          paletteColorIds,
+          paletteLocked,
+          itemCount,
+          outfitCount,
+          opr,
+        ]
       properties:
         id:
           type: string
@@ -96,8 +311,7 @@ components:
         name:
           type: string
         wardrobeType:
-          type: string
-          enum: [women, men, mixed]
+          $ref: "#/components/schemas/WardrobeType"
         paletteColorIds:
           type: array
           items:
@@ -110,13 +324,365 @@ components:
           type: integer
         opr:
           type: number
+    CreateCapsuleRequest:
+      type: object
+      required: [name, wardrobeType, categoryTargets, paletteColorIds]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        wardrobeType:
+          $ref: "#/components/schemas/WardrobeType"
+        categoryTargets:
+          type: array
+          minItems: 8
+          items:
+            type: object
+            required: [categoryId, quantity]
+            properties:
+              categoryId:
+                type: string
+                format: uuid
+              quantity:
+                type: integer
+                minimum: 1
+        paletteColorIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+    UpdateCapsuleRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+    Item:
+      type: object
+      required:
+        [
+          id,
+          name,
+          categoryId,
+          colorIds,
+          sourceType,
+          visibility,
+          imageUrl,
+          fromCatalog,
+          status,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+        colorIds:
+          type: array
+          minItems: 1
+          maxItems: 3
+          items:
+            type: string
+        brand:
+          type: [string, "null"]
+        material:
+          type: [string, "null"]
+        price:
+          type: [number, "null"]
+        sourceType:
+          $ref: "#/components/schemas/SourceType"
+        visibility:
+          $ref: "#/components/schemas/Visibility"
+        imageUrl:
+          type: string
+        fromCatalog:
+          type: boolean
+        favorite:
+          type: boolean
+        status:
+          $ref: "#/components/schemas/ItemStatus"
+        version:
+          type: integer
+          minimum: 1
+    CreateItemRequest:
+      type: object
+      required: [name, categoryId, colorIds, sourceType]
+      properties:
+        name:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+        colorIds:
+          type: array
+          minItems: 1
+          maxItems: 3
+          items:
+            type: string
+        brand:
+          type: [string, "null"]
+        material:
+          type: [string, "null"]
+        price:
+          type: [number, "null"]
+        sourceType:
+          $ref: "#/components/schemas/SourceType"
+        assetId:
+          type: [string, "null"]
+          format: uuid
+        catalogItemId:
+          type: [string, "null"]
+          format: uuid
+    UpdateItemRequest:
+      type: object
+      required: [version]
+      properties:
+        version:
+          type: integer
+          minimum: 1
+          description: Optimistic-lock value from the current item payload.
+        name:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+        colorIds:
+          type: array
+          minItems: 1
+          maxItems: 3
+          items:
+            type: string
+        brand:
+          type: [string, "null"]
+        material:
+          type: [string, "null"]
+        price:
+          type: [number, "null"]
+    FavoriteRequest:
+      type: object
+      required: [favorite]
+      properties:
+        favorite:
+          type: boolean
+    UpdateItemStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: "#/components/schemas/ItemStatus"
+    AddCapsuleItemRequest:
+      type: object
+      required: [wardrobeEntryId]
+      properties:
+        wardrobeEntryId:
+          type: string
+          format: uuid
+    ReplaceCapsuleItemRequest:
+      type: object
+      required: [replacementWardrobeEntryId]
+      properties:
+        replacementWardrobeEntryId:
+          type: string
+          format: uuid
+    Outfit:
+      type: object
+      required: [id, itemIds]
+      properties:
+        id:
+          type: string
+          format: uuid
+        itemIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    GapRecommendation:
+      type: object
+      required: [id, categoryId, priority, impact]
+      properties:
+        id:
+          type: string
+          format: uuid
+        categoryId:
+          type: string
+          format: uuid
+        colorIds:
+          type: array
+          items:
+            type: string
+        priority:
+          type: string
+          enum: [high, medium, low]
+        impact:
+          type: number
+    PhotoUploadInitRequest:
+      type: object
+      required: [fileName, contentType, sizeBytes]
+      properties:
+        fileName:
+          type: string
+        contentType:
+          type: string
+          enum: [image/jpeg, image/png, image/webp]
+        sizeBytes:
+          type: integer
+          maximum: 10485760
+        exifOrientation:
+          type: [integer, "null"]
+          description: Mobile EXIF orientation value to normalize before processing.
+        checksum:
+          type: [string, "null"]
+          description: Client image hash used to deduplicate paid processing.
+    PhotoUploadInitResponse:
+      type: object
+      required: [jobId, assetId, uploadUrl, storagePath]
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        assetId:
+          type: string
+          format: uuid
+        uploadUrl:
+          type: string
+        storagePath:
+          type: string
+    PhotoUploadCompleteRequest:
+      type: object
+      required: [jobId, assetId]
+      properties:
+        jobId:
+          type: string
+          format: uuid
+        assetId:
+          type: string
+          format: uuid
+    BackgroundRemovalRequest:
+      type: object
+      properties:
+        forceRetry:
+          type: boolean
+          default: false
+    UploadJob:
+      type: object
+      required: [id, status, jobType]
+      properties:
+        id:
+          type: string
+          format: uuid
+        jobType:
+          type: string
+          enum:
+            [
+              photo_upload,
+              background_removal,
+              marketplace_parse,
+              item_embedding,
+            ]
+        status:
+          $ref: "#/components/schemas/ProcessingStatus"
+        durationMs:
+          type: [integer, "null"]
+        errorMessage:
+          type: [string, "null"]
+    MarketplaceImportRequest:
+      type: object
+      required: [urls]
+      properties:
+        urls:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            type: string
+            format: uri
+    MarketplaceParsedCandidate:
+      type: object
+      required:
+        [sourceUrl, title, imageUrls, suggestedCategoryId, suggestedColorIds]
+      properties:
+        sourceUrl:
+          type: string
+          format: uri
+        title:
+          type: string
+        imageUrls:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uri
+        price:
+          type: [number, "null"]
+        currency:
+          type: [string, "null"]
+        brand:
+          type: [string, "null"]
+        suggestedCategoryId:
+          type: [string, "null"]
+          format: uuid
+        suggestedColorIds:
+          type: array
+          items:
+            type: string
+    MarketplaceImport:
+      type: object
+      required: [id, status, candidates]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/ProcessingStatus"
+        candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/MarketplaceParsedCandidate"
+    MarketplaceConfirmRequest:
+      type: object
+      required: [candidateIndex, name, categoryId, colorIds]
+      properties:
+        candidateIndex:
+          type: integer
+          minimum: 0
+        name:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+        colorIds:
+          type: array
+          minItems: 1
+          maxItems: 3
+          items:
+            type: string
+        selectedImageUrl:
+          type: string
+          format: uri
+    CatalogSearchResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Item"
     LavaInvoiceRequest:
       type: object
-      required: [coinPackId]
+      required: [coinPackId, idempotencyKey]
       properties:
         coinPackId:
           type: string
           enum: [coins_5, coins_15, coins_30]
+        idempotencyKey:
+          type: string
+          minLength: 12
+          maxLength: 128
     LavaInvoiceResponse:
       type: object
       required: [invoiceId, paymentUrl]
@@ -147,12 +713,15 @@ components:
         targetId:
           type: [string, "null"]
           format: uuid
-          description: Capsule, item, or upload job receiving the paid action when applicable.
+          description: >
+            reason=extra_capsule requires the capsule UUID that receives the
+            extra slot. reason=photo_enhancement requires the item UUID or
+            upload job UUID being enhanced. Null is rejected for both MVP
+            reasons unless a future server-owned reason explicitly allows it.
         idempotencyKey:
           type: string
           minLength: 12
           maxLength: 128
-          description: Client-generated key used to prevent duplicate coin spends.
     CoinSpendResponse:
       type: object
       required: [ledgerEntryId, coinBalance, coinDelta, reason]
@@ -169,32 +738,834 @@ components:
         reason:
           type: string
           enum: [extra_capsule, photo_enhancement]
+    LavaWebhookPayload:
+      type: object
+      required: [eventId, eventType, invoiceId, status, coinPackId]
+      properties:
+        eventId:
+          type: string
+        eventType:
+          type: string
+          enum: [payment.success, payment.failed, payment.refunded]
+        invoiceId:
+          type: string
+        status:
+          type: string
+        coinPackId:
+          type: string
+          enum: [coins_5, coins_15, coins_30]
+        userId:
+          type: [string, "null"]
+          format: uuid
+        payload:
+          type: object
+          additionalProperties: true
+    AdminModerationRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [approved, rejected]
+        reason:
+          type: [string, "null"]
+    MessageResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+    IdResponse:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          format: uuid
 paths:
-  /api/health:
+  /auth/callback:
     get:
+      tags: [Auth]
+      operationId: handleAuthCallback
+      x-auth: public
+      x-client-availability: web
       security: []
-      summary: Deployment health check
+      summary: Exchange web OAuth callback code and redirect.
+      responses:
+        "302":
+          description: Redirect to authenticated web route.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /auth/mobile-callback:
+    get:
+      tags: [Auth]
+      operationId: handleMobileAuthCallback
+      x-auth: public
+      security: []
+      summary: Exchange mobile OAuth callback code and redirect to app deep link.
+      responses:
+        "302":
+          description: Redirect to Flutter deep link.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /api/profile:
+    get:
+      tags: [Profile]
+      operationId: getProfile
+      x-auth: user
+      summary: Read current profile.
       responses:
         "200":
-          description: Healthy deployment
+          description: Current profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    patch:
+      tags: [Profile]
+      operationId: updateProfile
+      x-auth: user
+      summary: Update current profile.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdateRequest"
+      responses:
+        "200":
+          description: Updated profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/profile/avatar:
+    post:
+      tags: [Profile]
+      operationId: updateProfileAvatar
+      x-auth: user
+      summary: Attach uploaded avatar asset to the profile.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AvatarRequest"
+      responses:
+        "200":
+          description: Avatar metadata updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    delete:
+      tags: [Profile]
+      operationId: deleteProfileAvatar
+      x-auth: user
+      summary: Remove custom avatar.
+      responses:
+        "200":
+          description: Avatar removed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/journey/categories:
+    get:
+      tags: [Journey]
+      operationId: listJourneyCategories
+      x-auth: user
+      summary: List categories filtered by wardrobe type.
+      parameters:
+        - in: query
+          name: wardrobeType
+          required: true
+          schema:
+            $ref: "#/components/schemas/WardrobeType"
+      responses:
+        "200":
+          description: Available categories.
           content:
             application/json:
               schema:
                 type: object
-                required: [ok]
+                required: [categories]
                 properties:
-                  ok:
-                    type: boolean
-        default:
-          description: Error
+                  categories:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Category"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/journey/custom-category/validate:
+    post:
+      tags: [Journey]
+      operationId: validateCustomCategory
+      x-auth: user
+      summary: Validate custom category basicity.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomCategoryValidationRequest"
+      responses:
+        "200":
+          description: Basicity result.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/CustomCategoryValidationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/SemanticValidation"
+  /api/palette/validate:
+    post:
+      tags: [Journey]
+      operationId: validatePalette
+      x-auth: user
+      summary: Validate selected color IDs and return blocked colors.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaletteValidationRequest"
+      responses:
+        "200":
+          description: Palette validation result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaletteValidationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/SemanticValidation"
+  /api/capsules:
+    post:
+      tags: [Capsules]
+      operationId: createCapsule
+      x-auth: user
+      summary: Create capsule from journey selections.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCapsuleRequest"
+      responses:
+        "201":
+          description: Created capsule.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Capsule"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/SemanticValidation"
+  /api/capsules/current:
+    get:
+      tags: [Capsules]
+      operationId: getCurrentCapsule
+      x-auth: user
+      summary: Read active capsule for dashboard.
+      responses:
+        "200":
+          description: Current capsule or null.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [capsule]
+                properties:
+                  capsule:
+                    anyOf:
+                      - $ref: "#/components/schemas/Capsule"
+                      - type: "null"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /api/capsules/{capsuleId}:
+    parameters:
+      - $ref: "#/components/parameters/capsuleId"
+    get:
+      tags: [Capsules]
+      operationId: getCapsule
+      x-auth: user
+      summary: Read capsule detail.
+      responses:
+        "200":
+          description: Capsule detail.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Capsule"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [Capsules]
+      operationId: updateCapsule
+      x-auth: user
+      summary: Rename capsule or update non-palette metadata.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCapsuleRequest"
+      responses:
+        "200":
+          description: Updated capsule.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Capsule"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/capsules/{capsuleId}/items:
+    parameters:
+      - $ref: "#/components/parameters/capsuleId"
+    post:
+      tags: [Capsules]
+      operationId: addCapsuleItem
+      x-auth: user
+      summary: Add wardrobe entry to capsule after compatibility check.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddCapsuleItemRequest"
+      responses:
+        "200":
+          description: Updated capsule.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Capsule"
+        "422":
+          $ref: "#/components/responses/SemanticValidation"
+  /api/capsules/{capsuleId}/items/{entryId}:
+    parameters:
+      - $ref: "#/components/parameters/capsuleId"
+      - $ref: "#/components/parameters/entryId"
+    delete:
+      tags: [Capsules]
+      operationId: removeCapsuleItem
+      x-auth: user
+      summary: Remove item from capsule and recompute outputs.
+      responses:
+        "200":
+          description: Updated capsule.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Capsule"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/capsules/{capsuleId}/items/{entryId}/replace:
+    parameters:
+      - $ref: "#/components/parameters/capsuleId"
+      - $ref: "#/components/parameters/entryId"
+    post:
+      tags: [Capsules]
+      operationId: replaceCapsuleItem
+      x-auth: user
+      summary: Replace item and recompute capsule outputs.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReplaceCapsuleItemRequest"
+      responses:
+        "200":
+          description: Updated capsule.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Capsule"
+        "422":
+          $ref: "#/components/responses/SemanticValidation"
+  /api/capsules/{capsuleId}/outfits:
+    parameters:
+      - $ref: "#/components/parameters/capsuleId"
+    get:
+      tags: [Capsules]
+      operationId: listCapsuleOutfits
+      x-auth: user
+      summary: Read generated outfits.
+      responses:
+        "200":
+          description: Generated outfits.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [outfits]
+                properties:
+                  outfits:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Outfit"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/capsules/{capsuleId}/gaps:
+    parameters:
+      - $ref: "#/components/parameters/capsuleId"
+    get:
+      tags: [Capsules]
+      operationId: listCapsuleGaps
+      x-auth: user
+      summary: Read gap analysis.
+      responses:
+        "200":
+          description: Gap recommendations.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [gaps]
+                properties:
+                  gaps:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/GapRecommendation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/capsules/{capsuleId}/shopping-list:
+    parameters:
+      - $ref: "#/components/parameters/capsuleId"
+    get:
+      tags: [Capsules]
+      operationId: getCapsuleShoppingList
+      x-auth: user
+      summary: Read shopping list.
+      responses:
+        "200":
+          description: Shopping recommendations.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/GapRecommendation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/items:
+    get:
+      tags: [Items]
+      operationId: listItems
+      x-auth: user
+      summary: List user's wardrobe entries with filters.
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/ItemStatus"
+        - in: query
+          name: favorite
+          schema:
+            type: boolean
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Wardrobe items.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Item"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Items]
+      operationId: createItem
+      x-auth: user
+      summary: Create item metadata from confirmed upload/import/catalog result.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateItemRequest"
+      responses:
+        "201":
+          description: Created item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /api/items/{itemId}:
+    parameters:
+      - $ref: "#/components/parameters/itemId"
+    get:
+      tags: [Items]
+      operationId: getItem
+      x-auth: user
+      summary: Read item detail.
+      responses:
+        "200":
+          description: Item detail.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [Items]
+      operationId: updateItem
+      x-auth: user
+      summary: Edit item metadata with optimistic locking.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateItemRequest"
+      responses:
+        "200":
+          description: Updated item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/SemanticValidation"
+    delete:
+      tags: [Items]
+      operationId: deleteItem
+      x-auth: user
+      summary: Delete private item or remove user's wardrobe entry.
+      responses:
+        "200":
+          description: Item deleted or detached.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/items/{itemId}/favorite:
+    parameters:
+      - $ref: "#/components/parameters/itemId"
+    post:
+      tags: [Items]
+      operationId: setItemFavorite
+      x-auth: user
+      summary: Toggle favorite.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FavoriteRequest"
+      responses:
+        "200":
+          description: Updated item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/items/{itemId}/status:
+    parameters:
+      - $ref: "#/components/parameters/itemId"
+    patch:
+      tags: [Items]
+      operationId: updateItemStatus
+      x-auth: user
+      summary: Move item to active, uncapsulated, for sale, or for repair.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateItemStatusRequest"
+      responses:
+        "200":
+          description: Updated item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /api/uploads/photo/init:
+    post:
+      tags: [Uploads]
+      operationId: initPhotoUpload
+      x-auth: user
+      summary: Validate metadata and return signed upload target.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoUploadInitRequest"
+      responses:
+        "200":
+          description: Upload target.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PhotoUploadInitResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/uploads/photo/complete:
+    post:
+      tags: [Uploads]
+      operationId: completePhotoUpload
+      x-auth: user
+      summary: Create item asset metadata after upload.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoUploadCompleteRequest"
+      responses:
+        "200":
+          description: Upload job.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadJob"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/uploads/{jobId}/background-removal:
+    parameters:
+      - $ref: "#/components/parameters/jobId"
+    post:
+      tags: [Uploads]
+      operationId: startBackgroundRemoval
+      x-auth: user
+      summary: Start or retry background removal.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BackgroundRemovalRequest"
+      responses:
+        "202":
+          description: Processing job accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadJob"
+        "402":
+          $ref: "#/components/responses/InsufficientBalance"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/uploads/{jobId}:
+    parameters:
+      - $ref: "#/components/parameters/jobId"
+    get:
+      tags: [Uploads]
+      operationId: getUploadJob
+      x-auth: user
+      summary: Read processing status.
+      responses:
+        "200":
+          description: Upload job.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadJob"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/imports/marketplace:
+    post:
+      tags: [Imports]
+      operationId: createMarketplaceImport
+      x-auth: user
+      summary: Submit one or more product URLs.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarketplaceImportRequest"
+      responses:
+        "202":
+          description: Import job accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketplaceImport"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /api/imports/{importId}:
+    parameters:
+      - $ref: "#/components/parameters/importId"
+    get:
+      tags: [Imports]
+      operationId: getMarketplaceImport
+      x-auth: user
+      summary: Read parse status and parsed candidate data.
+      responses:
+        "200":
+          description: Import status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketplaceImport"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/imports/{importId}/confirm:
+    parameters:
+      - $ref: "#/components/parameters/importId"
+    post:
+      tags: [Imports]
+      operationId: confirmMarketplaceImport
+      x-auth: user
+      summary: Confirm candidate tags and create item.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarketplaceConfirmRequest"
+      responses:
+        "201":
+          description: Created item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "422":
+          $ref: "#/components/responses/SemanticValidation"
+  /api/catalog/search:
+    get:
+      tags: [Catalog]
+      operationId: searchCatalog
+      x-auth: user
+      summary: Hybrid semantic search over public catalog items.
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+            minLength: 2
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: colorIds
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        "200":
+          description: Catalog search results.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogSearchResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /api/catalog/items/{itemId}:
+    parameters:
+      - $ref: "#/components/parameters/itemId"
+    get:
+      tags: [Catalog]
+      operationId: getCatalogItem
+      x-auth: user
+      summary: Read public catalog item.
+      responses:
+        "200":
+          description: Catalog item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/catalog/items/{itemId}/add:
+    parameters:
+      - $ref: "#/components/parameters/itemId"
+    post:
+      tags: [Catalog]
+      operationId: addCatalogItem
+      x-auth: user
+      summary: Add public catalog item to user's wardrobe or capsule.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                capsuleId:
+                  type: [string, "null"]
+                  format: uuid
+      responses:
+        "201":
+          description: Added wardrobe item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Item"
+        "422":
+          $ref: "#/components/responses/SemanticValidation"
   /api/billing/lava/invoice:
     post:
+      tags: [Billing]
+      operationId: createLavaInvoice
+      x-auth: user
       x-client-availability: web
-      summary: Create a Lava.top invoice for a web coin-pack purchase
+      summary: Create a Lava.top invoice for a web coin-pack purchase.
       description: Web-only in v0.1; native mobile apps must not expose this as a purchase CTA.
       requestBody:
         required: true
@@ -204,42 +1575,38 @@ paths:
               $ref: "#/components/schemas/LavaInvoiceRequest"
       responses:
         "200":
-          description: Lava.top invoice/payment link
+          description: Lava.top invoice/payment link.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/LavaInvoiceResponse"
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /api/billing/lava/status/{invoiceId}:
+    parameters:
+      - $ref: "#/components/parameters/invoiceId"
     get:
-      summary: Read Lava.top invoice status
-      parameters:
-        - in: path
-          name: invoiceId
-          required: true
-          schema:
-            type: string
+      tags: [Billing]
+      operationId: getLavaInvoiceStatus
+      x-auth: user
+      summary: Read Lava.top invoice status.
       responses:
         "200":
-          description: Invoice status
+          description: Invoice status.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/LavaStatusResponse"
-        default:
-          description: Error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /api/billing/coins/spend:
     post:
-      summary: Spend coins for paid app actions
+      tags: [Billing]
+      operationId: spendCoins
+      x-auth: user
+      summary: Spend coins for paid app actions.
       description: >
         Creates a negative coin_ledger entry for an authenticated user after
         server-side balance, reason, target, price, and idempotency validation.
@@ -252,36 +1619,106 @@ paths:
               $ref: "#/components/schemas/CoinSpendRequest"
       responses:
         "200":
-          description: Coin spend accepted idempotently
+          description: Coin spend accepted idempotently.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CoinSpendResponse"
-        default:
-          description: Error
+        "402":
+          $ref: "#/components/responses/InsufficientBalance"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/SemanticValidation"
+  /api/webhooks/lava:
+    post:
+      tags: [Billing]
+      operationId: handleLavaWebhook
+      x-auth: webhook
+      x-client-availability: server
+      security:
+        - lavaWebhookKey: []
+      summary: Fulfill Lava.top payment webhook into coin ledger.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LavaWebhookPayload"
+      responses:
+        "200":
+          description: Webhook accepted idempotently.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-  /api/webhooks/lava:
-    post:
-      security:
-        - lavaWebhookKey: []
-      summary: Fulfill Lava.top payment webhook into coin ledger
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /api/admin/moderation/items:
+    get:
+      tags: [Admin]
+      operationId: listModerationItems
+      x-auth: admin
+      x-client-availability: server
+      summary: List marketplace items awaiting moderation.
       responses:
         "200":
-          description: Webhook accepted idempotently
+          description: Moderation items.
           content:
             application/json:
               schema:
                 type: object
-                required: [ok]
+                required: [items]
                 properties:
-                  ok:
-                    type: boolean
-        default:
-          description: Error
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Item"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/admin/moderation/items/{itemId}:
+    parameters:
+      - $ref: "#/components/parameters/itemId"
+    patch:
+      tags: [Admin]
+      operationId: updateModerationItem
+      x-auth: admin
+      x-client-availability: server
+      summary: Approve or reject catalog visibility.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminModerationRequest"
+      responses:
+        "200":
+          description: Updated moderation item.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/Item"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/health:
+    get:
+      tags: [Health]
+      operationId: getHealth
+      x-auth: public
+      security: []
+      summary: Basic deployment health check.
+      responses:
+        "200":
+          description: Healthy deployment.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
