@@ -16,36 +16,43 @@ function parseArgs(argv = process.argv.slice(2)) {
     endpoint: process.env.PHOTOROOM_API_URL || defaultEndpoint,
   };
 
+  const requireValue = (flag, value) => {
+    if (value === undefined) {
+      throw new Error(`${flag} requires a value.`);
+    }
+    return value;
+  };
+
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
 
     if (arg === "--image") {
-      args.images.push(argv[index + 1]);
+      args.images.push(requireValue(arg, argv[index + 1]));
       index += 1;
     } else if (arg.startsWith("--image=")) {
       args.images.push(arg.slice("--image=".length));
     } else if (arg === "--output-dir") {
-      args.outputDir = argv[index + 1];
+      args.outputDir = requireValue(arg, argv[index + 1]);
       index += 1;
     } else if (arg.startsWith("--output-dir=")) {
       args.outputDir = arg.slice("--output-dir=".length);
     } else if (arg === "--markdown") {
-      args.markdown = argv[index + 1];
+      args.markdown = requireValue(arg, argv[index + 1]);
       index += 1;
     } else if (arg.startsWith("--markdown=")) {
       args.markdown = arg.slice("--markdown=".length);
     } else if (arg === "--format") {
-      args.format = argv[index + 1];
+      args.format = requireValue(arg, argv[index + 1]);
       index += 1;
     } else if (arg.startsWith("--format=")) {
       args.format = arg.slice("--format=".length);
     } else if (arg === "--size") {
-      args.size = argv[index + 1];
+      args.size = requireValue(arg, argv[index + 1]);
       index += 1;
     } else if (arg.startsWith("--size=")) {
       args.size = arg.slice("--size=".length);
     } else if (arg === "--endpoint") {
-      args.endpoint = argv[index + 1];
+      args.endpoint = requireValue(arg, argv[index + 1]);
       index += 1;
     } else if (arg.startsWith("--endpoint=")) {
       args.endpoint = arg.slice("--endpoint=".length);
@@ -97,9 +104,9 @@ function percentile(values, p) {
   }
 
   const sorted = [...values].sort((left, right) => left - right);
-  const index = Math.min(
-    sorted.length - 1,
-    Math.ceil((p / 100) * sorted.length) - 1,
+  const index = Math.max(
+    0,
+    Math.min(sorted.length - 1, Math.ceil((p / 100) * sorted.length) - 1),
   );
   return sorted[index];
 }

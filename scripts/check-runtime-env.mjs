@@ -35,9 +35,9 @@ const groups = {
       serverOnly: true,
       maxLength: 80,
     },
-    { name: "LAVA_COINS_5_PRODUCT_ID", kind: "id" },
-    { name: "LAVA_COINS_15_PRODUCT_ID", kind: "id" },
-    { name: "LAVA_COINS_30_PRODUCT_ID", kind: "id" },
+    { name: "LAVA_COINS_5_PRODUCT_ID", kind: "id", serverOnly: true },
+    { name: "LAVA_COINS_15_PRODUCT_ID", kind: "id", serverOnly: true },
+    { name: "LAVA_COINS_30_PRODUCT_ID", kind: "id", serverOnly: true },
   ],
   image: [
     { name: "PHOTOROOM_API_KEY", kind: "secret", serverOnly: true },
@@ -64,16 +64,23 @@ function parseArgs(argv = process.argv.slice(2)) {
     allowPlaceholders: false,
   };
 
+  const requireValue = (flag, value) => {
+    if (value === undefined) {
+      throw new Error(`${flag} requires a value.`);
+    }
+    return value;
+  };
+
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
 
     if (arg === "--env") {
-      args.envFiles.push(argv[index + 1]);
+      args.envFiles.push(requireValue(arg, argv[index + 1]));
       index += 1;
     } else if (arg.startsWith("--env=")) {
       args.envFiles.push(arg.slice("--env=".length));
     } else if (arg === "--surface") {
-      args.surfaces.push(...argv[index + 1].split(","));
+      args.surfaces.push(...requireValue(arg, argv[index + 1]).split(","));
       index += 1;
     } else if (arg.startsWith("--surface=")) {
       args.surfaces.push(...arg.slice("--surface=".length).split(","));
@@ -158,9 +165,8 @@ function isPlaceholder(value) {
     !normalized ||
     normalized.includes("replace-with") ||
     normalized.includes("changeme") ||
-    normalized.includes("todo") ||
-    normalized.includes("your-") ||
-    normalized.includes("your_") ||
+    /(^|[^a-z0-9])todo([^a-z0-9]|$)/.test(normalized) ||
+    /^your[-_]/.test(normalized) ||
     /^x+$/.test(normalized)
   );
 }
@@ -245,7 +251,12 @@ function main() {
       }
 
       const valueErrors = validateValue(rule, value, args.allowPlaceholders);
-      checked.push({ surface, name: label, serverOnly: rule.serverOnly });
+      checked.push({
+        surface,
+        name: label,
+        serverOnly: rule.serverOnly,
+        ok: valueErrors.length === 0,
+      });
       errors.push(...valueErrors);
     }
   }
@@ -264,7 +275,8 @@ function main() {
 
   for (const item of checked) {
     const suffix = item.serverOnly ? " [server-only]" : "";
-    console.log(`[ok] ${item.surface}: ${item.name}${suffix}`);
+    const status = item.ok ? "ok" : "fail";
+    console.log(`[${status}] ${item.surface}: ${item.name}${suffix}`);
   }
 
   for (const warning of warnings) {
