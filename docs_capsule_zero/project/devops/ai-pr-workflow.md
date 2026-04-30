@@ -78,6 +78,20 @@ Routing details live in `docs_capsule_zero/project/devops/ai-orchestration-proto
 
 Detailed CI and branch-protection policy lives in `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md`.
 
+## SENAR Done Gate
+
+Before merge, the author and the human merge owner confirm that:
+
+- Feature memory (`spec.md`) names goal and scope.
+- Every acceptance criterion has evidence in the PR diff, in the `## Verification` table of `plan.md`, or in a linked check. AI-written summaries do not count as evidence.
+- At least one negative scenario is covered, or `spec.md` explicitly waives the requirement with a one-line reason.
+- `tasks.md` records the relevant dead ends, decisions, and known issues under `## Process Memory`.
+- Any remaining known issue is explicitly accepted by the human merge owner.
+
+This gate is enforced by the review agent and the human merge owner, not by an additional GitHub Actions check. Structural completeness of feature memory continues to be enforced by `pr-guard.yml` (spec/plan/tasks must exist for `app/` changes). Full mapping and rationale: `docs_capsule_zero/project/devops/senar-mapping.md`.
+
+The gate applies to every spec authored after the SENAR layer shipped (`005-…` and onward). Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered.
+
 ## Merge-Ready Rule
 
 The loop is still active while any of these are true:
@@ -86,5 +100,6 @@ The loop is still active while any of these are true:
 - blocking findings remain on the current PR head SHA
 - the PR has merge conflicts
 - workflow, integration, or routing issues remain unresolved
+- the SENAR Done Gate is unmet for an in-scope (non-grandfathered) spec
 
-A task is done only when the current PR head SHA has green required checks, no blocking findings, no conflicts, and only final merge mechanics remain.
+A task is done only when the current PR head SHA has green required checks, no blocking findings, no conflicts, the SENAR Done Gate is satisfied (or N/A for infrastructure-only PRs), and only final merge mechanics remain.

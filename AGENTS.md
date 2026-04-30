@@ -12,16 +12,16 @@
 
 ## Current Phase & Status
 
-| Phase | Status |
-|---|---|
-| 0. Founder Vision | COMPLETE — `.specify/memory/constitution.md` |
-| 1. Market Research | COMPLETE — `docs_capsule_zero/marketing/go-to-market.md` |
-| 2. Product Definition | COMPLETE — `.specify/specs/001-capsule-zero-mvp/spec.md`, `docs_capsule_zero/project/methodology/`, `docs_capsule_zero/ux/emotion-map.md`, `docs_capsule_zero/ux/ux-validation.md` |
-| 3. UX/UI Design | COMPLETE — 16 logical screens across 12 HTML files + `html-prototypes/design-system.html`, `html-prototypes/color-system.html` — all in `html-prototypes/` |
-| **4. Technical Architecture** | **DECISIONS DOCUMENTED** — Sprint 0 entrance gate pending before Phase 5 feature work |
-| 5. Development Sprint | Upcoming |
-| 6. QA & Soft Launch | Upcoming |
-| 7. Commercial Launch | Upcoming |
+| Phase                         | Status                                                                                                                                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0. Founder Vision             | COMPLETE — `.specify/memory/constitution.md`                                                                                                                                       |
+| 1. Market Research            | COMPLETE — `docs_capsule_zero/marketing/go-to-market.md`                                                                                                                           |
+| 2. Product Definition         | COMPLETE — `.specify/specs/001-capsule-zero-mvp/spec.md`, `docs_capsule_zero/project/methodology/`, `docs_capsule_zero/ux/emotion-map.md`, `docs_capsule_zero/ux/ux-validation.md` |
+| 3. UX/UI Design               | COMPLETE — 16 logical screens across 12 HTML files + `html-prototypes/design-system.html`, `html-prototypes/color-system.html` — all in `html-prototypes/`                         |
+| **4. Technical Architecture** | **DECISIONS DOCUMENTED** — Sprint 0 entrance gate pending before Phase 5 feature work                                                                                              |
+| 5. Development Sprint         | Upcoming                                                                                                                                                                           |
+| 6. QA & Soft Launch           | Upcoming                                                                                                                                                                           |
+| 7. Commercial Launch          | Upcoming                                                                                                                                                                           |
 
 ## Where to Find Specifications
 
@@ -43,87 +43,95 @@ Located in `html-prototypes/`. These are **pixel-perfect hi-fi prototypes** (pur
 
 **Current source of truth:** the HTML prototypes in `html-prototypes/` are the most up-to-date product reference for product behavior, layout, and scope. If an older doc conflicts with an approved HTML prototype, follow the prototype and then align the docs.
 
-| File | Screen | User Stories |
-|---|---|---|
-| `html-prototypes/index.html` | Landing + Auth popup | US-001, US-002, US-003 |
-| `html-prototypes/auth.html` | Standalone Auth | US-002, US-003 |
-| `html-prototypes/dashboard.html` | Dashboard | US-004, US-005 |
-| `html-prototypes/guided-journey.html` | Guided Journey (3 steps) | US-008–012, US-017 |
-| `html-prototypes/capsule-result.html` | Capsule Result | US-013–016 |
-| `html-prototypes/my-items.html` | My Items | US-006, US-007 |
-| `html-prototypes/uncapsulated.html` | Uncapsulated | US-020 |
-| `html-prototypes/favorites.html` | Favorites | US-019 |
-| `html-prototypes/for-sale.html` | For Sale | US-021 |
-| `html-prototypes/for-repair.html` | For Repair | US-024 |
-| `html-prototypes/profile.html` | Profile | US-005, US-018 |
-| `html-prototypes/design-system.html` | Design System (tokens, components, patterns) | — |
-| `html-prototypes/color-system.html` | Color Palette (51 colors, capsule palette) | — |
+| File                                  | Screen                                       | User Stories           |
+| ------------------------------------- | -------------------------------------------- | ---------------------- |
+| `html-prototypes/index.html`          | Landing + Auth popup                         | US-001, US-002, US-003 |
+| `html-prototypes/auth.html`           | Standalone Auth                              | US-002, US-003         |
+| `html-prototypes/dashboard.html`      | Dashboard                                    | US-004, US-005         |
+| `html-prototypes/guided-journey.html` | Guided Journey (3 steps)                     | US-008–012, US-017     |
+| `html-prototypes/capsule-result.html` | Capsule Result                               | US-013–016             |
+| `html-prototypes/my-items.html`       | My Items                                     | US-006, US-007         |
+| `html-prototypes/uncapsulated.html`   | Uncapsulated                                 | US-020                 |
+| `html-prototypes/favorites.html`      | Favorites                                    | US-019                 |
+| `html-prototypes/for-sale.html`       | For Sale                                     | US-021                 |
+| `html-prototypes/for-repair.html`     | For Repair                                   | US-024                 |
+| `html-prototypes/profile.html`        | Profile                                      | US-005, US-018         |
+| `html-prototypes/design-system.html`  | Design System (tokens, components, patterns) | —                      |
+| `html-prototypes/color-system.html`   | Color Palette (51 colors, capsule palette)   | —                      |
 
 **To view:** `python3 -m http.server 3100` from `html-prototypes/`, then `http://localhost:3100/<file>.html`
 
 ## Key Principles to ALWAYS Respect
 
 ### 1. Glassmorphism UI Language (NON-NEGOTIABLE)
+
 The interface uses frosted glass surfaces. Two variants: main panels (blur 40px) and nav/bottom sheets (blur 44px).
+
 - **Never** use opaque solid backgrounds for containers. **Always** use glass.
 - → Exact token values: `docs_capsule_zero/project/frontend/styling.md`
 
 ### 2. Achromatic Interface
+
 - UI colors: black / white / grey only
 - Color enters ONLY through user's garment photos and color dots
 - Error color: `#FFD600` (yellow), NOT red
 
 ### 3. Capsule Methodology (Color Rules)
+
 - Palette is immutable once created
 - Colors must be compatible either by temperature or by saturation
 - Achromats always compatible
 - Incompatible items blocked with explanation
 
 ### 4. "Direct, Not Dictate"
+
 - System suggests, explains, offers alternatives
 - Never force user decisions
 - Blocks come with explanations and alternative paths
 
 ### 5. Premium Quality Bar
+
 - "Screenshot test": every screen must be worth screenshotting
 - Interface must stand next to Aesop / ZARA / COS
 - Screens match designs to 2px precision
 - Lighthouse: Performance 90+, Accessibility 95+
 
 ### 6. Three Upload Methods
+
 Photo upload, marketplace link import, semantic search from shared DB. All three are critical — they solve the #1 competitor pain point (upload friction).
 
 ## Source Documentation
 
-| Document | Content |
-|---|---|
-| `.specify/specs/001-capsule-zero-mvp/spec.md` | 25 user stories (24 MUST + 1 NICE), user flow, screen inventory |
-| `docs_capsule_zero/project/methodology/capsule-methodology.md` | Capsule methodology, compatibility rules, palette logic, limits |
-| `docs_capsule_zero/project/methodology/colors.md` | 51-color system, HEX values, compatibility matrix |
-| `docs_capsule_zero/project/methodology/categories.md` | Garment categories and classification |
-| `docs_capsule_zero/project/methodology/outfit-generation.md` | 7-layer outfit structure, OPR formula, combination algorithm |
-| `docs_capsule_zero/project/methodology/gap-analysis.md` | Gap detection rules, shopping list format, validation constraints |
-| `docs_capsule_zero/project/frontend/styling.md` | Glass tokens, colors, typography, component patterns (source of truth for visual tokens and component styling) |
-| `docs_capsule_zero/project/frontend/frontend-docs.md` | Web frontend architecture, libraries, state management, env vars |
-| `docs_capsule_zero/project/frontend/components.md` | Component conventions, glass patterns, mobile-first rules |
-| `docs_capsule_zero/project/backend/backend-docs.md` | Backend stack, API structure, DB schema, env vars |
-| `docs_capsule_zero/project/mobile/mobile-docs.md` | Flutter app architecture, mobile auth/deep links, mobile payment constraints |
-| `docs_capsule_zero/project/architecture/phase-4-council.md` | Architecture council decision register and validation notes |
-| `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` | Required Sprint 0 gate before product feature implementation |
-| `docs_capsule_zero/adr/` | ADRs for stack, auth, storage, and API contract |
-| `docs_capsule_zero/glossary.md` | Domain terminology with RU/ES-AR equivalents |
-| `docs_capsule_zero/i18n/ui-texts.md` | i18n content (EN, ES-AR, RU) — all 16 screens |
-| `docs_capsule_zero/ux/emotion-map.md` | Emotional targets per screen, UX principles |
-| `docs_capsule_zero/ux/ux-validation.md` | Competitor analysis, UX benchmarks, 6 critical insights |
-| `docs_capsule_zero/features/f-XXX-name.md` | Per-feature requirements, acceptance criteria, edge cases (15 files) |
-| `docs_capsule_zero/screens/screen-name.md` | Per-screen layout, component details, states (11 files) |
-| `docs_capsule_zero/marketing/go-to-market.md` | TAM/SAM/SOM, competitor matrix, persona, pricing |
-| `docs_capsule_zero/launch/launch-plan.md` | Full launch plan, phases 0-7, quality gates |
-| `.specify/specs/001-capsule-zero-mvp/prototype-map.md` | Prototype-to-story map, cross-cutting stories, backend-only stories |
+| Document                                                               | Content                                                                                                        |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `.specify/specs/001-capsule-zero-mvp/spec.md`                          | 25 user stories (24 MUST + 1 NICE), user flow, screen inventory                                                |
+| `docs_capsule_zero/project/methodology/capsule-methodology.md`         | Capsule methodology, compatibility rules, palette logic, limits                                                |
+| `docs_capsule_zero/project/methodology/colors.md`                      | 51-color system, HEX values, compatibility matrix                                                              |
+| `docs_capsule_zero/project/methodology/categories.md`                  | Garment categories and classification                                                                          |
+| `docs_capsule_zero/project/methodology/outfit-generation.md`           | 7-layer outfit structure, OPR formula, combination algorithm                                                   |
+| `docs_capsule_zero/project/methodology/gap-analysis.md`                | Gap detection rules, shopping list format, validation constraints                                              |
+| `docs_capsule_zero/project/frontend/styling.md`                        | Glass tokens, colors, typography, component patterns (source of truth for visual tokens and component styling) |
+| `docs_capsule_zero/project/frontend/frontend-docs.md`                  | Web frontend architecture, libraries, state management, env vars                                               |
+| `docs_capsule_zero/project/frontend/components.md`                     | Component conventions, glass patterns, mobile-first rules                                                      |
+| `docs_capsule_zero/project/backend/backend-docs.md`                    | Backend stack, API structure, DB schema, env vars                                                              |
+| `docs_capsule_zero/project/mobile/mobile-docs.md`                      | Flutter app architecture, mobile auth/deep links, mobile payment constraints                                   |
+| `docs_capsule_zero/project/architecture/phase-4-council.md`            | Architecture council decision register and validation notes                                                    |
+| `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` | Required Sprint 0 gate before product feature implementation                                                   |
+| `docs_capsule_zero/adr/`                                               | ADRs for stack, auth, storage, and API contract                                                                |
+| `docs_capsule_zero/glossary.md`                                        | Domain terminology with RU/ES-AR equivalents                                                                   |
+| `docs_capsule_zero/i18n/ui-texts.md`                                   | i18n content (EN, ES-AR, RU) — all 16 screens                                                                  |
+| `docs_capsule_zero/ux/emotion-map.md`                                  | Emotional targets per screen, UX principles                                                                    |
+| `docs_capsule_zero/ux/ux-validation.md`                                | Competitor analysis, UX benchmarks, 6 critical insights                                                        |
+| `docs_capsule_zero/features/f-XXX-name.md`                             | Per-feature requirements, acceptance criteria, edge cases (15 files)                                           |
+| `docs_capsule_zero/screens/screen-name.md`                             | Per-screen layout, component details, states (11 files)                                                        |
+| `docs_capsule_zero/marketing/go-to-market.md`                          | TAM/SAM/SOM, competitor matrix, persona, pricing                                                               |
+| `docs_capsule_zero/launch/launch-plan.md`                              | Full launch plan, phases 0-7, quality gates                                                                    |
+| `.specify/specs/001-capsule-zero-mvp/prototype-map.md`                 | Prototype-to-story map, cross-cutting stories, backend-only stories                                            |
 
 ### Reading Route — Implementing a Feature
 
 When assigned to implement a specific feature, read in this order:
+
 1. HTML prototype (`html-prototypes/`) — current source of truth for approved behavior, layout, and scope
 2. `docs_capsule_zero/features/f-XXX-name.md` — requirements, acceptance criteria, edge cases
 3. `docs_capsule_zero/screens/screen-name.md` — layout, component details, states
@@ -152,6 +160,7 @@ When assigned to implement a specific feature, read in this order:
 ## App Directory
 
 `/app` contains a Next.js 14+ project initialized with Tailwind. Structure:
+
 - `app/src/` — source code
 - `app/src/styles/tokens.css` — Tailwind v4 @theme tokens (from design system)
 - `app/public/` — static assets
@@ -176,6 +185,21 @@ When assigned to implement a specific feature, read in this order:
 - Native review normalization is documented in `docs_capsule_zero/project/devops/review-contract.md`.
 - Local PowerShell and worktree orchestration scripts are no longer part of the repository.
 
+## SENAR Completion Contract
+
+Capsule Zero adds a lightweight supervised-verification layer (SENAR) on top of the spec-first PR workflow. Full mapping: `docs_capsule_zero/project/devops/senar-mapping.md`.
+
+A task is **not complete** until the current PR head SHA has:
+
+- Feature memory that names goal and scope (`## Goal`, `## Scope` in `spec.md`).
+- Evidence for every acceptance criterion in the `## Verification` table of `plan.md` (command, test, screenshot, diff, or linked check — **not** an AI-written summary).
+- At least one negative scenario covered, or an explicit one-line waiver in `spec.md`.
+- `## Process Memory` (Dead Ends / Decisions / Known Issues) updated in `tasks.md` _before_ declaring the work complete.
+- The SENAR Done Gate checklist filled in the PR description.
+- The standard merge-ready conditions: green `baseline-checks` / `guard` / `AI Review`, no blocking review findings, no merge conflicts.
+
+**Scope of application:** SENAR fields are required for every spec authored after the SENAR layer shipped (i.e. starting with `005-…`). Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered and keep their original shape; do not retrofit them.
+
 ## Review guidelines
 
 - Codex review uses native GitHub PR review output plus `P0-P3` inline severity badges.
@@ -193,40 +217,43 @@ When assigned to implement a specific feature, read in this order:
 Architecture decisions have been made through an Architectura-style council and documented in the repository. Before Phase 5 feature work begins, complete the Sprint 0 entrance gate and get founder approval on the stack.
 
 ### What's already done
-| Item | Status | Location |
-|---|---|---|
-| Frontend framework | ✅ Next.js 14+ App Router, React, TypeScript | `/app` |
-| Styling | ✅ Tailwind CSS v4 with custom @theme tokens | `app/src/styles/tokens.css` |
-| Design tokens | ✅ Glass tokens, colors, typography | `docs_capsule_zero/project/frontend/styling.md` |
-| Folder structure | ✅ Basic boilerplate (`/app/src/`) | `/app/src/` |
-| Architecture council | ✅ Decisions + validation | `docs_capsule_zero/project/architecture/phase-4-council.md` |
-| Phase 5 entrance checklist | ✅ Required Sprint 0 gate documented | `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` |
-| ADR-001: Stack Overview | ✅ Accepted | `docs_capsule_zero/adr/adr-001-stack.md` |
-| ADR-002: Auth | ✅ Accepted | `docs_capsule_zero/adr/adr-002-auth.md` |
-| ADR-003: Storage | ✅ Accepted | `docs_capsule_zero/adr/adr-003-storage.md` |
-| API spec | ✅ MVP planning contract | `docs_capsule_zero/adr/api-spec.md` |
-| Backend docs | ✅ Stack, API structure, DB schema | `docs_capsule_zero/project/backend/backend-docs.md` |
-| Frontend docs | ✅ Libraries, state management, env vars | `docs_capsule_zero/project/frontend/frontend-docs.md` |
-| Components guide | ✅ Component conventions, glass patterns | `docs_capsule_zero/project/frontend/components.md` |
-| Mobile docs | ✅ Flutter stack, deep links, mobile QA | `docs_capsule_zero/project/mobile/mobile-docs.md` |
+
+| Item                       | Status                                       | Location                                                               |
+| -------------------------- | -------------------------------------------- | ---------------------------------------------------------------------- |
+| Frontend framework         | ✅ Next.js 14+ App Router, React, TypeScript | `/app`                                                                 |
+| Styling                    | ✅ Tailwind CSS v4 with custom @theme tokens | `app/src/styles/tokens.css`                                            |
+| Design tokens              | ✅ Glass tokens, colors, typography          | `docs_capsule_zero/project/frontend/styling.md`                        |
+| Folder structure           | ✅ Basic boilerplate (`/app/src/`)           | `/app/src/`                                                            |
+| Architecture council       | ✅ Decisions + validation                    | `docs_capsule_zero/project/architecture/phase-4-council.md`            |
+| Phase 5 entrance checklist | ✅ Required Sprint 0 gate documented         | `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` |
+| ADR-001: Stack Overview    | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-001-stack.md`                               |
+| ADR-002: Auth              | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-002-auth.md`                                |
+| ADR-003: Storage           | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-003-storage.md`                             |
+| API spec                   | ✅ MVP planning contract                     | `docs_capsule_zero/adr/api-spec.md`                                    |
+| Backend docs               | ✅ Stack, API structure, DB schema           | `docs_capsule_zero/project/backend/backend-docs.md`                    |
+| Frontend docs              | ✅ Libraries, state management, env vars     | `docs_capsule_zero/project/frontend/frontend-docs.md`                  |
+| Components guide           | ✅ Component conventions, glass patterns     | `docs_capsule_zero/project/frontend/components.md`                     |
+| Mobile docs                | ✅ Flutter stack, deep links, mobile QA      | `docs_capsule_zero/project/mobile/mobile-docs.md`                      |
 
 ### Accepted Phase 4 decisions
-| Decision | Accepted option |
-|---|---|
-| **Backend / BaaS** | Supabase |
-| **Database** | Supabase PostgreSQL with RLS, pgvector, and Postgres full-text search |
-| **Auth** | Supabase Auth with Email, Google OAuth, and Apple Sign-In |
-| **File Storage** | Supabase Storage |
-| **Background Removal** | Photoroom API behind an adapter, with remove.bg fallback if SLA/quality fails |
-| **Hosting** | Vercel frontend + Supabase backend services |
-| **State Management** | Zustand for local Journey/UI state; TanStack Query for interactive server-state |
-| **API Client** | Server Components/Actions + typed fetch/TanStack Query; Route Handlers for explicit API boundaries |
-| **Forms** | React Hook Form + Zod |
-| **i18n** | next-intl |
-| **Payments** | Lava.top web purchases + Postgres coin ledger; mobile read-only balance in v0.1 |
-| **Mobile App** | Flutter + Dart for iOS and Android |
+
+| Decision               | Accepted option                                                                                    |
+| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| **Backend / BaaS**     | Supabase                                                                                           |
+| **Database**           | Supabase PostgreSQL with RLS, pgvector, and Postgres full-text search                              |
+| **Auth**               | Supabase Auth with Email, Google OAuth, and Apple Sign-In                                          |
+| **File Storage**       | Supabase Storage                                                                                   |
+| **Background Removal** | Photoroom API behind an adapter, with remove.bg fallback if SLA/quality fails                      |
+| **Hosting**            | Vercel frontend + Supabase backend services                                                        |
+| **State Management**   | Zustand for local Journey/UI state; TanStack Query for interactive server-state                    |
+| **API Client**         | Server Components/Actions + typed fetch/TanStack Query; Route Handlers for explicit API boundaries |
+| **Forms**              | React Hook Form + Zod                                                                              |
+| **i18n**               | next-intl                                                                                          |
+| **Payments**           | Lava.top web purchases + Postgres coin ledger; mobile read-only balance in v0.1                    |
+| **Mobile App**         | Flutter + Dart for iOS and Android                                                                 |
 
 ### Required Sprint 0 follow-ups before Phase 5 feature work
+
 - Founder approval on the accepted stack.
 - Configure linting and local commit hooks before first Phase 5 product-code PR.
 - Create Supabase project/local stack, migrations, storage buckets, RLS policies, and seed data.
@@ -237,6 +264,7 @@ Architecture decisions have been made through an Architectura-style council and 
 - Generate TypeScript and Dart API clients from `docs_capsule_zero/adr/openapi.yaml`.
 
 ### Phase 4 quality gate (from launch-plan.md)
+
 - All stack decisions documented as ADRs: ✅ done
 - CI/CD pipeline set up (auto-build, preview deployments): ✅ baseline GitHub checks documented and configured
 - Local dev setup documented (env vars, seed data): ✅ documented in backend/frontend docs
@@ -244,6 +272,7 @@ Architecture decisions have been made through an Architectura-style council and 
 - Founder approval on stack: pending
 
 ### Key constraints for architecture decisions
+
 - **No subscription model** — coins only (Lava.top one-time purchases)
 - **3 upload methods:** photo upload · marketplace link import · semantic search (shared DB)
 - **Background removal < 5 sec** per quality gate

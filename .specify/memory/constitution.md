@@ -21,38 +21,45 @@
 Capsule Zero proprietary color circle methodology.
 
 ### Color Architecture
+
 - **Temperature axis:** Warm / Cool / Neutral
 - **Group taxonomy:** 4 chromatic groups — Brights (vivid), Pastels (light), Desaturated (muted), Darks (deep). Full table and compatibility matrix: `docs_capsule_zero/project/methodology/colors.md`.
 - **Achromatic axis:** Yes / No (3 universal connectors — Black, Gray, White)
 
 ### Immutable Palette Rules
+
 - Capsule color palette is **locked at creation**. Changing palette = new capsule.
 - Compatible colors can be added via item addition/replacement.
 - Incompatible items are **blocked** with recommendation to create a separate capsule.
 - Achromatics (Black, Gray, White — 3 colors, IDs A1–A3) are **universal connectors** — always compatible with every color in the system. → Full color table: `docs_capsule_zero/project/methodology/colors.md`
 
 ### Compatibility Rules
-| Combination | Verdict |
-|---|---|
-| Achromat + Achromat | ALWAYS compatible |
-| Achromat + Any color | ALWAYS compatible |
-| Same temperature | Compatible |
-| Same saturation group | Compatible |
+
+| Combination                                          | Verdict                                |
+| ---------------------------------------------------- | -------------------------------------- |
+| Achromat + Achromat                                  | ALWAYS compatible                      |
+| Achromat + Any color                                 | ALWAYS compatible                      |
+| Same temperature                                     | Compatible                             |
+| Same saturation group                                | Compatible                             |
 | Different temperature and different saturation group | BLOCKED — separate capsule recommended |
 
 ### Outfit Productivity Ratio (OPR)
+
 **Formula:** number of generated outfits / number of items in capsule.
 A good capsule of 30 items yields 80–150+ unique outfits. OPR is the hero metric displayed on capsule cards in the dashboard. Updated on every capsule change. Shows delta: "+0.3 from last change".
 
 ### Item Categories
+
 Only **basic cuts** — simple, non-designer, guaranteeing universal combinability. Three wardrobe types: Women's (F), Men's (M), Mixed. TypeScript enum: `FEMALE | MALE | MIXED`. Min 8 categories to create a capsule. No upper limit. Category system with 7 groups: Tops, Dresses & Skirts, Bottoms, Outerwear, Shoes, Bags, Accessories.
 
 ### Auto-tagging
+
 Every item must have: name, category, color palette (color dots). Auto-tagging is AI-generated on addition, user-editable. Extended fields (brand, material/composition, source URL) parsed automatically on import. Basis for capsule assembly, compatibility validation, gap analysis, and recommendations.
 
 ## III. Design Principles
 
 ### Visual Identity
+
 - **Achromatic interface** — black / white / grey. Color comes ONLY from the user's own items.
 - **Glassmorphism UI language** — frosted glass surfaces, backdrop blur, translucent layers, subtle borders on glass elements.
   - Glass panels: `rgba(255,255,255,0.22)` + `backdrop-filter: blur(40px)` (main panels) / `blur(44px)` (nav, bottom sheets)
@@ -65,6 +72,7 @@ Every item must have: name, category, color palette (color dots). Auto-tagging i
 - **Favorite active:** `rgba(220,30,50,.90)` — saturated opaque red
 
 ### Editorial Aesthetics
+
 - References: Zara.com, COS, Massimo Dutti — editorial minimalism, typography as hero
 - Full-screen B&W editorial photography on landing
 - Manifesto headline as brand statement
@@ -73,40 +81,47 @@ Every item must have: name, category, color palette (color dots). Auto-tagging i
 - Monetization reference: Canva credit model — users buy coin packs for premium features (not subscription)
 
 ### Red Lines — Do Not Ship If:
+
 - Interface feels cheap or dated (fails "Aesop test")
 - Any critical bug is present or error surfaces to user
 - Interface is confusing — maximum simplicity is non-negotiable
 - Service is unavailable or unreliable
 
 ### Animation Principles
+
 - Transitions — instant. Completion — quiet and elegant (checkmark, soft glow).
 - Zero "dead zones" — every user action gets visual feedback.
 - Soft animation, highlight, quiet checkmark.
 
 ### Tone of Voice
+
 Restrained, confident. Like a smart stylist: suggests, explains, does not impose. Blocks — with explanation and alternative.
 
 ## IV. UX Philosophy
 
 ### "Direct, Not Dictate"
+
 The platform guides the user through methodology without imposing. It suggests, explains, and offers alternatives. The user chooses color, the platform highlights compatible items.
 
 ### Guided 3-Step Journey
+
 1. **Choose wardrobe type** (women's / men's / mixed)
 2. **Select categories** (checklist, min 8)
 3. **Choose colors + add items** (palette selection, three upload methods: photo, marketplace links, semantic search)
 
 ### Emotional Arc
+
 **Attraction → Trust → Creativity → Satisfaction**
 
-| Phase | Screens | User's Inner Voice |
-|---|---|---|
-| ATTRACTION | Landing page | "This is not another clothes app — this is something else" |
-| TRUST | Registration, Dashboard | "Fast, beautiful, they respect my time" |
-| CREATIVITY | Journey 1-3, Import, Search | "I'm building my style system!" |
-| SATISFACTION | Result, Dashboard (filled), My Items | "My wardrobe finally works" |
+| Phase        | Screens                              | User's Inner Voice                                         |
+| ------------ | ------------------------------------ | ---------------------------------------------------------- |
+| ATTRACTION   | Landing page                         | "This is not another clothes app — this is something else" |
+| TRUST        | Registration, Dashboard              | "Fast, beautiful, they respect my time"                    |
+| CREATIVITY   | Journey 1-3, Import, Search          | "I'm building my style system!"                            |
+| SATISFACTION | Result, Dashboard (filled), My Items | "My wardrobe finally works"                                |
 
 ### Cross-cutting Emotional Principles
+
 - **Silence over noise.** Every screen must "breathe". Empty space is not emptiness but confidence.
 - **Instant feedback.** Every user action gets visual response.
 - **Screenshot test.** Main quality criterion: "Will the user screenshot this and send to a friend?" If not — back to revision.
@@ -125,6 +140,7 @@ The platform guides the user through methodology without imposing. It suggests, 
 ## VI. Code Quality Standards
 
 ### Quality Gates
+
 - Every screen: minimum 3 states (default, loading, empty/error)
 - Typography hierarchy: clear and uniform
 - Contrast: WCAG AA while preserving aesthetics
@@ -137,6 +153,7 @@ The platform guides the user through methodology without imposing. It suggests, 
 - Lighthouse: Performance 90+, Accessibility 95+
 
 ### Red Lines (never ship if violated)
+
 - Cheap design — interface must be worthy next to Aesop / ZARA / COS
 - Bad stylist recommendations — better fewer, but more accurate
 - Complex interface — maximum simplicity and intuitiveness
@@ -144,6 +161,21 @@ The platform guides the user through methodology without imposing. It suggests, 
 - Service unavailability
 
 ### Premium Test
+
 "Will the target user screenshot this screen and send to a friend?" If not — back to revision.
 
-**Version**: 1.0 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-03-17
+## VII. Engineering Process Principles
+
+These principles govern _how_ product work is implemented and merged. They sit alongside (not above) the product principles in sections I–VI. Their full operational mapping lives in `docs_capsule_zero/project/devops/senar-mapping.md`.
+
+### Supervised Verification
+
+Every product-code PR must name its goal, scope (in/out), acceptance criteria, **at least one negative scenario** (or an explicit waiver), and verification evidence before merge. Evidence means a command, test, screenshot, diff, or linked check tied to a specific acceptance criterion. **An AI-written summary of work done does not substitute for evidence.** The `## Verification` table in `plan.md` is where this binding lives; the SENAR Done Gate in the PR template is where the merge owner confirms it.
+
+### Process Memory
+
+Each feature folder must record what was tried and rejected, what decisions were made and why, and what limitations or follow-ups are accepted. This lives per-feature in `.specify/specs/<feature-id>/tasks.md` under `## Process Memory` (Dead Ends / Decisions / Known Issues). Process memory is written _before_ declaring work complete, not after. Future agents inherit it on read.
+
+These principles apply to every spec authored after the SENAR layer shipped. Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered and keep their original shape.
+
+**Version**: 1.1 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-04-30

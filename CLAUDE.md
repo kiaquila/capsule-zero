@@ -15,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Phase 4 — Technical Architecture (DECISIONS DOCUMENTED).** Phase 3 (UX/UI Design) is complete. All 16 MVP logical screens have approved hi-fi prototypes, implemented across 12 HTML files (some files contain multiple screens as tabs/modals). Phase 5 feature work requires Sprint 0 entrance-gate completion first.
 
 **Phase 4 status:**
+
 - ✅ Web: Next.js 14+ App Router, React, TypeScript, Tailwind v4 initialized (`/app`)
 - ✅ Mobile decision: Flutter + Dart for iOS and Android
 - ✅ Backend stack decided: Supabase
@@ -45,6 +46,19 @@ This project uses spec-kit for structured development. **Always read the relevan
 ```
 
 **AGENTS.md** (project root) — universal onboarding for any AI agent.
+
+### SENAR Layer (applies to specs created after 2026-04-30)
+
+For every new spec (`005-…` and onward), feature memory must follow the SENAR shape:
+
+- `spec.md` includes explicit `## Goal`, `## Scope` (in/out), and `## Negative Scenarios` sections.
+- `plan.md` includes a `## Verification` table mapping every acceptance criterion to concrete evidence.
+- `tasks.md` includes `## Process Memory` with `### Dead Ends`, `### Decisions`, `### Known Issues` written _before_ declaring work complete.
+- The SENAR Done Gate in `.github/pull_request_template.md` is filled in the PR description.
+
+Reference example: `.specify/specs/004-senar-process-layer/`. Full contract: `docs_capsule_zero/project/devops/senar-mapping.md`. Constitution principles VII (Supervised Verification, Process Memory) govern this.
+
+Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered — do not retrofit them.
 
 ## Tech Stack
 
@@ -78,25 +92,26 @@ npm run ci:check     # CI baseline checks
 ## HTML Prototypes
 
 Pixel-perfect Phase 3 prototypes in `html-prototypes/` (pure HTML+CSS). This folder contains:
+
 - **All 16 approved MVP screens** — source of truth for approved behavior, layout, and scope
 - **Design system** (`html-prototypes/design-system.html`) — all design tokens, glass panel variants, typography, component patterns, spacing grid
 - **Color palette** (`html-prototypes/color-system.html`) — the full 51-color capsule palette with HEX values and compatibility groups
 
-| File | Screen | User Stories |
-|---|---|---|
-| `html-prototypes/index.html` | Landing + Auth popup | US-001, US-002/003 |
-| `html-prototypes/auth.html` | Standalone Auth | US-002, US-003 |
-| `html-prototypes/dashboard.html` | Dashboard | US-004, US-005 |
-| `html-prototypes/guided-journey.html` | Guided Journey (3 steps) | US-008–012, US-017 |
-| `html-prototypes/capsule-result.html` | Capsule Result | US-013–016 |
-| `html-prototypes/my-items.html` | My Items | US-006, US-007 |
-| `html-prototypes/uncapsulated.html` | Uncapsulated | US-020 |
-| `html-prototypes/favorites.html` | Favorites | US-019 |
-| `html-prototypes/for-sale.html` | For Sale | US-021 |
-| `html-prototypes/for-repair.html` | For Repair | US-024 |
-| `html-prototypes/profile.html` | Profile | US-005, US-018 |
-| `html-prototypes/design-system.html` | Design System (tokens, components) | — |
-| `html-prototypes/color-system.html` | Color Palette (51 colors, capsule palette) | — |
+| File                                  | Screen                                     | User Stories       |
+| ------------------------------------- | ------------------------------------------ | ------------------ |
+| `html-prototypes/index.html`          | Landing + Auth popup                       | US-001, US-002/003 |
+| `html-prototypes/auth.html`           | Standalone Auth                            | US-002, US-003     |
+| `html-prototypes/dashboard.html`      | Dashboard                                  | US-004, US-005     |
+| `html-prototypes/guided-journey.html` | Guided Journey (3 steps)                   | US-008–012, US-017 |
+| `html-prototypes/capsule-result.html` | Capsule Result                             | US-013–016         |
+| `html-prototypes/my-items.html`       | My Items                                   | US-006, US-007     |
+| `html-prototypes/uncapsulated.html`   | Uncapsulated                               | US-020             |
+| `html-prototypes/favorites.html`      | Favorites                                  | US-019             |
+| `html-prototypes/for-sale.html`       | For Sale                                   | US-021             |
+| `html-prototypes/for-repair.html`     | For Repair                                 | US-024             |
+| `html-prototypes/profile.html`        | Profile                                    | US-005, US-018     |
+| `html-prototypes/design-system.html`  | Design System (tokens, components)         | —                  |
+| `html-prototypes/color-system.html`   | Color Palette (51 colors, capsule palette) | —                  |
 
 **To view:** `python3 -m http.server 3100` from `html-prototypes/`.
 
@@ -137,6 +152,7 @@ Pixel-perfect Phase 3 prototypes in `html-prototypes/` (pure HTML+CSS). This fol
 ## Feature & Screen Specs
 
 **Reading route for implementing a feature:**
+
 1. HTML prototype (`html-prototypes/`) — current source of truth for approved behavior, layout, and scope
 2. `docs_capsule_zero/features/f-XXX-name.md` — requirements, acceptance criteria, edge cases
 3. `docs_capsule_zero/screens/screen-name.md` — layout, component details, states
