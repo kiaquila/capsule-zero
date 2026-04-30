@@ -13,6 +13,8 @@
    for routing, deep links, and localization.
 5. Wire linting and local hooks into the existing GitHub baseline checks without
    changing the trusted AI review gates.
+6. Add a runtime provisioning layer that keeps secrets out of git while making
+   Supabase, OAuth, Lava.top, mobile, and Photoroom validation repeatable.
 
 ## Validation
 
@@ -22,6 +24,10 @@
 - Run `npm run typecheck`.
 - Run `npm run build`.
 - Run `npm run test`.
+- Run `npm run check:runtime-env -- --env app/.env.local.example --env mobile/.env.example --allow-placeholders`.
+- Run `npm run check:runtime-tooling -- --allow-missing` to confirm the checker
+  reports local Supabase/Docker/Flutter readiness without blocking this repo-only
+  prep branch.
 
 Flutter and Supabase runtime validation remains blocked until local SDKs and
 project credentials are provisioned.
