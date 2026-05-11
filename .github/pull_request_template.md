@@ -10,8 +10,12 @@
 ## SENAR Done Gate
 
 <!--
-  Required for product-code PRs. Infrastructure-only PRs (no `app/` changes)
-  may mark items N/A with a one-line reason.
+  Required for product-code PRs against specs `004-…` and onward.
+  Grandfathered specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and
+  `003-sprint-0-foundation` are exempt — mark all items N/A with note
+  "grandfathered (spec ≤003)".
+  Infrastructure-only PRs (no `app/` changes) may mark items N/A with a
+  one-line reason.
   Full contract: docs_capsule_zero/project/devops/senar-mapping.md
 -->
 

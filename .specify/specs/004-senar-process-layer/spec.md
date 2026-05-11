@@ -81,6 +81,12 @@ As the human merge owner, I want a SENAR Done Gate checklist visible directly in
 - A PR that touches only documentation or workflow files. The PR Guard does not require feature memory in that case; the SENAR Done Gate may be skipped or partially marked, with a note in the PR.
 - A SENAR spec that genuinely has no negative scenario worth listing. The spec must explicitly waive the negative-scenario requirement instead of leaving the section empty.
 
+## Negative Scenarios
+
+- **Done Gate bypass via mass N/A**: a PR author marks every SENAR Done Gate checkpoint as N/A without justification. Detection: the review agent flags any PR where more than one checkpoint is N/A without a one-line reason. Resolution: the human merge owner blocks the merge until the PR description carries explicit reasons or actual evidence.
+- **Templates drift back to pre-SENAR shape**: an unrelated refactor PR removes `## Goal`, `## Scope`, `## Negative Scenarios`, `## Verification`, or `## Process Memory` headers from `.specify/templates/*`. Detection: SC-002 verification over post-SENAR `.specify/specs/0*/spec.md` (with grandfathered 001/002/003 excluded) starts returning paths once the first post-SENAR spec is authored against the broken template. Resolution: revert the template change and require a SENAR-amendment PR before re-introducing it.
+- **Process Memory filled with AI-generated boilerplate**: an agent fills `## Process Memory` with plausible but content-free text (e.g. "considered alternatives, picked the simpler one") that does not name concrete artifacts, decisions, or rejected approaches. Detection: the review agent flags entries that lack any of file path, command, link, or named tradeoff. Resolution: request a rewrite before approving.
+
 ## Requirements
 
 ### Functional Requirements
@@ -99,5 +105,5 @@ As the human merge owner, I want a SENAR Done Gate checklist visible directly in
 ### Measurable Outcomes
 
 - **SC-001**: After merge, `npm run preflight` passes locally and required GitHub checks (`baseline-checks`, `guard`, `AI Review`) all pass on the PR.
-- **SC-002**: Every spec in `.specify/specs/` created after this PR merges contains an explicit `## Negative Scenarios` section, verifiable via `git grep -L "## Negative Scenarios" .specify/specs/0*/spec.md` returning nothing for new feature folders.
+- **SC-002**: Every spec in `.specify/specs/` created after this PR merges contains an explicit `## Negative Scenarios` section, verifiable via `git grep -L "## Negative Scenarios" .specify/specs/0*/spec.md | grep -vE '/(001|002|003)-'` returning empty. Grandfathered specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are excluded explicitly.
 - **SC-003**: This PR itself dogfoods the new shape: `.specify/specs/004-senar-process-layer/{spec,plan,tasks}.md` contains every required SENAR field and serves as the reference example for the next spec author.
