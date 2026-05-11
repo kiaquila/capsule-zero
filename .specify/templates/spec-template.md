@@ -5,13 +5,27 @@
 **Status**: Draft  
 **Input**: User description: "$ARGUMENTS"
 
-## User Scenarios & Testing *(mandatory)*
+## Goal _(mandatory)_
+
+[One-sentence outcome this change must produce. Not "what we will build" but "what is true after we ship it".]
+
+## Scope _(mandatory)_
+
+In scope:
+
+- [Path, behavior, or workflow included in this change]
+
+Out of scope:
+
+- [Path, behavior, or workflow intentionally not changed — keeping reviewers from inferring expanded scope]
+
+## User Scenarios & Testing _(mandatory)_
 
 <!--
   IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
   Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
   you should still have a viable MVP (Minimum Viable Product) that delivers value.
-  
+
   Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
   Think of each story as a standalone slice of functionality that can be:
   - Developed independently
@@ -75,7 +89,19 @@
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
 
-## Requirements *(mandatory)*
+## Negative Scenarios _(mandatory — required by SENAR; waive explicitly if none apply)_
+
+<!--
+  Negative scenarios = what the system must REJECT, not just degrade gracefully on.
+  Distinct from Edge Cases: edge cases are boundary inputs and error states;
+  negative scenarios are abuse paths, security boundaries, and explicit refusals.
+  If the change genuinely has none, replace this list with a single line:
+  "No negative scenario applies because <one-line reason>."
+-->
+
+1. **Given** [invalid, abusive, or out-of-policy context], **When** [action attempted], **Then** [explicit rejection or safe outcome].
+
+## Requirements _(mandatory)_
 
 <!--
   ACTION REQUIRED: The content in this section represents placeholders.
@@ -85,22 +111,22 @@
 ### Functional Requirements
 
 - **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]  
+- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]
 - **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
 
-*Example of marking unclear requirements:*
+_Example of marking unclear requirements:_
 
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
 - **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 <!--
   ACTION REQUIRED: Define measurable success criteria.
