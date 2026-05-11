@@ -105,5 +105,5 @@ As the human merge owner, I want a SENAR Done Gate checklist visible directly in
 ### Measurable Outcomes
 
 - **SC-001**: After merge, `npm run preflight` passes locally and required GitHub checks (`baseline-checks`, `guard`, `AI Review`) all pass on the PR.
-- **SC-002**: Every spec in `.specify/specs/` created after this PR merges contains an explicit `## Negative Scenarios` section, verifiable via `git grep -L "## Negative Scenarios" .specify/specs/0*/spec.md | grep -vE '/(001|002|003)-'` returning empty. Grandfathered specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are excluded explicitly.
+- **SC-002**: Every spec in `.specify/specs/` created after this PR merges contains an explicit `## Negative Scenarios` section, verifiable via `git grep -L '## Negative Scenarios' -- '.specify/specs/0*/spec.md' ':!.specify/specs/001-capsule-zero-mvp/spec.md' ':!.specify/specs/002-pipeline-hardening/spec.md' ':!.specify/specs/003-sprint-0-foundation/spec.md'` returning empty. Grandfathered specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are excluded via pathspec.
 - **SC-003**: This PR itself dogfoods the new shape: `.specify/specs/004-senar-process-layer/{spec,plan,tasks}.md` contains every required SENAR field and serves as the reference example for the next spec author.
