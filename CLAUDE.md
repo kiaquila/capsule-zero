@@ -10,6 +10,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Languages:** EN (primary), ES-AR, RU — i18n from Day 1
 - **Core metric:** Outfit Productivity Ratio (outfits / items)
 
+## Read Before Coding
+
+1. @.specify/memory/constitution.md — project principles, methodology, design rules
+2. @AGENTS.md — universal agent onboarding
+3. @.specify/memory/design-system.md — glass tokens, typography, components
+4. @.specify/memory/market-context.md — competitors, persona, pricing
+
 ## Current Phase
 
 **Phase 4 — Technical Architecture (DECISIONS DOCUMENTED).** Phase 3 (UX/UI Design) is complete. All 16 MVP logical screens have approved hi-fi prototypes, implemented across 12 HTML files (some files contain multiple screens as tabs/modals). Phase 5 feature work requires Sprint 0 entrance-gate completion first.
