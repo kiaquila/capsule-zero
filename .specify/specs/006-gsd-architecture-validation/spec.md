@@ -3,7 +3,8 @@
 ## Goal
 
 Create a separate-branch architecture validation artifact that evaluates whether
-GSD Core planning convergence should be connected before founder stack approval.
+GSD Core planning convergence should be connected around founder stack approval
+and records the confirmed stack posture.
 
 ## Scope
 
@@ -14,15 +15,16 @@ GSD Core planning convergence should be connected before founder stack approval.
 - Add a durable report under
   `docs_capsule_zero/project/architecture/gsd-convergence-validation.md`.
 - Update the Phase 5 entrance checklist so GSD-style architecture convergence is
-  an explicit pre-approval checkpoint.
+  an explicit approval checkpoint.
 - Avoid committing GSD-generated `.planning/` files or making GSD a required CI
   gate before the owner accepts that governance change.
 
 ## User Story
 
 As the founder/product lead, I want a second planning-convergence lens over the
-accepted architecture before final approval so that hidden stack risks are found
-before real provider registration and Phase 5 feature implementation.
+accepted architecture around final approval so that hidden stack risks are found
+or consciously waived before real provider registration and Phase 5 feature
+implementation.
 
 ## Negative Scenarios
 
@@ -46,13 +48,13 @@ before real provider registration and Phase 5 feature implementation.
   as the source of truth unless the owner later approves a `.planning/`
   governance change.
 - **FR-005**: The Phase 5 entrance checklist must name the convergence
-  checkpoint before founder approval.
+  checkpoint around founder approval.
 
 ## Success Criteria
 
 - The validation report exists and lists keep/amend/defer decisions for the
   accepted stack.
-- The report names unresolved HIGH concerns without claiming they are stack
+- The report names remaining Sprint 0 blockers without claiming they are stack
   replacement reasons.
 - Local validation evidence is captured for repo baseline, API contract, runtime
   env examples, runtime tooling, and GSD installer feasibility.

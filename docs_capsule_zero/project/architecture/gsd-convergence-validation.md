@@ -2,18 +2,19 @@
 
 ## Status
 
-Advisory pilot complete. Formal native GSD multi-reviewer convergence is not yet
-claimed for this repository.
+Advisory pilot complete. Stack direction confirmed. Formal native GSD
+multi-reviewer convergence remains an optional follow-up, not a blocker for
+merging this validation record.
 
-This document records a GSD-style architecture convergence pass before founder
+This document records a GSD-style architecture convergence pass around founder
 stack approval. It uses the current Capsule Zero source-of-truth documents and
 the pinned GSD Core installer as evidence, but does not introduce `.planning/`
 as a second durable planning surface.
 
 ## Goal
 
-Validate whether `open-gsd/gsd-core` should be connected before final stack
-approval, and identify any required changes to the accepted Phase 4 architecture
+Validate whether `open-gsd/gsd-core` should be connected around stack approval,
+record the confirmed Phase 4 stack posture, and identify remaining blockers
 before real Supabase, OAuth, Lava.top, Flutter, and Photoroom provisioning.
 
 ## Source Inputs
@@ -72,13 +73,13 @@ Notes:
 
 ## Convergence Summary
 
-The accepted Phase 4 stack should be kept. The convergence pass did not find a
-stack-replacement reason for Supabase, Flutter, Vercel, Lava.top web purchases,
-Photoroom-with-adapter, or the shared OpenAPI/Supabase contract.
+The accepted Phase 4 stack is confirmed and should be kept. The convergence pass
+did not find a stack-replacement reason for Supabase, Flutter, Vercel, Lava.top
+web purchases, Photoroom-with-adapter, or the shared OpenAPI/Supabase contract.
 
-The main change is governance: before founder approval, Capsule Zero should add
-an explicit architecture convergence checkpoint. That checkpoint should separate
-"architecture approved" from "external services provisioned and verified".
+The main change is governance: Capsule Zero keeps an explicit architecture
+convergence checkpoint. That checkpoint separates "architecture approved" from
+"external services provisioned and verified".
 
 ### Decision Delta
 
@@ -94,16 +95,15 @@ an explicit architecture convergence checkpoint. That checkpoint should separate
 | Photoroom adapter     | Keep with gate          | Keep Photoroom primary and remove.bg fallback. Do not approve the image pipeline until real-image latency/quality evidence exists.                    |
 | GSD Core              | Adopt as advisory pilot | Pin `@opengsd/gsd-core@1.3.1`; do not make it a required CI gate yet; do not commit `.planning/` as a source of truth until explicitly approved.      |
 
-## Current HIGH Concerns
+## Remaining Sprint 0 Blockers
 
-These are not reasons to replace the stack. They are approval or provisioning
-blockers before the architecture can be treated as implementation-ready.
+These are not reasons to replace the stack. They are provider/setup blockers
+before feature work can treat Sprint 0 as externally verified.
 
-| ID       | Concern                                                                                  | Required resolution                                                                                                                                                               |
-| -------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| HIGH-001 | Formal native GSD multi-reviewer convergence has not run in a fresh GSD-enabled runtime. | Run `$gsd-map-codebase` and `$gsd-plan-review-convergence` from a configured runtime, or explicitly accept this repo-native report as the advisory substitute for stack approval. |
-| HIGH-002 | Real Supabase/OAuth/Lava.top/Photoroom provider evidence is still missing.               | Complete the runtime provisioning evidence template before treating Sprint 0 as externally verified.                                                                              |
-| HIGH-003 | Supabase CLI and Flutter SDK are missing in the current local environment.               | Install/activate both tools before running `npm run check:supabase-local` and mobile boot validation, or collect equivalent evidence from another machine/CI runner.              |
+| ID          | Concern                                                                    | Required resolution                                                                                                                                                  |
+| ----------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BLOCKER-001 | Real Supabase/OAuth/Lava.top/Photoroom provider evidence is still missing. | Complete the runtime provisioning evidence template before treating Sprint 0 as externally verified.                                                                 |
+| BLOCKER-002 | Supabase CLI and Flutter SDK are missing in the current local environment. | Install/activate both tools before running `npm run check:supabase-local` and mobile boot validation, or collect equivalent evidence from another machine/CI runner. |
 
 ## Advisory Concerns
 
@@ -113,6 +113,7 @@ blockers before the architecture can be treated as implementation-ready.
 | ADV-002 | Photoroom spike needs at least 10 representative real wardrobe images and a real API key.                  | Defer to runtime provisioning; keep remove.bg fallback decision open.                                                      |
 | ADV-003 | Mobile payment posture is deliberately conservative but still benefits from founder/legal acknowledgement. | Add explicit founder sign-off to stack approval evidence.                                                                  |
 | ADV-004 | `.planning/` would duplicate `.specify`/ADR/SENAR if adopted uncritically.                                 | Keep Capsule Zero source of truth in existing docs; use GSD outputs as review inputs unless a later PR changes governance. |
+| ADV-005 | Formal native GSD multi-reviewer convergence has not run in a fresh GSD-enabled runtime.                   | Optional follow-up only; run it later if the owner wants another reviewer loop, not as a merge or stack-approval blocker.  |
 
 ## Recommended Native GSD Runbook
 
@@ -138,7 +139,7 @@ Use this repository policy while running it:
   durable planning surface.
 - Translate any unresolved HIGH findings into
   `docs_capsule_zero/project/architecture/gsd-convergence-validation.md` or the
-  Phase 5 entrance checklist before founder approval.
+  Phase 5 entrance checklist before changing approved architecture decisions.
 
 ## Validation Commands
 
@@ -163,13 +164,13 @@ git diff --check
 
 ## Stack Approval Recommendation
 
-Proceed with the accepted stack, but do not collapse the remaining setup work
-into "approved" language.
+Proceed with the confirmed stack, but do not collapse the remaining setup work
+into "externally verified" language.
 
-Recommended approval wording:
+Recorded approval posture:
 
-> Founder approves the Phase 4 stack direction: Supabase, Next.js/Vercel,
-> Flutter, Lava.top web purchases with mobile read-only balance, and
-> Photoroom behind an adapter. Implementation may continue through Sprint 0
-> provisioning gates. Feature work starts only after runtime evidence closes the
-> HIGH concerns listed in the Phase 5 entrance checklist.
+> Founder confirms the Phase 4 stack direction: Supabase, Next.js/Vercel,
+> Flutter, Lava.top web purchases with mobile read-only balance, and Photoroom
+> behind an adapter. Implementation may continue through Sprint 0 provisioning
+> gates. Feature work starts only after runtime evidence closes the remaining
+> Sprint 0 blockers listed in this report and the Phase 5 entrance checklist.
