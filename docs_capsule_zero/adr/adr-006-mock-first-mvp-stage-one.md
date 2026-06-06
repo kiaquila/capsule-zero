@@ -58,9 +58,10 @@ MVP Stage 2 adds:
 - Apple Sign-In;
 - web and mobile OAuth callback/deep-link verification.
 
-Stage 1 screens should not expose active Google or Apple buttons. If an older
-HTML prototype shows social buttons, treat them as a Stage 2 variant and follow
-the updated feature/spec docs for Stage 1 implementation.
+Stage 1 screens should not expose active Google or Apple buttons. The current
+Stage 1 HTML prototypes for standalone auth and the landing auth popup remove
+those buttons; Stage 2 must reintroduce them through an explicit social-auth
+prototype and implementation update.
 
 ## Credential Policy
 

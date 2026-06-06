@@ -27,8 +27,11 @@ cp mobile/.env.example mobile/.env.local
 
 ```bash
 npm run check:runtime-tooling
-npm run check:runtime-env -- --env app/.env.local --env mobile/.env.local
+npm run check:runtime-env -- --env app/.env.local --env mobile/.env.local --allow-placeholders
 ```
+
+When an integration gate opens and real values are present, rerun the runtime
+env check without `--allow-placeholders`.
 
 ## Mock-First Stage 1
 
