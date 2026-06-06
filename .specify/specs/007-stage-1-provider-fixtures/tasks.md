@@ -57,6 +57,7 @@
 - Aligned mock coin-pack ids with the OpenAPI enum values (`coins_5`, `coins_15`, `coins_30`) so billing routes do not need fixture-specific translation.
 - Rewrote marketplace import candidates to keep the submitted URL as `sourceUrl` so confirmed wardrobe items preserve the user's actual link.
 - Stored created capsules in mock registry state and made `getCurrentCapsule` read the latest capsule for the user.
+- Derived mock auth session expiry from the mock clock and upserted profiles on sign-in so profile email matches the signed-in session.
 
 ### Known Issues
 

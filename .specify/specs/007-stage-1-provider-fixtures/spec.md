@@ -81,6 +81,8 @@ As the founder/operator, I want real provider mode to remain blocked until evide
 - Accepted coin spend retries must return the existing ledger entry for the idempotency key before checking current balance.
 - Capsules created through the mock registry must be readable from the same registry state.
 - Catalog search may return all fixtures for an empty query or filtered deterministic matches.
+- Mock auth sessions must remain unexpired for Stage 1 auth guards.
+- Mock profiles loaded after sign-in must preserve the signed-in email.
 
 ## Negative Scenarios
 

@@ -51,6 +51,7 @@ Negative scenario evidence:
 - `server-only` import in registry/mock implementation plus `npm --prefix app run build` verifies server-only protection remains compatible with the App Router build.
 - Review-fix smoke evidence: `app/src/lib/providers/mock/index.ts` keeps upload target job ids pollable after completion/background-removal transition and returns accepted coin-spend retries by idempotency key before current-balance rejection.
 - Second review-fix evidence: `app/src/lib/providers/mock/fixtures.ts` uses OpenAPI coin-pack ids, `app/src/lib/providers/mock/index.ts` propagates submitted marketplace URLs to candidates, and created capsules are preserved in mock registry state for create-to-read flows.
+- Third review-fix evidence: `app/src/lib/providers/mock/index.ts` derives session expiry from the mock clock and upserts signed-in profiles from session email before profile reads.
 
 ## Project Structure
 

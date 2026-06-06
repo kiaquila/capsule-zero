@@ -51,6 +51,10 @@ interface MockProviderOptions {
   now?: () => Date;
 }
 
+type MockSession = NonNullable<
+  Awaited<ReturnType<ProviderRegistry["auth"]["getCurrentSession"]>>
+>;
+
 export function createMockProviderRegistry(
   options: MockProviderOptions = {},
 ): ProviderRegistry {
@@ -78,9 +82,7 @@ export function createMockProviderRegistry(
   );
   const invoices = new Map<string, LavaInvoice>();
   const ledger = new Map<string, CoinLedgerEntry>();
-  let currentSession: Awaited<
-    ReturnType<ProviderRegistry["auth"]["getCurrentSession"]>
-  > = buildSession();
+  let currentSession: MockSession | null = buildSession(now());
 
   const profileRepository: ProfileRepository = {
     async getProfile(userId) {
@@ -473,20 +475,24 @@ export function createMockProviderRegistry(
       },
 
       async signUpWithPassword(credentials) {
-        currentSession = buildSession(credentials.email, credentials.name);
-        profiles.set(currentSession.user.id, {
-          ...MOCK_PROFILE,
-          userId: currentSession.user.id,
-          email: currentSession.user.email,
-          displayName: currentSession.user.name ?? currentSession.user.email,
-          createdAt: now(),
-          updatedAt: now(),
-        });
+        const timestamp = now();
+        currentSession = buildSession(
+          timestamp,
+          credentials.email,
+          credentials.name,
+        );
+        upsertProfileFromSession(profiles, currentSession, timestamp);
         return clone(currentSession);
       },
 
       async signInWithPassword(credentials) {
-        currentSession = buildSession(credentials.email, credentials.name);
+        const timestamp = now();
+        currentSession = buildSession(
+          timestamp,
+          credentials.email,
+          credentials.name,
+        );
+        upsertProfileFromSession(profiles, currentSession, timestamp);
         return clone(currentSession);
       },
 
@@ -563,11 +569,10 @@ export function createMockProviderRegistry(
 }
 
 function buildSession(
+  timestamp: string,
   email = MOCK_USER.email,
   name = MOCK_USER.name,
-): NonNullable<
-  Awaited<ReturnType<ProviderRegistry["auth"]["getCurrentSession"]>>
-> {
+): MockSession {
   const userId =
     email === MOCK_USER.email ? MOCK_USER.id : deterministicUuid("user", email);
 
@@ -577,11 +582,27 @@ function buildSession(
       id: userId,
       email,
       name,
-      createdAt: "2026-06-01T09:00:00.000Z",
+      createdAt: timestamp,
     },
     accessToken: `mock-access-token-${userId}`,
-    expiresAt: "2026-06-02T09:00:00.000Z",
+    expiresAt: addDays(timestamp, 365),
   };
+}
+
+function upsertProfileFromSession(
+  profiles: Map<string, Profile>,
+  session: MockSession,
+  timestamp: string,
+): void {
+  const existing = profiles.get(session.user.id);
+  profiles.set(session.user.id, {
+    ...(existing ?? MOCK_PROFILE),
+    userId: session.user.id,
+    email: session.user.email,
+    displayName: session.user.name ?? session.user.email,
+    createdAt: existing?.createdAt ?? timestamp,
+    updatedAt: timestamp,
+  });
 }
 
 function buildMethodologyPort(): MethodologyPort {
@@ -734,6 +755,12 @@ function ensureProfile(
 
 function buildUploadJobId(uploadId: string): string {
   return deterministicUuid("upload-job", uploadId);
+}
+
+function addDays(timestamp: string, days: number): string {
+  const date = new Date(timestamp);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString();
 }
 
 function deterministicUuid(namespace: string, seed: string): string {
