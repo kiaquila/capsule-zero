@@ -67,6 +67,9 @@ export function createMockProviderRegistry(
   const uploadJobs = new Map(
     MOCK_UPLOAD_JOBS.map((job) => [job.id, clone(job)]),
   );
+  const capsules = new Map<string, Capsule>([
+    [MOCK_CAPSULE.id, clone(MOCK_CAPSULE)],
+  ]);
   const marketplaceImports = new Map(
     MOCK_MARKETPLACE_IMPORTS.map((marketplaceImport) => [
       marketplaceImport.id,
@@ -238,11 +241,16 @@ export function createMockProviderRegistry(
         (item) =>
           item.url.includes("unparseable") === url.includes("unparseable"),
       );
+      const source = fixture ?? MOCK_MARKETPLACE_IMPORTS[0];
       const marketplaceImport: MarketplaceImport = {
-        ...(fixture ?? MOCK_MARKETPLACE_IMPORTS[0]),
+        ...source,
         id: deterministicUuid("marketplace-import", `${userId}:${url}`),
         userId,
         url,
+        candidates: source.candidates.map((candidate) => ({
+          ...candidate,
+          sourceUrl: url,
+        })),
         createdAt: now(),
         updatedAt: now(),
       };
@@ -499,10 +507,10 @@ export function createMockProviderRegistry(
     billing: billingPort,
     capsules: {
       async getCurrentCapsule(userId) {
-        if (MOCK_CAPSULE.userId !== userId) {
-          return null;
-        }
-        return clone(MOCK_CAPSULE);
+        const currentCapsule = [...capsules.values()]
+          .reverse()
+          .find((capsule) => capsule.userId === userId);
+        return currentCapsule ? clone(currentCapsule) : null;
       },
 
       async createCapsule(userId, draft: CapsuleDraft) {
@@ -521,6 +529,7 @@ export function createMockProviderRegistry(
           gapAnalysis: [],
           createdAt: now(),
         };
+        capsules.set(capsule.id, capsule);
         return clone(capsule);
       },
     },

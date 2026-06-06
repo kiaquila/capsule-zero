@@ -315,19 +315,19 @@ export const MOCK_MARKETPLACE_IMPORTS: MarketplaceImport[] = [
 
 export const MOCK_COIN_PACKS: CoinPack[] = [
   {
-    id: "coins-5",
+    id: "coins_5",
     coins: 5,
     priceUsd: 5,
     providerProductId: "mock-lava-coins-5",
   },
   {
-    id: "coins-15",
+    id: "coins_15",
     coins: 15,
     priceUsd: 12,
     providerProductId: "mock-lava-coins-15",
   },
   {
-    id: "coins-30",
+    id: "coins_30",
     coins: 30,
     priceUsd: 20,
     providerProductId: "mock-lava-coins-30",

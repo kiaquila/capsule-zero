@@ -75,8 +75,11 @@ As the founder/operator, I want real provider mode to remain blocked until evide
 - Completed photo uploads must remain readable through the upload target's `jobId` before and after optional background removal starts.
 - Background removal may return success or timeout states.
 - Marketplace import may parse successfully or fail.
+- Marketplace import candidates must keep the submitted URL when confirmed into wardrobe items.
+- Mock billing coin-pack ids must match OpenAPI `coinPackId` enum values.
 - Coin spend may be rejected when `targetId` is missing or balance is insufficient.
 - Accepted coin spend retries must return the existing ledger entry for the idempotency key before checking current balance.
+- Capsules created through the mock registry must be readable from the same registry state.
 - Catalog search may return all fixtures for an empty query or filtered deterministic matches.
 
 ## Negative Scenarios

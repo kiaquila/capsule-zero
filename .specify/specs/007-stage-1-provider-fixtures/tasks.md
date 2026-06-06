@@ -54,6 +54,9 @@
 - Updated app scripts to call Next and ESLint JS entrypoints directly so standard `npm run lint` and `npm run build` are locally reproducible in this worktree.
 - Reused the upload target's deterministic job id when completing photo uploads so the same job remains pollable and can transition into background removal.
 - Moved mock coin-spend idempotency lookup ahead of balance enforcement so accepted retries return the existing ledger entry even if the current balance later changes.
+- Aligned mock coin-pack ids with the OpenAPI enum values (`coins_5`, `coins_15`, `coins_30`) so billing routes do not need fixture-specific translation.
+- Rewrote marketplace import candidates to keep the submitted URL as `sourceUrl` so confirmed wardrobe items preserve the user's actual link.
+- Stored created capsules in mock registry state and made `getCurrentCapsule` read the latest capsule for the user.
 
 ### Known Issues
 

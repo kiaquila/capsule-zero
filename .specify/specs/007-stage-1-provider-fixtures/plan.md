@@ -29,27 +29,28 @@ Add a server-only provider boundary layer for Stage 1 product work, default it t
 
 ## Verification
 
-| Acceptance criterion | Evidence                                                                                                                                                                                          |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| US1 / FR-001         | `app/src/lib/providers/contracts.ts` defines shared provider ports for auth/profile, wardrobe, storage, image processing, marketplace import, catalog search, billing, capsules, and methodology. |
-| US1 / FR-002         | `app/src/lib/providers/mock/index.ts` implements every port; `npm --prefix app run typecheck` verifies interface coverage.                                                                        |
-| US2 / FR-002         | `app/src/lib/providers/mock/fixtures.ts` includes deterministic wardrobe, catalog, upload timeout, marketplace success/failure, coin-pack fixtures, and review-fix evidence below.                |
-| US3 / FR-003         | `app/src/lib/providers/registry.ts` defaults unset `CAPSULE_PROVIDER_MODE` to `mock`; `app/.env.local.example` declares `CAPSULE_PROVIDER_MODE=mock`.                                             |
-| US3 / FR-004         | `app/src/lib/providers/registry.ts` rejects `supabase` mode with an integration-gate error.                                                                                                       |
-| FR-005               | `app/src/lib/providers/registry.ts` and `app/src/lib/providers/mock/index.ts` import `server-only`; `npm --prefix app run build` validates the server boundary.                                   |
-| FR-006               | `app/src/app/api/health/route.ts`; local smoke check with `curl http://localhost:3000/api/health`.                                                                                                |
-| FR-007               | `docs_capsule_zero/project/backend/backend-docs.md` documents provider-boundary paths.                                                                                                            |
-| SC-001               | `npm --prefix app run typecheck`                                                                                                                                                                  |
-| SC-002               | `npm --prefix app run lint`                                                                                                                                                                       |
-| SC-003               | `npm --prefix app run build`                                                                                                                                                                      |
-| SC-004               | `curl -sS http://127.0.0.1:3101/api/health` returned `providerMode: "mock"` with fixture counts `users: 1`, `wardrobeItems: 4`, `catalogItems: 2`, `coinPacks: 3`.                                |
-| SC-005               | `npm run check:feature-memory -- --worktree`                                                                                                                                                      |
+| Acceptance criterion | Evidence                                                                                                                                                                                           |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| US1 / FR-001         | `app/src/lib/providers/contracts.ts` defines shared provider ports for auth/profile, wardrobe, storage, image processing, marketplace import, catalog search, billing, capsules, and methodology.  |
+| US1 / FR-002         | `app/src/lib/providers/mock/index.ts` implements every port; `npm --prefix app run typecheck` verifies interface coverage.                                                                         |
+| US2 / FR-002         | `app/src/lib/providers/mock/fixtures.ts` includes deterministic wardrobe, catalog, upload timeout, marketplace success/failure, OpenAPI-aligned coin-pack fixtures, and review-fix evidence below. |
+| US3 / FR-003         | `app/src/lib/providers/registry.ts` defaults unset `CAPSULE_PROVIDER_MODE` to `mock`; `app/.env.local.example` declares `CAPSULE_PROVIDER_MODE=mock`.                                              |
+| US3 / FR-004         | `app/src/lib/providers/registry.ts` rejects `supabase` mode with an integration-gate error.                                                                                                        |
+| FR-005               | `app/src/lib/providers/registry.ts` and `app/src/lib/providers/mock/index.ts` import `server-only`; `npm --prefix app run build` validates the server boundary.                                    |
+| FR-006               | `app/src/app/api/health/route.ts`; local smoke check with `curl http://localhost:3000/api/health`.                                                                                                 |
+| FR-007               | `docs_capsule_zero/project/backend/backend-docs.md` documents provider-boundary paths.                                                                                                             |
+| SC-001               | `npm --prefix app run typecheck`                                                                                                                                                                   |
+| SC-002               | `npm --prefix app run lint`                                                                                                                                                                        |
+| SC-003               | `npm --prefix app run build`                                                                                                                                                                       |
+| SC-004               | `curl -sS http://127.0.0.1:3101/api/health` returned `providerMode: "mock"` with fixture counts `users: 1`, `wardrobeItems: 4`, `catalogItems: 2`, `coinPacks: 3`.                                 |
+| SC-005               | `npm run check:feature-memory -- --worktree`                                                                                                                                                       |
 
 Negative scenario evidence:
 
 - Static review of `app/src/lib/providers/registry.ts` verifies `CAPSULE_PROVIDER_MODE=supabase` rejects with an explicit integration-gate error before real provider evidence exists.
 - `server-only` import in registry/mock implementation plus `npm --prefix app run build` verifies server-only protection remains compatible with the App Router build.
 - Review-fix smoke evidence: `app/src/lib/providers/mock/index.ts` keeps upload target job ids pollable after completion/background-removal transition and returns accepted coin-spend retries by idempotency key before current-balance rejection.
+- Second review-fix evidence: `app/src/lib/providers/mock/fixtures.ts` uses OpenAPI coin-pack ids, `app/src/lib/providers/mock/index.ts` propagates submitted marketplace URLs to candidates, and created capsules are preserved in mock registry state for create-to-read flows.
 
 ## Project Structure
 
