@@ -72,9 +72,11 @@ As the founder/operator, I want real provider mode to remain blocked until evide
 ### Edge Cases
 
 - Upload metadata may contain unsupported MIME types or files above the mock upload limit.
+- Completed photo uploads must remain readable through the upload target's `jobId` before and after optional background removal starts.
 - Background removal may return success or timeout states.
 - Marketplace import may parse successfully or fail.
 - Coin spend may be rejected when `targetId` is missing or balance is insufficient.
+- Accepted coin spend retries must return the existing ledger entry for the idempotency key before checking current balance.
 - Catalog search may return all fixtures for an empty query or filtered deterministic matches.
 
 ## Negative Scenarios

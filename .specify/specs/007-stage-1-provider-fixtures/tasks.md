@@ -52,6 +52,8 @@
 - Made `supabase` mode an explicit integration-gate error instead of a partially wired placeholder.
 - Added `/api/health` as the first Route Handler because it is low-risk, public in the OpenAPI contract, and proves the provider registry can be instantiated through the App Router.
 - Updated app scripts to call Next and ESLint JS entrypoints directly so standard `npm run lint` and `npm run build` are locally reproducible in this worktree.
+- Reused the upload target's deterministic job id when completing photo uploads so the same job remains pollable and can transition into background removal.
+- Moved mock coin-spend idempotency lookup ahead of balance enforcement so accepted retries return the existing ledger entry even if the current balance later changes.
 
 ### Known Issues
 

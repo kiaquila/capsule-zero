@@ -158,7 +158,7 @@ export function createMockProviderRegistry(
         "upload",
         `${userId}:${metadata.fileName}`,
       );
-      const jobId = deterministicUuid("upload-job", uploadId);
+      const jobId = buildUploadJobId(uploadId);
 
       return {
         uploadId,
@@ -172,7 +172,7 @@ export function createMockProviderRegistry(
 
     async completePhotoUpload(userId, completion: UploadCompletion) {
       const job: UploadJob = {
-        id: deterministicUuid("photo-upload", completion.uploadId),
+        id: buildUploadJobId(completion.uploadId),
         userId,
         type: "photo_upload",
         status: "succeeded",
@@ -192,7 +192,10 @@ export function createMockProviderRegistry(
   const imageProcessingPort: ImageProcessingPort = {
     async startBackgroundRemoval(userId, jobId) {
       const existing = uploadJobs.get(jobId);
-      if (existing && existing.userId === userId) {
+      if (existing && existing.userId !== userId) {
+        throw new Error("NOT_FOUND: Upload job not found.");
+      }
+      if (existing?.type === "background_removal") {
         return clone(existing);
       }
 
@@ -201,7 +204,8 @@ export function createMockProviderRegistry(
         userId,
         type: "background_removal",
         status: jobId.includes("timeout") ? "timeout" : "succeeded",
-        originalUrl: `/fixtures/uploads/${jobId}-original.jpg`,
+        originalUrl:
+          existing?.originalUrl ?? `/fixtures/uploads/${jobId}-original.jpg`,
         processedUrl: jobId.includes("timeout")
           ? undefined
           : `/fixtures/uploads/${jobId}-processed.png`,
@@ -378,13 +382,15 @@ export function createMockProviderRegistry(
       }
       const spendAmount = request.reason === "extra_capsule" ? 5 : 1;
       const profile = ensureProfile(profiles, userId, now());
-      if (profile.coinBalance < spendAmount) {
-        throw new Error("INSUFFICIENT_BALANCE: Not enough coins.");
-      }
-
       const existing = ledger.get(request.idempotencyKey);
       if (existing) {
+        if (existing.userId !== userId) {
+          throw new Error("IDEMPOTENCY_CONFLICT: Coin spend key already used.");
+        }
         return { profile: clone(profile), ledgerEntry: clone(existing) };
+      }
+      if (profile.coinBalance < spendAmount) {
+        throw new Error("INSUFFICIENT_BALANCE: Not enough coins.");
       }
 
       const updatedProfile = {
@@ -715,6 +721,10 @@ function ensureProfile(
   };
   profiles.set(userId, created);
   return created;
+}
+
+function buildUploadJobId(uploadId: string): string {
+  return deterministicUuid("upload-job", uploadId);
 }
 
 function deterministicUuid(namespace: string, seed: string): string {

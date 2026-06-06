@@ -33,7 +33,7 @@ Add a server-only provider boundary layer for Stage 1 product work, default it t
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | US1 / FR-001         | `app/src/lib/providers/contracts.ts` defines shared provider ports for auth/profile, wardrobe, storage, image processing, marketplace import, catalog search, billing, capsules, and methodology. |
 | US1 / FR-002         | `app/src/lib/providers/mock/index.ts` implements every port; `npm --prefix app run typecheck` verifies interface coverage.                                                                        |
-| US2 / FR-002         | `app/src/lib/providers/mock/fixtures.ts` includes deterministic wardrobe, catalog, upload timeout, marketplace success/failure, and coin-pack fixtures.                                           |
+| US2 / FR-002         | `app/src/lib/providers/mock/fixtures.ts` includes deterministic wardrobe, catalog, upload timeout, marketplace success/failure, coin-pack fixtures, and review-fix evidence below.                |
 | US3 / FR-003         | `app/src/lib/providers/registry.ts` defaults unset `CAPSULE_PROVIDER_MODE` to `mock`; `app/.env.local.example` declares `CAPSULE_PROVIDER_MODE=mock`.                                             |
 | US3 / FR-004         | `app/src/lib/providers/registry.ts` rejects `supabase` mode with an integration-gate error.                                                                                                       |
 | FR-005               | `app/src/lib/providers/registry.ts` and `app/src/lib/providers/mock/index.ts` import `server-only`; `npm --prefix app run build` validates the server boundary.                                   |
@@ -49,6 +49,7 @@ Negative scenario evidence:
 
 - Static review of `app/src/lib/providers/registry.ts` verifies `CAPSULE_PROVIDER_MODE=supabase` rejects with an explicit integration-gate error before real provider evidence exists.
 - `server-only` import in registry/mock implementation plus `npm --prefix app run build` verifies server-only protection remains compatible with the App Router build.
+- Review-fix smoke evidence: `app/src/lib/providers/mock/index.ts` keeps upload target job ids pollable after completion/background-removal transition and returns accepted coin-spend retries by idempotency key before current-balance rejection.
 
 ## Project Structure
 
