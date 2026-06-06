@@ -16,6 +16,13 @@ Stage 1 implementation is mock-first for external services. Supabase, Lava.top, 
 
 Next.js Route Handlers act as the app-facing API boundary for uploads, marketplace import, catalog search, billing, and webhooks. Flutter mobile apps consume the same Supabase schema, RPC functions, storage policies, and REST endpoints, but v0.1 mobile payments are read-only balance/status views. Server Actions may call the same domain services for authenticated web mutations.
 
+Stage 1 web provider boundaries live under `app/src/lib/providers/`:
+
+- `contracts.ts` defines the domain ports UI, Server Actions, and Route Handlers depend on.
+- `registry.ts` selects `CAPSULE_PROVIDER_MODE=mock` by default and keeps real Supabase mode behind an integration-gate error until provider evidence exists.
+- `mock/fixtures.ts` and `mock/index.ts` provide deterministic fixtures for auth, profiles, wardrobe entries, storage, marketplace import, semantic catalog search, background removal states, billing, capsule reads, and methodology checks.
+- `app/src/app/api/health/route.ts` verifies the active provider mode and fixture-backed health state without exposing secrets.
+
 ## Core Backend Modules
 
 | Module             | Responsibility                                                                       |
