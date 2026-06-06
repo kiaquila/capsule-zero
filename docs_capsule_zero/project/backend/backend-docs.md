@@ -4,13 +4,15 @@
 
 Capsule Zero v0.1 uses Supabase as the canonical backend:
 
-- Supabase Auth for email/password, Google OAuth, and Apple Sign-In
+- Supabase Auth for email/password in Stage 1, with Google OAuth and Apple Sign-In in Stage 2
 - Supabase PostgreSQL for application data
 - Row Level Security for ownership and privacy
 - Supabase Storage for avatars, wardrobe photos, processed images, and catalog assets
 - Supabase Edge Functions or Vercel Route Handlers for server-only jobs and vendor calls
 - PostgreSQL full-text search plus pgvector for shared catalog search
 - Lava.top invoices/payment links and webhooks for web coin purchases
+
+Stage 1 implementation is mock-first for external services. Supabase, Lava.top, Photoroom, remove.bg, Google OAuth, and Apple Sign-In calls must sit behind provider/domain adapters so the app can run with deterministic fixtures until the corresponding integration gate is opened. Stage 1 auth is email/password only; Google OAuth and Apple Sign-In are MVP Stage 2.
 
 Next.js Route Handlers act as the app-facing API boundary for uploads, marketplace import, catalog search, billing, and webhooks. Flutter mobile apps consume the same Supabase schema, RPC functions, storage policies, and REST endpoints, but v0.1 mobile payments are read-only balance/status views. Server Actions may call the same domain services for authenticated web mutations.
 
@@ -122,44 +124,45 @@ MVP implementation can use Route Handlers or Supabase Edge Functions. Jobs must 
 
 ## Sprint 0 Backend Gate
 
-Before product feature implementation, create migration-backed backend artifacts:
+Before Stage 1 product feature implementation, create migration-backed backend artifacts and mock/provider boundaries:
 
 - `supabase/migrations/0001_initial_schema.sql` with tables, indexes, foreign keys, enum/check constraints, seed references, and RPC signatures.
 - `supabase/migrations/0002_storage_policies.sql` or equivalent storage policy migration for every bucket.
 - `supabase/tests/` coverage for owner isolation, public catalog access, private asset reads, server-only coin ledger writes, and webhook idempotency.
 - API contract sync with `docs_capsule_zero/adr/openapi.yaml`, including generated TypeScript and Dart clients.
+- Mock adapters or deterministic fixtures for auth, storage, marketplace import, semantic search, background removal, billing, and webhook replay.
 
 Feature PRs must not introduce ad hoc schema changes outside migrations.
 
 ## Environment Variables
 
-| Variable                        | Scope                 | Purpose                                             |
-| ------------------------------- | --------------------- | --------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | browser/server        | Supabase project URL                                |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser/server        | Supabase anon key                                   |
-| `SUPABASE_SERVICE_ROLE_KEY`     | server only           | Admin/server operations                             |
-| `PHOTOROOM_API_KEY`             | server only           | Primary background removal provider                 |
-| `REMOVE_BG_API_KEY`             | server only, optional | Fallback background removal provider                |
-| `LAVA_API_KEY`                  | server only           | API key for requests to Lava.top                    |
-| `LAVA_WEBHOOK_API_KEY`          | server only           | Key expected in Lava.top webhook `X-Api-Key` header |
-| `LAVA_API_URL`                  | server only           | Lava.top API base URL                               |
-| `LAVA_COINS_5_PRODUCT_ID`       | server only           | Lava.top product ID for the 5-coin pack             |
-| `LAVA_COINS_15_PRODUCT_ID`      | server only           | Lava.top product ID for the 15-coin pack            |
-| `LAVA_COINS_30_PRODUCT_ID`      | server only           | Lava.top product ID for the 30-coin pack            |
-| `NEXT_PUBLIC_APP_URL`           | browser/server        | Absolute app URL for callbacks                      |
-| `MOBILE_DEEP_LINK_SCHEME`       | server/mobile         | Mobile return URL scheme for auth callbacks         |
-| `EMBEDDING_PROVIDER`            | server only           | Catalog embedding provider switch                   |
+| Variable                        | Scope                 | Purpose                                                                                      |
+| ------------------------------- | --------------------- | -------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | browser/server        | Supabase project URL                                                                         |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser/server        | Supabase anon key                                                                            |
+| `SUPABASE_SERVICE_ROLE_KEY`     | server only           | Admin/server operations                                                                      |
+| `PHOTOROOM_API_KEY`             | server only           | Primary background removal provider; optional until image integration gate                   |
+| `REMOVE_BG_API_KEY`             | server only, optional | Fallback background removal provider; optional until image integration gate                  |
+| `LAVA_API_KEY`                  | server only           | API key for requests to Lava.top; optional until payment integration gate                    |
+| `LAVA_WEBHOOK_API_KEY`          | server only           | Key expected in Lava.top webhook `X-Api-Key` header; optional until payment integration gate |
+| `LAVA_API_URL`                  | server only           | Lava.top API base URL; may point to mock adapter in Stage 1                                  |
+| `LAVA_COINS_5_PRODUCT_ID`       | server only           | Lava.top product ID for the 5-coin pack; mock ID allowed in Stage 1                          |
+| `LAVA_COINS_15_PRODUCT_ID`      | server only           | Lava.top product ID for the 15-coin pack; mock ID allowed in Stage 1                         |
+| `LAVA_COINS_30_PRODUCT_ID`      | server only           | Lava.top product ID for the 30-coin pack; mock ID allowed in Stage 1                         |
+| `NEXT_PUBLIC_APP_URL`           | browser/server        | Absolute app URL for callbacks                                                               |
+| `MOBILE_DEEP_LINK_SCHEME`       | server/mobile         | Mobile return URL scheme for auth callbacks                                                  |
+| `EMBEDDING_PROVIDER`            | server only           | Catalog embedding provider switch                                                            |
 
 ## Local Development
 
-Required local setup before backend implementation:
+Required local setup before Stage 1 backend implementation:
 
-1. Create Supabase project or local Supabase stack.
+1. Use committed migrations, seed fixtures, and mock adapters for local product development.
 2. Apply database migrations for schema, RLS, and seed data.
 3. Seed `color_catalog`, `category_catalog`, and `compatibility_rules` from methodology docs.
-4. Create storage buckets and policies.
-5. Configure Google and Apple OAuth providers.
-6. Configure Lava.top products, API key, and webhook URL for web purchases.
+4. Create storage buckets and policies locally when Supabase CLI is available, or keep storage behavior behind the mock adapter until the Supabase integration gate.
+5. Defer Google and Apple OAuth providers to MVP Stage 2.
+6. Defer Lava.top products, API key, and webhook URL until payment integration QA.
 7. Add `.env.local` under `app/` with the variables above.
 8. Add mobile env/config for Supabase URL, publishable key, app links, and deep-link scheme.
 

@@ -12,12 +12,14 @@
 **Happy path:** Landing → Registration → Dashboard (empty) → Journey 1/3 → Journey 2/3 → Journey 3/3 → Capsule Result → Dashboard (filled)
 
 **Key decisions (v1.1):**
+
 - Outfits are view-only (no drag-and-drop)
 - Gap analysis is text-based (category + color)
 - Capsule color palette is immutable (change = new capsule)
 - Item addition/replacement validated against palette compatibility
 - 1 free capsule per user (additional in v0.2)
 - Killer features: marketplace link import + semantic search from shared DB
+- Stage 1 implementation is mock-first for external services; Google OAuth and Apple Sign-In are deferred to MVP Stage 2
 
 ## User Scenarios & Testing
 
@@ -30,6 +32,7 @@ As a new user, I want to see a premium landing page with B&W editorial hero so I
 **Prototype:** `html-prototypes/index.html`
 
 **Acceptance Scenarios:**
+
 1. **Given** a new visitor, **When** the page loads, **Then** full-screen B&W photo with manifesto headline is centered, registration button in top-right corner
 2. **Given** any visitor, **When** they view the page, **Then** language switcher (EN/ES/RU) is visible next to registration
 3. **Given** any device, **When** page loads on 4G, **Then** load time < 2 seconds
@@ -40,14 +43,17 @@ As a new user, I want to see a premium landing page with B&W editorial hero so I
 
 ### US-002 — Registration (Priority: P1)
 
-As a new user, I want to register via Email, Google, or Apple so I can quickly create an account.
+As a new user, I want to register via email and password so I can quickly create an account in MVP Stage 1.
+
+Google OAuth and Apple Sign-In are MVP Stage 2 scope.
 
 **Emotional target:** TRUST — "Fast, beautiful, they respect my time"
 
 **Prototype:** `html-prototypes/auth.html`, `html-prototypes/index.html` (popup)
 
 **Acceptance Scenarios:**
-1. **Given** the auth form, **When** displayed, **Then** it uses glassmorphic styling with three methods: email+password, Google OAuth, Apple Sign-In
+
+1. **Given** the Stage 1 auth form, **When** displayed, **Then** it uses glassmorphic styling with email+password registration and no active Google/Apple buttons
 2. **Given** form fields, **When** user types, **Then** real-time inline validation occurs
 3. **Given** optional location field (country/city), **When** skipped, **Then** registration is not blocked
 4. **Given** successful registration, **When** complete, **Then** redirect to Dashboard
@@ -58,11 +64,14 @@ As a new user, I want to register via Email, Google, or Apple so I can quickly c
 
 ### US-003 — Authorization (Priority: P1)
 
-As an existing user, I want to log in using the same methods as registration to continue working with my capsule.
+As an existing user, I want to log in using email and password in MVP Stage 1 to continue working with my capsule.
+
+Google OAuth and Apple Sign-In login are MVP Stage 2 scope.
 
 **Prototype:** `html-prototypes/auth.html`, `html-prototypes/index.html` (popup)
 
 **Acceptance Scenarios:**
+
 1. **Given** the auth form, **When** displayed, **Then** login form with switcher to registration is shown
 2. **Given** a user who forgot password, **When** they click "Forgot password", **Then** email recovery flow starts
 3. **Given** a valid session, **When** user returns, **Then** session is preserved between visits
@@ -81,6 +90,7 @@ As an authorized user, I want to see a dashboard with my active capsule, summary
 **Dashboard content:** active capsule hero card, OPR widget, summary stats, shopping list panel, recently added panel, quick-access sections, bottom navigation
 
 **Acceptance Scenarios:**
+
 1. **Given** the dashboard, **When** loaded, **Then** active capsule hero card with palette, item/outfit/category counts, and OPR is displayed
 2. **Given** the active capsule, **When** the user clicks Open Capsule / Outfits / Shopping List, **Then** they navigate to the corresponding capsule view
 3. **Given** the dashboard, **When** viewed, **Then** summary stats, shopping list preview, recently added items, and quick-access sections are displayed
@@ -96,6 +106,7 @@ As a user, I want to upload my avatar to personalize my profile.
 **Prototype:** `html-prototypes/profile.html`
 
 **Acceptance Scenarios:**
+
 1. **Given** registration, **When** account created, **Then** default avatar assigned
 2. **Given** profile settings, **When** user uploads JPEG/PNG, **Then** image auto-crops to circle
 3. **Given** an uploaded avatar, **When** user wants to change, **Then** replace or delete (revert to default) options available
@@ -112,6 +123,7 @@ As a user, I want to see all my clothing items in a grid with names, photos, and
 **Prototype:** `html-prototypes/my-items.html`
 
 **Acceptance Scenarios:**
+
 1. **Given** items exist, **When** grid loads, **Then** cards show: name in header + photo + color dots
 2. **Given** a card, **When** viewed, **Then** capsule membership indicator is visible
 3. **Given** a card, **When** clicked, **Then** navigates to detail card
@@ -126,6 +138,7 @@ As a user, I want to edit item information (name, category, color, photo) to cor
 **Prototype:** `html-prototypes/my-items.html` (detail view)
 
 **Acceptance Scenarios:**
+
 1. **Given** a card, **When** Edit button clicked, **Then** editable fields: name, photo, category, color dots, brand, material/composition, price
 2. **Given** editing, **When** saved, **Then** saves without page reload
 3. **Given** required fields, **When** missing, **Then** name + category + color dots are highlighted as required
@@ -141,6 +154,7 @@ As a new user, I want to choose wardrobe type (women's/men's/mixed) to get relev
 **Prototype:** `html-prototypes/guided-journey.html`
 
 **Acceptance Scenarios:**
+
 1. **Given** Step 1, **When** displayed, **Then** three large visual cards (Women's/Men's/Mixed)
 2. **Given** a selection, **When** made, **Then** choice is locked, proceed to Step 2
 3. **Given** Step 2, **When** user wants to change, **Then** ability to go back to Step 1
@@ -157,6 +171,7 @@ As a user, I want to select garment categories from a checklist to define my cap
 **Prototype:** `html-prototypes/guided-journey.html`
 
 **Acceptance Scenarios:**
+
 1. **Given** Step 2, **When** displayed, **Then** textual category checklist (no visuals) with quantity steppers
 2. **Given** wardrobe type, **When** selected in Step 1, **Then** categories filtered by gender
 3. **Given** selections, **When** fewer than 8, **Then** min 8 categories validated before proceeding
@@ -174,6 +189,7 @@ As a user, I want to choose color palette and add items (photos, links, or searc
 **Prototype:** `html-prototypes/guided-journey.html`
 
 **Acceptance Scenarios:**
+
 1. **Given** Step 3, **When** displayed, **Then** achromatic colors appear first in the palette, followed by all other colors in one continuous grid
 2. **Given** any palette color, **When** selected, **Then** it becomes part of the capsule palette without a hard count limit
 3. **Given** colors already selected, **When** another color is incompatible by both temperature and saturation, **Then** it becomes unavailable for selection
@@ -191,6 +207,7 @@ As a user, I want to paste marketplace URLs so the system parses them and adds i
 **Prototype:** `html-prototypes/guided-journey.html` (tab "Paste Links")
 
 **Acceptance Scenarios:**
+
 1. **Given** the input, **When** one or multiple URLs pasted, **Then** system parses: name, category, colors, all photos, brand, material/composition, source URL
 2. **Given** parsed items, **When** displayed, **Then** minimalist interface for each item — choose one photo from several
 3. **Given** auto-tagging, **When** complete, **Then** user can correct before saving
@@ -209,6 +226,7 @@ As a user, I want to find similar items from the shared database by description 
 **Prototype:** `html-prototypes/guided-journey.html` (tab "Search Catalog")
 
 **Acceptance Scenarios:**
+
 1. **Given** search input, **When** free text entered (e.g., "chocolate loafers"), **Then** semantic search returns results from shared DB
 2. **Given** results, **When** displayed, **Then** cards with photos shown
 3. **Given** a result, **When** selected, **Then** item added to capsule with "from catalog" label
@@ -225,6 +243,7 @@ As a user, I want to see my completed capsule with outfits, gap analysis, and sh
 **Prototype:** `html-prototypes/capsule-result.html`
 
 **Acceptance Scenarios:**
+
 1. **Given** the result, **When** loaded, **Then** visual grid of items with color dots displayed
 2. **Given** outfits tab, **When** viewed, **Then** static outfit combinations shown (view-only)
 3. **Given** gap analysis tab, **When** viewed, **Then** text-based list: category + color of missing items
@@ -238,6 +257,7 @@ As a user, I want to see my completed capsule with outfits, gap analysis, and sh
 As a user, I want to remove an item from a capsule to adjust its composition.
 
 **Acceptance Scenarios:**
+
 1. **Given** an item in capsule, **When** remove button clicked, **Then** confirmation dialog shown
 2. **Given** confirmation, **When** confirmed, **Then** item moves to Uncapsulated
 3. **Given** removal, **When** complete, **Then** outfits and gap analysis recomputed
@@ -249,6 +269,7 @@ As a user, I want to remove an item from a capsule to adjust its composition.
 As a user, I want to replace an item to improve combinability.
 
 **Acceptance Scenarios:**
+
 1. **Given** an item, **When** "Replace" action triggered, **Then** selection from My Items, shared DB, or upload
 2. **Given** a replacement, **When** selected, **Then** color compatibility validated against capsule palette
 3. **Given** incompatible replacement, **When** attempted, **Then** blocked with recommendation for separate capsule
@@ -261,6 +282,7 @@ As a user, I want to replace an item to improve combinability.
 As a user, I want to add a new item to an existing capsule to expand outfit count.
 
 **Acceptance Scenarios:**
+
 1. **Given** capsule view, **When** "Add item" clicked, **Then** selection from My Items, shared DB, or upload
 2. **Given** new item color, **When** validated, **Then** must be compatible with capsule palette
 3. **Given** incompatible item, **When** attempted, **Then** blocked with recommendation
@@ -275,6 +297,7 @@ As a user, I want to upload photos of my items to populate my wardrobe with real
 **Prototype:** `html-prototypes/guided-journey.html` Step 3
 
 **Acceptance Scenarios:**
+
 1. **Given** upload UI, **When** displayed, **Then** drag-and-drop or file picker button available
 2. **Given** file selection, **When** file chosen, **Then** accepts JPEG, PNG, WebP
 3. **Given** upload, **When** processed, **Then** optional background removal (checkbox, off by default)
@@ -289,6 +312,7 @@ As a user, I want to upload photos of my items to populate my wardrobe with real
 As a user, I want to switch the interface language (EN/ES-AR/RU) to use the platform comfortably.
 
 **Acceptance Scenarios:**
+
 1. **Given** language switcher, **When** available, **Then** shown on landing page and in profile
 2. **Given** language switch, **When** triggered, **Then** all UI elements translated
 3. **Given** AI stylist content, **When** generated, **Then** also translated
@@ -306,6 +330,7 @@ As a user, I want to add items to favorites to quickly return to them.
 **Prototype:** `html-prototypes/favorites.html`
 
 **Acceptance Scenarios:**
+
 1. **Given** any item card, **When** heart icon clicked, **Then** item added to favorites (own or from catalog)
 2. **Given** favorites section, **When** viewed, **Then** split into two sub-sections: "My" and "From Catalogs"
 3. **Given** favorites list, **When** displayed, **Then** sorted by date added
@@ -321,6 +346,7 @@ As a user, I want to see items not in any capsule to decide their fate.
 **Prototype:** `html-prototypes/uncapsulated.html`
 
 **Acceptance Scenarios:**
+
 1. **Given** uncapsulated section, **When** viewed, **Then** shows items not in any capsule
 2. **Given** each item, **When** actions available, **Then** can add to capsule, move to "For Sale", or "For Repair"
 3. **Given** filters, **When** applied, **Then** filter by category
@@ -334,6 +360,7 @@ As a user, I want to mark items for sale so they don't count in wardrobe statist
 **Prototype:** `html-prototypes/for-sale.html`
 
 **Acceptance Scenarios:**
+
 1. **Given** an item, **When** "For Sale" action triggered, **Then** item moves to For Sale section
 2. **Given** a for-sale item, **When** viewed, **Then** not counted in capsules or statistics
 3. **Given** a for-sale item, **When** user changes mind, **Then** can return to My Items
@@ -345,6 +372,7 @@ As a user, I want to mark items for sale so they don't count in wardrobe statist
 As a user, I want to track cost per wear to evaluate purchase effectiveness.
 
 **Acceptance Scenarios:**
+
 1. **Given** item editing, **When** price field shown, **Then** user can enter purchase price
 2. **Given** a price, **When** wear count tracked, **Then** cost per wear = price / wears calculated
 3. **Given** cost per wear, **When** displayed, **Then** shown on item card
@@ -356,6 +384,7 @@ As a user, I want to track cost per wear to evaluate purchase effectiveness.
 As a user, I want to see the OPR of my capsule to understand wardrobe efficiency.
 
 **Acceptance Scenarios:**
+
 1. **Given** dashboard, **When** capsule card displayed, **Then** OPR shown in format "X.X" (e.g., 4.2)
 2. **Given** capsule change, **When** items added/removed/replaced, **Then** OPR recalculated
 3. **Given** OPR change, **When** displayed, **Then** delta shown: "+0.3 from last change"
@@ -369,6 +398,7 @@ As a user, I want to mark items for repair so they're excluded from capsules unt
 **Prototype:** `html-prototypes/for-repair.html`
 
 **Acceptance Scenarios:**
+
 1. **Given** an item, **When** "For Repair" action triggered, **Then** item moves to For Repair section
 2. **Given** a for-repair item, **When** viewed, **Then** not counted in capsules or statistics
 3. **Given** a for-repair item, **When** fixed, **Then** can return to My Items or Uncapsulated
@@ -381,6 +411,7 @@ As a user, I want to mark items for repair so they're excluded from capsules unt
 As a system, I want imported marketplace items to populate the shared database for semantic search enrichment.
 
 **Acceptance Scenarios:**
+
 1. **Given** a marketplace import, **When** saved, **Then** item stored in shared DB with owner flag (private)
 2. **Given** user validation, **When** auto-tagging confirmed, **Then** internal moderation triggered
 3. **Given** moderation pass, **When** approved, **Then** item gets "public" flag, available in semantic search
@@ -403,7 +434,7 @@ As a system, I want imported marketplace items to populate the shared database f
 
 ### Functional Requirements
 
-- **FR-001**: System MUST support registration via email+password, Google OAuth, Apple Sign-In
+- **FR-001**: System MUST support registration via email+password in MVP Stage 1; Google OAuth and Apple Sign-In are deferred to MVP Stage 2
 - **FR-002**: System MUST validate fields inline in real-time during auth
 - **FR-003**: System MUST persist user sessions between visits
 - **FR-004**: System MUST display a dashboard with active capsule hero, OPR widget, summary stats, shopping list preview, recently added items, and quick-access wardrobe sections

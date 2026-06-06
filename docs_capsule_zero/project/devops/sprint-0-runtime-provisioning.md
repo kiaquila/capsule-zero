@@ -2,7 +2,10 @@
 
 ## Purpose
 
-This runbook turns the Sprint 0 foundation into a runnable local/staging setup.
+This runbook turns the Sprint 0 foundation into a runnable local/staging setup
+when a feature reaches an integration gate. It is not required before
+mock-first Stage 1 product implementation.
+
 It does not store secrets in git. Use the committed `.env.example` files as
 templates and keep real credentials in local env files, Vercel env vars,
 Supabase dashboard settings, or the relevant provider dashboard.
@@ -18,13 +21,35 @@ cp app/.env.local.example app/.env.local
 cp mobile/.env.example mobile/.env.local
 ```
 
-- Fill real values in `app/.env.local` and `mobile/.env.local`.
+- For mock-first Stage 1, placeholders or local mock values are acceptable.
+  Fill real values only when running the relevant integration gate.
 - Run:
 
 ```bash
 npm run check:runtime-tooling
 npm run check:runtime-env -- --env app/.env.local --env mobile/.env.local
 ```
+
+## Mock-First Stage 1
+
+Stage 1 development can proceed without real Supabase cloud, Google, Apple,
+Lava.top, Photoroom, remove.bg, or production Vercel credentials.
+
+Use this posture until a feature explicitly needs real provider evidence:
+
+- auth: email/password only; mock auth adapter is acceptable until Supabase
+  staging is needed for persistence or RLS validation;
+- database/search: use migrations, seed fixtures, and deterministic repository
+  fixtures;
+- storage: use local/mock storage responses for uploads, signed URL states, and
+  failures;
+- billing: use mock coin packs, invoice IDs, webhook replay, and ledger effects;
+- image processing: use mock processed images plus timeout/failure states;
+- social auth: defer Google OAuth and Apple Sign-In to MVP Stage 2.
+
+Production credentials are never placed in local env files or shared with
+agents. Test/staging credentials may be shared only when the owner explicitly
+permits the integration work.
 
 ## Supabase Local Validation
 
@@ -76,6 +101,9 @@ Dashboard checks:
 
 ## Google And Apple OAuth
 
+Google OAuth and Apple Sign-In are MVP Stage 2. Run this section only when the
+social-auth integration gate opens.
+
 Provider dashboard callback URL must point to Supabase Auth:
 
 ```text
@@ -102,6 +130,9 @@ Use exact production URLs. Use preview wildcards only for Vercel preview
 deployments, and keep those narrower than a global `**` whenever possible.
 
 ## Lava.top Setup
+
+Run this section only when the payment integration gate opens. Stage 1 uses
+mock coin packs, invoice creation, webhook replay, and ledger effects.
 
 Create the web-only coin products in Lava.top and map their provider IDs:
 
@@ -130,6 +161,9 @@ no Lava.top CTA, external payment link, or in-app purchase prompt in v0.1.
 
 ## Photoroom Spike
 
+Run this section only when the image-processing integration gate opens. Stage 1
+uses mock processed-image success, timeout, and failure states.
+
 Run the spike on at least 10 representative real wardrobe images:
 
 ```bash
@@ -154,7 +188,8 @@ If the gate fails, document one of these decisions:
 ## Evidence Template
 
 Post this as a GitHub issue comment, PR comment, or committed measurement note
-once real credentials and dashboards are configured.
+once real credentials and dashboards are configured for the relevant
+integration gate.
 
 ```markdown
 Sprint 0 runtime provisioning evidence
