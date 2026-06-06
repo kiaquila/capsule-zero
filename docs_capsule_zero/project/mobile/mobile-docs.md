@@ -10,16 +10,18 @@ Capsule Zero MVP includes native mobile apps for iOS and Android built with Flut
 
 ## Stack
 
-| Layer | Decision |
-|---|---|
-| Framework | Flutter |
-| Language | Dart |
-| Routing | `go_router` |
-| State management | Riverpod |
-| Backend client | `supabase_flutter` |
-| Secure storage | Platform secure storage for auth/session material |
-| Image input | Native camera/gallery picker, upload through Supabase Storage policies |
-| Payments | Read-only coin balance in v0.1; purchases happen on web through Lava.top and webhooks |
+| Layer            | Decision                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------- |
+| Framework        | Flutter                                                                               |
+| Language         | Dart                                                                                  |
+| Routing          | `go_router`                                                                           |
+| State management | Riverpod                                                                              |
+| Backend client   | `supabase_flutter`                                                                    |
+| Secure storage   | Platform secure storage for auth/session material                                     |
+| Image input      | Native camera/gallery picker, upload through Supabase Storage policies                |
+| Payments         | Read-only coin balance in v0.1; purchases happen on web through Lava.top and webhooks |
+
+Stage 1 mobile implementation may use mock adapters and fixtures for Supabase, storage, billing, and image processing until the corresponding integration gate is opened. Auth in Stage 1 is email/password only. Google OAuth and Apple Sign-In are MVP Stage 2.
 
 ## Architecture
 
@@ -44,10 +46,11 @@ Do not create a mobile-specific backend. Any mobile-only endpoint must be justif
 
 ## Auth And Deep Links
 
-- Configure Supabase OAuth redirect URLs for both web and mobile.
+- Stage 1 uses email/password auth and session persistence.
+- Configure Supabase OAuth redirect URLs for both web and mobile in Stage 2.
 - Use universal links/app links where possible; custom scheme is acceptable for early MVP testing.
-- Deep links are required for OAuth callbacks. Payment-return deep links are deferred because mobile v0.1 has no purchase CTA.
-- Test cold-start and warm-start deep links on iOS and Android.
+- Deep links are required for Stage 2 OAuth callbacks. Payment-return deep links are deferred because mobile v0.1 has no purchase CTA.
+- Test cold-start and warm-start deep links on iOS and Android before Stage 2 social auth QA.
 
 ## Payments
 
@@ -68,9 +71,10 @@ Mobile QA must cover:
 
 - iPhone small/standard screens
 - Android small/standard screens
-- OAuth callback
-- app cold-start deep link
-- app foreground deep link
+- email/password auth and session persistence
+- Stage 2 OAuth callback
+- Stage 2 app cold-start deep link
+- Stage 2 app foreground deep link
 - photo upload from camera
 - photo upload from gallery
 - background removal status and retry

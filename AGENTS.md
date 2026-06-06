@@ -18,7 +18,7 @@
 | 1. Market Research            | COMPLETE — `docs_capsule_zero/marketing/go-to-market.md`                                                                                                                           |
 | 2. Product Definition         | COMPLETE — `.specify/specs/001-capsule-zero-mvp/spec.md`, `docs_capsule_zero/project/methodology/`, `docs_capsule_zero/ux/emotion-map.md`, `docs_capsule_zero/ux/ux-validation.md` |
 | 3. UX/UI Design               | COMPLETE — 16 logical screens across 12 HTML files + `html-prototypes/design-system.html`, `html-prototypes/color-system.html` — all in `html-prototypes/`                         |
-| **4. Technical Architecture** | **DECISIONS DOCUMENTED** — Sprint 0 entrance gate pending before Phase 5 feature work                                                                                              |
+| **4. Technical Architecture** | **DECISIONS DOCUMENTED** — mock-first Stage 1 posture accepted; integration gates pending before real provider flows                                                               |
 | 5. Development Sprint         | Upcoming                                                                                                                                                                           |
 | 6. QA & Soft Launch           | Upcoming                                                                                                                                                                           |
 | 7. Commercial Launch          | Upcoming                                                                                                                                                                           |
@@ -116,7 +116,7 @@ Photo upload, marketplace link import, semantic search from shared DB. All three
 | `docs_capsule_zero/project/backend/backend-docs.md`                    | Backend stack, API structure, DB schema, env vars                                                              |
 | `docs_capsule_zero/project/mobile/mobile-docs.md`                      | Flutter app architecture, mobile auth/deep links, mobile payment constraints                                   |
 | `docs_capsule_zero/project/architecture/phase-4-council.md`            | Architecture council decision register and validation notes                                                    |
-| `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` | Required Sprint 0 gate before product feature implementation                                                   |
+| `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` | Stage 1 mock-first entrance gate and provider integration gates                                                |
 | `docs_capsule_zero/adr/`                                               | ADRs for stack, auth, storage, and API contract                                                                |
 | `docs_capsule_zero/glossary.md`                                        | Domain terminology with RU/ES-AR equivalents                                                                   |
 | `docs_capsule_zero/i18n/ui-texts.md`                                   | i18n content (EN, ES-AR, RU) — all 16 screens                                                                  |
@@ -214,26 +214,27 @@ A task is **not complete** until the current PR head SHA has:
 
 ## Phase 4 — Technical Architecture (DECISIONS DOCUMENTED)
 
-Architecture decisions have been made through an Architectura-style council and documented in the repository. Before Phase 5 feature work begins, complete the Sprint 0 entrance gate and get founder approval on the stack.
+Architecture decisions have been made through an Architectura-style council and documented in the repository. Phase 5 starts with mock-first Stage 1 implementation: product work can proceed behind provider adapters and fixtures, while real provider registration remains an integration gate before provider-backed QA, staging, or launch.
 
 ### What's already done
 
-| Item                       | Status                                       | Location                                                               |
-| -------------------------- | -------------------------------------------- | ---------------------------------------------------------------------- |
-| Frontend framework         | ✅ Next.js 14+ App Router, React, TypeScript | `/app`                                                                 |
-| Styling                    | ✅ Tailwind CSS v4 with custom @theme tokens | `app/src/styles/tokens.css`                                            |
-| Design tokens              | ✅ Glass tokens, colors, typography          | `docs_capsule_zero/project/frontend/styling.md`                        |
-| Folder structure           | ✅ Basic boilerplate (`/app/src/`)           | `/app/src/`                                                            |
-| Architecture council       | ✅ Decisions + validation                    | `docs_capsule_zero/project/architecture/phase-4-council.md`            |
-| Phase 5 entrance checklist | ✅ Required Sprint 0 gate documented         | `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` |
-| ADR-001: Stack Overview    | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-001-stack.md`                               |
-| ADR-002: Auth              | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-002-auth.md`                                |
-| ADR-003: Storage           | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-003-storage.md`                             |
-| API spec                   | ✅ MVP planning contract                     | `docs_capsule_zero/adr/api-spec.md`                                    |
-| Backend docs               | ✅ Stack, API structure, DB schema           | `docs_capsule_zero/project/backend/backend-docs.md`                    |
-| Frontend docs              | ✅ Libraries, state management, env vars     | `docs_capsule_zero/project/frontend/frontend-docs.md`                  |
-| Components guide           | ✅ Component conventions, glass patterns     | `docs_capsule_zero/project/frontend/components.md`                     |
-| Mobile docs                | ✅ Flutter stack, deep links, mobile QA      | `docs_capsule_zero/project/mobile/mobile-docs.md`                      |
+| Item                        | Status                                       | Location                                                               |
+| --------------------------- | -------------------------------------------- | ---------------------------------------------------------------------- |
+| Frontend framework          | ✅ Next.js 14+ App Router, React, TypeScript | `/app`                                                                 |
+| Styling                     | ✅ Tailwind CSS v4 with custom @theme tokens | `app/src/styles/tokens.css`                                            |
+| Design tokens               | ✅ Glass tokens, colors, typography          | `docs_capsule_zero/project/frontend/styling.md`                        |
+| Folder structure            | ✅ Basic boilerplate (`/app/src/`)           | `/app/src/`                                                            |
+| Architecture council        | ✅ Decisions + validation                    | `docs_capsule_zero/project/architecture/phase-4-council.md`            |
+| Phase 5 entrance checklist  | ✅ Required Sprint 0 gate documented         | `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` |
+| ADR-001: Stack Overview     | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-001-stack.md`                               |
+| ADR-002: Auth               | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-002-auth.md`                                |
+| ADR-003: Storage            | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-003-storage.md`                             |
+| ADR-006: Mock-first Stage 1 | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-006-mock-first-mvp-stage-one.md`            |
+| API spec                    | ✅ MVP planning contract                     | `docs_capsule_zero/adr/api-spec.md`                                    |
+| Backend docs                | ✅ Stack, API structure, DB schema           | `docs_capsule_zero/project/backend/backend-docs.md`                    |
+| Frontend docs               | ✅ Libraries, state management, env vars     | `docs_capsule_zero/project/frontend/frontend-docs.md`                  |
+| Components guide            | ✅ Component conventions, glass patterns     | `docs_capsule_zero/project/frontend/components.md`                     |
+| Mobile docs                 | ✅ Flutter stack, deep links, mobile QA      | `docs_capsule_zero/project/mobile/mobile-docs.md`                      |
 
 ### Accepted Phase 4 decisions
 
@@ -241,27 +242,33 @@ Architecture decisions have been made through an Architectura-style council and 
 | ---------------------- | -------------------------------------------------------------------------------------------------- |
 | **Backend / BaaS**     | Supabase                                                                                           |
 | **Database**           | Supabase PostgreSQL with RLS, pgvector, and Postgres full-text search                              |
-| **Auth**               | Supabase Auth with Email, Google OAuth, and Apple Sign-In                                          |
+| **Auth**               | Supabase Auth with Email in Stage 1; Google OAuth and Apple Sign-In deferred to MVP Stage 2        |
 | **File Storage**       | Supabase Storage                                                                                   |
-| **Background Removal** | Photoroom API behind an adapter, with remove.bg fallback if SLA/quality fails                      |
+| **Background Removal** | Mocked in Stage 1; Photoroom API behind an adapter, with remove.bg fallback if SLA/quality fails   |
 | **Hosting**            | Vercel frontend + Supabase backend services                                                        |
 | **State Management**   | Zustand for local Journey/UI state; TanStack Query for interactive server-state                    |
 | **API Client**         | Server Components/Actions + typed fetch/TanStack Query; Route Handlers for explicit API boundaries |
 | **Forms**              | React Hook Form + Zod                                                                              |
 | **i18n**               | next-intl                                                                                          |
-| **Payments**           | Lava.top web purchases + Postgres coin ledger; mobile read-only balance in v0.1                    |
+| **Payments**           | Mocked in Stage 1; Lava.top web purchases + Postgres coin ledger; mobile read-only balance in v0.1 |
 | **Mobile App**         | Flutter + Dart for iOS and Android                                                                 |
 
-### Required Sprint 0 follow-ups before Phase 5 feature work
+### Required Sprint 0 follow-ups before Phase 5 Stage 1 feature work
 
 - Founder approval on the accepted stack.
 - Configure linting and local commit hooks before first Phase 5 product-code PR.
-- Create Supabase project/local stack, migrations, storage buckets, RLS policies, and seed data.
-- Configure Google and Apple OAuth providers in Supabase/provider dashboards.
-- Configure Lava.top products/API key/webhook for web purchases.
+- Keep external service calls behind mockable provider/domain adapters.
+- Create migration-backed Supabase schema, storage buckets, RLS policies, and seed data.
 - Scaffold Flutter app and shared web/mobile domain contract.
-- Run a real-image Photoroom latency/quality test against the < 5 sec background removal gate.
 - Generate TypeScript and Dart API clients from `docs_capsule_zero/adr/openapi.yaml`.
+
+### Provider integration gates before real-provider QA/staging/launch
+
+- Create Supabase local/staging project credentials when persistence/RLS validation needs real Supabase.
+- Configure Google and Apple OAuth providers only for MVP Stage 2 social auth.
+- Configure Lava.top products/API key/webhook before real web purchases are tested.
+- Run a real-image Photoroom latency/quality test against the < 5 sec background removal gate before enabling real image processing.
+- Production credentials must be stored only in production deployment/provider dashboards and must not be shared with agents.
 
 ### Phase 4 quality gate (from launch-plan.md)
 
@@ -269,7 +276,7 @@ Architecture decisions have been made through an Architectura-style council and 
 - CI/CD pipeline set up (auto-build, preview deployments): ✅ baseline GitHub checks documented and configured
 - Local dev setup documented (env vars, seed data): ✅ documented in backend/frontend docs
 - Repository has linting + commit hooks configured: pending Sprint 0 follow-up
-- Founder approval on stack: pending
+- Founder approval on stack/mock-first Stage 1 posture: recorded in ADR-006; final launch sign-off remains pending
 
 ### Key constraints for architecture decisions
 

@@ -14,7 +14,8 @@
 5. Wire linting and local hooks into the existing GitHub baseline checks without
    changing the trusted AI review gates.
 6. Add a runtime provisioning layer that keeps secrets out of git while making
-   Supabase, OAuth, Lava.top, mobile, and Photoroom validation repeatable.
+   Supabase, OAuth, Lava.top, mobile, and Photoroom validation repeatable when
+   their integration gates open.
 
 ## Validation
 

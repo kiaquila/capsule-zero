@@ -14,8 +14,9 @@ as a second durable planning surface.
 ## Goal
 
 Validate whether `open-gsd/gsd-core` should be connected around stack approval,
-record the confirmed Phase 4 stack posture, and identify remaining blockers
-before real Supabase, OAuth, Lava.top, Flutter, and Photoroom provisioning.
+record the confirmed Phase 4 stack posture, and identify which remaining
+runtime-provider checks block Stage 1 implementation versus later integration
+and launch gates.
 
 ## Source Inputs
 
@@ -78,39 +79,41 @@ did not find a stack-replacement reason for Supabase, Flutter, Vercel, Lava.top
 web purchases, Photoroom-with-adapter, or the shared OpenAPI/Supabase contract.
 
 The main change is governance: Capsule Zero keeps an explicit architecture
-convergence checkpoint. That checkpoint separates "architecture approved" from
-"external services provisioned and verified".
+convergence checkpoint. That checkpoint separates "architecture approved",
+"mock-first Stage 1 implementation may proceed", and "external services are
+provisioned and verified".
 
 ### Decision Delta
 
-| Decision area         | Result                  | Delta                                                                                                                                                 |
-| --------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Supabase backend      | Keep                    | Current migrations/RLS align with the accepted two-table item model. Do not replace with a custom backend for v0.1.                                   |
-| PostgreSQL + pgvector | Keep                    | `item_embeddings.embedding vector(1536)` is already locked. Provider choice remains runtime config via `EMBEDDING_PROVIDER`.                          |
-| Supabase Auth         | Keep                    | Web/mobile auth authority and RLS ownership remain coherent. OAuth dashboard configuration is still a user/provider action.                           |
-| Supabase Storage      | Keep                    | Bucket split matches privacy and catalog needs. Real local/linked validation still requires Supabase CLI.                                             |
-| Next.js/Vercel web    | Keep                    | Matches prototypes, i18n, web-only Lava purchase surface, and preview deployment needs.                                                               |
-| Flutter mobile        | Keep                    | Native mobile scope remains justified by upload/camera workflow. Flutter SDK validation is still pending locally.                                     |
-| Lava.top payments     | Keep with guard         | Web-only purchases plus mobile read-only balance remains the lowest-risk v0.1 posture. Do not add mobile purchase CTA without founder/legal approval. |
-| Photoroom adapter     | Keep with gate          | Keep Photoroom primary and remove.bg fallback. Do not approve the image pipeline until real-image latency/quality evidence exists.                    |
-| GSD Core              | Adopt as advisory pilot | Pin `@opengsd/gsd-core@1.3.1`; do not make it a required CI gate yet; do not commit `.planning/` as a source of truth until explicitly approved.      |
+| Decision area         | Result                     | Delta                                                                                                                                                                                   |
+| --------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Supabase backend      | Keep                       | Current migrations/RLS align with the accepted two-table item model. Do not replace with a custom backend for v0.1.                                                                     |
+| PostgreSQL + pgvector | Keep                       | `item_embeddings.embedding vector(1536)` is already locked. Provider choice remains runtime config via `EMBEDDING_PROVIDER`.                                                            |
+| Supabase Auth         | Keep with staged scope     | Email/password is Stage 1. Google OAuth and Apple Sign-In move to MVP Stage 2. OAuth dashboard configuration is still a user/provider action.                                           |
+| Supabase Storage      | Keep with mock adapter     | Bucket split matches privacy and catalog needs. Stage 1 may use local/mock storage; real local/linked validation still requires Supabase CLI.                                           |
+| Next.js/Vercel web    | Keep                       | Matches prototypes, i18n, web-only Lava purchase surface, and preview deployment needs.                                                                                                 |
+| Flutter mobile        | Keep                       | Native mobile scope remains justified by upload/camera workflow. Flutter SDK validation is still pending locally.                                                                       |
+| Lava.top payments     | Keep with mock-first guard | Web-only purchases plus mobile read-only balance remains the lowest-risk posture. Mock invoice/webhook flows in Stage 1; do not add mobile purchase CTA without founder/legal approval. |
+| Photoroom adapter     | Keep with gate             | Mock processed-image states in Stage 1. Keep Photoroom primary and remove.bg fallback, but do not enable real image processing until real-image latency/quality evidence exists.        |
+| GSD Core              | Adopt as advisory pilot    | Pin `@opengsd/gsd-core@1.3.1`; do not make it a required CI gate yet; do not commit `.planning/` as a source of truth until explicitly approved.                                        |
 
-## Remaining Sprint 0 Blockers
+## Remaining Runtime Gates
 
-These are not reasons to replace the stack. They are provider/setup blockers
-before feature work can treat Sprint 0 as externally verified.
+These are not reasons to replace the stack. They no longer block mock-first
+Stage 1 product implementation, but they do block the corresponding real
+provider flow from entering QA, staging, or launch.
 
-| ID          | Concern                                                                    | Required resolution                                                                                                                                                  |
-| ----------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| BLOCKER-001 | Real Supabase/OAuth/Lava.top/Photoroom provider evidence is still missing. | Complete the runtime provisioning evidence template before treating Sprint 0 as externally verified.                                                                 |
-| BLOCKER-002 | Supabase CLI and Flutter SDK are missing in the current local environment. | Install/activate both tools before running `npm run check:supabase-local` and mobile boot validation, or collect equivalent evidence from another machine/CI runner. |
+| ID       | Concern                                                                    | Required resolution                                                                                                                                                  |
+| -------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GATE-001 | Real Supabase/OAuth/Lava.top/Photoroom provider evidence is still missing. | Complete the runtime provisioning evidence template before any mocked provider flow is promoted to real-provider QA, staging, or launch.                             |
+| GATE-002 | Supabase CLI and Flutter SDK are missing in the current local environment. | Install/activate both tools before running `npm run check:supabase-local` and mobile boot validation, or collect equivalent evidence from another machine/CI runner. |
 
 ## Advisory Concerns
 
 | ID      | Concern                                                                                                    | Disposition                                                                                                                |
 | ------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | ADV-001 | Generated API clients are currently operation metadata, not full payload clients.                          | Accept for Sprint 0 foundation; generate full payload clients before route-handler-heavy feature work.                     |
-| ADV-002 | Photoroom spike needs at least 10 representative real wardrobe images and a real API key.                  | Defer to runtime provisioning; keep remove.bg fallback decision open.                                                      |
+| ADV-002 | Photoroom spike needs at least 10 representative real wardrobe images and a real API key.                  | Defer to the image-processing integration gate; keep remove.bg fallback decision open.                                     |
 | ADV-003 | Mobile payment posture is deliberately conservative but still benefits from founder/legal acknowledgement. | Add explicit founder sign-off to stack approval evidence.                                                                  |
 | ADV-004 | `.planning/` would duplicate `.specify`/ADR/SENAR if adopted uncritically.                                 | Keep Capsule Zero source of truth in existing docs; use GSD outputs as review inputs unless a later PR changes governance. |
 | ADV-005 | Formal native GSD multi-reviewer convergence has not run in a fresh GSD-enabled runtime.                   | Optional follow-up only; run it later if the owner wants another reviewer loop, not as a merge or stack-approval blocker.  |
@@ -164,13 +167,14 @@ git diff --check
 
 ## Stack Approval Recommendation
 
-Proceed with the confirmed stack, but do not collapse the remaining setup work
-into "externally verified" language.
+Proceed with the confirmed stack and ADR-006 mock-first Stage 1 posture, but do
+not collapse the remaining setup work into "externally verified" language.
 
 Recorded approval posture:
 
 > Founder confirms the Phase 4 stack direction: Supabase, Next.js/Vercel,
 > Flutter, Lava.top web purchases with mobile read-only balance, and Photoroom
-> behind an adapter. Implementation may continue through Sprint 0 provisioning
-> gates. Feature work starts only after runtime evidence closes the remaining
-> Sprint 0 blockers listed in this report and the Phase 5 entrance checklist.
+> behind an adapter. Implementation may continue in mock-first Stage 1 without
+> registering every provider up front. Real Supabase, Google/Apple OAuth,
+> Lava.top, Photoroom, and production credentials are integration gates before
+> those provider-backed flows enter QA, staging, or launch.

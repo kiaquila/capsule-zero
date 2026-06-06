@@ -10,7 +10,7 @@ Capsule Zero needs to move from approved prototypes to Phase 5 implementation. T
 
 - premium mobile-first Next.js frontend matching the HTML prototypes
 - Flutter iOS and Android apps in the MVP
-- email/password, Google, and Apple authentication
+- MVP Stage 1 email/password authentication, with Google and Apple authentication deferred to MVP Stage 2
 - private user wardrobe data and photos
 - three upload methods: photo upload, marketplace link import, semantic catalog search
 - optional background removal under the 5 second quality gate
@@ -25,26 +25,28 @@ The project should optimize for delivery speed and operational simplicity withou
 
 Use the following MVP stack:
 
-| Layer | Decision |
-|---|---|
-| Frontend | Next.js App Router, React, TypeScript |
-| Mobile | Flutter + Dart for iOS and Android |
-| Styling | Tailwind CSS v4 with Capsule Zero glass tokens |
-| Hosting/distribution | Vercel for web, Apple App Store and Google Play for Flutter apps |
-| Backend/BaaS | Supabase |
-| Database | Supabase PostgreSQL with RLS |
-| Vector/search | PostgreSQL full-text search + pgvector hybrid search |
-| Auth | Supabase Auth |
-| File storage | Supabase Storage |
-| Background removal | Photoroom API through an adapter, with remove.bg kept as fallback |
-| Payments | Lava.top one-time product payments on web, Lava.top webhooks, mobile read-only balance for v0.1 |
-| i18n | next-intl |
-| Local UI state | Zustand |
-| Client server-state | TanStack Query |
-| Forms | React Hook Form + Zod |
-| API boundary | Shared backend contract for web and mobile: Supabase clients/RPC for core data, Route Handlers/Edge Functions for trusted vendor operations, OpenAPI-documented REST endpoints for mobile parity |
+| Layer                | Decision                                                                                                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Frontend             | Next.js App Router, React, TypeScript                                                                                                                                                            |
+| Mobile               | Flutter + Dart for iOS and Android                                                                                                                                                               |
+| Styling              | Tailwind CSS v4 with Capsule Zero glass tokens                                                                                                                                                   |
+| Hosting/distribution | Vercel for web, Apple App Store and Google Play for Flutter apps                                                                                                                                 |
+| Backend/BaaS         | Supabase                                                                                                                                                                                         |
+| Database             | Supabase PostgreSQL with RLS                                                                                                                                                                     |
+| Vector/search        | PostgreSQL full-text search + pgvector hybrid search                                                                                                                                             |
+| Auth                 | Supabase Auth; Stage 1 email/password, Stage 2 Google OAuth and Apple Sign-In                                                                                                                    |
+| File storage         | Supabase Storage                                                                                                                                                                                 |
+| Background removal   | Photoroom API through an adapter, with remove.bg kept as fallback                                                                                                                                |
+| Payments             | Lava.top one-time product payments on web, Lava.top webhooks, mobile read-only balance for v0.1                                                                                                  |
+| i18n                 | next-intl                                                                                                                                                                                        |
+| Local UI state       | Zustand                                                                                                                                                                                          |
+| Client server-state  | TanStack Query                                                                                                                                                                                   |
+| Forms                | React Hook Form + Zod                                                                                                                                                                            |
+| API boundary         | Shared backend contract for web and mobile: Supabase clients/RPC for core data, Route Handlers/Edge Functions for trusted vendor operations, OpenAPI-documented REST endpoints for mobile parity |
 
 Supabase is the canonical backend for v0.1 across web and mobile. Do not introduce a custom NestJS or FastAPI backend unless a measured MVP requirement cannot be met through Supabase, Vercel Functions, or Supabase Edge Functions.
+
+Stage 1 implementation follows ADR-006: external provider calls may be mocked behind the same domain/provider interfaces until the relevant integration gate requires real Supabase, Lava.top, Photoroom, or OAuth evidence.
 
 ## Consequences
 
@@ -58,6 +60,7 @@ Positive:
 - Vercel preview deployments remain the natural delivery surface.
 - Lava.top matches the founder payment constraint and supports webhook-based coin fulfillment.
 - Mobile avoids app-store payment-policy risk in v0.1 by displaying balance and purchase status only.
+- Mock-first Stage 1 lets product screens and domain flows move before all provider dashboards are registered.
 
 Tradeoffs:
 
@@ -67,6 +70,7 @@ Tradeoffs:
 - TanStack Query and next-intl must be added to the app dependencies before their feature slices.
 - Flutter materially increases MVP delivery scope and requires mobile-specific QA, release signing, deep links, and store-review work.
 - Lava.top payments for digital coins inside mobile apps carry App Store and Google Play policy risk; v0.1 therefore ships web purchases only, while mobile reflects ledger state after webhook fulfillment.
+- Real provider evidence remains required before mocked flows are promoted to real-provider QA, staging, or launch.
 
 ## Alternatives Considered
 
@@ -77,6 +81,7 @@ Tradeoffs:
 - Web-only mobile-responsive MVP: lower scope, but rejected by updated founder requirement for native iOS and Android support.
 - Stripe Checkout: previously accepted for coins, superseded by founder requirement to use Lava.top.
 - In-app Lava.top purchase CTA for mobile: deferred until store-policy approval or a store-specific fallback is selected.
+- Google OAuth and Apple Sign-In in Stage 1: deferred to MVP Stage 2 to reduce provider setup and callback complexity before the core product is moving.
 
 ## References
 
@@ -91,3 +96,4 @@ Tradeoffs:
 - Google Play external offers: https://developer.android.com/google/play/billing/external/integration
 - next-intl: https://next-intl.dev/
 - Vercel environment variables: https://vercel.com/docs/environment-variables
+- Mock-first Stage 1 ADR: `docs_capsule_zero/adr/adr-006-mock-first-mvp-stage-one.md`

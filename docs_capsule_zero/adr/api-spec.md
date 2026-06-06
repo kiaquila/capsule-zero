@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted for MVP planning. Before feature implementation, Sprint 0 must create the implementation OpenAPI contract at `docs_capsule_zero/adr/openapi.yaml`. Every feature slice must preserve the resource boundaries and auth rules below.
+Accepted for MVP planning. Before Stage 1 feature implementation, Sprint 0 must create the implementation OpenAPI contract at `docs_capsule_zero/adr/openapi.yaml`. Every feature slice must preserve the resource boundaries and auth rules below.
 
 ## API Principles
 
@@ -17,7 +17,7 @@ Accepted for MVP planning. Before feature implementation, Sprint 0 must create t
 
 ## Implementation Contract Artifacts
 
-Sprint 0 must create and verify these artifacts before product feature work:
+Sprint 0 must create and verify these artifacts before Stage 1 product feature work:
 
 | Artifact                | Location                                      | Purpose                                                                |
 | ----------------------- | --------------------------------------------- | ---------------------------------------------------------------------- |
@@ -127,16 +127,16 @@ Server logs may include provider/raw details, but client responses must keep mes
 
 ## Auth
 
-Supabase Auth endpoints handle sign-up, login, OAuth, session refresh, and password recovery.
+Supabase Auth endpoints handle sign-up, login, session refresh, and password recovery in MVP Stage 1. OAuth callbacks are kept in the contract as MVP Stage 2 boundaries for Google OAuth and Apple Sign-In.
 
-| Route                   | Method | Auth   | Purpose                                                       |
-| ----------------------- | -----: | ------ | ------------------------------------------------------------- |
-| `/auth/callback`        |    GET | Public | Web OAuth callback; exchanges code and redirects to dashboard |
-| `/auth/mobile-callback` |    GET | Public | Mobile OAuth callback; redirects into Flutter deep link       |
-| `/api/profile`          |    GET | User   | Read current profile                                          |
-| `/api/profile`          |  PATCH | User   | Update display name, language, country, city                  |
-| `/api/profile/avatar`   |   POST | User   | Upload or replace avatar metadata after storage upload        |
-| `/api/profile/avatar`   | DELETE | User   | Remove custom avatar                                          |
+| Route                   | Method | Auth   | Purpose                                                               |
+| ----------------------- | -----: | ------ | --------------------------------------------------------------------- |
+| `/auth/callback`        |    GET | Public | Stage 2 web OAuth callback; exchanges code and redirects to dashboard |
+| `/auth/mobile-callback` |    GET | Public | Stage 2 mobile OAuth callback; redirects into Flutter deep link       |
+| `/api/profile`          |    GET | User   | Read current profile                                                  |
+| `/api/profile`          |  PATCH | User   | Update display name, language, country, city                          |
+| `/api/profile/avatar`   |   POST | User   | Upload or replace avatar metadata after storage upload                |
+| `/api/profile/avatar`   | DELETE | User   | Remove custom avatar                                                  |
 
 ## Journey
 
