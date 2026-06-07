@@ -16,6 +16,7 @@ In scope:
 - Implement locale-aware landing route using `html-prototypes/index.html`, `app/public/wall.png`, and `docs_capsule_zero/i18n/ui-texts.md`.
 - Implement standalone auth route and landing auth popup using `html-prototypes/auth.html`.
 - Add minimal `next-intl` routing and messages for active MVP v1 locales `en` and `ru`.
+- Keep the app dependency lockfile valid for CI clean installs after adding `next-intl`.
 - Add React Hook Form + Zod realtime validation for login, registration, and recovery.
 - Use mock provider auth through server actions and a mock session cookie.
 - Add a minimal dashboard redirect target so successful auth does not lead to a dead route.
@@ -97,6 +98,7 @@ As a maintainer, I want auth to use the existing provider boundary and remain bl
 - **FR-007**: The dashboard target MUST avoid a dead redirect after auth and allow mock sign-out.
 - **FR-008**: User-facing landing/auth text MUST come from message files seeded from `docs_capsule_zero/i18n/ui-texts.md`.
 - **FR-009**: Docs cleanup MUST mark the completed payload-client follow-up and reflect the current frontend dependency baseline.
+- **FR-010**: The app package lock MUST remain compatible with CI `npm ci --prefix app` after the i18n dependency is added.
 
 ### Key Entities
 
@@ -113,3 +115,4 @@ As a maintainer, I want auth to use the existing provider boundary and remain bl
 - **SC-003**: Successful mock login/register redirects to `/en/dashboard` without a 404.
 - **SC-004**: `npm run preflight` passes.
 - **SC-005**: Local Chrome smoke check shows no obvious desktop/mobile layout overlap before PR prep.
+- **SC-006**: CI-equivalent app dependency installation succeeds with npm 10.

@@ -40,6 +40,7 @@ Implement the first user-facing Stage 1 slice by converting the approved landing
 | API contract unchanged | `npm run check:api-contract` |
 | Feature memory | `npm run check:feature-memory -- --worktree` |
 | Whitespace safety | `git diff --check` |
+| CI app install parity | `npx -y npm@10.9.2 ci --prefix app` |
 
 Negative scenario evidence:
 
