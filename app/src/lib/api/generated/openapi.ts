@@ -337,7 +337,7 @@ export type ErrorResponse = {
   };
 };
 
-export type Locale = "en" | "es-AR" | "ru";
+export type Locale = "en" | "ru";
 
 export type WardrobeType = "women" | "men" | "mixed";
 
@@ -1396,7 +1396,6 @@ export const API_SCHEMAS = {
     "type": "string",
     "enum": [
       "en",
-      "es-AR",
       "ru"
     ]
   },

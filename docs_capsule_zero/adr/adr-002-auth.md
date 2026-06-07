@@ -47,7 +47,7 @@ Implementation rules:
 | `id`              | uuid PK       | References `auth.users.id`                        |
 | `display_name`    | text          | User-editable                                     |
 | `avatar_asset_id` | uuid nullable | References selected avatar asset                  |
-| `language`        | text          | `en`, `es-AR`, `ru`; default `en`                 |
+| `language`        | text          | `en`, `ru`; default `en`. `es-AR` is deferred to MVP v2 |
 | `country`         | text nullable | Optional                                          |
 | `city`            | text nullable | Optional                                          |
 | `coin_balance`    | integer       | Derived from coin ledger or cached for fast reads |

@@ -131,7 +131,7 @@ The platform guides the user through methodology without imposing. It suggests, 
 
 - **Frontend:** Next.js 14+ App Router, React, TypeScript
 - **Styling:** Tailwind CSS v4 with custom @theme tokens
-- **Languages:** EN (primary), ES-AR, RU — i18n from Day 1, switching without reload
+- **Languages:** EN (primary) and RU in MVP v1 — i18n from Day 1, switching without reload. ES-AR is deferred globally to MVP v2.
 - **Responsive:** iPhone 14+ (375px), iPad (768px), Desktop 1280px+
 - **Performance targets:** Page load < 2 sec on 4G, Upload + bg removal < 5 sec
 - **Supported upload formats:** JPEG, PNG, WebP (max 10 MB)

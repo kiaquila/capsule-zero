@@ -127,7 +127,6 @@ const apiSchemasJson = r'''{
     "type": "string",
     "enum": [
       "en",
-      "es-AR",
       "ru"
     ]
   },

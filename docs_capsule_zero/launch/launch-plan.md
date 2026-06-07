@@ -16,7 +16,7 @@
 
 ### What's IN v0.1
 - Landing page with premium brand identity (hero, value proposition, CTA)
-- Multilingual support (EN, ES-AR, RU from launch)
+- Multilingual support (EN and RU in MVP v0.1; ES-AR deferred globally to MVP v2)
 - Mobile-first web design
 - Native Flutter apps for iOS and Android
 - User profile / personal cabinet

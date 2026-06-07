@@ -34,7 +34,7 @@ As a new user, I want to see a premium landing page with B&W editorial hero so I
 **Acceptance Scenarios:**
 
 1. **Given** a new visitor, **When** the page loads, **Then** full-screen B&W photo with manifesto headline is centered, registration button in top-right corner
-2. **Given** any visitor, **When** they view the page, **Then** language switcher (EN/ES/RU) is visible next to registration
+2. **Given** any visitor, **When** they view the page, **Then** language switcher (EN/RU in MVP v1) is visible next to registration
 3. **Given** any device, **When** page loads on 4G, **Then** load time < 2 seconds
 4. **Given** iPhone 14+, iPad, or desktop 1280px+, **Then** layout is responsive and adaptive
 5. **Given** the page, **When** user evaluates it, **Then** it passes the "screenshot test"
@@ -309,7 +309,7 @@ As a user, I want to upload photos of my items to populate my wardrobe with real
 
 ### US-018 — Multilingual (Priority: P1)
 
-As a user, I want to switch the interface language (EN/ES-AR/RU) to use the platform comfortably.
+As a user, I want to switch the interface language (EN/RU in MVP v1; ES-AR in MVP v2) to use the platform comfortably.
 
 **Acceptance Scenarios:**
 
@@ -450,7 +450,7 @@ As a system, I want imported marketplace items to populate the shared database f
 - **FR-014**: System MUST provide semantic search from shared item database
 - **FR-015**: System MUST support photo upload with optional background removal
 - **FR-016**: System MUST auto-tag items (name, category, color dots) on upload/import
-- **FR-017**: System MUST support i18n (EN, ES-AR, RU) with runtime switching
+- **FR-017**: System MUST support i18n (EN and RU in MVP v1, ES-AR deferred to MVP v2) with runtime switching
 - **FR-018**: System MUST be responsive (375px, 768px, 1280px+)
 - **FR-019**: System MUST implement favorites with "My" and "From Catalogs" sub-sections
 - **FR-020**: System MUST track items across sections (My Items, Uncapsulated, For Sale, For Repair)

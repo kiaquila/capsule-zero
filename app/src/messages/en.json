@@ -1,0 +1,60 @@
+{
+  "language": {
+    "label": "Select language",
+    "en": "English",
+    "ru": "Русский"
+  },
+  "landing": {
+    "headline": "When new money mindset meets old money taste",
+    "subtitle": "For those who find their way to Capsule Zero — a wardrobe management platform for slow fashion devotees and connoisseurs of aesthetics",
+    "authCta": "Log In",
+    "terms": "Terms of Use",
+    "privacy": "Privacy Policy",
+    "copyright": "© 2025 Capsule Zero",
+    "cookie": "We use cookies to improve your experience. By continuing you accept our Cookie Policy.",
+    "cookieAccept": "Accept",
+    "cookieSettings": "Settings",
+    "cookiePolicy": "Cookie Policy"
+  },
+  "auth": {
+    "signUpTab": "Sign Up",
+    "logInTab": "Log In",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password *",
+    "name": "Name (optional)",
+    "country": "Country",
+    "city": "City",
+    "forgotPassword": "Forgot password?",
+    "signInLinkPrefix": "New here?",
+    "signInLinkAction": "Create an account",
+    "logInLinkPrefix": "Already have an account?",
+    "logInLinkAction": "Log in",
+    "requiredNote": "Required fields are marked *",
+    "createAccountCta": "Create Account",
+    "termsConsentPrefix": "By continuing you agree to our",
+    "termsConsentMiddle": "and",
+    "invalidEmail": "Please enter a valid email",
+    "weakPassword": "Password must be at least 8 characters",
+    "passwordsMismatch": "Passwords don't match",
+    "enterPassword": "Enter your password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "checking": "Checking",
+    "creating": "Creating",
+    "sending": "Sending",
+    "recoveryTitle": "Password recovery",
+    "recoveryHint": "Enter your email and we will send reset instructions.",
+    "recoveryCta": "Send recovery email",
+    "recoverySent": "Recovery email sent. Check your inbox.",
+    "backToLogin": "Back to log in",
+    "successRedirect": "Redirecting to dashboard...",
+    "close": "Close"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome!",
+    "sessionLabel": "Signed in as",
+    "logout": "Log Out"
+  }
+}

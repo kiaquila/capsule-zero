@@ -151,7 +151,7 @@ components:
               additionalProperties: true
     Locale:
       type: string
-      enum: [en, es-AR, ru]
+      enum: [en, ru]
     WardrobeType:
       type: string
       enum: [women, men, mixed]

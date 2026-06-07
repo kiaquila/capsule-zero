@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Capsule Zero — Система. Стиль. Свобода.",
+  title: "Capsule Zero",
   description:
-    "Создай капсульный гардероб из минимума вещей с максимумом комплектов. AI-стилист по методологии Школы Шоппинга.",
-  keywords: ["capsule wardrobe", "capsule zero", "гардероб", "капсула", "стиль"],
+    "A premium wardrobe management platform for capsule wardrobes, slow fashion, and outfit productivity.",
+  keywords: ["capsule wardrobe", "capsule zero", "wardrobe", "capsule", "style"],
   openGraph: {
     title: "Capsule Zero",
-    description: "Система. Стиль. Свобода.",
+    description: "A premium wardrobe management platform.",
     type: "website",
   },
 };

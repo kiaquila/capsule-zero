@@ -133,4 +133,4 @@ export interface DashboardSectionInfo {
 // ЯЗЫКИ
 // ============================================================
 
-export type Locale = "en" | "es" | "ru";
+export type Locale = "en" | "ru";

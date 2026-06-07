@@ -12,7 +12,7 @@
 1. Visitor opens the root URL
 2. Full-screen B&W editorial fashion photo loads with manifesto headline
 3. Registration button visible in top-right corner
-4. Language switcher (EN/ES/RU) visible next to registration
+4. Language switcher (EN/RU in MVP v1) visible next to registration
 5. Visitor clicks Register → auth popup opens (see f-002-auth.md)
 
 ## Interface States
@@ -25,7 +25,7 @@
 
 ## Acceptance Criteria
 1. Full-screen B&W photo with manifesto headline centered, registration button in top-right
-2. Language switcher (EN/ES/RU) visible next to registration
+2. Language switcher (EN/RU in MVP v1) visible next to registration
 3. Page load < 2 seconds on 4G
 4. Responsive: iPhone 14+ (375px), iPad (768px), Desktop 1280px+
 5. Passes the "screenshot test" — premium editorial quality
@@ -33,7 +33,7 @@
 ## Key Components
 - **HeroSection** — full-viewport B&W photo with gradient overlay + manifesto text
 - **RegisterButton** — glass button, top-right positioning
-- **LanguageSwitcher** — EN/ES/RU toggle, glass dropdown
+- **LanguageSwitcher** — EN/RU toggle in MVP v1, glass dropdown. ES-AR is deferred to MVP v2.
 
 ## Edge Cases
 - Slow connection → hero image has low-res placeholder, progressive load
