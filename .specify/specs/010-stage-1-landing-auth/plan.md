@@ -31,11 +31,12 @@ Implement the first user-facing Stage 1 slice by converting the approved landing
 
 | Acceptance criterion | Evidence |
 | -------------------- | -------- |
-| SC-001 / FR-001-FR-003 / FR-008 | Local Chrome smoke check for `/en` and `/ru`; `npm --prefix app run build` |
+| SC-001 / FR-001-FR-003 / FR-008 / FR-011 / SC-007 | Local Chrome smoke check for `/en` and `/ru`, including `<html lang>` inspection; `npm --prefix app run build` |
 | SC-002 / FR-004-FR-006 | Local Chrome auth form check; `npm --prefix app run typecheck`; `npm --prefix app run lint` |
 | SC-003 / FR-006-FR-007 | Local Chrome valid mock auth redirect check |
 | SC-004 | `npm run preflight` |
 | FR-009 | Diff in `.specify/specs/003-sprint-0-foundation/tasks.md` and `docs_capsule_zero/project/frontend/frontend-docs.md` |
+| FR-012 | Diff in `AGENTS.md` records ES-AR as MVP v2 scope and EN/RU as active MVP v1 locales |
 | Repo baseline | `npm run check:repo` |
 | API contract unchanged | `npm run check:api-contract` |
 | Feature memory | `npm run check:feature-memory -- --worktree` |
@@ -51,8 +52,9 @@ Negative scenario evidence:
 
 ```text
 app/src/app/
-  page.tsx
-  layout.tsx
+  (redirect)/
+    layout.tsx
+    page.tsx
   [locale]/
     layout.tsx
     page.tsx

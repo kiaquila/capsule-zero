@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import "../globals.css";
 
 export const metadata: Metadata = {
   title: "Capsule Zero",
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default function RedirectRootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

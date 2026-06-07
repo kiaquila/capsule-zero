@@ -17,10 +17,11 @@ In scope:
 - Implement standalone auth route and landing auth popup using `html-prototypes/auth.html`.
 - Add minimal `next-intl` routing and messages for active MVP v1 locales `en` and `ru`.
 - Keep the app dependency lockfile valid for CI clean installs after adding `next-intl`.
+- Keep locale-aware document metadata and `<html lang>` aligned with active routes.
 - Add React Hook Form + Zod realtime validation for login, registration, and recovery.
 - Use mock provider auth through server actions and a mock session cookie.
 - Add a minimal dashboard redirect target so successful auth does not lead to a dead route.
-- Update Sprint 0/frontend docs for the completed payload-client and current dependency baseline.
+- Update Sprint 0/frontend docs and repository onboarding for the completed payload-client, current dependency baseline, and MVP v1 EN/RU locale scope.
 
 Out of scope:
 
@@ -99,6 +100,8 @@ As a maintainer, I want auth to use the existing provider boundary and remain bl
 - **FR-008**: User-facing landing/auth text MUST come from message files seeded from `docs_capsule_zero/i18n/ui-texts.md`.
 - **FR-009**: Docs cleanup MUST mark the completed payload-client follow-up and reflect the current frontend dependency baseline.
 - **FR-010**: The app package lock MUST remain compatible with CI `npm ci --prefix app` after the i18n dependency is added.
+- **FR-011**: Localized landing and auth routes MUST render a locale-aware document shell so `/ru` uses `<html lang="ru">` and `/en` uses `<html lang="en">`.
+- **FR-012**: Repository onboarding docs MUST record that ES-AR is globally deferred to MVP v2 so agent guidance matches the active MVP v1 implementation scope.
 
 ### Key Entities
 
@@ -116,3 +119,4 @@ As a maintainer, I want auth to use the existing provider boundary and remain bl
 - **SC-004**: `npm run preflight` passes.
 - **SC-005**: Local Chrome smoke check shows no obvious desktop/mobile layout overlap before PR prep.
 - **SC-006**: CI-equivalent app dependency installation succeeds with npm 10.
+- **SC-007**: Browser/HTML inspection confirms localized routes expose the matching document language.

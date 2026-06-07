@@ -1,8 +1,22 @@
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { routing } from "@/i18n/routing";
+import "../globals.css";
+
+export const metadata: Metadata = {
+  title: "Capsule Zero",
+  description:
+    "A premium wardrobe management platform for capsule wardrobes, slow fashion, and outfit productivity.",
+  keywords: ["capsule wardrobe", "capsule zero", "wardrobe", "capsule", "style"],
+  openGraph: {
+    title: "Capsule Zero",
+    description: "A premium wardrobe management platform.",
+    type: "website",
+  },
+};
 
 interface LocaleLayoutProps {
   children: ReactNode;
@@ -29,8 +43,12 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider messages={messages}>
-      {children}
-    </NextIntlClientProvider>
+    <html lang={locale}>
+      <body className="antialiased">
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+        </NextIntlClientProvider>
+      </body>
+    </html>
   );
 }

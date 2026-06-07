@@ -67,6 +67,8 @@
 - Keep `/[locale]/dashboard` as a minimal redirect target only, so auth success is not a dead route while the full dashboard feature remains a later slice.
 - Remove ES-AR from active MVP v1 routing, generated clients, profile language enum, and language switchers; keep Spanish copy as MVP v2 reference material in docs only.
 - Add `@swc/helpers@0.5.23` explicitly because `next-intl` installs `@swc/core@1.15.40`, whose optional peer requires helpers `>=0.5.17`; CI's `npm ci --prefix app` rejects the lockfile when only Next's pinned `0.5.15` helper is present.
+- Keep `/` in a small redirect route group and move the localized document shell into `app/src/app/[locale]/layout.tsx` so `/ru` renders `<html lang="ru">` while `/en` renders `<html lang="en">`.
+- Update `AGENTS.md` with the 2026-06-07 locale scope decision so future agents do not treat deferred ES-AR as an active MVP v1 requirement.
 
 ### Known Issues
 
@@ -86,3 +88,4 @@
 - Chrome smoke check passed for `/en` landing, invalid auth inline errors, valid mock login redirect to `/en/dashboard`, RU landing text, standalone `/en/auth`, cookie banner on a clean local origin, EN/RU-only language options, mobile wallpaper position, and absence of Google/Apple controls.
 - Chrome computed style check confirmed auth and cookie glass surfaces use `rgba(255, 255, 255, 0.38)` with `backdrop-filter: blur(64px) saturate(1.18)`.
 - `npx -y npm@10.9.2 ci --prefix app` passed after the explicit `@swc/helpers@0.5.23` dependency was added for CI lockfile parity.
+- After moving the document shell to the localized root layout, `curl http://127.0.0.1:3000/ru` returned `<html lang="ru">` and `curl http://127.0.0.1:3000/en` returned `<html lang="en">`; ordinary Google Chrome was reopened on `/ru` and `/en/auth`.
