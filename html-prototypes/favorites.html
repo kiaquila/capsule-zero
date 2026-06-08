@@ -366,15 +366,15 @@
 
 <script>
 const MY_FAVS = [
-  { name: 'Camel coat',        category: 'Outerwear', colors: ['#C19A6B'],            brand: 'Max Mara' },
-  { name: 'Ivory silk blouse',  category: 'Top',       colors: ['#F5F5F0','#E8E0D0'],  brand: 'Massimo Dutti' },
-  { name: 'Black ankle boots',  category: 'Shoes',     colors: ['#1A1A1A'],            brand: 'Aeyde' },
+  { name: 'Camel coat',        category: 'Outerwear', colors: ['#C0A268'],            brand: 'Max Mara' },
+  { name: 'Ivory silk blouse',  category: 'Top',       colors: ['#FFFFFF','#F5EADC'],  brand: 'Massimo Dutti' },
+  { name: 'Black ankle boots',  category: 'Shoes',     colors: ['#1C1C1C'],            brand: 'Aeyde' },
 ];
 const CATALOG_FAVS = [
   { name: 'Wool midi skirt',    category: 'Bottom',    colors: ['#8C8C8C'],            brand: 'The Row',       catalog: true },
-  { name: 'Leather tote bag',   category: 'Bag',       colors: ['#1A1A1A'],            brand: 'Polene',        catalog: true },
+  { name: 'Leather tote bag',   category: 'Bag',       colors: ['#1C1C1C'],            brand: 'Polene',        catalog: true },
   { name: 'Cashmere cardigan',  category: 'Top',       colors: ['#F0EBE0'],            brand: 'Brunello Cucinelli', catalog: true },
-  { name: 'Suede ankle boots',  category: 'Shoes',     colors: ['#D4C5A9'],            brand: 'Aeyde',         catalog: true },
+  { name: 'Suede ankle boots',  category: 'Shoes',     colors: ['#E8D5B5'],            brand: 'Aeyde',         catalog: true },
 ];
 
 const ICON = '<svg width="36" height="36" fill="none" viewBox="0 0 36 36"><path d="M18 8C18 8 13 11 13 15L7 18V28H29V18L23 15C23 8 18 8 18 8Z" stroke="rgba(255,255,255,.48)" stroke-width="1.4" stroke-linejoin="round"/></svg>';
@@ -403,7 +403,7 @@ function renderGrid() {
       <div class="item-name">${item.name}</div>
       <div class="item-cat-row">
         <span class="item-cat">${item.category}</span>
-        <div class="item-colors">${item.colors.map(c => `<div class="item-color" style="background:${c};${c==='#1A1A1A'?'border-color:rgba(255,255,255,.35);':''}"></div>`).join('')}</div>
+        <div class="item-colors">${item.colors.map(c => `<div class="item-color" style="background:${c};${c==='#1C1C1C'?'border-color:rgba(255,255,255,.35);':''}"></div>`).join('')}</div>
       </div>
       <div class="item-brand">${item.brand}</div>
       ${item.catalog ? '<span class="catalog-tag">Catalog</span>' : ''}

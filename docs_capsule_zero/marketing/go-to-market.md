@@ -59,7 +59,7 @@ Cladwell, Whering, Indyx, CAPSULE (ApS), Stylebook, Acloset — all with signifi
 | Gap | Analysis |
 |-----|---------|
 | **Premium editorial aesthetics** | No wardrobe app delivers a visual experience comparable to Zara.com, COS, or Aesop. Most interfaces feel utilitarian or generic |
-| **Methodology-driven capsule building** | Cladwell offers pre-built templates but lacks real color theory, temperature, or saturation logic. No competitor uses a structured styling methodology like the color circle approach |
+| **Methodology-driven capsule building** | Cladwell offers pre-built templates but lacks real group-harmony rules, achromatic connectors, or explainable color logic. No competitor uses a structured styling methodology like the color circle approach |
 | **Photo-to-editorial transformation** | Background removal exists everywhere, but no app transforms user photos into fashion editorial quality. This is a monetizable premium feature |
 | **Two-sided brand marketplace** | No capsule wardrobe app connects users' gap analysis directly to brand catalogues with analytics for brands. A fundamentally different business model |
 | **Multilingual premium experience** | Most apps are English-only or have poor localization. Capsule Zero starts with EN + RU for MVP v1 and defers ES-AR to MVP v2, preserving a path to premium consumers in NA, LATAM, and CIS markets |
@@ -79,7 +79,7 @@ Cladwell, Whering, Indyx, CAPSULE (ApS), Stylebook, Acloset — all with signifi
 | Dimension | Capsule Zero | Cladwell | Whering | Indyx |
 |-----------|-------------|----------|---------|-------|
 | **Design quality** | Premium editorial (Zara/COS level) | Functional, dated | Good, modern | Clean, minimal |
-| **Capsule methodology** | Color science (temperature, saturation, achromatic principle) | Pre-built templates | None | None |
+| **Capsule methodology** | Group harmony + achromatic connectors + warm/cool metadata | Pre-built templates | None | None |
 | **Photo enhancement** | Editorial transformation (coin-based) | Basic bg removal | Auto bg removal | Auto bg removal |
 | **B2B brand platform** | Full analytics dashboard for brands | None | Marketplace (curated) | Resale marketplace |
 | **Gap analysis** | Automated + shopping list + brand bridge | Shopping suggestions (generic) | None | Stylist suggestions |

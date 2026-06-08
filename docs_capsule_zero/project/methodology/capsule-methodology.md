@@ -7,7 +7,7 @@
 A capsule wardrobe is a curated collection of universal items that combine into the maximum number of complete, aesthetically harmonious outfits. The goal is not minimalism for minimalism's sake, but optimization: fewer items, more looks, zero "nothing to wear" mornings.
 
 - **Basic cuts only.** Every item has a simple, non-designer cut. This guarantees universal combinability.
-- **Color unity.** All items belong to one tonal group (Brights, Pastels, Desaturated, or Darks). Achromatics (Onyx, Stone, Chalk) are universal connectors compatible with everything.
+- **Color unity.** All items belong to one compatible tonal group set: Brights, Pastels, Desaturated, or Darks, with Desaturated and Darks allowed to cross-pair. Achromatics (Black, Gray, White) are universal connectors compatible with everything.
 - **One universal capsule in v0.1.** All seasons, all contexts. Seasonal capsules in v0.2+.
 - **Quantity matters.** You can have multiple items in one category (e.g., 3 T-shirts of different colors).
 - **Start from the real wardrobe.** The capsule is built from what the user already owns. The platform directs, not dictates.
@@ -22,7 +22,7 @@ A capsule wardrobe is a curated collection of universal items that combine into 
 
 | Group | Count | Description |
 |---|---|---|
-| **Achromatics** | 3 | Black `#1C1C1C`, Gray `#8C8C8C`, White `#F0F0F0` |
+| **Achromatics** | 3 | Black `#1C1C1C`, Gray `#8C8C8C`, White `#FFFFFF` |
 | **Brights** | 12 | 12 base hues at full saturation (Scarlet → Fuchsia) |
 | **Pastels** | 12 | Brights + white → high lightness, soft (Blush → Orchid) |
 | **Desaturated** | 12 | Brights + grey → reduced saturation (Brick → Antique Rose) |
@@ -104,8 +104,8 @@ Every item must have auto-generated tags (AI-generated on addition, user-editabl
 | Capsules per user | 1 free; additional via coins | Each extra capsule costs 1 coin |
 | Categories in capsule | 8 min, no max | Soft size label: Basic / Large / Very Large |
 | Achromatic colors in palette | Optional | Shown first in Journey Step 3 |
-| Additional chromatic colors | No hard cap | Constrained by compatibility rules |
-| Total colors in palette | No hard cap | Constrained by compatibility rules |
+| Additional chromatic colors | Max 12 | Constrained by compatibility rules |
+| Total colors in palette | Max 15 | 12 chromatic + 3 achromatic |
 | Items per category | Min 0, default 1, no cap (stepper) | Each with its own color/photo |
 | Total items in capsule | Min 7 to create; warning at 40; hard limit 50 | At 40–50: suggest creating a new capsule instead |
 

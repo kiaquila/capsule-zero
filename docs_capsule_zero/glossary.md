@@ -32,15 +32,15 @@ A curated collection of universal items that combine into the maximum number of 
 - **ES-AR:** Cápsula
 
 ### Color Dots
-1–3 circles representing the dominant colors of an item, extracted from the photo. Each dot carries HEX value + classification (temperature, saturation, achromaticity). User-editable.
+1–3 circles representing the dominant colors of an item, extracted from the photo. Each dot carries HEX value + classification (group, warm/cool metadata, achromaticity). User-editable.
 - **RU:** Цветовые точки
 
 ### Color Temperature
-Classification of color undertone: Warm (yellow/orange), Cool (blue/pink), or Neutral. Colors can coexist in a capsule when they match either by temperature or by saturation.
+Classification of color undertone: Warm (yellow/orange), Cool (blue/pink), or Neutral. Temperature is display/explanation metadata; compatibility is governed by color group.
 - **RU:** Цветовая температура
 
 ### Compatibility Rules
-The rules governing which colors can coexist in a palette: achromatics are always compatible with everything; chromatic colors are compatible when they match by temperature or saturation. → Full rules: `project/methodology/capsule-methodology.md`
+The rules governing which colors can coexist in a palette: achromatics are always compatible with everything; chromatic colors are compatible when they share a group or form the Desaturated↔Dark cross-pair. → Full rules: `project/methodology/capsule-methodology.md`
 
 ## E
 
@@ -88,7 +88,7 @@ After the user confirms their palette in Journey Step 3, it becomes immutable. C
 ## S
 
 ### Saturation
-The intensity axis of color: Muted (dusty/powdery), Bright (vivid/pure), Deep (dark saturated). Colors in a capsule can combine when they share saturation, even if temperature differs.
+The intensity/lightness family of a color: Bright, Pastel, Desaturated, or Dark. Colors in a capsule can combine when they share the same group, with Desaturated and Dark allowed to cross-pair.
 - **RU:** Насыщенность
 
 ### Screenshot Test
@@ -105,7 +105,7 @@ The prioritized list of recommended purchases based on gap analysis. Four column
 ## T
 
 ### Capsule Zero Color Methodology
-Capsule Zero's proprietary color circle methodology that forms the basis of capsule building logic: temperature, saturation, achromatic principle.
+Capsule Zero's proprietary color circle methodology that forms the basis of capsule building logic: group harmony, achromatic connectors, and warm/cool display metadata.
 
 ## U
 

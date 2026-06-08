@@ -3,7 +3,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 
 import { getCategoriesByGender } from "@/lib/categories";
-import type { Capsule } from "@/types";
+import type { Capsule, ColorPoint } from "@/types";
 import type {
   BillingPort,
   CapsuleDraft,
@@ -45,6 +45,8 @@ import {
 
 const ACCEPTED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+const MAX_PALETTE_COLORS = 15;
+const MAX_CHROMATIC_COLORS = 12;
 const DEFAULT_NOW = new Date("2026-06-01T15:00:00.000Z");
 
 interface MockProviderOptions {
@@ -605,29 +607,56 @@ function upsertProfileFromSession(
   });
 }
 
+function arePaletteColorsCompatible(base: ColorPoint, target: ColorPoint): boolean {
+  if (target.isAchromatic) {
+    return true;
+  }
+  if (base.group === target.group) {
+    return true;
+  }
+  return (
+    (base.group === "desaturated" && target.group === "dark") ||
+    (base.group === "dark" && target.group === "desaturated")
+  );
+}
+
 function buildMethodologyPort(): MethodologyPort {
   return {
     async validatePalette(colorPoints) {
       const chromatic = colorPoints.filter((color) => !color.isAchromatic);
-      if (chromatic.length > 7) {
+      if (colorPoints.length > MAX_PALETTE_COLORS) {
         return {
           valid: false,
-          blockedColorIds: chromatic.slice(7).map((color) => color.hex),
+          blockedColorIds: colorPoints
+            .slice(MAX_PALETTE_COLORS)
+            .map((color) => color.hex),
           explanation:
-            "A capsule palette can include up to 7 chromatic colors.",
+            "A capsule palette can include up to 15 colors total.",
+        };
+      }
+      if (chromatic.length > MAX_CHROMATIC_COLORS) {
+        return {
+          valid: false,
+          blockedColorIds: chromatic
+            .slice(MAX_CHROMATIC_COLORS)
+            .map((color) => color.hex),
+          explanation:
+            "A capsule palette can include up to 12 chromatic colors.",
         };
       }
 
-      const temperatures = new Set(chromatic.map((color) => color.temperature));
-      const shades = new Set(chromatic.map((color) => color.shade));
-      const valid = temperatures.size <= 1 || shades.size <= 1;
+      const base = chromatic[0] ?? null;
+      const blocked = base
+        ? chromatic.filter((color) => !arePaletteColorsCompatible(base, color))
+        : [];
+      const valid = blocked.length === 0;
 
       return {
         valid,
-        blockedColorIds: valid ? [] : chromatic.map((color) => color.hex),
+        blockedColorIds: blocked.map((color) => color.hex),
         explanation: valid
-          ? "Colors are compatible by temperature or saturation."
-          : "Mock validation blocks palettes that mix temperature and saturation.",
+          ? "Colors are compatible by group harmony."
+          : "Palette colors must share a group or use the Desaturated/Dark cross-pair.",
       };
     },
 

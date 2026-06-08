@@ -1280,47 +1280,47 @@
    MOCK DATA (same 24 items as my-items)
 ══════════════════════════════ */
 const MY_ITEMS = [
-  { name: 'White T-shirt',         category: 'Top',        colors: ['#F5F5F0'],            layer: 'top',       brand: 'COS',           materials: ['Cotton'],              cost: 45 },
-  { name: 'Black T-shirt',         category: 'Top',        colors: ['#1A1A1A'],            layer: 'top',       brand: 'Uniqlo',        materials: ['Cotton'],              cost: 25 },
-  { name: 'Ivory silk blouse',     category: 'Top',        colors: ['#F5F5F0','#E8E0D0'],  layer: 'top',       brand: 'Massimo Dutti', materials: ['Silk'],                cost: 120 },
+  { name: 'White T-shirt',         category: 'Top',        colors: ['#FFFFFF'],            layer: 'top',       brand: 'COS',           materials: ['Cotton'],              cost: 45 },
+  { name: 'Black T-shirt',         category: 'Top',        colors: ['#1C1C1C'],            layer: 'top',       brand: 'Uniqlo',        materials: ['Cotton'],              cost: 25 },
+  { name: 'Ivory silk blouse',     category: 'Top',        colors: ['#FFFFFF','#F5EADC'],  layer: 'top',       brand: 'Massimo Dutti', materials: ['Silk'],                cost: 120 },
   { name: 'Grey cashmere sweater', category: 'Top',        colors: ['#8C8C8C'],            layer: 'top',       brand: 'COS',           materials: ['Cashmere','Wool'],     cost: 180 },
-  { name: 'Navy striped shirt',    category: 'Top',        colors: ['#1B2A4A','#F5F5F0'],  layer: 'top',       brand: 'Ralph Lauren',  materials: ['Cotton'],              cost: 95 },
+  { name: 'Navy striped shirt',    category: 'Top',        colors: ['#182878','#FFFFFF'],  layer: 'top',       brand: 'Ralph Lauren',  materials: ['Cotton'],              cost: 95 },
   { name: 'Cream knit polo',       category: 'Top',        colors: ['#F0EBE0'],            layer: 'top',       brand: 'COS',           materials: ['Cotton'],              cost: 65 },
-  { name: 'Black blazer',          category: 'Outerwear',  colors: ['#1A1A1A'],            layer: 'outer',     brand: 'Zara',          materials: ['Wool','Polyester'],    cost: 150 },
-  { name: 'Camel coat',            category: 'Outerwear',  colors: ['#C19A6B'],            layer: 'outer',     brand: 'Max Mara',      materials: ['Wool','Cashmere'],     cost: 680 },
-  { name: 'Navy trench coat',      category: 'Outerwear',  colors: ['#1B2A4A'],            layer: 'outer',     brand: 'Burberry',      materials: ['Cotton','Polyester'],  cost: 520 },
+  { name: 'Black blazer',          category: 'Outerwear',  colors: ['#1C1C1C'],            layer: 'outer',     brand: 'Zara',          materials: ['Wool','Polyester'],    cost: 150 },
+  { name: 'Camel coat',            category: 'Outerwear',  colors: ['#C0A268'],            layer: 'outer',     brand: 'Max Mara',      materials: ['Wool','Cashmere'],     cost: 680 },
+  { name: 'Navy trench coat',      category: 'Outerwear',  colors: ['#182878'],            layer: 'outer',     brand: 'Burberry',      materials: ['Cotton','Polyester'],  cost: 520 },
   { name: 'Grey wool vest',        category: 'Outerwear',  colors: ['#8C8C8C'],            layer: 'outer',     brand: 'Arket',         materials: ['Wool'],               cost: 110 },
-  { name: 'Straight jeans',        category: 'Bottom',     colors: ['#1B2A4A'],            layer: 'bottom',    brand: 'Agolde',        materials: ['Denim','Elastane'],    cost: 180 },
-  { name: 'Black trousers',        category: 'Bottom',     colors: ['#1A1A1A'],            layer: 'bottom',    brand: 'Theory',        materials: ['Wool','Lycra'],        cost: 240 },
-  { name: 'Beige chinos',          category: 'Bottom',     colors: ['#D4C5A9'],            layer: 'bottom',    brand: 'COS',           materials: ['Cotton'],              cost: 89 },
+  { name: 'Straight jeans',        category: 'Bottom',     colors: ['#182878'],            layer: 'bottom',    brand: 'Agolde',        materials: ['Denim','Elastane'],    cost: 180 },
+  { name: 'Black trousers',        category: 'Bottom',     colors: ['#1C1C1C'],            layer: 'bottom',    brand: 'Theory',        materials: ['Wool','Lycra'],        cost: 240 },
+  { name: 'Beige chinos',          category: 'Bottom',     colors: ['#E8D5B5'],            layer: 'bottom',    brand: 'COS',           materials: ['Cotton'],              cost: 89 },
   { name: 'Grey wool skirt',       category: 'Bottom',     colors: ['#8C8C8C'],            layer: 'bottom',    brand: 'Massimo Dutti', materials: ['Wool'],               cost: 130 },
-  { name: 'Ivory wide trousers',   category: 'Bottom',     colors: ['#F5F5F0'],            layer: 'bottom',    brand: 'COS',           materials: ['Linen','Cotton'],      cost: null },
-  { name: 'Black ankle boots',     category: 'Shoes',      colors: ['#1A1A1A'],            layer: 'shoes',     brand: 'Aeyde',         materials: ['Leather'],             cost: 350 },
-  { name: 'White sneakers',        category: 'Shoes',      colors: ['#F5F5F0'],            layer: 'shoes',     brand: 'Veja',          materials: ['Leather','Rubber'],    cost: 140 },
-  { name: 'Beige loafers',         category: 'Shoes',      colors: ['#D4C5A9'],            layer: 'shoes',     brand: 'Massimo Dutti', materials: ['Suede'],               cost: 160 },
-  { name: 'Black leather bag',     category: 'Bag',        colors: ['#1A1A1A'],            layer: 'bag',       brand: 'Polene',        materials: ['Leather'],             cost: 380 },
-  { name: 'Canvas tote',           category: 'Bag',        colors: ['#F5F5F0','#1A1A1A'],  layer: 'bag',       brand: 'Aesther Ekme',  materials: ['Canvas','Leather'],    cost: 210 },
-  { name: 'Camel crossbody',       category: 'Bag',        colors: ['#C19A6B'],            layer: 'bag',       brand: 'A.P.C.',        materials: ['Leather'],             cost: 290 },
-  { name: 'Camel belt',            category: 'Accessory',  colors: ['#C19A6B'],            layer: 'accessory', brand: 'Anderson\'s',   materials: ['Leather'],             cost: 85 },
-  { name: 'Black sunglasses',      category: 'Accessory',  colors: ['#1A1A1A'],            layer: 'accessory', brand: 'Celine',        materials: ['Acetate'],             cost: null },
-  { name: 'Grey cashmere scarf',   category: 'Accessory',  colors: ['#8C8C8C','#D4C5A9'],  layer: 'accessory', brand: 'Johnstons',     materials: ['Cashmere'],            cost: 195 },
+  { name: 'Ivory wide trousers',   category: 'Bottom',     colors: ['#FFFFFF'],            layer: 'bottom',    brand: 'COS',           materials: ['Linen','Cotton'],      cost: null },
+  { name: 'Black ankle boots',     category: 'Shoes',      colors: ['#1C1C1C'],            layer: 'shoes',     brand: 'Aeyde',         materials: ['Leather'],             cost: 350 },
+  { name: 'White sneakers',        category: 'Shoes',      colors: ['#FFFFFF'],            layer: 'shoes',     brand: 'Veja',          materials: ['Leather','Rubber'],    cost: 140 },
+  { name: 'Beige loafers',         category: 'Shoes',      colors: ['#E8D5B5'],            layer: 'shoes',     brand: 'Massimo Dutti', materials: ['Suede'],               cost: 160 },
+  { name: 'Black leather bag',     category: 'Bag',        colors: ['#1C1C1C'],            layer: 'bag',       brand: 'Polene',        materials: ['Leather'],             cost: 380 },
+  { name: 'Canvas tote',           category: 'Bag',        colors: ['#FFFFFF','#1C1C1C'],  layer: 'bag',       brand: 'Aesther Ekme',  materials: ['Canvas','Leather'],    cost: 210 },
+  { name: 'Camel crossbody',       category: 'Bag',        colors: ['#C0A268'],            layer: 'bag',       brand: 'A.P.C.',        materials: ['Leather'],             cost: 290 },
+  { name: 'Camel belt',            category: 'Accessory',  colors: ['#C0A268'],            layer: 'accessory', brand: 'Anderson\'s',   materials: ['Leather'],             cost: 85 },
+  { name: 'Black sunglasses',      category: 'Accessory',  colors: ['#1C1C1C'],            layer: 'accessory', brand: 'Celine',        materials: ['Acetate'],             cost: null },
+  { name: 'Grey cashmere scarf',   category: 'Accessory',  colors: ['#8C8C8C','#E8D5B5'],  layer: 'accessory', brand: 'Johnstons',     materials: ['Cashmere'],            cost: 195 },
 ];
 
 /* Capsules — adjusted so indices 5, 9, 14, 20, 22, 23 are uncapsulated */
 const CAPSULES = [
   {
     id: 'spring-2026', name: { EN: 'Spring 2026', RU: '\u0412\u0435\u0441\u043d\u0430 2026', ES: 'Primavera 2026' },
-    palette: ['#1A1A1A','#F5F5F0','#8C8C8C','#1B2A4A','#D4C5A9','#C19A6B'],
+    palette: ['#1C1C1C','#FFFFFF','#8C8C8C','#182878','#E8D5B5','#C0A268'],
     itemIndices: [0,1,2,3,4,6,7,8,10,11,12,13,15,16,17,18,19,21], active: true
   },
   {
     id: 'travel-light', name: { EN: 'Travel Light', RU: '\u0412 \u0434\u043e\u0440\u043e\u0433\u0443', ES: 'Viaje Ligero' },
-    palette: ['#1A1A1A','#F5F5F0','#D4C5A9','#6B8E7B'],
+    palette: ['#1C1C1C','#FFFFFF','#E8D5B5','#60A878'],
     itemIndices: [0,1,10,12,15,16,18], active: false
   },
   {
     id: 'work-basics', name: { EN: 'Work Basics', RU: '\u0411\u0430\u0437\u043e\u0432\u044b\u0439 \u0440\u0430\u0431\u043e\u0447\u0438\u0439', ES: 'Trabajo B\u00e1sico' },
-    palette: ['#1A1A1A','#F5F5F0','#1B2A4A','#8C8C8C','#C19A6B'],
+    palette: ['#1C1C1C','#FFFFFF','#182878','#8C8C8C','#C0A268'],
     itemIndices: [0,2,3,4,6,8,11,13,15,17,18,21], active: false
   },
 ];

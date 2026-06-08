@@ -893,11 +893,11 @@
           <!-- Color Palette -->
           <div class="gc color-section">
             <div class="section-title">Color Palette</div>
-            <div class="color-hint">Choose any number of colors. Incompatible ones are blocked automatically.</div>
+            <div class="color-hint">Choose up to 15 colors. Incompatible ones are blocked automatically.</div>
             <div class="color-grid" id="paletteColors">
               <!-- rendered by JS -->
             </div>
-            <div class="compatibility-note" id="compatibilityNote">Colors combine when they match either by temperature or by saturation. Achromats combine with everything.</div>
+            <div class="compatibility-note" id="compatibilityNote">Colors combine by group: same group, Desaturated with Dark, and achromats with everything. Warm/Cool is shown only for orientation.</div>
           </div>
 
         </div>
@@ -987,96 +987,71 @@ const CATEGORIES = [
   { name: 'Jewelry Set',      group: 'Accessories',  for: ['women','mixed'] },
 ];
 
+const MAX_TOTAL_COLORS = 15;
+const MAX_CHROMATIC_COLORS = 12;
+
 const ACHROMATIC_COLORS = [
-  { name: 'White', hex: '#F5F5F0', temp: 'neutral', shade: 'neutral', hue: 'achromatic', light: true },
-  { name: 'Grey',  hex: '#8C8C8C', temp: 'neutral', shade: 'neutral', hue: 'achromatic' },
-  { name: 'Black', hex: '#1A1A1A', temp: 'neutral', shade: 'neutral', hue: 'achromatic' },
+  { name: 'Black', hex: '#1C1C1C', group: 'achromatic', temp: 'neutral', hue: 'achromatic', isAchromatic: true },
+  { name: 'Gray',  hex: '#8C8C8C', group: 'achromatic', temp: 'neutral', hue: 'achromatic', isAchromatic: true },
+  { name: 'White', hex: '#FFFFFF', group: 'achromatic', temp: 'neutral', hue: 'achromatic', isAchromatic: true, light: true },
 ];
 
 const PALETTE_COLORS = [
-  // ── WARM: Red ──
-  { name: 'Scarlet',      hex: '#E23D28', temp: 'warm', shade: 'bright',   hue: 'red' },
-  { name: 'Coral',        hex: '#E87461', temp: 'warm', shade: 'light',    hue: 'red' },
-  { name: 'Rose Quartz',  hex: '#F5C4C0', temp: 'warm', shade: 'lightest', hue: 'red', light: true },
-  { name: 'Burgundy',     hex: '#722F37', temp: 'warm', shade: 'dark',     hue: 'red' },
-  { name: 'Oxblood',      hex: '#4A1520', temp: 'warm', shade: 'darkest',  hue: 'red' },
+  // Brights
+  { name: 'Scarlet',     hex: '#E82535', group: 'bright', temp: 'warm', hue: 'red' },
+  { name: 'Vermillion',  hex: '#E84B20', group: 'bright', temp: 'warm', hue: 'red-orange' },
+  { name: 'Tangerine',   hex: '#E87820', group: 'bright', temp: 'warm', hue: 'orange' },
+  { name: 'Amber',       hex: '#E8AA20', group: 'bright', temp: 'warm', hue: 'yellow-orange' },
+  { name: 'Canary',      hex: '#E8D520', group: 'bright', temp: 'warm', hue: 'yellow', light: true },
+  { name: 'Chartreuse',  hex: '#7EC820', group: 'bright', temp: 'warm', hue: 'yellow-green' },
+  { name: 'Emerald',     hex: '#20A84E', group: 'bright', temp: 'cool', hue: 'green' },
+  { name: 'Teal',        hex: '#10A896', group: 'bright', temp: 'cool', hue: 'blue-green' },
+  { name: 'Cobalt',      hex: '#186AE8', group: 'bright', temp: 'cool', hue: 'blue' },
+  { name: 'Indigo',      hex: '#3828E8', group: 'bright', temp: 'cool', hue: 'blue-violet' },
+  { name: 'Violet',      hex: '#8820E8', group: 'bright', temp: 'cool', hue: 'violet' },
+  { name: 'Fuchsia',     hex: '#D020AA', group: 'bright', temp: 'cool', hue: 'red-violet' },
 
-  // ── WARM: Red-Orange ──
-  { name: 'Vermillion',   hex: '#E8441A', temp: 'warm', shade: 'bright',   hue: 'red-orange' },
-  { name: 'Terracotta',   hex: '#CC6644', temp: 'warm', shade: 'light',    hue: 'red-orange' },
-  { name: 'Peach',        hex: '#F7C8A8', temp: 'warm', shade: 'lightest', hue: 'red-orange', light: true },
-  { name: 'Rust',         hex: '#9C3A1E', temp: 'warm', shade: 'dark',     hue: 'red-orange' },
-  { name: 'Mahogany',     hex: '#5C1A08', temp: 'warm', shade: 'darkest',  hue: 'red-orange' },
+  // Pastels
+  { name: 'Blush',       hex: '#F5B5BB', group: 'pastel', temp: 'warm', hue: 'red', light: true },
+  { name: 'Nectarine',   hex: '#F5CDB0', group: 'pastel', temp: 'warm', hue: 'red-orange', light: true },
+  { name: 'Beige',       hex: '#E8D5B5', group: 'pastel', temp: 'warm', hue: 'orange', light: true },
+  { name: 'Off-White',   hex: '#F5EADC', group: 'pastel', temp: 'warm', hue: 'yellow-orange', light: true },
+  { name: 'Primrose',    hex: '#F7EDA5', group: 'pastel', temp: 'warm', hue: 'yellow', light: true },
+  { name: 'Pistachio',   hex: '#D8EEB0', group: 'pastel', temp: 'warm', hue: 'yellow-green', light: true },
+  { name: 'Mint',        hex: '#B0EEC5', group: 'pastel', temp: 'cool', hue: 'green', light: true },
+  { name: 'Aqua',        hex: '#B0EEDE', group: 'pastel', temp: 'cool', hue: 'blue-green', light: true },
+  { name: 'Sky',         hex: '#B0CDEE', group: 'pastel', temp: 'cool', hue: 'blue', light: true },
+  { name: 'Periwinkle',  hex: '#C0B8EE', group: 'pastel', temp: 'cool', hue: 'blue-violet', light: true },
+  { name: 'Lavender',    hex: '#DCB8EE', group: 'pastel', temp: 'cool', hue: 'violet', light: true },
+  { name: 'Orchid',      hex: '#EEB8E5', group: 'pastel', temp: 'cool', hue: 'red-violet', light: true },
 
-  // ── WARM: Orange ──
-  { name: 'Tangerine',    hex: '#F0761A', temp: 'warm', shade: 'bright',   hue: 'orange' },
-  { name: 'Apricot',      hex: '#F4A56A', temp: 'warm', shade: 'light',    hue: 'orange' },
-  { name: 'Cream Orange', hex: '#FAD9BA', temp: 'warm', shade: 'lightest', hue: 'orange', light: true },
-  { name: 'Burnt Orange', hex: '#A84E10', temp: 'warm', shade: 'dark',     hue: 'orange' },
-  { name: 'Cognac',       hex: '#6A2800', temp: 'warm', shade: 'darkest',  hue: 'orange' },
+  // Desaturated
+  { name: 'Brick',       hex: '#B86068', group: 'desaturated', temp: 'warm', hue: 'red' },
+  { name: 'Coral',       hex: '#C07860', group: 'desaturated', temp: 'warm', hue: 'red-orange' },
+  { name: 'Terracotta',  hex: '#C08A65', group: 'desaturated', temp: 'warm', hue: 'orange' },
+  { name: 'Sand',        hex: '#C0A268', group: 'desaturated', temp: 'warm', hue: 'yellow-orange' },
+  { name: 'Straw',       hex: '#B8B268', group: 'desaturated', temp: 'warm', hue: 'yellow' },
+  { name: 'Sage',        hex: '#88A865', group: 'desaturated', temp: 'warm', hue: 'yellow-green' },
+  { name: 'Fern',        hex: '#60A878', group: 'desaturated', temp: 'cool', hue: 'green' },
+  { name: 'Dusty Teal',  hex: '#50A095', group: 'desaturated', temp: 'cool', hue: 'blue-green' },
+  { name: 'Slate',       hex: '#5082B8', group: 'desaturated', temp: 'cool', hue: 'blue' },
+  { name: 'Dusty Indigo', hex: '#6860B8', group: 'desaturated', temp: 'cool', hue: 'blue-violet' },
+  { name: 'Mauve',       hex: '#9860B8', group: 'desaturated', temp: 'cool', hue: 'violet' },
+  { name: 'Antique Rose', hex: '#B860A2', group: 'desaturated', temp: 'cool', hue: 'red-violet' },
 
-  // ── WARM: Yellow-Orange ──
-  { name: 'Amber',        hex: '#F0A820', temp: 'warm', shade: 'bright',   hue: 'yellow-orange' },
-  { name: 'Marigold',     hex: '#F4C060', temp: 'warm', shade: 'light',    hue: 'yellow-orange', light: true },
-  { name: 'Champagne',    hex: '#F7E2B0', temp: 'warm', shade: 'lightest', hue: 'yellow-orange', light: true },
-  { name: 'Ochre',        hex: '#B07A10', temp: 'warm', shade: 'dark',     hue: 'yellow-orange' },
-  { name: 'Bronze',       hex: '#6E4A00', temp: 'warm', shade: 'darkest',  hue: 'yellow-orange' },
-
-  // ── WARM: Yellow ──
-  { name: 'Canary',       hex: '#F5E020', temp: 'warm', shade: 'bright',   hue: 'yellow', light: true },
-  { name: 'Butter',       hex: '#F7E870', temp: 'warm', shade: 'light',    hue: 'yellow', light: true },
-  { name: 'Ivory',        hex: '#FAF4C0', temp: 'warm', shade: 'lightest', hue: 'yellow', light: true },
-  { name: 'Mustard',      hex: '#B89010', temp: 'warm', shade: 'dark',     hue: 'yellow' },
-  { name: 'Goldenrod',    hex: '#7A5C00', temp: 'warm', shade: 'darkest',  hue: 'yellow' },
-
-  // ── WARM: Yellow-Green ──
-  { name: 'Chartreuse',   hex: '#8CC820', temp: 'warm', shade: 'bright',   hue: 'yellow-green' },
-  { name: 'Pistachio',    hex: '#AACC6C', temp: 'warm', shade: 'light',    hue: 'yellow-green', light: true },
-  { name: 'Honeydew',     hex: '#D8F0B0', temp: 'warm', shade: 'lightest', hue: 'yellow-green', light: true },
-  { name: 'Olive',        hex: '#5C7018', temp: 'warm', shade: 'dark',     hue: 'yellow-green' },
-  { name: 'Moss',         hex: '#384010', temp: 'warm', shade: 'darkest',  hue: 'yellow-green' },
-
-  // ── COOL: Green ──
-  { name: 'Emerald',      hex: '#28A868', temp: 'cool', shade: 'bright',   hue: 'green' },
-  { name: 'Sage',         hex: '#80B894', temp: 'cool', shade: 'light',    hue: 'green', light: true },
-  { name: 'Celadon',      hex: '#C0E8D0', temp: 'cool', shade: 'lightest', hue: 'green', light: true },
-  { name: 'Forest',       hex: '#1C6838', temp: 'cool', shade: 'dark',     hue: 'green' },
-  { name: 'Bottle Green', hex: '#0C3820', temp: 'cool', shade: 'darkest',  hue: 'green' },
-
-  // ── COOL: Blue-Green ──
-  { name: 'Teal',         hex: '#1A9090', temp: 'cool', shade: 'bright',   hue: 'blue-green' },
-  { name: 'Seafoam',      hex: '#70C0B0', temp: 'cool', shade: 'light',    hue: 'blue-green', light: true },
-  { name: 'Mint',         hex: '#B8E8E0', temp: 'cool', shade: 'lightest', hue: 'blue-green', light: true },
-  { name: 'Petrol',       hex: '#1A5C5C', temp: 'cool', shade: 'dark',     hue: 'blue-green' },
-  { name: 'Deep Teal',    hex: '#0A3030', temp: 'cool', shade: 'darkest',  hue: 'blue-green' },
-
-  // ── COOL: Blue ──
-  { name: 'Cobalt',       hex: '#2050C8', temp: 'cool', shade: 'bright',   hue: 'blue' },
-  { name: 'Cornflower',   hex: '#6898E0', temp: 'cool', shade: 'light',    hue: 'blue' },
-  { name: 'Powder Blue',  hex: '#B8D4F0', temp: 'cool', shade: 'lightest', hue: 'blue', light: true },
-  { name: 'Navy',         hex: '#18287A', temp: 'cool', shade: 'dark',     hue: 'blue' },
-  { name: 'Midnight',     hex: '#0C1848', temp: 'cool', shade: 'darkest',  hue: 'blue' },
-
-  // ── COOL: Blue-Violet ──
-  { name: 'Periwinkle',   hex: '#6878D8', temp: 'cool', shade: 'bright',   hue: 'blue-violet' },
-  { name: 'Lavender',     hex: '#A8B4E8', temp: 'cool', shade: 'light',    hue: 'blue-violet', light: true },
-  { name: 'Pale Lilac',   hex: '#D8DCF8', temp: 'cool', shade: 'lightest', hue: 'blue-violet', light: true },
-  { name: 'Indigo',       hex: '#3C3898', temp: 'cool', shade: 'dark',     hue: 'blue-violet' },
-  { name: 'Ultramarine',  hex: '#201858', temp: 'cool', shade: 'darkest',  hue: 'blue-violet' },
-
-  // ── COOL: Violet ──
-  { name: 'Amethyst',     hex: '#8848B8', temp: 'cool', shade: 'bright',   hue: 'violet' },
-  { name: 'Wisteria',     hex: '#B890D0', temp: 'cool', shade: 'light',    hue: 'violet', light: true },
-  { name: 'Orchid Mist',  hex: '#E0C8F0', temp: 'cool', shade: 'lightest', hue: 'violet', light: true },
-  { name: 'Grape',        hex: '#5C2878', temp: 'cool', shade: 'dark',     hue: 'violet' },
-  { name: 'Aubergine',    hex: '#300840', temp: 'cool', shade: 'darkest',  hue: 'violet' },
-
-  // ── COOL: Red-Violet ──
-  { name: 'Fuchsia',      hex: '#C02888', temp: 'cool', shade: 'bright',   hue: 'red-violet' },
-  { name: 'Blush Pink',   hex: '#E080B0', temp: 'cool', shade: 'light',    hue: 'red-violet', light: true },
-  { name: 'Petal',        hex: '#F5C8E0', temp: 'cool', shade: 'lightest', hue: 'red-violet', light: true },
-  { name: 'Plum',         hex: '#7A1850', temp: 'cool', shade: 'dark',     hue: 'red-violet' },
-  { name: 'Bordeaux',     hex: '#440028', temp: 'cool', shade: 'darkest',  hue: 'red-violet' },
+  // Darks
+  { name: 'Burgundy',    hex: '#8C1820', group: 'dark', temp: 'warm', hue: 'red' },
+  { name: 'Rust',        hex: '#8C3015', group: 'dark', temp: 'warm', hue: 'red-orange' },
+  { name: 'Burnt Orange', hex: '#8C5018', group: 'dark', temp: 'warm', hue: 'orange' },
+  { name: 'Ochre',       hex: '#8C6C15', group: 'dark', temp: 'warm', hue: 'yellow-orange' },
+  { name: 'Olive Gold',  hex: '#787815', group: 'dark', temp: 'warm', hue: 'yellow' },
+  { name: 'Olive',       hex: '#4A7A18', group: 'dark', temp: 'warm', hue: 'yellow-green' },
+  { name: 'Forest',      hex: '#187838', group: 'dark', temp: 'cool', hue: 'green' },
+  { name: 'Pine',        hex: '#187870', group: 'dark', temp: 'cool', hue: 'blue-green' },
+  { name: 'Navy',        hex: '#182878', group: 'dark', temp: 'cool', hue: 'blue' },
+  { name: 'Midnight',    hex: '#201878', group: 'dark', temp: 'cool', hue: 'blue-violet' },
+  { name: 'Plum',        hex: '#5A1878', group: 'dark', temp: 'cool', hue: 'violet' },
+  { name: 'Mulberry',    hex: '#781860', group: 'dark', temp: 'cool', hue: 'red-violet' },
 ];
 
 // ══════════════════════════════
@@ -1290,10 +1265,10 @@ function addCustomCategory() {
 
 function initColors() {
   const grid = document.getElementById('paletteColors');
-  const colors = [...ACHROMATIC_COLORS, ...PALETTE_COLORS];
+  const colors = allPaletteColors();
   grid.innerHTML = colors.map(c => {
     const light = c.light ? ' light' : '';
-    return `<div class="color-item${light}" data-color="${c.name}" data-temp="${c.temp}" data-shade="${c.shade}" data-hue="${c.hue}" onclick="toggleColor(this, '${c.name.replace(/'/g, "\\'")}')">
+    return `<div class="color-item${light}" data-color="${c.name}" data-group="${c.group}" data-temp="${c.temp}" data-hue="${c.hue}" onclick="toggleColor(this, '${c.name.replace(/'/g, "\\'")}')">
       <div class="color-circle" style="background:${c.hex};"></div>
       <span class="color-label">${c.name}</span>
     </div>`;
@@ -1302,29 +1277,64 @@ function initColors() {
 }
 
 function toggleColor(el, name) {
+  const color = allPaletteColors().find(c => c.name === name);
+  if (!color) return;
+
   if (selectedColors.has(name)) {
     selectedColors.delete(name);
     el.classList.remove('selected');
   } else {
+    if (!isColorAddable(color)) return;
     selectedColors.add(name);
     el.classList.add('selected');
   }
   updateColorAvailability();
 }
 
-function areColorsCompatible(a, b) {
-  if (a.hue === 'achromatic' || b.hue === 'achromatic') return true;
-  return a.temp === b.temp || a.shade === b.shade;
+function allPaletteColors() {
+  return [...ACHROMATIC_COLORS, ...PALETTE_COLORS];
+}
+
+function selectedPaletteColors() {
+  return allPaletteColors().filter(c => selectedColors.has(c.name));
+}
+
+function getBaseColor(colors) {
+  return colors.find(c => !c.isAchromatic) || null;
+}
+
+function countChromatic(colors) {
+  return colors.filter(c => !c.isAchromatic).length;
+}
+
+function areColorsCompatible(base, target) {
+  if (!base) return true;
+  if (target.isAchromatic) return true;
+  if (base.group === target.group) return true;
+  return (
+    (base.group === 'desaturated' && target.group === 'dark') ||
+    (base.group === 'dark' && target.group === 'desaturated')
+  );
+}
+
+function isColorAddable(color) {
+  if (selectedColors.has(color.name)) return true;
+
+  const selected = selectedPaletteColors();
+  const base = getBaseColor(selected);
+  if (!areColorsCompatible(base, color)) return false;
+  if (selected.length >= MAX_TOTAL_COLORS) return false;
+  if (!color.isAchromatic && countChromatic(selected) >= MAX_CHROMATIC_COLORS) return false;
+  return true;
 }
 
 function updateColorAvailability() {
-  const allColors = [...ACHROMATIC_COLORS, ...PALETTE_COLORS];
-  const selected = allColors.filter(c => selectedColors.has(c.name));
+  const allColors = allPaletteColors();
   document.querySelectorAll('#paletteColors .color-item').forEach(el => {
     const color = allColors.find(c => c.name === el.dataset.color);
-    const compatible = selected.every(sel => areColorsCompatible(sel, color));
+    if (!color) return;
     const isSelected = selectedColors.has(color.name);
-    el.classList.toggle('disabled', !compatible && !isSelected);
+    el.classList.toggle('disabled', !isColorAddable(color) && !isSelected);
   });
 }
 

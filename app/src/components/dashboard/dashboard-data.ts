@@ -182,7 +182,7 @@ function buildRecentItems(
         name: item.name,
         category: categoryName(item.categoryId, locale),
         ...age,
-        colorHex: item.colorPoints[0]?.hex ?? "#F7F6F2",
+        colorHex: item.colorPoints[0]?.hex ?? "#FFFFFF",
       };
     });
 }

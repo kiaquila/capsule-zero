@@ -8,7 +8,7 @@
 The interface is strictly achromatic. Color enters ONLY through the user's garment items.
 
 ### Wardrobe Color System
-3 Achromatics (Black `#1C1C1C`, Gray `#8C8C8C`, White `#F0F0F0`) + 48 chromatic colors in 4 groups (Brights, Pastels, Desaturated, Darks). Achromatics are universal connectors — compatible with all 51 colors. → Full table: `docs_capsule_zero/project/methodology/colors.md`
+3 Achromatics (Black `#1C1C1C`, Gray `#8C8C8C`, White `#FFFFFF`) + 48 chromatic colors in 4 groups (Brights, Pastels, Desaturated, Darks). Achromatics are universal connectors — compatible with all 51 colors. → Full table: `docs_capsule_zero/project/methodology/colors.md`
 
 ### Glass Surface Tokens
 | Element | Background | Blur | Border | Shadow |
@@ -127,13 +127,13 @@ All active MVP v1 UI text exists in EN and RU, with ES-AR retained as MVP v2 ref
 | Rule | Value/Threshold | Behavior |
 |---|---|---|
 | Palette: min achromats | 0 | No blocking |
-| Palette: max colors | No hard cap | Naturally constrained by combinability rules |
+| Palette: max colors | 15 total / 12 chromatic | Naturally constrained by combinability rules |
 | Categories: min selected | 8 | Blocks progress |
 | Categories: max slots | No limit | Soft size label |
 | Items per category | Min 0, default 1, no cap | Stepper |
 | Total items in capsule | Min 7 / max 40 (limit 50) | Min blocks creation; 40–50 shows warning + suggest new capsule |
 | Custom category | Basicity algorithm | Rejection with explanation |
-| Item color vs palette | Temperature-or-saturation compatibility | Block with recommendation |
+| Item color vs palette | Same group or Desaturated↔Dark compatibility | Block with recommendation |
 | Photo upload: format | JPEG, PNG, WebP | Error for others |
 | Photo upload: size | Max 10 MB | Error with compress suggestion |
 | Import links | Best-effort generic product URL parsing | Error for unsupported or non-product pages |
@@ -152,5 +152,5 @@ All active MVP v1 UI text exists in EN and RU, with ES-AR retained as MVP v2 ref
 | Guided Journey | 3-step capsule creation flow: type > categories > colors+items. |
 | Outfit Productivity Ratio | Outfits / items count. |
 | Palette lock | After confirmation, palette cannot be changed (v0.1 constraint). |
-| Saturation | Color brightness: muted (dusty), bright (vivid), deep (dark saturated). |
+| Saturation | Descriptive property behind the Bright / Pastel / Desaturated / Dark groups; not a separate compatibility filter. |
 | Shopping list | Prioritized purchase list based on gap analysis. |

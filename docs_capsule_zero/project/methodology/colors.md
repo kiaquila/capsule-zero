@@ -27,7 +27,7 @@ Compatible with **all 51 colors** in the system.
 |---|---|---|
 | A1 | Black | `#1C1C1C` |
 | A2 | Gray | `#8C8C8C` |
-| A3 | White | `#F0F0F0` |
+| A3 | White | `#FFFFFF` |
 
 ---
 
@@ -59,11 +59,11 @@ Brights + white added (high lightness, medium saturation). Compatible with: **Pa
 | ID | Name | Base Hue | HEX |
 |---|---|---|---|
 | P1 | Blush | Red | `#F5B5BB` |
-| P2 | Peach | Red-Orange | `#F5C5B0` |
-| P3 | Apricot | Orange | `#F5D5B0` |
-| P4 | Beige | Yellow-Orange | `#E8D5B5` |
-| P5 | Off-white | Yellow | `#FAF0E6` |
-| P6 | Pale Lime | Yellow-Green | `#DCEEB0` |
+| P2 | Nectarine | Red-Orange | `#F5CDB0` |
+| P3 | Beige | Orange | `#E8D5B5` |
+| P4 | Off-White | Yellow-Orange | `#F5EADC` |
+| P5 | Primrose | Yellow | `#F7EDA5` |
+| P6 | Pistachio | Yellow-Green | `#D8EEB0` |
 | P7 | Mint | Green | `#B0EEC5` |
 | P8 | Aqua | Blue-Green | `#B0EEDE` |
 | P9 | Sky | Blue | `#B0CDEE` |
@@ -127,8 +127,6 @@ Brights + dark added (low lightness, moderate saturation). Compatible with: **Da
 
 **Key rule:** Cross-group mixing (e.g. Brights + Pastels, Brights + Darks, Pastels + Desaturated) is **not compatible**. The system blocks these combinations and suggests creating a separate capsule.
 
-> ⚠️ **Prototype discrepancy (follow-up).** The current prototype `html-prototypes/guided-journey.html` (function `areColorsCompatible`, ~line 1315) implements a permissive runtime check `same temperature OR same shade` based on per-color `temp` and `shade` attributes. That check allows some combinations this matrix forbids (e.g. warm Brights with warm Pastels). Production implementation MUST follow the matrix above; the prototype's compatibility function will be tightened as part of imp work to match. Until then, treat the matrix as canonical specification and the prototype as an approximation for layout/interaction only.
-
 ---
 
 ## Palette Picker — UI Behavior
@@ -149,9 +147,9 @@ After capsule creation, the palette is **immutable**. Changing colors = creating
 
 ---
 
-## Temperature-Based Compatibility Rules
+## Temperature Metadata
 
-> ⏳ **To be added.** Temperature rules (warm/cool undertone compatibility within and across groups) will be specified separately and layered on top of the group-based rules above.
+Temperature is **not** a compatibility filter. It is metadata used for final palette grouping and user explanation (Warm / Cool / Universal), matching `pallete-maker`.
 
 ---
 

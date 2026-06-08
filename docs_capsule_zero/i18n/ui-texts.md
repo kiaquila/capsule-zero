@@ -30,7 +30,7 @@
 | Element | EN | ES-AR | RU |
 |---------|-----|-------|-----|
 | Title | Choose your colors | Elegí tus colores | Выбери свои любимые цвета |
-| Palette hint | Choose any number of colors. Incompatible ones are blocked automatically. | Elegí cualquier cantidad de colores. Los incompatibles se bloquean automáticamente. | Выбирай любое количество цветов. Несовместимые блокируются автоматически. |
+| Palette hint | Choose up to 15 colors. Incompatible ones are blocked automatically. | Elegí hasta 15 colores. Los incompatibles se bloquean automáticamente. | Выбери до 15 цветов. Несовместимые блокируются автоматически. |
 | Compatibility warning | This color doesn't combine with the current palette. | Este color no combina con la paleta actual. | Этот цвет не сочетается с текущей палитрой. |
 | Items section | Add your garments | Agregá tus prendas | Добавь свои вещи |
 | Upload methods | Upload photos / Paste links / Search catalog | Subir fotos / Pegar links / Buscar en catálogo | Загрузить фото / Вставить ссылки / Поиск в каталоге |

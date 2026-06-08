@@ -82,13 +82,13 @@ When the capsule has categories selected but no items added yet:
 | Rule | Value/Threshold | Behavior |
 |------|----------------|----------|
 | Palette: min achromats | 0 | No blocking |
-| Palette: max colors | No hard cap | Naturally constrained by combinability rules |
+| Palette: max colors | 15 total / 12 chromatic | Naturally constrained by combinability rules |
 | Categories: min selected | 8 | Blocks progress |
 | Categories: max slots | Unlimited | Soft size label, no blocking |
 | Quantity per category | Min 0, default 1, no hard cap | Stepper |
 | Total items in capsule | Min 7 to create; warning at 40; hard limit 50 | Min blocks creation; 40–50 shows warning + suggest new capsule. → `capsule-methodology.md` Section 7 |
 | Custom category | Basicity algorithm | Rejection with explanation |
-| Item color vs palette | Temperature-or-saturation compatibility check | Block with recommendation |
+| Item color vs palette | Same group or Desaturated↔Dark compatibility check | Block with recommendation |
 | Photo upload: format | JPEG, PNG, WebP | Error for other formats |
 | Photo upload: size | Max 10 MB | Error with suggestion to compress |
 | Link import: sources | Best-effort generic product URL parsing | Error for unsupported or non-product pages |
