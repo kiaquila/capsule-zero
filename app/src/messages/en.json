@@ -111,5 +111,107 @@
       "for_repair": "For Repair",
       "uncapsulated": "Uncapsulated"
     }
+  },
+  "journey": {
+    "sessionLabel": "Signed in as",
+    "stepCount": "Step {step} of 3",
+    "back": "Back",
+    "continue": "Continue",
+    "createCapsule": "Create Capsule",
+    "creating": "Creating",
+    "created": "Capsule preview prepared. Capsule Result is the next slice.",
+    "createHint": "This Stage 1 handoff stays local and mock-first.",
+    "createSummary": "{categories} categories · {items} items",
+    "steps": {
+      "1": {
+        "title": "Choose <strong>Wardrobe Type</strong>"
+      },
+      "2": {
+        "title": "Select <strong>Categories</strong>"
+      },
+      "3": {
+        "title": "Add Items & <strong>Colors</strong>"
+      }
+    },
+    "progress": {
+      "1": "Type",
+      "2": "Categories",
+      "3": "Items & Colors"
+    },
+    "types": {
+      "women": {
+        "title": "Women's",
+        "description": "Dresses, skirts, blouses, heels, and feminine essentials"
+      },
+      "men": {
+        "title": "Men's",
+        "description": "Suits, chinos, polos, loafers, and classic wardrobe basics"
+      },
+      "mixed": {
+        "title": "Mixed",
+        "description": "All categories combined for a universal wardrobe approach"
+      }
+    },
+    "categories": {
+      "itemsSelected": "items selected",
+      "selected": "{count} categories selected",
+      "minWarning": "Select at least 8 categories ({count}/8)",
+      "customPlaceholder": "Add your own category...",
+      "addCustom": "+ Add",
+      "customSection": "Custom",
+      "customEmpty": "Name a basic wardrobe category first.",
+      "customDuplicate": "This category is already in your list.",
+      "customRejected": "This doesn't look like a basic item. Try cardigan, belt, or loafers.",
+      "decrease": "Decrease {category}",
+      "increase": "Increase {category}",
+      "size": {
+        "empty": "---",
+        "basic": "Basic",
+        "standard": "Standard",
+        "large": "Large",
+        "extra": "Extra Large"
+      }
+    },
+    "items": {
+      "title": "Add Items to Your Capsule",
+      "tabs": {
+        "upload": "Upload Photos",
+        "links": "Paste Links",
+        "search": "Search Catalog"
+      },
+      "uploadTitle": "Drag photos here or browse",
+      "uploadHint": "JPEG, PNG, or WebP up to 10 MB each",
+      "backgroundRemoval": "Request mock background removal",
+      "uploadUnsupported": "Use JPEG, PNG, or WebP for this mock upload.",
+      "uploadTooLarge": "This file is over 10 MB. Compress it and try again.",
+      "photoCategory": "Photo upload",
+      "linkPlaceholder": "Paste one or more product URLs...",
+      "linkRequired": "Paste at least one product URL.",
+      "linkInvalid": "Use a full http or https product URL.",
+      "linkUnparseable": "This mock parser could not recognize the URL.",
+      "linkDuplicate": "This URL already produced an item.",
+      "linkHint": "Supported in mock mode: Zara, COS, ARKET, Massimo Dutti, Uniqlo, Mango",
+      "addLink": "Add",
+      "parsedName": "Parsed item from {host}",
+      "marketplaceCategory": "Marketplace import",
+      "searchPlaceholder": "Search by name, brand, or category...",
+      "added": "Added Items ({count})",
+      "remove": "Remove {item}",
+      "incompatible": "{color} does not match the selected palette. Add it to wardrobe later or create a separate capsule.",
+      "sources": {
+        "photo": "Photo",
+        "marketplace": "Link",
+        "catalog": "Catalog"
+      }
+    },
+    "palette": {
+      "title": "Color Palette",
+      "hint": "Choose up to 15 compatible colors.",
+      "selected": "Selected palette",
+      "empty": "No colors selected yet",
+      "incompatible": "This color doesn't match your palette tone. Add it to a separate capsule.",
+      "maxTotal": "A capsule palette can include up to 15 colors total.",
+      "maxChromatic": "A capsule palette can include up to 12 chromatic colors."
+    }
   }
 }
