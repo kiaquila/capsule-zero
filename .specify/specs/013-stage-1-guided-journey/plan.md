@@ -42,6 +42,7 @@ Add the first mock-first Guided Journey route after dashboard by building a loca
 | SC-009 | `git diff --check` passed on 2026-06-08 after the final patch. |
 | SC-010 | `npm run check:feature-memory -- --worktree` passed through `npm run preflight` on 2026-06-08. |
 | FR-013 | `app/src/components/guided-journey/GuidedJourneyShell.tsx` keeps item creation in client-local state and mock creation handoff redirects to `/capsule-result`; no provider writes were added. |
+| Codex review P2 follow-up | PR #32 Codex review findings for non-Latin custom category IDs and same-host marketplace links were addressed in `GuidedJourneyShell.tsx`; `npm run preflight` passed after the patch. |
 
 Negative scenario evidence:
 

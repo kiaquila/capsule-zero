@@ -55,6 +55,8 @@
 - Use the canonical group compatibility matrix from `docs_capsule_zero/project/methodology/colors.md`; temperature stays explanatory metadata only.
 - Keep empty category-only capsule creation available because the existing feature/spec calls that a valid "plan" state.
 - Mark incompatible palette colors with `aria-disabled=true`; keep the default palette copy concise because compatibility is already enforced by the algorithm.
+- Preserve non-Latin custom category identifiers with Unicode-aware slugs so RU users can add multiple custom categories.
+- Treat duplicate marketplace links by URL-derived item id rather than host-derived display name, allowing multiple products from one store.
 
 ### Known Issues
 

@@ -83,8 +83,9 @@ As a user, I want unavailable colors to be blocked with a clear explanation so I
 - A user switches between EN and RU on the journey route.
 - A user selects categories, goes back to Step 1, and changes wardrobe type.
 - A custom category is too decorative or non-basic.
+- RU users add multiple valid Cyrillic custom categories in one journey.
 - A user uploads an unsupported file type or file over the local mock limit.
-- A marketplace URL is malformed, duplicated, or intentionally unparseable.
+- A marketplace URL is malformed, duplicated, intentionally unparseable, or shares a host with another distinct URL.
 - A catalog item color conflicts with the currently selected palette.
 - The journey is viewed at 375px, tablet, and desktop widths.
 
@@ -94,6 +95,7 @@ As a user, I want unavailable colors to be blocked with a clear explanation so I
 2. **Given** ES-AR is deferred to MVP v2, **When** journey language controls render, **Then** only EN and RU are available.
 3. **Given** a user selects an incompatible palette color or item color, **When** the action is attempted, **Then** the system blocks it with a methodology explanation instead of silently accepting it.
 4. **Given** Stage 1 is mock-first, **When** the journey adds items or creates the capsule preview, **Then** it does not call real Supabase, storage, Photoroom, marketplace, semantic search, or Lava.top providers.
+5. **Given** active EN/RU support, **When** a user adds valid Cyrillic custom categories or multiple distinct marketplace URLs from one host, **Then** the journey preserves each distinct local entry instead of collapsing it into a false duplicate.
 
 ## Requirements
 

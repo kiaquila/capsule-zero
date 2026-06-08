@@ -165,7 +165,7 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
       return;
     }
 
-    const id = `custom-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+    const id = buildCustomCategoryId(label);
 
     if (categoryState[id]) {
       setCustomCategoryError(t("categories.customDuplicate"));
@@ -233,7 +233,11 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
       return;
     }
 
-    const existingNames = new Set(addedItems.map((item) => item.name));
+    const existingMarketplaceIds = new Set(
+      addedItems
+        .filter((item) => item.source === "marketplace")
+        .map((item) => item.id),
+    );
 
     for (const url of urls) {
       if (!/^https?:\/\//i.test(url)) {
@@ -255,15 +259,16 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
         return;
       }
 
+      const id = `marketplace-${url}`;
       const name = t("items.parsedName", { host });
 
-      if (existingNames.has(name)) {
+      if (existingMarketplaceIds.has(id)) {
         setLinkError(t("items.linkDuplicate"));
         return;
       }
 
       addItem({
-        id: `marketplace-${url}`,
+        id,
         name,
         categoryLabel: t("items.marketplaceCategory"),
         colorPoints: [snapshot.paletteColors.find((color) => color.id === "K9")].filter(
@@ -271,7 +276,7 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
         ),
         source: "marketplace",
       });
-      existingNames.add(name);
+      existingMarketplaceIds.add(id);
     }
 
     setLinkInput("");
@@ -837,6 +842,16 @@ function sizeLabel(
 
 function stripFileExtension(fileName: string) {
   return fileName.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ");
+}
+
+function buildCustomCategoryId(label: string) {
+  const slug = label
+    .normalize("NFKC")
+    .toLocaleLowerCase()
+    .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return `custom-${slug || encodeURIComponent(label)}`;
 }
 
 function JourneyIcon({
