@@ -5,7 +5,7 @@
 - [x] T003 Update HTML prototypes to the current 51-color palette and group compatibility.
 - [x] T004 Update Stage 1 mock fixture colors and mock validation behavior.
 - [x] T005 Run local verification.
-- [ ] T006 Commit, push, open PR, trigger `@codex review`, and monitor checks.
+- [x] T006 Commit, push, open PR, trigger `@codex review`, and monitor checks.
 
 ## Process Memory
 
@@ -19,6 +19,7 @@
 - Keep temperature as metadata for Warm/Cool/Universal display only, not as a compatibility filter.
 - Keep human garment labels like "Camel coat" and "Ivory silk blouse" where they describe item copy, while mapping their color dots to closest PM catalog colors (`Sand`, `White`, `Off-White`).
 - Add `group` to `ColorPoint` and keep `shade` as a compatibility-safe alias to the PM group family for existing TypeScript surfaces.
+- Use PR #31 checks page as SENAR linked-check evidence because it resolves to the current PR head after the final evidence push.
 
 ### Known Issues
 
