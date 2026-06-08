@@ -95,6 +95,7 @@ As a maintainer, I want dashboard data to come from the existing mock provider b
 - **FR-002**: Dashboard MUST load profile, active capsule, wardrobe items, and shopping preview data through the mock provider boundary.
 - **FR-003**: Dashboard MUST render active capsule hero with palette dots, item count, outfit count, category count, and OPR.
 - **FR-004**: Dashboard MUST render summary stats, shopping list preview, recently added items, quick-access cards, and app navigation.
+- **FR-004a**: Dashboard recent-item labels MUST derive recency from item `updatedAt` values instead of list position.
 - **FR-005**: Dashboard MUST provide localized EN/RU labels through next-intl message files.
 - **FR-006**: Dashboard MUST not expose ES-AR in active routing or language controls.
 - **FR-007**: Dashboard MUST preserve achromatic glass UI styling and approved wallpaper treatment.

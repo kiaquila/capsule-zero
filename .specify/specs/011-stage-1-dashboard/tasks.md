@@ -96,3 +96,5 @@
 - Second AI Review follow-up converted active-capsule Open Capsule / Outfits CTAs into disabled controls while `/capsule-result` is not implemented.
 - `npm run preflight` and `git diff --check` passed after the second AI Review fix.
 - Mobile Browser DOM check confirmed Open Capsule / Outfits render as disabled buttons without `href`, no primary `/capsule-result` or `/guided-journey` CTA links remain, and Shopping List still links to `/en/dashboard#shopping-list`.
+- Third AI Review follow-up changed recent-item labels to derive from each item's `updatedAt` calendar date instead of the item's list position.
+- Browser DOM check on 2026-06-08 confirmed the seeded 2026-06-01 recent items render as `1 week ago` instead of position-based `Today`, `2 days ago`, or `4 days ago`.

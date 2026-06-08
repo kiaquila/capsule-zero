@@ -80,7 +80,7 @@
     "outfitImpact": "+{count} outfits",
     "today": "Today",
     "daysAgo": "{count, plural, one {# day ago} other {# days ago}}",
-    "weekAgo": "1 week ago",
+    "weekAgo": "{count, plural, one {# week ago} other {# weeks ago}}",
     "quickAccess": "Quick access",
     "addItem": "Add Item",
     "closeMore": "Close menu",

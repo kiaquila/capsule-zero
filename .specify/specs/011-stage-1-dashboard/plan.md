@@ -33,6 +33,7 @@ Replace the placeholder post-auth dashboard with a localized mock-first dashboar
 | -------------------- | -------- |
 | SC-001 / FR-001 | Browser or curl check for unauthenticated `/en/dashboard` redirect |
 | SC-002 / FR-002-FR-004 / FR-007-FR-008 | Local Browser login and dashboard smoke check |
+| FR-004a | DOM or code audit confirms recent-item labels are computed from `updatedAt` |
 | SC-003 / FR-005-FR-006 | Local Browser RU dashboard check and `<html lang>` inspection |
 | SC-004 / FR-009 | Local Browser viewport checks for desktop and mobile |
 | SC-005 | `npm run preflight` |

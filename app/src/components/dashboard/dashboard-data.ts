@@ -66,6 +66,7 @@ const SHOPPING_FALLBACKS = [
   { categoryId: "cardigan", impact: 6, priority: "medium" as const },
   { categoryId: "scarf", impact: 3, priority: "low" as const },
 ];
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export async function buildDashboardSnapshot({
   registry,
@@ -168,17 +169,53 @@ function buildRecentItems(
   items: WardrobeEntry[],
   locale: AppLocale,
 ): DashboardSnapshot["recentItems"] {
+  const nowMs = Date.now();
+
   return [...items]
     .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
     .slice(0, 4)
-    .map((item, index) => ({
-      id: item.id,
-      name: item.name,
-      category: categoryName(item.categoryId, locale),
-      age: index === 0 ? "today" : index < 3 ? "days" : "week",
-      ageCount: index === 0 ? 0 : index * 2,
-      colorHex: item.colorPoints[0]?.hex ?? "#F7F6F2",
-    }));
+    .map((item) => {
+      const age = buildRecentAge(item.updatedAt, nowMs);
+
+      return {
+        id: item.id,
+        name: item.name,
+        category: categoryName(item.categoryId, locale),
+        ...age,
+        colorHex: item.colorPoints[0]?.hex ?? "#F7F6F2",
+      };
+    });
+}
+
+function buildRecentAge(
+  updatedAt: string,
+  nowMs: number,
+): Pick<DashboardSnapshot["recentItems"][number], "age" | "ageCount"> {
+  const updatedMs = Date.parse(updatedAt);
+
+  if (Number.isNaN(updatedMs)) {
+    return { age: "week", ageCount: 1 };
+  }
+
+  const diffDays = Math.max(
+    0,
+    Math.floor((utcDayStart(nowMs) - utcDayStart(updatedMs)) / MS_PER_DAY),
+  );
+
+  if (diffDays === 0) {
+    return { age: "today", ageCount: 0 };
+  }
+
+  if (diffDays < 7) {
+    return { age: "days", ageCount: diffDays };
+  }
+
+  return { age: "week", ageCount: Math.max(1, Math.floor(diffDays / 7)) };
+}
+
+function utcDayStart(value: number): number {
+  const date = new Date(value);
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 }
 
 function categoryName(categoryId: string, locale: AppLocale): string {

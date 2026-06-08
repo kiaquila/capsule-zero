@@ -80,7 +80,7 @@
     "outfitImpact": "+{count} комплектов",
     "today": "Сегодня",
     "daysAgo": "{count, plural, one {# день назад} few {# дня назад} many {# дней назад} other {# дня назад}}",
-    "weekAgo": "1 неделю назад",
+    "weekAgo": "{count, plural, one {# неделю назад} few {# недели назад} many {# недель назад} other {# недели назад}}",
     "quickAccess": "Быстрый доступ",
     "addItem": "Добавить вещь",
     "closeMore": "Закрыть меню",

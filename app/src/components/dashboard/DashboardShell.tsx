@@ -511,7 +511,7 @@ function ageLabel(
   }
 
   if (item.age === "week") {
-    return t("weekAgo");
+    return t("weekAgo", { count: item.ageCount });
   }
 
   return t("daysAgo", { count: item.ageCount });
