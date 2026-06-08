@@ -25,6 +25,7 @@ Align Capsule Zero color documentation, prototypes, and Stage 1 mock methodology
 2. **Given** the documented 51-color palette, **When** compared with `pallete-maker`, **Then** the names and HEX values match the current palette, including true white `#FFFFFF` and the aligned pastel sequence.
 3. **Given** the Guided Journey prototype, **When** a user selects colors, **Then** incompatible colors are blocked by the group-based rule and the 15 total / 12 chromatic caps are enforced.
 4. **Given** Stage 1 mock palette validation, **When** a palette mixes incompatible groups, **Then** it is blocked with an explanation; when it mixes `desaturated ↔ dark`, it remains valid.
+5. **Given** the documented `/api/palette/validate` contract, **When** a client submits a valid PM-sized palette, **Then** the contract and generated clients allow up to 15 total color IDs.
 
 ## Negative Scenarios
 
@@ -37,4 +38,5 @@ Align Capsule Zero color documentation, prototypes, and Stage 1 mock methodology
 - **FR-002**: Compatibility docs MUST remove temperature/saturation matching as a hard compatibility rule.
 - **FR-003**: Prototypes MUST not show or execute the old 63-color temperature/shade picker model.
 - **FR-004**: Mock methodology validation MUST enforce the same group-based compatibility and caps as `pallete-maker`.
-- **FR-005**: PR evidence MUST include local verification and GitHub check results for the current PR head.
+- **FR-005**: OpenAPI and generated clients MUST expose the same 15-color validation request cap as the PM-aligned picker and mock provider.
+- **FR-006**: PR evidence MUST include local verification and GitHub check results for the current PR head.

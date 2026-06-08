@@ -11,7 +11,8 @@
 
 ### Dead Ends
 
-- No dead ends. The only sequencing wrinkle is that the PR checks URL cannot be recorded until after the first PR creation creates a PR number.
+- AI Review correctly found that the API contract still capped palette validation at 8 colors. Fixed by updating `docs_capsule_zero/adr/openapi.yaml` to 15 and regenerating TypeScript/Dart clients.
+- The only sequencing wrinkle is that the PR checks URL cannot be recorded until after the first PR creation creates a PR number.
 
 ### Decisions
 
@@ -20,6 +21,7 @@
 - Keep human garment labels like "Camel coat" and "Ivory silk blouse" where they describe item copy, while mapping their color dots to closest PM catalog colors (`Sand`, `White`, `Off-White`).
 - Add `group` to `ColorPoint` and keep `shade` as a compatibility-safe alias to the PM group family for existing TypeScript surfaces.
 - Use PR #31 checks page as SENAR linked-check evidence because it resolves to the current PR head after the final evidence push.
+- Keep `/api/palette/validate` aligned with the picker cap: 15 total color IDs in OpenAPI and generated clients.
 
 ### Known Issues
 

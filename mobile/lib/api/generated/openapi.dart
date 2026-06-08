@@ -348,7 +348,7 @@ const apiSchemasJson = r'''{
       "colorIds": {
         "type": "array",
         "minItems": 1,
-        "maxItems": 8,
+        "maxItems": 15,
         "items": {
           "type": "string"
         }

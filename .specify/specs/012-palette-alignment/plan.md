@@ -12,7 +12,8 @@ Use `kiaquila/pallete-maker` `main` as the external source of truth for the pale
 | AC-002 documented 51-color palette matches `pallete-maker` | `node --input-type=module` comparison against `/tmp/pallete-maker/src/scripts/harmony.mjs`: `colors.md: 51 colors, 0 mismatches`; `color-system.html: 51 colors, 0 mismatches`; `guided-journey.html: 51 colors, 0 mismatches`. |
 | AC-003 Guided Journey prototype blocks by PM rule and caps | Diff replaces the 63-color picker data and runtime compatibility function in `html-prototypes/guided-journey.html`; `rg` for old palette HEX/copy/rule terms only returns this spec folder. |
 | AC-004 mock validation enforces same rule | `npm run preflight` exited 0, covering feature memory, repo baseline, API contract/client check, lint, typecheck, build, and optional tests. |
-| AC-005 PR head passes required GitHub checks | PR checks page for the current head: https://github.com/kiaquila/capsule-zero/pull/31/checks. Final monitoring command: `gh pr checks 31 --watch --interval 10`. |
+| AC-005 API validation cap matches PM-sized palette | `npm run generate:api` after `docs_capsule_zero/adr/openapi.yaml` update; `rg` confirms `maxItems: 15` / `"maxItems": 15` in YAML, TypeScript generated client, and Dart generated client. |
+| AC-006 PR head passes required GitHub checks | PR checks page for the current head: https://github.com/kiaquila/capsule-zero/pull/31/checks. Final monitoring command: `gh pr checks 31 --watch --interval 10`. |
 
 ## Risks
 
