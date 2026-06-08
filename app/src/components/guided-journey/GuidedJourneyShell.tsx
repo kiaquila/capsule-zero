@@ -84,6 +84,10 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
     .filter((color): color is PaletteColorOption => Boolean(color));
   const selectedChromaticColors = selectedColors.filter((color) => !color.isAchromatic);
   const baseChromaticColor = selectedChromaticColors[0] ?? null;
+  const addedItemColors = useMemo(
+    () => addedItems.flatMap((item) => item.colorPoints),
+    [addedItems],
+  );
   const filteredCatalogItems = useMemo(() => {
     const normalized = searchQuery.trim().toLowerCase();
 
@@ -261,9 +265,18 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
 
       const id = `marketplace-${url}`;
       const name = t("items.parsedName", { host });
+      const colorPoints = [snapshot.paletteColors.find((color) => color.id === "K9")].filter(
+        (color): color is PaletteColorOption => Boolean(color),
+      );
+      const dominantColor = colorPoints[0] ?? null;
 
       if (existingMarketplaceIds.has(id)) {
         setLinkError(t("items.linkDuplicate"));
+        return;
+      }
+
+      if (dominantColor && !isItemColorCompatible(dominantColor)) {
+        setLinkError(t("items.incompatible", { color: dominantColor.name }));
         return;
       }
 
@@ -271,9 +284,7 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
         id,
         name,
         categoryLabel: t("items.marketplaceCategory"),
-        colorPoints: [snapshot.paletteColors.find((color) => color.id === "K9")].filter(
-          (color): color is PaletteColorOption => Boolean(color),
-        ),
+        colorPoints,
         source: "marketplace",
       });
       existingMarketplaceIds.add(id);
@@ -281,6 +292,7 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
 
     setLinkInput("");
     setLinkError(null);
+    setItemNotice(null);
   };
 
   const addCatalogItem = (item: JourneyCatalogItem) => {
@@ -362,11 +374,27 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
       return { available: false, reason: t("palette.incompatible") };
     }
 
+    const conflictingItemColor = addedItemColors.find(
+      (itemColor) => !areColorPairCompatible(itemColor, color),
+    );
+
+    if (conflictingItemColor) {
+      return {
+        available: false,
+        reason: t("palette.itemConflict", { color: conflictingItemColor.name }),
+      };
+    }
+
     return { available: true, reason: "" };
   };
 
   const isItemColorCompatible = (color: PaletteColorOption) =>
     !baseChromaticColor || arePaletteColorGroupsCompatible(baseChromaticColor, color);
+
+  const areColorPairCompatible = (
+    base: PaletteColorOption,
+    target: PaletteColorOption,
+  ) => base.isAchromatic || arePaletteColorGroupsCompatible(base, target);
 
   const categoriesBySection = groupCategoriesBySection(categoryValues);
 

@@ -57,6 +57,7 @@
 - Mark incompatible palette colors with `aria-disabled=true`; keep the default palette copy concise because compatibility is already enforced by the algorithm.
 - Preserve non-Latin custom category identifiers with Unicode-aware slugs so RU users can add multiple custom categories.
 - Treat duplicate marketplace links by URL-derived item id rather than host-derived display name, allowing multiple products from one store.
+- Validate marketplace mock colors before adding link imports and revalidate new palette colors against already added item colors.
 
 ### Known Issues
 

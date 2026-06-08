@@ -43,12 +43,14 @@ Add the first mock-first Guided Journey route after dashboard by building a loca
 | SC-010 | `npm run check:feature-memory -- --worktree` passed through `npm run preflight` on 2026-06-08. |
 | FR-013 | `app/src/components/guided-journey/GuidedJourneyShell.tsx` keeps item creation in client-local state and mock creation handoff redirects to `/capsule-result`; no provider writes were added. |
 | Codex review P2 follow-up | PR #32 Codex review findings for non-Latin custom category IDs and same-host marketplace links were addressed in `GuidedJourneyShell.tsx`; `npm run preflight` passed after the patch. |
+| Codex review P2 compatibility follow-up | PR #32 Codex review findings for marketplace mock-color validation and palette revalidation against added items were addressed in `GuidedJourneyShell.tsx`; `npm run preflight` and in-app Browser smoke checks passed after the patch. |
 
 Negative scenario evidence:
 
 - Unauthenticated route access redirects to localized auth.
 - Language controls expose EN/RU only.
 - Incompatible palette and item colors are blocked with explanation.
+- Added item colors are rechecked when selecting later palette colors.
 - No real Supabase, OAuth, Lava.top, marketplace, semantic search, storage, or image-processing calls are introduced.
 
 ## Project Structure
