@@ -151,10 +151,18 @@ function buildCatalogItem(
     categoryId: item.categoryId,
     categoryLabel: categoryName(item.categoryId, locale),
     brand: item.brand,
-    imageUrl: item.imageUrl,
+    imageUrl: resolvePublicImageUrl(item.imageUrl),
     colorPoints: item.colorPoints.map(toPaletteColorOption),
     explanation,
   };
+}
+
+function resolvePublicImageUrl(imageUrl: string | undefined): string | undefined {
+  if (!imageUrl || imageUrl.startsWith("/fixtures/")) {
+    return undefined;
+  }
+
+  return imageUrl;
 }
 
 function categoryName(categoryId: string, locale: AppLocale): string {

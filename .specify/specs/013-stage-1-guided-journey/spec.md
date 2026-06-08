@@ -88,6 +88,7 @@ As a user, I want unavailable colors to be blocked with a clear explanation so I
 - A marketplace URL is malformed, duplicated, intentionally unparseable, or shares a host with another distinct URL.
 - A catalog item color conflicts with the currently selected palette.
 - A marketplace or catalog item is added before the user chooses a conflicting palette color.
+- A catalog fixture references a preview image that is not available in `app/public`.
 - The journey is viewed at 375px, tablet, and desktop widths.
 
 ## Negative Scenarios
@@ -98,6 +99,7 @@ As a user, I want unavailable colors to be blocked with a clear explanation so I
 4. **Given** Stage 1 is mock-first, **When** the journey adds items or creates the capsule preview, **Then** it does not call real Supabase, storage, Photoroom, marketplace, semantic search, or Lava.top providers.
 5. **Given** active EN/RU support, **When** a user adds valid Cyrillic custom categories or multiple distinct marketplace URLs from one host, **Then** the journey preserves each distinct local entry instead of collapsing it into a false duplicate.
 6. **Given** an added item already has a mock color, **When** the user selects a conflicting palette color later, **Then** the palette action is blocked before the draft can contain an item/color conflict.
+7. **Given** catalog mock data references a non-public fixture image, **When** a catalog item is added, **Then** the added-card preview falls back to the existing icon instead of rendering a broken image.
 
 ## Requirements
 

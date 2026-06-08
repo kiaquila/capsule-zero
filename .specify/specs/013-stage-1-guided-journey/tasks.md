@@ -58,6 +58,7 @@
 - Preserve non-Latin custom category identifiers with Unicode-aware slugs so RU users can add multiple custom categories.
 - Treat duplicate marketplace links by URL-derived item id rather than host-derived display name, allowing multiple products from one store.
 - Validate marketplace mock colors before adding link imports and revalidate new palette colors against already added item colors.
+- Omit unavailable `/fixtures/` catalog image URLs from the guided journey snapshot so catalog-added cards use the existing icon fallback.
 
 ### Known Issues
 
