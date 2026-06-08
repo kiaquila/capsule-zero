@@ -30,7 +30,7 @@
 ### `html-prototypes/index.html` — Landing Page
 
 - **Spec sections:** US-001 (Landing), US-002/US-003 (Auth popup)
-- **Content:** Full-screen B&W editorial hero photo, manifesto headline centered, auth popup toggle (top-right), language switcher (EN/ES/RU), footer (Terms, Privacy, Instagram)
+- **Content:** Full-screen B&W editorial hero photo, manifesto headline centered, auth popup toggle (top-right), language switcher (EN/RU in MVP v1; ES-AR deferred to MVP v2), footer (Terms, Privacy, Instagram)
 - **Key interactions:** "Log In" button toggles auth popup, Sign Up / Log In switcher in popup
 
 ### `html-prototypes/auth.html` — Standalone Authentication

@@ -7,7 +7,7 @@
 **Capsule Zero** is a premium fashion-tech platform — "the Aesop of wardrobe apps". It helps affluent users (25–40 yo) build maximally productive capsule wardrobes using a proprietary color and wardrobe methodology. Core metric: **Outfit Productivity Ratio** (outfits / items).
 
 **Tech stack:** Next.js 14+ App Router, React, TypeScript, Tailwind CSS v4, Flutter mobile app (iOS + Android), Supabase backend
-**Languages:** EN (primary), ES-AR, RU — i18n from Day 1
+**Languages:** EN (primary) and RU are active in MVP v1 — i18n from Day 1. ES-AR is globally deferred to MVP v2.
 **Target:** Buenos Aires-based startup, global premium segment
 
 ## Current Phase & Status
@@ -22,6 +22,8 @@
 | 5. Development Sprint         | Upcoming                                                                                                                                                                           |
 | 6. QA & Soft Launch           | Upcoming                                                                                                                                                                           |
 | 7. Commercial Launch          | Upcoming                                                                                                                                                                           |
+
+**Locale scope decision, 2026-06-07:** Spanish / ES-AR is removed from active MVP v1 scope and moved globally to MVP v2. Keep Spanish source copy as future reference only; do not expose ES-AR in active routing, language switchers, profile language persistence, OpenAPI enums, generated clients, or launch acceptance criteria until the MVP v2 locale scope is reopened.
 
 ## Where to Find Specifications
 
@@ -118,8 +120,8 @@ Photo upload, marketplace link import, semantic search from shared DB. All three
 | `docs_capsule_zero/project/architecture/phase-4-council.md`            | Architecture council decision register and validation notes                                                    |
 | `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` | Stage 1 mock-first entrance gate and provider integration gates                                                |
 | `docs_capsule_zero/adr/`                                               | ADRs for stack, auth, storage, and API contract                                                                |
-| `docs_capsule_zero/glossary.md`                                        | Domain terminology with RU/ES-AR equivalents                                                                   |
-| `docs_capsule_zero/i18n/ui-texts.md`                                   | i18n content (EN, ES-AR, RU) — all 16 screens                                                                  |
+| `docs_capsule_zero/glossary.md`                                        | Domain terminology with active RU equivalents and ES-AR reference entries for MVP v2                            |
+| `docs_capsule_zero/i18n/ui-texts.md`                                   | i18n content (EN and RU active in MVP v1; ES-AR retained as MVP v2 reference) — all 16 screens                  |
 | `docs_capsule_zero/ux/emotion-map.md`                                  | Emotional targets per screen, UX principles                                                                    |
 | `docs_capsule_zero/ux/ux-validation.md`                                | Competitor analysis, UX benchmarks, 6 critical insights                                                        |
 | `docs_capsule_zero/features/f-XXX-name.md`                             | Per-feature requirements, acceptance criteria, edge cases (15 files)                                           |
@@ -283,7 +285,7 @@ Architecture decisions have been made through an Architectura-style council and 
 - **No subscription model** — coins only (Lava.top one-time purchases)
 - **3 upload methods:** photo upload · marketplace link import · semantic search (shared DB)
 - **Background removal < 5 sec** per quality gate
-- **Multilingual from Day 1:** EN, ES-AR, RU — use `next-intl` or `react-i18next`
+- **Multilingual from Day 1:** EN and RU in MVP v1 — use `next-intl` or `react-i18next`; ES-AR is globally deferred to MVP v2
 - **i18n strings:** `docs_capsule_zero/i18n/ui-texts.md`
 - **Mobile-first:** phone UX first on web and Flutter; iPhone 14+ (375px), Android small/standard, iPad/tablet (768px), Desktop 1280px+
 - **Native mobile MVP:** Flutter app for iOS and Android uses the same Supabase backend and documented API contract

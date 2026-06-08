@@ -15,7 +15,7 @@ Capsule Zero needs to move from approved prototypes to Phase 5 implementation. T
 - three upload methods: photo upload, marketplace link import, semantic catalog search
 - optional background removal under the 5 second quality gate
 - shared item database for public marketplace imports
-- EN, ES-AR, and RU from day 1
+- EN and RU from MVP v1 day 1, with ES-AR deferred globally to MVP v2
 - coins-only monetization through Lava.top one-time purchases on web, with mobile balance display in v0.1
 - PR-first delivery with existing `baseline-checks`, `guard`, and `AI Review` gates
 
@@ -47,6 +47,8 @@ Use the following MVP stack:
 Supabase is the canonical backend for v0.1 across web and mobile. Do not introduce a custom NestJS or FastAPI backend unless a measured MVP requirement cannot be met through Supabase, Vercel Functions, or Supabase Edge Functions.
 
 Stage 1 implementation follows ADR-006: external provider calls may be mocked behind the same domain/provider interfaces until the relevant integration gate requires real Supabase, Lava.top, Photoroom, or OAuth evidence.
+
+Locale scope update on 2026-06-07: active MVP v1 locales are EN and RU. ES-AR is moved to MVP v2 and must stay out of active route, database, and API-client enums until the v2 locale scope is accepted.
 
 ## Consequences
 

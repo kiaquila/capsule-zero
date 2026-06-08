@@ -19,4 +19,4 @@
       integration gate opens.
 - [ ] Run real-image Photoroom latency/quality spike when image-processing
       integration gate opens.
-- [ ] Generate full payload clients once route handlers start landing.
+- [x] Generate full payload clients once route handlers start landing.

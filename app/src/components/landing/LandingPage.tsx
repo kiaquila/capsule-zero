@@ -1,0 +1,59 @@
+"use client";
+
+import { useLocale, useTranslations } from "next-intl";
+import { useState } from "react";
+import { AuthPanel } from "@/components/auth/AuthPanel";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { CookieBanner } from "./CookieBanner";
+
+export function LandingPage() {
+  const t = useTranslations("landing");
+  const locale = useLocale();
+  const [authOpen, setAuthOpen] = useState(false);
+
+  return (
+    <div className="cz-page">
+      <div className="wallpaper-bg" />
+      <div className="wallpaper-overlay" />
+
+      <header className="landing-header">
+        <a className="landing-logo" href={`/${locale}`}>
+          Capsule Zero
+        </a>
+        <div className="landing-header-actions">
+          <LanguageSwitcher />
+          <button
+            className="landing-auth-button"
+            onClick={() => setAuthOpen((value) => !value)}
+            type="button"
+          >
+            {t("authCta")}
+          </button>
+        </div>
+      </header>
+
+      <main className="landing-main">
+        <section className="landing-manifesto">
+          <h1>{t("headline")}</h1>
+          <p>{t("subtitle")}</p>
+        </section>
+      </main>
+
+      <footer className="landing-footer">
+        <a href="#terms">{t("terms")}</a>
+        <span aria-hidden="true">·</span>
+        <a href="#privacy">{t("privacy")}</a>
+        <span aria-hidden="true">·</span>
+        <span>{t("copyright")}</span>
+      </footer>
+
+      {authOpen ? (
+        <div className="landing-auth-popover">
+          <AuthPanel onClose={() => setAuthOpen(false)} variant="popup" />
+        </div>
+      ) : null}
+
+      <CookieBanner />
+    </div>
+  );
+}

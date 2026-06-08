@@ -11,7 +11,7 @@ create table public.profiles (
   email text,
   display_name text,
   avatar_asset_id uuid,
-  language text not null default 'en' check (language in ('en', 'es-AR', 'ru')),
+  language text not null default 'en' check (language in ('en', 'ru')),
   country text,
   city text,
   coin_balance integer not null default 0 check (coin_balance >= 0),

@@ -11,7 +11,7 @@
 - **Gender:** Women and men
 - **Income:** Upper-middle to high (can afford luxury, but buy with intention)
 - **Geography:** Global urban — NA, Western Europe, LATAM (Argentina), CIS (Russia)
-- **Languages:** English (primary), Spanish (AR), Russian
+- **Languages:** English (primary) and Russian for MVP v1; Spanish (AR) deferred to MVP v2
 
 ### Psychographic Profile — "The Intentional Curator"
 "New money mindset meets old money taste" — financially capable of luxury purchases but philosophically aligned with minimalism and conscious consumption. They shop brands like COS, Massimo Dutti, Celine, and browse Farfetch — not for logos, but for quality, cut, and longevity.
@@ -62,7 +62,7 @@ Cladwell, Whering, Indyx, CAPSULE (ApS), Stylebook, Acloset — all with signifi
 | **Methodology-driven capsule building** | Cladwell offers pre-built templates but lacks real color theory, temperature, or saturation logic. No competitor uses a structured styling methodology like the color circle approach |
 | **Photo-to-editorial transformation** | Background removal exists everywhere, but no app transforms user photos into fashion editorial quality. This is a monetizable premium feature |
 | **Two-sided brand marketplace** | No capsule wardrobe app connects users' gap analysis directly to brand catalogues with analytics for brands. A fundamentally different business model |
-| **Multilingual premium experience** | Most apps are English-only or have poor localization. None target the EN + ES-AR + RU combination covering premium consumers in NA, LATAM, and CIS markets |
+| **Multilingual premium experience** | Most apps are English-only or have poor localization. Capsule Zero starts with EN + RU for MVP v1 and defers ES-AR to MVP v2, preserving a path to premium consumers in NA, LATAM, and CIS markets |
 
 ## TAM / SAM / SOM
 
@@ -70,7 +70,7 @@ Cladwell, Whering, Indyx, CAPSULE (ApS), Stylebook, Acloset — all with signifi
 |-------|-----------|-------------|-------------|----------|
 | **TAM** | Total addressable: global wardrobe/styling app market + fashion brand digital advertising | $2.6B–$8.4B (styling app market 2023–2030) | $15B+ (fashion digital advertising sub-segment) | $17–$23B |
 | **SAM** | Serviceable: premium capsule wardrobe users in target geographies (NA, EU, LATAM, CIS) + mid-to-premium fashion brands interested in intent-based data | $400M–$600M (premium segment, 15–20% of TAM) | $500M–$1B (fashion analytics, intent data for 1K–10K brands) | $900M–$1.6B |
-| **SOM** | Obtainable in Year 1–2: initial launch markets (EN + ES-AR + RU), organic acquisition + Product Hunt + word-of-mouth | $150K–$500K (1K–5K paying users via coin purchases, avg $10–20/user/yr) | $50K–$200K (10–50 pilot brands at $200–$500/mo) | $200K–$700K |
+| **SOM** | Obtainable in Year 1–2: initial launch markets (EN + RU in MVP v1, ES-AR in MVP v2), organic acquisition + Product Hunt + word-of-mouth | $150K–$500K (1K–5K paying users via coin purchases, avg $10–20/user/yr) | $50K–$200K (10–50 pilot brands at $200–$500/mo) | $200K–$700K |
 
 **Methodology notes:** B2C TAM based on Verified Market Research styling app report ($2.6B in 2023, CAGR 31%). Wardrobe app sub-segment per Intel Market Research: $242M in 2025, CAGR 8.8%. SAM assumes premium segment captures 15–20% of total market. SOM Year 1 targets are conservative, based on Cladwell benchmark (1M+ downloads over full lifecycle, conversion rate 2–5% to paid). B2B estimates based on mid-tier SaaS analytics platforms for fashion brands.
 
@@ -84,7 +84,7 @@ Cladwell, Whering, Indyx, CAPSULE (ApS), Stylebook, Acloset — all with signifi
 | **B2B brand platform** | Full analytics dashboard for brands | None | Marketplace (curated) | Resale marketplace |
 | **Gap analysis** | Automated + shopping list + brand bridge | Shopping suggestions (generic) | None | Stylist suggestions |
 | **Monetization** | Coins (capsules 2+ + photo enhancement) + brand commission in v2.0 | Subscription + stylist | Unclear (free model) | Stylist services + subscription |
-| **Multilingual** | EN + ES-AR + RU from Day 1 | EN only | EN (+ limited) | EN only |
+| **Multilingual** | EN + RU in MVP v1; ES-AR planned for MVP v2 | EN only | EN (+ limited) | EN only |
 
 ## Pricing Hypothesis
 
@@ -123,7 +123,7 @@ Cladwell, Whering, Indyx, CAPSULE (ApS), Stylebook, Acloset — all with signifi
 ## Phase 2 Positioning Summary
 
 - **Positioning:** Premium capsule wardrobe platform with color science methodology, editorial aesthetics, and brand marketplace
-- **Target:** Intentional Curators, 25–40, upper-middle income, values-driven consumption. EN + ES-AR + RU markets
+- **Target:** Intentional Curators, 25–40, upper-middle income, values-driven consumption. EN + RU MVP v1 markets, with ES-AR planned for MVP v2
 - **Differentiation:** Only platform combining methodology-driven capsule building + editorial photo transformation + two-sided brand marketplace
 - **Pricing (v0.1):** Free tier (1 capsule, all features) + coins (additional capsules + photo enhancement). No subscription. Brand commission platform in v2.0
 - **Competitive moat:** Premium brand identity (design quality as barrier to entry) + proprietary styling methodology + B2B data network effects

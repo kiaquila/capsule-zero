@@ -6,16 +6,17 @@
 - React
 - TypeScript
 - Tailwind CSS v4
-- next-intl for EN, ES-AR, and RU
+- next-intl for EN and RU in MVP v1; ES-AR is deferred to MVP v2
 - Zustand for local workflow state
 - TanStack Query for interactive server-state
 - React Hook Form + Zod for forms
 
 Current app baseline:
 
-- Next.js `16.2.4`
+- Next.js `16.2.6`
 - React `19.2.x`
 - Tailwind CSS v4
+- next-intl `4.13.x`
 - Source code under `app/src/`
 
 ## Delivery Rules
@@ -64,6 +65,8 @@ app/src/app/
 
 Use locale-aware routing for app pages. The language switcher appears on landing and profile, and the selected locale is also persisted to `profiles.language`.
 
+Decision: active MVP v1 web locales are `en` and `ru`. `es-AR` remains a future locale for MVP v2 and must not be exposed in routing, UI controls, generated clients, or the profile language enum until that scope is reactivated.
+
 ## State Management
 
 | State type | Owner | Examples |
@@ -86,7 +89,8 @@ Use locale-aware routing for app pages. The language switcher appears on landing
 ## i18n
 
 - Primary locale: `en`
-- Supported locales: `en`, `es-AR`, `ru`
+- Supported MVP v1 locales: `en`, `ru`
+- Deferred MVP v2 locale: `es-AR`
 - Source text: `docs_capsule_zero/i18n/ui-texts.md`
 - Fallback locale: `en`
 - Missing translations fail development review.
@@ -103,13 +107,13 @@ Already present:
 - `framer-motion`
 - `clsx`
 - `tailwind-merge`
+- `next-intl`
 
 Add before dependent feature slices:
 
 - `@supabase/supabase-js`
 - `@supabase/ssr`
 - `@tanstack/react-query`
-- `next-intl`
 - `lava-top-sdk` only if it is adopted after a small integration spike; otherwise use typed server-side HTTP against Lava.top OpenAPI endpoints
 
 ## Payments

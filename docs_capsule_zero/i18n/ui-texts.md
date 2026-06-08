@@ -1,8 +1,9 @@
 # UI Texts — Capsule Zero (i18n)
 
-> Exact UI text strings in all supported languages. Source of truth for i18n implementation.
+> Exact UI text strings in documented product languages. Active implementation scope is governed by the locale decision below.
 > Source: Styling Guide v1.3, Section 7 + Phase 4 audit (2026-03-20).
 > Coverage: all 16 logical screens.
+> Locale scope decision, 2026-06-07: active MVP v1 locales are EN and RU. ES-AR copy is retained here as MVP v2 reference material only and must not be exposed in active routing, profile language persistence, or generated API clients until Spanish is reactivated for MVP v2.
 
 ## Guided Journey — Step 1: Wardrobe Type
 

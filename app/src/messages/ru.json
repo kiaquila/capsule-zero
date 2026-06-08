@@ -1,0 +1,60 @@
+{
+  "language": {
+    "label": "Выбрать язык",
+    "en": "English",
+    "ru": "Русский"
+  },
+  "landing": {
+    "headline": "Когда тихая роскошь встречает осознанность минимализма",
+    "subtitle": "Для тех, кто нашел свой путь к Capsule Zero — платформе управления гардеробом для последователей устойчивой моды и ценителей эстетики",
+    "authCta": "Войти",
+    "terms": "Условия использования",
+    "privacy": "Политика конфиденциальности",
+    "copyright": "© 2025 Capsule Zero",
+    "cookie": "Мы используем куки для улучшения работы сервиса. Продолжая использование, вы принимаете нашу Политику куки.",
+    "cookieAccept": "Принять",
+    "cookieSettings": "Настройки",
+    "cookiePolicy": "Политика куки"
+  },
+  "auth": {
+    "signUpTab": "Зарегистрироваться",
+    "logInTab": "Войти",
+    "email": "Email",
+    "password": "Пароль",
+    "confirmPassword": "Подтвердите пароль *",
+    "name": "Имя (необязательно)",
+    "country": "Страна",
+    "city": "Город",
+    "forgotPassword": "Забыли пароль?",
+    "signInLinkPrefix": "Впервые здесь?",
+    "signInLinkAction": "Создать аккаунт",
+    "logInLinkPrefix": "Уже есть аккаунт?",
+    "logInLinkAction": "Войдите",
+    "requiredNote": "Обязательные поля отмечены *",
+    "createAccountCta": "Создать аккаунт",
+    "termsConsentPrefix": "Продолжая, вы принимаете",
+    "termsConsentMiddle": "и",
+    "invalidEmail": "Введите корректный email",
+    "weakPassword": "Пароль должен содержать минимум 8 символов",
+    "passwordsMismatch": "Пароли не совпадают",
+    "enterPassword": "Введите пароль",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль",
+    "checking": "Проверяем",
+    "creating": "Создаем",
+    "sending": "Отправляем",
+    "recoveryTitle": "Восстановление пароля",
+    "recoveryHint": "Введите email, и мы отправим инструкции.",
+    "recoveryCta": "Отправить email",
+    "recoverySent": "Письмо отправлено. Проверьте почту.",
+    "backToLogin": "Вернуться ко входу",
+    "successRedirect": "Переходим в кабинет...",
+    "close": "Закрыть"
+  },
+  "dashboard": {
+    "title": "Главная",
+    "welcome": "Добро пожаловать!",
+    "sessionLabel": "Вы вошли как",
+    "logout": "Выйти"
+  }
+}

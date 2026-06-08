@@ -59,11 +59,11 @@ Prototype: `html-prototypes/index.html`
 - **Hero Photo:** Full-screen B&W editorial fashion image, centered
 - **Manifesto:** Large thin headline text, centered below photo
 - **Register Button:** Glass button (`rgba(255,255,255,.36)`), top-right
-- **Language Switcher:** Glass dropdown (EN/ES/RU), next to Register
+- **Language Switcher:** Glass dropdown (EN/RU in MVP v1; ES-AR deferred to MVP v2), next to Register
 - **Cookie Banner:** Glass panel at bottom
 
 ## Interactivity
 - Click [Register] → glassmorphic auth popup overlay (see screen-auth.md)
-- Click [EN ▾] → dropdown with EN / ES-AR / RU options
+- Click [EN ▾] → dropdown with EN / RU options
 - Scroll → no scroll on landing (single viewport)
 - Page load < 2 sec on 4G
