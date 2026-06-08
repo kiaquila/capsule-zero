@@ -97,4 +97,5 @@
 - `npm run preflight` and `git diff --check` passed after the second AI Review fix.
 - Mobile Browser DOM check confirmed Open Capsule / Outfits render as disabled buttons without `href`, no primary `/capsule-result` or `/guided-journey` CTA links remain, and Shopping List still links to `/en/dashboard#shopping-list`.
 - Third AI Review follow-up changed recent-item labels to derive from each item's `updatedAt` calendar date instead of the item's list position.
-- Browser DOM check on 2026-06-08 confirmed the seeded 2026-06-01 recent items render as `1 week ago` instead of position-based `Today`, `2 days ago`, or `4 days ago`.
+- Fourth AI Review follow-up changed the recent-item reference date from `Date.now()` to the maximum item `updatedAt`, keeping mock fixture labels deterministic over time while still deriving each label from item dates.
+- Browser DOM check confirmed seeded recent items render deterministic fixture-relative `Today` labels after replacing `Date.now()`.

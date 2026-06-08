@@ -169,13 +169,13 @@ function buildRecentItems(
   items: WardrobeEntry[],
   locale: AppLocale,
 ): DashboardSnapshot["recentItems"] {
-  const nowMs = Date.now();
+  const referenceMs = buildRecentReferenceMs(items);
 
   return [...items]
     .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
     .slice(0, 4)
     .map((item) => {
-      const age = buildRecentAge(item.updatedAt, nowMs);
+      const age = buildRecentAge(item.updatedAt, referenceMs);
 
       return {
         id: item.id,
@@ -187,9 +187,17 @@ function buildRecentItems(
     });
 }
 
+function buildRecentReferenceMs(items: WardrobeEntry[]): number {
+  const updatedTimes = items
+    .map((item) => Date.parse(item.updatedAt))
+    .filter((value) => !Number.isNaN(value));
+
+  return updatedTimes.length ? Math.max(...updatedTimes) : 0;
+}
+
 function buildRecentAge(
   updatedAt: string,
-  nowMs: number,
+  referenceMs: number,
 ): Pick<DashboardSnapshot["recentItems"][number], "age" | "ageCount"> {
   const updatedMs = Date.parse(updatedAt);
 
@@ -199,7 +207,7 @@ function buildRecentAge(
 
   const diffDays = Math.max(
     0,
-    Math.floor((utcDayStart(nowMs) - utcDayStart(updatedMs)) / MS_PER_DAY),
+    Math.floor((utcDayStart(referenceMs) - utcDayStart(updatedMs)) / MS_PER_DAY),
   );
 
   if (diffDays === 0) {
