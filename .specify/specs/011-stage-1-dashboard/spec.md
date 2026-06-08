@@ -120,4 +120,4 @@ As a maintainer, I want dashboard data to come from the existing mock provider b
 - **SC-005**: `npm run preflight` passes.
 - **SC-006**: `git diff --check` passes.
 - **SC-007**: `npm run check:feature-memory -- --worktree` passes.
-- **SC-008**: Primary dashboard CTAs do not expose `/guided-journey` links until the route is implemented.
+- **SC-008**: Primary dashboard CTAs do not expose `/guided-journey` or `/capsule-result` links until those routes are implemented.

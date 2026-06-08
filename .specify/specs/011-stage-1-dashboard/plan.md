@@ -38,7 +38,7 @@ Replace the placeholder post-auth dashboard with a localized mock-first dashboar
 | SC-005 | `npm run preflight` |
 | SC-006 | `git diff --check` |
 | SC-007 | `npm run check:feature-memory -- --worktree` |
-| SC-008 / FR-010 | DOM or code audit confirms primary dashboard CTAs are guarded and no `/guided-journey` link is exposed |
+| SC-008 / FR-010 | DOM or code audit confirms primary dashboard CTAs are guarded and no `/guided-journey` or `/capsule-result` primary CTA links are exposed |
 | Provider gate safety | Existing provider registry still rejects `CAPSULE_PROVIDER_MODE=supabase` |
 
 Negative scenario evidence:

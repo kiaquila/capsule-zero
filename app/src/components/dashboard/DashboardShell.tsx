@@ -283,12 +283,22 @@ export function DashboardShell({ snapshot }: DashboardShellProps) {
                   </div>
 
                   <div className="dashboard-capsule-actions">
-                    <Link className="dashboard-ghost-action" href="/capsule-result">
+                    <button
+                      aria-disabled="true"
+                      className="dashboard-ghost-action dashboard-ghost-action-disabled"
+                      disabled
+                      type="button"
+                    >
                       {t("openCapsule")}
-                    </Link>
-                    <Link className="dashboard-ghost-action" href="/capsule-result">
+                    </button>
+                    <button
+                      aria-disabled="true"
+                      className="dashboard-ghost-action dashboard-ghost-action-disabled"
+                      disabled
+                      type="button"
+                    >
                       {t("outfits")}
-                    </Link>
+                    </button>
                     <Link className="dashboard-ghost-action" href="/dashboard#shopping-list">
                       {t("shoppingList")}
                     </Link>

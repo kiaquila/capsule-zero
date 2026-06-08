@@ -56,10 +56,11 @@
 - Use the prototype pin SVG for the active capsule eyebrow, while leaving the separate capsule navigation icons unchanged.
 - Make the mobile bottom nav nearly opaque but lighter than the More sheet so scrolled content cannot show through it.
 - Disable primary Add Item / Create Capsule controls until the Guided Journey route lands, so dashboard CTAs do not route users into a 404.
+- Disable active-capsule Open Capsule / Outfits controls until the Capsule Result route lands; keep the Shopping List action live because it targets the current dashboard section.
 
 ### Known Issues
 
-- Destination screens linked from dashboard are still future slices unless already implemented; primary journey CTAs are disabled rather than linked until their route exists.
+- Destination screens linked from dashboard are still future slices unless already implemented; primary journey and capsule hero CTAs are disabled rather than linked until their routes exist.
 
 ### Verification Evidence
 
@@ -92,3 +93,6 @@
 - `npm run preflight` passed after the AI Review fixes.
 - `git diff --check` passed after the AI Review fixes.
 - Mobile Browser DOM check confirmed no `/guided-journey` anchors are exposed, the primary Add Item control is a disabled button, the More sheet opens and closes on repeated taps, bottom nav background remains `rgba(36, 36, 36, 0.98)`, More sheet remains `rgba(14, 14, 14, 0.96)`, and Settings stays above the bottom nav.
+- Second AI Review follow-up converted active-capsule Open Capsule / Outfits CTAs into disabled controls while `/capsule-result` is not implemented.
+- `npm run preflight` and `git diff --check` passed after the second AI Review fix.
+- Mobile Browser DOM check confirmed Open Capsule / Outfits render as disabled buttons without `href`, no primary `/capsule-result` or `/guided-journey` CTA links remain, and Shopping List still links to `/en/dashboard#shopping-list`.

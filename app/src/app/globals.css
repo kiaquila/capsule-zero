@@ -933,6 +933,13 @@ button, a, input, textarea {
   background: rgba(255,255,255,.20);
 }
 
+.dashboard-ghost-action-disabled,
+.dashboard-ghost-action-disabled:hover {
+  background: rgba(255,255,255,.06);
+  cursor: not-allowed;
+  opacity: .62;
+}
+
 .dashboard-opr-widget {
   width: 134px;
   flex: 0 0 134px;
