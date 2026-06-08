@@ -24,7 +24,8 @@ export interface User {
 // ============================================================
 
 export type ColorTemperature = "warm" | "cool" | "neutral";
-export type ColorShade = "bright" | "light" | "lightest" | "dark" | "darkest" | "neutral";
+export type ColorGroup = "achromatic" | "bright" | "pastel" | "desaturated" | "dark";
+export type ColorShade = ColorGroup;
 export type ColorHue =
   | "red" | "red-orange" | "orange" | "yellow-orange" | "yellow" | "yellow-green"
   | "green" | "blue-green" | "blue" | "blue-violet" | "violet" | "red-violet"
@@ -34,6 +35,7 @@ export interface ColorPoint {
   hex: string;
   name: string;
   temperature: ColorTemperature;
+  group: ColorGroup;
   shade: ColorShade;
   hue: ColorHue;
   isAchromatic: boolean;
@@ -60,8 +62,8 @@ export interface ClothingItem {
 // ============================================================
 
 export interface CapsulePalette {
-  achromaticColors: ColorPoint[];  // always White, Grey, Black
-  selectedColors: ColorPoint[];    // up to 7 chromatic colors
+  achromaticColors: ColorPoint[];  // always Black, Gray, White
+  selectedColors: ColorPoint[];    // up to 12 chromatic colors
 }
 
 // ============================================================

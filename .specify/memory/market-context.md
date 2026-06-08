@@ -91,7 +91,7 @@ No existing player combines premium editorial aesthetics, methodology-driven cap
 | Dimension | Capsule Zero | Cladwell | Whering | Indyx |
 |---|---|---|---|---|
 | Design quality | Premium editorial (Zara/COS level) | Functional, dated | Good, modern | Clean, minimal |
-| Capsule methodology | Color science (temperature, saturation, achromatic) | Pre-built templates | None | None |
+| Capsule methodology | Group harmony + achromatic connectors + warm/cool metadata | Pre-built templates | None | None |
 | Photo enhancement | Editorial transformation (coin-based) | Basic bg removal | Auto bg removal | Auto bg removal |
 | B2B brand platform | Separate commission-based platform (v2.0) | None | Marketplace (curated) | Resale marketplace |
 | Gap analysis | Automated + shopping list + brand bridge | Shopping suggestions (generic) | None | Stylist suggestions |

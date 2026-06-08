@@ -1394,12 +1394,12 @@
 
           <!-- Palette -->
           <div class="palette-row">
-            <div class="pdot pdot-lg" style="background:#1A1A1A;" title="Black"></div>
-            <div class="pdot pdot-lg" style="background:#F5F5F0;" title="Ivory"></div>
-            <div class="pdot pdot-lg" style="background:#8C8C8C;" title="Grey"></div>
-            <div class="pdot pdot-lg" style="background:#1B2A4A;" title="Navy"></div>
-            <div class="pdot pdot-sm" style="background:#D4C5A9;" title="Beige"></div>
-            <div class="pdot pdot-sm" style="background:#C19A6B;" title="Camel"></div>
+            <div class="pdot pdot-lg" style="background:#1C1C1C;" title="Black"></div>
+            <div class="pdot pdot-lg" style="background:#FFFFFF;" title="White"></div>
+            <div class="pdot pdot-lg" style="background:#8C8C8C;" title="Gray"></div>
+            <div class="pdot pdot-lg" style="background:#182878;" title="Navy"></div>
+            <div class="pdot pdot-sm" style="background:#E8D5B5;" title="Beige"></div>
+            <div class="pdot pdot-sm" style="background:#C0A268;" title="Sand"></div>
             <span class="palette-label" data-i18n="palette_label">Color Palette</span>
           </div>
 
@@ -1612,24 +1612,24 @@
    MOCK DATA
 ══════════════════════════════ */
 const CAPSULE_ITEMS = [
-  { name: 'White T-shirt',         category: 'Top',       color: '#F5F5F0', layer: 'top' },
-  { name: 'Black T-shirt',         category: 'Top',       color: '#1A1A1A', layer: 'top' },
-  { name: 'Ivory silk blouse',     category: 'Top',       color: '#F5F5F0', layer: 'top' },
+  { name: 'White T-shirt',         category: 'Top',       color: '#FFFFFF', layer: 'top' },
+  { name: 'Black T-shirt',         category: 'Top',       color: '#1C1C1C', layer: 'top' },
+  { name: 'Ivory silk blouse',     category: 'Top',       color: '#FFFFFF', layer: 'top' },
   { name: 'Grey cashmere sweater', category: 'Knitwear',  color: '#8C8C8C', layer: 'top' },
-  { name: 'Navy striped shirt',    category: 'Top',       color: '#1B2A4A', layer: 'top' },
-  { name: 'Black blazer',          category: 'Outerwear', color: '#1A1A1A', layer: 'outer' },
-  { name: 'Camel coat',            category: 'Outerwear', color: '#C19A6B', layer: 'outer' },
-  { name: 'Navy trench coat',      category: 'Outerwear', color: '#1B2A4A', layer: 'outer' },
-  { name: 'Straight jeans',        category: 'Bottom',    color: '#1B2A4A', layer: 'bottom' },
-  { name: 'Black trousers',        category: 'Bottom',    color: '#1A1A1A', layer: 'bottom' },
-  { name: 'Beige chinos',          category: 'Bottom',    color: '#D4C5A9', layer: 'bottom' },
+  { name: 'Navy striped shirt',    category: 'Top',       color: '#182878', layer: 'top' },
+  { name: 'Black blazer',          category: 'Outerwear', color: '#1C1C1C', layer: 'outer' },
+  { name: 'Camel coat',            category: 'Outerwear', color: '#C0A268', layer: 'outer' },
+  { name: 'Navy trench coat',      category: 'Outerwear', color: '#182878', layer: 'outer' },
+  { name: 'Straight jeans',        category: 'Bottom',    color: '#182878', layer: 'bottom' },
+  { name: 'Black trousers',        category: 'Bottom',    color: '#1C1C1C', layer: 'bottom' },
+  { name: 'Beige chinos',          category: 'Bottom',    color: '#E8D5B5', layer: 'bottom' },
   { name: 'Grey wool skirt',       category: 'Bottom',    color: '#8C8C8C', layer: 'bottom' },
-  { name: 'Black ankle boots',     category: 'Shoes',     color: '#1A1A1A', layer: 'shoes' },
-  { name: 'White sneakers',        category: 'Shoes',     color: '#F5F5F0', layer: 'shoes' },
-  { name: 'Beige loafers',         category: 'Shoes',     color: '#D4C5A9', layer: 'shoes' },
-  { name: 'Black leather bag',     category: 'Bag',       color: '#1A1A1A', layer: 'bag' },
-  { name: 'Canvas tote',           category: 'Bag',       color: '#F5F5F0', layer: 'bag' },
-  { name: 'Camel belt',            category: 'Accessory', color: '#C19A6B', layer: 'accessory' },
+  { name: 'Black ankle boots',     category: 'Shoes',     color: '#1C1C1C', layer: 'shoes' },
+  { name: 'White sneakers',        category: 'Shoes',     color: '#FFFFFF', layer: 'shoes' },
+  { name: 'Beige loafers',         category: 'Shoes',     color: '#E8D5B5', layer: 'shoes' },
+  { name: 'Black leather bag',     category: 'Bag',       color: '#1C1C1C', layer: 'bag' },
+  { name: 'Canvas tote',           category: 'Bag',       color: '#FFFFFF', layer: 'bag' },
+  { name: 'Camel belt',            category: 'Accessory', color: '#C0A268', layer: 'accessory' },
 ];
 
 const CAPSULE_OUTFITS = [
@@ -1650,11 +1650,11 @@ const CAPSULE_OUTFITS = [
 const GAP_ANALYSIS = [
   {
     type: 'structural', category: 'Dress',
-    color: '#1A1A1A', desc: 'A versatile dress would unlock one-piece outfit options and expand evening looks.'
+    color: '#1C1C1C', desc: 'A versatile dress would unlock one-piece outfit options and expand evening looks.'
   },
   {
     type: 'color', category: 'Top',
-    color: '#D4C5A9', desc: 'Your beige palette color is only used in bottoms and shoes. A beige top would improve balance.'
+    color: '#E8D5B5', desc: 'Your beige palette color is only used in bottoms and shoes. A beige top would improve balance.'
   },
   {
     type: 'combinability', category: 'Cardigan',
@@ -1662,15 +1662,15 @@ const GAP_ANALYSIS = [
   },
   {
     type: 'structural', category: 'Scarf',
-    color: '#1B2A4A', desc: 'A lightweight scarf adds a finishing layer and seasonal versatility to 8+ existing outfits.'
+    color: '#182878', desc: 'A lightweight scarf adds a finishing layer and seasonal versatility to 8+ existing outfits.'
   },
 ];
 
 const SHOPPING_LIST = [
   { category: 'Straight-leg trousers', color: '#8C8C8C', priority: 'high',   impact: '+12 outfits' },
   { category: 'Grey cardigan',         color: '#8C8C8C', priority: 'high',   impact: '+18 outfits' },
-  { category: 'Beige silk top',        color: '#D4C5A9', priority: 'medium', impact: '+8 outfits'  },
-  { category: 'Navy scarf',            color: '#1B2A4A', priority: 'low',    impact: '+5 outfits'  },
+  { category: 'Beige silk top',        color: '#E8D5B5', priority: 'medium', impact: '+8 outfits'  },
+  { category: 'Navy scarf',            color: '#182878', priority: 'low',    impact: '+5 outfits'  },
 ];
 
 /* ══════════════════════════════
@@ -1680,21 +1680,21 @@ const CAPSULES = [
   {
     id: 'spring-2026',
     name: { EN: 'Spring 2026', RU: 'Весна 2026', ES: 'Primavera 2026' },
-    palette: ['#1A1A1A','#F5F5F0','#8C8C8C','#1B2A4A','#D4C5A9','#C19A6B'],
+    palette: ['#1C1C1C','#FFFFFF','#8C8C8C','#182878','#E8D5B5','#C0A268'],
     items: 18, outfits: 74, categories: 12, opr: 4.1, oprDelta: '+0.3',
     active: true
   },
   {
     id: 'travel-light',
     name: { EN: 'Travel Light', RU: 'В дорогу', ES: 'Viaje Ligero' },
-    palette: ['#1A1A1A','#F5F5F0','#D4C5A9','#6B8E7B'],
+    palette: ['#1C1C1C','#FFFFFF','#E8D5B5','#60A878'],
     items: 12, outfits: 28, categories: 8, opr: 3.6, oprDelta: '+0.1',
     active: false
   },
   {
     id: 'work-basics',
     name: { EN: 'Work Basics', RU: 'Базовый рабочий', ES: 'Trabajo B\u00e1sico' },
-    palette: ['#1A1A1A','#F5F5F0','#1B2A4A','#8C8C8C','#C19A6B'],
+    palette: ['#1C1C1C','#FFFFFF','#182878','#8C8C8C','#C0A268'],
     items: 15, outfits: 42, categories: 10, opr: 3.9, oprDelta: '+0.5',
     active: false
   },

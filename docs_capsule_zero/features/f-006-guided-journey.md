@@ -44,15 +44,15 @@
 ### User Flow
 1. **Items first:** user adds garments via Upload Photos / Paste Links / Search Catalog
 2. **Palette selection:** achromatic colors appear first, followed by all other colors in a single continuous grid
-3. User can select any number of colors
+3. User can select up to 15 compatible colors (12 chromatic + 3 achromatic)
 4. Colors incompatible with the current palette become unavailable
 5. User adds items to capsule
 6. "Create capsule" → capsule generated, redirect to Capsule Result
 
 ### Acceptance Criteria
 - Achromatic colors appear first in the palette UI but remain optional
-- User can select any number of compatible colors
-- Incompatible colors are blocked based on temperature-or-saturation compatibility
+- User can select up to 15 compatible colors
+- Incompatible colors are blocked based on same-group or Desaturated↔Dark compatibility
 - Three upload methods available
 - "Create capsule" → generates capsule, redirects to Result
 
@@ -80,12 +80,12 @@
 
 ## Validation Rules
 - Achromatics are optional and shown first in the palette
-- No hard cap on selected colors
+- Palette cap: 15 total colors / 12 chromatic colors
 - Min 8 categories
 - Items per category: min 0, default 1, no hard cap (stepper)
 - Total items in capsule: min 7 to create; warning at 40; hard limit 50 → suggest creating new capsule
 - Custom category: basicity algorithm validation
-- Color compatibility rule: a color is allowed if it matches the current palette by temperature or saturation
+- Color compatibility rule: a color is allowed if it matches the current palette by same group, is achromatic, or forms the Desaturated↔Dark cross-pair
 
 ## Edge Cases
 - Fully achromatic capsule → valid, no accent colors needed

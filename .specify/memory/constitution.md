@@ -39,9 +39,10 @@ Capsule Zero proprietary color circle methodology.
 | ---------------------------------------------------- | -------------------------------------- |
 | Achromat + Achromat                                  | ALWAYS compatible                      |
 | Achromat + Any color                                 | ALWAYS compatible                      |
-| Same temperature                                     | Compatible                             |
-| Same saturation group                                | Compatible                             |
-| Different temperature and different saturation group | BLOCKED — separate capsule recommended |
+| Same chromatic group                                 | Compatible                             |
+| Desaturated + Dark                                   | Compatible                             |
+| Brights + Pastels / Brights + Darks / Pastels + Darks | BLOCKED — separate capsule recommended |
+| Temperature difference                               | Metadata only — not a hard filter      |
 
 ### Outfit Productivity Ratio (OPR)
 

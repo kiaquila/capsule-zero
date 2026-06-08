@@ -191,8 +191,8 @@ As a user, I want to choose color palette and add items (photos, links, or searc
 **Acceptance Scenarios:**
 
 1. **Given** Step 3, **When** displayed, **Then** achromatic colors appear first in the palette, followed by all other colors in one continuous grid
-2. **Given** any palette color, **When** selected, **Then** it becomes part of the capsule palette without a hard count limit
-3. **Given** colors already selected, **When** another color is incompatible by both temperature and saturation, **Then** it becomes unavailable for selection
+2. **Given** any compatible palette color, **When** selected, **Then** it becomes part of the capsule palette up to 15 total colors / 12 chromatic colors
+3. **Given** colors already selected, **When** another color is outside the compatible group set, **Then** it becomes unavailable for selection
 4. **Given** items section, **When** displayed, **Then** three upload methods available: Upload Photos / Paste Links / Search Catalog
 5. **Given** all selections, **When** "Create capsule" clicked, **Then** capsule is generated, redirect to Result
 
@@ -440,7 +440,7 @@ As a system, I want imported marketplace items to populate the shared database f
 - **FR-004**: System MUST display a dashboard with active capsule hero, OPR widget, summary stats, shopping list preview, recently added items, and quick-access wardrobe sections
 - **FR-005**: System MUST implement 3-step Guided Journey (type → categories → colors+items)
 - **FR-006**: System MUST enforce min 8 categories for capsule creation
-- **FR-007**: System MUST validate item colors against capsule palette using compatibility by temperature or saturation
+- **FR-007**: System MUST validate item colors against capsule palette using same-group or Desaturated↔Dark compatibility, with achromatics always compatible
 - **FR-008**: System MUST block incompatible items with explanation and alternative
 - **FR-009**: System MUST lock capsule palette after creation (immutable in v0.1)
 - **FR-010**: System MUST generate outfit combinations algorithmically from capsule items
@@ -461,7 +461,7 @@ As a system, I want imported marketplace items to populate the shared database f
 - **Capsule**: Name, wardrobe type, color palette (locked), categories, items, OPR
 - **Item**: Name, photo(s), category, color dots (1-3), brand, material, price, source URL, capsule membership, basicity score
 - **Outfit**: Generated combination of items following layer rules and color harmony
-- **Palette**: User-selected achromatic and chromatic colors, ordered with achromats first in UI, governed by temperature-or-saturation compatibility rules
+- **Palette**: User-selected achromatic and chromatic colors, ordered with achromats first in UI, governed by same-group or Desaturated↔Dark compatibility rules
 - **Shopping List Item**: Category, recommended color, priority, impact (+N outfits)
 
 ## Success Criteria

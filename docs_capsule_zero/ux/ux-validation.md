@@ -35,13 +35,13 @@ Users consistently cite photographing, uploading, and tagging as the #1 reason t
 
 User feedback is overwhelmingly negative. The algorithm described as "atrocious" (Cladwell App Store), producing weather-inappropriate suggestions, ignoring wardrobe items entirely, and generating repetitive combinations. Whering's shuffle feature produces random combinations without styling logic. Acloset's AI receives mixed reviews.
 
-> **CZ Implication:** Methodology-first approach (temperature-or-saturation color compatibility) generates outfits algorithmically with guaranteed color harmony. No AI guesswork — the methodology itself ensures quality. Every combination within a properly built capsule is valid by definition.
+> **CZ Implication:** Methodology-first approach (group-based color compatibility) generates outfits algorithmically with guaranteed color harmony. No AI guesswork — the methodology itself ensures quality. Every combination within a properly built capsule is valid by definition.
 
 ### 2.3 Color & Auto-Tagging Accuracy
 
 Multiple apps attempt automatic color detection. Results are consistently frustrating. Whering users report auto-detected colors being "random and very different from the actual color". Cladwell offers limited color selection. Indyx has "quite a limited selection of colours". Users across all apps spend significant time correcting auto-tags.
 
-> **CZ Implication:** Auto-tagging must prioritize accuracy over speed. The 1-3 color point extraction with temperature/saturation classification is more sophisticated than competitors' simple color labels. Easy manual correction is essential.
+> **CZ Implication:** Auto-tagging must prioritize accuracy over speed. The 1-3 color point extraction with group classification, warm/cool metadata, and achromatic detection is more sophisticated than competitors' simple color labels. Easy manual correction is essential.
 
 ### 2.4 Paywall Frustration & Unclear Pricing
 
@@ -106,7 +106,7 @@ Open-ended apps produce "where do I even start?" paralysis. Cladwell's templates
 > **Target:** Guided Journey with 3 clear steps. Methodology provides the framework. User curates within guardrails.
 
 ### Insight #4: Outfit generation must have visible logic
-AI outfit suggestions fail because users can't understand WHY items were paired. Methodology-based pairing (colors combine when they match by temperature or saturation) provides transparent, explainable logic.
+AI outfit suggestions fail because users can't understand WHY items were paired. Methodology-based pairing (colors combine when they share a group, are achromatic, or form the Desaturated↔Dark cross-pair) provides transparent, explainable logic.
 > **Target:** Every generated outfit follows capsule color rules. No "magic" — users understand the system.
 
 ### Insight #5: The "aha moment" is seeing hidden potential
@@ -115,7 +115,7 @@ The most positive reviews describe the moment users realize they have more outfi
 
 ### Insight #6: Color is underserved across the entire market
 No competitor has sophisticated color logic. Whering detects colors but gets them wrong. Cladwell shows color palette statistics but doesn't use them for styling. Users want to understand their color preferences and use that knowledge for shopping decisions.
-> **Target:** Color system is CZ's deepest moat. Temperature + saturation + achromatic logic is unique in market.
+> **Target:** Color system is CZ's deepest moat. Group harmony + achromatic connectors + warm/cool display metadata are unique in market.
 
 ## 6. First-Impression Design Audit
 

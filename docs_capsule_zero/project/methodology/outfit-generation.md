@@ -18,7 +18,7 @@
 ## 2. Combination Rules
 
 ### Color Harmony
-All items in a properly assembled capsule match by color by definition — the palette guarantees compatibility through temperature-or-saturation matching, with achromats always allowed. No limit on the number of colors per outfit. **Any combination of items from the capsule palette is color-valid.** This is the key advantage of the Capsule Zero color methodology.
+All items in a properly assembled capsule match by color by definition — the palette guarantees compatibility through group-based matching, with achromats always allowed and Desaturated/Dark allowed as a cross-pair. No limit on the number of colors per outfit beyond the capsule palette itself. **Any combination of items from the capsule palette is color-valid.** This is the key advantage of the Capsule Zero color methodology.
 
 ### Category Logic
 Some categories don't combine:
