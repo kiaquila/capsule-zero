@@ -99,3 +99,5 @@
 - Third AI Review follow-up changed recent-item labels to derive from each item's `updatedAt` calendar date instead of the item's list position.
 - Fourth AI Review follow-up changed the recent-item reference date from `Date.now()` to the maximum item `updatedAt`, keeping mock fixture labels deterministic over time while still deriving each label from item dates.
 - Browser DOM check confirmed seeded recent items render deterministic fixture-relative `Today` labels after replacing `Date.now()`.
+- Fifth AI Review follow-up added a constrained `/{locale}/{future}` redirect route for known future dashboard destinations (`my-items`, `capsule-result`, `favorites`, `uncapsulated`, `for-sale`, `for-repair`, `profile`) so visible navigation no longer produces 404 pages before those slices are built.
+- Route audit confirmed `/en/my-items` returns `307` to `/en/dashboard`, while unknown `/en/not-a-dashboard-section` still returns `404`.

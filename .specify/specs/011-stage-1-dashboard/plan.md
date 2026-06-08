@@ -41,6 +41,7 @@ Replace the placeholder post-auth dashboard with a localized mock-first dashboar
 | SC-006 | `git diff --check` |
 | SC-007 | `npm run check:feature-memory -- --worktree` |
 | SC-008 / FR-010 | DOM or code audit confirms primary dashboard CTAs are guarded and no `/guided-journey` or `/capsule-result` primary CTA links are exposed |
+| FR-011 | Route audit confirms linked future dashboard section paths resolve through a safe redirect stub instead of 404 |
 | Provider gate safety | Existing provider registry still rejects `CAPSULE_PROVIDER_MODE=supabase` |
 
 Negative scenario evidence:
@@ -54,6 +55,7 @@ Negative scenario evidence:
 
 ```text
 app/src/app/[locale]/dashboard/page.tsx
+app/src/app/[locale]/[future]/page.tsx
 app/src/components/dashboard/DashboardShell.tsx
 app/src/components/dashboard/dashboard-data.ts
 app/src/messages/en.json

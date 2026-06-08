@@ -17,6 +17,7 @@ In scope:
 - Use deterministic mock provider fixtures for profile, current capsule, wardrobe items, and gap analysis.
 - Display filled dashboard state with active capsule hero, palette, OPR, summary stats, shopping list preview, recently added items, and quick-access cards.
 - Keep dashboard navigation visible across desktop and mobile, including EN/RU language switching and mock sign-out.
+- Provide safe redirect stubs for linked future dashboard sections so navigation does not land on 404 pages before those slices exist.
 - Keep the implementation under Stage 1 mock-first boundaries with no Supabase, Lava.top, OAuth, marketplace, or image-processing calls.
 - Verify locally before PR creation and stop for user review.
 
@@ -103,6 +104,7 @@ As a maintainer, I want dashboard data to come from the existing mock provider b
 - **FR-008**: Dashboard MUST include mock sign-out that clears the session and returns to localized landing.
 - **FR-009**: Dashboard MUST remain responsive at mobile, tablet, and desktop breakpoints without overlapping text or controls.
 - **FR-010**: Dashboard MUST not route primary CTAs to unimplemented pages; future-slice actions must be guarded until their routes exist.
+- **FR-011**: Dashboard navigation links to future section screens MUST be backed by safe route stubs or disabled states so they do not produce localized 404 pages.
 
 ### Key Entities
 
