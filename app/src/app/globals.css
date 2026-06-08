@@ -808,6 +808,14 @@ button, a, input, textarea {
   transform: translateY(-1px);
 }
 
+.dashboard-primary-action-disabled,
+.dashboard-primary-action-disabled:hover {
+  background: rgba(255,255,255,.18);
+  cursor: not-allowed;
+  opacity: .64;
+  transform: none;
+}
+
 .dashboard-content {
   display: flex;
   flex-direction: column;

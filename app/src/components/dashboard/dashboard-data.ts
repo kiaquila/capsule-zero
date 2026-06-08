@@ -73,19 +73,8 @@ export async function buildDashboardSnapshot({
   locale,
 }: BuildDashboardSnapshotOptions): Promise<DashboardSnapshot> {
   const profile = await registry.profiles.getProfile(session.userId);
-  let fixtureUserId = session.userId;
-  let items = await registry.wardrobe.listItems(fixtureUserId);
-  let capsule = await registry.capsules.getCurrentCapsule(fixtureUserId);
-
-  if (!items.length || !capsule) {
-    const demoSession = await registry.auth.getCurrentSession();
-
-    if (demoSession?.user.id && demoSession.user.id !== session.userId) {
-      fixtureUserId = demoSession.user.id;
-      items = await registry.wardrobe.listItems(fixtureUserId);
-      capsule = await registry.capsules.getCurrentCapsule(fixtureUserId);
-    }
-  }
+  const items = await registry.wardrobe.listItems(session.userId);
+  const capsule = await registry.capsules.getCurrentCapsule(session.userId);
 
   const totalOutfits = capsule?.outfitCount ?? 0;
   const favorites = items.filter((item) => item.favorite).length;
@@ -151,13 +140,17 @@ function buildShoppingPreview(
   capsule: Capsule | null,
   locale: AppLocale,
 ): DashboardSnapshot["shoppingPreview"] {
+  if (!capsule) {
+    return [];
+  }
+
   const fromGaps =
-    capsule?.gapAnalysis.map((item, index) => ({
+    capsule.gapAnalysis.map((item, index) => ({
       id: `gap-${item.categoryId}`,
       name: categoryName(item.categoryId, locale),
       impact: Math.max(4, 12 - index * 3),
       priority: index === 0 ? ("high" as const) : ("medium" as const),
-    })) ?? [];
+    }));
   const existingIds = new Set(fromGaps.map((item) => item.id));
   const fallbacks = SHOPPING_FALLBACKS.filter(
     (item) => !existingIds.has(`gap-${item.categoryId}`),

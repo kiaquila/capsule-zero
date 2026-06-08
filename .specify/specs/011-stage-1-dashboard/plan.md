@@ -38,12 +38,14 @@ Replace the placeholder post-auth dashboard with a localized mock-first dashboar
 | SC-005 | `npm run preflight` |
 | SC-006 | `git diff --check` |
 | SC-007 | `npm run check:feature-memory -- --worktree` |
+| SC-008 / FR-010 | DOM or code audit confirms primary dashboard CTAs are guarded and no `/guided-journey` link is exposed |
 | Provider gate safety | Existing provider registry still rejects `CAPSULE_PROVIDER_MODE=supabase` |
 
 Negative scenario evidence:
 
 - Dashboard language controls expose EN/RU only.
 - Unauthenticated dashboard access redirects to localized auth.
+- Arbitrary mock-session users keep user-scoped empty wardrobe/capsule data instead of falling back to founder fixtures.
 - No real Supabase, OAuth, Lava.top, marketplace, semantic search, or image-processing calls are introduced.
 
 ## Project Structure

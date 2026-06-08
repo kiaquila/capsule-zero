@@ -49,16 +49,17 @@
 - Use `011-stage-1-dashboard` because `010-stage-1-landing-auth` is merged and its only known issue is the intentionally minimal dashboard target.
 - Start from `origin/main` instead of local `main` because local `main` is stale and diverged.
 - Keep dashboard data deterministic and fixture-backed through the existing mock provider registry; real provider integration remains a separate gate.
-- Fall back to the provider's demo fixture user for dashboard wardrobe/capsule data when a mock session uses an arbitrary email, while still displaying the signed-in user's session email/name.
+- Keep dashboard wardrobe/capsule data scoped to the signed-in mock session user. Arbitrary mock-session emails now render the empty dashboard state instead of borrowing the founder fixture wardrobe.
 - Keep requested dashboard icon swaps scoped to new explicit icon names so existing non-menu icon usage remains unchanged.
 - Let the mobile More button sit above the open sheet/overlay only while expanded so a second tap can close the menu.
 - Keep all bottom-nav items visible while the mobile More sheet is open, and raise the sheet above the bottom nav so its Settings item remains clickable.
 - Use the prototype pin SVG for the active capsule eyebrow, while leaving the separate capsule navigation icons unchanged.
 - Make the mobile bottom nav nearly opaque but lighter than the More sheet so scrolled content cannot show through it.
+- Disable primary Add Item / Create Capsule controls until the Guided Journey route lands, so dashboard CTAs do not route users into a 404.
 
 ### Known Issues
 
-- Destination screens linked from dashboard are still future slices unless already implemented.
+- Destination screens linked from dashboard are still future slices unless already implemented; primary journey CTAs are disabled rather than linked until their route exists.
 
 ### Verification Evidence
 
@@ -86,3 +87,8 @@
 - Mobile Browser check confirmed the open More sheet background computes to `rgba(14, 14, 14, 0.96)`, all bottom-nav items remain visible, the sheet bottom sits above the bottom-nav top, Settings remains clickable, and the More trigger still closes the sheet on the second tap.
 - Browser DOM audit confirmed the active capsule pin icon uses the prototype `0 -1 14 15` SVG with rect, ellipse, and polygon shapes.
 - Mobile Browser check confirmed bottom nav background computes to `rgba(36, 36, 36, 0.98)`, More sheet remains darker at `rgba(14, 14, 14, 0.96)`, Settings stays above the nav, and the second More tap still closes the sheet.
+- AI Review follow-up removed demo-fixture fallback from dashboard data loading so wardrobe/capsule data remains scoped to `session.userId`.
+- AI Review follow-up converted `/guided-journey` primary dashboard CTAs into disabled controls while the route is not implemented.
+- `npm run preflight` passed after the AI Review fixes.
+- `git diff --check` passed after the AI Review fixes.
+- Mobile Browser DOM check confirmed no `/guided-journey` anchors are exposed, the primary Add Item control is a disabled button, the More sheet opens and closes on repeated taps, bottom nav background remains `rgba(36, 36, 36, 0.98)`, More sheet remains `rgba(14, 14, 14, 0.96)`, and Settings stays above the bottom nav.

@@ -76,6 +76,7 @@ As a maintainer, I want dashboard data to come from the existing mock provider b
 - A user opens `/dashboard` without a locale prefix.
 - A user opens `/en/dashboard` without a mock session.
 - The active capsule is unavailable in a future fixture state.
+- A mock session belongs to a user with no seeded wardrobe or capsule data.
 - The dashboard is viewed at 375px, 768px, and desktop widths.
 - Long email, capsule, item, or category text must not overflow its glass container.
 - The user attempts to expose deferred ES-AR through the language switcher.
@@ -84,6 +85,7 @@ As a maintainer, I want dashboard data to come from the existing mock provider b
 
 1. **Given** Stage 1 dashboard is mock-first, **When** `CAPSULE_PROVIDER_MODE=supabase` is used, **Then** provider registry rejection remains unchanged and dashboard does not bypass the integration gate.
 2. **Given** ES-AR is deferred to MVP v2, **When** dashboard language controls render, **Then** only EN and RU are available.
+3. **Given** a mock session has no seeded wardrobe fixtures, **When** dashboard data loads, **Then** it renders user-scoped empty data instead of borrowing another fixture user's capsule or wardrobe.
 
 ## Requirements
 
@@ -98,6 +100,7 @@ As a maintainer, I want dashboard data to come from the existing mock provider b
 - **FR-007**: Dashboard MUST preserve achromatic glass UI styling and approved wallpaper treatment.
 - **FR-008**: Dashboard MUST include mock sign-out that clears the session and returns to localized landing.
 - **FR-009**: Dashboard MUST remain responsive at mobile, tablet, and desktop breakpoints without overlapping text or controls.
+- **FR-010**: Dashboard MUST not route primary CTAs to unimplemented pages; future-slice actions must be guarded until their routes exist.
 
 ### Key Entities
 
@@ -117,3 +120,4 @@ As a maintainer, I want dashboard data to come from the existing mock provider b
 - **SC-005**: `npm run preflight` passes.
 - **SC-006**: `git diff --check` passes.
 - **SC-007**: `npm run check:feature-memory -- --worktree` passes.
+- **SC-008**: Primary dashboard CTAs do not expose `/guided-journey` links until the route is implemented.
