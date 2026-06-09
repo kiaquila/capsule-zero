@@ -238,15 +238,10 @@ export function DashboardShell({ snapshot }: DashboardShellProps) {
             </div>
             <div className="dashboard-topbar-actions">
               <LanguageSwitcher />
-              <button
-                aria-disabled="true"
-                className="dashboard-primary-action dashboard-primary-action-disabled"
-                disabled
-                type="button"
-              >
+              <Link className="dashboard-primary-action" href="/guided-journey">
                 <DashboardIcon name="plus" />
                 <span>{t("addItem")}</span>
-              </button>
+              </Link>
             </div>
           </header>
 
@@ -315,15 +310,10 @@ export function DashboardShell({ snapshot }: DashboardShellProps) {
               <section className="dashboard-glass dashboard-empty-card">
                 <p>{t("emptyEyebrow")}</p>
                 <h1>{t("emptyTitle")}</h1>
-                <button
-                  aria-disabled="true"
-                  className="dashboard-primary-action dashboard-primary-action-disabled"
-                  disabled
-                  type="button"
-                >
+                <Link className="dashboard-primary-action" href="/guided-journey">
                   <DashboardIcon name="plus" />
                   <span>{t("createFirstCapsule")}</span>
-                </button>
+                </Link>
               </section>
             )}
 
