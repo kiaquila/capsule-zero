@@ -214,5 +214,91 @@
       "maxTotal": "A capsule palette can include up to 15 colors total.",
       "maxChromatic": "A capsule palette can include up to 12 chromatic colors."
     }
+  },
+  "capsuleResult": {
+    "backToDashboard": "Dashboard",
+    "title": "Your capsule is ready",
+    "subtitle": "Built from your selected palette and wardrobe.",
+    "newCapsule": "New capsule",
+    "activeCapsule": "Active capsule",
+    "palette": "Palette",
+    "items": "Items",
+    "outfits": "Outfits",
+    "categories": "Categories",
+    "opr": "OPR",
+    "oprHint": "Outfit Productivity Ratio",
+    "itemColors": "Item colors",
+    "favorite": "Toggle favorite for {item}",
+    "actions": "Open actions for {item}",
+    "replace": "Replace item",
+    "addItem": "Add item",
+    "localOnly": "Curated slot",
+    "cancel": "Cancel",
+    "close": "Close",
+    "tabs": {
+      "label": "Capsule result tabs",
+      "items": "Items",
+      "outfits": "Outfits",
+      "gaps": "What's missing",
+      "shopping": "Shopping list"
+    },
+    "empty": {
+      "title": "Capsule result",
+      "subtitle": "No active capsule is attached to this wardrobe.",
+      "cardTitle": "No capsule yet",
+      "cardCopy": "Create a capsule through the guided flow, then return here to review its result.",
+      "cta": "Start journey"
+    },
+    "remove": {
+      "title": "Remove from capsule?",
+      "copy": "{item} will move out of this capsule. You can add it back later.",
+      "confirm": "Remove",
+      "action": "Remove"
+    },
+    "picker": {
+      "eyebrow": "Wardrobe picker",
+      "addTitle": "Add compatible item",
+      "replaceTitle": "Replace with compatible item",
+      "blocked": "Blocked by palette",
+      "blockedReason": "Outside the immutable capsule palette.",
+      "incompatible": "{item} does not match the immutable capsule palette."
+    },
+    "sources": {
+      "photo": "Photo",
+      "marketplace": "Link",
+      "catalog": "Catalog"
+    },
+    "outfitsGenerated": "{count} outfits generated",
+    "outfitViews": {
+      "linear": "Line view",
+      "moodboard": "Square view"
+    },
+    "outfitsEmpty": "No outfits yet",
+    "outfitsEmptyCopy": "Add at least two compatible items to see outfit options.",
+    "outfitNames": {
+      "everyday": "Everyday base",
+      "layered": "Layered option",
+      "travel": "Travel edit"
+    },
+    "outfitNotes": {
+      "viewOnly": "View only"
+    },
+    "gapsComplete": "Your capsule is complete",
+    "gapsCompleteCopy": "No visible gaps remain in this capsule.",
+    "gapTypes": {
+      "structural": "Structural",
+      "color": "Color",
+      "combinability": "Combinability",
+      "balance": "Balance"
+    },
+    "derivedGapReason": "Adds a missing layer and increases outfit variety without changing the palette.",
+    "shoppingComplete": "Shopping list is clear",
+    "shoppingCompleteCopy": "There are no priority recommendations for this capsule.",
+    "priorities": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "impact": "+{count} outfits"
   }
 }

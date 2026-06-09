@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -46,18 +47,31 @@ const DECORATIVE_CATEGORY_PATTERN =
 export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
   const t = useTranslations("journey");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const objectUrls = useRef<string[]>([]);
-  const [step, setStep] = useState<JourneyStep>(1);
-  const [selectedType, setSelectedType] = useState<GarderType | null>(null);
-  const [categoryState, setCategoryState] = useState<Record<string, CategoryState>>({});
+  const requestedTab = parseJourneyTab(searchParams.get("tab"));
+  const requestedCategoryId = searchParams.get("category");
+  const initialTab = requestedTab ?? (requestedCategoryId ? "search" : "upload");
+  const initialSetup = initialTab === "search"
+    ? buildInitialSearchHandoffSetup(snapshot, requestedCategoryId)
+    : null;
+  const [step, setStep] = useState<JourneyStep>(initialTab === "search" ? 3 : 1);
+  const [selectedType, setSelectedType] = useState<GarderType | null>(
+    initialSetup?.type ?? null,
+  );
+  const [categoryState, setCategoryState] = useState<Record<string, CategoryState>>(
+    initialSetup?.categoryState ?? {},
+  );
   const [customCategory, setCustomCategory] = useState("");
   const [customCategoryError, setCustomCategoryError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<JourneyTab>("upload");
+  const [activeTab, setActiveTab] = useState<JourneyTab>(initialTab);
   const [addedItems, setAddedItems] = useState<AddedJourneyItem[]>([]);
   const [linkInput, setLinkInput] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(() =>
+    buildInitialSearchQuery(snapshot, requestedCategoryId),
+  );
   const [selectedColorIds, setSelectedColorIds] = useState<string[]>([]);
   const [paletteNotice, setPaletteNotice] = useState<string | null>(null);
   const [itemNotice, setItemNotice] = useState<string | null>(null);
@@ -119,16 +133,7 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
   };
 
   const selectType = (type: GarderType) => {
-    const nextState = Object.fromEntries(
-      snapshot.categories[type].map((option) => [
-        option.id,
-        {
-          count: option.defaultCount,
-          option,
-          selected: false,
-        } satisfies CategoryState,
-      ]),
-    );
+    const nextState = buildCategoryState(snapshot.categories[type]);
 
     setSelectedType(type);
     setCategoryState(nextState);
@@ -775,7 +780,7 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
                 </div>
                 <button
                   className="journey-primary-button"
-                  disabled={isCreating}
+                  disabled={isCreating || !selectedType || selectedCategoryCount < 8}
                   onClick={createCapsule}
                   type="button"
                 >
@@ -897,6 +902,70 @@ function buildCustomCategoryId(label: string) {
     .replace(/^-+|-+$/g, "");
 
   return `custom-${slug || encodeURIComponent(label)}`;
+}
+
+function parseJourneyTab(raw: string | null): JourneyTab | null {
+  return raw === "upload" || raw === "links" || raw === "search" ? raw : null;
+}
+
+function buildInitialSearchQuery(
+  snapshot: GuidedJourneySnapshot,
+  categoryId: string | null,
+) {
+  const normalized = categoryId?.trim();
+
+  if (!normalized) {
+    return "";
+  }
+
+  return (
+    snapshot.catalogItems.find((item) => item.categoryId === normalized)?.categoryLabel ??
+    Object.values(snapshot.categories)
+      .flat()
+      .find((category) => category.id === normalized)?.label ??
+    normalized
+  );
+}
+
+function buildInitialSearchHandoffSetup(
+  snapshot: GuidedJourneySnapshot,
+  categoryId: string | null,
+): { type: GarderType; categoryState: Record<string, CategoryState> } {
+  const type: GarderType = "mixed";
+  const selectedIds = new Set<string>();
+  const normalized = categoryId?.trim();
+  const options = snapshot.categories[type];
+
+  if (normalized && options.some((category) => category.id === normalized)) {
+    selectedIds.add(normalized);
+  }
+
+  options.forEach((category) => {
+    if (selectedIds.size < 8) {
+      selectedIds.add(category.id);
+    }
+  });
+
+  return {
+    type,
+    categoryState: buildCategoryState(options, selectedIds),
+  };
+}
+
+function buildCategoryState(
+  options: JourneyCategoryOption[],
+  selectedIds = new Set<string>(),
+): Record<string, CategoryState> {
+  return Object.fromEntries(
+    options.map((option) => [
+      option.id,
+      {
+        count: option.defaultCount,
+        option,
+        selected: selectedIds.has(option.id),
+      } satisfies CategoryState,
+    ]),
+  );
 }
 
 function JourneyIcon({
