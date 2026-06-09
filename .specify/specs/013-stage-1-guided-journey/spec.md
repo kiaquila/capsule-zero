@@ -100,6 +100,7 @@ As a user, I want unavailable colors to be blocked with a clear explanation so I
 5. **Given** active EN/RU support, **When** a user adds valid Cyrillic custom categories or multiple distinct marketplace URLs from one host, **Then** the journey preserves each distinct local entry instead of collapsing it into a false duplicate.
 6. **Given** an added item already has a mock color, **When** the user selects a conflicting palette color later, **Then** the palette action is blocked before the draft can contain an item/color conflict.
 7. **Given** catalog mock data references a non-public fixture image, **When** a catalog item is added, **Then** the added-card preview falls back to the existing icon instead of rendering a broken image.
+8. **Given** a user reaches Step 3 and then returns to choose a different wardrobe type, **When** the new type is selected, **Then** previous Step 3 items, palette colors, tab inputs, notices, and upload previews are cleared.
 
 ## Requirements
 

@@ -59,6 +59,7 @@
 - Treat duplicate marketplace links by URL-derived item id rather than host-derived display name, allowing multiple products from one store.
 - Validate marketplace mock colors before adding link imports and revalidate new palette colors against already added item colors.
 - Omit unavailable `/fixtures/` catalog image URLs from the guided journey snapshot so catalog-added cards use the existing icon fallback.
+- Reset Step 3 draft state, notices, inputs, and upload object URLs whenever a wardrobe type is selected so stale items/palette cannot carry into a different type flow.
 
 ### Known Issues
 

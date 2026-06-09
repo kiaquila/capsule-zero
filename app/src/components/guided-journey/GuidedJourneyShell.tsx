@@ -102,6 +102,22 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
     );
   }, [searchQuery, snapshot.catalogItems]);
 
+  const resetStepThreeState = () => {
+    objectUrls.current.forEach((url) => URL.revokeObjectURL(url));
+    objectUrls.current.length = 0;
+    setActiveTab("upload");
+    setAddedItems([]);
+    setLinkInput("");
+    setLinkError(null);
+    setUploadError(null);
+    setSearchQuery("");
+    setSelectedColorIds([]);
+    setPaletteNotice(null);
+    setItemNotice(null);
+    setIsCreating(false);
+    setCreated(false);
+  };
+
   const selectType = (type: GarderType) => {
     const nextState = Object.fromEntries(
       snapshot.categories[type].map((option) => [
@@ -118,6 +134,7 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
     setCategoryState(nextState);
     setCustomCategory("");
     setCustomCategoryError(null);
+    resetStepThreeState();
     setStep(2);
   };
 

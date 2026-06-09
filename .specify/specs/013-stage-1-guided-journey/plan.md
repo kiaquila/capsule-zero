@@ -45,6 +45,7 @@ Add the first mock-first Guided Journey route after dashboard by building a loca
 | Codex review P2 follow-up | PR #32 Codex review findings for non-Latin custom category IDs and same-host marketplace links were addressed in `GuidedJourneyShell.tsx`; `npm run preflight` passed after the patch. |
 | Codex review P2 compatibility follow-up | PR #32 Codex review findings for marketplace mock-color validation and palette revalidation against added items were addressed in `GuidedJourneyShell.tsx`; `npm run preflight` and in-app Browser smoke checks passed after the patch. |
 | Codex review P2 asset follow-up | PR #32 Codex review finding for missing catalog fixture images was addressed in `guided-journey-data.ts` by omitting unavailable `/fixtures/` URLs so added catalog cards use the icon fallback; `npm run preflight` and in-app Browser catalog fallback smoke passed after the patch. |
+| Codex review P2 type-reset follow-up | PR #32 Codex review finding for stale Step 3 draft state after changing wardrobe type was addressed in `GuidedJourneyShell.tsx`; `npm run preflight` and in-app Browser type-reset smoke passed after the patch. |
 
 Negative scenario evidence:
 
@@ -53,6 +54,7 @@ Negative scenario evidence:
 - Incompatible palette and item colors are blocked with explanation.
 - Added item colors are rechecked when selecting later palette colors.
 - Missing catalog fixture images fall back to the existing item icon.
+- Changing wardrobe type after reaching Step 3 clears the old item, palette, tab input, notice, and upload-preview draft state.
 - No real Supabase, OAuth, Lava.top, marketplace, semantic search, storage, or image-processing calls are introduced.
 
 ## Project Structure
