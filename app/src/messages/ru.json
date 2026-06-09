@@ -300,5 +300,80 @@
       "low": "Низкий"
     },
     "impact": "+{count, plural, one {# комплект} few {# комплекта} many {# комплектов} other {# комплекта}}"
+  },
+  "myItems": {
+    "title": "Мои <strong>вещи</strong>",
+    "subtitle": "{count, plural, one {# вещь в гардеробе} few {# вещи в гардеробе} many {# вещей в гардеробе} other {# вещи в гардеробе}}",
+    "addItem": "Добавить вещь",
+    "gridLabel": "Вещи гардероба",
+    "itemColors": "Цвета вещи",
+    "favorite": "Переключить избранное для {item}",
+    "filters": {
+      "label": "Фильтры гардероба",
+      "categories": "Фильтры по категориям",
+      "colors": "Фильтры по цветам",
+      "allCategories": "Все",
+      "allColors": "Все цвета",
+      "color": "Фильтр по цвету {color}"
+    },
+    "sort": {
+      "label": "Сортировка",
+      "name": "Название",
+      "category": "Категория",
+      "recent": "Недавние",
+      "price": "Цена"
+    },
+    "empty": {
+      "title": "Гардероб ждет первую вещь",
+      "copy": "Добавьте вещь, чтобы начать собирать капсульный гардероб.",
+      "filteredTitle": "Нет подходящих вещей",
+      "filteredCopy": "Попробуйте другую категорию или цвет."
+    },
+    "sources": {
+      "photo_upload": "Фото",
+      "marketplace": "Ссылка",
+      "catalog": "Каталог"
+    },
+    "badges": {
+      "capsule": "Капсула"
+    },
+    "statuses": {
+      "active": "Активная",
+      "uncapsulated": "Вне капсулы",
+      "for_sale": "На продажу",
+      "for_repair": "В ремонт"
+    },
+    "detail": {
+      "newTitle": "Новая вещь",
+      "editTitle": "Редактировать вещь",
+      "close": "Закрыть",
+      "changePhoto": "Изменить фото",
+      "name": "Название",
+      "category": "Категория",
+      "colors": "Цвета",
+      "color": "Цвет {count}",
+      "removeColor": "Удалить цвет",
+      "brand": "Бренд",
+      "material": "Материал",
+      "price": "Цена",
+      "capsules": "В капсулах",
+      "active": "Активная",
+      "noCapsules": "Не входит в капсулы",
+      "save": "Сохранить",
+      "moveSale": "На продажу",
+      "moveRepair": "В ремонт"
+    },
+    "notice": {
+      "saved": "{item} сохранена.",
+      "added": "{item} добавлена.",
+      "movedSale": "{item} перемещена в продажу.",
+      "movedRepair": "{item} перемещена в ремонт."
+    },
+    "validation": {
+      "name": "Введите название.",
+      "category": "Выберите категорию.",
+      "colorsRequired": "Добавьте хотя бы один цвет.",
+      "colorsMax": "Можно выбрать до трех цветов."
+    }
   }
 }
