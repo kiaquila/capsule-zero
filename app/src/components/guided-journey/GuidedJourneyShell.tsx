@@ -52,9 +52,16 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
   const requestedTab = parseJourneyTab(searchParams.get("tab"));
   const requestedCategoryId = searchParams.get("category");
   const initialTab = requestedTab ?? (requestedCategoryId ? "search" : "upload");
+  const initialSetup = initialTab === "search"
+    ? buildInitialSearchHandoffSetup(snapshot, requestedCategoryId)
+    : null;
   const [step, setStep] = useState<JourneyStep>(initialTab === "search" ? 3 : 1);
-  const [selectedType, setSelectedType] = useState<GarderType | null>(null);
-  const [categoryState, setCategoryState] = useState<Record<string, CategoryState>>({});
+  const [selectedType, setSelectedType] = useState<GarderType | null>(
+    initialSetup?.type ?? null,
+  );
+  const [categoryState, setCategoryState] = useState<Record<string, CategoryState>>(
+    initialSetup?.categoryState ?? {},
+  );
   const [customCategory, setCustomCategory] = useState("");
   const [customCategoryError, setCustomCategoryError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<JourneyTab>(initialTab);
@@ -126,16 +133,7 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
   };
 
   const selectType = (type: GarderType) => {
-    const nextState = Object.fromEntries(
-      snapshot.categories[type].map((option) => [
-        option.id,
-        {
-          count: option.defaultCount,
-          option,
-          selected: false,
-        } satisfies CategoryState,
-      ]),
-    );
+    const nextState = buildCategoryState(snapshot.categories[type]);
 
     setSelectedType(type);
     setCategoryState(nextState);
@@ -782,7 +780,7 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
                 </div>
                 <button
                   className="journey-primary-button"
-                  disabled={isCreating}
+                  disabled={isCreating || !selectedType || selectedCategoryCount < 8}
                   onClick={createCapsule}
                   type="button"
                 >
@@ -926,6 +924,47 @@ function buildInitialSearchQuery(
       .flat()
       .find((category) => category.id === normalized)?.label ??
     normalized
+  );
+}
+
+function buildInitialSearchHandoffSetup(
+  snapshot: GuidedJourneySnapshot,
+  categoryId: string | null,
+): { type: GarderType; categoryState: Record<string, CategoryState> } {
+  const type: GarderType = "mixed";
+  const selectedIds = new Set<string>();
+  const normalized = categoryId?.trim();
+  const options = snapshot.categories[type];
+
+  if (normalized && options.some((category) => category.id === normalized)) {
+    selectedIds.add(normalized);
+  }
+
+  options.forEach((category) => {
+    if (selectedIds.size < 8) {
+      selectedIds.add(category.id);
+    }
+  });
+
+  return {
+    type,
+    categoryState: buildCategoryState(options, selectedIds),
+  };
+}
+
+function buildCategoryState(
+  options: JourneyCategoryOption[],
+  selectedIds = new Set<string>(),
+): Record<string, CategoryState> {
+  return Object.fromEntries(
+    options.map((option) => [
+      option.id,
+      {
+        count: option.defaultCount,
+        option,
+        selected: selectedIds.has(option.id),
+      } satisfies CategoryState,
+    ]),
   );
 }
 

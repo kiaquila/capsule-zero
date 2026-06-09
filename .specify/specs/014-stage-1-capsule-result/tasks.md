@@ -46,6 +46,7 @@
 - [x] T028 Remove temporary downloaded garment debug assets from the app before PR scope freeze.
 - [x] T029 Address Codex review P2 findings: filter retired wardrobe statuses from picker candidates and sync tab state after URL query changes.
 - [x] T030 Address second Codex review P2 findings: wire Shopping List query handoff into Guided Journey search and localize known RU provider gap reasons.
+- [x] T031 Address third Codex review P2 finding: hydrate a valid Guided Journey setup state for shopping search handoffs.
 
 ## Process Memory
 
@@ -68,6 +69,7 @@
 - Sync the active Capsule Result tab from `?tab=` on every client-side URL query change so dashboard/sidebar links keep working without a page reload.
 - Treat Shopping List rows as real Guided Journey search handoffs in Stage 1: direct links may skip to step 3 search with a category-prefilled query, but still do not persist provider data.
 - Translate known provider fixture gap reasons at the capsule-result data boundary so RU screens do not mix English gap copy into localized UI.
+- Hydrate shopping search handoff with a mixed journey setup and 8 selected categories so back navigation and create gating remain valid.
 
 ### Known Issues
 

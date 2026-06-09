@@ -121,7 +121,7 @@ As a Stage 1 reviewer, I want add/remove/replace/favorite controls to behave loc
 - **FR-013**: The canonical `/{locale}/capsule/{id}` route MUST render the same mock result for the current capsule ID and reject unknown IDs with a safe dashboard redirect or not-found state.
 - **FR-014**: Add/Replace picker candidates MUST exclude `for_sale` and `for_repair` wardrobe items until those items are restored to an eligible wardrobe status.
 - **FR-015**: Capsule Result tabs MUST stay synchronized with the current `?tab=` query during client-side navigation on the same route.
-- **FR-016**: Shopping List handoff links MUST open the Guided Journey search context promised by their query parameters.
+- **FR-016**: Shopping List handoff links MUST open the Guided Journey search context promised by their query parameters without bypassing a valid journey setup state.
 - **FR-017**: RU Capsule Result copy MUST not render English provider gap reason text for known Stage 1 fixture gaps.
 
 ### Key Entities
