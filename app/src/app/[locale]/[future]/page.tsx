@@ -5,7 +5,6 @@ const FUTURE_DASHBOARD_ROUTES = new Set([
   "favorites",
   "for-repair",
   "for-sale",
-  "my-items",
   "profile",
   "uncapsulated",
 ]);

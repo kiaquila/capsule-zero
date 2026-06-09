@@ -300,5 +300,80 @@
       "low": "Low"
     },
     "impact": "+{count} outfits"
+  },
+  "myItems": {
+    "title": "My <strong>Items</strong>",
+    "subtitle": "{count, plural, one {# item in wardrobe} other {# items in wardrobe}}",
+    "addItem": "Add Item",
+    "gridLabel": "Wardrobe items",
+    "itemColors": "Item colors",
+    "favorite": "Toggle favorite for {item}",
+    "filters": {
+      "label": "Wardrobe filters",
+      "categories": "Category filters",
+      "colors": "Color filters",
+      "allCategories": "All",
+      "allColors": "All colors",
+      "color": "Filter by {color}"
+    },
+    "sort": {
+      "label": "Sort",
+      "name": "Name",
+      "category": "Category",
+      "recent": "Recent",
+      "price": "Price"
+    },
+    "empty": {
+      "title": "Your wardrobe is waiting",
+      "copy": "Add a first item to begin shaping your capsule wardrobe.",
+      "filteredTitle": "No items match",
+      "filteredCopy": "Try a different category or color."
+    },
+    "sources": {
+      "photo_upload": "Photo",
+      "marketplace": "Link",
+      "catalog": "Catalog"
+    },
+    "badges": {
+      "capsule": "Capsule"
+    },
+    "statuses": {
+      "active": "Active",
+      "uncapsulated": "Uncapsulated",
+      "for_sale": "For Sale",
+      "for_repair": "For Repair"
+    },
+    "detail": {
+      "newTitle": "New Item",
+      "editTitle": "Edit Item",
+      "close": "Close",
+      "changePhoto": "Change Photo",
+      "name": "Name",
+      "category": "Category",
+      "colors": "Colors",
+      "color": "Color {count}",
+      "removeColor": "Remove color",
+      "brand": "Brand",
+      "material": "Material",
+      "price": "Price",
+      "capsules": "In Capsules",
+      "active": "Active",
+      "noCapsules": "Not in any capsule",
+      "save": "Save",
+      "moveSale": "Move to Sale",
+      "moveRepair": "Move to Repair"
+    },
+    "notice": {
+      "saved": "{item} saved.",
+      "added": "{item} added.",
+      "movedSale": "{item} moved to For Sale.",
+      "movedRepair": "{item} moved to For Repair."
+    },
+    "validation": {
+      "name": "Name is required.",
+      "category": "Category is required.",
+      "colorsRequired": "Add at least one color.",
+      "colorsMax": "Use up to three colors."
+    }
   }
 }
