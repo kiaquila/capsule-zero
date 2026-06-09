@@ -66,9 +66,7 @@ export function CapsuleResultShell({ snapshot }: CapsuleResultShellProps) {
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<CapsuleResultTab>(
-    parseTab(searchParams.get("tab")),
-  );
+  const activeTab = parseTab(searchParams.get("tab"));
   const [items, setItems] = useState<CapsuleResultItem[]>(snapshot.items);
   const [favorites, setFavorites] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(
@@ -113,6 +111,13 @@ export function CapsuleResultShell({ snapshot }: CapsuleResultShellProps) {
     await signOutAction();
     router.push(`/${locale}`);
     router.refresh();
+  };
+
+  const selectTab = (tab: CapsuleResultTab) => {
+    router.replace(
+      `/${locale}/capsule-result${tab === "items" ? "" : `?tab=${tab}`}`,
+      { scroll: false },
+    );
   };
 
   const toggleFavorite = (itemId: string) => {
@@ -292,7 +297,7 @@ export function CapsuleResultShell({ snapshot }: CapsuleResultShellProps) {
                         activeTab === tab && "capsule-result-tab-active",
                       )}
                       key={tab}
-                      onClick={() => setActiveTab(tab)}
+                      onClick={() => selectTab(tab)}
                       type="button"
                     >
                       {t(`tabs.${tab}`)}

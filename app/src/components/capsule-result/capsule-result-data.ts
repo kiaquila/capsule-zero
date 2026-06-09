@@ -107,6 +107,7 @@ export async function buildCapsuleResultSnapshot({
     .filter((item) => capsuleItemIds.has(item.id))
     .map((item) => buildItem(item, locale, palette));
   const wardrobeCandidates = wardrobeItems
+    .filter(isCapsulePickerEligible)
     .filter((item) => !capsuleItemIds.has(item.id))
     .map((item) => buildItem(item, locale, palette));
   const catalogCandidates = catalogResults.map((result) =>
@@ -310,6 +311,10 @@ function sourceType(item: WardrobeEntry): CapsuleResultItemSource {
   }
 
   return item.sourceType === "marketplace" ? "marketplace" : "photo";
+}
+
+function isCapsulePickerEligible(item: WardrobeEntry): boolean {
+  return item.status === "active" || item.status === "uncapsulated";
 }
 
 function categoryName(categoryId: string, locale: AppLocale): string {

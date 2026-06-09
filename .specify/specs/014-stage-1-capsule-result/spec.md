@@ -87,6 +87,8 @@ As a Stage 1 reviewer, I want add/remove/replace/favorite controls to behave loc
 - A user removes the last item.
 - A user tries to add an item already in the capsule.
 - A replacement candidate conflicts with the immutable capsule palette.
+- A user navigates client-side to another `?tab=` URL while already on Capsule Result.
+- A wardrobe item has `for_sale` or `for_repair` status while Add/Replace picker is open.
 - A mock wardrobe/catalog item references a non-public fixture image.
 - The result is viewed at 375px, tablet, and desktop widths.
 
@@ -115,6 +117,8 @@ As a Stage 1 reviewer, I want add/remove/replace/favorite controls to behave loc
 - **FR-011**: Result copy MUST be localized through next-intl EN/RU messages and MUST not expose ES-AR.
 - **FR-012**: Result UI MUST preserve achromatic glass styling and responsive mobile-first behavior.
 - **FR-013**: The canonical `/{locale}/capsule/{id}` route MUST render the same mock result for the current capsule ID and reject unknown IDs with a safe dashboard redirect or not-found state.
+- **FR-014**: Add/Replace picker candidates MUST exclude `for_sale` and `for_repair` wardrobe items until those items are restored to an eligible wardrobe status.
+- **FR-015**: Capsule Result tabs MUST stay synchronized with the current `?tab=` query during client-side navigation on the same route.
 
 ### Key Entities
 

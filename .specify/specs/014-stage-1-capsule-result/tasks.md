@@ -44,6 +44,7 @@
 - [x] T026 Browser smoke-check unauthenticated redirect, dashboard result link, Guided Journey handoff, EN/RU result, tab switching, local management interactions, compatibility blocking, and mobile viewport.
 - [x] T027 Browser smoke-check restored Outfits view toggle icons and line/square layout behavior after user review.
 - [x] T028 Remove temporary downloaded garment debug assets from the app before PR scope freeze.
+- [x] T029 Address Codex review P2 findings: filter retired wardrobe statuses from picker candidates and sync tab state after URL query changes.
 
 ## Process Memory
 
@@ -62,6 +63,8 @@
 - Keep visible UI copy product-facing and move mock/local constraints to implementation and SENAR evidence instead of showing technical labels in the result screen.
 - Match the Outfits view toggle to the approved prototype: filled three-line and 2x2 icons, line view as a horizontal layer row, square view as a 2x2 moodboard collage.
 - Remove the temporary downloaded garment images before PR because they were only used for local visual inspection and are not part of the approved PR scope.
+- Keep Add/Replace picker candidates limited to `active` and `uncapsulated` wardrobe statuses; `for_sale` and `for_repair` remain outside capsule composition until restored to wardrobe eligibility.
+- Sync the active Capsule Result tab from `?tab=` on every client-side URL query change so dashboard/sidebar links keep working without a page reload.
 
 ### Known Issues
 
