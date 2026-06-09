@@ -45,6 +45,7 @@
 - [x] T027 Browser smoke-check restored Outfits view toggle icons and line/square layout behavior after user review.
 - [x] T028 Remove temporary downloaded garment debug assets from the app before PR scope freeze.
 - [x] T029 Address Codex review P2 findings: filter retired wardrobe statuses from picker candidates and sync tab state after URL query changes.
+- [x] T030 Address second Codex review P2 findings: wire Shopping List query handoff into Guided Journey search and localize known RU provider gap reasons.
 
 ## Process Memory
 
@@ -65,6 +66,8 @@
 - Remove the temporary downloaded garment images before PR because they were only used for local visual inspection and are not part of the approved PR scope.
 - Keep Add/Replace picker candidates limited to `active` and `uncapsulated` wardrobe statuses; `for_sale` and `for_repair` remain outside capsule composition until restored to wardrobe eligibility.
 - Sync the active Capsule Result tab from `?tab=` on every client-side URL query change so dashboard/sidebar links keep working without a page reload.
+- Treat Shopping List rows as real Guided Journey search handoffs in Stage 1: direct links may skip to step 3 search with a category-prefilled query, but still do not persist provider data.
+- Translate known provider fixture gap reasons at the capsule-result data boundary so RU screens do not mix English gap copy into localized UI.
 
 ### Known Issues
 

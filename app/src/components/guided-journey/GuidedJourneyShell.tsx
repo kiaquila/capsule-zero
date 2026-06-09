@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -46,18 +47,24 @@ const DECORATIVE_CATEGORY_PATTERN =
 export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
   const t = useTranslations("journey");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const objectUrls = useRef<string[]>([]);
-  const [step, setStep] = useState<JourneyStep>(1);
+  const requestedTab = parseJourneyTab(searchParams.get("tab"));
+  const requestedCategoryId = searchParams.get("category");
+  const initialTab = requestedTab ?? (requestedCategoryId ? "search" : "upload");
+  const [step, setStep] = useState<JourneyStep>(initialTab === "search" ? 3 : 1);
   const [selectedType, setSelectedType] = useState<GarderType | null>(null);
   const [categoryState, setCategoryState] = useState<Record<string, CategoryState>>({});
   const [customCategory, setCustomCategory] = useState("");
   const [customCategoryError, setCustomCategoryError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<JourneyTab>("upload");
+  const [activeTab, setActiveTab] = useState<JourneyTab>(initialTab);
   const [addedItems, setAddedItems] = useState<AddedJourneyItem[]>([]);
   const [linkInput, setLinkInput] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(() =>
+    buildInitialSearchQuery(snapshot, requestedCategoryId),
+  );
   const [selectedColorIds, setSelectedColorIds] = useState<string[]>([]);
   const [paletteNotice, setPaletteNotice] = useState<string | null>(null);
   const [itemNotice, setItemNotice] = useState<string | null>(null);
@@ -897,6 +904,29 @@ function buildCustomCategoryId(label: string) {
     .replace(/^-+|-+$/g, "");
 
   return `custom-${slug || encodeURIComponent(label)}`;
+}
+
+function parseJourneyTab(raw: string | null): JourneyTab | null {
+  return raw === "upload" || raw === "links" || raw === "search" ? raw : null;
+}
+
+function buildInitialSearchQuery(
+  snapshot: GuidedJourneySnapshot,
+  categoryId: string | null,
+) {
+  const normalized = categoryId?.trim();
+
+  if (!normalized) {
+    return "";
+  }
+
+  return (
+    snapshot.catalogItems.find((item) => item.categoryId === normalized)?.categoryLabel ??
+    Object.values(snapshot.categories)
+      .flat()
+      .find((category) => category.id === normalized)?.label ??
+    normalized
+  );
 }
 
 function JourneyIcon({

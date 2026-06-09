@@ -271,7 +271,7 @@ function buildInitialGaps(
       colorHint: translateColorHint(gap.colorHint, locale) ?? category?.colorHint ?? colorName(color, locale),
       colorHex: category?.colorHex ?? color.hex,
       type: "structural" as const,
-      reason: gap.reason,
+      reason: translateGapReason(gap.reason, locale),
       impact: Math.max(8, 12 - index * 2),
       priority: index === 0 ? ("high" as const) : ("medium" as const),
     };
@@ -397,6 +397,19 @@ function translateColorHint(
     .replaceAll("Navy", "Темно-синий")
     .replaceAll("Sand", "Песочный")
     .replaceAll("Burgundy", "Бордовый");
+}
+
+function translateGapReason(reason: string, locale: AppLocale): string {
+  if (locale !== "ru") {
+    return reason;
+  }
+
+  const translations: Record<string, string> = {
+    "Completes casual combinations without changing palette.":
+      "Завершает повседневные сочетания без изменения палитры.",
+  };
+
+  return translations[reason] ?? reason;
 }
 
 function areColorGroupsCompatible(
