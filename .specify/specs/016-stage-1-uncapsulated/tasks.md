@@ -42,6 +42,7 @@
 - [x] T024 Run `git diff --check`.
 - [x] T025 Start local dev server.
 - [x] T026 Browser smoke-check unauthenticated redirect, dashboard navigation, EN/RU Uncapsulated, category filtering, detail/add-to-capsule/sale/repair interactions, no ES-AR controls, and mobile viewport.
+- [x] T027 Address Codex P2 review feedback by restoring approved transparent glass styling on the Add to Capsule confirmation modal.
 
 ## Process Memory
 
@@ -57,6 +58,7 @@
 - Keep actions client-local in this slice; real persistence, RLS, capsule recomputation, and provider-backed writes remain later integration-gate work.
 - Keep Uncapsulated as a scoped shell instead of refactoring My Items shared components because the accepted My Items screen is large and stable, and this slice should avoid unrelated UI abstraction churn.
 - Use browser-local object URLs for photo preview in Stage 1. Save stores the object URL in page state only; reloading returns to deterministic mock fixtures and avoids Supabase Storage or background-removal calls.
+- Codex review flagged the Add to Capsule confirmation modal as too opaque. Keep modal overlays within the documented glass token family, even when they sit over the dark wallpaper.
 
 ### Known Issues
 

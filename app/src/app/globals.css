@@ -4824,11 +4824,11 @@ button, a, input, textarea {
   border: 1px solid rgba(255,255,255,.22);
   border-radius: var(--radius-lg);
   background:
-    linear-gradient(180deg, rgba(30,30,30,.96), rgba(12,12,12,.96)),
-    rgba(12,12,12,.96);
+    linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.08)),
+    rgba(18,18,18,.54);
   box-shadow: 0 20px 58px rgba(0,0,0,.34);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(44px);
+  -webkit-backdrop-filter: blur(44px);
   color: var(--color-text-primary);
   overflow: hidden;
 }

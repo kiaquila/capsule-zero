@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/stage-1-uncapsulated`
 **Created**: 2026-06-11
-**Status**: Local implementation
+**Status**: Open PR review fix
 **Input**: User description: "Execute the next plan step: Stage 1 Uncapsulated, prepare it locally for review, and wait for approval before creating a PR."
 
 ## Goal
@@ -118,6 +118,7 @@ As a Stage 1 reviewer, I want action controls to behave locally so the wardrobe 
 - **FR-011**: Add-to-capsule MUST explain the target active capsule, or explain that no active capsule is available.
 - **FR-012**: Uncapsulated copy MUST be localized through next-intl EN/RU messages and MUST not expose ES-AR.
 - **FR-013**: Uncapsulated UI MUST preserve achromatic glass styling and responsive mobile-first behavior.
+- **FR-014**: Add-to-capsule confirmation UI MUST use the approved transparent glass treatment and MUST NOT render as an opaque dark modal.
 
 ### Key Entities
 
