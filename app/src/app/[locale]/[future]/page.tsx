@@ -6,7 +6,6 @@ const FUTURE_DASHBOARD_ROUTES = new Set([
   "for-repair",
   "for-sale",
   "profile",
-  "uncapsulated",
 ]);
 
 interface FutureDashboardRouteProps {
