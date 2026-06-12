@@ -27,8 +27,8 @@
 - [x] T012 Implement Favorites shell with sidebar/topbar, language switcher, sign-out, My Items / From Catalogs tabs, category filters, grid, detail panel, toast/notice, mobile bottom nav, and more sheet.
 - [x] T013 Implement category filtering for the active Favorites section.
 - [x] T014 Implement favorite item cards with shared My Items-style favorite controls, color dots, source/status context, and catalog badges.
-- [x] T015 Implement editable detail panel with local photo preview, name/category/color/brand/material/price fields, Save, Remove Favorite, Move to Sale, and Move to Repair actions.
-- [x] T016 Implement local-only favorite removal and status transitions that update visible counts.
+- [x] T015 Implement editable detail panel with local photo preview, name/category/color/brand/material/price fields, Save, Remove Favorite, Add to Capsule, Delete Item, Move to Sale, and Move to Repair actions.
+- [x] T016 Implement local-only favorite removal, add-to-capsule, deletion, and status transitions that update visible counts.
 - [x] T017 Add EN/RU Favorites messages with no ES-AR active controls.
 - [x] T018 Add responsive glass CSS for Favorites-specific controls.
 
@@ -42,7 +42,7 @@
 - [x] T024 Run `npm run preflight`.
 - [x] T025 Run `git diff --check`.
 - [x] T026 Start local dev server.
-- [x] T027 Browser smoke-check unauthenticated redirect, dashboard navigation, EN/RU Favorites, section tabs, category filtering, active-heart removal, detail edit/save/status interactions, no ES-AR controls, and mobile viewport.
+- [x] T027 Browser smoke-check unauthenticated redirect, dashboard navigation, EN/RU Favorites, section tabs, category/color filtering, sort controls, favorite removal, detail edit/save/add-to-capsule/delete/status interactions, no ES-AR controls, and mobile viewport.
 
 ## Process Memory
 
@@ -58,8 +58,9 @@
 - Keep all Favorites interactions client-local in this slice; real persistence and provider-backed favorite/item writes remain later integration-gate work.
 - Use an existing catalog-derived wardrobe fixture as the From Catalogs favorite instead of inventing a separate catalog persistence model in this screen slice.
 - Implement Favorites detail as an editable side panel aligned with My Items and Uncapsulated because the user explicitly required no shortcut for object edit cards.
-- Keep favorite removal as "remove from Favorites" rather than deleting the wardrobe object because the Favorites prototype heart action is scoped to the favorite marker.
+- Keep the card favorite control scoped to "remove from Favorites"; expose local Delete Item only inside the edit/detail panel because the user explicitly requested delete parity there.
 - Follow-up parity patch keeps the My Items circular favorite display as the shared visual contract across My Items, Uncapsulated, and Favorites, and uses the Uncapsulated yellow destructive button treatment for remove/delete actions in Favorites and My Items.
+- Address Codex review by aligning `FR-010`, scope, success criteria, and verification evidence with the user-requested Favorites `Add to Capsule` and `Delete Item` actions.
 
 ### Known Issues
 
