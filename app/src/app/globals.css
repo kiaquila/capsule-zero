@@ -4420,6 +4420,16 @@ button, a, input, textarea {
   border-radius: 8px;
   background: rgba(255,255,255,.08);
   margin-bottom: 18px;
+  overflow: hidden;
+  position: relative;
+}
+
+.my-items-detail-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .my-items-detail-photo button,
@@ -4435,6 +4445,25 @@ button, a, input, textarea {
   letter-spacing: .08em;
   padding: 9px 13px;
   text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+
+.my-items-photo-input {
+  display: none;
+}
+
+.my-items-photo-error {
+  position: relative;
+  z-index: 1;
+  max-width: calc(100% - 24px);
+  border-radius: var(--radius-pill);
+  background: rgba(0,0,0,.58);
+  color: #FFD600;
+  font-size: 11px;
+  line-height: 1.35;
+  padding: 5px 9px;
+  text-align: center;
 }
 
 .my-items-field {
@@ -4656,6 +4685,226 @@ button, a, input, textarea {
   -webkit-backdrop-filter: blur(32px);
 }
 
+.uncapsulated-grid {
+  align-items: stretch;
+}
+
+.uncapsulated-card {
+  display: flex;
+  min-height: 302px;
+  flex-direction: column;
+}
+
+.uncapsulated-card-main {
+  flex: 1;
+}
+
+.uncapsulated-card-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  border-top: 1px solid rgba(255,255,255,.12);
+  padding: 10px;
+}
+
+.uncapsulated-card-actions button {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 8px;
+  background: rgba(255,255,255,.08);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  padding: 0 8px;
+  text-transform: uppercase;
+}
+
+.uncapsulated-card-actions button:hover {
+  border-color: rgba(255,255,255,.36);
+  background: rgba(255,255,255,.17);
+  color: var(--color-text-primary);
+}
+
+.uncapsulated-card-actions button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.my-items-detail-photo > span {
+  color: var(--color-text-placeholder);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+
+.uncapsulated-detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.uncapsulated-detail-field p {
+  color: var(--color-text-placeholder);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.uncapsulated-detail-field > span {
+  min-height: 42px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 8px;
+  background: rgba(255,255,255,.07);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 11px 12px;
+}
+
+.uncapsulated-detail-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.uncapsulated-detail-colors span {
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(255,255,255,.28);
+  border-radius: var(--radius-circle);
+}
+
+.uncapsulated-delete-button {
+  border-color: rgba(255,214,0,.42);
+  background: rgba(255,214,0,.08);
+  color: #FFD600;
+}
+
+.dashboard-more-item-active {
+  background: rgba(255,255,255,.14);
+}
+
+.uncapsulated-capsule-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.uncapsulated-capsule-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0,0,0,.60);
+  cursor: pointer;
+}
+
+.uncapsulated-capsule-modal {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 100%);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.08)),
+    rgba(18,18,18,.54);
+  box-shadow: 0 20px 58px rgba(0,0,0,.34);
+  backdrop-filter: blur(44px);
+  -webkit-backdrop-filter: blur(44px);
+  color: var(--color-text-primary);
+  overflow: hidden;
+}
+
+.uncapsulated-capsule-modal header,
+.uncapsulated-capsule-modal footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+}
+
+.uncapsulated-capsule-modal header {
+  border-bottom: 1px solid rgba(255,255,255,.10);
+}
+
+.uncapsulated-capsule-modal h2 {
+  font-size: 18px;
+  line-height: var(--leading-snug);
+}
+
+.uncapsulated-capsule-modal footer {
+  border-top: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+}
+
+.uncapsulated-capsule-modal footer .my-items-save-button,
+.uncapsulated-capsule-modal footer .my-items-secondary-button {
+  flex: 1 1 0;
+}
+
+.uncapsulated-capsule-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 8px;
+  background: rgba(255,255,255,.08);
+  margin: 18px 20px 0;
+  padding: 14px;
+}
+
+.uncapsulated-capsule-card p {
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.uncapsulated-capsule-card small {
+  display: block;
+  color: var(--color-text-placeholder);
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+.uncapsulated-capsule-palette {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 4px;
+}
+
+.uncapsulated-capsule-palette span {
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(255,255,255,.36);
+  border-radius: var(--radius-circle);
+}
+
+.uncapsulated-capsule-copy {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+  padding: 16px 20px 20px;
+}
+
 @media (max-width: 1024px) {
   .my-items-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -4722,6 +4971,10 @@ button, a, input, textarea {
     min-height: 218px;
   }
 
+  .uncapsulated-card {
+    min-height: 256px;
+  }
+
   .my-items-card-main {
     padding: 10px;
   }
@@ -4754,5 +5007,28 @@ button, a, input, textarea {
   .my-items-toast {
     right: 14px;
     bottom: calc(94px + env(safe-area-inset-bottom));
+  }
+
+  .uncapsulated-card-actions {
+    gap: 5px;
+    padding: 8px;
+  }
+
+  .uncapsulated-card-actions button {
+    min-height: 32px;
+    padding: 0 6px;
+  }
+
+  .uncapsulated-card-actions button span {
+    display: none;
+  }
+
+  .uncapsulated-capsule-modal footer {
+    flex-direction: column-reverse;
+  }
+
+  .uncapsulated-capsule-modal footer .my-items-save-button,
+  .uncapsulated-capsule-modal footer .my-items-secondary-button {
+    width: 100%;
   }
 }

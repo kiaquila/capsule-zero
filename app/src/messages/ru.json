@@ -375,5 +375,92 @@
       "colorsRequired": "Добавьте хотя бы один цвет.",
       "colorsMax": "Можно выбрать до трех цветов."
     }
+  },
+  "uncapsulated": {
+    "title": "<strong>Вне капсулы</strong>",
+    "subtitle": "{count, plural, one {# вещь вне капсул} few {# вещи вне капсул} many {# вещей вне капсул} other {# вещи вне капсул}}",
+    "openMyItems": "Мои вещи",
+    "gridLabel": "Вещи вне капсул",
+    "itemColors": "Цвета вещи",
+    "filters": {
+      "label": "Фильтры вещей вне капсул",
+      "categories": "Фильтры по категориям",
+      "allCategories": "Все"
+    },
+    "empty": {
+      "title": "Все вещи уже в капсулах",
+      "copy": "Сейчас нет вещей вне капсул, которые ждут решения.",
+      "filteredTitle": "Нет подходящих вещей",
+      "filteredCopy": "Попробуйте другую категорию или вернитесь ко всем."
+    },
+    "sources": {
+      "photo_upload": "Фото",
+      "marketplace": "Ссылка",
+      "catalog": "Каталог"
+    },
+    "badges": {
+      "noCapsule": "Без капсулы"
+    },
+    "statuses": {
+      "active": "Активная",
+      "uncapsulated": "Вне капсулы",
+      "for_sale": "На продажу",
+      "for_repair": "В ремонт"
+    },
+    "actions": {
+      "label": "Действия для {item}",
+      "addShort": "Капсула",
+      "saleShort": "Продажа",
+      "repairShort": "Ремонт",
+      "addToCapsule": "Добавить в капсулу",
+      "moveSale": "На продажу",
+      "moveRepair": "В ремонт"
+    },
+    "detail": {
+      "title": "Детали вещи {item}",
+      "editTitle": "Редактировать вещь",
+      "close": "Закрыть",
+      "photoFallback": "Превью фото",
+      "changePhoto": "Заменить фото",
+      "name": "Название",
+      "category": "Категория",
+      "colors": "Цвета",
+      "color": "Цвет {count}",
+      "addColor": "Добавить цвет",
+      "removeColor": "Удалить цвет",
+      "brand": "Бренд",
+      "material": "Материал",
+      "price": "Цена",
+      "source": "Источник",
+      "capsules": "Капсулы",
+      "noCapsules": "Не входит в капсулы",
+      "notSet": "Не указано",
+      "save": "Сохранить",
+      "delete": "Удалить"
+    },
+    "capsule": {
+      "title": "Добавить в капсулу",
+      "copy": "{item} исчезнет из списка вне капсул и попадет в {capsule} в этом локальном превью.",
+      "meta": "{items, plural, one {# вещь} few {# вещи} many {# вещей} other {# вещи}} · {outfits, plural, one {# комплект} few {# комплекта} many {# комплектов} other {# комплекта}}",
+      "confirm": "Добавить",
+      "cancel": "Отмена"
+    },
+    "notice": {
+      "saved": "{item} сохранена.",
+      "deleted": "{item} удалена из Моих вещей.",
+      "photoReady": "Превью фото добавлено. Сохраните вещь, чтобы оставить его в локальном просмотре.",
+      "addedCapsule": "{item} добавлена в {capsule}.",
+      "movedSale": "{item} перемещена в продажу.",
+      "movedRepair": "{item} перемещена в ремонт.",
+      "noCapsule": "Активной капсулы пока нет."
+    },
+    "validation": {
+      "name": "Введите название.",
+      "category": "Выберите категорию.",
+      "colorsRequired": "Добавьте хотя бы один цвет.",
+      "colorsMax": "Можно выбрать до трех цветов.",
+      "photoType": "Загрузите изображение JPEG, PNG или WebP.",
+      "photoSize": "Загрузите изображение до 10 МБ."
+    }
   }
 }

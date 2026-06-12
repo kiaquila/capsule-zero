@@ -375,5 +375,92 @@
       "colorsRequired": "Add at least one color.",
       "colorsMax": "Use up to three colors."
     }
+  },
+  "uncapsulated": {
+    "title": "<strong>Uncapsulated</strong>",
+    "subtitle": "{count, plural, one {# item outside capsules} other {# items outside capsules}}",
+    "openMyItems": "My Items",
+    "gridLabel": "Uncapsulated items",
+    "itemColors": "Item colors",
+    "filters": {
+      "label": "Uncapsulated filters",
+      "categories": "Category filters",
+      "allCategories": "All"
+    },
+    "empty": {
+      "title": "All items are in capsules",
+      "copy": "There are no uncapsulated decisions waiting right now.",
+      "filteredTitle": "No items match",
+      "filteredCopy": "Try another category or return to All."
+    },
+    "sources": {
+      "photo_upload": "Photo",
+      "marketplace": "Link",
+      "catalog": "Catalog"
+    },
+    "badges": {
+      "noCapsule": "No capsule"
+    },
+    "statuses": {
+      "active": "Active",
+      "uncapsulated": "Uncapsulated",
+      "for_sale": "For Sale",
+      "for_repair": "For Repair"
+    },
+    "actions": {
+      "label": "Decision actions for {item}",
+      "addShort": "Capsule",
+      "saleShort": "Sale",
+      "repairShort": "Repair",
+      "addToCapsule": "Add to Capsule",
+      "moveSale": "Move to Sale",
+      "moveRepair": "Move to Repair"
+    },
+    "detail": {
+      "title": "Details for {item}",
+      "editTitle": "Edit item",
+      "close": "Close",
+      "photoFallback": "Photo preview",
+      "changePhoto": "Change photo",
+      "name": "Name",
+      "category": "Category",
+      "colors": "Colors",
+      "color": "Color {count}",
+      "addColor": "Add color",
+      "removeColor": "Remove color",
+      "brand": "Brand",
+      "material": "Material",
+      "price": "Price",
+      "source": "Source",
+      "capsules": "Capsules",
+      "noCapsules": "Not in any capsule",
+      "notSet": "Not set",
+      "save": "Save",
+      "delete": "Delete"
+    },
+    "capsule": {
+      "title": "Add to Capsule",
+      "copy": "{item} will leave Uncapsulated and join {capsule} in this local preview.",
+      "meta": "{items} items · {outfits} outfits",
+      "confirm": "Add",
+      "cancel": "Cancel"
+    },
+    "notice": {
+      "saved": "{item} saved.",
+      "deleted": "{item} deleted from My Items.",
+      "photoReady": "Photo preview added. Save the item to keep it in this local preview.",
+      "addedCapsule": "{item} added to {capsule}.",
+      "movedSale": "{item} moved to For Sale.",
+      "movedRepair": "{item} moved to For Repair.",
+      "noCapsule": "No active capsule is available yet."
+    },
+    "validation": {
+      "name": "Name is required.",
+      "category": "Category is required.",
+      "colorsRequired": "Add at least one color.",
+      "colorsMax": "Use up to three colors.",
+      "photoType": "Upload a JPEG, PNG, or WebP image.",
+      "photoSize": "Upload an image up to 10 MB."
+    }
   }
 }
