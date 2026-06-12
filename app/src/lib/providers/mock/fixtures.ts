@@ -166,7 +166,7 @@ export const MOCK_WARDROBE_ITEMS: WardrobeEntry[] = [
     isPublic: false,
     sourceType: "catalog",
     status: "uncapsulated",
-    favorite: false,
+    favorite: true,
     fromCatalog: true,
     version: 1,
     createdAt: "2026-06-01T10:20:00.000Z",
