@@ -360,12 +360,14 @@
       "active": "Active",
       "noCapsules": "Not in any capsule",
       "save": "Save",
+      "delete": "Delete",
       "moveSale": "Move to Sale",
       "moveRepair": "Move to Repair"
     },
     "notice": {
       "saved": "{item} saved.",
       "added": "{item} added.",
+      "deleted": "{item} deleted from My Items.",
       "movedSale": "{item} moved to For Sale.",
       "movedRepair": "{item} moved to For Repair."
     },
@@ -376,22 +378,128 @@
       "colorsMax": "Use up to three colors."
     }
   },
+  "favorites": {
+    "title": "My <strong>Favorites</strong>",
+    "subtitle": "{count, plural, one {# item saved} other {# items saved}}",
+    "openMyItems": "My Items",
+    "gridLabel": "Favorite items",
+    "itemColors": "Item colors",
+    "removeFavorite": "Remove {item} from favorites",
+    "tabs": {
+      "label": "Favorite sections",
+      "mine": "My Items",
+      "catalog": "From Catalogs"
+    },
+    "filters": {
+      "label": "Favorite filters",
+      "categories": "Favorite category filters",
+      "colors": "Favorite color filters",
+      "allCategories": "All",
+      "allColors": "All colors",
+      "color": "Filter by {color}"
+    },
+    "sort": {
+      "label": "Sort",
+      "name": "Name",
+      "category": "Category",
+      "recent": "Recent",
+      "price": "Price"
+    },
+    "empty": {
+      "title": "No favorites yet",
+      "copy": "Items you mark as favorite will appear here.",
+      "filteredTitle": "No favorites match",
+      "filteredCopy": "Try another category, color, or section."
+    },
+    "sources": {
+      "photo_upload": "Photo",
+      "marketplace": "Link",
+      "catalog": "Catalog"
+    },
+    "badges": {
+      "mine": "My item",
+      "catalog": "Catalog"
+    },
+    "statuses": {
+      "active": "Active",
+      "uncapsulated": "Uncapsulated",
+      "for_sale": "For Sale",
+      "for_repair": "For Repair"
+    },
+    "detail": {
+      "title": "Details for {item}",
+      "editTitle": "Edit favorite",
+      "close": "Close",
+      "photoFallback": "Photo preview",
+      "changePhoto": "Change photo",
+      "name": "Name",
+      "category": "Category",
+      "colors": "Colors",
+      "color": "Color {count}",
+      "addColor": "Add color",
+      "removeColor": "Remove color",
+      "brand": "Brand",
+      "material": "Material",
+      "price": "Price",
+      "source": "Source",
+      "favoriteType": "Favorite section",
+      "capsules": "In Capsules",
+      "active": "Active",
+      "noCapsules": "Not in any capsule",
+      "save": "Save",
+      "removeFavorite": "Remove Favorite",
+      "addToCapsule": "Add to Capsule",
+      "delete": "Delete Item",
+      "moveSale": "Move to Sale",
+      "moveRepair": "Move to Repair"
+    },
+    "notice": {
+      "saved": "{item} saved.",
+      "removed": "{item} removed from favorites.",
+      "deleted": "{item} deleted from My Items.",
+      "addedCapsule": "{item} added to {capsule}.",
+      "alreadyCapsule": "{item} is already in {capsule}.",
+      "noCapsule": "No active capsule is available yet.",
+      "photoReady": "Photo preview added. Save the item to keep it in this local preview.",
+      "movedSale": "{item} moved to For Sale.",
+      "movedRepair": "{item} moved to For Repair."
+    },
+    "validation": {
+      "name": "Name is required.",
+      "category": "Category is required.",
+      "colorsRequired": "Add at least one color.",
+      "colorsMax": "Use up to three colors.",
+      "photoType": "Upload a JPEG, PNG, or WebP image.",
+      "photoSize": "Upload an image up to 10 MB."
+    }
+  },
   "uncapsulated": {
     "title": "<strong>Uncapsulated</strong>",
     "subtitle": "{count, plural, one {# item outside capsules} other {# items outside capsules}}",
     "openMyItems": "My Items",
     "gridLabel": "Uncapsulated items",
     "itemColors": "Item colors",
+    "favorite": "Toggle favorite for {item}",
     "filters": {
       "label": "Uncapsulated filters",
       "categories": "Category filters",
-      "allCategories": "All"
+      "colors": "Color filters",
+      "allCategories": "All",
+      "allColors": "All colors",
+      "color": "Filter by {color}"
+    },
+    "sort": {
+      "label": "Sort",
+      "name": "Name",
+      "category": "Category",
+      "recent": "Recent",
+      "price": "Price"
     },
     "empty": {
       "title": "All items are in capsules",
       "copy": "There are no uncapsulated decisions waiting right now.",
       "filteredTitle": "No items match",
-      "filteredCopy": "Try another category or return to All."
+      "filteredCopy": "Try another category, color, or return to All."
     },
     "sources": {
       "photo_upload": "Photo",

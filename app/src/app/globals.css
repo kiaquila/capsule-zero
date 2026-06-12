@@ -4789,7 +4789,10 @@ button, a, input, textarea {
   border-radius: var(--radius-circle);
 }
 
-.uncapsulated-delete-button {
+.uncapsulated-delete-button,
+.my-items-delete-button,
+.favorites-remove-button,
+.favorites-delete-button {
   border-color: rgba(255,214,0,.42);
   background: rgba(255,214,0,.08);
   color: #FFD600;
@@ -4905,6 +4908,68 @@ button, a, input, textarea {
   padding: 16px 20px 20px;
 }
 
+.favorites-content {
+  gap: 18px;
+}
+
+.favorites-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+.favorites-tab {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--color-text-placeholder);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  padding: 0 24px;
+}
+
+.favorites-tab:hover,
+.favorites-tab-active {
+  border-bottom-color: rgba(255,255,255,.65);
+  color: var(--color-text-primary);
+}
+
+.favorites-tab small {
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: var(--radius-pill);
+  background: rgba(255,255,255,.08);
+  color: var(--color-text-secondary);
+  font-size: 10px;
+  padding: 2px 7px;
+}
+
+.favorites-filter-panel {
+  padding: 12px;
+}
+
+.favorites-grid {
+  grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+}
+
+.favorites-card {
+  min-height: 248px;
+}
+
+.favorites-card-main {
+  padding: 12px;
+}
+
+.favorites-empty {
+  min-height: 340px;
+}
+
 @media (max-width: 1024px) {
   .my-items-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -4959,6 +5024,20 @@ button, a, input, textarea {
   .my-items-chip,
   .my-items-color-filter {
     flex: 0 0 auto;
+  }
+
+  .favorites-tabs {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .favorites-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .favorites-tab {
+    flex: 0 0 auto;
+    padding: 0 18px;
   }
 
   .my-items-grid {

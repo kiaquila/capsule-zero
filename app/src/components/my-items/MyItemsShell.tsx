@@ -333,6 +333,18 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
     closeDetail();
   };
 
+  const deleteSelectedItem = () => {
+    if (!draft?.id) {
+      return;
+    }
+
+    const itemId = draft.id;
+    const itemName = selectedItem?.name ?? draft.name;
+    setItems((currentItems) => currentItems.filter((item) => item.id !== itemId));
+    setNotice(t("notice.deleted", { item: itemName }));
+    closeDetail();
+  };
+
   const removeColor = (index: number) => {
     if (!draft || draft.colorHexes.length <= 1) {
       return;
@@ -726,6 +738,10 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
                   <button className="my-items-secondary-button" onClick={() => moveSelectedItem("for_repair")} type="button">
                     <MyItemsIcon name="for-repair" />
                     <span>{t("detail.moveRepair")}</span>
+                  </button>
+                  <button className="my-items-secondary-button my-items-delete-button" onClick={deleteSelectedItem} type="button">
+                    <MyItemsIcon name="trash" />
+                    <span>{t("detail.delete")}</span>
                   </button>
                 </>
               ) : null}

@@ -4,17 +4,19 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
+import type { MyItemsEntry } from "@/components/my-items/my-items-data";
 import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
+import type { ItemStatus } from "@/lib/providers";
 import { cn } from "@/lib/utils";
 import type { ColorGroup, ColorPoint } from "@/types";
-import type { MyItemsEntry } from "@/components/my-items/my-items-data";
-import type { UncapsulatedSnapshot } from "./uncapsulated-data";
+import type { FavoritesSnapshot } from "./favorites-data";
 
-interface UncapsulatedShellProps {
-  snapshot: UncapsulatedSnapshot;
+interface FavoritesShellProps {
+  snapshot: FavoritesSnapshot;
 }
 
+type FavoritesTab = "catalog" | "mine";
 type IconName =
   | "bag"
   | "ban"
@@ -33,7 +35,6 @@ type IconName =
   | "settings"
   | "tag"
   | "trash";
-
 type SortKey = "name" | "category" | "recent" | "price";
 type DraftErrors = Partial<Record<"name" | "categoryId" | "colorHexes" | "photo", string>>;
 
@@ -48,7 +49,7 @@ interface ItemDraftState {
   imageUrl?: string;
 }
 
-interface UncapsulatedNavItem {
+interface FavoritesNavItem {
   href: string;
   icon: IconName;
   label: string;
@@ -57,44 +58,50 @@ interface UncapsulatedNavItem {
 }
 
 const DEFAULT_COLOR = "#8C8C8C";
-const LOCAL_UPDATED_AT = "2026-06-11T15:00:00.000Z";
+const LOCAL_UPDATED_AT = "2026-06-12T15:00:00.000Z";
 const MAX_LOCAL_PHOTO_BYTES = 10 * 1024 * 1024;
 const SUPPORTED_LOCAL_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
-  const t = useTranslations("uncapsulated");
+export function FavoritesShell({ snapshot }: FavoritesShellProps) {
+  const t = useTranslations("favorites");
   const dashboardT = useTranslations("dashboard");
   const locale = useLocale();
   const router = useRouter();
   const [items, setItems] = useState(snapshot.items);
   const [navigation, setNavigation] = useState(snapshot.navigation);
+  const [activeTab, setActiveTab] = useState<FavoritesTab>("mine");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [colorFilter, setColorFilter] = useState("all");
-  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortKey, setSortKey] = useState<SortKey>("recent");
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [draft, setDraft] = useState<ItemDraftState | null>(null);
   const [errors, setErrors] = useState<DraftErrors>({});
-  const [capsuleCandidateId, setCapsuleCandidateId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const localPhotoUrlsRef = useRef(new Set<string>());
 
-  const categories = useMemo(() => buildCategoryFilters(items), [items]);
-  const colors = useMemo(() => buildColorFilters(items), [items]);
+  const totals = useMemo(() => buildTotals(items), [items]);
+  const displayNavigation = useMemo(
+    () => ({ ...navigation, favorites: totals.total }),
+    [navigation, totals.total],
+  );
+  const tabItems = useMemo(
+    () => items.filter((item) => (activeTab === "catalog" ? item.fromCatalog : !item.fromCatalog)),
+    [activeTab, items],
+  );
+  const categories = useMemo(() => buildCategoryFilters(tabItems), [tabItems]);
+  const colors = useMemo(() => buildColorFilters(tabItems), [tabItems]);
+  const visibleItems = useMemo(
+    () => filterAndSortFavorites(tabItems, categoryFilter, colorFilter, sortKey),
+    [categoryFilter, colorFilter, sortKey, tabItems],
+  );
   const knownColors = useMemo(
     () => uniqueColorPoints(items.flatMap((item) => item.colorPoints)),
     [items],
   );
-  const visibleItems = useMemo(
-    () => filterAndSortItems(items, categoryFilter, colorFilter, sortKey),
-    [categoryFilter, colorFilter, items, sortKey],
-  );
   const selectedItem = selectedItemId
     ? items.find((item) => item.id === selectedItemId) ?? null
-    : null;
-  const capsuleCandidate = capsuleCandidateId
-    ? items.find((item) => item.id === capsuleCandidateId) ?? null
     : null;
 
   useEffect(() => {
@@ -116,7 +123,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     };
   }, []);
 
-  const navGroups: Array<{ label: string; items: UncapsulatedNavItem[] }> = [
+  const navGroups: Array<{ label: string; items: FavoritesNavItem[] }> = [
     {
       label: dashboardT("nav.overview"),
       items: [
@@ -134,26 +141,25 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           href: "/my-items",
           icon: "my-items",
           label: dashboardT("nav.myItems"),
-          badge: navigation.myItems,
+          badge: displayNavigation.myItems,
         },
         {
           href: "/capsule-result?tab=outfits",
           icon: "bag",
           label: dashboardT("nav.outfits"),
-          badge: navigation.outfits,
+          badge: displayNavigation.outfits,
         },
         {
           href: "/capsule-result",
           icon: "capsules",
           label: dashboardT("nav.capsules"),
-          badge: navigation.capsules,
+          badge: displayNavigation.capsules,
         },
         {
           href: "/uncapsulated",
           icon: "ban",
           label: dashboardT("nav.uncapsulated"),
-          active: true,
-          badge: navigation.uncapsulated,
+          badge: displayNavigation.uncapsulated,
         },
       ],
     },
@@ -164,60 +170,60 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           href: "/favorites",
           icon: "heart",
           label: dashboardT("nav.favorites"),
-          badge: navigation.favorites,
+          active: true,
+          badge: displayNavigation.favorites,
         },
         {
           href: "/capsule-result?tab=shopping",
           icon: "list",
           label: dashboardT("nav.shoppingList"),
-          badge: navigation.shoppingList,
+          badge: displayNavigation.shoppingList,
         },
         {
           href: "/for-sale",
           icon: "tag",
           label: dashboardT("nav.forSale"),
-          badge: navigation.forSale,
+          badge: displayNavigation.forSale,
         },
         {
           href: "/for-repair",
           icon: "for-repair",
           label: dashboardT("nav.forRepair"),
-          badge: navigation.forRepair,
+          badge: displayNavigation.forRepair,
         },
       ],
     },
   ];
-  const moreItems: UncapsulatedNavItem[] = [
+  const moreItems: FavoritesNavItem[] = [
     {
       href: "/capsule-result?tab=outfits",
       icon: "bag",
       label: dashboardT("nav.outfits"),
-      badge: navigation.outfits,
+      badge: displayNavigation.outfits,
     },
     {
       href: "/uncapsulated",
       icon: "ban",
       label: dashboardT("nav.uncapsulated"),
-      active: true,
-      badge: navigation.uncapsulated,
+      badge: displayNavigation.uncapsulated,
     },
     {
       href: "/capsule-result?tab=shopping",
       icon: "list",
       label: dashboardT("nav.shoppingList"),
-      badge: navigation.shoppingList,
+      badge: displayNavigation.shoppingList,
     },
     {
       href: "/for-sale",
       icon: "tag",
       label: dashboardT("nav.forSale"),
-      badge: navigation.forSale,
+      badge: displayNavigation.forSale,
     },
     {
       href: "/for-repair",
       icon: "for-repair",
       label: dashboardT("nav.forRepair"),
-      badge: navigation.forRepair,
+      badge: displayNavigation.forRepair,
     },
     {
       href: "/profile",
@@ -235,6 +241,13 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     await signOutAction();
     router.push(`/${locale}`);
     router.refresh();
+  };
+
+  const switchTab = (tab: FavoritesTab) => {
+    setActiveTab(tab);
+    setCategoryFilter("all");
+    setColorFilter("all");
+    setNotice(null);
   };
 
   const openItem = (item: MyItemsEntry) => {
@@ -284,46 +297,99 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     setNotice(t("notice.saved", { item: normalized.name }));
   };
 
-  const deleteSelectedItem = () => {
-    if (!draft) {
-      return;
-    }
-
-    const item = items.find((currentItem) => currentItem.id === draft.id);
-    const itemName = item?.name ?? draft.name;
-
-    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== draft.id));
+  const removeFavorite = (item: MyItemsEntry) => {
+    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
     setNavigation((currentNavigation) => ({
       ...currentNavigation,
-      myItems: Math.max(0, currentNavigation.myItems - 1),
-      uncapsulated: Math.max(0, currentNavigation.uncapsulated - 1),
-      favorites: item?.favorite
-        ? Math.max(0, currentNavigation.favorites - 1)
-        : currentNavigation.favorites,
+      favorites: Math.max(0, currentNavigation.favorites - 1),
     }));
     closeDetail();
-    setNotice(t("notice.deleted", { item: itemName }));
+    setNotice(t("notice.removed", { item: item.name }));
   };
 
-  const toggleFavorite = (itemId: string) => {
-    const item = items.find((currentItem) => currentItem.id === itemId);
-
-    if (!item) {
+  const addSelectedItemToCapsule = () => {
+    if (!selectedItem) {
       return;
     }
 
-    const nextFavorite = !item.favorite;
+    const itemToAdd = selectedItem;
+
+    if (!snapshot.activeCapsule) {
+      setNotice(t("notice.noCapsule"));
+      return;
+    }
+
+    const activeCapsule = snapshot.activeCapsule;
+    const alreadyInCapsule = itemToAdd.capsuleIds.includes(activeCapsule.id);
+
+    if (alreadyInCapsule) {
+      setNotice(t("notice.alreadyCapsule", { item: itemToAdd.name, capsule: activeCapsule.name }));
+      return;
+    }
+
     setItems((currentItems) =>
-      currentItems.map((currentItem) =>
-        currentItem.id === itemId
-          ? { ...currentItem, favorite: nextFavorite, updatedAt: LOCAL_UPDATED_AT }
-          : currentItem,
+      currentItems.map((item) =>
+        item.id === itemToAdd.id
+          ? {
+              ...item,
+              status: "active",
+              capsuleIds: [...item.capsuleIds, activeCapsule.id],
+              capsules: [
+                ...item.capsules,
+                {
+                  active: true,
+                  id: activeCapsule.id,
+                  name: activeCapsule.name,
+                  palette: activeCapsule.palette,
+                },
+              ],
+              updatedAt: LOCAL_UPDATED_AT,
+            }
+          : item,
       ),
     );
-    setNavigation((currentNavigation) => ({
-      ...currentNavigation,
-      favorites: Math.max(0, currentNavigation.favorites + (nextFavorite ? 1 : -1)),
-    }));
+    setNavigation((currentNavigation) => adjustStatusNavigation(currentNavigation, itemToAdd.status, "active"));
+    setNotice(t("notice.addedCapsule", { item: itemToAdd.name, capsule: activeCapsule.name }));
+    closeDetail();
+  };
+
+  const deleteSelectedItem = () => {
+    if (!selectedItem) {
+      return;
+    }
+
+    const itemToDelete = selectedItem;
+    setItems((currentItems) => currentItems.filter((item) => item.id !== itemToDelete.id));
+    setNavigation((currentNavigation) => removeItemFromNavigation(currentNavigation, itemToDelete));
+    setNotice(t("notice.deleted", { item: itemToDelete.name }));
+    closeDetail();
+  };
+
+  const moveSelectedItem = (status: Extract<ItemStatus, "for_repair" | "for_sale">) => {
+    if (!selectedItem) {
+      return;
+    }
+
+    setItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === selectedItem.id
+          ? {
+              ...item,
+              status,
+              capsuleIds: [],
+              capsules: [],
+              updatedAt: LOCAL_UPDATED_AT,
+            }
+          : item,
+      ),
+    );
+    setNavigation((currentNavigation) => adjustStatusNavigation(currentNavigation, selectedItem.status, status));
+    setNotice(
+      status === "for_sale"
+        ? t("notice.movedSale", { item: selectedItem.name })
+        : t("notice.movedRepair", { item: selectedItem.name }),
+    );
+    closeDetail();
   };
 
   const removeColor = (index: number) => {
@@ -380,65 +446,8 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     setNotice(t("notice.photoReady"));
   };
 
-  const requestAddToCapsule = (item: MyItemsEntry) => {
-    if (!snapshot.activeCapsule) {
-      setNotice(t("notice.noCapsule"));
-      return;
-    }
-
-    setCapsuleCandidateId(item.id);
-    setNotice(null);
-  };
-
-  const confirmAddToCapsule = () => {
-    if (!capsuleCandidate || !snapshot.activeCapsule) {
-      return;
-    }
-
-    completeDecision(capsuleCandidate, "capsule");
-    setNotice(
-      t("notice.addedCapsule", {
-        capsule: snapshot.activeCapsule.name,
-        item: capsuleCandidate.name,
-      }),
-    );
-    setCapsuleCandidateId(null);
-    closeDetail();
-  };
-
-  const moveToSale = (item: MyItemsEntry) => {
-    completeDecision(item, "sale");
-    setNotice(t("notice.movedSale", { item: item.name }));
-    closeDetail();
-  };
-
-  const moveToRepair = (item: MyItemsEntry) => {
-    completeDecision(item, "repair");
-    setNotice(t("notice.movedRepair", { item: item.name }));
-    closeDetail();
-  };
-
-  const completeDecision = (
-    item: MyItemsEntry,
-    decision: "capsule" | "repair" | "sale",
-  ) => {
-    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
-    setNavigation((currentNavigation) => ({
-      ...currentNavigation,
-      uncapsulated: Math.max(0, currentNavigation.uncapsulated - 1),
-      forSale:
-        decision === "sale"
-          ? currentNavigation.forSale + 1
-          : currentNavigation.forSale,
-      forRepair:
-        decision === "repair"
-          ? currentNavigation.forRepair + 1
-          : currentNavigation.forRepair,
-    }));
-  };
-
   return (
-    <div className="cz-page dashboard-page my-items-page uncapsulated-page">
+    <div className="cz-page dashboard-page my-items-page favorites-page">
       <div className="wallpaper-bg" />
       <div className="wallpaper-overlay" />
 
@@ -470,7 +479,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                     key={`${group.label}-${item.label}`}
                   >
                     <span className="dashboard-nav-icon">
-                      <UncapsulatedIcon name={item.icon} />
+                      <FavoritesIcon name={item.icon} />
                     </span>
                     <span className="dashboard-nav-label">{item.label}</span>
                     {typeof item.badge === "number" ? (
@@ -485,13 +494,13 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           <div className="dashboard-sidebar-foot">
             <Link className="dashboard-nav-item" href="/profile">
               <span className="dashboard-nav-icon">
-                <UncapsulatedIcon name="settings" />
+                <FavoritesIcon name="settings" />
               </span>
               <span className="dashboard-nav-label">{dashboardT("nav.settings")}</span>
             </Link>
             <button className="dashboard-nav-item dashboard-nav-button" onClick={signOut} type="button">
               <span className="dashboard-nav-icon">
-                <UncapsulatedIcon name="logout" />
+                <FavoritesIcon name="logout" />
               </span>
               <span className="dashboard-nav-label">{dashboardT("logout")}</span>
             </button>
@@ -506,19 +515,42 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                   strong: (chunks) => <strong>{chunks}</strong>,
                 })}
               </h1>
-              <p className="my-items-subtitle">{t("subtitle", { count: navigation.uncapsulated })}</p>
+              <p className="my-items-subtitle">{t("subtitle", { count: totals.total })}</p>
             </div>
             <div className="dashboard-topbar-actions">
               <LanguageSwitcher />
               <Link className="dashboard-primary-action" href="/my-items">
-                <UncapsulatedIcon name="my-items" />
+                <FavoritesIcon name="my-items" />
                 <span>{t("openMyItems")}</span>
               </Link>
             </div>
           </header>
 
-          <div className="my-items-content uncapsulated-content">
-            <section className="my-items-filter-panel" aria-label={t("filters.label")}>
+          <div className="my-items-content favorites-content">
+            <div className="favorites-tabs" role="tablist" aria-label={t("tabs.label")}>
+              <button
+                aria-selected={activeTab === "mine"}
+                className={cn("favorites-tab", activeTab === "mine" && "favorites-tab-active")}
+                onClick={() => switchTab("mine")}
+                role="tab"
+                type="button"
+              >
+                <span>{t("tabs.mine")}</span>
+                <small>{totals.mine}</small>
+              </button>
+              <button
+                aria-selected={activeTab === "catalog"}
+                className={cn("favorites-tab", activeTab === "catalog" && "favorites-tab-active")}
+                onClick={() => switchTab("catalog")}
+                role="tab"
+                type="button"
+              >
+                <span>{t("tabs.catalog")}</span>
+                <small>{totals.catalog}</small>
+              </button>
+            </div>
+
+            <section className="my-items-filter-panel favorites-filter-panel" aria-label={t("filters.label")}>
               <div className="my-items-filter-row">
                 <div className="my-items-chip-row" aria-label={t("filters.categories")}>
                   <button
@@ -566,7 +598,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                       "my-items-color-filter my-items-color-dot-filter",
                       colorFilter === color.hex && "my-items-color-filter-active",
                     )}
-                    key={`${color.hex}-${color.name}`}
+                    key={`${activeTab}-${color.hex}-${color.name}`}
                     onClick={() => setColorFilter(color.hex)}
                     title={color.name}
                     type="button"
@@ -579,29 +611,26 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
             </section>
 
             {visibleItems.length > 0 ? (
-              <section className="my-items-grid uncapsulated-grid" aria-label={t("gridLabel")}>
+              <section className="my-items-grid favorites-grid" aria-label={t("gridLabel")}>
                 {visibleItems.map((item) => (
-                  <UncapsulatedItemCard
+                  <FavoriteItemCard
                     item={item}
                     key={item.id}
-                    onAddToCapsule={() => requestAddToCapsule(item)}
-                    onMoveToRepair={() => moveToRepair(item)}
-                    onMoveToSale={() => moveToSale(item)}
                     onOpen={() => openItem(item)}
-                    onToggleFavorite={() => toggleFavorite(item.id)}
+                    onRemove={() => removeFavorite(item)}
                     t={t}
                   />
                 ))}
               </section>
             ) : (
-              <section className="my-items-empty">
+              <section className="my-items-empty favorites-empty">
                 <span>
-                  <UncapsulatedIcon name="ban" />
+                  <FavoritesIcon name="heart" />
                 </span>
                 <h2>{items.length ? t("empty.filteredTitle") : t("empty.title")}</h2>
                 <p>{items.length ? t("empty.filteredCopy") : t("empty.copy")}</p>
                 <Link className="dashboard-primary-action" href="/my-items">
-                  <UncapsulatedIcon name="my-items" />
+                  <FavoritesIcon name="my-items" />
                   <span>{t("openMyItems")}</span>
                 </Link>
               </section>
@@ -614,16 +643,16 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
         <BottomNavLink href="/dashboard" icon="grid" label={dashboardT("nav.dashboard")} />
         <BottomNavLink href="/my-items" icon="my-items" label={dashboardT("nav.myItems")} />
         <BottomNavLink href="/capsule-result" icon="capsules" label={dashboardT("nav.capsules")} />
-        <BottomNavLink href="/favorites" icon="heart" label={dashboardT("nav.favorites")} />
+        <BottomNavLink active href="/favorites" icon="heart" label={dashboardT("nav.favorites")} />
         <button
           aria-expanded={moreOpen}
           aria-label={dashboardT("nav.more")}
-          className="dashboard-bottom-item dashboard-bottom-button dashboard-bottom-item-active"
+          className="dashboard-bottom-item dashboard-bottom-button"
           onClick={() => setMoreOpen((value) => !value)}
           type="button"
         >
           <span className="dashboard-bottom-icon">
-            <UncapsulatedIcon name="more" />
+            <FavoritesIcon name="more" />
           </span>
           <span className="dashboard-bottom-label">{dashboardT("nav.more")}</span>
         </button>
@@ -640,13 +669,13 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
         <div className="dashboard-more-grid">
           {moreItems.map((item) => (
             <Link
-              className={cn("dashboard-more-item", item.active && "dashboard-more-item-active")}
+              className="dashboard-more-item"
               href={item.href}
               key={`${item.href}-${item.label}`}
               onClick={() => setMoreOpen(false)}
             >
               <span className="dashboard-more-icon">
-                <UncapsulatedIcon name={item.icon} />
+                <FavoritesIcon name={item.icon} />
               </span>
               <span className="dashboard-more-label">{item.label}</span>
               {typeof item.badge === "number" ? (
@@ -669,7 +698,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
             <header className="my-items-detail-head">
               <h2>{t("detail.editTitle")}</h2>
               <button aria-label={t("detail.close")} className="my-items-icon-button" onClick={closeDetail} type="button">
-                <UncapsulatedIcon name="close" />
+                <FavoritesIcon name="close" />
               </button>
             </header>
 
@@ -741,7 +770,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                           onClick={() => removeColor(index)}
                           type="button"
                         >
-                          <UncapsulatedIcon name="close" />
+                          <FavoritesIcon name="close" />
                         </button>
                       ) : null}
                     </div>
@@ -753,7 +782,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                     onClick={addColor}
                     type="button"
                   >
-                    <UncapsulatedIcon name="plus" />
+                    <FavoritesIcon name="plus" />
                   </button>
                 </div>
                 {errors.colorHexes ? <small>{errors.colorHexes}</small> : null}
@@ -780,86 +809,58 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
               </label>
 
               <DetailField label={t("detail.source")} value={t(`sources.${selectedItem.sourceType}`)} />
+              <DetailField label={t("detail.favoriteType")} value={selectedItem.fromCatalog ? t("tabs.catalog") : t("tabs.mine")} />
 
               <div className="my-items-membership">
                 <p>{t("detail.capsules")}</p>
-                <div className="my-items-no-capsules">{t("detail.noCapsules")}</div>
+                {selectedItem.capsules.length > 0 ? (
+                  selectedItem.capsules.map((capsule) => (
+                    <div className="my-items-capsule-row" key={capsule.id}>
+                      <span className="my-items-capsule-palette">
+                        {capsule.palette.slice(0, 5).map((color) => (
+                          <span
+                            key={`${capsule.id}-${color.hex}`}
+                            style={{ backgroundColor: color.hex }}
+                          />
+                        ))}
+                      </span>
+                      <span>{capsule.name}</span>
+                      {capsule.active ? <small>{t("detail.active")}</small> : null}
+                    </div>
+                  ))
+                ) : (
+                  <div className="my-items-no-capsules">{t("detail.noCapsules")}</div>
+                )}
               </div>
             </div>
 
             <footer className="my-items-detail-actions">
               <button className="my-items-save-button" onClick={saveDraft} type="button">
-                <UncapsulatedIcon name="check" />
+                <FavoritesIcon name="check" />
                 <span>{t("detail.save")}</span>
               </button>
-              <button className="my-items-secondary-button uncapsulated-delete-button" onClick={deleteSelectedItem} type="button">
-                <UncapsulatedIcon name="trash" />
+              <button className="my-items-secondary-button favorites-remove-button" onClick={() => removeFavorite(selectedItem)} type="button">
+                <FavoritesIcon name="heart" />
+                <span>{t("detail.removeFavorite")}</span>
+              </button>
+              <button className="my-items-secondary-button" onClick={addSelectedItemToCapsule} type="button">
+                <FavoritesIcon name="capsules" />
+                <span>{t("detail.addToCapsule")}</span>
+              </button>
+              <button className="my-items-secondary-button favorites-delete-button" onClick={deleteSelectedItem} type="button">
+                <FavoritesIcon name="trash" />
                 <span>{t("detail.delete")}</span>
               </button>
-              <button className="my-items-secondary-button" onClick={() => requestAddToCapsule(selectedItem)} type="button">
-                <UncapsulatedIcon name="capsules" />
-                <span>{t("actions.addToCapsule")}</span>
+              <button className="my-items-secondary-button" onClick={() => moveSelectedItem("for_sale")} type="button">
+                <FavoritesIcon name="tag" />
+                <span>{t("detail.moveSale")}</span>
               </button>
-              <button className="my-items-secondary-button" onClick={() => moveToSale(selectedItem)} type="button">
-                <UncapsulatedIcon name="tag" />
-                <span>{t("actions.moveSale")}</span>
-              </button>
-              <button className="my-items-secondary-button" onClick={() => moveToRepair(selectedItem)} type="button">
-                <UncapsulatedIcon name="for-repair" />
-                <span>{t("actions.moveRepair")}</span>
+              <button className="my-items-secondary-button" onClick={() => moveSelectedItem("for_repair")} type="button">
+                <FavoritesIcon name="for-repair" />
+                <span>{t("detail.moveRepair")}</span>
               </button>
             </footer>
           </aside>
-        </div>
-      ) : null}
-
-      {capsuleCandidate && snapshot.activeCapsule ? (
-        <div className="uncapsulated-capsule-wrap" role="dialog" aria-modal="true" aria-label={t("capsule.title")}>
-          <button
-            aria-label={t("capsule.cancel")}
-            className="uncapsulated-capsule-backdrop"
-            onClick={() => setCapsuleCandidateId(null)}
-            type="button"
-          />
-          <section className="uncapsulated-capsule-modal">
-            <header>
-              <h2>{t("capsule.title")}</h2>
-              <button aria-label={t("capsule.cancel")} className="my-items-icon-button" onClick={() => setCapsuleCandidateId(null)} type="button">
-                <UncapsulatedIcon name="close" />
-              </button>
-            </header>
-            <div className="uncapsulated-capsule-card">
-              <span className="uncapsulated-capsule-palette">
-                {snapshot.activeCapsule.palette.slice(0, 6).map((color) => (
-                  <span key={`${snapshot.activeCapsule?.id}-${color.hex}`} style={{ backgroundColor: color.hex }} />
-                ))}
-              </span>
-              <div>
-                <p>{snapshot.activeCapsule.name}</p>
-                <small>
-                  {t("capsule.meta", {
-                    items: snapshot.activeCapsule.itemCount,
-                    outfits: snapshot.activeCapsule.outfitCount,
-                  })}
-                </small>
-              </div>
-            </div>
-            <p className="uncapsulated-capsule-copy">
-              {t("capsule.copy", {
-                capsule: snapshot.activeCapsule.name,
-                item: capsuleCandidate.name,
-              })}
-            </p>
-            <footer>
-              <button className="my-items-secondary-button" onClick={() => setCapsuleCandidateId(null)} type="button">
-                {t("capsule.cancel")}
-              </button>
-              <button className="my-items-save-button" onClick={confirmAddToCapsule} type="button">
-                <UncapsulatedIcon name="check" />
-                <span>{t("capsule.confirm")}</span>
-              </button>
-            </footer>
-          </section>
         </div>
       ) : null}
 
@@ -872,37 +873,31 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
   );
 }
 
-function UncapsulatedItemCard({
+function FavoriteItemCard({
   item,
-  onAddToCapsule,
-  onMoveToRepair,
-  onMoveToSale,
   onOpen,
-  onToggleFavorite,
+  onRemove,
   t,
 }: {
   item: MyItemsEntry;
-  onAddToCapsule: () => void;
-  onMoveToRepair: () => void;
-  onMoveToSale: () => void;
   onOpen: () => void;
-  onToggleFavorite: () => void;
-  t: ReturnType<typeof useTranslations<"uncapsulated">>;
+  onRemove: () => void;
+  t: ReturnType<typeof useTranslations<"favorites">>;
 }) {
   const mainColor = item.colorPoints[0]?.hex ?? DEFAULT_COLOR;
 
   return (
-    <article className="my-items-card uncapsulated-card">
+    <article className="my-items-card favorites-card">
       <button
-        aria-label={t("favorite", { item: item.name })}
-        aria-pressed={item.favorite}
-        className={cn("my-items-fav", item.favorite && "my-items-fav-active")}
-        onClick={onToggleFavorite}
+        aria-label={t("removeFavorite", { item: item.name })}
+        aria-pressed="true"
+        className="my-items-fav my-items-fav-active"
+        onClick={onRemove}
         type="button"
       >
-        <UncapsulatedIcon name="heart" />
+        <FavoritesIcon name="heart" />
       </button>
-      <button className="my-items-card-main uncapsulated-card-main" onClick={onOpen} type="button">
+      <button className="my-items-card-main favorites-card-main" onClick={onOpen} type="button">
         <span className="my-items-thumb">
           {item.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -929,25 +924,11 @@ function UncapsulatedItemCard({
             {item.brand ?? t(`sources.${item.sourceType}`)}
           </span>
           <span className="my-items-card-badges">
-            <small>{t("badges.noCapsule")}</small>
+            <small>{item.fromCatalog ? t("badges.catalog") : t("badges.mine")}</small>
             <small>{t(`statuses.${item.status}`)}</small>
           </span>
         </span>
       </button>
-      <div className="uncapsulated-card-actions" aria-label={t("actions.label", { item: item.name })}>
-        <button onClick={onAddToCapsule} type="button">
-          <UncapsulatedIcon name="capsules" />
-          <span>{t("actions.addShort")}</span>
-        </button>
-        <button onClick={onMoveToSale} type="button">
-          <UncapsulatedIcon name="tag" />
-          <span>{t("actions.saleShort")}</span>
-        </button>
-        <button onClick={onMoveToRepair} type="button">
-          <UncapsulatedIcon name="for-repair" />
-          <span>{t("actions.repairShort")}</span>
-        </button>
-      </div>
     </article>
   );
 }
@@ -975,7 +956,7 @@ function BottomNavLink({
   return (
     <Link className={cn("dashboard-bottom-item", active && "dashboard-bottom-item-active")} href={href}>
       <span className="dashboard-bottom-icon">
-        <UncapsulatedIcon name={icon} />
+        <FavoritesIcon name={icon} />
       </span>
       <span className="dashboard-bottom-label">{label}</span>
     </Link>
@@ -997,7 +978,7 @@ function buildDraftFromItem(item: MyItemsEntry): ItemDraftState {
 
 function validateDraft(
   draft: ItemDraftState,
-  t: ReturnType<typeof useTranslations<"uncapsulated">>,
+  t: ReturnType<typeof useTranslations<"favorites">>,
 ): DraftErrors {
   const errors: DraftErrors = {};
 
@@ -1022,7 +1003,7 @@ function validateDraft(
 
 function normalizeDraft(
   draft: ItemDraftState,
-  snapshot: UncapsulatedSnapshot,
+  snapshot: FavoritesSnapshot,
   knownColors: ColorPoint[],
 ): Pick<
   MyItemsEntry,
@@ -1107,7 +1088,18 @@ function uniqueColorPoints(colors: ColorPoint[]): ColorPoint[] {
   return [...byHex.values()];
 }
 
-function buildCategoryFilters(items: MyItemsEntry[]): UncapsulatedSnapshot["categories"] {
+function buildTotals(items: MyItemsEntry[]) {
+  const mine = items.filter((item) => !item.fromCatalog).length;
+  const catalog = items.filter((item) => item.fromCatalog).length;
+
+  return {
+    catalog,
+    mine,
+    total: items.length,
+  };
+}
+
+function buildCategoryFilters(items: MyItemsEntry[]) {
   const counts = new Map<string, { id: string; label: string; count: number }>();
 
   items.forEach((item) => {
@@ -1139,7 +1131,7 @@ function buildColorFilters(items: MyItemsEntry[]) {
   return [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
 
-function filterAndSortItems(
+function filterAndSortFavorites(
   items: MyItemsEntry[],
   categoryFilter: string,
   colorFilter: string,
@@ -1170,6 +1162,66 @@ function filterAndSortItems(
   });
 }
 
+function adjustStatusNavigation(
+  navigation: FavoritesSnapshot["navigation"],
+  previousStatus: ItemStatus,
+  nextStatus: ItemStatus,
+): FavoritesSnapshot["navigation"] {
+  const nextNavigation = { ...navigation };
+
+  if (previousStatus === nextStatus) {
+    return nextNavigation;
+  }
+
+  if (previousStatus === "uncapsulated") {
+    nextNavigation.uncapsulated = Math.max(0, nextNavigation.uncapsulated - 1);
+  }
+
+  if (previousStatus === "for_sale") {
+    nextNavigation.forSale = Math.max(0, nextNavigation.forSale - 1);
+  }
+
+  if (previousStatus === "for_repair") {
+    nextNavigation.forRepair = Math.max(0, nextNavigation.forRepair - 1);
+  }
+
+  if (nextStatus === "for_sale") {
+    nextNavigation.forSale += 1;
+  }
+
+  if (nextStatus === "for_repair") {
+    nextNavigation.forRepair += 1;
+  }
+
+  return nextNavigation;
+}
+
+function removeItemFromNavigation(
+  navigation: FavoritesSnapshot["navigation"],
+  item: MyItemsEntry,
+): FavoritesSnapshot["navigation"] {
+  const nextNavigation = { ...navigation };
+
+  nextNavigation.myItems = Math.max(0, nextNavigation.myItems - 1);
+  nextNavigation.favorites = item.favorite
+    ? Math.max(0, nextNavigation.favorites - 1)
+    : nextNavigation.favorites;
+
+  if (item.status === "uncapsulated") {
+    nextNavigation.uncapsulated = Math.max(0, nextNavigation.uncapsulated - 1);
+  }
+
+  if (item.status === "for_sale") {
+    nextNavigation.forSale = Math.max(0, nextNavigation.forSale - 1);
+  }
+
+  if (item.status === "for_repair") {
+    nextNavigation.forRepair = Math.max(0, nextNavigation.forRepair - 1);
+  }
+
+  return nextNavigation;
+}
+
 function ItemFallbackIcon({ colorHex }: { colorHex: string }) {
   const stroke = isColorDark(colorHex) ? "rgba(255,255,255,.42)" : "rgba(0,0,0,.28)";
 
@@ -1196,7 +1248,7 @@ function isColorDark(hex: string): boolean {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.45;
 }
 
-function UncapsulatedIcon({ name }: { name: IconName }) {
+function FavoritesIcon({ name }: { name: IconName }) {
   const common = {
     "aria-hidden": true,
     fill: "none",
@@ -1234,7 +1286,7 @@ function UncapsulatedIcon({ name }: { name: IconName }) {
     case "close":
       return (
         <svg {...common}>
-          <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+          <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="1.9" />
         </svg>
       );
     case "for-repair":
@@ -1245,80 +1297,77 @@ function UncapsulatedIcon({ name }: { name: IconName }) {
       );
     case "grid":
       return (
-        <svg {...common}>
-          <rect height="7" rx="1.5" stroke="currentColor" strokeWidth="1.7" width="7" x="3" y="3" />
-          <rect height="7" rx="1.5" stroke="currentColor" strokeWidth="1.7" width="7" x="14" y="3" />
-          <rect height="7" rx="1.5" stroke="currentColor" strokeWidth="1.7" width="7" x="3" y="14" />
-          <rect height="7" rx="1.5" stroke="currentColor" strokeWidth="1.7" width="7" x="14" y="14" />
+        <svg aria-hidden fill="none" height="18" viewBox="0 0 17 17" width="18">
+          <rect height="5.5" rx="1.5" stroke="currentColor" strokeWidth="1.35" width="5.5" x="1.5" y="1.5" />
+          <rect height="5.5" rx="1.5" stroke="currentColor" strokeWidth="1.35" width="5.5" x="10" y="1.5" />
+          <rect height="5.5" rx="1.5" stroke="currentColor" strokeWidth="1.35" width="5.5" x="1.5" y="10" />
+          <rect height="5.5" rx="1.5" stroke="currentColor" strokeWidth="1.35" width="5.5" x="10" y="10" />
         </svg>
       );
     case "heart":
       return (
         <svg {...common}>
-          <path d="m12 20-7-7a4.2 4.2 0 0 1 6-6l1 1 1-1a4.2 4.2 0 0 1 6 6l-7 7Z" fill="currentColor" fillOpacity="var(--icon-fill-opacity, 0)" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.7" />
+          <path d="M20.8 5.6a5.2 5.2 0 0 0-7.4 0L12 7l-1.4-1.4a5.2 5.2 0 0 0-7.4 7.4l1.4 1.4L12 21.2l7.4-6.8 1.4-1.4a5.2 5.2 0 0 0 0-7.4Z" fill="currentColor" fillOpacity="var(--icon-fill-opacity, .92)" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.7" />
         </svg>
       );
     case "list":
       return (
-        <svg {...common}>
-          <path d="M5 7h14M5 12h11M5 17h8" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+        <svg aria-hidden fill="none" height="18" viewBox="0 0 17 17" width="18">
+          <path d="M2.5 5h12M2.5 8.5h9M2.5 12h7" stroke="currentColor" strokeLinecap="round" strokeWidth="1.35" />
         </svg>
       );
     case "logout":
       return (
         <svg {...common}>
-          <path d="M10 5V4a2 2 0 0 1 2-2h7v20h-7a2 2 0 0 1-2-2v-1" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-          <path d="M3 12h11" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-          <path d="m10 8 4 4-4 4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+          <path d="M10 17l5-5-5-5M15 12H3M21 4v16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
         </svg>
       );
     case "more":
       return (
-        <svg {...common} fill="currentColor">
-          <circle cx="6" cy="12" r="1.8" />
-          <circle cx="12" cy="12" r="1.8" />
-          <circle cx="18" cy="12" r="1.8" />
+        <svg {...common}>
+          <circle cx="5" cy="12" fill="currentColor" r="1.7" />
+          <circle cx="12" cy="12" fill="currentColor" r="1.7" />
+          <circle cx="19" cy="12" fill="currentColor" r="1.7" />
         </svg>
       );
     case "my-items":
       return (
         <svg aria-hidden fill="none" height="18" viewBox="0 0 17 17" width="18">
-          <rect height="9" rx="1" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.4" width="12" x="2.5" y="6" />
-          <path d="m2.5 6 2.5-3.5h7L14.5 6" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.4" />
-          <path d="M8.5 2.5V6" stroke="currentColor" strokeLinecap="round" strokeWidth="1.4" />
+          <rect height="9" rx="1" stroke="currentColor" strokeWidth="1.3" width="12" x="2.5" y="6" />
+          <path d="m2.5 6 2.5-3.5h7L14.5 6M8.5 2.5V6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.3" />
         </svg>
       );
     case "plus":
       return (
         <svg {...common}>
-          <path d="M12 5v14M5 12h14" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+          <path d="M12 5v14M5 12h14" stroke="currentColor" strokeLinecap="round" strokeWidth="1.9" />
         </svg>
       );
     case "profile":
       return (
         <svg {...common}>
-          <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.7" />
-          <path d="M4.5 21a7.5 7.5 0 0 1 15 0" stroke="currentColor" strokeLinecap="round" strokeWidth="1.7" />
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+          <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="1.8" />
         </svg>
       );
     case "settings":
       return (
         <svg {...common}>
-          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.7" />
-          <path d="M19 12a7 7 0 0 0-.1-1.1l2-1.5-2-3.5-2.4 1a7.5 7.5 0 0 0-1.9-1.1L14.3 3h-4.6l-.3 2.8a7.5 7.5 0 0 0-1.9 1.1l-2.4-1-2 3.5 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.1l-2 1.5 2 3.5 2.4-1c.6.5 1.2.9 1.9 1.1l.3 2.8h4.6l.3-2.8c.7-.3 1.3-.6 1.9-1.1l2.4 1 2-3.5-2-1.5c.1-.3.1-.7.1-1.1Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.4" />
+          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
+          <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1A2 2 0 0 1 7 4.4l.1.1a1.6 1.6 0 0 0 1.8.3 1.6 1.6 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1A2 2 0 0 1 19.6 7l-.1.1a1.6 1.6 0 0 0-.3 1.8 1.6 1.6 0 0 0 1.5 1h.3a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.1Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
         </svg>
       );
     case "tag":
       return (
-        <svg {...common}>
-          <path d="M4 5v6.2L12.8 20 20 12.8 11.2 4H5a1 1 0 0 0-1 1Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.7" />
-          <circle cx="8" cy="8" r="1.2" fill="currentColor" />
+        <svg aria-hidden fill="none" height="18" viewBox="0 0 17 17" width="18">
+          <path d="M8.5 1.5v12M11.5 4.5C11.5 3.5 10.1 3 8.5 3S5.5 3.8 5.5 5.2s3 2 3 2 3 .6 3 2.3-1.4 2.3-3 2.3-3-.5-3-1.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.3" />
         </svg>
       );
     case "trash":
       return (
         <svg {...common}>
-          <path d="M4 7h16M9 7V4h6v3M8 10v8M12 10v8M16 10v8M6 7l1 14h10l1-14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+          <path d="M6 8h12l-1 12H7L6 8Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.7" />
+          <path d="M9 8V6a3 3 0 0 1 6 0v2M5 8h14" stroke="currentColor" strokeLinecap="round" strokeWidth="1.7" />
         </svg>
       );
   }

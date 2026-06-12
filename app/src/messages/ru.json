@@ -360,12 +360,14 @@
       "active": "Активная",
       "noCapsules": "Не входит в капсулы",
       "save": "Сохранить",
+      "delete": "Удалить",
       "moveSale": "На продажу",
       "moveRepair": "В ремонт"
     },
     "notice": {
       "saved": "{item} сохранена.",
       "added": "{item} добавлена.",
+      "deleted": "{item} удалена из Моих вещей.",
       "movedSale": "{item} перемещена в продажу.",
       "movedRepair": "{item} перемещена в ремонт."
     },
@@ -376,22 +378,128 @@
       "colorsMax": "Можно выбрать до трех цветов."
     }
   },
+  "favorites": {
+    "title": "Мое <strong>избранное</strong>",
+    "subtitle": "{count, plural, one {# сохраненная вещь} few {# сохраненные вещи} many {# сохраненных вещей} other {# сохраненной вещи}}",
+    "openMyItems": "Мои вещи",
+    "gridLabel": "Избранные вещи",
+    "itemColors": "Цвета вещи",
+    "removeFavorite": "Убрать {item} из избранного",
+    "tabs": {
+      "label": "Разделы избранного",
+      "mine": "Мои вещи",
+      "catalog": "Из каталогов"
+    },
+    "filters": {
+      "label": "Фильтры избранного",
+      "categories": "Фильтры избранного по категориям",
+      "colors": "Фильтры избранного по цветам",
+      "allCategories": "Все",
+      "allColors": "Все цвета",
+      "color": "Фильтр по цвету {color}"
+    },
+    "sort": {
+      "label": "Сортировка",
+      "name": "Название",
+      "category": "Категория",
+      "recent": "Недавние",
+      "price": "Цена"
+    },
+    "empty": {
+      "title": "В избранном пока пусто",
+      "copy": "Здесь появятся вещи, которые вы отметите сердцем.",
+      "filteredTitle": "Нет подходящих избранных вещей",
+      "filteredCopy": "Попробуйте другую категорию, цвет или раздел."
+    },
+    "sources": {
+      "photo_upload": "Фото",
+      "marketplace": "Ссылка",
+      "catalog": "Каталог"
+    },
+    "badges": {
+      "mine": "Моя вещь",
+      "catalog": "Каталог"
+    },
+    "statuses": {
+      "active": "Активная",
+      "uncapsulated": "Вне капсулы",
+      "for_sale": "На продажу",
+      "for_repair": "В ремонт"
+    },
+    "detail": {
+      "title": "Детали вещи {item}",
+      "editTitle": "Редактировать избранное",
+      "close": "Закрыть",
+      "photoFallback": "Превью фото",
+      "changePhoto": "Заменить фото",
+      "name": "Название",
+      "category": "Категория",
+      "colors": "Цвета",
+      "color": "Цвет {count}",
+      "addColor": "Добавить цвет",
+      "removeColor": "Удалить цвет",
+      "brand": "Бренд",
+      "material": "Материал",
+      "price": "Цена",
+      "source": "Источник",
+      "favoriteType": "Раздел избранного",
+      "capsules": "В капсулах",
+      "active": "Активная",
+      "noCapsules": "Не входит в капсулы",
+      "save": "Сохранить",
+      "removeFavorite": "Убрать из избранного",
+      "addToCapsule": "Добавить в капсулу",
+      "delete": "Удалить вещь",
+      "moveSale": "На продажу",
+      "moveRepair": "В ремонт"
+    },
+    "notice": {
+      "saved": "{item} сохранена.",
+      "removed": "{item} убрана из избранного.",
+      "deleted": "{item} удалена из Моих вещей.",
+      "addedCapsule": "{item} добавлена в {capsule}.",
+      "alreadyCapsule": "{item} уже в {capsule}.",
+      "noCapsule": "Активной капсулы пока нет.",
+      "photoReady": "Превью фото добавлено. Сохраните вещь, чтобы оставить его в локальном просмотре.",
+      "movedSale": "{item} перемещена в продажу.",
+      "movedRepair": "{item} перемещена в ремонт."
+    },
+    "validation": {
+      "name": "Введите название.",
+      "category": "Выберите категорию.",
+      "colorsRequired": "Добавьте хотя бы один цвет.",
+      "colorsMax": "Можно выбрать до трех цветов.",
+      "photoType": "Загрузите изображение JPEG, PNG или WebP.",
+      "photoSize": "Загрузите изображение до 10 МБ."
+    }
+  },
   "uncapsulated": {
     "title": "<strong>Вне капсулы</strong>",
     "subtitle": "{count, plural, one {# вещь вне капсул} few {# вещи вне капсул} many {# вещей вне капсул} other {# вещи вне капсул}}",
     "openMyItems": "Мои вещи",
     "gridLabel": "Вещи вне капсул",
     "itemColors": "Цвета вещи",
+    "favorite": "Переключить избранное для {item}",
     "filters": {
       "label": "Фильтры вещей вне капсул",
       "categories": "Фильтры по категориям",
-      "allCategories": "Все"
+      "colors": "Фильтры по цветам",
+      "allCategories": "Все",
+      "allColors": "Все цвета",
+      "color": "Фильтр по цвету {color}"
+    },
+    "sort": {
+      "label": "Сортировка",
+      "name": "Название",
+      "category": "Категория",
+      "recent": "Недавние",
+      "price": "Цена"
     },
     "empty": {
       "title": "Все вещи уже в капсулах",
       "copy": "Сейчас нет вещей вне капсул, которые ждут решения.",
       "filteredTitle": "Нет подходящих вещей",
-      "filteredCopy": "Попробуйте другую категорию или вернитесь ко всем."
+      "filteredCopy": "Попробуйте другую категорию, цвет или вернитесь ко всем."
     },
     "sources": {
       "photo_upload": "Фото",
