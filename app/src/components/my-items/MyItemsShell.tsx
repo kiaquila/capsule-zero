@@ -289,6 +289,7 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
         status: "active",
         favorite: false,
         fromCatalog: false,
+        isPublic: false,
         capsuleIds: [],
         capsules: [],
         updatedAt: LOCAL_UPDATED_AT,

@@ -40,6 +40,7 @@
 - [x] T022 Start or reuse local dev server.
 - [x] T023 Browser smoke-check unauthenticated redirect, dashboard navigation, EN/RU For Sale, filtering/sorting, grid favorite toggle, capsule/return/delete/edit/photo/catalog interactions, no ES-AR controls, and mobile viewport.
 - [x] T024 Address Codex review P2 by excluding `for_sale` items from dashboard wardrobe statistics/recent items while preserving the separate For Sale count.
+- [x] T025 Address Codex review P2 follow-ups by deriving For Sale visibility from `isPublic` and sharing the non-sale wardrobe-statistic helper with For Sale navigation counts.
 
 ## Process Memory
 
@@ -63,6 +64,7 @@
 - Record the broader engineering consistency rule in root `AGENTS.md`: if a product or technical object type already exists, reuse its component/service/adapter/schema/helper/CSS/API contract and let review reject copy-pasted variants under DRY/SOLID.
 - Replace the For Sale detail `Mark as Sold` action with `Add to Capsule`, shorten the return label to `To My Items`, and clamp detail footer SVGs to the shared 18px icon box so the action row matches the other item edit panels.
 - Keep For Sale quick-access/list counts separate from dashboard wardrobe statistics: `for_sale` items remain visible in For Sale, but dashboard total items, My Items navigation badge, and recent wardrobe items exclude them until return to My Items.
+- Carry actual public/listing visibility as `MyItemsEntry.isPublic`; `fromCatalog` remains source provenance and must not drive For Sale catalog visibility by itself.
 
 ### Known Issues
 

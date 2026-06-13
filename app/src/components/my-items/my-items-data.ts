@@ -32,6 +32,7 @@ export interface MyItemsEntry {
   status: ItemStatus;
   favorite: boolean;
   fromCatalog: boolean;
+  isPublic: boolean;
   capsuleIds: string[];
   capsules: MyItemsCapsuleMembership[];
   updatedAt: string;
@@ -148,6 +149,7 @@ function buildItem(
     status: item.status,
     favorite: item.favorite,
     fromCatalog: item.fromCatalog,
+    isPublic: item.isPublic,
     capsuleIds: item.capsuleIds,
     capsules,
     updatedAt: item.updatedAt,

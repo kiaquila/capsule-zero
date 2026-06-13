@@ -74,7 +74,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
   const [items, setItems] = useState(snapshot.items);
   const [navigation, setNavigation] = useState(snapshot.navigation);
   const [catalogVisibleIds, setCatalogVisibleIds] = useState<Set<string>>(
-    () => new Set(snapshot.items.filter((item) => item.fromCatalog).map((item) => item.id)),
+    () => new Set(snapshot.items.filter((item) => item.isPublic).map((item) => item.id)),
   );
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [colorFilter, setColorFilter] = useState("all");

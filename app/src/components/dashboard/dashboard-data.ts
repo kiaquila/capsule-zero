@@ -3,6 +3,7 @@ import type { ProviderRegistry, WardrobeEntry } from "@/lib/providers";
 import type { AppLocale } from "@/i18n/routing";
 import type { Capsule, ColorPoint } from "@/types";
 import type { PersistedMockSession } from "@/features/auth/session";
+import { isWardrobeStatisticItem } from "@/components/wardrobe/wardrobe-statistics";
 
 export interface DashboardSnapshot {
   profile: {
@@ -67,7 +68,6 @@ const SHOPPING_FALLBACKS = [
   { categoryId: "scarf", impact: 3, priority: "low" as const },
 ];
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
-const isWardrobeStatisticItem = (item: WardrobeEntry) => item.status !== "for_sale";
 
 export async function buildDashboardSnapshot({
   registry,
