@@ -39,6 +39,7 @@
 - [x] T021 Run `git diff --check`.
 - [x] T022 Start or reuse local dev server.
 - [x] T023 Browser smoke-check unauthenticated redirect, dashboard navigation, EN/RU For Sale, filtering/sorting, grid favorite toggle, capsule/return/delete/edit/photo/catalog interactions, no ES-AR controls, and mobile viewport.
+- [x] T024 Address Codex review P2 by excluding `for_sale` items from dashboard wardrobe statistics/recent items while preserving the separate For Sale count.
 
 ## Process Memory
 
@@ -61,6 +62,7 @@
 - Keep favorite add/remove only on the grid heart. Detail panels do not duplicate favorite actions; section-specific actions appear after `Save`, and `Delete` is the final action with the simple `Delete` label.
 - Record the broader engineering consistency rule in root `AGENTS.md`: if a product or technical object type already exists, reuse its component/service/adapter/schema/helper/CSS/API contract and let review reject copy-pasted variants under DRY/SOLID.
 - Replace the For Sale detail `Mark as Sold` action with `Add to Capsule`, shorten the return label to `To My Items`, and clamp detail footer SVGs to the shared 18px icon box so the action row matches the other item edit panels.
+- Keep For Sale quick-access/list counts separate from dashboard wardrobe statistics: `for_sale` items remain visible in For Sale, but dashboard total items, My Items navigation badge, and recent wardrobe items exclude them until return to My Items.
 
 ### Known Issues
 

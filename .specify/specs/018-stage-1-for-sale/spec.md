@@ -110,7 +110,7 @@ As a Stage 1 reviewer, I want the For Sale detail panel to match the already imp
 - **FR-002**: For Sale MUST replace the `/{locale}/for-sale` future redirect and be reachable from dashboard and wardrobe navigation without a 404.
 - **FR-003**: For Sale MUST build data through the mock provider registry and user-scoped wardrobe items.
 - **FR-004**: For Sale MUST render only items whose status is `for_sale`.
-- **FR-005**: For Sale MUST explain that listed items are not counted in capsules or statistics.
+- **FR-005**: For Sale MUST explain that listed items are not counted in capsules or statistics, and dashboard wardrobe statistics/recent wardrobe items MUST exclude `for_sale` items while preserving the separate For Sale list count.
 - **FR-006**: Item cards MUST reuse the shared wardrobe grid card and render visual fallback/photo area, item name, category, color dots, brand/source meta, sale/status badges, and the heart favorite control; section-specific capsule/return actions MUST live in the unified detail panel, not in the grid card.
 - **FR-007**: Category filters, color filters, and sort controls MUST update the grid client-side without page reload.
 - **FR-008**: Item detail MUST allow local editing of name, category, 1-3 color points, brand, material, price, local photo preview, and catalog visibility.
