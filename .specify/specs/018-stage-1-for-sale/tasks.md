@@ -42,6 +42,7 @@
 - [x] T024 Address Codex review P2 by excluding `for_sale` items from dashboard wardrobe statistics/recent items while preserving the separate For Sale count.
 - [x] T025 Address Codex review P2 follow-ups by deriving For Sale visibility from `isPublic` and sharing the non-sale wardrobe-statistic helper with For Sale navigation counts.
 - [x] T026 Address Codex review P2 follow-ups by keeping the non-sale My Items badge consistent across To My Items, Add to Capsule, and Delete local For Sale transitions.
+- [x] T027 Address Codex review P2 follow-up by moving non-sale My Items counts into `buildMyItemsSnapshot`, My Items derived UI data, and Favorites status-count helpers so inheriting screens stay consistent.
 
 ## Process Memory
 
@@ -67,6 +68,7 @@
 - Keep For Sale quick-access/list counts separate from dashboard wardrobe statistics: `for_sale` items remain visible in For Sale, but dashboard total items, My Items navigation badge, and recent wardrobe items exclude them until return to My Items.
 - Carry actual public/listing visibility as `MyItemsEntry.isPublic`; `fromCatalog` remains source provenance and must not drive For Sale catalog visibility by itself.
 - Treat local For Sale transitions as status changes for navigation counts: To My Items and Add to Capsule move an item back into the non-sale wardrobe count, while Delete removes only the sale listing and favorite count when applicable.
+- Put the non-sale My Items badge/count rule at the shared My Items snapshot layer; feature screens that inherit the snapshot should not need one-off `myItems` overrides for sale fixtures.
 
 ### Known Issues
 

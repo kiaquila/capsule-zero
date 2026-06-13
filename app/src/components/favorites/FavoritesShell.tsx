@@ -10,6 +10,7 @@ import {
   WardrobeDetailField,
   WardrobeItemDetailPanel,
 } from "@/components/wardrobe/WardrobeItemDetailPanel";
+import { isWardrobeStatisticItem } from "@/components/wardrobe/wardrobe-statistics";
 import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
 import type { ItemStatus } from "@/lib/providers";
@@ -1020,6 +1021,14 @@ function adjustStatusNavigation(
     return nextNavigation;
   }
 
+  if (isWardrobeStatisticItem({ status: previousStatus }) && !isWardrobeStatisticItem({ status: nextStatus })) {
+    nextNavigation.myItems = Math.max(0, nextNavigation.myItems - 1);
+  }
+
+  if (!isWardrobeStatisticItem({ status: previousStatus }) && isWardrobeStatisticItem({ status: nextStatus })) {
+    nextNavigation.myItems += 1;
+  }
+
   if (previousStatus === "uncapsulated") {
     nextNavigation.uncapsulated = Math.max(0, nextNavigation.uncapsulated - 1);
   }
@@ -1049,7 +1058,10 @@ function removeItemFromNavigation(
 ): FavoritesSnapshot["navigation"] {
   const nextNavigation = { ...navigation };
 
-  nextNavigation.myItems = Math.max(0, nextNavigation.myItems - 1);
+  if (isWardrobeStatisticItem(item)) {
+    nextNavigation.myItems = Math.max(0, nextNavigation.myItems - 1);
+  }
+
   nextNavigation.favorites = item.favorite
     ? Math.max(0, nextNavigation.favorites - 1)
     : nextNavigation.favorites;

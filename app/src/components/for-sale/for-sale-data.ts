@@ -7,7 +7,6 @@ import {
   type MyItemsEntry,
   type MyItemsSnapshot,
 } from "@/components/my-items/my-items-data";
-import { isWardrobeStatisticItem } from "@/components/wardrobe/wardrobe-statistics";
 
 export interface ForSaleCapsuleOption {
   id: string;
@@ -46,7 +45,6 @@ export async function buildForSaleSnapshot({
   const items = baseSnapshot.items
     .filter((item) => item.status === "for_sale")
     .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
-  const wardrobeStatisticItems = baseSnapshot.items.filter(isWardrobeStatisticItem);
 
   return {
     ...baseSnapshot,
@@ -63,7 +61,6 @@ export async function buildForSaleSnapshot({
     items,
     navigation: {
       ...baseSnapshot.navigation,
-      myItems: wardrobeStatisticItems.length,
       forSale: items.length,
     },
   };

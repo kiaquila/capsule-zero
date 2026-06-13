@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
 import { WardrobeItemDetailPanel } from "@/components/wardrobe/WardrobeItemDetailPanel";
+import { isWardrobeStatisticItem } from "@/components/wardrobe/wardrobe-statistics";
 import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
 import type { ItemStatus } from "@/lib/providers";
@@ -75,16 +76,17 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
   const [notice, setNotice] = useState<string | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
 
+  const wardrobeItems = useMemo(() => items.filter(isWardrobeStatisticItem), [items]);
   const counts = useMemo(() => buildCounts(items, snapshot.navigation), [items, snapshot.navigation]);
-  const categories = useMemo(() => buildCategoryFilters(items), [items]);
-  const colors = useMemo(() => buildColorFilters(items), [items]);
+  const categories = useMemo(() => buildCategoryFilters(wardrobeItems), [wardrobeItems]);
+  const colors = useMemo(() => buildColorFilters(wardrobeItems), [wardrobeItems]);
   const knownColors = useMemo(
-    () => uniqueColorPoints([...snapshot.colors, ...items.flatMap((item) => item.colorPoints)]),
-    [items, snapshot.colors],
+    () => uniqueColorPoints([...snapshot.colors, ...wardrobeItems.flatMap((item) => item.colorPoints)]),
+    [snapshot.colors, wardrobeItems],
   );
   const visibleItems = useMemo(
-    () => filterAndSortItems(items, categoryFilter, colorFilter, sortKey),
-    [categoryFilter, colorFilter, items, sortKey],
+    () => filterAndSortItems(wardrobeItems, categoryFilter, colorFilter, sortKey),
+    [categoryFilter, colorFilter, sortKey, wardrobeItems],
   );
   const selectedItem = selectedItemId
     ? items.find((item) => item.id === selectedItemId)
@@ -447,7 +449,7 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
                   strong: (chunks) => <strong>{chunks}</strong>,
                 })}
               </h1>
-              <p className="my-items-subtitle">{t("subtitle", { count: items.length })}</p>
+              <p className="my-items-subtitle">{t("subtitle", { count: counts.myItems })}</p>
             </div>
             <div className="dashboard-topbar-actions">
               <LanguageSwitcher />
@@ -547,8 +549,8 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
                 <span>
                   <MyItemsIcon name="my-items" />
                 </span>
-                <h2>{items.length ? t("empty.filteredTitle") : t("empty.title")}</h2>
-                <p>{items.length ? t("empty.filteredCopy") : t("empty.copy")}</p>
+                <h2>{wardrobeItems.length ? t("empty.filteredTitle") : t("empty.title")}</h2>
+                <p>{wardrobeItems.length ? t("empty.filteredCopy") : t("empty.copy")}</p>
                 <button className="dashboard-primary-action" onClick={openNewItem} type="button">
                   <MyItemsIcon name="plus" />
                   <span>{t("addItem")}</span>
@@ -717,9 +719,11 @@ function buildCounts(
   items: MyItemsEntry[],
   base: MyItemsSnapshot["navigation"],
 ): MyItemsSnapshot["navigation"] {
+  const wardrobeItems = items.filter(isWardrobeStatisticItem);
+
   return {
     ...base,
-    myItems: items.length,
+    myItems: wardrobeItems.length,
     uncapsulated: items.filter((item) => item.status === "uncapsulated").length,
     favorites: items.filter((item) => item.favorite).length,
     forSale: items.filter((item) => item.status === "for_sale").length,
