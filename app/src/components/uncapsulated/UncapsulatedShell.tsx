@@ -9,6 +9,7 @@ import {
   WardrobeDetailField,
   WardrobeItemDetailPanel,
 } from "@/components/wardrobe/WardrobeItemDetailPanel";
+import { updateWardrobeStatisticCountForStatusChange } from "@/components/wardrobe/wardrobe-statistics";
 import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -65,6 +66,11 @@ const DEFAULT_COLOR = "#8C8C8C";
 const LOCAL_UPDATED_AT = "2026-06-11T15:00:00.000Z";
 const MAX_LOCAL_PHOTO_BYTES = 10 * 1024 * 1024;
 const SUPPORTED_LOCAL_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const decisionStatusMap: Record<"capsule" | "repair" | "sale", MyItemsEntry["status"]> = {
+  capsule: "active",
+  repair: "for_repair",
+  sale: "for_sale",
+};
 
 export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
   const t = useTranslations("uncapsulated");
@@ -427,9 +433,12 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     item: MyItemsEntry,
     decision: "capsule" | "repair" | "sale",
   ) => {
+    const nextStatus = decisionStatusMap[decision];
+
     setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
     setNavigation((currentNavigation) => ({
       ...currentNavigation,
+      myItems: updateWardrobeStatisticCountForStatusChange(currentNavigation.myItems, item.status, nextStatus),
       uncapsulated: Math.max(0, currentNavigation.uncapsulated - 1),
       forSale:
         decision === "sale"

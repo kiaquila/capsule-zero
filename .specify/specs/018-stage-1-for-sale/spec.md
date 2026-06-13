@@ -117,7 +117,7 @@ As a Stage 1 reviewer, I want the For Sale detail panel to match the already imp
 - **FR-009**: Item detail MUST provide Save, Add to Capsule, To My Items, and Delete actions with localized validation and notices; it MUST NOT duplicate the favorite toggle, which belongs to the grid heart.
 - **FR-010**: Returning an item to My Items MUST move it to `uncapsulated` in local preview state, increment the non-sale My Items navigation badge, and update visible counts.
 - **FR-011**: Adding an item to a capsule or deleting it MUST remove it from the local For Sale preview and update visible counts; Add to Capsule increments the non-sale My Items badge, while Delete leaves it unchanged.
-- **FR-012**: For Sale interactions MUST remain local-only and update visible counts or card state where applicable.
+- **FR-012**: For Sale interactions MUST remain local-only and update visible counts or card state where applicable, using shared wardrobe-statistic transition rules for sale/return/delete moves.
 - **FR-013**: For Sale copy MUST be localized through next-intl EN/RU messages and MUST not expose ES-AR.
 - **FR-014**: For Sale UI MUST preserve achromatic glass styling and responsive mobile-first behavior.
 

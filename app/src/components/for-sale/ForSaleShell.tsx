@@ -10,6 +10,10 @@ import {
   WardrobeDetailField,
   WardrobeItemDetailPanel,
 } from "@/components/wardrobe/WardrobeItemDetailPanel";
+import {
+  updateWardrobeStatisticCountForRemoval,
+  updateWardrobeStatisticCountForStatusChange,
+} from "@/components/wardrobe/wardrobe-statistics";
 import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -326,7 +330,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
     setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
     setNavigation((currentNavigation) => ({
       ...currentNavigation,
-      myItems: currentNavigation.myItems + 1,
+      myItems: updateWardrobeStatisticCountForStatusChange(currentNavigation.myItems, item.status, "uncapsulated"),
       forSale: Math.max(0, currentNavigation.forSale - 1),
       uncapsulated: currentNavigation.uncapsulated + 1,
     }));
@@ -366,7 +370,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
     });
     setNavigation((currentNavigation) => ({
       ...currentNavigation,
-      myItems: currentNavigation.myItems + 1,
+      myItems: updateWardrobeStatisticCountForStatusChange(currentNavigation.myItems, itemToAdd.status, "active"),
       forSale: Math.max(0, currentNavigation.forSale - 1),
     }));
     closeDetail();
@@ -382,6 +386,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
     });
     setNavigation((currentNavigation) => ({
       ...currentNavigation,
+      myItems: updateWardrobeStatisticCountForRemoval(currentNavigation.myItems, item),
       forSale: Math.max(0, currentNavigation.forSale - 1),
       favorites: item.favorite
         ? Math.max(0, currentNavigation.favorites - 1)
