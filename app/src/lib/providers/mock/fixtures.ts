@@ -193,6 +193,25 @@ export const MOCK_WARDROBE_ITEMS: WardrobeEntry[] = [
     createdAt: "2026-06-01T10:30:00.000Z",
     updatedAt: "2026-06-01T10:45:00.000Z",
   },
+  {
+    id: "22222222-2222-4222-8222-222222222225",
+    userId: MOCK_USER.id,
+    name: "Charcoal silk slip skirt",
+    categoryId: "skirt",
+    colorPoints: [MOCK_COLORS.grey],
+    brand: "Toteme",
+    material: "Silk blend",
+    price: 140,
+    capsuleIds: [],
+    isPublic: false,
+    sourceType: "photo_upload",
+    status: "for_sale",
+    favorite: false,
+    fromCatalog: false,
+    version: 1,
+    createdAt: "2026-06-01T10:40:00.000Z",
+    updatedAt: "2026-06-01T10:50:00.000Z",
+  },
 ];
 
 export const MOCK_CATALOG_ITEMS: WardrobeEntry[] = [

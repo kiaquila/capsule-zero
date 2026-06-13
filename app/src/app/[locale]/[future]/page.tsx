@@ -3,7 +3,6 @@ import { notFound, redirect } from "next/navigation";
 
 const FUTURE_DASHBOARD_ROUTES = new Set([
   "for-repair",
-  "for-sale",
   "profile",
 ]);
 

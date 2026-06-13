@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import type { MyItemsEntry } from "@/components/my-items/my-items-data";
+import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
+import {
+  WardrobeDetailField,
+  WardrobeItemDetailPanel,
+} from "@/components/wardrobe/WardrobeItemDetailPanel";
 import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
 import type { ItemStatus } from "@/lib/providers";
@@ -613,12 +618,22 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
             {visibleItems.length > 0 ? (
               <section className="my-items-grid favorites-grid" aria-label={t("gridLabel")}>
                 {visibleItems.map((item) => (
-                  <FavoriteItemCard
+                  <WardrobeItemCard
+                    badges={[
+                      item.fromCatalog ? t("badges.catalog") : t("badges.mine"),
+                      t(`statuses.${item.status}`),
+                    ]}
+                    className="favorites-card"
+                    favoriteActive
+                    favoriteLabel={t("removeFavorite", { item: item.name })}
                     item={item}
+                    itemColorsLabel={t("itemColors")}
                     key={item.id}
+                    mainClassName="favorites-card-main"
+                    meta={item.brand ?? t(`sources.${item.sourceType}`)}
+                    onFavorite={() => removeFavorite(item)}
                     onOpen={() => openItem(item)}
-                    onRemove={() => removeFavorite(item)}
-                    t={t}
+                    renderHeartIcon={() => <FavoritesIcon name="heart" />}
                   />
                 ))}
               </section>
@@ -687,130 +702,19 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
       </div>
 
       {selectedItem && draft ? (
-        <div className="my-items-detail-wrap" role="dialog" aria-modal="true" aria-label={t("detail.title", { item: selectedItem.name })}>
-          <button
-            aria-label={t("detail.close")}
-            className="my-items-detail-backdrop"
-            onClick={closeDetail}
-            type="button"
-          />
-          <aside className="my-items-detail-panel">
-            <header className="my-items-detail-head">
-              <h2>{t("detail.editTitle")}</h2>
-              <button aria-label={t("detail.close")} className="my-items-icon-button" onClick={closeDetail} type="button">
-                <FavoritesIcon name="close" />
-              </button>
-            </header>
-
-            <div className="my-items-detail-body">
-              <div className="my-items-detail-photo">
-                {draft.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img alt="" src={draft.imageUrl} />
-                ) : (
-                  <>
-                    <ItemFallbackIcon colorHex={draft.colorHexes[0] ?? DEFAULT_COLOR} />
-                    <span>{t("detail.photoFallback")}</span>
-                  </>
-                )}
-                <button onClick={() => photoInputRef.current?.click()} type="button">
-                  {t("detail.changePhoto")}
-                </button>
-                <input
-                  accept="image/jpeg,image/png,image/webp"
-                  className="my-items-photo-input"
-                  onChange={handlePhotoUpload}
-                  ref={photoInputRef}
-                  type="file"
-                />
-                {errors.photo ? <small className="my-items-photo-error">{errors.photo}</small> : null}
-              </div>
-
-              <label className="my-items-field">
-                <span>{t("detail.name")}</span>
-                <input
-                  aria-invalid={Boolean(errors.name)}
-                  onChange={(event) => updateDraft({ name: event.target.value })}
-                  value={draft.name}
-                />
-                {errors.name ? <small>{errors.name}</small> : null}
-              </label>
-
-              <label className="my-items-field">
-                <span>{t("detail.category")}</span>
-                <select
-                  aria-invalid={Boolean(errors.categoryId)}
-                  onChange={(event) => updateDraft({ categoryId: event.target.value })}
-                  value={draft.categoryId}
-                >
-                  {snapshot.categoryOptions.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.categoryId ? <small>{errors.categoryId}</small> : null}
-              </label>
-
-              <div className="my-items-field">
-                <span>{t("detail.colors")}</span>
-                <div className="my-items-edit-colors">
-                  {draft.colorHexes.map((hex, index) => (
-                    <div className="my-items-edit-color" key={`${hex}-${index}`}>
-                      <span className="my-items-edit-color-swatch" style={{ backgroundColor: hex }} />
-                      <input
-                        aria-label={t("detail.color", { count: index + 1 })}
-                        onChange={(event) => updateColor(index, event.target.value)}
-                        type="color"
-                        value={hex}
-                      />
-                      {draft.colorHexes.length > 1 ? (
-                        <button
-                          aria-label={t("detail.removeColor")}
-                          onClick={() => removeColor(index)}
-                          type="button"
-                        >
-                          <FavoritesIcon name="close" />
-                        </button>
-                      ) : null}
-                    </div>
-                  ))}
-                  <button
-                    aria-label={t("detail.addColor")}
-                    className="my-items-add-color"
-                    disabled={draft.colorHexes.length >= 3}
-                    onClick={addColor}
-                    type="button"
-                  >
-                    <FavoritesIcon name="plus" />
-                  </button>
-                </div>
-                {errors.colorHexes ? <small>{errors.colorHexes}</small> : null}
-              </div>
-
-              <label className="my-items-field">
-                <span>{t("detail.brand")}</span>
-                <input onChange={(event) => updateDraft({ brand: event.target.value })} value={draft.brand} />
-              </label>
-
-              <label className="my-items-field">
-                <span>{t("detail.material")}</span>
-                <input onChange={(event) => updateDraft({ material: event.target.value })} value={draft.material} />
-              </label>
-
-              <label className="my-items-field">
-                <span>{t("detail.price")}</span>
-                <input
-                  inputMode="decimal"
-                  onChange={(event) => updateDraft({ price: event.target.value })}
-                  placeholder="0"
-                  value={draft.price}
-                />
-              </label>
-
-              <DetailField label={t("detail.source")} value={t(`sources.${selectedItem.sourceType}`)} />
-              <DetailField label={t("detail.favoriteType")} value={selectedItem.fromCatalog ? t("tabs.catalog") : t("tabs.mine")} />
-
+        <WardrobeItemDetailPanel
+          categoryOptions={snapshot.categoryOptions}
+          deleteAction={{
+            className: "my-items-secondary-button favorites-delete-button",
+            label: t("detail.delete"),
+            onClick: deleteSelectedItem,
+          }}
+          draft={draft}
+          errors={errors}
+          extraFields={
+            <>
+              <WardrobeDetailField label={t("detail.source")} value={t(`sources.${selectedItem.sourceType}`)} />
+              <WardrobeDetailField label={t("detail.favoriteType")} value={selectedItem.fromCatalog ? t("tabs.catalog") : t("tabs.mine")} />
               <div className="my-items-membership">
                 <p>{t("detail.capsules")}</p>
                 {selectedItem.capsules.length > 0 ? (
@@ -818,10 +722,7 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
                     <div className="my-items-capsule-row" key={capsule.id}>
                       <span className="my-items-capsule-palette">
                         {capsule.palette.slice(0, 5).map((color) => (
-                          <span
-                            key={`${capsule.id}-${color.hex}`}
-                            style={{ backgroundColor: color.hex }}
-                          />
+                          <span key={`${capsule.id}-${color.hex}`} style={{ backgroundColor: color.hex }} />
                         ))}
                       </span>
                       <span>{capsule.name}</span>
@@ -832,24 +733,39 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
                   <div className="my-items-no-capsules">{t("detail.noCapsules")}</div>
                 )}
               </div>
-            </div>
-
-            <footer className="my-items-detail-actions">
-              <button className="my-items-save-button" onClick={saveDraft} type="button">
-                <FavoritesIcon name="check" />
-                <span>{t("detail.save")}</span>
-              </button>
-              <button className="my-items-secondary-button favorites-remove-button" onClick={() => removeFavorite(selectedItem)} type="button">
-                <FavoritesIcon name="heart" />
-                <span>{t("detail.removeFavorite")}</span>
-              </button>
+            </>
+          }
+          labels={{
+            addColor: t("detail.addColor"),
+            brand: t("detail.brand"),
+            category: t("detail.category"),
+            changePhoto: t("detail.changePhoto"),
+            close: t("detail.close"),
+            color: (count) => t("detail.color", { count }),
+            colors: t("detail.colors"),
+            dialogLabel: t("detail.title", { item: selectedItem.name }),
+            material: t("detail.material"),
+            name: t("detail.name"),
+            photoFallback: t("detail.photoFallback"),
+            price: t("detail.price"),
+            removeColor: t("detail.removeColor"),
+            save: t("detail.save"),
+            title: t("detail.editTitle"),
+          }}
+          onAddColor={addColor}
+          onChange={updateDraft}
+          onClose={closeDetail}
+          onColorChange={updateColor}
+          onPhotoUpload={handlePhotoUpload}
+          onRemoveColor={removeColor}
+          onSave={saveDraft}
+          photoInputRef={photoInputRef}
+          renderIcon={(name) => <FavoritesIcon name={name} />}
+          actionSlot={
+            <>
               <button className="my-items-secondary-button" onClick={addSelectedItemToCapsule} type="button">
                 <FavoritesIcon name="capsules" />
                 <span>{t("detail.addToCapsule")}</span>
-              </button>
-              <button className="my-items-secondary-button favorites-delete-button" onClick={deleteSelectedItem} type="button">
-                <FavoritesIcon name="trash" />
-                <span>{t("detail.delete")}</span>
               </button>
               <button className="my-items-secondary-button" onClick={() => moveSelectedItem("for_sale")} type="button">
                 <FavoritesIcon name="tag" />
@@ -859,9 +775,9 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
                 <FavoritesIcon name="for-repair" />
                 <span>{t("detail.moveRepair")}</span>
               </button>
-            </footer>
-          </aside>
-        </div>
+            </>
+          }
+        />
       ) : null}
 
       {notice ? (
@@ -869,75 +785,6 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
           {notice}
         </div>
       ) : null}
-    </div>
-  );
-}
-
-function FavoriteItemCard({
-  item,
-  onOpen,
-  onRemove,
-  t,
-}: {
-  item: MyItemsEntry;
-  onOpen: () => void;
-  onRemove: () => void;
-  t: ReturnType<typeof useTranslations<"favorites">>;
-}) {
-  const mainColor = item.colorPoints[0]?.hex ?? DEFAULT_COLOR;
-
-  return (
-    <article className="my-items-card favorites-card">
-      <button
-        aria-label={t("removeFavorite", { item: item.name })}
-        aria-pressed="true"
-        className="my-items-fav my-items-fav-active"
-        onClick={onRemove}
-        type="button"
-      >
-        <FavoritesIcon name="heart" />
-      </button>
-      <button className="my-items-card-main favorites-card-main" onClick={onOpen} type="button">
-        <span className="my-items-thumb">
-          {item.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img alt="" src={item.imageUrl} />
-          ) : (
-            <ItemFallbackIcon colorHex={mainColor} />
-          )}
-        </span>
-        <span className="my-items-card-body">
-          <span className="my-items-card-name">{item.name}</span>
-          <span className="my-items-card-row">
-            <span>{item.categoryLabel}</span>
-            <span className="my-items-card-colors" aria-label={t("itemColors")}>
-              {item.colorPoints.map((color) => (
-                <span
-                  key={`${item.id}-${color.hex}`}
-                  style={{ backgroundColor: color.hex }}
-                  title={color.name}
-                />
-              ))}
-            </span>
-          </span>
-          <span className="my-items-card-meta">
-            {item.brand ?? t(`sources.${item.sourceType}`)}
-          </span>
-          <span className="my-items-card-badges">
-            <small>{item.fromCatalog ? t("badges.catalog") : t("badges.mine")}</small>
-            <small>{t(`statuses.${item.status}`)}</small>
-          </span>
-        </span>
-      </button>
-    </article>
-  );
-}
-
-function DetailField({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="uncapsulated-detail-field">
-      <p>{label}</p>
-      <span>{value}</span>
     </div>
   );
 }
@@ -1220,32 +1067,6 @@ function removeItemFromNavigation(
   }
 
   return nextNavigation;
-}
-
-function ItemFallbackIcon({ colorHex }: { colorHex: string }) {
-  const stroke = isColorDark(colorHex) ? "rgba(255,255,255,.42)" : "rgba(0,0,0,.28)";
-
-  return (
-    <svg aria-hidden fill="none" height="44" viewBox="0 0 44 44" width="44">
-      <path
-        d="M22 8s-6.8 4.2-6.8 10.3L7 22.8V36h30V22.8l-8.2-4.5C28.8 12.2 22 8 22 8Z"
-        fill={`${colorHex}22`}
-        stroke={stroke}
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-      <path d="M15.2 18.3h13.6" stroke={stroke} strokeLinecap="round" strokeWidth="1.6" />
-    </svg>
-  );
-}
-
-function isColorDark(hex: string): boolean {
-  const value = hex.replace("#", "");
-  const r = Number.parseInt(value.slice(0, 2), 16);
-  const g = Number.parseInt(value.slice(2, 4), 16);
-  const b = Number.parseInt(value.slice(4, 6), 16);
-
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.45;
 }
 
 function FavoritesIcon({ name }: { name: IconName }) {

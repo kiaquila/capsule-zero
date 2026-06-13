@@ -347,11 +347,13 @@
       "newTitle": "Новая вещь",
       "editTitle": "Редактировать вещь",
       "close": "Закрыть",
+      "photoFallback": "Превью фото",
       "changePhoto": "Изменить фото",
       "name": "Название",
       "category": "Категория",
       "colors": "Цвета",
       "color": "Цвет {count}",
+      "addColor": "Добавить цвет",
       "removeColor": "Удалить цвет",
       "brand": "Бренд",
       "material": "Материал",
@@ -447,9 +449,8 @@
       "active": "Активная",
       "noCapsules": "Не входит в капсулы",
       "save": "Сохранить",
-      "removeFavorite": "Убрать из избранного",
       "addToCapsule": "Добавить в капсулу",
-      "delete": "Удалить вещь",
+      "delete": "Удалить",
       "moveSale": "На продажу",
       "moveRepair": "В ремонт"
     },
@@ -463,6 +464,100 @@
       "photoReady": "Превью фото добавлено. Сохраните вещь, чтобы оставить его в локальном просмотре.",
       "movedSale": "{item} перемещена в продажу.",
       "movedRepair": "{item} перемещена в ремонт."
+    },
+    "validation": {
+      "name": "Введите название.",
+      "category": "Выберите категорию.",
+      "colorsRequired": "Добавьте хотя бы один цвет.",
+      "colorsMax": "Можно выбрать до трех цветов.",
+      "photoType": "Загрузите изображение JPEG, PNG или WebP.",
+      "photoSize": "Загрузите изображение до 10 МБ."
+    }
+  },
+  "forSale": {
+    "title": "На <strong>продажу</strong>",
+    "subtitle": "{count, plural, one {# вещь в продаже} few {# вещи в продаже} many {# вещей в продаже} other {# вещи в продаже}}",
+    "openMyItems": "Мои вещи",
+    "gridLabel": "Вещи на продажу",
+    "itemColors": "Цвета вещи",
+    "favorite": "Переключить избранное для {item}",
+    "infoLabel": "Пояснение статуса продажи",
+    "info": "Вещи здесь не учитываются в капсулах и статистике гардероба, пока вы не вернете их в Мои вещи.",
+    "filters": {
+      "label": "Фильтры вещей на продажу",
+      "categories": "Фильтры продажи по категориям",
+      "colors": "Фильтры продажи по цветам",
+      "allCategories": "Все",
+      "allColors": "Все цвета",
+      "color": "Фильтр по цвету {color}"
+    },
+    "sort": {
+      "label": "Сортировка",
+      "name": "Название",
+      "category": "Категория",
+      "recent": "Недавние",
+      "price": "Цена"
+    },
+    "empty": {
+      "title": "В продаже пока пусто",
+      "copy": "Вещи, отправленные на продажу, появятся здесь и не будут попадать в статистику капсул.",
+      "filteredTitle": "Нет подходящих вещей на продажу",
+      "filteredCopy": "Попробуйте другую категорию, цвет или вернитесь ко всем."
+    },
+    "sources": {
+      "photo_upload": "Фото",
+      "marketplace": "Ссылка",
+      "catalog": "Каталог"
+    },
+    "badges": {
+      "privateListing": "Личное",
+      "publicListing": "Видно в каталоге"
+    },
+    "statuses": {
+      "active": "Активная",
+      "uncapsulated": "Вне капсулы",
+      "for_sale": "На продажу",
+      "for_repair": "В ремонт"
+    },
+    "actions": {
+      "label": "Действия продажи для {item}",
+      "returnShort": "Вернуть",
+      "returnItem": "Вернуть {item} в Мои вещи"
+    },
+    "detail": {
+      "title": "Детали вещи {item}",
+      "editTitle": "Редактировать вещь на продажу",
+      "close": "Закрыть",
+      "photoFallback": "Превью фото",
+      "changePhoto": "Заменить фото",
+      "name": "Название",
+      "category": "Категория",
+      "colors": "Цвета",
+      "color": "Цвет {count}",
+      "addColor": "Добавить цвет",
+      "removeColor": "Удалить цвет",
+      "brand": "Бренд",
+      "material": "Материал",
+      "price": "Цена",
+      "source": "Источник",
+      "status": "Статус",
+      "catalogVisible": "Видно в каталоге",
+      "catalogVisibleHint": "Только локальное превью Stage 1",
+      "capsules": "В капсулах",
+      "noCapsules": "Не входит в капсулы",
+      "save": "Сохранить",
+      "addToCapsule": "В капсулу",
+      "returnToMyItems": "В Мои вещи",
+      "delete": "Удалить"
+    },
+    "notice": {
+      "saved": "{item} сохранена.",
+      "addedCapsule": "{item} добавлена в {capsule}.",
+      "alreadyCapsule": "{item} уже в {capsule}.",
+      "noCapsule": "Активной капсулы пока нет.",
+      "returned": "{item} возвращена в Мои вещи.",
+      "deleted": "{item} удалена из Моих вещей.",
+      "photoReady": "Превью фото добавлено. Сохраните вещь, чтобы оставить его в локальном просмотре."
     },
     "validation": {
       "name": "Введите название.",

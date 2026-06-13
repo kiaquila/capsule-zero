@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
+import type { MyItemsEntry } from "@/components/my-items/my-items-data";
 import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
 import {
   WardrobeDetailField,
@@ -13,11 +14,10 @@ import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { ColorGroup, ColorPoint } from "@/types";
-import type { MyItemsEntry } from "@/components/my-items/my-items-data";
-import type { UncapsulatedSnapshot } from "./uncapsulated-data";
+import type { ForSaleSnapshot } from "./for-sale-data";
 
-interface UncapsulatedShellProps {
-  snapshot: UncapsulatedSnapshot;
+interface ForSaleShellProps {
+  snapshot: ForSaleSnapshot;
 }
 
 type IconName =
@@ -38,7 +38,6 @@ type IconName =
   | "settings"
   | "tag"
   | "trash";
-
 type SortKey = "name" | "category" | "recent" | "price";
 type DraftErrors = Partial<Record<"name" | "categoryId" | "colorHexes" | "photo", string>>;
 
@@ -51,9 +50,10 @@ interface ItemDraftState {
   material: string;
   price: string;
   imageUrl?: string;
+  visibleInCatalog: boolean;
 }
 
-interface UncapsulatedNavItem {
+interface ForSaleNavItem {
   href: string;
   icon: IconName;
   label: string;
@@ -62,24 +62,26 @@ interface UncapsulatedNavItem {
 }
 
 const DEFAULT_COLOR = "#8C8C8C";
-const LOCAL_UPDATED_AT = "2026-06-11T15:00:00.000Z";
+const LOCAL_UPDATED_AT = "2026-06-12T16:00:00.000Z";
 const MAX_LOCAL_PHOTO_BYTES = 10 * 1024 * 1024;
 const SUPPORTED_LOCAL_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
-  const t = useTranslations("uncapsulated");
+export function ForSaleShell({ snapshot }: ForSaleShellProps) {
+  const t = useTranslations("forSale");
   const dashboardT = useTranslations("dashboard");
   const locale = useLocale();
   const router = useRouter();
   const [items, setItems] = useState(snapshot.items);
   const [navigation, setNavigation] = useState(snapshot.navigation);
+  const [catalogVisibleIds, setCatalogVisibleIds] = useState<Set<string>>(
+    () => new Set(snapshot.items.filter((item) => item.fromCatalog).map((item) => item.id)),
+  );
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [colorFilter, setColorFilter] = useState("all");
-  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortKey, setSortKey] = useState<SortKey>("recent");
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [draft, setDraft] = useState<ItemDraftState | null>(null);
   const [errors, setErrors] = useState<DraftErrors>({});
-  const [capsuleCandidateId, setCapsuleCandidateId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
@@ -97,9 +99,6 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
   );
   const selectedItem = selectedItemId
     ? items.find((item) => item.id === selectedItemId) ?? null
-    : null;
-  const capsuleCandidate = capsuleCandidateId
-    ? items.find((item) => item.id === capsuleCandidateId) ?? null
     : null;
 
   useEffect(() => {
@@ -121,7 +120,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     };
   }, []);
 
-  const navGroups: Array<{ label: string; items: UncapsulatedNavItem[] }> = [
+  const navGroups: Array<{ label: string; items: ForSaleNavItem[] }> = [
     {
       label: dashboardT("nav.overview"),
       items: [
@@ -157,7 +156,6 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           href: "/uncapsulated",
           icon: "ban",
           label: dashboardT("nav.uncapsulated"),
-          active: true,
           badge: navigation.uncapsulated,
         },
       ],
@@ -181,6 +179,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           href: "/for-sale",
           icon: "tag",
           label: dashboardT("nav.forSale"),
+          active: true,
           badge: navigation.forSale,
         },
         {
@@ -192,7 +191,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
       ],
     },
   ];
-  const moreItems: UncapsulatedNavItem[] = [
+  const moreItems: ForSaleNavItem[] = [
     {
       href: "/capsule-result?tab=outfits",
       icon: "bag",
@@ -203,7 +202,6 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
       href: "/uncapsulated",
       icon: "ban",
       label: dashboardT("nav.uncapsulated"),
-      active: true,
       badge: navigation.uncapsulated,
     },
     {
@@ -216,6 +214,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
       href: "/for-sale",
       icon: "tag",
       label: dashboardT("nav.forSale"),
+      active: true,
       badge: navigation.forSale,
     },
     {
@@ -244,7 +243,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
 
   const openItem = (item: MyItemsEntry) => {
     setSelectedItemId(item.id);
-    setDraft(buildDraftFromItem(item));
+    setDraft(buildDraftFromItem(item, catalogVisibleIds.has(item.id)));
     setErrors({});
     setNotice(null);
   };
@@ -272,6 +271,8 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
       return;
     }
 
+    setErrors({});
+
     const normalized = normalizeDraft(draft, snapshot, knownColors);
 
     setItems((currentItems) =>
@@ -286,28 +287,18 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           : item,
       ),
     );
+    setCatalogVisibleIds((current) => {
+      const next = new Set(current);
+
+      if (draft.visibleInCatalog) {
+        next.add(draft.id);
+      } else {
+        next.delete(draft.id);
+      }
+
+      return next;
+    });
     setNotice(t("notice.saved", { item: normalized.name }));
-  };
-
-  const deleteSelectedItem = () => {
-    if (!draft) {
-      return;
-    }
-
-    const item = items.find((currentItem) => currentItem.id === draft.id);
-    const itemName = item?.name ?? draft.name;
-
-    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== draft.id));
-    setNavigation((currentNavigation) => ({
-      ...currentNavigation,
-      myItems: Math.max(0, currentNavigation.myItems - 1),
-      uncapsulated: Math.max(0, currentNavigation.uncapsulated - 1),
-      favorites: item?.favorite
-        ? Math.max(0, currentNavigation.favorites - 1)
-        : currentNavigation.favorites,
-    }));
-    closeDetail();
-    setNotice(t("notice.deleted", { item: itemName }));
   };
 
   const toggleFavorite = (itemId: string) => {
@@ -328,6 +319,72 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     setNavigation((currentNavigation) => ({
       ...currentNavigation,
       favorites: Math.max(0, currentNavigation.favorites + (nextFavorite ? 1 : -1)),
+    }));
+  };
+
+  const returnToMyItems = (item: MyItemsEntry) => {
+    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
+    setNavigation((currentNavigation) => ({
+      ...currentNavigation,
+      forSale: Math.max(0, currentNavigation.forSale - 1),
+      uncapsulated: currentNavigation.uncapsulated + 1,
+    }));
+    closeDetail();
+    setNotice(t("notice.returned", { item: item.name }));
+  };
+
+  const deleteItem = (item: MyItemsEntry) => {
+    removeFromLocalWardrobe(item);
+    closeDetail();
+    setNotice(t("notice.deleted", { item: item.name }));
+  };
+
+  const addSelectedItemToCapsule = () => {
+    if (!selectedItem) {
+      return;
+    }
+
+    if (!snapshot.activeCapsule) {
+      setNotice(t("notice.noCapsule"));
+      return;
+    }
+
+    const itemToAdd = selectedItem;
+    const activeCapsule = snapshot.activeCapsule;
+
+    if (itemToAdd.capsuleIds.includes(activeCapsule.id)) {
+      setNotice(t("notice.alreadyCapsule", { item: itemToAdd.name, capsule: activeCapsule.name }));
+      return;
+    }
+
+    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== itemToAdd.id));
+    setCatalogVisibleIds((current) => {
+      const next = new Set(current);
+      next.delete(itemToAdd.id);
+      return next;
+    });
+    setNavigation((currentNavigation) => ({
+      ...currentNavigation,
+      forSale: Math.max(0, currentNavigation.forSale - 1),
+    }));
+    closeDetail();
+    setNotice(t("notice.addedCapsule", { item: itemToAdd.name, capsule: activeCapsule.name }));
+  };
+
+  const removeFromLocalWardrobe = (item: MyItemsEntry) => {
+    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
+    setCatalogVisibleIds((current) => {
+      const next = new Set(current);
+      next.delete(item.id);
+      return next;
+    });
+    setNavigation((currentNavigation) => ({
+      ...currentNavigation,
+      myItems: Math.max(0, currentNavigation.myItems - 1),
+      forSale: Math.max(0, currentNavigation.forSale - 1),
+      favorites: item.favorite
+        ? Math.max(0, currentNavigation.favorites - 1)
+        : currentNavigation.favorites,
     }));
   };
 
@@ -385,65 +442,8 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     setNotice(t("notice.photoReady"));
   };
 
-  const requestAddToCapsule = (item: MyItemsEntry) => {
-    if (!snapshot.activeCapsule) {
-      setNotice(t("notice.noCapsule"));
-      return;
-    }
-
-    setCapsuleCandidateId(item.id);
-    setNotice(null);
-  };
-
-  const confirmAddToCapsule = () => {
-    if (!capsuleCandidate || !snapshot.activeCapsule) {
-      return;
-    }
-
-    completeDecision(capsuleCandidate, "capsule");
-    setNotice(
-      t("notice.addedCapsule", {
-        capsule: snapshot.activeCapsule.name,
-        item: capsuleCandidate.name,
-      }),
-    );
-    setCapsuleCandidateId(null);
-    closeDetail();
-  };
-
-  const moveToSale = (item: MyItemsEntry) => {
-    completeDecision(item, "sale");
-    setNotice(t("notice.movedSale", { item: item.name }));
-    closeDetail();
-  };
-
-  const moveToRepair = (item: MyItemsEntry) => {
-    completeDecision(item, "repair");
-    setNotice(t("notice.movedRepair", { item: item.name }));
-    closeDetail();
-  };
-
-  const completeDecision = (
-    item: MyItemsEntry,
-    decision: "capsule" | "repair" | "sale",
-  ) => {
-    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
-    setNavigation((currentNavigation) => ({
-      ...currentNavigation,
-      uncapsulated: Math.max(0, currentNavigation.uncapsulated - 1),
-      forSale:
-        decision === "sale"
-          ? currentNavigation.forSale + 1
-          : currentNavigation.forSale,
-      forRepair:
-        decision === "repair"
-          ? currentNavigation.forRepair + 1
-          : currentNavigation.forRepair,
-    }));
-  };
-
   return (
-    <div className="cz-page dashboard-page my-items-page uncapsulated-page">
+    <div className="cz-page dashboard-page my-items-page for-sale-page">
       <div className="wallpaper-bg" />
       <div className="wallpaper-overlay" />
 
@@ -475,7 +475,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                     key={`${group.label}-${item.label}`}
                   >
                     <span className="dashboard-nav-icon">
-                      <UncapsulatedIcon name={item.icon} />
+                      <ForSaleIcon name={item.icon} />
                     </span>
                     <span className="dashboard-nav-label">{item.label}</span>
                     {typeof item.badge === "number" ? (
@@ -490,13 +490,13 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           <div className="dashboard-sidebar-foot">
             <Link className="dashboard-nav-item" href="/profile">
               <span className="dashboard-nav-icon">
-                <UncapsulatedIcon name="settings" />
+                <ForSaleIcon name="settings" />
               </span>
               <span className="dashboard-nav-label">{dashboardT("nav.settings")}</span>
             </Link>
             <button className="dashboard-nav-item dashboard-nav-button" onClick={signOut} type="button">
               <span className="dashboard-nav-icon">
-                <UncapsulatedIcon name="logout" />
+                <ForSaleIcon name="logout" />
               </span>
               <span className="dashboard-nav-label">{dashboardT("logout")}</span>
             </button>
@@ -511,18 +511,23 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                   strong: (chunks) => <strong>{chunks}</strong>,
                 })}
               </h1>
-              <p className="my-items-subtitle">{t("subtitle", { count: navigation.uncapsulated })}</p>
+              <p className="my-items-subtitle">{t("subtitle", { count: navigation.forSale })}</p>
             </div>
             <div className="dashboard-topbar-actions">
               <LanguageSwitcher />
               <Link className="dashboard-primary-action" href="/my-items">
-                <UncapsulatedIcon name="my-items" />
+                <ForSaleIcon name="my-items" />
                 <span>{t("openMyItems")}</span>
               </Link>
             </div>
           </header>
 
-          <div className="my-items-content uncapsulated-content">
+          <div className="my-items-content for-sale-content">
+            <section className="for-sale-info" aria-label={t("infoLabel")}>
+              <span className="for-sale-info-icon" aria-hidden="true">i</span>
+              <p>{t("info")}</p>
+            </section>
+
             <section className="my-items-filter-panel" aria-label={t("filters.label")}>
               <div className="my-items-filter-row">
                 <div className="my-items-chip-row" aria-label={t("filters.categories")}>
@@ -584,54 +589,35 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
             </section>
 
             {visibleItems.length > 0 ? (
-              <section className="my-items-grid uncapsulated-grid" aria-label={t("gridLabel")}>
+              <section className="my-items-grid for-sale-grid" aria-label={t("gridLabel")}>
                 {visibleItems.map((item) => (
                   <WardrobeItemCard
-                    actionClassName="uncapsulated-card-actions"
-                    actionGroupLabel={t("actions.label", { item: item.name })}
-                    actions={[
-                      {
-                        icon: <UncapsulatedIcon name="capsules" />,
-                        label: t("actions.addToCapsule"),
-                        onClick: () => requestAddToCapsule(item),
-                        text: t("actions.addShort"),
-                      },
-                      {
-                        icon: <UncapsulatedIcon name="tag" />,
-                        label: t("actions.moveSale"),
-                        onClick: () => moveToSale(item),
-                        text: t("actions.saleShort"),
-                      },
-                      {
-                        icon: <UncapsulatedIcon name="for-repair" />,
-                        label: t("actions.moveRepair"),
-                        onClick: () => moveToRepair(item),
-                        text: t("actions.repairShort"),
-                      },
+                    badges={[
+                      catalogVisibleIds.has(item.id)
+                        ? t("badges.publicListing")
+                        : t("badges.privateListing"),
+                      t(`statuses.${item.status}`),
                     ]}
-                    badges={[t("badges.noCapsule"), t(`statuses.${item.status}`)]}
-                    className="uncapsulated-card"
                     favoriteLabel={t("favorite", { item: item.name })}
                     item={item}
                     itemColorsLabel={t("itemColors")}
                     key={item.id}
-                    mainClassName="uncapsulated-card-main"
                     meta={item.brand ?? t(`sources.${item.sourceType}`)}
                     onFavorite={() => toggleFavorite(item.id)}
                     onOpen={() => openItem(item)}
-                    renderHeartIcon={() => <UncapsulatedIcon name="heart" />}
+                    renderHeartIcon={() => <ForSaleIcon name="heart" />}
                   />
                 ))}
               </section>
             ) : (
-              <section className="my-items-empty">
+              <section className="my-items-empty for-sale-empty">
                 <span>
-                  <UncapsulatedIcon name="ban" />
+                  <ForSaleIcon name="tag" />
                 </span>
                 <h2>{items.length ? t("empty.filteredTitle") : t("empty.title")}</h2>
                 <p>{items.length ? t("empty.filteredCopy") : t("empty.copy")}</p>
                 <Link className="dashboard-primary-action" href="/my-items">
-                  <UncapsulatedIcon name="my-items" />
+                  <ForSaleIcon name="my-items" />
                   <span>{t("openMyItems")}</span>
                 </Link>
               </section>
@@ -653,7 +639,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           type="button"
         >
           <span className="dashboard-bottom-icon">
-            <UncapsulatedIcon name="more" />
+            <ForSaleIcon name="more" />
           </span>
           <span className="dashboard-bottom-label">{dashboardT("nav.more")}</span>
         </button>
@@ -676,7 +662,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
               onClick={() => setMoreOpen(false)}
             >
               <span className="dashboard-more-icon">
-                <UncapsulatedIcon name={item.icon} />
+                <ForSaleIcon name={item.icon} />
               </span>
               <span className="dashboard-more-label">{item.label}</span>
               {typeof item.badge === "number" ? (
@@ -691,15 +677,31 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
         <WardrobeItemDetailPanel
           categoryOptions={snapshot.categoryOptions}
           deleteAction={{
-            className: "my-items-secondary-button uncapsulated-delete-button",
+            className: "my-items-secondary-button for-sale-delete-button",
             label: t("detail.delete"),
-            onClick: deleteSelectedItem,
+            onClick: () => deleteItem(selectedItem),
           }}
           draft={draft}
           errors={errors}
           extraFields={
             <>
               <WardrobeDetailField label={t("detail.source")} value={t(`sources.${selectedItem.sourceType}`)} />
+              <WardrobeDetailField label={t("detail.status")} value={t(`statuses.${selectedItem.status}`)} />
+              <div className="for-sale-toggle-row">
+                <div>
+                  <p>{t("detail.catalogVisible")}</p>
+                  <span>{t("detail.catalogVisibleHint")}</span>
+                </div>
+                <button
+                  aria-label={t("detail.catalogVisible")}
+                  aria-pressed={draft.visibleInCatalog}
+                  className={cn("for-sale-toggle", draft.visibleInCatalog && "for-sale-toggle-on")}
+                  onClick={() => updateDraft({ visibleInCatalog: !draft.visibleInCatalog })}
+                  type="button"
+                >
+                  <span />
+                </button>
+              </div>
               <div className="my-items-membership">
                 <p>{t("detail.capsules")}</p>
                 <div className="my-items-no-capsules">{t("detail.noCapsules")}</div>
@@ -731,74 +733,20 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           onRemoveColor={removeColor}
           onSave={saveDraft}
           photoInputRef={photoInputRef}
-          renderIcon={(name) => <UncapsulatedIcon name={name} />}
+          renderIcon={(name) => <ForSaleIcon name={name} />}
           actionSlot={
             <>
-              <button className="my-items-secondary-button" onClick={() => requestAddToCapsule(selectedItem)} type="button">
-                <UncapsulatedIcon name="capsules" />
-                <span>{t("actions.addToCapsule")}</span>
+              <button className="my-items-secondary-button" onClick={addSelectedItemToCapsule} type="button">
+                <ForSaleIcon name="capsules" />
+                <span>{t("detail.addToCapsule")}</span>
               </button>
-              <button className="my-items-secondary-button" onClick={() => moveToSale(selectedItem)} type="button">
-                <UncapsulatedIcon name="tag" />
-                <span>{t("actions.moveSale")}</span>
-              </button>
-              <button className="my-items-secondary-button" onClick={() => moveToRepair(selectedItem)} type="button">
-                <UncapsulatedIcon name="for-repair" />
-                <span>{t("actions.moveRepair")}</span>
+              <button className="my-items-secondary-button" onClick={() => returnToMyItems(selectedItem)} type="button">
+                <ForSaleIcon name="my-items" />
+                <span>{t("detail.returnToMyItems")}</span>
               </button>
             </>
           }
         />
-      ) : null}
-
-      {capsuleCandidate && snapshot.activeCapsule ? (
-        <div className="uncapsulated-capsule-wrap" role="dialog" aria-modal="true" aria-label={t("capsule.title")}>
-          <button
-            aria-label={t("capsule.cancel")}
-            className="uncapsulated-capsule-backdrop"
-            onClick={() => setCapsuleCandidateId(null)}
-            type="button"
-          />
-          <section className="uncapsulated-capsule-modal">
-            <header>
-              <h2>{t("capsule.title")}</h2>
-              <button aria-label={t("capsule.cancel")} className="my-items-icon-button" onClick={() => setCapsuleCandidateId(null)} type="button">
-                <UncapsulatedIcon name="close" />
-              </button>
-            </header>
-            <div className="uncapsulated-capsule-card">
-              <span className="uncapsulated-capsule-palette">
-                {snapshot.activeCapsule.palette.slice(0, 6).map((color) => (
-                  <span key={`${snapshot.activeCapsule?.id}-${color.hex}`} style={{ backgroundColor: color.hex }} />
-                ))}
-              </span>
-              <div>
-                <p>{snapshot.activeCapsule.name}</p>
-                <small>
-                  {t("capsule.meta", {
-                    items: snapshot.activeCapsule.itemCount,
-                    outfits: snapshot.activeCapsule.outfitCount,
-                  })}
-                </small>
-              </div>
-            </div>
-            <p className="uncapsulated-capsule-copy">
-              {t("capsule.copy", {
-                capsule: snapshot.activeCapsule.name,
-                item: capsuleCandidate.name,
-              })}
-            </p>
-            <footer>
-              <button className="my-items-secondary-button" onClick={() => setCapsuleCandidateId(null)} type="button">
-                {t("capsule.cancel")}
-              </button>
-              <button className="my-items-save-button" onClick={confirmAddToCapsule} type="button">
-                <UncapsulatedIcon name="check" />
-                <span>{t("capsule.confirm")}</span>
-              </button>
-            </footer>
-          </section>
-        </div>
       ) : null}
 
       {notice ? (
@@ -824,14 +772,14 @@ function BottomNavLink({
   return (
     <Link className={cn("dashboard-bottom-item", active && "dashboard-bottom-item-active")} href={href}>
       <span className="dashboard-bottom-icon">
-        <UncapsulatedIcon name={icon} />
+        <ForSaleIcon name={icon} />
       </span>
       <span className="dashboard-bottom-label">{label}</span>
     </Link>
   );
 }
 
-function buildDraftFromItem(item: MyItemsEntry): ItemDraftState {
+function buildDraftFromItem(item: MyItemsEntry, visibleInCatalog: boolean): ItemDraftState {
   return {
     id: item.id,
     name: item.name,
@@ -841,12 +789,13 @@ function buildDraftFromItem(item: MyItemsEntry): ItemDraftState {
     material: item.material ?? "",
     price: typeof item.price === "number" ? String(item.price) : "",
     imageUrl: item.imageUrl,
+    visibleInCatalog,
   };
 }
 
 function validateDraft(
   draft: ItemDraftState,
-  t: ReturnType<typeof useTranslations<"uncapsulated">>,
+  t: ReturnType<typeof useTranslations<"forSale">>,
 ): DraftErrors {
   const errors: DraftErrors = {};
 
@@ -871,7 +820,7 @@ function validateDraft(
 
 function normalizeDraft(
   draft: ItemDraftState,
-  snapshot: UncapsulatedSnapshot,
+  snapshot: ForSaleSnapshot,
   knownColors: ColorPoint[],
 ): Pick<
   MyItemsEntry,
@@ -956,7 +905,7 @@ function uniqueColorPoints(colors: ColorPoint[]): ColorPoint[] {
   return [...byHex.values()];
 }
 
-function buildCategoryFilters(items: MyItemsEntry[]): UncapsulatedSnapshot["categories"] {
+function buildCategoryFilters(items: MyItemsEntry[]): ForSaleSnapshot["categories"] {
   const counts = new Map<string, { id: string; label: string; count: number }>();
 
   items.forEach((item) => {
@@ -1019,7 +968,7 @@ function filterAndSortItems(
   });
 }
 
-function UncapsulatedIcon({ name }: { name: IconName }) {
+function ForSaleIcon({ name }: { name: IconName }) {
   const common = {
     "aria-hidden": true,
     fill: "none",
