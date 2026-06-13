@@ -326,6 +326,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
     setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
     setNavigation((currentNavigation) => ({
       ...currentNavigation,
+      myItems: currentNavigation.myItems + 1,
       forSale: Math.max(0, currentNavigation.forSale - 1),
       uncapsulated: currentNavigation.uncapsulated + 1,
     }));
@@ -365,6 +366,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
     });
     setNavigation((currentNavigation) => ({
       ...currentNavigation,
+      myItems: currentNavigation.myItems + 1,
       forSale: Math.max(0, currentNavigation.forSale - 1),
     }));
     closeDetail();
@@ -380,7 +382,6 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
     });
     setNavigation((currentNavigation) => ({
       ...currentNavigation,
-      myItems: Math.max(0, currentNavigation.myItems - 1),
       forSale: Math.max(0, currentNavigation.forSale - 1),
       favorites: item.favorite
         ? Math.max(0, currentNavigation.favorites - 1)
