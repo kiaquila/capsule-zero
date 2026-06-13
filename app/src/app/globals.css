@@ -4647,6 +4647,13 @@ button, a, input, textarea {
   gap: 8px;
 }
 
+.my-items-detail-actions svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+
 .my-items-save-button {
   flex: 1 1 100%;
   border: 1px solid rgba(255,255,255,.52);
@@ -4791,8 +4798,8 @@ button, a, input, textarea {
 
 .uncapsulated-delete-button,
 .my-items-delete-button,
-.favorites-remove-button,
-.favorites-delete-button {
+.favorites-delete-button,
+.for-sale-delete-button {
   border-color: rgba(255,214,0,.42);
   background: rgba(255,214,0,.08);
   color: #FFD600;
@@ -4968,6 +4975,116 @@ button, a, input, textarea {
 
 .favorites-empty {
   min-height: 340px;
+}
+
+.for-sale-content {
+  gap: 18px;
+}
+
+.for-sale-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,.12);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.34);
+  color: var(--color-text-secondary);
+  padding: 14px 16px;
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+}
+
+.for-sale-info > span {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.20);
+  border-radius: var(--radius-circle);
+  background: rgba(255,255,255,.08);
+  color: var(--color-text-primary);
+}
+
+.for-sale-info-icon {
+  font-size: 16px;
+  font-weight: 700;
+  font-style: normal;
+  line-height: 1;
+}
+
+.for-sale-info p {
+  max-width: 760px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.for-sale-grid {
+  align-items: stretch;
+}
+
+.for-sale-empty {
+  min-height: 340px;
+}
+
+.for-sale-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 8px;
+  background: rgba(255,255,255,.07);
+  margin-bottom: 16px;
+  padding: 12px;
+}
+
+.for-sale-toggle-row p {
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.for-sale-toggle-row span {
+  display: block;
+  color: var(--color-text-placeholder);
+  font-size: 11px;
+  margin-top: 3px;
+}
+
+.for-sale-toggle {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: var(--radius-pill);
+  background: rgba(255,255,255,.10);
+  cursor: pointer;
+}
+
+.for-sale-toggle > span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-circle);
+  background: rgba(255,255,255,.62);
+  margin: 0;
+  transition: transform .18s ease, background .18s ease;
+}
+
+.for-sale-toggle-on {
+  border-color: rgba(255,255,255,.48);
+  background: rgba(255,255,255,.28);
+}
+
+.for-sale-toggle-on > span {
+  background: rgba(255,255,255,.96);
+  transform: translateX(18px);
 }
 
 @media (max-width: 1024px) {

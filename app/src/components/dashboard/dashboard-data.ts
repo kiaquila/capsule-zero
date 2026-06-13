@@ -3,6 +3,7 @@ import type { ProviderRegistry, WardrobeEntry } from "@/lib/providers";
 import type { AppLocale } from "@/i18n/routing";
 import type { Capsule, ColorPoint } from "@/types";
 import type { PersistedMockSession } from "@/features/auth/session";
+import { isWardrobeStatisticItem } from "@/components/wardrobe/wardrobe-statistics";
 
 export interface DashboardSnapshot {
   profile: {
@@ -75,6 +76,7 @@ export async function buildDashboardSnapshot({
 }: BuildDashboardSnapshotOptions): Promise<DashboardSnapshot> {
   const profile = await registry.profiles.getProfile(session.userId);
   const items = await registry.wardrobe.listItems(session.userId);
+  const wardrobeStatisticItems = items.filter(isWardrobeStatisticItem);
   const capsule = await registry.capsules.getCurrentCapsule(session.userId);
 
   const totalOutfits = capsule?.outfitCount ?? 0;
@@ -94,12 +96,12 @@ export async function buildDashboardSnapshot({
     },
     activeCapsule: capsule ? buildActiveCapsule(capsule) : null,
     stats: {
-      totalItems: items.length,
+      totalItems: wardrobeStatisticItems.length,
       totalOutfits,
       uncapsulated,
     },
     shoppingPreview,
-    recentItems: buildRecentItems(items, locale),
+    recentItems: buildRecentItems(wardrobeStatisticItems, locale),
     quickAccess: [
       { id: "favorites", count: favorites },
       { id: "for_sale", count: forSale },
@@ -107,7 +109,7 @@ export async function buildDashboardSnapshot({
       { id: "uncapsulated", count: uncapsulated },
     ],
     navigation: {
-      myItems: items.length,
+      myItems: wardrobeStatisticItems.length,
       outfits: totalOutfits,
       capsules: capsule ? 1 : 0,
       uncapsulated,

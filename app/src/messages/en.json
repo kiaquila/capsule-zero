@@ -347,11 +347,13 @@
       "newTitle": "New Item",
       "editTitle": "Edit Item",
       "close": "Close",
+      "photoFallback": "Photo preview",
       "changePhoto": "Change Photo",
       "name": "Name",
       "category": "Category",
       "colors": "Colors",
       "color": "Color {count}",
+      "addColor": "Add color",
       "removeColor": "Remove color",
       "brand": "Brand",
       "material": "Material",
@@ -447,9 +449,8 @@
       "active": "Active",
       "noCapsules": "Not in any capsule",
       "save": "Save",
-      "removeFavorite": "Remove Favorite",
       "addToCapsule": "Add to Capsule",
-      "delete": "Delete Item",
+      "delete": "Delete",
       "moveSale": "Move to Sale",
       "moveRepair": "Move to Repair"
     },
@@ -463,6 +464,100 @@
       "photoReady": "Photo preview added. Save the item to keep it in this local preview.",
       "movedSale": "{item} moved to For Sale.",
       "movedRepair": "{item} moved to For Repair."
+    },
+    "validation": {
+      "name": "Name is required.",
+      "category": "Category is required.",
+      "colorsRequired": "Add at least one color.",
+      "colorsMax": "Use up to three colors.",
+      "photoType": "Upload a JPEG, PNG, or WebP image.",
+      "photoSize": "Upload an image up to 10 MB."
+    }
+  },
+  "forSale": {
+    "title": "For <strong>Sale</strong>",
+    "subtitle": "{count, plural, one {# item listed} other {# items listed}}",
+    "openMyItems": "My Items",
+    "gridLabel": "Items for sale",
+    "itemColors": "Item colors",
+    "favorite": "Toggle favorite for {item}",
+    "infoLabel": "For sale status note",
+    "info": "Items here are not counted in capsules or wardrobe statistics until you return them to My Items.",
+    "filters": {
+      "label": "For Sale filters",
+      "categories": "For Sale category filters",
+      "colors": "For Sale color filters",
+      "allCategories": "All",
+      "allColors": "All colors",
+      "color": "Filter by {color}"
+    },
+    "sort": {
+      "label": "Sort",
+      "name": "Name",
+      "category": "Category",
+      "recent": "Recent",
+      "price": "Price"
+    },
+    "empty": {
+      "title": "Nothing is listed for sale",
+      "copy": "Items moved to sale will appear here and stay out of capsule statistics.",
+      "filteredTitle": "No sale items match",
+      "filteredCopy": "Try another category, color, or return to All."
+    },
+    "sources": {
+      "photo_upload": "Photo",
+      "marketplace": "Link",
+      "catalog": "Catalog"
+    },
+    "badges": {
+      "privateListing": "Private",
+      "publicListing": "Catalog visible"
+    },
+    "statuses": {
+      "active": "Active",
+      "uncapsulated": "Uncapsulated",
+      "for_sale": "For Sale",
+      "for_repair": "For Repair"
+    },
+    "actions": {
+      "label": "Sale actions for {item}",
+      "returnShort": "Return",
+      "returnItem": "Return {item} to My Items"
+    },
+    "detail": {
+      "title": "Details for {item}",
+      "editTitle": "Edit sale item",
+      "close": "Close",
+      "photoFallback": "Photo preview",
+      "changePhoto": "Change photo",
+      "name": "Name",
+      "category": "Category",
+      "colors": "Colors",
+      "color": "Color {count}",
+      "addColor": "Add color",
+      "removeColor": "Remove color",
+      "brand": "Brand",
+      "material": "Material",
+      "price": "Price",
+      "source": "Source",
+      "status": "Status",
+      "catalogVisible": "Visible in catalog",
+      "catalogVisibleHint": "Stage 1 local preview only",
+      "capsules": "In Capsules",
+      "noCapsules": "Not in any capsule",
+      "save": "Save",
+      "addToCapsule": "Add to Capsule",
+      "returnToMyItems": "To My Items",
+      "delete": "Delete"
+    },
+    "notice": {
+      "saved": "{item} saved.",
+      "addedCapsule": "{item} added to {capsule}.",
+      "alreadyCapsule": "{item} is already in {capsule}.",
+      "noCapsule": "No active capsule is available yet.",
+      "returned": "{item} returned to My Items.",
+      "deleted": "{item} deleted from My Items.",
+      "photoReady": "Photo preview added. Save the item to keep it in this local preview."
     },
     "validation": {
       "name": "Name is required.",

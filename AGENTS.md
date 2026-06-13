@@ -102,6 +102,15 @@ The interface uses frosted glass surfaces. Two variants: main panels (blur 40px)
 
 Photo upload, marketplace link import, semantic search from shared DB. All three are critical — they solve the #1 competitor pain point (upload friction).
 
+### 7. Engineering Reuse Rule (DRY/SOLID)
+
+If a product or technical object type already exists in code, reuse its component, service, adapter, schema, helper, and CSS/API contract before adding a new variant. This applies across frontend, backend, API, data, and mobile layers.
+
+- UI examples: item cards, item detail panels, bottom navigation, glass buttons, filters, color dots, and repeated wardrobe actions.
+- Backend/API examples: provider adapters, route handlers, validation schemas, DTOs, repository helpers, domain services, and fixture builders.
+- Shared structure belongs in a shared abstraction; feature-specific screens or endpoints should pass only section-specific labels, metadata, behavior, and policy.
+- Code review must reject copy-pasted markup, logic, schemas, or one-off classes/modules when an established object type can cover the same responsibility.
+
 ## Source Documentation
 
 | Document                                                               | Content                                                                                                        |

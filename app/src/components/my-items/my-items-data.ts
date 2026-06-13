@@ -8,6 +8,7 @@ import type {
 import type { PersistedMockSession } from "@/features/auth/session";
 import type { AppLocale } from "@/i18n/routing";
 import type { ColorPoint } from "@/types";
+import { isWardrobeStatisticItem } from "@/components/wardrobe/wardrobe-statistics";
 
 export interface MyItemsCapsuleMembership {
   id: string;
@@ -32,6 +33,7 @@ export interface MyItemsEntry {
   status: ItemStatus;
   favorite: boolean;
   fromCatalog: boolean;
+  isPublic: boolean;
   capsuleIds: string[];
   capsules: MyItemsCapsuleMembership[];
   updatedAt: string;
@@ -93,6 +95,7 @@ export async function buildMyItemsSnapshot({
   const mappedItems = items.map((item) =>
     buildItem(item, locale, capsuleMembership),
   );
+  const wardrobeStatisticItems = mappedItems.filter(isWardrobeStatisticItem);
   const favorites = mappedItems.filter((item) => item.favorite).length;
   const forSale = mappedItems.filter((item) => item.status === "for_sale").length;
   const forRepair = mappedItems.filter((item) => item.status === "for_repair").length;
@@ -105,11 +108,11 @@ export async function buildMyItemsSnapshot({
       initials: buildInitials(session.name ?? profile.displayName ?? session.email),
     },
     items: mappedItems,
-    categories: buildCategories(mappedItems),
+    categories: buildCategories(wardrobeStatisticItems),
     categoryOptions: buildCategoryOptions(locale),
-    colors: buildColors(mappedItems),
+    colors: buildColors(wardrobeStatisticItems),
     navigation: {
-      myItems: mappedItems.length,
+      myItems: wardrobeStatisticItems.length,
       outfits: capsule?.outfitCount ?? 0,
       capsules: capsule ? 1 : 0,
       uncapsulated,
@@ -148,6 +151,7 @@ function buildItem(
     status: item.status,
     favorite: item.favorite,
     fromCatalog: item.fromCatalog,
+    isPublic: item.isPublic,
     capsuleIds: item.capsuleIds,
     capsules,
     updatedAt: item.updatedAt,
