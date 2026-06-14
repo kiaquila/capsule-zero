@@ -4483,7 +4483,8 @@ button, a, input, textarea {
 }
 
 .my-items-field input,
-.my-items-field select {
+.my-items-field select,
+.my-items-field textarea {
   width: 100%;
   min-height: 42px;
   border: 1px solid rgba(255,255,255,.18);
@@ -4493,6 +4494,13 @@ button, a, input, textarea {
   font: inherit;
   font-size: 14px;
   padding: 0 12px;
+}
+
+.my-items-field textarea {
+  min-height: 108px;
+  line-height: 1.45;
+  padding: 12px;
+  resize: vertical;
 }
 
 .my-items-field input[aria-invalid="true"],
@@ -4692,61 +4700,6 @@ button, a, input, textarea {
   -webkit-backdrop-filter: blur(32px);
 }
 
-.uncapsulated-grid {
-  align-items: stretch;
-}
-
-.uncapsulated-card {
-  display: flex;
-  min-height: 302px;
-  flex-direction: column;
-}
-
-.uncapsulated-card-main {
-  flex: 1;
-}
-
-.uncapsulated-card-actions {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-  border-top: 1px solid rgba(255,255,255,.12);
-  padding: 10px;
-}
-
-.uncapsulated-card-actions button {
-  display: inline-flex;
-  min-width: 0;
-  min-height: 34px;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: 8px;
-  background: rgba(255,255,255,.08);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  font: inherit;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .06em;
-  padding: 0 8px;
-  text-transform: uppercase;
-}
-
-.uncapsulated-card-actions button:hover {
-  border-color: rgba(255,255,255,.36);
-  background: rgba(255,255,255,.17);
-  color: var(--color-text-primary);
-}
-
-.uncapsulated-card-actions button span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .my-items-detail-photo > span {
   color: var(--color-text-placeholder);
   font-size: 10.5px;
@@ -4799,7 +4752,8 @@ button, a, input, textarea {
 .uncapsulated-delete-button,
 .my-items-delete-button,
 .favorites-delete-button,
-.for-sale-delete-button {
+.for-sale-delete-button,
+.for-repair-delete-button {
   border-color: rgba(255,214,0,.42);
   background: rgba(255,214,0,.08);
   color: #FFD600;
@@ -5087,6 +5041,18 @@ button, a, input, textarea {
   transform: translateX(18px);
 }
 
+.for-repair-content {
+  gap: 18px;
+}
+
+.for-repair-empty {
+  min-height: 340px;
+}
+
+.for-repair-note-field textarea::placeholder {
+  color: var(--color-text-placeholder);
+}
+
 @media (max-width: 1024px) {
   .my-items-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -5203,20 +5169,6 @@ button, a, input, textarea {
   .my-items-toast {
     right: 14px;
     bottom: calc(94px + env(safe-area-inset-bottom));
-  }
-
-  .uncapsulated-card-actions {
-    gap: 5px;
-    padding: 8px;
-  }
-
-  .uncapsulated-card-actions button {
-    min-height: 32px;
-    padding: 0 6px;
-  }
-
-  .uncapsulated-card-actions button span {
-    display: none;
   }
 
   .uncapsulated-capsule-modal footer {

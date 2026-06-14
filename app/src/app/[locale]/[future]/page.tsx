@@ -2,7 +2,6 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
 
 const FUTURE_DASHBOARD_ROUTES = new Set([
-  "for-repair",
   "profile",
 ]);
 

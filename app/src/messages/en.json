@@ -568,6 +568,94 @@
       "photoSize": "Upload an image up to 10 MB."
     }
   },
+  "forRepair": {
+    "title": "For <strong>Repair</strong>",
+    "subtitle": "{count, plural, one {# item needs attention} other {# items need attention}}",
+    "openMyItems": "My Items",
+    "gridLabel": "Items for repair",
+    "itemColors": "Item colors",
+    "favorite": "Toggle favorite for {item}",
+    "infoLabel": "For repair status note",
+    "info": "Items here are excluded from capsules and wardrobe statistics until they are fixed.",
+    "filters": {
+      "label": "For Repair filters",
+      "categories": "For Repair category filters",
+      "colors": "For Repair color filters",
+      "allCategories": "All",
+      "allColors": "All colors",
+      "color": "Filter by {color}"
+    },
+    "sort": {
+      "label": "Sort",
+      "name": "Name",
+      "category": "Category",
+      "recent": "Recent",
+      "price": "Price"
+    },
+    "empty": {
+      "title": "Nothing needs repair",
+      "copy": "Items moved to repair will appear here and stay out of capsule statistics.",
+      "filteredTitle": "No repair items match",
+      "filteredCopy": "Try another category, color, or return to All."
+    },
+    "sources": {
+      "photo_upload": "Photo",
+      "marketplace": "Link",
+      "catalog": "Catalog"
+    },
+    "statuses": {
+      "active": "Active",
+      "uncapsulated": "Uncapsulated",
+      "for_sale": "For Sale",
+      "for_repair": "For Repair"
+    },
+    "actions": {
+      "label": "Repair actions for {item}",
+      "fixedShort": "Fixed",
+      "deleteShort": "Delete",
+      "markFixed": "Mark {item} as fixed",
+      "deleteItem": "Delete {item}"
+    },
+    "detail": {
+      "title": "Repair details for {item}",
+      "editTitle": "Repair details",
+      "close": "Close",
+      "photoFallback": "Photo preview",
+      "changePhoto": "Change photo",
+      "name": "Name",
+      "category": "Category",
+      "colors": "Colors",
+      "color": "Color {count}",
+      "addColor": "Add color",
+      "removeColor": "Remove color",
+      "brand": "Brand",
+      "material": "Material",
+      "price": "Price",
+      "source": "Source",
+      "status": "Status",
+      "repairNotes": "Repair notes",
+      "repairNotesPlaceholder": "Describe what needs to be repaired...",
+      "capsules": "In Capsules",
+      "noCapsules": "Removed from capsules until fixed",
+      "save": "Save",
+      "markFixed": "Mark as Fixed",
+      "delete": "Delete"
+    },
+    "notice": {
+      "saved": "{item} saved.",
+      "fixed": "{item} marked fixed and returned to Uncapsulated.",
+      "deleted": "{item} deleted from My Items.",
+      "photoReady": "Photo preview added. Save the item to keep it in this local preview."
+    },
+    "validation": {
+      "name": "Name is required.",
+      "category": "Category is required.",
+      "colorsRequired": "Add at least one color.",
+      "colorsMax": "Use up to three colors.",
+      "photoType": "Upload a JPEG, PNG, or WebP image.",
+      "photoSize": "Upload an image up to 10 MB."
+    }
+  },
   "uncapsulated": {
     "title": "<strong>Uncapsulated</strong>",
     "subtitle": "{count, plural, one {# item outside capsules} other {# items outside capsules}}",
@@ -600,9 +688,6 @@
       "photo_upload": "Photo",
       "marketplace": "Link",
       "catalog": "Catalog"
-    },
-    "badges": {
-      "noCapsule": "No capsule"
     },
     "statuses": {
       "active": "Active",
