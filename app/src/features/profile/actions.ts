@@ -58,6 +58,10 @@ export async function saveProfileAction(
 
   const data = parsed.data;
 
+  if (data.preferredLoginMethod === "sms" && !data.phone.trim()) {
+    return { ok: false, message: "PHONE_REQUIRED_FOR_SMS" };
+  }
+
   if (!(await isUsernameAvailableStub(data.username, session.userId))) {
     return { ok: false, message: "USERNAME_TAKEN" };
   }

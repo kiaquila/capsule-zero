@@ -35,13 +35,13 @@ Implement the authenticated Stage 1 Profile screen from the approved prototype, 
 | US1-AC1 authenticated `/en/profile` renders Profile | Browser smoke at `http://127.0.0.1:3000/en/profile`: `title: "Profile & Settings"`, `cards: 5`, `url: ".../en/profile"`. `npm --prefix app run build` route table includes `ƒ /[locale]/profile`. |
 | US1-AC2 every prototype section is visible | Browser DOM snapshot sections: `Personal Information`, `Notifications`, `Login & Security`, `Account Management`; snapshot also includes profile header, active sessions, logout, and delete-account controls. |
 | US2-AC1 default initials displayed without avatar | Browser DOM snapshot: profile summary `button "Change photo"` contains default initials `CZ`; Remove button is disabled without an avatar preview. |
-| US2-AC2 supported avatar preview appears circular | Source evidence: `ProfileShell.tsx` creates a preview via `URL.createObjectURL`, restricts the picker to `image/jpeg,image/png`, and `globals.css` uses a circular avatar with overflow hidden and cropped image `object-fit: cover`. |
+| US2-AC2 supported avatar preview appears circular | Source evidence: `ProfileShell.tsx` creates a preview via `URL.createObjectURL`, restricts the picker to `image/jpeg,image/png`, and renders the same `avatarPreview` in the profile header and sidebar avatar; `globals.css` uses circular avatars with cropped image `object-fit: cover`. |
 | US2-AC3 remove avatar reverts to initials | Browser/source evidence: profile avatar actions expose only `Remove photo` with no `Replace`; source clears `avatarPreview` and render falls back to initials when preview is empty. |
 | US2-AC4 valid profile basics save locally | Browser smoke: after saving Anna/Kozlova/`+54 11 5555 0100` and reloading, state remained `profileName: "Anna Kozlova"`, `phone: "+54 11 5555 0100"`, `warning: null`. |
 | US2-AC5 username uniqueness stub works | Browser smoke saved `taken`: field error `This username is already taken.` and header stayed `@founder`; saved `kristina_style`: header/sidebar became `@kristina_style`. |
 | US3-AC1 EN/RU language switch works | Browser smoke clicked the top-right language switcher and reached `http://127.0.0.1:3000/ru/profile`; H1 rendered `Профиль и настройки`. `curl -I` on `/ru/profile` showed `set-cookie: NEXT_LOCALE=ru`. |
 | US3-AC2 only EN/RU language options are exposed | Browser smoke top language options were `EnglishEN` and `РусскийRU`; Profile form `languageFieldCount: 0`, so there is no duplicate language field. |
-| US3-AC3 SMS without phone shows inline warning | Browser smoke cleared Phone with keyboard while SMS selected: `.profile-warning` text was `Please fill in your phone number to use SMS login.` |
+| US3-AC3 SMS without phone shows inline warning | Browser smoke cleared Phone with keyboard while SMS selected: `.profile-warning` text was `Please fill in your phone number to use SMS login.` Codex review follow-up added the same `PHONE_REQUIRED_FOR_SMS` guard to `saveProfileAction` before mock persistence. |
 | US3-AC4 logout clears session and returns to landing | Browser smoke clicked Profile account logout: result `url: "http://127.0.0.1:3000/ru"`, landing H1 visible, `hasProfileForm: false`; then mock login restored `/en/profile` for local review. |
 | FR-003 profile removed from future redirect route | Source evidence: `app/src/app/[locale]/[future]/page.tsx:4` has `FUTURE_DASHBOARD_ROUTES = new Set<string>([])`, so `profile` no longer redirects through the future route. |
 | FR-014 no ES-AR active controls | Browser smoke on RU Profile returned `bodyHasSpanishLocaleControls: false`; active language combobox exposes only `en` and `ru`. |
@@ -52,6 +52,7 @@ Negative scenario evidence:
 - Unauthenticated redirect: `curl -I -s http://127.0.0.1:3000/en/profile` returned `HTTP/1.1 307 Temporary Redirect` with `location: /en/auth`.
 - Unsupported avatar rejection: source evidence `ProfileShell.tsx:332-338` rejects unsupported MIME types and files over 10 MB before preview creation; `globals.css:239-242` renders inline yellow field errors.
 - SMS login prerequisite warning: browser smoke cleared the phone field by keyboard while SMS was selected and read `.profile-warning` as `Please fill in your phone number to use SMS login.`
+- Server-action SMS prerequisite: source evidence `saveProfileAction` returns `PHONE_REQUIRED_FOR_SMS` before provider/profile persistence when `preferredLoginMethod` is `sms` and `phone` is empty.
 - Username uniqueness: browser smoke saved `taken` and received the server-stub field error `This username is already taken.`
 
 Validation suite:
@@ -64,6 +65,7 @@ Validation suite:
 - `npm run preflight` passed.
 - Browser smoke passed desktop EN, RU locale switch, toggles, SMS warning, logout, re-login, mobile 390x844 bottom nav and More-sheet; browser console error log was `[]`.
 - Fix smoke passed `Remove photo`/no `Replace`, username header, no Profile form language field, `NEXT_LOCALE` cookie evidence, username taken/free save, compact dimensions, inline logout, and grey delete outside the form.
+- Codex review follow-up source check covered sidebar avatar rendering from the active preview/provider URL and server-side SMS phone validation before save.
 
 ## Project Structure
 

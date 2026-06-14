@@ -57,7 +57,7 @@ The user can edit profile basics, preview an avatar, remove an avatar, and save 
 **Acceptance Scenarios**:
 
 1. **Given** the profile header, **When** no custom avatar is present, **Then** initials are displayed as the default avatar.
-2. **Given** a JPEG/PNG avatar file, **When** the user chooses it, **Then** a circular cropped preview appears in the profile header.
+2. **Given** a JPEG/PNG avatar file, **When** the user chooses it, **Then** a circular cropped preview appears in the profile header and sidebar avatar.
 3. **Given** a custom avatar preview, **When** the user removes it, **Then** the avatar reverts to initials.
 4. **Given** valid profile basics, **When** the user saves, **Then** the screen updates locally and shows success feedback.
 5. **Given** a username already reserved by the Stage 1 server stub, **When** the user saves, **Then** the username field shows a uniqueness validation error.
@@ -104,12 +104,12 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 - **FR-003**: System MUST remove `profile` from future dashboard redirect routes.
 - **FR-004**: System MUST render every major section from `html-prototypes/profile.html`.
 - **FR-005**: System MUST show default initials when no custom avatar preview exists.
-- **FR-006**: Users MUST be able to choose JPEG or PNG avatar previews and remove them locally.
+- **FR-006**: Users MUST be able to choose JPEG or PNG avatar previews, see the current preview in profile and navigation avatars, and remove them locally.
 - **FR-007**: System MUST reject unsupported avatar file types and files over 10 MB with inline yellow validation.
 - **FR-008**: Users MUST be able to edit and save personal information fields locally.
 - **FR-009**: System MUST validate required name/email/username fields before save.
 - **FR-010**: Users MUST be able to toggle notification and 2FA controls locally.
-- **FR-011**: Users MUST be able to select preferred login method and see prerequisite warnings.
+- **FR-011**: Users MUST be able to select preferred login method and see prerequisite warnings; SMS must require a phone number on both client and server action paths.
 - **FR-012**: System MUST render active sessions and current-session label from the prototype.
 - **FR-013**: Users MUST be able to log out through the Profile screen.
 - **FR-014**: System MUST provide EN and RU messages with no active ES-AR controls.
@@ -121,7 +121,7 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 ### Key Entities
 
 - **Profile Snapshot**: Server-built Stage 1 view model containing profile, session, preferences, navigation counts, active sessions, and select options.
-- **Avatar Preview**: Client-local image object URL rendered as a circular crop until removed or the page reloads.
+- **Avatar Preview**: Client-local image object URL rendered as a circular crop in the profile header and sidebar avatar until removed or the page reloads.
 - **Mock Profile Preferences**: Client/server Stage 1 fields for notification, security, size, and contact controls that do not yet map to a real provider schema.
 - **Username Validation Stub**: Server-side Stage 1 placeholder that rejects reserved/taken usernames until a follow-up provider-backed uniqueness PR.
 - **Active Session**: Static Stage 1 session display matching the prototype's current device list.

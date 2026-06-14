@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter as useNextRouter } from "next/navigation";
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
@@ -364,6 +365,11 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
       if (result.message === "USERNAME_TAKEN") {
         setError("username", { message: t("validation.usernameTaken") });
       }
+      if (result.message === "PHONE_REQUIRED_FOR_SMS") {
+        setError("phone", { message: t("login.warningPhone") });
+        setNotice(t("login.warningPhone"));
+        return;
+      }
       setNotice(t("notice.saveError"));
       return;
     }
@@ -390,7 +396,13 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
             </Link>
             <div className="dashboard-user-row">
               <Link aria-label={dashboardT("nav.profile")} className="dashboard-avatar-link" href="/profile">
-                <span className="dashboard-avatar">{profileHeader.initials}</span>
+                <span className="dashboard-avatar">
+                  {avatarPreview ? (
+                    <Image alt="" height={38} src={avatarPreview} unoptimized width={38} />
+                  ) : (
+                    profileHeader.initials
+                  )}
+                </span>
               </Link>
               <div className="dashboard-user-meta">
                 <p className="dashboard-user-name">{profileHeader.displayName}</p>
@@ -459,8 +471,7 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
                   type="button"
                 >
                   {avatarPreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img alt="" src={avatarPreview} />
+                    <Image alt="" height={72} src={avatarPreview} unoptimized width={72} />
                   ) : (
                     <span>{profileHeader.initials}</span>
                   )}

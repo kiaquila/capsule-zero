@@ -43,6 +43,7 @@
 - [x] T025 Browser smoke-check unauthenticated redirect, EN/RU Profile, every prototype section, avatar preview/remove/validation, save, SMS warning, toggles, logout, no ES-AR controls, and mobile viewport.
 - [x] T026 Apply review fixes: remove Replace, rename Remove photo, add username with server uniqueness stub, remove Profile language field, compact spacing, move logout/delete controls.
 - [x] T027 Browser smoke-check review fixes: username taken/free flow, top language cookie flow, account row, delete outside form, compact dimensions.
+- [x] T028 Apply Codex review fixes: enforce SMS phone prerequisite in the server action and render avatar previews in the sidebar avatar.
 
 ## Process Memory
 
@@ -58,7 +59,8 @@
 - Keep real security/session/delete/password actions mock/design-only in Stage 1; they do not call external providers or destructively modify data.
 - Keep language persistence owned by next-intl `NEXT_LOCALE` via the top-right switcher; do not persist language through the Profile form payload.
 - Add username now as a Stage 1 mock preference with a server-side uniqueness stub; provider-backed uniqueness remains a follow-up PR.
+- Mirror client-only prerequisites in server actions when the value affects persisted mock preferences; stale clients and direct server-action requests must not bypass Stage 1 negative scenarios.
 
 ### Known Issues
 
-- None yet.
+- None.
