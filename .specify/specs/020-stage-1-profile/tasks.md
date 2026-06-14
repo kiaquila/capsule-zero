@@ -45,6 +45,7 @@
 - [x] T027 Browser smoke-check review fixes: username taken/free flow, top language cookie flow, account row, delete outside form, compact dimensions.
 - [x] T028 Apply Codex review fixes: enforce SMS phone prerequisite in the server action and render avatar previews in the sidebar avatar.
 - [x] T029 Apply Codex review follow-ups: preserve persisted first/last-name boundaries and keep the external delete action above the fixed mobile bottom nav.
+- [x] T030 Disable native Profile form validation so RHF/Zod inline validation handles invalid email/name/username inputs.
 
 ## Process Memory
 
@@ -62,6 +63,7 @@
 - Add username now as a Stage 1 mock preference with a server-side uniqueness stub; provider-backed uniqueness remains a follow-up PR.
 - Mirror client-only prerequisites in server actions when the value affects persisted mock preferences; stale clients and direct server-action requests must not bypass Stage 1 negative scenarios.
 - Treat persisted split form fields as canonical after save; display-name parsing is only a fallback for provider/session names.
+- Keep native browser validation disabled on rich RHF/Zod forms where the design requires consistent inline yellow validation.
 
 ### Known Issues
 

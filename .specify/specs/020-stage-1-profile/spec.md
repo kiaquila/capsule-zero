@@ -107,7 +107,7 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 - **FR-006**: Users MUST be able to choose JPEG or PNG avatar previews, see the current preview in profile and navigation avatars, and remove them locally.
 - **FR-007**: System MUST reject unsupported avatar file types and files over 10 MB with inline yellow validation.
 - **FR-008**: Users MUST be able to edit and save personal information fields locally.
-- **FR-009**: System MUST validate required name/email/username fields before save.
+- **FR-009**: System MUST validate required name/email/username fields before save through the Zod/RHF inline validation path rather than native browser tooltips.
 - **FR-010**: Users MUST be able to toggle notification and 2FA controls locally.
 - **FR-011**: Users MUST be able to select preferred login method and see prerequisite warnings; SMS must require a phone number on both client and server action paths.
 - **FR-012**: System MUST render active sessions and current-session label from the prototype.

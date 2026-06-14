@@ -461,7 +461,7 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
             </div>
           </header>
 
-          <form className="profile-content" onSubmit={handleSubmit(submitProfile)}>
+          <form className="profile-content" noValidate onSubmit={handleSubmit(submitProfile)}>
             <section className="dashboard-glass profile-card profile-header-card" aria-label={t("headerLabel")}>
               <div className="profile-avatar-wrap">
                 <button

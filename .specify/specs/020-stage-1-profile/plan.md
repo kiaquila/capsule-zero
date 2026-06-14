@@ -54,6 +54,7 @@ Negative scenario evidence:
 - SMS login prerequisite warning: browser smoke cleared the phone field by keyboard while SMS was selected and read `.profile-warning` as `Please fill in your phone number to use SMS login.`
 - Server-action SMS prerequisite: source evidence `saveProfileAction` returns `PHONE_REQUIRED_FOR_SMS` before provider/profile persistence when `preferredLoginMethod` is `sms` and `phone` is empty.
 - Saved name boundaries: source evidence `buildProfileSnapshot` uses persisted `firstName` and `lastName` directly and only falls back to `splitDisplayName` when no saved boundary exists.
+- Inline form validation path: source evidence Profile form sets `noValidate`, so invalid email/name/username values reach RHF/Zod yellow inline errors instead of browser-native tooltips.
 - Username uniqueness: browser smoke saved `taken` and received the server-stub field error `This username is already taken.`
 
 Validation suite:
@@ -68,6 +69,7 @@ Validation suite:
 - Fix smoke passed `Remove photo`/no `Replace`, username header, no Profile form language field, `NEXT_LOCALE` cookie evidence, username taken/free save, compact dimensions, inline logout, and grey delete outside the form.
 - Codex review follow-up source check covered sidebar avatar rendering from the active preview/provider URL and server-side SMS phone validation before save.
 - Codex review follow-up source check covered preserved first/last-name boundaries and mobile delete-zone clearance above the fixed bottom navigation.
+- Codex review follow-up source check covered disabling native validation on the Profile form so Zod-backed inline errors remain authoritative.
 
 ## Project Structure
 
