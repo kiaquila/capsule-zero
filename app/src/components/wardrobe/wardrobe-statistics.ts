@@ -3,7 +3,7 @@ export interface WardrobeStatisticItem {
 }
 
 export function isWardrobeStatisticItem<T extends WardrobeStatisticItem>(item: T): boolean {
-  return item.status !== "for_sale";
+  return item.status !== "for_sale" && item.status !== "for_repair";
 }
 
 export function updateWardrobeStatisticCountForStatusChange(

@@ -4,21 +4,24 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
+import type { MyItemsEntry } from "@/components/my-items/my-items-data";
 import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
 import {
   WardrobeDetailField,
   WardrobeItemDetailPanel,
 } from "@/components/wardrobe/WardrobeItemDetailPanel";
-import { updateWardrobeStatisticCountForStatusChange } from "@/components/wardrobe/wardrobe-statistics";
+import {
+  updateWardrobeStatisticCountForRemoval,
+  updateWardrobeStatisticCountForStatusChange,
+} from "@/components/wardrobe/wardrobe-statistics";
 import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { ColorGroup, ColorPoint } from "@/types";
-import type { MyItemsEntry } from "@/components/my-items/my-items-data";
-import type { UncapsulatedSnapshot } from "./uncapsulated-data";
+import type { ForRepairSnapshot } from "./for-repair-data";
 
-interface UncapsulatedShellProps {
-  snapshot: UncapsulatedSnapshot;
+interface ForRepairShellProps {
+  snapshot: ForRepairSnapshot;
 }
 
 type IconName =
@@ -39,7 +42,6 @@ type IconName =
   | "settings"
   | "tag"
   | "trash";
-
 type SortKey = "name" | "category" | "recent" | "price";
 type DraftErrors = Partial<Record<"name" | "categoryId" | "colorHexes" | "photo", string>>;
 
@@ -52,9 +54,10 @@ interface ItemDraftState {
   material: string;
   price: string;
   imageUrl?: string;
+  repairNote: string;
 }
 
-interface UncapsulatedNavItem {
+interface ForRepairNavItem {
   href: string;
   icon: IconName;
   label: string;
@@ -63,29 +66,24 @@ interface UncapsulatedNavItem {
 }
 
 const DEFAULT_COLOR = "#8C8C8C";
-const LOCAL_UPDATED_AT = "2026-06-11T15:00:00.000Z";
+const LOCAL_UPDATED_AT = "2026-06-14T12:00:00.000Z";
 const MAX_LOCAL_PHOTO_BYTES = 10 * 1024 * 1024;
 const SUPPORTED_LOCAL_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-const decisionStatusMap: Record<"capsule" | "repair" | "sale", MyItemsEntry["status"]> = {
-  capsule: "active",
-  repair: "for_repair",
-  sale: "for_sale",
-};
 
-export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
-  const t = useTranslations("uncapsulated");
+export function ForRepairShell({ snapshot }: ForRepairShellProps) {
+  const t = useTranslations("forRepair");
   const dashboardT = useTranslations("dashboard");
   const locale = useLocale();
   const router = useRouter();
   const [items, setItems] = useState(snapshot.items);
   const [navigation, setNavigation] = useState(snapshot.navigation);
+  const [repairNotes, setRepairNotes] = useState<Record<string, string>>({});
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [colorFilter, setColorFilter] = useState("all");
-  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortKey, setSortKey] = useState<SortKey>("recent");
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [draft, setDraft] = useState<ItemDraftState | null>(null);
   const [errors, setErrors] = useState<DraftErrors>({});
-  const [capsuleCandidateId, setCapsuleCandidateId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
@@ -103,9 +101,6 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
   );
   const selectedItem = selectedItemId
     ? items.find((item) => item.id === selectedItemId) ?? null
-    : null;
-  const capsuleCandidate = capsuleCandidateId
-    ? items.find((item) => item.id === capsuleCandidateId) ?? null
     : null;
 
   useEffect(() => {
@@ -127,7 +122,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     };
   }, []);
 
-  const navGroups: Array<{ label: string; items: UncapsulatedNavItem[] }> = [
+  const navGroups: Array<{ label: string; items: ForRepairNavItem[] }> = [
     {
       label: dashboardT("nav.overview"),
       items: [
@@ -163,7 +158,6 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           href: "/uncapsulated",
           icon: "ban",
           label: dashboardT("nav.uncapsulated"),
-          active: true,
           badge: navigation.uncapsulated,
         },
       ],
@@ -193,12 +187,13 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           href: "/for-repair",
           icon: "for-repair",
           label: dashboardT("nav.forRepair"),
+          active: true,
           badge: navigation.forRepair,
         },
       ],
     },
   ];
-  const moreItems: UncapsulatedNavItem[] = [
+  const moreItems: ForRepairNavItem[] = [
     {
       href: "/capsule-result?tab=outfits",
       icon: "bag",
@@ -209,7 +204,6 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
       href: "/uncapsulated",
       icon: "ban",
       label: dashboardT("nav.uncapsulated"),
-      active: true,
       badge: navigation.uncapsulated,
     },
     {
@@ -228,6 +222,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
       href: "/for-repair",
       icon: "for-repair",
       label: dashboardT("nav.forRepair"),
+      active: true,
       badge: navigation.forRepair,
     },
     {
@@ -250,7 +245,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
 
   const openItem = (item: MyItemsEntry) => {
     setSelectedItemId(item.id);
-    setDraft(buildDraftFromItem(item));
+    setDraft(buildDraftFromItem(item, repairNotes[item.id] ?? ""));
     setErrors({});
     setNotice(null);
   };
@@ -278,6 +273,8 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
       return;
     }
 
+    setErrors({});
+
     const normalized = normalizeDraft(draft, snapshot, knownColors);
 
     setItems((currentItems) =>
@@ -292,28 +289,11 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           : item,
       ),
     );
-    setNotice(t("notice.saved", { item: normalized.name }));
-  };
-
-  const deleteSelectedItem = () => {
-    if (!draft) {
-      return;
-    }
-
-    const item = items.find((currentItem) => currentItem.id === draft.id);
-    const itemName = item?.name ?? draft.name;
-
-    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== draft.id));
-    setNavigation((currentNavigation) => ({
-      ...currentNavigation,
-      myItems: Math.max(0, currentNavigation.myItems - 1),
-      uncapsulated: Math.max(0, currentNavigation.uncapsulated - 1),
-      favorites: item?.favorite
-        ? Math.max(0, currentNavigation.favorites - 1)
-        : currentNavigation.favorites,
+    setRepairNotes((current) => ({
+      ...current,
+      [draft.id]: draft.repairNote.trim(),
     }));
-    closeDetail();
-    setNotice(t("notice.deleted", { item: itemName }));
+    setNotice(t("notice.saved", { item: normalized.name }));
   };
 
   const toggleFavorite = (itemId: string) => {
@@ -335,6 +315,46 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
       ...currentNavigation,
       favorites: Math.max(0, currentNavigation.favorites + (nextFavorite ? 1 : -1)),
     }));
+  };
+
+  const markFixed = (item: MyItemsEntry) => {
+    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
+    setRepairNotes((current) => {
+      const next = { ...current };
+      delete next[item.id];
+      return next;
+    });
+    setNavigation((currentNavigation) => ({
+      ...currentNavigation,
+      myItems: updateWardrobeStatisticCountForStatusChange(
+        currentNavigation.myItems,
+        item.status,
+        "uncapsulated",
+      ),
+      uncapsulated: currentNavigation.uncapsulated + 1,
+      forRepair: Math.max(0, currentNavigation.forRepair - 1),
+    }));
+    closeDetail();
+    setNotice(t("notice.fixed", { item: item.name }));
+  };
+
+  const deleteItem = (item: MyItemsEntry) => {
+    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
+    setRepairNotes((current) => {
+      const next = { ...current };
+      delete next[item.id];
+      return next;
+    });
+    setNavigation((currentNavigation) => ({
+      ...currentNavigation,
+      myItems: updateWardrobeStatisticCountForRemoval(currentNavigation.myItems, item),
+      forRepair: Math.max(0, currentNavigation.forRepair - 1),
+      favorites: item.favorite
+        ? Math.max(0, currentNavigation.favorites - 1)
+        : currentNavigation.favorites,
+    }));
+    closeDetail();
+    setNotice(t("notice.deleted", { item: item.name }));
   };
 
   const removeColor = (index: number) => {
@@ -391,68 +411,8 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     setNotice(t("notice.photoReady"));
   };
 
-  const requestAddToCapsule = (item: MyItemsEntry) => {
-    if (!snapshot.activeCapsule) {
-      setNotice(t("notice.noCapsule"));
-      return;
-    }
-
-    setCapsuleCandidateId(item.id);
-    setNotice(null);
-  };
-
-  const confirmAddToCapsule = () => {
-    if (!capsuleCandidate || !snapshot.activeCapsule) {
-      return;
-    }
-
-    completeDecision(capsuleCandidate, "capsule");
-    setNotice(
-      t("notice.addedCapsule", {
-        capsule: snapshot.activeCapsule.name,
-        item: capsuleCandidate.name,
-      }),
-    );
-    setCapsuleCandidateId(null);
-    closeDetail();
-  };
-
-  const moveToSale = (item: MyItemsEntry) => {
-    completeDecision(item, "sale");
-    setNotice(t("notice.movedSale", { item: item.name }));
-    closeDetail();
-  };
-
-  const moveToRepair = (item: MyItemsEntry) => {
-    completeDecision(item, "repair");
-    setNotice(t("notice.movedRepair", { item: item.name }));
-    closeDetail();
-  };
-
-  const completeDecision = (
-    item: MyItemsEntry,
-    decision: "capsule" | "repair" | "sale",
-  ) => {
-    const nextStatus = decisionStatusMap[decision];
-
-    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
-    setNavigation((currentNavigation) => ({
-      ...currentNavigation,
-      myItems: updateWardrobeStatisticCountForStatusChange(currentNavigation.myItems, item.status, nextStatus),
-      uncapsulated: Math.max(0, currentNavigation.uncapsulated - 1),
-      forSale:
-        decision === "sale"
-          ? currentNavigation.forSale + 1
-          : currentNavigation.forSale,
-      forRepair:
-        decision === "repair"
-          ? currentNavigation.forRepair + 1
-          : currentNavigation.forRepair,
-    }));
-  };
-
   return (
-    <div className="cz-page dashboard-page my-items-page uncapsulated-page">
+    <div className="cz-page dashboard-page my-items-page for-repair-page">
       <div className="wallpaper-bg" />
       <div className="wallpaper-overlay" />
 
@@ -484,7 +444,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                     key={`${group.label}-${item.label}`}
                   >
                     <span className="dashboard-nav-icon">
-                      <UncapsulatedIcon name={item.icon} />
+                      <ForRepairIcon name={item.icon} />
                     </span>
                     <span className="dashboard-nav-label">{item.label}</span>
                     {typeof item.badge === "number" ? (
@@ -499,13 +459,13 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           <div className="dashboard-sidebar-foot">
             <Link className="dashboard-nav-item" href="/profile">
               <span className="dashboard-nav-icon">
-                <UncapsulatedIcon name="settings" />
+                <ForRepairIcon name="settings" />
               </span>
               <span className="dashboard-nav-label">{dashboardT("nav.settings")}</span>
             </Link>
             <button className="dashboard-nav-item dashboard-nav-button" onClick={signOut} type="button">
               <span className="dashboard-nav-icon">
-                <UncapsulatedIcon name="logout" />
+                <ForRepairIcon name="logout" />
               </span>
               <span className="dashboard-nav-label">{dashboardT("logout")}</span>
             </button>
@@ -520,18 +480,23 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                   strong: (chunks) => <strong>{chunks}</strong>,
                 })}
               </h1>
-              <p className="my-items-subtitle">{t("subtitle", { count: navigation.uncapsulated })}</p>
+              <p className="my-items-subtitle">{t("subtitle", { count: navigation.forRepair })}</p>
             </div>
             <div className="dashboard-topbar-actions">
               <LanguageSwitcher />
               <Link className="dashboard-primary-action" href="/my-items">
-                <UncapsulatedIcon name="my-items" />
+                <ForRepairIcon name="my-items" />
                 <span>{t("openMyItems")}</span>
               </Link>
             </div>
           </header>
 
-          <div className="my-items-content uncapsulated-content">
+          <div className="my-items-content for-repair-content">
+            <section className="for-sale-info for-repair-info" aria-label={t("infoLabel")}>
+              <span className="for-sale-info-icon" aria-hidden="true">i</span>
+              <p>{t("info")}</p>
+            </section>
+
             <section className="my-items-filter-panel" aria-label={t("filters.label")}>
               <div className="my-items-filter-row">
                 <div className="my-items-chip-row" aria-label={t("filters.categories")}>
@@ -604,19 +569,19 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                     meta={item.brand ?? t(`sources.${item.sourceType}`)}
                     onFavorite={() => toggleFavorite(item.id)}
                     onOpen={() => openItem(item)}
-                    renderHeartIcon={() => <UncapsulatedIcon name="heart" />}
+                    renderHeartIcon={() => <ForRepairIcon name="heart" />}
                   />
                 ))}
               </section>
             ) : (
-              <section className="my-items-empty">
+              <section className="my-items-empty for-repair-empty">
                 <span>
-                  <UncapsulatedIcon name="ban" />
+                  <ForRepairIcon name="for-repair" />
                 </span>
                 <h2>{items.length ? t("empty.filteredTitle") : t("empty.title")}</h2>
                 <p>{items.length ? t("empty.filteredCopy") : t("empty.copy")}</p>
                 <Link className="dashboard-primary-action" href="/my-items">
-                  <UncapsulatedIcon name="my-items" />
+                  <ForRepairIcon name="my-items" />
                   <span>{t("openMyItems")}</span>
                 </Link>
               </section>
@@ -638,7 +603,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           type="button"
         >
           <span className="dashboard-bottom-icon">
-            <UncapsulatedIcon name="more" />
+            <ForRepairIcon name="more" />
           </span>
           <span className="dashboard-bottom-label">{dashboardT("nav.more")}</span>
         </button>
@@ -661,7 +626,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
               onClick={() => setMoreOpen(false)}
             >
               <span className="dashboard-more-icon">
-                <UncapsulatedIcon name={item.icon} />
+                <ForRepairIcon name={item.icon} />
               </span>
               <span className="dashboard-more-label">{item.label}</span>
               {typeof item.badge === "number" ? (
@@ -676,15 +641,24 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
         <WardrobeItemDetailPanel
           categoryOptions={snapshot.categoryOptions}
           deleteAction={{
-            className: "my-items-secondary-button uncapsulated-delete-button",
+            className: "my-items-secondary-button for-repair-delete-button",
             label: t("detail.delete"),
-            onClick: deleteSelectedItem,
+            onClick: () => deleteItem(selectedItem),
           }}
           draft={draft}
           errors={errors}
           extraFields={
             <>
               <WardrobeDetailField label={t("detail.source")} value={t(`sources.${selectedItem.sourceType}`)} />
+              <WardrobeDetailField label={t("detail.status")} value={t(`statuses.${selectedItem.status}`)} />
+              <label className="my-items-field for-repair-note-field">
+                <span>{t("detail.repairNotes")}</span>
+                <textarea
+                  onChange={(event) => updateDraft({ repairNote: event.target.value })}
+                  placeholder={t("detail.repairNotesPlaceholder")}
+                  value={draft.repairNote}
+                />
+              </label>
               <div className="my-items-membership">
                 <p>{t("detail.capsules")}</p>
                 <div className="my-items-no-capsules">{t("detail.noCapsules")}</div>
@@ -716,74 +690,14 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           onRemoveColor={removeColor}
           onSave={saveDraft}
           photoInputRef={photoInputRef}
-          renderIcon={(name) => <UncapsulatedIcon name={name} />}
+          renderIcon={(name) => <ForRepairIcon name={name} />}
           actionSlot={
-            <>
-              <button className="my-items-secondary-button" onClick={() => requestAddToCapsule(selectedItem)} type="button">
-                <UncapsulatedIcon name="capsules" />
-                <span>{t("actions.addToCapsule")}</span>
-              </button>
-              <button className="my-items-secondary-button" onClick={() => moveToSale(selectedItem)} type="button">
-                <UncapsulatedIcon name="tag" />
-                <span>{t("actions.moveSale")}</span>
-              </button>
-              <button className="my-items-secondary-button" onClick={() => moveToRepair(selectedItem)} type="button">
-                <UncapsulatedIcon name="for-repair" />
-                <span>{t("actions.moveRepair")}</span>
-              </button>
-            </>
+            <button className="my-items-secondary-button" onClick={() => markFixed(selectedItem)} type="button">
+              <ForRepairIcon name="check" />
+              <span>{t("detail.markFixed")}</span>
+            </button>
           }
         />
-      ) : null}
-
-      {capsuleCandidate && snapshot.activeCapsule ? (
-        <div className="uncapsulated-capsule-wrap" role="dialog" aria-modal="true" aria-label={t("capsule.title")}>
-          <button
-            aria-label={t("capsule.cancel")}
-            className="uncapsulated-capsule-backdrop"
-            onClick={() => setCapsuleCandidateId(null)}
-            type="button"
-          />
-          <section className="uncapsulated-capsule-modal">
-            <header>
-              <h2>{t("capsule.title")}</h2>
-              <button aria-label={t("capsule.cancel")} className="my-items-icon-button" onClick={() => setCapsuleCandidateId(null)} type="button">
-                <UncapsulatedIcon name="close" />
-              </button>
-            </header>
-            <div className="uncapsulated-capsule-card">
-              <span className="uncapsulated-capsule-palette">
-                {snapshot.activeCapsule.palette.slice(0, 6).map((color) => (
-                  <span key={`${snapshot.activeCapsule?.id}-${color.hex}`} style={{ backgroundColor: color.hex }} />
-                ))}
-              </span>
-              <div>
-                <p>{snapshot.activeCapsule.name}</p>
-                <small>
-                  {t("capsule.meta", {
-                    items: snapshot.activeCapsule.itemCount,
-                    outfits: snapshot.activeCapsule.outfitCount,
-                  })}
-                </small>
-              </div>
-            </div>
-            <p className="uncapsulated-capsule-copy">
-              {t("capsule.copy", {
-                capsule: snapshot.activeCapsule.name,
-                item: capsuleCandidate.name,
-              })}
-            </p>
-            <footer>
-              <button className="my-items-secondary-button" onClick={() => setCapsuleCandidateId(null)} type="button">
-                {t("capsule.cancel")}
-              </button>
-              <button className="my-items-save-button" onClick={confirmAddToCapsule} type="button">
-                <UncapsulatedIcon name="check" />
-                <span>{t("capsule.confirm")}</span>
-              </button>
-            </footer>
-          </section>
-        </div>
       ) : null}
 
       {notice ? (
@@ -809,14 +723,14 @@ function BottomNavLink({
   return (
     <Link className={cn("dashboard-bottom-item", active && "dashboard-bottom-item-active")} href={href}>
       <span className="dashboard-bottom-icon">
-        <UncapsulatedIcon name={icon} />
+        <ForRepairIcon name={icon} />
       </span>
       <span className="dashboard-bottom-label">{label}</span>
     </Link>
   );
 }
 
-function buildDraftFromItem(item: MyItemsEntry): ItemDraftState {
+function buildDraftFromItem(item: MyItemsEntry, repairNote: string): ItemDraftState {
   return {
     id: item.id,
     name: item.name,
@@ -826,12 +740,13 @@ function buildDraftFromItem(item: MyItemsEntry): ItemDraftState {
     material: item.material ?? "",
     price: typeof item.price === "number" ? String(item.price) : "",
     imageUrl: item.imageUrl,
+    repairNote,
   };
 }
 
 function validateDraft(
   draft: ItemDraftState,
-  t: ReturnType<typeof useTranslations<"uncapsulated">>,
+  t: ReturnType<typeof useTranslations<"forRepair">>,
 ): DraftErrors {
   const errors: DraftErrors = {};
 
@@ -856,7 +771,7 @@ function validateDraft(
 
 function normalizeDraft(
   draft: ItemDraftState,
-  snapshot: UncapsulatedSnapshot,
+  snapshot: ForRepairSnapshot,
   knownColors: ColorPoint[],
 ): Pick<
   MyItemsEntry,
@@ -941,7 +856,7 @@ function uniqueColorPoints(colors: ColorPoint[]): ColorPoint[] {
   return [...byHex.values()];
 }
 
-function buildCategoryFilters(items: MyItemsEntry[]): UncapsulatedSnapshot["categories"] {
+function buildCategoryFilters(items: MyItemsEntry[]): ForRepairSnapshot["categories"] {
   const counts = new Map<string, { id: string; label: string; count: number }>();
 
   items.forEach((item) => {
@@ -1004,7 +919,7 @@ function filterAndSortItems(
   });
 }
 
-function UncapsulatedIcon({ name }: { name: IconName }) {
+function ForRepairIcon({ name }: { name: IconName }) {
   const common = {
     "aria-hidden": true,
     fill: "none",
