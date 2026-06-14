@@ -116,13 +116,13 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 - **FR-015**: System MUST keep all profile/account containers on glass surfaces and avoid opaque UI panels.
 - **FR-016**: System MUST display username, not email, in the Profile header.
 - **FR-017**: System MUST keep Profile language selection out of the form and use the top-right language switcher/cookie flow.
-- **FR-018**: System MUST keep Delete Account outside the form, small, and grey.
+- **FR-018**: System MUST keep Delete Account outside the form, small, grey, and reachable above the fixed mobile bottom navigation.
 
 ### Key Entities
 
 - **Profile Snapshot**: Server-built Stage 1 view model containing profile, session, preferences, navigation counts, active sessions, and select options.
 - **Avatar Preview**: Client-local image object URL rendered as a circular crop in the profile header and sidebar avatar until removed or the page reloads.
-- **Mock Profile Preferences**: Client/server Stage 1 fields for notification, security, size, and contact controls that do not yet map to a real provider schema.
+- **Mock Profile Preferences**: Client/server Stage 1 fields for notification, security, size, contact controls, and saved first/last-name boundaries that do not yet map to a real provider schema.
 - **Username Validation Stub**: Server-side Stage 1 placeholder that rejects reserved/taken usernames until a follow-up provider-backed uniqueness PR.
 - **Active Session**: Static Stage 1 session display matching the prototype's current device list.
 

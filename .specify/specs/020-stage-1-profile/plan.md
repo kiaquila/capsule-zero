@@ -45,7 +45,7 @@ Implement the authenticated Stage 1 Profile screen from the approved prototype, 
 | US3-AC4 logout clears session and returns to landing | Browser smoke clicked Profile account logout: result `url: "http://127.0.0.1:3000/ru"`, landing H1 visible, `hasProfileForm: false`; then mock login restored `/en/profile` for local review. |
 | FR-003 profile removed from future redirect route | Source evidence: `app/src/app/[locale]/[future]/page.tsx:4` has `FUTURE_DASHBOARD_ROUTES = new Set<string>([])`, so `profile` no longer redirects through the future route. |
 | FR-014 no ES-AR active controls | Browser smoke on RU Profile returned `bodyHasSpanishLocaleControls: false`; active language combobox exposes only `en` and `ru`. |
-| Fix pass: compact layout and account actions | Browser smoke: `firstInputHeight: 37.5`, `cardPaddingTop: 20px`, `contentGap: 12px`; account head contained User ID + Log Out, and Delete Account was outside `.profile-content` with grey text. |
+| Fix pass: compact layout and account actions | Browser smoke: `firstInputHeight: 37.5`, `cardPaddingTop: 20px`, `contentGap: 12px`; account head contained User ID + Log Out, and Delete Account was outside `.profile-content` with grey text. Codex review follow-up added mobile bottom-nav clearance to the external delete zone. |
 
 Negative scenario evidence:
 
@@ -53,6 +53,7 @@ Negative scenario evidence:
 - Unsupported avatar rejection: source evidence `ProfileShell.tsx:332-338` rejects unsupported MIME types and files over 10 MB before preview creation; `globals.css:239-242` renders inline yellow field errors.
 - SMS login prerequisite warning: browser smoke cleared the phone field by keyboard while SMS was selected and read `.profile-warning` as `Please fill in your phone number to use SMS login.`
 - Server-action SMS prerequisite: source evidence `saveProfileAction` returns `PHONE_REQUIRED_FOR_SMS` before provider/profile persistence when `preferredLoginMethod` is `sms` and `phone` is empty.
+- Saved name boundaries: source evidence `buildProfileSnapshot` uses persisted `firstName` and `lastName` directly and only falls back to `splitDisplayName` when no saved boundary exists.
 - Username uniqueness: browser smoke saved `taken` and received the server-stub field error `This username is already taken.`
 
 Validation suite:
@@ -66,6 +67,7 @@ Validation suite:
 - Browser smoke passed desktop EN, RU locale switch, toggles, SMS warning, logout, re-login, mobile 390x844 bottom nav and More-sheet; browser console error log was `[]`.
 - Fix smoke passed `Remove photo`/no `Replace`, username header, no Profile form language field, `NEXT_LOCALE` cookie evidence, username taken/free save, compact dimensions, inline logout, and grey delete outside the form.
 - Codex review follow-up source check covered sidebar avatar rendering from the active preview/provider URL and server-side SMS phone validation before save.
+- Codex review follow-up source check covered preserved first/last-name boundaries and mobile delete-zone clearance above the fixed bottom navigation.
 
 ## Project Structure
 

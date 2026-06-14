@@ -72,11 +72,11 @@ export async function buildProfileSnapshot({
     registry.profiles.getProfile(session.userId),
     readMockProfilePreferences(session.userId),
   ]);
-  const names = splitDisplayName(
-    savedPreferences?.firstName || savedPreferences?.lastName
-      ? `${savedPreferences.firstName} ${savedPreferences.lastName}`
-      : session.name ?? providerProfile.displayName,
-  );
+  const fallbackNames = splitDisplayName(session.name ?? providerProfile.displayName);
+  const names = {
+    firstName: savedPreferences?.firstName ?? fallbackNames.firstName,
+    lastName: savedPreferences?.lastName ?? fallbackNames.lastName,
+  };
   const email = savedPreferences?.email ?? session.email ?? providerProfile.email;
   const displayName = `${names.firstName} ${names.lastName}`.trim();
   const username = savedPreferences?.username ?? buildDefaultUsername(email, displayName);
