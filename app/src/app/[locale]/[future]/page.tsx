@@ -1,9 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
-const FUTURE_DASHBOARD_ROUTES = new Set([
-  "profile",
-]);
+const FUTURE_DASHBOARD_ROUTES = new Set<string>([]);
 
 interface FutureDashboardRouteProps {
   params: Promise<{
@@ -22,5 +20,5 @@ export default async function FutureDashboardRoute({
     notFound();
   }
 
-  redirect(`/${locale}/dashboard`);
+  notFound();
 }
