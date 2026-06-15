@@ -3,6 +3,10 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  DashboardIcon,
+  type DashboardIconName,
+} from "@/components/dashboard/DashboardNavigation";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
 import {
@@ -58,7 +62,7 @@ interface ItemDraftState {
 
 interface UncapsulatedNavItem {
   href: string;
-  icon: IconName;
+  icon: DashboardIconName;
   label: string;
   active?: boolean;
   badge?: number;
@@ -155,7 +159,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
         },
         {
           href: "/capsule-result?tab=outfits",
-          icon: "bag",
+          icon: "outfits",
           label: dashboardT("nav.outfits"),
           badge: navigation.outfits,
         },
@@ -207,7 +211,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
   const moreItems: UncapsulatedNavItem[] = [
     {
       href: "/capsule-result?tab=outfits",
-      icon: "bag",
+      icon: "outfits",
       label: dashboardT("nav.outfits"),
       badge: navigation.outfits,
     },
@@ -518,7 +522,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                     key={`${group.label}-${item.label}`}
                   >
                     <span className="dashboard-nav-icon">
-                      <UncapsulatedIcon name={item.icon} />
+                      <DashboardIcon name={item.icon} />
                     </span>
                     <span className="dashboard-nav-label">{item.label}</span>
                     {typeof item.badge === "number" ? (
@@ -533,7 +537,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           <div className="dashboard-sidebar-foot">
             <Link className="dashboard-nav-item" href="/profile">
               <span className="dashboard-nav-icon">
-                <UncapsulatedIcon name="settings" />
+                <DashboardIcon name="settings" />
               </span>
               <span className="dashboard-nav-label">
                 {dashboardT("nav.settings")}
@@ -545,7 +549,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
               type="button"
             >
               <span className="dashboard-nav-icon">
-                <UncapsulatedIcon name="logout" />
+                <DashboardIcon name="logout" />
               </span>
               <span className="dashboard-nav-label">
                 {dashboardT("logout")}
@@ -733,7 +737,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           type="button"
         >
           <span className="dashboard-bottom-icon">
-            <UncapsulatedIcon name="more" />
+            <DashboardIcon name="more" />
           </span>
           <span className="dashboard-bottom-label">
             {dashboardT("nav.more")}
@@ -769,7 +773,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
               onClick={() => setMoreOpen(false)}
             >
               <span className="dashboard-more-icon">
-                <UncapsulatedIcon name={item.icon} />
+                <DashboardIcon name={item.icon} />
               </span>
               <span className="dashboard-more-label">{item.label}</span>
               {typeof item.badge === "number" ? (
@@ -949,7 +953,7 @@ function BottomNavLink({
 }: {
   active?: boolean;
   href: string;
-  icon: IconName;
+  icon: DashboardIconName;
   label: string;
 }) {
   return (
@@ -961,7 +965,7 @@ function BottomNavLink({
       href={href}
     >
       <span className="dashboard-bottom-icon">
-        <UncapsulatedIcon name={icon} />
+        <DashboardIcon name={icon} />
       </span>
       <span className="dashboard-bottom-label">{label}</span>
     </Link>
