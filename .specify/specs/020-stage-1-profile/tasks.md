@@ -46,6 +46,7 @@
 - [x] T028 Apply Codex review fixes: enforce SMS phone prerequisite in the server action and render avatar previews in the sidebar avatar.
 - [x] T029 Apply Codex review follow-ups: preserve persisted first/last-name boundaries and keep the external delete action above the fixed mobile bottom nav.
 - [x] T030 Disable native Profile form validation so RHF/Zod inline validation handles invalid email/name/username inputs.
+- [x] T031 Extract shared authenticated dashboard navigation and reuse it from Dashboard and Profile shells.
 
 ## Process Memory
 
@@ -64,6 +65,7 @@
 - Mirror client-only prerequisites in server actions when the value affects persisted mock preferences; stale clients and direct server-action requests must not bypass Stage 1 negative scenarios.
 - Treat persisted split form fields as canonical after save; display-name parsing is only a fallback for provider/session names.
 - Keep native browser validation disabled on rich RHF/Zod forms where the design requires consistent inline yellow validation.
+- Centralize the authenticated dashboard sidebar, bottom nav, More sheet, badges, settings, logout, and profile avatar row in `DashboardNavigationFrame` so Profile does not drift from Dashboard navigation.
 
 ### Known Issues
 

@@ -20,6 +20,7 @@ In scope:
 - Locale switching through the top-right `LanguageSwitcher`; next-intl stores the selected locale in `NEXT_LOCALE`.
 - EN/RU messages only; ES-AR remains inactive for MVP v1.
 - Local/mock persistence for profile form fields that are not yet provider-backed.
+- Shared dashboard/profile navigation frame so sidebar, mobile bottom nav, More sheet, badges, avatar row, settings, and logout stay DRY across authenticated screens.
 
 Out of scope:
 
@@ -117,6 +118,7 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 - **FR-016**: System MUST display username, not email, in the Profile header.
 - **FR-017**: System MUST keep Profile language selection out of the form and use the top-right language switcher/cookie flow.
 - **FR-018**: System MUST keep Delete Account outside the form, small, grey, and reachable above the fixed mobile bottom navigation.
+- **FR-019**: System MUST reuse a shared authenticated dashboard navigation component for Dashboard and Profile instead of duplicating sidebar, bottom nav, and More-sheet models.
 
 ### Key Entities
 
@@ -125,6 +127,7 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 - **Mock Profile Preferences**: Client/server Stage 1 fields for notification, security, size, contact controls, and saved first/last-name boundaries that do not yet map to a real provider schema.
 - **Username Validation Stub**: Server-side Stage 1 placeholder that rejects reserved/taken usernames until a follow-up provider-backed uniqueness PR.
 - **Active Session**: Static Stage 1 session display matching the prototype's current device list.
+- **Dashboard Navigation Frame**: Shared authenticated shell rendering sidebar navigation, mobile bottom navigation, More sheet, profile avatar row, settings, and logout controls for Dashboard and Profile.
 
 ## Success Criteria _(mandatory)_
 
