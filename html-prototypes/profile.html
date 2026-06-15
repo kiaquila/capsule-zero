@@ -1045,39 +1045,6 @@
       <div class="gc">
         <div class="gc-title" data-i18n="section_security">Login &amp; Security</div>
 
-        <!-- Preferred login method -->
-        <div class="security-block">
-          <div class="security-block-title" data-i18n="label_login_method">Preferred Login Method</div>
-          <div class="radio-group" id="loginMethodGroup">
-            <div class="radio-row selected" data-method="email" onclick="selectLoginMethod(this)">
-              <div class="radio-left">
-                <div class="radio-circle"><div class="radio-dot"></div></div>
-                <div>
-                  <div class="radio-text" data-i18n="login_email">Email</div>
-                  <div class="radio-desc" data-i18n="login_email_desc">Sign in with email link</div>
-                </div>
-              </div>
-            </div>
-            <div class="radio-row" data-method="sms" onclick="selectLoginMethod(this)">
-              <div class="radio-left">
-                <div class="radio-circle"><div class="radio-dot"></div></div>
-                <div>
-                  <div class="radio-text" data-i18n="login_sms">SMS</div>
-                  <div class="radio-desc" data-i18n="login_sms_desc">Sign in with SMS code</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="field-warning" id="loginWarning">
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" style="flex-shrink:0;">
-              <path d="M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="#FF4D00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span id="loginWarningText">Please fill in your phone number to use SMS login.</span>
-          </div>
-        </div>
-
-        <div class="security-divider"></div>
-
         <!-- Two-factor authentication -->
         <div class="security-block">
           <div class="security-block-title" data-i18n="label_2fa">Two-Factor Authentication</div>
@@ -1270,19 +1237,11 @@ const I18N = {
     label_shoe_size:     'Shoe Size',
     label_size_top:      'Clothing Size (Top)',
     label_size_bottom:   'Clothing Size (Bottom)',
-    label_login_method:  'Preferred Login Method',
     label_2fa:           'Two-Factor Authentication',
     label_change_pw:     'Password',
     label_user_id:       'User ID',
     label_sessions:      'Active Sessions',
     label_current:       'Current',
-
-    login_email:         'Email',
-    login_email_desc:    'Sign in with email link',
-    login_sms:           'SMS',
-    login_sms_desc:      'Sign in with SMS code',
-    login_warn_phone:    'Please fill in your phone number to use SMS login.',
-    login_warn_email:    'Please fill in your email to use email login.',
 
     toggle_email:        'Email notifications',
     toggle_push:         'Push notifications',
@@ -1333,19 +1292,11 @@ const I18N = {
     label_shoe_size:     'Размер обуви',
     label_size_top:      'Размер одежды (верх)',
     label_size_bottom:   'Размер одежды (низ)',
-    label_login_method:  'Способ входа',
     label_2fa:           'Двухфакторная аутентификация',
     label_change_pw:     'Пароль',
     label_user_id:       'ID пользователя',
     label_sessions:      'Активные сессии',
     label_current:       'Текущая',
-
-    login_email:         'Email',
-    login_email_desc:    'Вход по ссылке на email',
-    login_sms:           'SMS',
-    login_sms_desc:      'Вход по коду из SMS',
-    login_warn_phone:    'Укажите номер телефона, чтобы использовать вход по SMS.',
-    login_warn_email:    'Укажите email, чтобы использовать вход по email.',
 
     toggle_email:        'Email-уведомления',
     toggle_push:         'Push-уведомления',
@@ -1396,19 +1347,11 @@ const I18N = {
     label_shoe_size:     'Talla de calzado',
     label_size_top:      'Talla de ropa (arriba)',
     label_size_bottom:   'Talla de ropa (abajo)',
-    label_login_method:  'M&eacute;todo de inicio preferido',
     label_2fa:           'Autenticaci&oacute;n de dos factores',
     label_change_pw:     'Contrase&ntilde;a',
     label_user_id:       'ID de usuario',
     label_sessions:      'Sesiones activas',
     label_current:       'Actual',
-
-    login_email:         'Email',
-    login_email_desc:    'Iniciar sesi&oacute;n con enlace por email',
-    login_sms:           'SMS',
-    login_sms_desc:      'Iniciar sesi&oacute;n con c&oacute;digo SMS',
-    login_warn_phone:    'Completa tu n&uacute;mero de tel&eacute;fono para usar SMS.',
-    login_warn_email:    'Completa tu email para usar inicio por email.',
 
     toggle_email:        'Notificaciones por email',
     toggle_push:         'Notificaciones push',
@@ -1476,47 +1419,6 @@ function applyI18n(code) {
 function toggleSwitch(el) {
   el.classList.toggle('on');
 }
-
-/* ── Login method selection ── */
-function selectLoginMethod(row) {
-  document.querySelectorAll('#loginMethodGroup .radio-row').forEach(r => r.classList.remove('selected'));
-  row.classList.add('selected');
-  validateLoginMethod(row.dataset.method);
-}
-
-function validateLoginMethod(method) {
-  const warning = document.getElementById('loginWarning');
-  const warningText = document.getElementById('loginWarningText');
-  const dict = I18N[currentLangCode] || I18N.EN;
-
-  if (method === 'sms') {
-    const phone = document.getElementById('phoneField').value.trim();
-    if (!phone) {
-      warningText.textContent = dict.login_warn_phone;
-      warning.classList.add('show');
-    } else {
-      warning.classList.remove('show');
-    }
-  } else if (method === 'email') {
-    const email = document.getElementById('emailField').value.trim();
-    if (!email) {
-      warningText.textContent = dict.login_warn_email;
-      warning.classList.add('show');
-    } else {
-      warning.classList.remove('show');
-    }
-  }
-}
-
-/* Re-validate when fields change */
-document.getElementById('phoneField').addEventListener('input', () => {
-  const selected = document.querySelector('#loginMethodGroup .radio-row.selected');
-  if (selected) validateLoginMethod(selected.dataset.method);
-});
-document.getElementById('emailField').addEventListener('input', () => {
-  const selected = document.querySelector('#loginMethodGroup .radio-row.selected');
-  if (selected) validateLoginMethod(selected.dataset.method);
-});
 
   function toggleMore(e) {
     if (e) e.preventDefault();
