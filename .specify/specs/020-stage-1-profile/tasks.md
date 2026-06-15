@@ -48,6 +48,7 @@
 - [x] T030 Disable native Profile form validation so RHF/Zod inline validation handles invalid email/name/username inputs.
 - [x] T031 Extract shared authenticated dashboard navigation and reuse it from Dashboard and Profile shells.
 - [x] T032 Make Dashboard snapshots read saved mock profile preferences after Profile saves.
+- [x] T033 Extract shared Profile form schema so the client RHF resolver and server action validate the same payload contract.
 
 ## Process Memory
 
@@ -68,6 +69,7 @@
 - Keep native browser validation disabled on rich RHF/Zod forms where the design requires consistent inline yellow validation.
 - Centralize the authenticated dashboard sidebar, bottom nav, More sheet, badges, settings, logout, and profile avatar row in `DashboardNavigationFrame` so Profile does not drift from Dashboard navigation.
 - Treat the cookie-backed Stage 1 mock profile preferences as the durable profile override for authenticated web snapshots until real provider persistence is introduced.
+- Keep Profile form validation rules in `features/profile/schemas.ts`; the client supplies localized messages while the server action reuses the same schema before mock persistence.
 
 ### Known Issues
 
