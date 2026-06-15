@@ -143,6 +143,7 @@ The user can switch EN/RU, adjust prototype toggles, confirm removed alternate-l
 - **SC-002**: Profile shows zero ES-AR active route or switcher controls.
 - **SC-003**: Avatar preview, remove, validation, save, Preferred Login Method absence, toggles, logout, and mobile More sheet are manually verifiable in a browser.
 - **SC-004**: Local checks pass: JSON parse, feature memory, lint, typecheck, build, and preflight.
+- **SC-005**: PR dependency security checks remain green after local review polish by keeping vulnerable dev-only transitive lint dependencies on fixed versions without changing runtime behavior.
 
 ## Follow-up Plan
 

@@ -49,6 +49,7 @@ Implement the authenticated Stage 1 Profile screen from the approved prototype, 
 | FR-019 shared authenticated navigation               | Source evidence: `DashboardNavigationFrame` owns sidebar, profile avatar row, desktop nav groups, mobile bottom nav, More sheet, settings, and logout; both `DashboardShell` and `ProfileShell` render through that component instead of duplicating nav models. Browser smoke verified Profile and Dashboard render the shared nav links/badges with no console errors, and mobile 390x844 More sheet opens from the shared bottom nav. |
 | FR-020 dashboard reads saved profile preferences     | Browser smoke saved Profile values `Maya Rivera`, `maya.rivera@example.com`, and `Montevideo`, then opened `/en/dashboard`; Dashboard rendered `Welcome, Maya Rivera` and sidebar meta `maya.rivera@example.com` with no console errors. Source evidence: `buildDashboardSnapshot` reads `readMockProfilePreferences` before falling back to session/provider data.                                                                      |
 | Local review polish: stable sidebar + language menu  | Source evidence: authenticated sidebar rows now fix height, line-height, icon boxes, and badges through `dashboard-nav-item`; the legacy `capsule-result` sidebar mirrors those dimensions; logout SVG paths match Favorites; `LanguageSwitcher` now uses the same inline elevated blur style as Auth/Cookie plus an opaque dark glass fallback for dashboard backgrounds.                                                               |
+| PR security pipeline stays green                     | GitHub OSV initially flagged dev-only transitive lint dependencies `@babel/core@7.29.0` and `js-yaml@4.1.1`; `app/package.json` now pins fixed override versions `@babel/core@7.29.6` and `js-yaml@4.2.0`, and `npm --prefix app ls @babel/core js-yaml --depth=8` confirms both fixed versions are used.                                                                                                         |
 
 Negative scenario evidence:
 
@@ -76,6 +77,7 @@ Validation suite:
 - Codex review follow-up source check covered extracting shared Dashboard/Profile navigation into `DashboardNavigationFrame`.
 - Codex review follow-up browser/source check covered Dashboard reading saved mock profile preferences after leaving Profile.
 - Follow-up source check covered extracting shared Profile form validation to `features/profile/schemas.ts`, reused by `ProfileShell` and `saveProfileAction`; `npm --prefix app run typecheck` passed after the refactor.
+- PR security follow-up covered fixed dev-only dependency overrides for OSV: `npm --prefix app install --package-lock-only` completed with `found 0 vulnerabilities`, and `npm --prefix app ls @babel/core js-yaml --depth=8` resolved `@babel/core@7.29.6 overridden` and `js-yaml@4.2.0 overridden`.
 
 ## Project Structure
 
