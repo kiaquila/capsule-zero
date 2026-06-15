@@ -3,6 +3,7 @@ import type { ProviderRegistry, WardrobeEntry } from "@/lib/providers";
 import type { AppLocale } from "@/i18n/routing";
 import type { Capsule, ColorPoint } from "@/types";
 import type { PersistedMockSession } from "@/features/auth/session";
+import { readMockProfilePreferences } from "@/features/profile/mock-profile-preferences";
 import { isWardrobeStatisticItem } from "@/components/wardrobe/wardrobe-statistics";
 
 export interface DashboardSnapshot {
@@ -74,24 +75,34 @@ export async function buildDashboardSnapshot({
   session,
   locale,
 }: BuildDashboardSnapshotOptions): Promise<DashboardSnapshot> {
-  const profile = await registry.profiles.getProfile(session.userId);
+  const [profile, savedPreferences] = await Promise.all([
+    registry.profiles.getProfile(session.userId),
+    readMockProfilePreferences(session.userId),
+  ]);
   const items = await registry.wardrobe.listItems(session.userId);
   const wardrobeStatisticItems = items.filter(isWardrobeStatisticItem);
   const capsule = await registry.capsules.getCurrentCapsule(session.userId);
+  const displayName = savedPreferences
+    ? `${savedPreferences.firstName} ${savedPreferences.lastName}`.trim()
+    : "";
+  const profileDisplayName = displayName || session.name || profile.displayName;
+  const email = savedPreferences?.email ?? session.email ?? profile.email;
 
   const totalOutfits = capsule?.outfitCount ?? 0;
   const favorites = items.filter((item) => item.favorite).length;
   const forSale = items.filter((item) => item.status === "for_sale").length;
   const forRepair = items.filter((item) => item.status === "for_repair").length;
-  const uncapsulated = items.filter((item) => item.status === "uncapsulated").length;
+  const uncapsulated = items.filter(
+    (item) => item.status === "uncapsulated",
+  ).length;
   const shoppingPreview = buildShoppingPreview(capsule, locale);
 
   return {
     profile: {
-      displayName: session.name ?? profile.displayName,
-      email: session.email,
-      initials: buildInitials(session.name ?? profile.displayName ?? session.email),
-      city: profile.city,
+      displayName: profileDisplayName,
+      email,
+      initials: buildInitials(profileDisplayName || email),
+      city: savedPreferences?.city ?? profile.city,
       coinBalance: profile.coinBalance,
     },
     activeCapsule: capsule ? buildActiveCapsule(capsule) : null,
@@ -121,10 +132,16 @@ export async function buildDashboardSnapshot({
   };
 }
 
-function buildActiveCapsule(capsule: Capsule): NonNullable<DashboardSnapshot["activeCapsule"]> {
+function buildActiveCapsule(
+  capsule: Capsule,
+): NonNullable<DashboardSnapshot["activeCapsule"]> {
   const itemCount = capsule.itemIds.length;
-  const opr = itemCount > 0 ? (capsule.outfitCount / itemCount).toFixed(1) : "0.0";
-  const colors = [...capsule.palette.achromaticColors, ...capsule.palette.selectedColors];
+  const opr =
+    itemCount > 0 ? (capsule.outfitCount / itemCount).toFixed(1) : "0.0";
+  const colors = [
+    ...capsule.palette.achromaticColors,
+    ...capsule.palette.selectedColors,
+  ];
 
   return {
     name: capsule.name,
@@ -147,13 +164,12 @@ function buildShoppingPreview(
     return [];
   }
 
-  const fromGaps =
-    capsule.gapAnalysis.map((item, index) => ({
-      id: `gap-${item.categoryId}`,
-      name: categoryName(item.categoryId, locale),
-      impact: Math.max(4, 12 - index * 3),
-      priority: index === 0 ? ("high" as const) : ("medium" as const),
-    }));
+  const fromGaps = capsule.gapAnalysis.map((item, index) => ({
+    id: `gap-${item.categoryId}`,
+    name: categoryName(item.categoryId, locale),
+    impact: Math.max(4, 12 - index * 3),
+    priority: index === 0 ? ("high" as const) : ("medium" as const),
+  }));
   const existingIds = new Set(fromGaps.map((item) => item.id));
   const fallbacks = SHOPPING_FALLBACKS.filter(
     (item) => !existingIds.has(`gap-${item.categoryId}`),
@@ -209,7 +225,9 @@ function buildRecentAge(
 
   const diffDays = Math.max(
     0,
-    Math.floor((utcDayStart(referenceMs) - utcDayStart(updatedMs)) / MS_PER_DAY),
+    Math.floor(
+      (utcDayStart(referenceMs) - utcDayStart(updatedMs)) / MS_PER_DAY,
+    ),
   );
 
   if (diffDays === 0) {

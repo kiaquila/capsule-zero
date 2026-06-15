@@ -119,6 +119,7 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 - **FR-017**: System MUST keep Profile language selection out of the form and use the top-right language switcher/cookie flow.
 - **FR-018**: System MUST keep Delete Account outside the form, small, grey, and reachable above the fixed mobile bottom navigation.
 - **FR-019**: System MUST reuse a shared authenticated dashboard navigation component for Dashboard and Profile instead of duplicating sidebar, bottom nav, and More-sheet models.
+- **FR-020**: System MUST let authenticated dashboard snapshots read saved Stage 1 profile name, email, and city preferences so edits do not appear lost after leaving Profile.
 
 ### Key Entities
 
@@ -128,6 +129,7 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 - **Username Validation Stub**: Server-side Stage 1 placeholder that rejects reserved/taken usernames until a follow-up provider-backed uniqueness PR.
 - **Active Session**: Static Stage 1 session display matching the prototype's current device list.
 - **Dashboard Navigation Frame**: Shared authenticated shell rendering sidebar navigation, mobile bottom navigation, More sheet, profile avatar row, settings, and logout controls for Dashboard and Profile.
+- **Shared Mock Profile Preferences**: Cookie-backed Stage 1 profile source read by Profile and Dashboard snapshots until provider-backed persistence replaces the mock flow.
 
 ## Success Criteria _(mandatory)_
 

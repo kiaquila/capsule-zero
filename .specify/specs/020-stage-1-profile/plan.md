@@ -47,6 +47,7 @@ Implement the authenticated Stage 1 Profile screen from the approved prototype, 
 | FR-014 no ES-AR active controls                      | Browser smoke on RU Profile returned `bodyHasSpanishLocaleControls: false`; active language combobox exposes only `en` and `ru`.                                                                                                                                                                                                                                                                                                         |
 | Fix pass: compact layout and account actions         | Browser smoke: `firstInputHeight: 37.5`, `cardPaddingTop: 20px`, `contentGap: 12px`; account head contained User ID + Log Out, and Delete Account was outside `.profile-content` with grey text. Codex review follow-up added mobile bottom-nav clearance to the external delete zone.                                                                                                                                                   |
 | FR-019 shared authenticated navigation               | Source evidence: `DashboardNavigationFrame` owns sidebar, profile avatar row, desktop nav groups, mobile bottom nav, More sheet, settings, and logout; both `DashboardShell` and `ProfileShell` render through that component instead of duplicating nav models. Browser smoke verified Profile and Dashboard render the shared nav links/badges with no console errors, and mobile 390x844 More sheet opens from the shared bottom nav. |
+| FR-020 dashboard reads saved profile preferences     | Browser smoke saved Profile values `Maya Rivera`, `maya.rivera@example.com`, and `Montevideo`, then opened `/en/dashboard`; Dashboard rendered `Welcome, Maya Rivera` and sidebar meta `maya.rivera@example.com` with no console errors. Source evidence: `buildDashboardSnapshot` reads `readMockProfilePreferences` before falling back to session/provider data.                                                                      |
 
 Negative scenario evidence:
 
@@ -73,6 +74,7 @@ Validation suite:
 - Codex review follow-up source check covered preserved first/last-name boundaries and mobile delete-zone clearance above the fixed bottom navigation.
 - Codex review follow-up source check covered disabling native validation on the Profile form so Zod-backed inline errors remain authoritative.
 - Codex review follow-up source check covered extracting shared Dashboard/Profile navigation into `DashboardNavigationFrame`.
+- Codex review follow-up browser/source check covered Dashboard reading saved mock profile preferences after leaving Profile.
 
 ## Project Structure
 
@@ -92,6 +94,7 @@ app/src/app/[locale]/profile/page.tsx
 app/src/components/profile/ProfileShell.tsx
 app/src/components/profile/profile-data.ts
 app/src/components/dashboard/DashboardNavigation.tsx
+app/src/components/dashboard/dashboard-data.ts
 app/src/features/profile/actions.ts
 app/src/features/profile/mock-profile-preferences.ts
 app/src/messages/en.json

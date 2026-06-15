@@ -47,6 +47,7 @@
 - [x] T029 Apply Codex review follow-ups: preserve persisted first/last-name boundaries and keep the external delete action above the fixed mobile bottom nav.
 - [x] T030 Disable native Profile form validation so RHF/Zod inline validation handles invalid email/name/username inputs.
 - [x] T031 Extract shared authenticated dashboard navigation and reuse it from Dashboard and Profile shells.
+- [x] T032 Make Dashboard snapshots read saved mock profile preferences after Profile saves.
 
 ## Process Memory
 
@@ -66,6 +67,7 @@
 - Treat persisted split form fields as canonical after save; display-name parsing is only a fallback for provider/session names.
 - Keep native browser validation disabled on rich RHF/Zod forms where the design requires consistent inline yellow validation.
 - Centralize the authenticated dashboard sidebar, bottom nav, More sheet, badges, settings, logout, and profile avatar row in `DashboardNavigationFrame` so Profile does not drift from Dashboard navigation.
+- Treat the cookie-backed Stage 1 mock profile preferences as the durable profile override for authenticated web snapshots until real provider persistence is introduced.
 
 ### Known Issues
 
