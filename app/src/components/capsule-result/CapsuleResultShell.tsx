@@ -3,6 +3,10 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
+import {
+  DashboardIcon,
+  type DashboardIconName,
+} from "@/components/dashboard/DashboardNavigation";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
@@ -205,24 +209,24 @@ export function CapsuleResultShell({ snapshot }: CapsuleResultShellProps) {
             </p>
             <ResultNavLink
               href="/dashboard"
-              icon="dashboard"
+              icon="grid"
               label={dashboardT("nav.dashboard")}
             />
             <ResultNavLink
               href="/my-items"
-              icon="bag"
+              icon="my-items"
               label={dashboardT("nav.myItems")}
             />
             <ResultNavLink
               active={activeTab === "outfits"}
               href="/capsule-result?tab=outfits"
-              icon="tag"
+              icon="outfits"
               label={dashboardT("nav.outfits")}
             />
             <ResultNavLink
               active={activeTab === "items" || activeTab === "gaps"}
               href="/capsule-result"
-              icon="capsule"
+              icon="capsules"
               label={dashboardT("nav.capsules")}
             />
             <ResultNavLink
@@ -251,7 +255,7 @@ export function CapsuleResultShell({ snapshot }: CapsuleResultShellProps) {
             />
             <ResultNavLink
               href="/for-repair"
-              icon="repair"
+              icon="for-repair"
               label={dashboardT("nav.forRepair")}
             />
           </nav>
@@ -259,7 +263,7 @@ export function CapsuleResultShell({ snapshot }: CapsuleResultShellProps) {
           <div className="capsule-result-sidebar-foot">
             <Link className="capsule-result-nav-item" href="/profile">
               <span className="capsule-result-nav-icon">
-                <ResultIcon name="settings" />
+                <DashboardIcon name="settings" />
               </span>
               <span>{dashboardT("nav.settings")}</span>
             </Link>
@@ -269,7 +273,7 @@ export function CapsuleResultShell({ snapshot }: CapsuleResultShellProps) {
               type="button"
             >
               <span className="capsule-result-nav-icon">
-                <ResultIcon name="logout" />
+                <DashboardIcon name="logout" />
               </span>
               <span>{dashboardT("logout")}</span>
             </button>
@@ -419,18 +423,18 @@ export function CapsuleResultShell({ snapshot }: CapsuleResultShellProps) {
       >
         <BottomNavLink
           href="/dashboard"
-          icon="dashboard"
+          icon="grid"
           label={dashboardT("nav.dashboard")}
         />
         <BottomNavLink
           href="/my-items"
-          icon="bag"
+          icon="my-items"
           label={dashboardT("nav.myItems")}
         />
         <BottomNavLink
           active
           href="/capsule-result"
-          icon="capsule"
+          icon="capsules"
           label={dashboardT("nav.capsules")}
         />
         <BottomNavLink
@@ -921,7 +925,7 @@ function ResultNavLink({
 }: {
   active?: boolean;
   href: string;
-  icon: IconName;
+  icon: DashboardIconName;
   label: string;
 }) {
   return (
@@ -933,7 +937,7 @@ function ResultNavLink({
       href={href}
     >
       <span className="capsule-result-nav-icon">
-        <ResultIcon name={icon} />
+        <DashboardIcon name={icon} />
       </span>
       <span>{label}</span>
     </Link>
@@ -948,7 +952,7 @@ function BottomNavLink({
 }: {
   active?: boolean;
   href: string;
-  icon: IconName;
+  icon: DashboardIconName;
   label: string;
 }) {
   return (
@@ -960,7 +964,7 @@ function BottomNavLink({
       href={href}
     >
       <span>
-        <ResultIcon name={icon} />
+        <DashboardIcon name={icon} />
       </span>
       <small>{label}</small>
     </Link>

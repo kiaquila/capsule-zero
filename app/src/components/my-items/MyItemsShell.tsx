@@ -3,6 +3,10 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import {
+  DashboardIcon,
+  type DashboardIconName,
+} from "@/components/dashboard/DashboardNavigation";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
 import { WardrobeItemDetailPanel } from "@/components/wardrobe/WardrobeItemDetailPanel";
@@ -54,7 +58,7 @@ interface ItemDraftState {
 
 interface MyItemsNavItem {
   href: string;
-  icon: IconName;
+  icon: DashboardIconName;
   label: string;
   active?: boolean;
   badge?: number;
@@ -139,7 +143,7 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
         },
         {
           href: "/capsule-result?tab=outfits",
-          icon: "bag",
+          icon: "outfits",
           label: dashboardT("nav.outfits"),
           badge: counts.outfits,
         },
@@ -190,7 +194,7 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
   const moreItems: MyItemsNavItem[] = [
     {
       href: "/capsule-result?tab=outfits",
-      icon: "bag",
+      icon: "outfits",
       label: dashboardT("nav.outfits"),
       badge: counts.outfits,
     },
@@ -444,7 +448,7 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
                     key={`${group.label}-${item.label}`}
                   >
                     <span className="dashboard-nav-icon">
-                      <MyItemsIcon name={item.icon} />
+                      <DashboardIcon name={item.icon} />
                     </span>
                     <span className="dashboard-nav-label">{item.label}</span>
                     {typeof item.badge === "number" ? (
@@ -459,7 +463,7 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
           <div className="dashboard-sidebar-foot">
             <Link className="dashboard-nav-item" href="/profile">
               <span className="dashboard-nav-icon">
-                <MyItemsIcon name="settings" />
+                <DashboardIcon name="settings" />
               </span>
               <span className="dashboard-nav-label">
                 {dashboardT("nav.settings")}
@@ -471,7 +475,7 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
               type="button"
             >
               <span className="dashboard-nav-icon">
-                <MyItemsIcon name="logout" />
+                <DashboardIcon name="logout" />
               </span>
               <span className="dashboard-nav-label">
                 {dashboardT("logout")}
@@ -685,7 +689,7 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
           type="button"
         >
           <span className="dashboard-bottom-icon">
-            <MyItemsIcon name="more" />
+            <DashboardIcon name="more" />
           </span>
           <span className="dashboard-bottom-label">
             {dashboardT("nav.more")}
@@ -718,7 +722,7 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
               onClick={() => setMoreOpen(false)}
             >
               <span className="dashboard-more-icon">
-                <MyItemsIcon name={item.icon} />
+                <DashboardIcon name={item.icon} />
               </span>
               <span className="dashboard-more-label">{item.label}</span>
               {typeof item.badge === "number" ? (
@@ -840,7 +844,7 @@ function BottomNavLink({
 }: {
   active?: boolean;
   href: string;
-  icon: IconName;
+  icon: DashboardIconName;
   label: string;
 }) {
   return (
@@ -852,7 +856,7 @@ function BottomNavLink({
       href={href}
     >
       <span className="dashboard-bottom-icon">
-        <MyItemsIcon name={icon} />
+        <DashboardIcon name={icon} />
       </span>
       <span className="dashboard-bottom-label">{label}</span>
     </Link>

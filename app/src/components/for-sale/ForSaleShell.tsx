@@ -3,6 +3,10 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  DashboardIcon,
+  type DashboardIconName,
+} from "@/components/dashboard/DashboardNavigation";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import type { MyItemsEntry } from "@/components/my-items/my-items-data";
 import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
@@ -61,7 +65,7 @@ interface ItemDraftState {
 
 interface ForSaleNavItem {
   href: string;
-  icon: IconName;
+  icon: DashboardIconName;
   label: string;
   active?: boolean;
   badge?: number;
@@ -150,7 +154,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
         },
         {
           href: "/capsule-result?tab=outfits",
-          icon: "bag",
+          icon: "outfits",
           label: dashboardT("nav.outfits"),
           badge: navigation.outfits,
         },
@@ -202,7 +206,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
   const moreItems: ForSaleNavItem[] = [
     {
       href: "/capsule-result?tab=outfits",
-      icon: "bag",
+      icon: "outfits",
       label: dashboardT("nav.outfits"),
       badge: navigation.outfits,
     },
@@ -532,7 +536,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
                     key={`${group.label}-${item.label}`}
                   >
                     <span className="dashboard-nav-icon">
-                      <ForSaleIcon name={item.icon} />
+                      <DashboardIcon name={item.icon} />
                     </span>
                     <span className="dashboard-nav-label">{item.label}</span>
                     {typeof item.badge === "number" ? (
@@ -547,7 +551,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
           <div className="dashboard-sidebar-foot">
             <Link className="dashboard-nav-item" href="/profile">
               <span className="dashboard-nav-icon">
-                <ForSaleIcon name="settings" />
+                <DashboardIcon name="settings" />
               </span>
               <span className="dashboard-nav-label">
                 {dashboardT("nav.settings")}
@@ -559,7 +563,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
               type="button"
             >
               <span className="dashboard-nav-icon">
-                <ForSaleIcon name="logout" />
+                <DashboardIcon name="logout" />
               </span>
               <span className="dashboard-nav-label">
                 {dashboardT("logout")}
@@ -762,7 +766,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
           type="button"
         >
           <span className="dashboard-bottom-icon">
-            <ForSaleIcon name="more" />
+            <DashboardIcon name="more" />
           </span>
           <span className="dashboard-bottom-label">
             {dashboardT("nav.more")}
@@ -798,7 +802,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
               onClick={() => setMoreOpen(false)}
             >
               <span className="dashboard-more-icon">
-                <ForSaleIcon name={item.icon} />
+                <DashboardIcon name={item.icon} />
               </span>
               <span className="dashboard-more-label">{item.label}</span>
               {typeof item.badge === "number" ? (
@@ -923,7 +927,7 @@ function BottomNavLink({
 }: {
   active?: boolean;
   href: string;
-  icon: IconName;
+  icon: DashboardIconName;
   label: string;
 }) {
   return (
@@ -935,7 +939,7 @@ function BottomNavLink({
       href={href}
     >
       <span className="dashboard-bottom-icon">
-        <ForSaleIcon name={icon} />
+        <DashboardIcon name={icon} />
       </span>
       <span className="dashboard-bottom-label">{label}</span>
     </Link>

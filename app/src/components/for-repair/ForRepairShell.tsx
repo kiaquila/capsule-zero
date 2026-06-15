@@ -3,6 +3,10 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  DashboardIcon,
+  type DashboardIconName,
+} from "@/components/dashboard/DashboardNavigation";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import type { MyItemsEntry } from "@/components/my-items/my-items-data";
 import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
@@ -61,7 +65,7 @@ interface ItemDraftState {
 
 interface ForRepairNavItem {
   href: string;
-  icon: IconName;
+  icon: DashboardIconName;
   label: string;
   active?: boolean;
   badge?: number;
@@ -145,7 +149,7 @@ export function ForRepairShell({ snapshot }: ForRepairShellProps) {
         },
         {
           href: "/capsule-result?tab=outfits",
-          icon: "bag",
+          icon: "outfits",
           label: dashboardT("nav.outfits"),
           badge: navigation.outfits,
         },
@@ -197,7 +201,7 @@ export function ForRepairShell({ snapshot }: ForRepairShellProps) {
   const moreItems: ForRepairNavItem[] = [
     {
       href: "/capsule-result?tab=outfits",
-      icon: "bag",
+      icon: "outfits",
       label: dashboardT("nav.outfits"),
       badge: navigation.outfits,
     },
@@ -472,7 +476,7 @@ export function ForRepairShell({ snapshot }: ForRepairShellProps) {
                     key={`${group.label}-${item.label}`}
                   >
                     <span className="dashboard-nav-icon">
-                      <ForRepairIcon name={item.icon} />
+                      <DashboardIcon name={item.icon} />
                     </span>
                     <span className="dashboard-nav-label">{item.label}</span>
                     {typeof item.badge === "number" ? (
@@ -487,7 +491,7 @@ export function ForRepairShell({ snapshot }: ForRepairShellProps) {
           <div className="dashboard-sidebar-foot">
             <Link className="dashboard-nav-item" href="/profile">
               <span className="dashboard-nav-icon">
-                <ForRepairIcon name="settings" />
+                <DashboardIcon name="settings" />
               </span>
               <span className="dashboard-nav-label">
                 {dashboardT("nav.settings")}
@@ -499,7 +503,7 @@ export function ForRepairShell({ snapshot }: ForRepairShellProps) {
               type="button"
             >
               <span className="dashboard-nav-icon">
-                <ForRepairIcon name="logout" />
+                <DashboardIcon name="logout" />
               </span>
               <span className="dashboard-nav-label">
                 {dashboardT("logout")}
@@ -697,7 +701,7 @@ export function ForRepairShell({ snapshot }: ForRepairShellProps) {
           type="button"
         >
           <span className="dashboard-bottom-icon">
-            <ForRepairIcon name="more" />
+            <DashboardIcon name="more" />
           </span>
           <span className="dashboard-bottom-label">
             {dashboardT("nav.more")}
@@ -733,7 +737,7 @@ export function ForRepairShell({ snapshot }: ForRepairShellProps) {
               onClick={() => setMoreOpen(false)}
             >
               <span className="dashboard-more-icon">
-                <ForRepairIcon name={item.icon} />
+                <DashboardIcon name={item.icon} />
               </span>
               <span className="dashboard-more-label">{item.label}</span>
               {typeof item.badge === "number" ? (
@@ -838,7 +842,7 @@ function BottomNavLink({
 }: {
   active?: boolean;
   href: string;
-  icon: IconName;
+  icon: DashboardIconName;
   label: string;
 }) {
   return (
@@ -850,7 +854,7 @@ function BottomNavLink({
       href={href}
     >
       <span className="dashboard-bottom-icon">
-        <ForRepairIcon name={icon} />
+        <DashboardIcon name={icon} />
       </span>
       <span className="dashboard-bottom-label">{label}</span>
     </Link>
