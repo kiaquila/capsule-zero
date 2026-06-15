@@ -261,6 +261,19 @@ export function DashboardNavigationFrame({
               ) : null}
             </Link>
           ))}
+          <button
+            className="dashboard-more-item dashboard-more-action"
+            onClick={() => {
+              setMoreOpen(false);
+              onSignOut();
+            }}
+            type="button"
+          >
+            <span className="dashboard-more-icon">
+              <DashboardIcon name="logout" />
+            </span>
+            <span className="dashboard-more-label">{t("logout")}</span>
+          </button>
         </div>
       </div>
     </div>

@@ -1911,6 +1911,14 @@ textarea {
   background: rgba(255, 255, 255, 0.1);
 }
 
+.dashboard-more-action {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
 .dashboard-more-label {
   color: var(--color-text-primary);
   font-size: 9.5px;

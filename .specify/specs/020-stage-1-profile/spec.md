@@ -114,7 +114,7 @@ The user can switch EN/RU, adjust prototype toggles, confirm removed alternate-l
 - **FR-010**: Users MUST be able to toggle notification and 2FA controls locally.
 - **FR-011**: System MUST NOT render or persist Preferred Login Method selection in Stage 1.
 - **FR-012**: System MUST render active sessions and current-session label from the prototype.
-- **FR-013**: Users MUST be able to log out through the shared authenticated navigation while on the Profile screen.
+- **FR-013**: Users MUST be able to log out through the shared authenticated navigation while on the Profile screen, including mobile/tablet viewports where the desktop sidebar is hidden.
 - **FR-014**: System MUST provide EN and RU messages with no active ES-AR controls.
 - **FR-015**: System MUST keep all profile/account containers on glass surfaces and avoid opaque UI panels.
 - **FR-016**: System MUST display username, not email, in the Profile header.
