@@ -16,7 +16,7 @@ In scope:
 - `/{locale}/profile` authenticated route.
 - Profile header with avatar initials/photo preview, local remove-photo control, username display, and avatar validation.
 - Personal information form with first name, last name, username, email, phone, date of birth, country, city, shoe size, top size, bottom size, and Save.
-- Notifications, login method, two-factor, password, account ID, active sessions, logout, and delete-account prototype surfaces.
+- Notifications, two-factor, password, account ID, active sessions, logout, and delete-account prototype surfaces.
 - Locale switching through the top-right `LanguageSwitcher`; next-intl stores the selected locale in `NEXT_LOCALE`.
 - EN/RU messages only; ES-AR remains inactive for MVP v1.
 - Local/mock persistence for profile form fields that are not yet provider-backed.
@@ -27,6 +27,7 @@ Out of scope:
 
 - Real Supabase profile persistence beyond the Stage 1 mock provider boundary.
 - Real SMS, 2FA, password change, session revocation, delete-account, notification delivery, or avatar storage provider integrations.
+- Preferred Login Method selection or alternate-login prerequisites; this block is removed from Stage 1 to avoid unnecessary login-provider overhead.
 - ES-AR routing, controls, generated clients, or profile language enum changes.
 - Real username uniqueness lookup; Stage 1 uses a server-side validation stub until the follow-up backend PR.
 - Mobile native profile implementation.
@@ -68,17 +69,17 @@ The user can edit profile basics, preview an avatar, remove an avatar, and save 
 
 ### User Story 3 - Manage Language and Mock Account Controls (Priority: P1)
 
-The user can switch EN/RU, adjust prototype toggles/radios, validate login method prerequisites, and use logout without ES-AR exposure.
+The user can switch EN/RU, adjust prototype toggles, confirm removed alternate-login controls stay absent, and use logout without ES-AR exposure.
 
 **Why this priority**: US-018 requires profile language switching and persistence, and the prototype includes account/security controls that must not be inert.
 
-**Independent Test**: Switch EN/RU from Profile, toggle notification/2FA controls, select SMS with an empty phone to see inline warning, and log out.
+**Independent Test**: Switch EN/RU from Profile, toggle notification/2FA controls, confirm the Preferred Login Method block is not rendered, and log out.
 
 **Acceptance Scenarios**:
 
 1. **Given** the top-right language control, **When** the user selects RU or EN, **Then** the route and UI switch to that locale and next-intl stores `NEXT_LOCALE`.
 2. **Given** language options, **When** the menu is open, **Then** only EN and RU are available and no duplicate language field is shown inside the Profile form.
-3. **Given** SMS login is selected without a phone number, **When** validation runs, **Then** an inline yellow warning explains that a phone number is required.
+3. **Given** the Login & Security section, **When** it renders, **Then** no Preferred Login Method block or SMS prerequisite control is shown or persisted.
 4. **Given** logout is clicked, **When** the action completes, **Then** the mock session clears and the user returns to localized landing.
 
 ### Edge Cases
@@ -94,7 +95,7 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 
 1. **Given** no authenticated mock session, **When** `/en/profile` is requested, **Then** the route redirects to `/en/auth` instead of exposing profile data.
 2. **Given** an unsupported avatar file type, **When** a user attempts to preview it, **Then** no avatar is set and an inline validation error is shown.
-3. **Given** SMS login method is selected with an empty phone field, **When** the user saves or changes the login method, **Then** the warning is shown and no silent SMS setting is accepted.
+3. **Given** a stale client or direct save attempt includes a preferred-login field, **When** the profile payload reaches the shared schema/server action path, **Then** the Stage 1 profile contract does not expose or persist that field.
 4. **Given** a username marked as unavailable by the server stub, **When** the user saves, **Then** the response is mapped to the username field and the header remains unchanged.
 
 ## Requirements _(mandatory)_
@@ -111,9 +112,9 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 - **FR-008**: Users MUST be able to edit and save personal information fields locally.
 - **FR-009**: System MUST validate required name/email/username fields before save through the Zod/RHF inline validation path rather than native browser tooltips.
 - **FR-010**: Users MUST be able to toggle notification and 2FA controls locally.
-- **FR-011**: Users MUST be able to select preferred login method and see prerequisite warnings; SMS must require a phone number on both client and server action paths.
+- **FR-011**: System MUST NOT render or persist Preferred Login Method selection in Stage 1.
 - **FR-012**: System MUST render active sessions and current-session label from the prototype.
-- **FR-013**: Users MUST be able to log out through the Profile screen.
+- **FR-013**: Users MUST be able to log out through the shared authenticated navigation while on the Profile screen, including mobile/tablet viewports where the desktop sidebar is hidden.
 - **FR-014**: System MUST provide EN and RU messages with no active ES-AR controls.
 - **FR-015**: System MUST keep all profile/account containers on glass surfaces and avoid opaque UI panels.
 - **FR-016**: System MUST display username, not email, in the Profile header.
@@ -122,6 +123,7 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 - **FR-019**: System MUST reuse a shared authenticated dashboard navigation component for Dashboard and Profile instead of duplicating sidebar, bottom nav, and More-sheet models.
 - **FR-020**: System MUST let authenticated dashboard snapshots read saved Stage 1 profile name, email, and city preferences so edits do not appear lost after leaving Profile.
 - **FR-021**: System MUST keep Profile form field validation rules in one shared schema consumed by both the client form resolver and the server save action.
+- **FR-022**: System MUST keep legacy capsule-result sidebar active states stable: `Outfits` is active only for the outfits tab, while `Capsules` represents capsule items and gaps tabs.
 
 ### Key Entities
 
@@ -140,5 +142,10 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 
 - **SC-001**: Profile page renders successfully in EN and RU for authenticated mock users.
 - **SC-002**: Profile shows zero ES-AR active route or switcher controls.
-- **SC-003**: Avatar preview, remove, validation, save, login method warning, toggles, logout, and mobile More sheet are manually verifiable in a browser.
+- **SC-003**: Avatar preview, remove, validation, save, Preferred Login Method absence, toggles, logout, and mobile More sheet are manually verifiable in a browser.
 - **SC-004**: Local checks pass: JSON parse, feature memory, lint, typecheck, build, and preflight.
+- **SC-005**: PR dependency security checks remain green after local review polish by keeping vulnerable dev-only transitive lint dependencies on fixed versions without changing runtime behavior.
+
+## Follow-up Plan
+
+- Next PR: add localized Privacy Policy and Terms of Use pages for every active user language (EN/RU), then connect the existing landing/auth legal links to those routes.

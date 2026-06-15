@@ -26,7 +26,7 @@
 - [x] T011 Implement Profile shell with sidebar/topbar, language switcher, sign-out, bottom nav, and More sheet.
 - [x] T012 Implement avatar preview, remove-photo, file-type and file-size validation.
 - [x] T013 Implement personal information form with RHF/Zod, save feedback, and local profile updates.
-- [x] T014 Implement notifications, preferred login method, 2FA, password, sessions, logout, and delete-account prototype sections.
+- [x] T014 Implement notifications, 2FA, password, sessions, logout, and delete-account prototype sections.
 - [x] T015 Add EN/RU Profile messages with no ES-AR active controls.
 - [x] T016 Add scoped responsive CSS preserving glass tokens and achromatic UI.
 
@@ -40,15 +40,21 @@
 - [x] T022 Run `npm --prefix app run build`.
 - [x] T023 Run `npm run preflight`.
 - [x] T024 Start or reuse local dev server.
-- [x] T025 Browser smoke-check unauthenticated redirect, EN/RU Profile, every prototype section, avatar preview/remove/validation, save, SMS warning, toggles, logout, no ES-AR controls, and mobile viewport.
+- [x] T025 Browser smoke-check unauthenticated redirect, EN/RU Profile, every prototype section, avatar preview/remove/validation, save, toggles, logout, no ES-AR controls, and mobile viewport.
 - [x] T026 Apply review fixes: remove Replace, rename Remove photo, add username with server uniqueness stub, remove Profile language field, compact spacing, move logout/delete controls.
 - [x] T027 Browser smoke-check review fixes: username taken/free flow, top language cookie flow, account row, delete outside form, compact dimensions.
-- [x] T028 Apply Codex review fixes: enforce SMS phone prerequisite in the server action and render avatar previews in the sidebar avatar.
+- [x] T028 Apply Codex review fixes: render avatar previews in the sidebar avatar and keep form/server validation aligned.
 - [x] T029 Apply Codex review follow-ups: preserve persisted first/last-name boundaries and keep the external delete action above the fixed mobile bottom nav.
 - [x] T030 Disable native Profile form validation so RHF/Zod inline validation handles invalid email/name/username inputs.
 - [x] T031 Extract shared authenticated dashboard navigation and reuse it from Dashboard and Profile shells.
 - [x] T032 Make Dashboard snapshots read saved mock profile preferences after Profile saves.
 - [x] T033 Extract shared Profile form schema so the client RHF resolver and server action validate the same payload contract.
+- [x] T034 Apply product cleanup: remove Preferred Login Method from the Profile UI/mock contract and record the next-PR legal-pages follow-up.
+- [x] T035 Apply local review polish: fix authenticated sidebar item dimensions, align `capsule-result` nav sizing with dashboard nav, unify logout icon shape, and make the language menu opaque enough for dashboard backgrounds.
+- [x] T036 Fix PR OSV failure by pinning fixed dev-only transitive lint dependency overrides for `@babel/core` and `js-yaml`, then rerun local checks.
+- [x] T037 Address Codex P2 review by adding a shared mobile/tablet More-sheet logout action without restoring the duplicate Profile `user_id` row logout.
+- [x] T038 Address Codex P2 prototype-drift review by syncing `html-prototypes/profile.html` with the product decision to remove Preferred Login Method.
+- [x] T039 Address Codex P3 review by keeping the `Capsules` sidebar item active for the capsule gaps tab without reintroducing double-active Outfits/Capsules state.
 
 ## Process Memory
 
@@ -64,13 +70,19 @@
 - Keep real security/session/delete/password actions mock/design-only in Stage 1; they do not call external providers or destructively modify data.
 - Keep language persistence owned by next-intl `NEXT_LOCALE` via the top-right switcher; do not persist language through the Profile form payload.
 - Add username now as a Stage 1 mock preference with a server-side uniqueness stub; provider-backed uniqueness remains a follow-up PR.
-- Mirror client-only prerequisites in server actions when the value affects persisted mock preferences; stale clients and direct server-action requests must not bypass Stage 1 negative scenarios.
+- Remove Preferred Login Method from Stage 1 Profile because alternate login methods add implementation overhead and are not needed for the current mock-first layer.
 - Treat persisted split form fields as canonical after save; display-name parsing is only a fallback for provider/session names.
 - Keep native browser validation disabled on rich RHF/Zod forms where the design requires consistent inline yellow validation.
 - Centralize the authenticated dashboard sidebar, bottom nav, More sheet, badges, settings, logout, and profile avatar row in `DashboardNavigationFrame` so Profile does not drift from Dashboard navigation.
 - Treat the cookie-backed Stage 1 mock profile preferences as the durable profile override for authenticated web snapshots until real provider persistence is introduced.
 - Keep Profile form validation rules in `features/profile/schemas.ts`; the client supplies localized messages while the server action reuses the same schema before mock persistence.
+- Track localized Privacy Policy and Terms of Use pages as the next PR follow-up for all active user languages.
+- Treat `dashboard-nav-item` as the standard authenticated sidebar contract; pages with legacy local sidebars must match its fixed height, icon box, label line-height, badge sizing, and logout icon.
+- Keep OSV security fixes for transitive lint tooling in `app/package.json` `overrides` so runtime dependencies stay untouched while CI uses fixed package versions.
+- Keep logout in the shared authenticated navigation model: desktop uses the sidebar footer, while mobile/tablet uses the shared More sheet.
+- When a user-approved local review decision intentionally changes prototype behavior, update the affected HTML prototype in the same PR so product source-of-truth stays aligned.
+- Treat capsule-result `items` and `gaps` as represented by the `Capsules` sidebar item; keep `outfits` represented only by `Outfits`.
 
 ### Known Issues
 
-- None.
+- Next PR must add localized Privacy Policy and Terms of Use pages for EN/RU and wire the existing legal links to them.

@@ -53,10 +53,6 @@ export async function saveProfileAction(
 
   const data = parsed.data;
 
-  if (data.preferredLoginMethod === "sms" && !data.phone.trim()) {
-    return { ok: false, message: "PHONE_REQUIRED_FOR_SMS" };
-  }
-
   if (!(await isUsernameAvailableStub(data.username, session.userId))) {
     return { ok: false, message: "USERNAME_TAKEN" };
   }
@@ -87,16 +83,24 @@ async function isUsernameAvailableStub(username: string, userId: string) {
   void userId;
 
   const takenUsernames = new Set(["taken", "stylefounder", "capsuleuser"]);
-  const reservedUsernames = new Set(["admin", "api", "root", "support", "capsule_zero"]);
+  const reservedUsernames = new Set([
+    "admin",
+    "api",
+    "root",
+    "support",
+    "capsule_zero",
+  ]);
 
   return !takenUsernames.has(username) && !reservedUsernames.has(username);
 }
 
 function buildInitials(value: string) {
-  return value
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part[0]?.toUpperCase())
-    .join("")
-    .slice(0, 2) || "CZ";
+  return (
+    value
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part[0]?.toUpperCase())
+      .join("")
+      .slice(0, 2) || "CZ"
+  );
 }

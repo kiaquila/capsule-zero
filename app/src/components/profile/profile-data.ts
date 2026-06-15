@@ -27,7 +27,6 @@ export interface ProfileSnapshot {
   preferences: {
     emailNotifications: boolean;
     pushNotifications: boolean;
-    preferredLoginMethod: "email" | "sms";
     googleAuthenticator: boolean;
     pushSecondFactor: boolean;
   };
@@ -67,19 +66,24 @@ export async function buildProfileSnapshot({
   session,
   locale,
 }: BuildProfileSnapshotOptions): Promise<ProfileSnapshot> {
-  const [dashboardSnapshot, providerProfile, savedPreferences] = await Promise.all([
-    buildDashboardSnapshot({ registry, session, locale }),
-    registry.profiles.getProfile(session.userId),
-    readMockProfilePreferences(session.userId),
-  ]);
-  const fallbackNames = splitDisplayName(session.name ?? providerProfile.displayName);
+  const [dashboardSnapshot, providerProfile, savedPreferences] =
+    await Promise.all([
+      buildDashboardSnapshot({ registry, session, locale }),
+      registry.profiles.getProfile(session.userId),
+      readMockProfilePreferences(session.userId),
+    ]);
+  const fallbackNames = splitDisplayName(
+    session.name ?? providerProfile.displayName,
+  );
   const names = {
     firstName: savedPreferences?.firstName ?? fallbackNames.firstName,
     lastName: savedPreferences?.lastName ?? fallbackNames.lastName,
   };
-  const email = savedPreferences?.email ?? session.email ?? providerProfile.email;
+  const email =
+    savedPreferences?.email ?? session.email ?? providerProfile.email;
   const displayName = `${names.firstName} ${names.lastName}`.trim();
-  const username = savedPreferences?.username ?? buildDefaultUsername(email, displayName);
+  const username =
+    savedPreferences?.username ?? buildDefaultUsername(email, displayName);
 
   return {
     profile: {
@@ -103,7 +107,6 @@ export async function buildProfileSnapshot({
     preferences: {
       emailNotifications: savedPreferences?.emailNotifications ?? true,
       pushNotifications: savedPreferences?.pushNotifications ?? false,
-      preferredLoginMethod: savedPreferences?.preferredLoginMethod ?? "email",
       googleAuthenticator: savedPreferences?.googleAuthenticator ?? false,
       pushSecondFactor: savedPreferences?.pushSecondFactor ?? false,
     },
@@ -150,14 +153,29 @@ export async function buildProfileSnapshot({
         { value: "US", label: "United States" },
         { value: "UY", label: "Uruguay" },
       ],
-      shoeSizes: ["", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44"],
+      shoeSizes: [
+        "",
+        "35",
+        "36",
+        "37",
+        "38",
+        "39",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44",
+      ],
       clothingSizes: ["", "XS", "S", "M", "L", "XL"],
     },
   };
 }
 
 function splitDisplayName(displayName: string | undefined) {
-  const parts = (displayName ?? "Stage 1 Mock User").trim().split(/\s+/).filter(Boolean);
+  const parts = (displayName ?? "Stage 1 Mock User")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
   const firstName = parts[0] ?? "Stage";
   const lastName = parts.slice(1).join(" ") || "User";
 
@@ -165,12 +183,14 @@ function splitDisplayName(displayName: string | undefined) {
 }
 
 function buildInitials(value: string) {
-  return value
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((part) => part[0]?.toUpperCase())
-    .join("")
-    .slice(0, 2) || "CZ";
+  return (
+    value
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part[0]?.toUpperCase())
+      .join("")
+      .slice(0, 2) || "CZ"
+  );
 }
 
 function buildUserIdLabel(userId: string) {

@@ -5,8 +5,6 @@ import { cookies } from "next/headers";
 const MOCK_PROFILE_COOKIE = "capsule_zero_mock_profile";
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
-export type PreferredLoginMethod = "email" | "sms";
-
 export interface MockProfilePreferences {
   userId: string;
   firstName: string;
@@ -22,7 +20,6 @@ export interface MockProfilePreferences {
   bottomSize: string;
   emailNotifications: boolean;
   pushNotifications: boolean;
-  preferredLoginMethod: PreferredLoginMethod;
   googleAuthenticator: boolean;
   pushSecondFactor: boolean;
   updatedAt: string;
@@ -44,7 +41,9 @@ export async function readMockProfilePreferences(
   }
 
   try {
-    const parsed = JSON.parse(decodeURIComponent(rawValue)) as MockProfilePreferences;
+    const parsed = JSON.parse(
+      decodeURIComponent(rawValue),
+    ) as MockProfilePreferences;
 
     if (parsed.userId !== userId) {
       return null;
@@ -67,13 +66,17 @@ export async function persistMockProfilePreferences(
     updatedAt: new Date().toISOString(),
   };
 
-  cookieStore.set(MOCK_PROFILE_COOKIE, encodeURIComponent(JSON.stringify(value)), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: MAX_AGE_SECONDS,
-  });
+  cookieStore.set(
+    MOCK_PROFILE_COOKIE,
+    encodeURIComponent(JSON.stringify(value)),
+    {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: MAX_AGE_SECONDS,
+    },
+  );
 
   return value;
 }

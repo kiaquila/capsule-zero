@@ -261,6 +261,19 @@ export function DashboardNavigationFrame({
               ) : null}
             </Link>
           ))}
+          <button
+            className="dashboard-more-item dashboard-more-action"
+            onClick={() => {
+              setMoreOpen(false);
+              onSignOut();
+            }}
+            type="button"
+          >
+            <span className="dashboard-more-icon">
+              <DashboardIcon name="logout" />
+            </span>
+            <span className="dashboard-more-label">{t("logout")}</span>
+          </button>
         </div>
       </div>
     </div>
@@ -281,11 +294,6 @@ function buildDashboardNavGroups(
           icon: "grid",
           label: t("nav.dashboard"),
         },
-      ],
-    },
-    {
-      label: t("nav.wardrobe"),
-      items: [
         {
           key: "my-items",
           href: "/my-items",
@@ -314,11 +322,6 @@ function buildDashboardNavGroups(
           label: t("nav.uncapsulated"),
           badge: navigation.uncapsulated,
         },
-      ],
-    },
-    {
-      label: t("nav.lists"),
-      items: [
         {
           key: "favorites",
           href: "/favorites",
@@ -326,6 +329,11 @@ function buildDashboardNavGroups(
           label: t("nav.favorites"),
           badge: navigation.favorites,
         },
+      ],
+    },
+    {
+      label: t("nav.lists"),
+      items: [
         {
           key: "shopping-list",
           href: "/capsule-result?tab=shopping",
@@ -594,20 +602,7 @@ export function DashboardIcon({ name }: { name: DashboardIconName }) {
       return (
         <svg {...common}>
           <path
-            d="M10 5V4a2 2 0 0 1 2-2h7v20h-7a2 2 0 0 1-2-2v-1"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.8"
-          />
-          <path
-            d="M3 12h11"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeWidth="1.8"
-          />
-          <path
-            d="m10 8 4 4-4 4"
+            d="M10 17l5-5-5-5M15 12H3M21 4v16"
             stroke="currentColor"
             strokeLinecap="round"
             strokeLinejoin="round"

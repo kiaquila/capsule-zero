@@ -45,7 +45,9 @@ type IconName =
   | "tag"
   | "trash";
 type SortKey = "name" | "category" | "recent" | "price";
-type DraftErrors = Partial<Record<"name" | "categoryId" | "colorHexes" | "photo", string>>;
+type DraftErrors = Partial<
+  Record<"name" | "categoryId" | "colorHexes" | "photo", string>
+>;
 
 interface ItemDraftState {
   id: string;
@@ -69,7 +71,11 @@ interface FavoritesNavItem {
 const DEFAULT_COLOR = "#8C8C8C";
 const LOCAL_UPDATED_AT = "2026-06-12T15:00:00.000Z";
 const MAX_LOCAL_PHOTO_BYTES = 10 * 1024 * 1024;
-const SUPPORTED_LOCAL_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const SUPPORTED_LOCAL_PHOTO_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
 
 export function FavoritesShell({ snapshot }: FavoritesShellProps) {
   const t = useTranslations("favorites");
@@ -96,13 +102,17 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
     [navigation, totals.total],
   );
   const tabItems = useMemo(
-    () => items.filter((item) => (activeTab === "catalog" ? item.fromCatalog : !item.fromCatalog)),
+    () =>
+      items.filter((item) =>
+        activeTab === "catalog" ? item.fromCatalog : !item.fromCatalog,
+      ),
     [activeTab, items],
   );
   const categories = useMemo(() => buildCategoryFilters(tabItems), [tabItems]);
   const colors = useMemo(() => buildColorFilters(tabItems), [tabItems]);
   const visibleItems = useMemo(
-    () => filterAndSortFavorites(tabItems, categoryFilter, colorFilter, sortKey),
+    () =>
+      filterAndSortFavorites(tabItems, categoryFilter, colorFilter, sortKey),
     [categoryFilter, colorFilter, sortKey, tabItems],
   );
   const knownColors = useMemo(
@@ -110,7 +120,7 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
     [items],
   );
   const selectedItem = selectedItemId
-    ? items.find((item) => item.id === selectedItemId) ?? null
+    ? (items.find((item) => item.id === selectedItemId) ?? null)
     : null;
 
   useEffect(() => {
@@ -141,11 +151,6 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
           icon: "grid",
           label: dashboardT("nav.dashboard"),
         },
-      ],
-    },
-    {
-      label: dashboardT("nav.wardrobe"),
-      items: [
         {
           href: "/my-items",
           icon: "my-items",
@@ -170,11 +175,6 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
           label: dashboardT("nav.uncapsulated"),
           badge: displayNavigation.uncapsulated,
         },
-      ],
-    },
-    {
-      label: dashboardT("nav.lists"),
-      items: [
         {
           href: "/favorites",
           icon: "heart",
@@ -182,6 +182,11 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
           active: true,
           badge: displayNavigation.favorites,
         },
+      ],
+    },
+    {
+      label: dashboardT("nav.lists"),
+      items: [
         {
           href: "/capsule-result?tab=shopping",
           icon: "list",
@@ -307,7 +312,9 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
   };
 
   const removeFavorite = (item: MyItemsEntry) => {
-    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
+    setItems((currentItems) =>
+      currentItems.filter((currentItem) => currentItem.id !== item.id),
+    );
     setNavigation((currentNavigation) => ({
       ...currentNavigation,
       favorites: Math.max(0, currentNavigation.favorites - 1),
@@ -332,7 +339,12 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
     const alreadyInCapsule = itemToAdd.capsuleIds.includes(activeCapsule.id);
 
     if (alreadyInCapsule) {
-      setNotice(t("notice.alreadyCapsule", { item: itemToAdd.name, capsule: activeCapsule.name }));
+      setNotice(
+        t("notice.alreadyCapsule", {
+          item: itemToAdd.name,
+          capsule: activeCapsule.name,
+        }),
+      );
       return;
     }
 
@@ -357,8 +369,15 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
           : item,
       ),
     );
-    setNavigation((currentNavigation) => adjustStatusNavigation(currentNavigation, itemToAdd.status, "active"));
-    setNotice(t("notice.addedCapsule", { item: itemToAdd.name, capsule: activeCapsule.name }));
+    setNavigation((currentNavigation) =>
+      adjustStatusNavigation(currentNavigation, itemToAdd.status, "active"),
+    );
+    setNotice(
+      t("notice.addedCapsule", {
+        item: itemToAdd.name,
+        capsule: activeCapsule.name,
+      }),
+    );
     closeDetail();
   };
 
@@ -368,13 +387,19 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
     }
 
     const itemToDelete = selectedItem;
-    setItems((currentItems) => currentItems.filter((item) => item.id !== itemToDelete.id));
-    setNavigation((currentNavigation) => removeItemFromNavigation(currentNavigation, itemToDelete));
+    setItems((currentItems) =>
+      currentItems.filter((item) => item.id !== itemToDelete.id),
+    );
+    setNavigation((currentNavigation) =>
+      removeItemFromNavigation(currentNavigation, itemToDelete),
+    );
     setNotice(t("notice.deleted", { item: itemToDelete.name }));
     closeDetail();
   };
 
-  const moveSelectedItem = (status: Extract<ItemStatus, "for_repair" | "for_sale">) => {
+  const moveSelectedItem = (
+    status: Extract<ItemStatus, "for_repair" | "for_sale">,
+  ) => {
     if (!selectedItem) {
       return;
     }
@@ -392,7 +417,9 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
           : item,
       ),
     );
-    setNavigation((currentNavigation) => adjustStatusNavigation(currentNavigation, selectedItem.status, status));
+    setNavigation((currentNavigation) =>
+      adjustStatusNavigation(currentNavigation, selectedItem.status, status),
+    );
     setNotice(
       status === "for_sale"
         ? t("notice.movedSale", { item: selectedItem.name })
@@ -407,7 +434,9 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
     }
 
     updateDraft({
-      colorHexes: draft.colorHexes.filter((_, colorIndex) => colorIndex !== index),
+      colorHexes: draft.colorHexes.filter(
+        (_, colorIndex) => colorIndex !== index,
+      ),
     });
   };
 
@@ -467,11 +496,19 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
               Capsule Zero
             </Link>
             <div className="dashboard-user-row">
-              <Link aria-label={dashboardT("nav.profile")} className="dashboard-avatar-link" href="/profile">
-                <span className="dashboard-avatar">{snapshot.profile.initials}</span>
+              <Link
+                aria-label={dashboardT("nav.profile")}
+                className="dashboard-avatar-link"
+                href="/profile"
+              >
+                <span className="dashboard-avatar">
+                  {snapshot.profile.initials}
+                </span>
               </Link>
               <div className="dashboard-user-meta">
-                <p className="dashboard-user-name">{snapshot.profile.displayName}</p>
+                <p className="dashboard-user-name">
+                  {snapshot.profile.displayName}
+                </p>
                 <p className="dashboard-user-email">{snapshot.profile.email}</p>
               </div>
             </div>
@@ -483,7 +520,10 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
                 <p className="dashboard-nav-section">{group.label}</p>
                 {group.items.map((item) => (
                   <Link
-                    className={cn("dashboard-nav-item", item.active && "dashboard-nav-item-active")}
+                    className={cn(
+                      "dashboard-nav-item",
+                      item.active && "dashboard-nav-item-active",
+                    )}
                     href={item.href}
                     key={`${group.label}-${item.label}`}
                   >
@@ -505,13 +545,21 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
               <span className="dashboard-nav-icon">
                 <FavoritesIcon name="settings" />
               </span>
-              <span className="dashboard-nav-label">{dashboardT("nav.settings")}</span>
+              <span className="dashboard-nav-label">
+                {dashboardT("nav.settings")}
+              </span>
             </Link>
-            <button className="dashboard-nav-item dashboard-nav-button" onClick={signOut} type="button">
+            <button
+              className="dashboard-nav-item dashboard-nav-button"
+              onClick={signOut}
+              type="button"
+            >
               <span className="dashboard-nav-icon">
                 <FavoritesIcon name="logout" />
               </span>
-              <span className="dashboard-nav-label">{dashboardT("logout")}</span>
+              <span className="dashboard-nav-label">
+                {dashboardT("logout")}
+              </span>
             </button>
           </div>
         </aside>
@@ -524,7 +572,9 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
                   strong: (chunks) => <strong>{chunks}</strong>,
                 })}
               </h1>
-              <p className="my-items-subtitle">{t("subtitle", { count: totals.total })}</p>
+              <p className="my-items-subtitle">
+                {t("subtitle", { count: totals.total })}
+              </p>
             </div>
             <div className="dashboard-topbar-actions">
               <LanguageSwitcher />
@@ -536,10 +586,17 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
           </header>
 
           <div className="my-items-content favorites-content">
-            <div className="favorites-tabs" role="tablist" aria-label={t("tabs.label")}>
+            <div
+              className="favorites-tabs"
+              role="tablist"
+              aria-label={t("tabs.label")}
+            >
               <button
                 aria-selected={activeTab === "mine"}
-                className={cn("favorites-tab", activeTab === "mine" && "favorites-tab-active")}
+                className={cn(
+                  "favorites-tab",
+                  activeTab === "mine" && "favorites-tab-active",
+                )}
                 onClick={() => switchTab("mine")}
                 role="tab"
                 type="button"
@@ -549,7 +606,10 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
               </button>
               <button
                 aria-selected={activeTab === "catalog"}
-                className={cn("favorites-tab", activeTab === "catalog" && "favorites-tab-active")}
+                className={cn(
+                  "favorites-tab",
+                  activeTab === "catalog" && "favorites-tab-active",
+                )}
                 onClick={() => switchTab("catalog")}
                 role="tab"
                 type="button"
@@ -559,11 +619,20 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
               </button>
             </div>
 
-            <section className="my-items-filter-panel favorites-filter-panel" aria-label={t("filters.label")}>
+            <section
+              className="my-items-filter-panel favorites-filter-panel"
+              aria-label={t("filters.label")}
+            >
               <div className="my-items-filter-row">
-                <div className="my-items-chip-row" aria-label={t("filters.categories")}>
+                <div
+                  className="my-items-chip-row"
+                  aria-label={t("filters.categories")}
+                >
                   <button
-                    className={cn("my-items-chip", categoryFilter === "all" && "my-items-chip-active")}
+                    className={cn(
+                      "my-items-chip",
+                      categoryFilter === "all" && "my-items-chip-active",
+                    )}
                     onClick={() => setCategoryFilter("all")}
                     type="button"
                   >
@@ -571,7 +640,11 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
                   </button>
                   {categories.map((category) => (
                     <button
-                      className={cn("my-items-chip", categoryFilter === category.id && "my-items-chip-active")}
+                      className={cn(
+                        "my-items-chip",
+                        categoryFilter === category.id &&
+                          "my-items-chip-active",
+                      )}
                       key={category.id}
                       onClick={() => setCategoryFilter(category.id)}
                       type="button"
@@ -583,7 +656,12 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
                 </div>
                 <label className="my-items-sort">
                   <span>{t("sort.label")}</span>
-                  <select value={sortKey} onChange={(event) => setSortKey(event.target.value as SortKey)}>
+                  <select
+                    value={sortKey}
+                    onChange={(event) =>
+                      setSortKey(event.target.value as SortKey)
+                    }
+                  >
                     <option value="name">{t("sort.name")}</option>
                     <option value="category">{t("sort.category")}</option>
                     <option value="recent">{t("sort.recent")}</option>
@@ -592,9 +670,15 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
                 </label>
               </div>
 
-              <div className="my-items-color-row" aria-label={t("filters.colors")}>
+              <div
+                className="my-items-color-row"
+                aria-label={t("filters.colors")}
+              >
                 <button
-                  className={cn("my-items-color-filter", colorFilter === "all" && "my-items-color-filter-active")}
+                  className={cn(
+                    "my-items-color-filter",
+                    colorFilter === "all" && "my-items-color-filter-active",
+                  )}
                   onClick={() => setColorFilter("all")}
                   type="button"
                 >
@@ -605,7 +689,8 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
                     aria-label={t("filters.color", { color: color.name })}
                     className={cn(
                       "my-items-color-filter my-items-color-dot-filter",
-                      colorFilter === color.hex && "my-items-color-filter-active",
+                      colorFilter === color.hex &&
+                        "my-items-color-filter-active",
                     )}
                     key={`${activeTab}-${color.hex}-${color.name}`}
                     onClick={() => setColorFilter(color.hex)}
@@ -620,7 +705,10 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
             </section>
 
             {visibleItems.length > 0 ? (
-              <section className="my-items-grid favorites-grid" aria-label={t("gridLabel")}>
+              <section
+                className="my-items-grid favorites-grid"
+                aria-label={t("gridLabel")}
+              >
                 {visibleItems.map((item) => (
                   <WardrobeItemCard
                     badges={[
@@ -646,8 +734,12 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
                 <span>
                   <FavoritesIcon name="heart" />
                 </span>
-                <h2>{items.length ? t("empty.filteredTitle") : t("empty.title")}</h2>
-                <p>{items.length ? t("empty.filteredCopy") : t("empty.copy")}</p>
+                <h2>
+                  {items.length ? t("empty.filteredTitle") : t("empty.title")}
+                </h2>
+                <p>
+                  {items.length ? t("empty.filteredCopy") : t("empty.copy")}
+                </p>
                 <Link className="dashboard-primary-action" href="/my-items">
                   <FavoritesIcon name="my-items" />
                   <span>{t("openMyItems")}</span>
@@ -658,11 +750,34 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
         </main>
       </div>
 
-      <nav className={cn("dashboard-bottom-nav", moreOpen && "dashboard-bottom-nav-menu-open")} aria-label={dashboardT("nav.mobile")}>
-        <BottomNavLink href="/dashboard" icon="grid" label={dashboardT("nav.dashboard")} />
-        <BottomNavLink href="/my-items" icon="my-items" label={dashboardT("nav.myItems")} />
-        <BottomNavLink href="/capsule-result" icon="capsules" label={dashboardT("nav.capsules")} />
-        <BottomNavLink active href="/favorites" icon="heart" label={dashboardT("nav.favorites")} />
+      <nav
+        className={cn(
+          "dashboard-bottom-nav",
+          moreOpen && "dashboard-bottom-nav-menu-open",
+        )}
+        aria-label={dashboardT("nav.mobile")}
+      >
+        <BottomNavLink
+          href="/dashboard"
+          icon="grid"
+          label={dashboardT("nav.dashboard")}
+        />
+        <BottomNavLink
+          href="/my-items"
+          icon="my-items"
+          label={dashboardT("nav.myItems")}
+        />
+        <BottomNavLink
+          href="/capsule-result"
+          icon="capsules"
+          label={dashboardT("nav.capsules")}
+        />
+        <BottomNavLink
+          active
+          href="/favorites"
+          icon="heart"
+          label={dashboardT("nav.favorites")}
+        />
         <button
           aria-expanded={moreOpen}
           aria-label={dashboardT("nav.more")}
@@ -673,17 +788,27 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
           <span className="dashboard-bottom-icon">
             <FavoritesIcon name="more" />
           </span>
-          <span className="dashboard-bottom-label">{dashboardT("nav.more")}</span>
+          <span className="dashboard-bottom-label">
+            {dashboardT("nav.more")}
+          </span>
         </button>
       </nav>
 
       <button
         aria-label={dashboardT("closeMore")}
-        className={cn("dashboard-more-overlay", moreOpen && "dashboard-more-overlay-open")}
+        className={cn(
+          "dashboard-more-overlay",
+          moreOpen && "dashboard-more-overlay-open",
+        )}
         onClick={() => setMoreOpen(false)}
         type="button"
       />
-      <div className={cn("dashboard-more-sheet", moreOpen && "dashboard-more-sheet-open")}>
+      <div
+        className={cn(
+          "dashboard-more-sheet",
+          moreOpen && "dashboard-more-sheet-open",
+        )}
+      >
         <div className="dashboard-more-handle" />
         <div className="dashboard-more-grid">
           {moreItems.map((item) => (
@@ -717,8 +842,16 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
           errors={errors}
           extraFields={
             <>
-              <WardrobeDetailField label={t("detail.source")} value={t(`sources.${selectedItem.sourceType}`)} />
-              <WardrobeDetailField label={t("detail.favoriteType")} value={selectedItem.fromCatalog ? t("tabs.catalog") : t("tabs.mine")} />
+              <WardrobeDetailField
+                label={t("detail.source")}
+                value={t(`sources.${selectedItem.sourceType}`)}
+              />
+              <WardrobeDetailField
+                label={t("detail.favoriteType")}
+                value={
+                  selectedItem.fromCatalog ? t("tabs.catalog") : t("tabs.mine")
+                }
+              />
               <div className="my-items-membership">
                 <p>{t("detail.capsules")}</p>
                 {selectedItem.capsules.length > 0 ? (
@@ -726,15 +859,22 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
                     <div className="my-items-capsule-row" key={capsule.id}>
                       <span className="my-items-capsule-palette">
                         {capsule.palette.slice(0, 5).map((color) => (
-                          <span key={`${capsule.id}-${color.hex}`} style={{ backgroundColor: color.hex }} />
+                          <span
+                            key={`${capsule.id}-${color.hex}`}
+                            style={{ backgroundColor: color.hex }}
+                          />
                         ))}
                       </span>
                       <span>{capsule.name}</span>
-                      {capsule.active ? <small>{t("detail.active")}</small> : null}
+                      {capsule.active ? (
+                        <small>{t("detail.active")}</small>
+                      ) : null}
                     </div>
                   ))
                 ) : (
-                  <div className="my-items-no-capsules">{t("detail.noCapsules")}</div>
+                  <div className="my-items-no-capsules">
+                    {t("detail.noCapsules")}
+                  </div>
                 )}
               </div>
             </>
@@ -767,15 +907,27 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
           renderIcon={(name) => <FavoritesIcon name={name} />}
           actionSlot={
             <>
-              <button className="my-items-secondary-button" onClick={addSelectedItemToCapsule} type="button">
+              <button
+                className="my-items-secondary-button"
+                onClick={addSelectedItemToCapsule}
+                type="button"
+              >
                 <FavoritesIcon name="capsules" />
                 <span>{t("detail.addToCapsule")}</span>
               </button>
-              <button className="my-items-secondary-button" onClick={() => moveSelectedItem("for_sale")} type="button">
+              <button
+                className="my-items-secondary-button"
+                onClick={() => moveSelectedItem("for_sale")}
+                type="button"
+              >
                 <FavoritesIcon name="tag" />
                 <span>{t("detail.moveSale")}</span>
               </button>
-              <button className="my-items-secondary-button" onClick={() => moveSelectedItem("for_repair")} type="button">
+              <button
+                className="my-items-secondary-button"
+                onClick={() => moveSelectedItem("for_repair")}
+                type="button"
+              >
                 <FavoritesIcon name="for-repair" />
                 <span>{t("detail.moveRepair")}</span>
               </button>
@@ -805,7 +957,13 @@ function BottomNavLink({
   label: string;
 }) {
   return (
-    <Link className={cn("dashboard-bottom-item", active && "dashboard-bottom-item-active")} href={href}>
+    <Link
+      className={cn(
+        "dashboard-bottom-item",
+        active && "dashboard-bottom-item-active",
+      )}
+      href={href}
+    >
       <span className="dashboard-bottom-icon">
         <FavoritesIcon name={icon} />
       </span>
@@ -819,7 +977,9 @@ function buildDraftFromItem(item: MyItemsEntry): ItemDraftState {
     id: item.id,
     name: item.name,
     categoryId: item.categoryId,
-    colorHexes: item.colorPoints.map((color) => color.hex.toUpperCase()).slice(0, 3),
+    colorHexes: item.colorPoints
+      .map((color) => color.hex.toUpperCase())
+      .slice(0, 3),
     brand: item.brand ?? "",
     material: item.material ?? "",
     price: typeof item.price === "number" ? String(item.price) : "",
@@ -858,9 +1018,18 @@ function normalizeDraft(
   knownColors: ColorPoint[],
 ): Pick<
   MyItemsEntry,
-  "name" | "categoryId" | "categoryLabel" | "section" | "colorPoints" | "brand" | "material" | "price"
+  | "name"
+  | "categoryId"
+  | "categoryLabel"
+  | "section"
+  | "colorPoints"
+  | "brand"
+  | "material"
+  | "price"
 > {
-  const category = snapshot.categoryOptions.find((item) => item.id === draft.categoryId);
+  const category = snapshot.categoryOptions.find(
+    (item) => item.id === draft.categoryId,
+  );
   const price = Number(draft.price);
 
   return {
@@ -868,7 +1037,9 @@ function normalizeDraft(
     categoryId: draft.categoryId,
     categoryLabel: category?.label ?? draft.categoryId,
     section: "custom",
-    colorPoints: draft.colorHexes.map((hex) => buildColorPoint(hex, knownColors)),
+    colorPoints: draft.colorHexes.map((hex) =>
+      buildColorPoint(hex, knownColors),
+    ),
     brand: draft.brand.trim() || undefined,
     material: draft.material.trim() || undefined,
     price: Number.isFinite(price) && draft.price.trim() ? price : undefined,
@@ -877,7 +1048,9 @@ function normalizeDraft(
 
 function buildColorPoint(hex: string, knownColors: ColorPoint[]): ColorPoint {
   const normalizedHex = hex.toUpperCase();
-  const existing = knownColors.find((color) => color.hex.toUpperCase() === normalizedHex);
+  const existing = knownColors.find(
+    (color) => color.hex.toUpperCase() === normalizedHex,
+  );
 
   if (existing) {
     return existing;
@@ -933,7 +1106,10 @@ function uniqueColorPoints(colors: ColorPoint[]): ColorPoint[] {
   const byHex = new Map<string, ColorPoint>();
 
   colors.forEach((color) => {
-    byHex.set(color.hex.toUpperCase(), { ...color, hex: color.hex.toUpperCase() });
+    byHex.set(color.hex.toUpperCase(), {
+      ...color,
+      hex: color.hex.toUpperCase(),
+    });
   });
 
   return [...byHex.values()];
@@ -951,7 +1127,10 @@ function buildTotals(items: MyItemsEntry[]) {
 }
 
 function buildCategoryFilters(items: MyItemsEntry[]) {
-  const counts = new Map<string, { id: string; label: string; count: number }>();
+  const counts = new Map<
+    string,
+    { id: string; label: string; count: number }
+  >();
 
   items.forEach((item) => {
     const existing = counts.get(item.categoryId);
@@ -979,7 +1158,9 @@ function buildColorFilters(items: MyItemsEntry[]) {
     });
   });
 
-  return [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  return [...counts.values()].sort(
+    (a, b) => b.count - a.count || a.name.localeCompare(b.name),
+  );
 }
 
 function filterAndSortFavorites(
@@ -989,20 +1170,30 @@ function filterAndSortFavorites(
   sortKey: SortKey,
 ): MyItemsEntry[] {
   const filtered = items
-    .filter((item) => categoryFilter === "all" || item.categoryId === categoryFilter)
+    .filter(
+      (item) => categoryFilter === "all" || item.categoryId === categoryFilter,
+    )
     .filter((item) =>
       colorFilter === "all"
         ? true
-        : item.colorPoints.some((color) => color.hex.toUpperCase() === colorFilter),
+        : item.colorPoints.some(
+            (color) => color.hex.toUpperCase() === colorFilter,
+          ),
     );
 
   return [...filtered].sort((a, b) => {
     if (sortKey === "category") {
-      return a.categoryLabel.localeCompare(b.categoryLabel) || a.name.localeCompare(b.name);
+      return (
+        a.categoryLabel.localeCompare(b.categoryLabel) ||
+        a.name.localeCompare(b.name)
+      );
     }
 
     if (sortKey === "recent") {
-      return Date.parse(b.updatedAt) - Date.parse(a.updatedAt) || a.name.localeCompare(b.name);
+      return (
+        Date.parse(b.updatedAt) - Date.parse(a.updatedAt) ||
+        a.name.localeCompare(b.name)
+      );
     }
 
     if (sortKey === "price") {
@@ -1059,7 +1250,10 @@ function removeItemFromNavigation(
 ): FavoritesSnapshot["navigation"] {
   const nextNavigation = { ...navigation };
 
-  nextNavigation.myItems = updateWardrobeStatisticCountForRemoval(nextNavigation.myItems, item);
+  nextNavigation.myItems = updateWardrobeStatisticCountForRemoval(
+    nextNavigation.myItems,
+    item,
+  );
   nextNavigation.favorites = item.favorite
     ? Math.max(0, nextNavigation.favorites - 1)
     : nextNavigation.favorites;
@@ -1092,65 +1286,154 @@ function FavoritesIcon({ name }: { name: IconName }) {
     case "bag":
       return (
         <svg {...common}>
-          <path d="M6.5 3.5h3C9.5 4.9 10.6 6 12 6s2.5-1.1 2.5-2.5h3L22 8l-3 3-2-2v12H7V9l-2 2-3-3 4.5-4.5Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" />
+          <path
+            d="M6.5 3.5h3C9.5 4.9 10.6 6 12 6s2.5-1.1 2.5-2.5h3L22 8l-3 3-2-2v12H7V9l-2 2-3-3 4.5-4.5Z"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.6"
+          />
         </svg>
       );
     case "ban":
       return (
         <svg {...common}>
-          <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.7" />
-          <path d="m6.4 6.4 11.2 11.2" stroke="currentColor" strokeLinecap="round" strokeWidth="1.7" />
+          <circle
+            cx="12"
+            cy="12"
+            r="8"
+            stroke="currentColor"
+            strokeWidth="1.7"
+          />
+          <path
+            d="m6.4 6.4 11.2 11.2"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.7"
+          />
         </svg>
       );
     case "capsules":
       return (
         <svg aria-hidden fill="none" height="18" viewBox="0 0 17 17" width="18">
-          <path d="M2.5 3.5H7C7 2 6 .5 8 .5s1 1.5 1 3h4v3.5c1.5 0 3-1 3 1s-1.5 1-3 1V14H9c0-1.5 1-3-1-3s-1 1.5-1 3H2.5V9C4 9 5 10 5 8s-1-1-2.5-1V3.5Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.3" />
+          <path
+            d="M2.5 3.5H7C7 2 6 .5 8 .5s1 1.5 1 3h4v3.5c1.5 0 3-1 3 1s-1.5 1-3 1V14H9c0-1.5 1-3-1-3s-1 1.5-1 3H2.5V9C4 9 5 10 5 8s-1-1-2.5-1V3.5Z"
+            stroke="currentColor"
+            strokeLinejoin="round"
+            strokeWidth="1.3"
+          />
         </svg>
       );
     case "check":
       return (
         <svg {...common}>
-          <path d="m5 12 4 4L19 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+          <path
+            d="m5 12 4 4L19 6"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
         </svg>
       );
     case "close":
       return (
         <svg {...common}>
-          <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="1.9" />
+          <path
+            d="m6 6 12 12M18 6 6 18"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.9"
+          />
         </svg>
       );
     case "for-repair":
       return (
         <svg {...common}>
-          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9l-3.8 3.8Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+          <path
+            d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9l-3.8 3.8Z"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+          />
         </svg>
       );
     case "grid":
       return (
         <svg aria-hidden fill="none" height="18" viewBox="0 0 17 17" width="18">
-          <rect height="5.5" rx="1.5" stroke="currentColor" strokeWidth="1.35" width="5.5" x="1.5" y="1.5" />
-          <rect height="5.5" rx="1.5" stroke="currentColor" strokeWidth="1.35" width="5.5" x="10" y="1.5" />
-          <rect height="5.5" rx="1.5" stroke="currentColor" strokeWidth="1.35" width="5.5" x="1.5" y="10" />
-          <rect height="5.5" rx="1.5" stroke="currentColor" strokeWidth="1.35" width="5.5" x="10" y="10" />
+          <rect
+            height="5.5"
+            rx="1.5"
+            stroke="currentColor"
+            strokeWidth="1.35"
+            width="5.5"
+            x="1.5"
+            y="1.5"
+          />
+          <rect
+            height="5.5"
+            rx="1.5"
+            stroke="currentColor"
+            strokeWidth="1.35"
+            width="5.5"
+            x="10"
+            y="1.5"
+          />
+          <rect
+            height="5.5"
+            rx="1.5"
+            stroke="currentColor"
+            strokeWidth="1.35"
+            width="5.5"
+            x="1.5"
+            y="10"
+          />
+          <rect
+            height="5.5"
+            rx="1.5"
+            stroke="currentColor"
+            strokeWidth="1.35"
+            width="5.5"
+            x="10"
+            y="10"
+          />
         </svg>
       );
     case "heart":
       return (
         <svg {...common}>
-          <path d="M20.8 5.6a5.2 5.2 0 0 0-7.4 0L12 7l-1.4-1.4a5.2 5.2 0 0 0-7.4 7.4l1.4 1.4L12 21.2l7.4-6.8 1.4-1.4a5.2 5.2 0 0 0 0-7.4Z" fill="currentColor" fillOpacity="var(--icon-fill-opacity, .92)" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.7" />
+          <path
+            d="M20.8 5.6a5.2 5.2 0 0 0-7.4 0L12 7l-1.4-1.4a5.2 5.2 0 0 0-7.4 7.4l1.4 1.4L12 21.2l7.4-6.8 1.4-1.4a5.2 5.2 0 0 0 0-7.4Z"
+            fill="currentColor"
+            fillOpacity="var(--icon-fill-opacity, .92)"
+            stroke="currentColor"
+            strokeLinejoin="round"
+            strokeWidth="1.7"
+          />
         </svg>
       );
     case "list":
       return (
         <svg aria-hidden fill="none" height="18" viewBox="0 0 17 17" width="18">
-          <path d="M2.5 5h12M2.5 8.5h9M2.5 12h7" stroke="currentColor" strokeLinecap="round" strokeWidth="1.35" />
+          <path
+            d="M2.5 5h12M2.5 8.5h9M2.5 12h7"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.35"
+          />
         </svg>
       );
     case "logout":
       return (
         <svg {...common}>
-          <path d="M10 17l5-5-5-5M15 12H3M21 4v16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+          <path
+            d="M10 17l5-5-5-5M15 12H3M21 4v16"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+          />
         </svg>
       );
     case "more":
@@ -1164,41 +1447,99 @@ function FavoritesIcon({ name }: { name: IconName }) {
     case "my-items":
       return (
         <svg aria-hidden fill="none" height="18" viewBox="0 0 17 17" width="18">
-          <rect height="9" rx="1" stroke="currentColor" strokeWidth="1.3" width="12" x="2.5" y="6" />
-          <path d="m2.5 6 2.5-3.5h7L14.5 6M8.5 2.5V6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.3" />
+          <rect
+            height="9"
+            rx="1"
+            stroke="currentColor"
+            strokeWidth="1.3"
+            width="12"
+            x="2.5"
+            y="6"
+          />
+          <path
+            d="m2.5 6 2.5-3.5h7L14.5 6M8.5 2.5V6"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.3"
+          />
         </svg>
       );
     case "plus":
       return (
         <svg {...common}>
-          <path d="M12 5v14M5 12h14" stroke="currentColor" strokeLinecap="round" strokeWidth="1.9" />
+          <path
+            d="M12 5v14M5 12h14"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.9"
+          />
         </svg>
       );
     case "profile":
       return (
         <svg {...common}>
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-          <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="1.8" />
+          <path
+            d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+          />
+          <circle
+            cx="12"
+            cy="7"
+            r="4"
+            stroke="currentColor"
+            strokeWidth="1.8"
+          />
         </svg>
       );
     case "settings":
       return (
         <svg {...common}>
-          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
-          <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1A2 2 0 0 1 7 4.4l.1.1a1.6 1.6 0 0 0 1.8.3 1.6 1.6 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1A2 2 0 0 1 19.6 7l-.1.1a1.6 1.6 0 0 0-.3 1.8 1.6 1.6 0 0 0 1.5 1h.3a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.1Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+          <circle
+            cx="12"
+            cy="12"
+            r="3"
+            stroke="currentColor"
+            strokeWidth="1.8"
+          />
+          <path
+            d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1A2 2 0 0 1 7 4.4l.1.1a1.6 1.6 0 0 0 1.8.3 1.6 1.6 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1A2 2 0 0 1 19.6 7l-.1.1a1.6 1.6 0 0 0-.3 1.8 1.6 1.6 0 0 0 1.5 1h.3a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1.1Z"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.5"
+          />
         </svg>
       );
     case "tag":
       return (
         <svg aria-hidden fill="none" height="18" viewBox="0 0 17 17" width="18">
-          <path d="M8.5 1.5v12M11.5 4.5C11.5 3.5 10.1 3 8.5 3S5.5 3.8 5.5 5.2s3 2 3 2 3 .6 3 2.3-1.4 2.3-3 2.3-3-.5-3-1.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.3" />
+          <path
+            d="M8.5 1.5v12M11.5 4.5C11.5 3.5 10.1 3 8.5 3S5.5 3.8 5.5 5.2s3 2 3 2 3 .6 3 2.3-1.4 2.3-3 2.3-3-.5-3-1.5"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.3"
+          />
         </svg>
       );
     case "trash":
       return (
         <svg {...common}>
-          <path d="M6 8h12l-1 12H7L6 8Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.7" />
-          <path d="M9 8V6a3 3 0 0 1 6 0v2M5 8h14" stroke="currentColor" strokeLinecap="round" strokeWidth="1.7" />
+          <path
+            d="M6 8h12l-1 12H7L6 8Z"
+            stroke="currentColor"
+            strokeLinejoin="round"
+            strokeWidth="1.7"
+          />
+          <path
+            d="M9 8V6a3 3 0 0 1 6 0v2M5 8h14"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.7"
+          />
         </svg>
       );
   }
