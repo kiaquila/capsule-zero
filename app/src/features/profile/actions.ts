@@ -1,35 +1,30 @@
 "use server";
 
-import { z } from "zod";
 import { readMockSession } from "@/features/auth/session";
 import { createProviderRegistry } from "@/lib/providers";
 import {
   persistMockProfilePreferences,
   type MockProfilePreferenceInput,
 } from "./mock-profile-preferences";
+import {
+  createProfileFormSchema,
+  type ProfileFormInput,
+  type ProfileValidationMessages,
+} from "./schemas";
 
-const optionalText = z.string().trim().max(80);
+const serverValidationMessages: ProfileValidationMessages = {
+  firstName: "Enter your first name.",
+  lastName: "Enter your last name.",
+  nameLength: "Keep names under 40 characters.",
+  usernameLength: "Use 3-30 characters.",
+  usernamePattern: "Use lowercase letters, numbers, and underscores only.",
+  email: "Enter a valid email.",
+  phoneLength: "Keep the phone number under 40 characters.",
+  date: "Enter a valid date.",
+  cityLength: "Keep the city under 80 characters.",
+};
 
-const profileFormSchema = z.object({
-  firstName: z.string().trim().min(1).max(40),
-  lastName: z.string().trim().min(1).max(40),
-  username: z.string().trim().toLowerCase().min(3).max(30).regex(/^[a-z0-9_]+$/),
-  email: z.string().trim().email().max(120),
-  phone: z.string().trim().max(40),
-  dateOfBirth: z.string().trim().max(20),
-  country: optionalText,
-  city: optionalText,
-  shoeSize: z.string().trim().max(8),
-  topSize: z.string().trim().max(8),
-  bottomSize: z.string().trim().max(8),
-  emailNotifications: z.boolean(),
-  pushNotifications: z.boolean(),
-  preferredLoginMethod: z.enum(["email", "sms"]),
-  googleAuthenticator: z.boolean(),
-  pushSecondFactor: z.boolean(),
-});
-
-export type ProfileFormInput = z.infer<typeof profileFormSchema>;
+const profileFormSchema = createProfileFormSchema(serverValidationMessages);
 
 export interface ProfileActionResult {
   ok: boolean;

@@ -21,6 +21,7 @@ In scope:
 - EN/RU messages only; ES-AR remains inactive for MVP v1.
 - Local/mock persistence for profile form fields that are not yet provider-backed.
 - Shared dashboard/profile navigation frame so sidebar, mobile bottom nav, More sheet, badges, avatar row, settings, and logout stay DRY across authenticated screens.
+- Shared Profile form validation schema reused by the client resolver and server action.
 
 Out of scope:
 
@@ -120,6 +121,7 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 - **FR-018**: System MUST keep Delete Account outside the form, small, grey, and reachable above the fixed mobile bottom navigation.
 - **FR-019**: System MUST reuse a shared authenticated dashboard navigation component for Dashboard and Profile instead of duplicating sidebar, bottom nav, and More-sheet models.
 - **FR-020**: System MUST let authenticated dashboard snapshots read saved Stage 1 profile name, email, and city preferences so edits do not appear lost after leaving Profile.
+- **FR-021**: System MUST keep Profile form field validation rules in one shared schema consumed by both the client form resolver and the server save action.
 
 ### Key Entities
 
@@ -130,6 +132,7 @@ The user can switch EN/RU, adjust prototype toggles/radios, validate login metho
 - **Active Session**: Static Stage 1 session display matching the prototype's current device list.
 - **Dashboard Navigation Frame**: Shared authenticated shell rendering sidebar navigation, mobile bottom navigation, More sheet, profile avatar row, settings, and logout controls for Dashboard and Profile.
 - **Shared Mock Profile Preferences**: Cookie-backed Stage 1 profile source read by Profile and Dashboard snapshots until provider-backed persistence replaces the mock flow.
+- **Profile Form Schema**: Shared Zod contract for Profile form payload fields, transformations, and limits, with localized client messages and server-side reuse before persistence.
 
 ## Success Criteria _(mandatory)_
 

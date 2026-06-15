@@ -6,11 +6,15 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter as useNextRouter } from "next/navigation";
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch, type UseFormRegisterReturn } from "react-hook-form";
-import { z } from "zod";
 import { DashboardNavigationFrame } from "@/components/dashboard/DashboardNavigation";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { signOutAction } from "@/features/auth/actions";
 import { saveProfileAction } from "@/features/profile/actions";
+import {
+  createProfileFormSchema,
+  type ProfileFormInput,
+  type ProfileValidationMessages,
+} from "@/features/profile/schemas";
 import { cn } from "@/lib/utils";
 import type { ProfileSnapshot } from "./profile-data";
 
@@ -26,25 +30,6 @@ type IconName =
   | "shield"
   | "tablet"
   | "trash";
-
-type ProfileFormValues = {
-  firstName: string;
-  lastName: string;
-  username: string;
-  email: string;
-  phone: string;
-  dateOfBirth: string;
-  country: string;
-  city: string;
-  shoeSize: string;
-  topSize: string;
-  bottomSize: string;
-  emailNotifications: boolean;
-  pushNotifications: boolean;
-  preferredLoginMethod: "email" | "sms";
-  googleAuthenticator: boolean;
-  pushSecondFactor: boolean;
-};
 
 const MAX_AVATAR_BYTES = 10 * 1024 * 1024;
 const SUPPORTED_AVATAR_TYPES = new Set(["image/jpeg", "image/png"]);
@@ -69,45 +54,23 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
     username: snapshot.profile.username,
   });
 
-  const profileSchema = useMemo(
-    () =>
-      z.object({
-        firstName: z
-          .string()
-          .trim()
-          .min(1, t("validation.firstName"))
-          .max(40, t("validation.nameLength")),
-        lastName: z
-          .string()
-          .trim()
-          .min(1, t("validation.lastName"))
-          .max(40, t("validation.nameLength")),
-        username: z
-          .string()
-          .trim()
-          .toLowerCase()
-          .min(3, t("validation.usernameLength"))
-          .max(30, t("validation.usernameLength"))
-          .regex(/^[a-z0-9_]+$/, t("validation.usernamePattern")),
-        email: z
-          .string()
-          .trim()
-          .email(t("validation.email"))
-          .max(120, t("validation.email")),
-        phone: z.string().trim().max(40, t("validation.phoneLength")),
-        dateOfBirth: z.string().trim().max(20, t("validation.date")),
-        country: z.string().trim().max(80),
-        city: z.string().trim().max(80, t("validation.cityLength")),
-        shoeSize: z.string().trim().max(8),
-        topSize: z.string().trim().max(8),
-        bottomSize: z.string().trim().max(8),
-        emailNotifications: z.boolean(),
-        pushNotifications: z.boolean(),
-        preferredLoginMethod: z.enum(["email", "sms"]),
-        googleAuthenticator: z.boolean(),
-        pushSecondFactor: z.boolean(),
-      }),
+  const validationMessages = useMemo<ProfileValidationMessages>(
+    () => ({
+      firstName: t("validation.firstName"),
+      lastName: t("validation.lastName"),
+      nameLength: t("validation.nameLength"),
+      usernameLength: t("validation.usernameLength"),
+      usernamePattern: t("validation.usernamePattern"),
+      email: t("validation.email"),
+      phoneLength: t("validation.phoneLength"),
+      date: t("validation.date"),
+      cityLength: t("validation.cityLength"),
+    }),
     [t],
+  );
+  const profileSchema = useMemo(
+    () => createProfileFormSchema(validationMessages),
+    [validationMessages],
   );
 
   const {
@@ -118,7 +81,7 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
     reset,
     setError,
     setValue,
-  } = useForm<ProfileFormValues>({
+  } = useForm<ProfileFormInput>({
     resolver: zodResolver(profileSchema),
     mode: "onChange",
     defaultValues: {
@@ -187,7 +150,7 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
 
   const toggleBoolean = (
     field: keyof Pick<
-      ProfileFormValues,
+      ProfileFormInput,
       | "emailNotifications"
       | "googleAuthenticator"
       | "pushNotifications"
@@ -238,7 +201,7 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
     setNotice(t("notice.avatarRemoved"));
   };
 
-  const submitProfile = async (values: ProfileFormValues) => {
+  const submitProfile = async (values: ProfileFormInput) => {
     if (values.preferredLoginMethod === "sms" && !values.phone.trim()) {
       setNotice(t("login.warningPhone"));
       return;
@@ -735,7 +698,7 @@ function buildLoginWarning({
   t,
 }: {
   email: string;
-  method: ProfileFormValues["preferredLoginMethod"];
+  method: ProfileFormInput["preferredLoginMethod"];
   phone: string;
   t: ReturnType<typeof useTranslations<"profile">>;
 }) {
