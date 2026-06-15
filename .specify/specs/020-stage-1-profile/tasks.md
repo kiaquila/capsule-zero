@@ -54,6 +54,7 @@
 - [x] T036 Fix PR OSV failure by pinning fixed dev-only transitive lint dependency overrides for `@babel/core` and `js-yaml`, then rerun local checks.
 - [x] T037 Address Codex P2 review by adding a shared mobile/tablet More-sheet logout action without restoring the duplicate Profile `user_id` row logout.
 - [x] T038 Address Codex P2 prototype-drift review by syncing `html-prototypes/profile.html` with the product decision to remove Preferred Login Method.
+- [x] T039 Address Codex P3 review by keeping the `Capsules` sidebar item active for the capsule gaps tab without reintroducing double-active Outfits/Capsules state.
 
 ## Process Memory
 
@@ -80,6 +81,7 @@
 - Keep OSV security fixes for transitive lint tooling in `app/package.json` `overrides` so runtime dependencies stay untouched while CI uses fixed package versions.
 - Keep logout in the shared authenticated navigation model: desktop uses the sidebar footer, while mobile/tablet uses the shared More sheet.
 - When a user-approved local review decision intentionally changes prototype behavior, update the affected HTML prototype in the same PR so product source-of-truth stays aligned.
+- Treat capsule-result `items` and `gaps` as represented by the `Capsules` sidebar item; keep `outfits` represented only by `Outfits`.
 
 ### Known Issues
 

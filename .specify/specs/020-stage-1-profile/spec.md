@@ -123,6 +123,7 @@ The user can switch EN/RU, adjust prototype toggles, confirm removed alternate-l
 - **FR-019**: System MUST reuse a shared authenticated dashboard navigation component for Dashboard and Profile instead of duplicating sidebar, bottom nav, and More-sheet models.
 - **FR-020**: System MUST let authenticated dashboard snapshots read saved Stage 1 profile name, email, and city preferences so edits do not appear lost after leaving Profile.
 - **FR-021**: System MUST keep Profile form field validation rules in one shared schema consumed by both the client form resolver and the server save action.
+- **FR-022**: System MUST keep legacy capsule-result sidebar active states stable: `Outfits` is active only for the outfits tab, while `Capsules` represents capsule items and gaps tabs.
 
 ### Key Entities
 

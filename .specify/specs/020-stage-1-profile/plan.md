@@ -80,6 +80,7 @@ Validation suite:
 - PR security follow-up covered fixed dev-only dependency overrides for OSV: `npm --prefix app install --package-lock-only` completed with `found 0 vulnerabilities`, and `npm --prefix app ls @babel/core js-yaml --depth=8` resolved `@babel/core@7.29.6 overridden` and `js-yaml@4.2.0 overridden`.
 - AI Review follow-up browser check at 390x844 covered adding a shared More-sheet logout action for mobile/tablet authenticated navigation without restoring the removed Profile `user_id` row duplicate: `Log Out` count was `1`, sheet was open, min-height was `90px`, and the logout SVG path matched the unified icon.
 - AI Review follow-up source check covered syncing `html-prototypes/profile.html` with the product decision to remove Preferred Login Method, so the app no longer diverges from the active prototype source of truth.
+- AI Review advisory follow-up source check covered keeping the `Capsules` sidebar item active for `/capsule-result?tab=gaps` while preserving the local review fix that prevents `Outfits` and `Capsules` from being active at the same time.
 
 ## Project Structure
 

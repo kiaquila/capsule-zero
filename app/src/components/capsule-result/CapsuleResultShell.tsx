@@ -220,7 +220,7 @@ export function CapsuleResultShell({ snapshot }: CapsuleResultShellProps) {
               label={dashboardT("nav.outfits")}
             />
             <ResultNavLink
-              active={activeTab === "items"}
+              active={activeTab === "items" || activeTab === "gaps"}
               href="/capsule-result"
               icon="capsule"
               label={dashboardT("nav.capsules")}
