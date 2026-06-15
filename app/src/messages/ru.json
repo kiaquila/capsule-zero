@@ -122,19 +122,19 @@
       "security": "Вход и безопасность",
       "account": "Управление аккаунтом"
     },
-  "avatar": {
-    "change": "Изменить фото",
-    "remove": "Удалить фото",
+    "avatar": {
+      "change": "Изменить фото",
+      "remove": "Удалить фото",
       "validation": {
         "type": "Используйте JPEG или PNG для фото профиля.",
         "size": "Файл больше 10 МБ. Сожмите его и попробуйте снова."
       }
     },
     "fields": {
-    "firstName": "Имя",
-    "lastName": "Фамилия",
-    "username": "Username",
-    "email": "Email",
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "username": "Username",
+      "email": "Email",
       "phone": "Телефон",
       "phonePlaceholder": "+1 (000) 000-0000",
       "birthday": "Дата рождения",
@@ -142,7 +142,7 @@
       "city": "Город",
       "shoeSize": "Размер обуви",
       "topSize": "Размер одежды (верх)",
-    "bottomSize": "Размер одежды (низ)"
+      "bottomSize": "Размер одежды (низ)"
     },
     "countries": {
       "none": "Выберите страну",
@@ -161,15 +161,6 @@
     "notifications": {
       "email": "Email-уведомления",
       "push": "Push-уведомления"
-    },
-    "login": {
-      "title": "Способ входа",
-      "email": "Email",
-      "emailDesc": "Вход по ссылке на email",
-      "sms": "SMS",
-      "smsDesc": "Вход по коду из SMS",
-      "warningPhone": "Укажите номер телефона, чтобы использовать вход по SMS.",
-      "warningEmail": "Укажите email, чтобы использовать вход по email."
     },
     "twoFactor": {
       "title": "Двухфакторная аутентификация",
@@ -218,11 +209,11 @@
     "validation": {
       "firstName": "Укажите имя.",
       "lastName": "Укажите фамилию.",
-    "nameLength": "Имя и фамилия должны быть короче 40 символов.",
-    "usernameLength": "Используйте 3-30 символов.",
-    "usernamePattern": "Только строчные латинские буквы, цифры и нижнее подчеркивание.",
-    "usernameTaken": "Этот username уже занят.",
-    "email": "Введите корректный email.",
+      "nameLength": "Имя и фамилия должны быть короче 40 символов.",
+      "usernameLength": "Используйте 3-30 символов.",
+      "usernamePattern": "Только строчные латинские буквы, цифры и нижнее подчеркивание.",
+      "usernameTaken": "Этот username уже занят.",
+      "email": "Введите корректный email.",
       "phoneLength": "Телефон должен быть короче 40 символов.",
       "date": "Введите корректную дату.",
       "cityLength": "Город должен быть короче 80 символов."

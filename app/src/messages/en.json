@@ -122,19 +122,19 @@
       "security": "Login & Security",
       "account": "Account Management"
     },
-  "avatar": {
-    "change": "Change photo",
-    "remove": "Remove photo",
+    "avatar": {
+      "change": "Change photo",
+      "remove": "Remove photo",
       "validation": {
         "type": "Use a JPEG or PNG image for your profile photo.",
         "size": "This file is over 10 MB. Compress it and try again."
       }
     },
     "fields": {
-    "firstName": "First Name",
-    "lastName": "Last Name",
-    "username": "Username",
-    "email": "Email",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "username": "Username",
+      "email": "Email",
       "phone": "Phone",
       "phonePlaceholder": "+1 (000) 000-0000",
       "birthday": "Date of Birth",
@@ -142,7 +142,7 @@
       "city": "City",
       "shoeSize": "Shoe Size",
       "topSize": "Clothing Size (Top)",
-    "bottomSize": "Clothing Size (Bottom)"
+      "bottomSize": "Clothing Size (Bottom)"
     },
     "countries": {
       "none": "Select country",
@@ -161,15 +161,6 @@
     "notifications": {
       "email": "Email notifications",
       "push": "Push notifications"
-    },
-    "login": {
-      "title": "Preferred Login Method",
-      "email": "Email",
-      "emailDesc": "Sign in with email link",
-      "sms": "SMS",
-      "smsDesc": "Sign in with SMS code",
-      "warningPhone": "Please fill in your phone number to use SMS login.",
-      "warningEmail": "Please fill in your email to use email login."
     },
     "twoFactor": {
       "title": "Two-Factor Authentication",
@@ -218,11 +209,11 @@
     "validation": {
       "firstName": "Enter your first name.",
       "lastName": "Enter your last name.",
-    "nameLength": "Keep names under 40 characters.",
-    "usernameLength": "Use 3-30 characters.",
-    "usernamePattern": "Use lowercase letters, numbers, and underscores only.",
-    "usernameTaken": "This username is already taken.",
-    "email": "Enter a valid email.",
+      "nameLength": "Keep names under 40 characters.",
+      "usernameLength": "Use 3-30 characters.",
+      "usernamePattern": "Use lowercase letters, numbers, and underscores only.",
+      "usernameTaken": "This username is already taken.",
+      "email": "Enter a valid email.",
       "phoneLength": "Keep the phone number under 40 characters.",
       "date": "Enter a valid date.",
       "cityLength": "Keep the city under 80 characters."

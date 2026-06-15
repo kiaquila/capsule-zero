@@ -22,21 +22,13 @@ interface ProfileShellProps {
   snapshot: ProfileSnapshot;
 }
 
-type IconName =
-  | "camera"
-  | "desktop"
-  | "logout"
-  | "mobile"
-  | "shield"
-  | "tablet"
-  | "trash";
+type IconName = "camera" | "desktop" | "mobile" | "tablet" | "trash";
 
 const MAX_AVATAR_BYTES = 10 * 1024 * 1024;
 const SUPPORTED_AVATAR_TYPES = new Set(["image/jpeg", "image/png"]);
 
 export function ProfileShell({ snapshot }: ProfileShellProps) {
   const t = useTranslations("profile");
-  const dashboardT = useTranslations("dashboard");
   const locale = useLocale();
   const nextRouter = useNextRouter();
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
@@ -98,7 +90,6 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
       bottomSize: snapshot.profile.bottomSize,
       emailNotifications: snapshot.preferences.emailNotifications,
       pushNotifications: snapshot.preferences.pushNotifications,
-      preferredLoginMethod: snapshot.preferences.preferredLoginMethod,
       googleAuthenticator: snapshot.preferences.googleAuthenticator,
       pushSecondFactor: snapshot.preferences.pushSecondFactor,
     },
@@ -108,20 +99,10 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
     useWatch({ control, name: "emailNotifications" }) ?? false;
   const pushNotifications =
     useWatch({ control, name: "pushNotifications" }) ?? false;
-  const preferredLoginMethod =
-    useWatch({ control, name: "preferredLoginMethod" }) ?? "email";
   const googleAuthenticator =
     useWatch({ control, name: "googleAuthenticator" }) ?? false;
   const pushSecondFactor =
     useWatch({ control, name: "pushSecondFactor" }) ?? false;
-  const phoneValue = useWatch({ control, name: "phone" }) ?? "";
-  const emailValue = useWatch({ control, name: "email" }) ?? "";
-  const loginWarning = buildLoginWarning({
-    email: emailValue,
-    method: preferredLoginMethod,
-    phone: phoneValue,
-    t,
-  });
 
   useEffect(() => {
     const objectUrls = objectUrlsRef.current;
@@ -202,11 +183,6 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
   };
 
   const submitProfile = async (values: ProfileFormInput) => {
-    if (values.preferredLoginMethod === "sms" && !values.phone.trim()) {
-      setNotice(t("login.warningPhone"));
-      return;
-    }
-
     setSaving(true);
     const result = await saveProfileAction(values);
     setSaving(false);
@@ -214,11 +190,6 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
     if (!result.ok || !result.profile) {
       if (result.message === "USERNAME_TAKEN") {
         setError("username", { message: t("validation.usernameTaken") });
-      }
-      if (result.message === "PHONE_REQUIRED_FOR_SMS") {
-        setError("phone", { message: t("login.warningPhone") });
-        setNotice(t("login.warningPhone"));
-        return;
       }
       setNotice(t("notice.saveError"));
       return;
@@ -311,7 +282,7 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
               <p>{formatUsername(profileHeader.username)}</p>
               <div className="profile-avatar-actions">
                 <button
-                  className="profile-ghost-button"
+                  className="profile-ghost-button profile-remove-photo-button"
                   disabled={!avatarPreview}
                   onClick={removeAvatar}
                   type="button"
@@ -455,46 +426,6 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
             <h2 className="profile-section-title">{t("sections.security")}</h2>
 
             <div className="profile-security-block">
-              <h3>{t("login.title")}</h3>
-              <div
-                className="profile-radio-group"
-                role="radiogroup"
-                aria-label={t("login.title")}
-              >
-                <RadioRow
-                  checked={preferredLoginMethod === "email"}
-                  description={t("login.emailDesc")}
-                  label={t("login.email")}
-                  onSelect={() =>
-                    setValue("preferredLoginMethod", "email", {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    })
-                  }
-                />
-                <RadioRow
-                  checked={preferredLoginMethod === "sms"}
-                  description={t("login.smsDesc")}
-                  label={t("login.sms")}
-                  onSelect={() =>
-                    setValue("preferredLoginMethod", "sms", {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    })
-                  }
-                />
-              </div>
-              {loginWarning ? (
-                <div className="profile-warning" role="status">
-                  <ProfileIcon name="shield" />
-                  <span>{loginWarning}</span>
-                </div>
-              ) : null}
-            </div>
-
-            <div className="profile-divider" />
-
-            <div className="profile-security-block">
               <h3>{t("twoFactor.title")}</h3>
               <ToggleRow
                 checked={googleAuthenticator}
@@ -532,14 +463,6 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
                 <span>{t("account.userId")}</span>
                 <strong>{snapshot.account.userIdLabel}</strong>
               </div>
-              <button
-                className="profile-warning-button profile-logout-inline"
-                onClick={signOut}
-                type="button"
-              >
-                <ProfileIcon name="logout" />
-                <span>{dashboardT("logout")}</span>
-              </button>
             </div>
 
             <div className="profile-divider" />
@@ -658,61 +581,6 @@ function ToggleRow({
   );
 }
 
-function RadioRow({
-  checked,
-  description,
-  label,
-  onSelect,
-}: {
-  checked: boolean;
-  description: string;
-  label: string;
-  onSelect: () => void;
-}) {
-  return (
-    <button
-      aria-checked={checked}
-      className={cn(
-        "profile-radio-row",
-        checked && "profile-radio-row-selected",
-      )}
-      onClick={onSelect}
-      role="radio"
-      type="button"
-    >
-      <span className="profile-radio-circle">
-        <span />
-      </span>
-      <span className="profile-radio-copy">
-        <strong>{label}</strong>
-        <small>{description}</small>
-      </span>
-    </button>
-  );
-}
-
-function buildLoginWarning({
-  email,
-  method,
-  phone,
-  t,
-}: {
-  email: string;
-  method: ProfileFormInput["preferredLoginMethod"];
-  phone: string;
-  t: ReturnType<typeof useTranslations<"profile">>;
-}) {
-  if (method === "sms" && !phone.trim()) {
-    return t("login.warningPhone");
-  }
-
-  if (method === "email" && !email.trim()) {
-    return t("login.warningEmail");
-  }
-
-  return "";
-}
-
 function formatUsername(username: string) {
   return username.startsWith("@") ? username : `@${username}`;
 }
@@ -779,31 +647,6 @@ function ProfileIcon({ name }: { name: IconName }) {
           />
         </svg>
       );
-    case "logout":
-      return (
-        <svg {...common}>
-          <path
-            d="M10 5V4a2 2 0 0 1 2-2h7v20h-7a2 2 0 0 1-2-2v-1"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.8"
-          />
-          <path
-            d="M3 12h11"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeWidth="1.8"
-          />
-          <path
-            d="m10 8 4 4-4 4"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.8"
-          />
-        </svg>
-      );
     case "mobile":
       return (
         <svg {...common}>
@@ -821,23 +664,6 @@ function ProfileIcon({ name }: { name: IconName }) {
             stroke="currentColor"
             strokeLinecap="round"
             strokeWidth="2.4"
-          />
-        </svg>
-      );
-    case "shield":
-      return (
-        <svg {...common}>
-          <path
-            d="M12 3 20 6v6c0 5-3.4 8-8 9-4.6-1-8-4-8-9V6l8-3Z"
-            stroke="currentColor"
-            strokeLinejoin="round"
-            strokeWidth="1.7"
-          />
-          <path
-            d="M12 8v5M12 16h.01"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeWidth="1.9"
           />
         </svg>
       );

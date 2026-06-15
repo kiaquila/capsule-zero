@@ -43,10 +43,11 @@ export function createProfileFormSchema(messages: ProfileValidationMessages) {
     bottomSize: z.string().trim().max(8),
     emailNotifications: z.boolean(),
     pushNotifications: z.boolean(),
-    preferredLoginMethod: z.enum(["email", "sms"]),
     googleAuthenticator: z.boolean(),
     pushSecondFactor: z.boolean(),
   });
 }
 
-export type ProfileFormInput = z.infer<ReturnType<typeof createProfileFormSchema>>;
+export type ProfileFormInput = z.infer<
+  ReturnType<typeof createProfileFormSchema>
+>;

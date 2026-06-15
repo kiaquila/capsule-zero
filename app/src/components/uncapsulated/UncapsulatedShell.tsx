@@ -41,7 +41,9 @@ type IconName =
   | "trash";
 
 type SortKey = "name" | "category" | "recent" | "price";
-type DraftErrors = Partial<Record<"name" | "categoryId" | "colorHexes" | "photo", string>>;
+type DraftErrors = Partial<
+  Record<"name" | "categoryId" | "colorHexes" | "photo", string>
+>;
 
 interface ItemDraftState {
   id: string;
@@ -65,8 +67,15 @@ interface UncapsulatedNavItem {
 const DEFAULT_COLOR = "#8C8C8C";
 const LOCAL_UPDATED_AT = "2026-06-11T15:00:00.000Z";
 const MAX_LOCAL_PHOTO_BYTES = 10 * 1024 * 1024;
-const SUPPORTED_LOCAL_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-const decisionStatusMap: Record<"capsule" | "repair" | "sale", MyItemsEntry["status"]> = {
+const SUPPORTED_LOCAL_PHOTO_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+const decisionStatusMap: Record<
+  "capsule" | "repair" | "sale",
+  MyItemsEntry["status"]
+> = {
   capsule: "active",
   repair: "for_repair",
   sale: "for_sale",
@@ -85,7 +94,9 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [draft, setDraft] = useState<ItemDraftState | null>(null);
   const [errors, setErrors] = useState<DraftErrors>({});
-  const [capsuleCandidateId, setCapsuleCandidateId] = useState<string | null>(null);
+  const [capsuleCandidateId, setCapsuleCandidateId] = useState<string | null>(
+    null,
+  );
   const [notice, setNotice] = useState<string | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
@@ -102,10 +113,10 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     [categoryFilter, colorFilter, items, sortKey],
   );
   const selectedItem = selectedItemId
-    ? items.find((item) => item.id === selectedItemId) ?? null
+    ? (items.find((item) => item.id === selectedItemId) ?? null)
     : null;
   const capsuleCandidate = capsuleCandidateId
-    ? items.find((item) => item.id === capsuleCandidateId) ?? null
+    ? (items.find((item) => item.id === capsuleCandidateId) ?? null)
     : null;
 
   useEffect(() => {
@@ -136,11 +147,6 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           icon: "grid",
           label: dashboardT("nav.dashboard"),
         },
-      ],
-    },
-    {
-      label: dashboardT("nav.wardrobe"),
-      items: [
         {
           href: "/my-items",
           icon: "my-items",
@@ -166,17 +172,17 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           active: true,
           badge: navigation.uncapsulated,
         },
-      ],
-    },
-    {
-      label: dashboardT("nav.lists"),
-      items: [
         {
           href: "/favorites",
           icon: "heart",
           label: dashboardT("nav.favorites"),
           badge: navigation.favorites,
         },
+      ],
+    },
+    {
+      label: dashboardT("nav.lists"),
+      items: [
         {
           href: "/capsule-result?tab=shopping",
           icon: "list",
@@ -303,7 +309,9 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     const item = items.find((currentItem) => currentItem.id === draft.id);
     const itemName = item?.name ?? draft.name;
 
-    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== draft.id));
+    setItems((currentItems) =>
+      currentItems.filter((currentItem) => currentItem.id !== draft.id),
+    );
     setNavigation((currentNavigation) => ({
       ...currentNavigation,
       myItems: Math.max(0, currentNavigation.myItems - 1),
@@ -327,13 +335,20 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     setItems((currentItems) =>
       currentItems.map((currentItem) =>
         currentItem.id === itemId
-          ? { ...currentItem, favorite: nextFavorite, updatedAt: LOCAL_UPDATED_AT }
+          ? {
+              ...currentItem,
+              favorite: nextFavorite,
+              updatedAt: LOCAL_UPDATED_AT,
+            }
           : currentItem,
       ),
     );
     setNavigation((currentNavigation) => ({
       ...currentNavigation,
-      favorites: Math.max(0, currentNavigation.favorites + (nextFavorite ? 1 : -1)),
+      favorites: Math.max(
+        0,
+        currentNavigation.favorites + (nextFavorite ? 1 : -1),
+      ),
     }));
   };
 
@@ -343,7 +358,9 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     }
 
     updateDraft({
-      colorHexes: draft.colorHexes.filter((_, colorIndex) => colorIndex !== index),
+      colorHexes: draft.colorHexes.filter(
+        (_, colorIndex) => colorIndex !== index,
+      ),
     });
   };
 
@@ -435,10 +452,16 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
   ) => {
     const nextStatus = decisionStatusMap[decision];
 
-    setItems((currentItems) => currentItems.filter((currentItem) => currentItem.id !== item.id));
+    setItems((currentItems) =>
+      currentItems.filter((currentItem) => currentItem.id !== item.id),
+    );
     setNavigation((currentNavigation) => ({
       ...currentNavigation,
-      myItems: updateWardrobeStatisticCountForStatusChange(currentNavigation.myItems, item.status, nextStatus),
+      myItems: updateWardrobeStatisticCountForStatusChange(
+        currentNavigation.myItems,
+        item.status,
+        nextStatus,
+      ),
       uncapsulated: Math.max(0, currentNavigation.uncapsulated - 1),
       forSale:
         decision === "sale"
@@ -463,11 +486,19 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
               Capsule Zero
             </Link>
             <div className="dashboard-user-row">
-              <Link aria-label={dashboardT("nav.profile")} className="dashboard-avatar-link" href="/profile">
-                <span className="dashboard-avatar">{snapshot.profile.initials}</span>
+              <Link
+                aria-label={dashboardT("nav.profile")}
+                className="dashboard-avatar-link"
+                href="/profile"
+              >
+                <span className="dashboard-avatar">
+                  {snapshot.profile.initials}
+                </span>
               </Link>
               <div className="dashboard-user-meta">
-                <p className="dashboard-user-name">{snapshot.profile.displayName}</p>
+                <p className="dashboard-user-name">
+                  {snapshot.profile.displayName}
+                </p>
                 <p className="dashboard-user-email">{snapshot.profile.email}</p>
               </div>
             </div>
@@ -479,7 +510,10 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                 <p className="dashboard-nav-section">{group.label}</p>
                 {group.items.map((item) => (
                   <Link
-                    className={cn("dashboard-nav-item", item.active && "dashboard-nav-item-active")}
+                    className={cn(
+                      "dashboard-nav-item",
+                      item.active && "dashboard-nav-item-active",
+                    )}
                     href={item.href}
                     key={`${group.label}-${item.label}`}
                   >
@@ -501,13 +535,21 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
               <span className="dashboard-nav-icon">
                 <UncapsulatedIcon name="settings" />
               </span>
-              <span className="dashboard-nav-label">{dashboardT("nav.settings")}</span>
+              <span className="dashboard-nav-label">
+                {dashboardT("nav.settings")}
+              </span>
             </Link>
-            <button className="dashboard-nav-item dashboard-nav-button" onClick={signOut} type="button">
+            <button
+              className="dashboard-nav-item dashboard-nav-button"
+              onClick={signOut}
+              type="button"
+            >
               <span className="dashboard-nav-icon">
                 <UncapsulatedIcon name="logout" />
               </span>
-              <span className="dashboard-nav-label">{dashboardT("logout")}</span>
+              <span className="dashboard-nav-label">
+                {dashboardT("logout")}
+              </span>
             </button>
           </div>
         </aside>
@@ -520,7 +562,9 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                   strong: (chunks) => <strong>{chunks}</strong>,
                 })}
               </h1>
-              <p className="my-items-subtitle">{t("subtitle", { count: navigation.uncapsulated })}</p>
+              <p className="my-items-subtitle">
+                {t("subtitle", { count: navigation.uncapsulated })}
+              </p>
             </div>
             <div className="dashboard-topbar-actions">
               <LanguageSwitcher />
@@ -532,11 +576,20 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           </header>
 
           <div className="my-items-content uncapsulated-content">
-            <section className="my-items-filter-panel" aria-label={t("filters.label")}>
+            <section
+              className="my-items-filter-panel"
+              aria-label={t("filters.label")}
+            >
               <div className="my-items-filter-row">
-                <div className="my-items-chip-row" aria-label={t("filters.categories")}>
+                <div
+                  className="my-items-chip-row"
+                  aria-label={t("filters.categories")}
+                >
                   <button
-                    className={cn("my-items-chip", categoryFilter === "all" && "my-items-chip-active")}
+                    className={cn(
+                      "my-items-chip",
+                      categoryFilter === "all" && "my-items-chip-active",
+                    )}
                     onClick={() => setCategoryFilter("all")}
                     type="button"
                   >
@@ -544,7 +597,11 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                   </button>
                   {categories.map((category) => (
                     <button
-                      className={cn("my-items-chip", categoryFilter === category.id && "my-items-chip-active")}
+                      className={cn(
+                        "my-items-chip",
+                        categoryFilter === category.id &&
+                          "my-items-chip-active",
+                      )}
                       key={category.id}
                       onClick={() => setCategoryFilter(category.id)}
                       type="button"
@@ -556,7 +613,12 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                 </div>
                 <label className="my-items-sort">
                   <span>{t("sort.label")}</span>
-                  <select value={sortKey} onChange={(event) => setSortKey(event.target.value as SortKey)}>
+                  <select
+                    value={sortKey}
+                    onChange={(event) =>
+                      setSortKey(event.target.value as SortKey)
+                    }
+                  >
                     <option value="name">{t("sort.name")}</option>
                     <option value="category">{t("sort.category")}</option>
                     <option value="recent">{t("sort.recent")}</option>
@@ -565,9 +627,15 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                 </label>
               </div>
 
-              <div className="my-items-color-row" aria-label={t("filters.colors")}>
+              <div
+                className="my-items-color-row"
+                aria-label={t("filters.colors")}
+              >
                 <button
-                  className={cn("my-items-color-filter", colorFilter === "all" && "my-items-color-filter-active")}
+                  className={cn(
+                    "my-items-color-filter",
+                    colorFilter === "all" && "my-items-color-filter-active",
+                  )}
                   onClick={() => setColorFilter("all")}
                   type="button"
                 >
@@ -578,7 +646,8 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                     aria-label={t("filters.color", { color: color.name })}
                     className={cn(
                       "my-items-color-filter my-items-color-dot-filter",
-                      colorFilter === color.hex && "my-items-color-filter-active",
+                      colorFilter === color.hex &&
+                        "my-items-color-filter-active",
                     )}
                     key={`${color.hex}-${color.name}`}
                     onClick={() => setColorFilter(color.hex)}
@@ -613,8 +682,12 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                 <span>
                   <UncapsulatedIcon name="ban" />
                 </span>
-                <h2>{items.length ? t("empty.filteredTitle") : t("empty.title")}</h2>
-                <p>{items.length ? t("empty.filteredCopy") : t("empty.copy")}</p>
+                <h2>
+                  {items.length ? t("empty.filteredTitle") : t("empty.title")}
+                </h2>
+                <p>
+                  {items.length ? t("empty.filteredCopy") : t("empty.copy")}
+                </p>
                 <Link className="dashboard-primary-action" href="/my-items">
                   <UncapsulatedIcon name="my-items" />
                   <span>{t("openMyItems")}</span>
@@ -625,11 +698,33 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
         </main>
       </div>
 
-      <nav className={cn("dashboard-bottom-nav", moreOpen && "dashboard-bottom-nav-menu-open")} aria-label={dashboardT("nav.mobile")}>
-        <BottomNavLink href="/dashboard" icon="grid" label={dashboardT("nav.dashboard")} />
-        <BottomNavLink href="/my-items" icon="my-items" label={dashboardT("nav.myItems")} />
-        <BottomNavLink href="/capsule-result" icon="capsules" label={dashboardT("nav.capsules")} />
-        <BottomNavLink href="/favorites" icon="heart" label={dashboardT("nav.favorites")} />
+      <nav
+        className={cn(
+          "dashboard-bottom-nav",
+          moreOpen && "dashboard-bottom-nav-menu-open",
+        )}
+        aria-label={dashboardT("nav.mobile")}
+      >
+        <BottomNavLink
+          href="/dashboard"
+          icon="grid"
+          label={dashboardT("nav.dashboard")}
+        />
+        <BottomNavLink
+          href="/my-items"
+          icon="my-items"
+          label={dashboardT("nav.myItems")}
+        />
+        <BottomNavLink
+          href="/capsule-result"
+          icon="capsules"
+          label={dashboardT("nav.capsules")}
+        />
+        <BottomNavLink
+          href="/favorites"
+          icon="heart"
+          label={dashboardT("nav.favorites")}
+        />
         <button
           aria-expanded={moreOpen}
           aria-label={dashboardT("nav.more")}
@@ -640,22 +735,35 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           <span className="dashboard-bottom-icon">
             <UncapsulatedIcon name="more" />
           </span>
-          <span className="dashboard-bottom-label">{dashboardT("nav.more")}</span>
+          <span className="dashboard-bottom-label">
+            {dashboardT("nav.more")}
+          </span>
         </button>
       </nav>
 
       <button
         aria-label={dashboardT("closeMore")}
-        className={cn("dashboard-more-overlay", moreOpen && "dashboard-more-overlay-open")}
+        className={cn(
+          "dashboard-more-overlay",
+          moreOpen && "dashboard-more-overlay-open",
+        )}
         onClick={() => setMoreOpen(false)}
         type="button"
       />
-      <div className={cn("dashboard-more-sheet", moreOpen && "dashboard-more-sheet-open")}>
+      <div
+        className={cn(
+          "dashboard-more-sheet",
+          moreOpen && "dashboard-more-sheet-open",
+        )}
+      >
         <div className="dashboard-more-handle" />
         <div className="dashboard-more-grid">
           {moreItems.map((item) => (
             <Link
-              className={cn("dashboard-more-item", item.active && "dashboard-more-item-active")}
+              className={cn(
+                "dashboard-more-item",
+                item.active && "dashboard-more-item-active",
+              )}
               href={item.href}
               key={`${item.href}-${item.label}`}
               onClick={() => setMoreOpen(false)}
@@ -684,10 +792,15 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           errors={errors}
           extraFields={
             <>
-              <WardrobeDetailField label={t("detail.source")} value={t(`sources.${selectedItem.sourceType}`)} />
+              <WardrobeDetailField
+                label={t("detail.source")}
+                value={t(`sources.${selectedItem.sourceType}`)}
+              />
               <div className="my-items-membership">
                 <p>{t("detail.capsules")}</p>
-                <div className="my-items-no-capsules">{t("detail.noCapsules")}</div>
+                <div className="my-items-no-capsules">
+                  {t("detail.noCapsules")}
+                </div>
               </div>
             </>
           }
@@ -719,15 +832,27 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           renderIcon={(name) => <UncapsulatedIcon name={name} />}
           actionSlot={
             <>
-              <button className="my-items-secondary-button" onClick={() => requestAddToCapsule(selectedItem)} type="button">
+              <button
+                className="my-items-secondary-button"
+                onClick={() => requestAddToCapsule(selectedItem)}
+                type="button"
+              >
                 <UncapsulatedIcon name="capsules" />
                 <span>{t("actions.addToCapsule")}</span>
               </button>
-              <button className="my-items-secondary-button" onClick={() => moveToSale(selectedItem)} type="button">
+              <button
+                className="my-items-secondary-button"
+                onClick={() => moveToSale(selectedItem)}
+                type="button"
+              >
                 <UncapsulatedIcon name="tag" />
                 <span>{t("actions.moveSale")}</span>
               </button>
-              <button className="my-items-secondary-button" onClick={() => moveToRepair(selectedItem)} type="button">
+              <button
+                className="my-items-secondary-button"
+                onClick={() => moveToRepair(selectedItem)}
+                type="button"
+              >
                 <UncapsulatedIcon name="for-repair" />
                 <span>{t("actions.moveRepair")}</span>
               </button>
@@ -737,7 +862,12 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
       ) : null}
 
       {capsuleCandidate && snapshot.activeCapsule ? (
-        <div className="uncapsulated-capsule-wrap" role="dialog" aria-modal="true" aria-label={t("capsule.title")}>
+        <div
+          className="uncapsulated-capsule-wrap"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t("capsule.title")}
+        >
           <button
             aria-label={t("capsule.cancel")}
             className="uncapsulated-capsule-backdrop"
@@ -747,14 +877,22 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           <section className="uncapsulated-capsule-modal">
             <header>
               <h2>{t("capsule.title")}</h2>
-              <button aria-label={t("capsule.cancel")} className="my-items-icon-button" onClick={() => setCapsuleCandidateId(null)} type="button">
+              <button
+                aria-label={t("capsule.cancel")}
+                className="my-items-icon-button"
+                onClick={() => setCapsuleCandidateId(null)}
+                type="button"
+              >
                 <UncapsulatedIcon name="close" />
               </button>
             </header>
             <div className="uncapsulated-capsule-card">
               <span className="uncapsulated-capsule-palette">
                 {snapshot.activeCapsule.palette.slice(0, 6).map((color) => (
-                  <span key={`${snapshot.activeCapsule?.id}-${color.hex}`} style={{ backgroundColor: color.hex }} />
+                  <span
+                    key={`${snapshot.activeCapsule?.id}-${color.hex}`}
+                    style={{ backgroundColor: color.hex }}
+                  />
                 ))}
               </span>
               <div>
@@ -774,10 +912,18 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
               })}
             </p>
             <footer>
-              <button className="my-items-secondary-button" onClick={() => setCapsuleCandidateId(null)} type="button">
+              <button
+                className="my-items-secondary-button"
+                onClick={() => setCapsuleCandidateId(null)}
+                type="button"
+              >
                 {t("capsule.cancel")}
               </button>
-              <button className="my-items-save-button" onClick={confirmAddToCapsule} type="button">
+              <button
+                className="my-items-save-button"
+                onClick={confirmAddToCapsule}
+                type="button"
+              >
                 <UncapsulatedIcon name="check" />
                 <span>{t("capsule.confirm")}</span>
               </button>
@@ -807,7 +953,13 @@ function BottomNavLink({
   label: string;
 }) {
   return (
-    <Link className={cn("dashboard-bottom-item", active && "dashboard-bottom-item-active")} href={href}>
+    <Link
+      className={cn(
+        "dashboard-bottom-item",
+        active && "dashboard-bottom-item-active",
+      )}
+      href={href}
+    >
       <span className="dashboard-bottom-icon">
         <UncapsulatedIcon name={icon} />
       </span>
@@ -821,7 +973,9 @@ function buildDraftFromItem(item: MyItemsEntry): ItemDraftState {
     id: item.id,
     name: item.name,
     categoryId: item.categoryId,
-    colorHexes: item.colorPoints.map((color) => color.hex.toUpperCase()).slice(0, 3),
+    colorHexes: item.colorPoints
+      .map((color) => color.hex.toUpperCase())
+      .slice(0, 3),
     brand: item.brand ?? "",
     material: item.material ?? "",
     price: typeof item.price === "number" ? String(item.price) : "",
@@ -860,9 +1014,18 @@ function normalizeDraft(
   knownColors: ColorPoint[],
 ): Pick<
   MyItemsEntry,
-  "name" | "categoryId" | "categoryLabel" | "section" | "colorPoints" | "brand" | "material" | "price"
+  | "name"
+  | "categoryId"
+  | "categoryLabel"
+  | "section"
+  | "colorPoints"
+  | "brand"
+  | "material"
+  | "price"
 > {
-  const category = snapshot.categoryOptions.find((item) => item.id === draft.categoryId);
+  const category = snapshot.categoryOptions.find(
+    (item) => item.id === draft.categoryId,
+  );
   const price = Number(draft.price);
 
   return {
@@ -870,7 +1033,9 @@ function normalizeDraft(
     categoryId: draft.categoryId,
     categoryLabel: category?.label ?? draft.categoryId,
     section: "custom",
-    colorPoints: draft.colorHexes.map((hex) => buildColorPoint(hex, knownColors)),
+    colorPoints: draft.colorHexes.map((hex) =>
+      buildColorPoint(hex, knownColors),
+    ),
     brand: draft.brand.trim() || undefined,
     material: draft.material.trim() || undefined,
     price: Number.isFinite(price) && draft.price.trim() ? price : undefined,
@@ -879,7 +1044,9 @@ function normalizeDraft(
 
 function buildColorPoint(hex: string, knownColors: ColorPoint[]): ColorPoint {
   const normalizedHex = hex.toUpperCase();
-  const existing = knownColors.find((color) => color.hex.toUpperCase() === normalizedHex);
+  const existing = knownColors.find(
+    (color) => color.hex.toUpperCase() === normalizedHex,
+  );
 
   if (existing) {
     return existing;
@@ -935,14 +1102,22 @@ function uniqueColorPoints(colors: ColorPoint[]): ColorPoint[] {
   const byHex = new Map<string, ColorPoint>();
 
   colors.forEach((color) => {
-    byHex.set(color.hex.toUpperCase(), { ...color, hex: color.hex.toUpperCase() });
+    byHex.set(color.hex.toUpperCase(), {
+      ...color,
+      hex: color.hex.toUpperCase(),
+    });
   });
 
   return [...byHex.values()];
 }
 
-function buildCategoryFilters(items: MyItemsEntry[]): UncapsulatedSnapshot["categories"] {
-  const counts = new Map<string, { id: string; label: string; count: number }>();
+function buildCategoryFilters(
+  items: MyItemsEntry[],
+): UncapsulatedSnapshot["categories"] {
+  const counts = new Map<
+    string,
+    { id: string; label: string; count: number }
+  >();
 
   items.forEach((item) => {
     const existing = counts.get(item.categoryId);
@@ -970,7 +1145,9 @@ function buildColorFilters(items: MyItemsEntry[]) {
     });
   });
 
-  return [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  return [...counts.values()].sort(
+    (a, b) => b.count - a.count || a.name.localeCompare(b.name),
+  );
 }
 
 function filterAndSortItems(
@@ -980,20 +1157,30 @@ function filterAndSortItems(
   sortKey: SortKey,
 ): MyItemsEntry[] {
   const filtered = items
-    .filter((item) => categoryFilter === "all" || item.categoryId === categoryFilter)
+    .filter(
+      (item) => categoryFilter === "all" || item.categoryId === categoryFilter,
+    )
     .filter((item) =>
       colorFilter === "all"
         ? true
-        : item.colorPoints.some((color) => color.hex.toUpperCase() === colorFilter),
+        : item.colorPoints.some(
+            (color) => color.hex.toUpperCase() === colorFilter,
+          ),
     );
 
   return [...filtered].sort((a, b) => {
     if (sortKey === "category") {
-      return a.categoryLabel.localeCompare(b.categoryLabel) || a.name.localeCompare(b.name);
+      return (
+        a.categoryLabel.localeCompare(b.categoryLabel) ||
+        a.name.localeCompare(b.name)
+      );
     }
 
     if (sortKey === "recent") {
-      return Date.parse(b.updatedAt) - Date.parse(a.updatedAt) || a.name.localeCompare(b.name);
+      return (
+        Date.parse(b.updatedAt) - Date.parse(a.updatedAt) ||
+        a.name.localeCompare(b.name)
+      );
     }
 
     if (sortKey === "price") {
@@ -1017,67 +1204,154 @@ function UncapsulatedIcon({ name }: { name: IconName }) {
     case "bag":
       return (
         <svg {...common}>
-          <path d="M6.5 3.5h3C9.5 4.9 10.6 6 12 6s2.5-1.1 2.5-2.5h3L22 8l-3 3-2-2v12H7V9l-2 2-3-3 4.5-4.5Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.6" />
+          <path
+            d="M6.5 3.5h3C9.5 4.9 10.6 6 12 6s2.5-1.1 2.5-2.5h3L22 8l-3 3-2-2v12H7V9l-2 2-3-3 4.5-4.5Z"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.6"
+          />
         </svg>
       );
     case "ban":
       return (
         <svg {...common}>
-          <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.7" />
-          <path d="m6.4 6.4 11.2 11.2" stroke="currentColor" strokeLinecap="round" strokeWidth="1.7" />
+          <circle
+            cx="12"
+            cy="12"
+            r="8"
+            stroke="currentColor"
+            strokeWidth="1.7"
+          />
+          <path
+            d="m6.4 6.4 11.2 11.2"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.7"
+          />
         </svg>
       );
     case "capsules":
       return (
         <svg aria-hidden fill="none" height="18" viewBox="0 0 17 17" width="18">
-          <path d="M2.5 3.5H7C7 2 6 .5 8 .5s1 1.5 1 3h4v3.5c1.5 0 3-1 3 1s-1.5 1-3 1V14H9c0-1.5 1-3-1-3s-1 1.5-1 3H2.5V9C4 9 5 10 5 8s-1-1-2.5-1V3.5Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.3" />
+          <path
+            d="M2.5 3.5H7C7 2 6 .5 8 .5s1 1.5 1 3h4v3.5c1.5 0 3-1 3 1s-1.5 1-3 1V14H9c0-1.5 1-3-1-3s-1 1.5-1 3H2.5V9C4 9 5 10 5 8s-1-1-2.5-1V3.5Z"
+            stroke="currentColor"
+            strokeLinejoin="round"
+            strokeWidth="1.3"
+          />
         </svg>
       );
     case "check":
       return (
         <svg {...common}>
-          <path d="m5 12 4 4L19 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+          <path
+            d="m5 12 4 4L19 6"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
         </svg>
       );
     case "close":
       return (
         <svg {...common}>
-          <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+          <path
+            d="m6 6 12 12M18 6 6 18"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.8"
+          />
         </svg>
       );
     case "for-repair":
       return (
         <svg {...common}>
-          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9l-3.8 3.8Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+          <path
+            d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9l-3.8 3.8Z"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+          />
         </svg>
       );
     case "grid":
       return (
         <svg {...common}>
-          <rect height="7" rx="1.5" stroke="currentColor" strokeWidth="1.7" width="7" x="3" y="3" />
-          <rect height="7" rx="1.5" stroke="currentColor" strokeWidth="1.7" width="7" x="14" y="3" />
-          <rect height="7" rx="1.5" stroke="currentColor" strokeWidth="1.7" width="7" x="3" y="14" />
-          <rect height="7" rx="1.5" stroke="currentColor" strokeWidth="1.7" width="7" x="14" y="14" />
+          <rect
+            height="7"
+            rx="1.5"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            width="7"
+            x="3"
+            y="3"
+          />
+          <rect
+            height="7"
+            rx="1.5"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            width="7"
+            x="14"
+            y="3"
+          />
+          <rect
+            height="7"
+            rx="1.5"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            width="7"
+            x="3"
+            y="14"
+          />
+          <rect
+            height="7"
+            rx="1.5"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            width="7"
+            x="14"
+            y="14"
+          />
         </svg>
       );
     case "heart":
       return (
         <svg {...common}>
-          <path d="m12 20-7-7a4.2 4.2 0 0 1 6-6l1 1 1-1a4.2 4.2 0 0 1 6 6l-7 7Z" fill="currentColor" fillOpacity="var(--icon-fill-opacity, 0)" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.7" />
+          <path
+            d="m12 20-7-7a4.2 4.2 0 0 1 6-6l1 1 1-1a4.2 4.2 0 0 1 6 6l-7 7Z"
+            fill="currentColor"
+            fillOpacity="var(--icon-fill-opacity, 0)"
+            stroke="currentColor"
+            strokeLinejoin="round"
+            strokeWidth="1.7"
+          />
         </svg>
       );
     case "list":
       return (
         <svg {...common}>
-          <path d="M5 7h14M5 12h11M5 17h8" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+          <path
+            d="M5 7h14M5 12h11M5 17h8"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.8"
+          />
         </svg>
       );
     case "logout":
       return (
         <svg {...common}>
-          <path d="M10 5V4a2 2 0 0 1 2-2h7v20h-7a2 2 0 0 1-2-2v-1" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-          <path d="M3 12h11" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
-          <path d="m10 8 4 4-4 4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+          <path
+            d="M10 17l5-5-5-5M15 12H3M21 4v16"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+          />
         </svg>
       );
     case "more":
@@ -1091,42 +1365,99 @@ function UncapsulatedIcon({ name }: { name: IconName }) {
     case "my-items":
       return (
         <svg aria-hidden fill="none" height="18" viewBox="0 0 17 17" width="18">
-          <rect height="9" rx="1" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.4" width="12" x="2.5" y="6" />
-          <path d="m2.5 6 2.5-3.5h7L14.5 6" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.4" />
-          <path d="M8.5 2.5V6" stroke="currentColor" strokeLinecap="round" strokeWidth="1.4" />
+          <rect
+            height="9"
+            rx="1"
+            stroke="currentColor"
+            strokeLinejoin="round"
+            strokeWidth="1.4"
+            width="12"
+            x="2.5"
+            y="6"
+          />
+          <path
+            d="m2.5 6 2.5-3.5h7L14.5 6"
+            stroke="currentColor"
+            strokeLinejoin="round"
+            strokeWidth="1.4"
+          />
+          <path
+            d="M8.5 2.5V6"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.4"
+          />
         </svg>
       );
     case "plus":
       return (
         <svg {...common}>
-          <path d="M12 5v14M5 12h14" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+          <path
+            d="M12 5v14M5 12h14"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="2"
+          />
         </svg>
       );
     case "profile":
       return (
         <svg {...common}>
-          <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.7" />
-          <path d="M4.5 21a7.5 7.5 0 0 1 15 0" stroke="currentColor" strokeLinecap="round" strokeWidth="1.7" />
+          <circle
+            cx="12"
+            cy="8"
+            r="4"
+            stroke="currentColor"
+            strokeWidth="1.7"
+          />
+          <path
+            d="M4.5 21a7.5 7.5 0 0 1 15 0"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.7"
+          />
         </svg>
       );
     case "settings":
       return (
         <svg {...common}>
-          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.7" />
-          <path d="M19 12a7 7 0 0 0-.1-1.1l2-1.5-2-3.5-2.4 1a7.5 7.5 0 0 0-1.9-1.1L14.3 3h-4.6l-.3 2.8a7.5 7.5 0 0 0-1.9 1.1l-2.4-1-2 3.5 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.1l-2 1.5 2 3.5 2.4-1c.6.5 1.2.9 1.9 1.1l.3 2.8h4.6l.3-2.8c.7-.3 1.3-.6 1.9-1.1l2.4 1 2-3.5-2-1.5c.1-.3.1-.7.1-1.1Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.4" />
+          <circle
+            cx="12"
+            cy="12"
+            r="3"
+            stroke="currentColor"
+            strokeWidth="1.7"
+          />
+          <path
+            d="M19 12a7 7 0 0 0-.1-1.1l2-1.5-2-3.5-2.4 1a7.5 7.5 0 0 0-1.9-1.1L14.3 3h-4.6l-.3 2.8a7.5 7.5 0 0 0-1.9 1.1l-2.4-1-2 3.5 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.1l-2 1.5 2 3.5 2.4-1c.6.5 1.2.9 1.9 1.1l.3 2.8h4.6l.3-2.8c.7-.3 1.3-.6 1.9-1.1l2.4 1 2-3.5-2-1.5c.1-.3.1-.7.1-1.1Z"
+            stroke="currentColor"
+            strokeLinejoin="round"
+            strokeWidth="1.4"
+          />
         </svg>
       );
     case "tag":
       return (
         <svg {...common}>
-          <path d="M4 5v6.2L12.8 20 20 12.8 11.2 4H5a1 1 0 0 0-1 1Z" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.7" />
+          <path
+            d="M4 5v6.2L12.8 20 20 12.8 11.2 4H5a1 1 0 0 0-1 1Z"
+            stroke="currentColor"
+            strokeLinejoin="round"
+            strokeWidth="1.7"
+          />
           <circle cx="8" cy="8" r="1.2" fill="currentColor" />
         </svg>
       );
     case "trash":
       return (
         <svg {...common}>
-          <path d="M4 7h16M9 7V4h6v3M8 10v8M12 10v8M16 10v8M6 7l1 14h10l1-14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" />
+          <path
+            d="M4 7h16M9 7V4h6v3M8 10v8M12 10v8M16 10v8M6 7l1 14h10l1-14"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.7"
+          />
         </svg>
       );
   }
