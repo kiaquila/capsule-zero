@@ -11,10 +11,36 @@
     "terms": "Terms of Use",
     "privacy": "Privacy Policy",
     "copyright": "© 2025 Capsule Zero",
-    "cookie": "We use cookies to improve your experience. By continuing you accept our Cookie Policy.",
-    "cookieAccept": "Accept",
-    "cookieSettings": "Settings",
-    "cookiePolicy": "Cookie Policy"
+    "cookie": "We use cookies to make Capsule Zero work, to remember your preferences, and — only with your consent — to measure usage and tailor marketing. Choose what you allow.",
+    "cookieAccept": "Accept all",
+    "cookieReject": "Reject all",
+    "cookieCustomize": "Customize",
+    "cookieSettings": "Cookie settings",
+    "cookiePreferences": "Cookie preferences",
+    "cookieSave": "Save preferences",
+    "cookieClose": "Close",
+    "cookieNecessaryNote": "Strictly necessary cookies are always active.",
+    "cookieGpcNote": "Global Privacy Control detected — analytics and marketing are off by default.",
+    "cookiePolicy": "Cookie Policy",
+    "cookieReadPolicy": "Read the Cookie Policy",
+    "cookieCategories": {
+      "necessary": {
+        "title": "Strictly necessary",
+        "description": "Required for login, session, language, and core wardrobe features. Cannot be switched off."
+      },
+      "preferences": {
+        "title": "Preferences",
+        "description": "Remember settings such as language, layout, and cookie choices across visits."
+      },
+      "analytics": {
+        "title": "Analytics",
+        "description": "Help us understand product usage and diagnose issues. Aggregated, never sold."
+      },
+      "marketing": {
+        "title": "Marketing",
+        "description": "Allow tailored messages and measurement of campaigns. Off unless you opt in."
+      }
+    }
   },
   "auth": {
     "signUpTab": "Sign Up",
