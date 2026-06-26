@@ -23,6 +23,12 @@ Stage 1 web provider boundaries live under `app/src/lib/providers/`:
 - `mock/fixtures.ts` and `mock/index.ts` provide deterministic fixtures for auth, profiles, wardrobe entries, storage, marketplace import, semantic catalog search, background removal states, billing, capsule reads, and methodology checks.
 - `app/src/app/api/health/route.ts` verifies the active provider mode and fixture-backed health state without exposing secrets.
 
+The web app can also be packaged as a Next.js standalone Docker image for
+staging or production review environments. The Docker Compose runtime is
+documented in `docs_capsule_zero/project/devops/docker-compose-deploy.md` and
+does not change the provider gate: `CAPSULE_PROVIDER_MODE=mock` is still the
+only runnable mode on `main` until real provider evidence lands.
+
 ## Core Backend Modules
 
 | Module             | Responsibility                                                                       |

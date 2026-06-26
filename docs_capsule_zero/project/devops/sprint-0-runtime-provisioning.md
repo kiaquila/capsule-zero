@@ -21,6 +21,9 @@ cp app/.env.local.example app/.env.local
 cp mobile/.env.example mobile/.env.local
 ```
 
+- For Docker Compose staging or production web deploys, use
+  `docs_capsule_zero/project/devops/docker-compose-deploy.md`.
+
 - For mock-first Stage 1, placeholders or local mock values are acceptable.
   Fill real values only when running the relevant integration gate.
 - Run:

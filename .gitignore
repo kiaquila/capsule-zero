@@ -4,10 +4,12 @@
 
 # env files
 .env*
+deploy/*.env
 !.env.example
 !.env.*.example
 !**/.env.example
 !**/.env.*.example
+!deploy/*.env.example
 
 # IDE
 .idea/

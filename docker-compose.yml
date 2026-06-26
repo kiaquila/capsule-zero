@@ -1,0 +1,30 @@
+services:
+  web:
+    image: ${CAPSULE_WEB_IMAGE:-capsule-zero-web:local}
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      target: runner
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22-bookworm-slim}
+    init: true
+    restart: unless-stopped
+    env_file:
+      - ${CAPSULE_RUNTIME_ENV_FILE:-./deploy/runtime.env}
+    environment:
+      HOSTNAME: 0.0.0.0
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      PORT: ${CAPSULE_CONTAINER_PORT:-3000}
+    ports:
+      - "${CAPSULE_HOST_BIND:-127.0.0.1}:${CAPSULE_HOST_PORT:-3000}:${CAPSULE_CONTAINER_PORT:-3000}"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:' + (process.env.PORT || '3000') + '/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))\"",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
