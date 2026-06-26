@@ -55,6 +55,9 @@
 - [x] T043 Verify `credit_coins_atomic` idempotency through PostgREST RPC smoke.
 - [x] T044 Address third Codex AI Review findings for verified protected-route sessions, preserved profile sync fields, and idempotent upload completion.
 - [x] T045 Rerun local preflight and Docker build after third AI Review fixes.
+- [x] T046 Address fourth Codex AI Review findings for refreshable sessions, inline auth errors, catalog filters, and no-match search behavior.
+- [x] T047 Apply `0006_catalog_search_filters.sql` through the Compose `migrate` service and smoke SQL filter/no-match results.
+- [x] T048 Rerun local preflight and Docker build after fourth AI Review fixes.
 
 ## Process Memory
 
@@ -65,6 +68,7 @@
 - `docker compose --env-file deploy/compose.env.example config` succeeds for Compose interpolation, but shell `source deploy/compose.env.example` is not reliable because some Compose values contain spaces. Smoke commands use `awk` to read keys instead.
 - A first REST smoke query asked for the wrong profile column name (`id`/`name` instead of `user_id`/`display_name`) and returned 400. Inspecting `public.profiles` confirmed the schema and the corrected query showed the trigger-created row.
 - Local feature-memory guard failed after app provider changes because no spec files were modified in the uncommitted worktree; this update touches all three required files.
+- The first `0006_catalog_search_filters.sql` migration attempt failed because Postgres does not allow a CTE field directly inside `LIMIT`. The migration now uses a scalar subquery for the dynamic limit and applied cleanly.
 
 ### Decisions
 
@@ -83,6 +87,9 @@
 - Keep `readMockSession` as a compatibility export, but route it through provider auth verification in Supabase mode so protected pages do not bypass token validation.
 - Preserve existing profile display name and locale during Supabase auth sync; sign-in should refresh email/metadata without discarding user-edited preferences.
 - Upsert upload-completion assets by storage object identity so retrying completion after the asset exists still reaches the job update.
+- Keep raw signed-cookie parsing behind `readSignedAppSession`; `readAppSession` and `readMockSession` now return only provider-verified sessions in Supabase mode.
+- Persist Supabase refresh tokens in the signed app session and refresh near-expired/expired sessions before calling trusted `getUser()`.
+- Apply catalog filters both in SQL and after mapping results locally so Supabase mode cannot return items outside requested category/color/wardrobe criteria.
 
 ### Known Issues
 

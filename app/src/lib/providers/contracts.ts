@@ -35,6 +35,7 @@ export type CoinSpendReason = "extra_capsule" | "photo_enhancement";
 export interface Session {
   user: User;
   accessToken: string;
+  refreshToken?: string;
   expiresAt: string;
 }
 

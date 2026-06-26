@@ -16,6 +16,7 @@ export interface PersistedAppSession {
   email: string;
   name?: string;
   accessToken?: string;
+  refreshToken?: string;
   createdAt?: string;
   expiresAt: string;
 }
@@ -35,7 +36,7 @@ export async function persistAppSession(session: Session) {
   });
 }
 
-export async function readAppSession(): Promise<PersistedAppSession | null> {
+export async function readSignedAppSession(): Promise<PersistedAppSession | null> {
   const cookieStore = await cookies();
   const rawValue = cookieStore.get(APP_SESSION_COOKIE)?.value;
 
@@ -51,8 +52,12 @@ export async function readAppSession(): Promise<PersistedAppSession | null> {
   return null;
 }
 
+export async function readAppSession(): Promise<PersistedAppSession | null> {
+  return readVerifiedAppSession();
+}
+
 export async function readVerifiedAppSession(): Promise<PersistedAppSession | null> {
-  const persisted = await readAppSession();
+  const persisted = await readSignedAppSession();
   if (!persisted) {
     return null;
   }
@@ -78,6 +83,7 @@ function toPersistedAppSession(session: Session): PersistedAppSession {
     email: session.user.email,
     name: session.user.name,
     accessToken: session.accessToken,
+    refreshToken: session.refreshToken,
     createdAt: session.user.createdAt,
     expiresAt: session.expiresAt,
   };
@@ -131,7 +137,7 @@ function validatePersistedSession(
     !parsed.email ||
     !parsed.userId ||
     !Number.isFinite(expiresAt) ||
-    expiresAt < Date.now()
+    (expiresAt < Date.now() && !parsed.refreshToken)
   ) {
     return null;
   }

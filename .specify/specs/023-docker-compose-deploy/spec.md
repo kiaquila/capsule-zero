@@ -20,7 +20,7 @@ In scope:
 - Make `CAPSULE_PROVIDER_MODE=supabase` the default runtime mode and disable `mock` in production.
 - Keep external SaaS calls real but gated: Photoroom, Lava.top, marketplace import, Google OAuth, and Apple Sign-In must require real credentials instead of falling back to local mocks.
 - Add migration-backed runtime alignment for statuses, Lava invoices, auth profile creation, and public catalog seed data.
-- Harden real-runtime follow-ups from AI Review: signed and verified app sessions, Supabase token verification, profile sync preservation, atomic coin ledger mutations, upload asset attachment/completion idempotency, processed image polling, and marketplace confirmation foreign keys.
+- Harden real-runtime follow-ups from AI Review: signed and verified app sessions, Supabase token verification and refresh state, auth form error handling, profile sync preservation, atomic coin ledger mutations, upload asset attachment/completion idempotency, processed image polling, marketplace confirmation foreign keys, and catalog search filtering/no-match behavior.
 - Update env examples and deployment docs for local, staging, and production operation.
 - Preserve local smoke-testability with clearly marked demo Supabase JWT values that must be rotated outside local runs.
 
@@ -104,6 +104,9 @@ Operators can see which real external integrations still need credentials, and t
 - **FR-020**: Protected route/session helpers MUST verify Supabase-backed sessions before returning a user id used with service-role repositories.
 - **FR-021**: Auth profile synchronization MUST preserve user-edited profile fields such as display name and locale.
 - **FR-022**: Photo upload completion MUST be safe to retry after the asset row already exists.
+- **FR-023**: Supabase-backed app sessions MUST persist refresh tokens so expired access tokens can be refreshed before trusted server verification.
+- **FR-024**: Supabase auth provider failures from normal sign-in, sign-up, and recovery attempts MUST return inline form errors instead of escaping to an error boundary.
+- **FR-025**: Supabase catalog search MUST apply category/color/wardrobe filters and return an empty result for non-empty no-match searches.
 
 ### Key Entities
 
@@ -127,3 +130,4 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-010**: AI Review follow-up fixes for session trust, coin debits, and marketplace confirmation links pass local verification and a fresh Codex review cycle.
 - **SC-011**: AI Review follow-up fixes for upload asset attachment, purchase credit idempotency, and processed image polling pass local verification and a fresh Codex review cycle.
 - **SC-012**: AI Review follow-up fixes for verified protected-route sessions, profile preservation, and upload-completion idempotency pass local verification and a fresh Codex review cycle.
+- **SC-013**: AI Review follow-up fixes for session refresh state, inline auth errors, and catalog search filters/no-match behavior pass local verification and a fresh Codex review cycle.

@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import {
-  readAppSession,
+  readSignedAppSession,
   type PersistedAppSession,
 } from "@/features/auth/session";
 import { getCategoriesByGender } from "@/lib/categories";
@@ -24,6 +24,7 @@ import type {
 import type {
   BillingPort,
   CapsuleDraft,
+  CatalogSearchFilters,
   CatalogSearchPort,
   CoinLedgerEntry,
   CoinPack,
@@ -274,6 +275,8 @@ const DB_SLUG_TO_CATEGORY: Record<string, string> = {
   "crossbody-bag": "crossbody",
 };
 
+const NO_MATCH_UUID = "00000000-0000-0000-0000-000000000000";
+
 const HUES: ColorHue[] = [
   "red",
   "red-orange",
@@ -376,7 +379,7 @@ function buildAuthPort(
 ): ProviderRegistry["auth"] {
   return {
     async getCurrentSession() {
-      const persisted = await readAppSession();
+      const persisted = await readSignedAppSession();
       if (!persisted) {
         return null;
       }
@@ -444,7 +447,7 @@ function buildAuthPort(
     },
 
     async signOut() {
-      const persisted = await readAppSession();
+      const persisted = await readSignedAppSession();
       if (!persisted?.accessToken) {
         return;
       }
@@ -467,7 +470,31 @@ async function verifyPersistedSession(
     return null;
   }
 
-  const { data, error } = await clients.anon.auth.getUser(persisted.accessToken);
+  let accessToken = persisted.accessToken;
+  let refreshToken = persisted.refreshToken;
+  let expiresAt = persisted.expiresAt;
+  const expiresAtMs = Date.parse(persisted.expiresAt);
+
+  if (
+    refreshToken &&
+    (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now() + 60_000)
+  ) {
+    const refreshed = await clients.anon.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+    if (refreshed.error || !refreshed.data.session) {
+      return null;
+    }
+
+    accessToken = refreshed.data.session.access_token;
+    refreshToken = refreshed.data.session.refresh_token;
+    expiresAt = refreshed.data.session.expires_at
+      ? new Date(refreshed.data.session.expires_at * 1000).toISOString()
+      : expiresAt;
+  }
+
+  const { data, error } = await clients.anon.auth.getUser(accessToken);
   if (error || !data.user || data.user.id !== persisted.userId) {
     return null;
   }
@@ -479,8 +506,9 @@ async function verifyPersistedSession(
       name: readMetadataName(data.user.user_metadata) ?? persisted.name,
       createdAt: data.user.created_at ?? persisted.createdAt ?? persisted.expiresAt,
     },
-    accessToken: persisted.accessToken,
-    expiresAt: persisted.expiresAt,
+    accessToken,
+    refreshToken,
+    expiresAt,
   };
 }
 
@@ -1025,9 +1053,18 @@ function buildCatalogSearchPort(
 
   return {
     async search(_userId, query, filters) {
+      const normalizedQuery = query.trim();
+      const [dbFilters, categories] = await Promise.all([
+        buildCatalogSearchDbFilters(
+          colorCatalog,
+          categoryCatalog,
+          filters,
+        ),
+        categoryCatalog(),
+      ]);
       const rpc = await service.rpc("search_catalog_hybrid", {
-        query,
-        filters: { ...filters, limit: 20 },
+        query: normalizedQuery || null,
+        filters: { ...dbFilters, limit: 20 },
       });
       throwIfError(rpc.error, "Failed to search public catalog");
 
@@ -1035,15 +1072,19 @@ function buildCatalogSearchPort(
         item_id: string;
         rank: number;
       }>).map((row) => row.item_id);
+      if (!rankedIds.length && normalizedQuery) {
+        return [];
+      }
+
       const items = rankedIds.length
         ? await loadItemsByIds(service, rankedIds)
         : await loadPublicCatalogItems(service);
-      const mapped = await mapCatalogItems(
+      const mapped = (await mapCatalogItems(
         clients,
         colorCatalog,
         categoryCatalog,
         items,
-      );
+      )).filter((item) => itemMatchesCatalogFilters(item, filters, categories));
       const rank = new Map(
         ((rpc.data ?? []) as Array<{ item_id: string; rank: number }>).map(
           (row) => [row.item_id, Number(row.rank)],
@@ -1350,6 +1391,128 @@ function buildMethodologyPort(
           }));
     },
   };
+}
+
+type CatalogSearchDbFilters = {
+  categoryIds?: string[];
+  colorIds?: string[];
+  wardrobeType?: GarderType;
+};
+
+async function buildCatalogSearchDbFilters(
+  colorCatalog: () => Promise<Map<string, ColorPoint>>,
+  categoryCatalog: () => Promise<Map<string, DbCategory>>,
+  filters: CatalogSearchFilters | undefined,
+): Promise<CatalogSearchDbFilters> {
+  if (!filters) {
+    return {};
+  }
+
+  const [colors, categories] = await Promise.all([
+    colorCatalog(),
+    categoryCatalog(),
+  ]);
+
+  return stripUndefined({
+    categoryIds: filters.categoryIds?.length
+      ? resolveSearchCategoryIds(categories, filters.categoryIds)
+      : undefined,
+    colorIds: filters.colorIds?.length
+      ? resolveSearchColorIds(colors, filters.colorIds)
+      : undefined,
+    wardrobeType: filters.wardrobeType,
+  });
+}
+
+function itemMatchesCatalogFilters(
+  item: WardrobeEntry,
+  filters: CatalogSearchFilters | undefined,
+  categories: Map<string, DbCategory>,
+): boolean {
+  if (filters?.categoryIds?.length && !filters.categoryIds.includes(item.categoryId)) {
+    return false;
+  }
+
+  if (filters?.colorIds?.length) {
+    const requestedColors = new Set(
+      filters.colorIds.map((colorId) => colorId.toLowerCase()),
+    );
+    if (
+      !item.colorPoints.some((color) =>
+        requestedColors.has(color.hex.toLowerCase()),
+      )
+    ) {
+      return false;
+    }
+  }
+
+  if (
+    filters?.wardrobeType &&
+    !categorySupportsWardrobeType(categories, item.categoryId, filters.wardrobeType)
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function resolveSearchCategoryIds(
+  categories: Map<string, DbCategory>,
+  categoryIds: string[],
+): string[] {
+  const rows = [...categories.values()];
+  return unique(
+    categoryIds.map((categoryId) => {
+      const dbSlug = CATEGORY_TO_DB_SLUG[categoryId] ?? categoryId;
+      const category =
+        categories.get(categoryId) ??
+        rows.find(
+          (row) =>
+            row.slug === dbSlug ||
+            toUiCategoryId(row.slug) === categoryId,
+        );
+      return category?.id ?? NO_MATCH_UUID;
+    }),
+  );
+}
+
+function resolveSearchColorIds(
+  colors: Map<string, ColorPoint>,
+  colorIds: string[],
+): string[] {
+  const rows = [...colors.entries()];
+  return unique(
+    colorIds.map((colorId) => {
+      const color = colors.get(colorId);
+      if (color) {
+        return colorId;
+      }
+
+      const byHex = rows.find(
+        ([, value]) => value.hex.toLowerCase() === colorId.toLowerCase(),
+      );
+      return byHex?.[0] ?? colorId;
+    }),
+  );
+}
+
+function categorySupportsWardrobeType(
+  categories: Map<string, DbCategory>,
+  uiCategoryId: string,
+  wardrobeType: GarderType,
+): boolean {
+  const dbSlug = CATEGORY_TO_DB_SLUG[uiCategoryId] ?? uiCategoryId;
+  const category = [...categories.values()].find(
+    (row) => row.slug === dbSlug || toUiCategoryId(row.slug) === uiCategoryId,
+  );
+  if (!category) {
+    return false;
+  }
+
+  return wardrobeType === "mixed"
+    ? category.wardrobe_types.includes("women") ||
+        category.wardrobe_types.includes("men")
+    : category.wardrobe_types.includes(wardrobeType);
 }
 
 async function mapWardrobeEntries(
@@ -1793,12 +1956,14 @@ function mapSession(
   },
   session: {
     access_token: string;
+    refresh_token?: string;
     expires_at?: number;
   },
 ): Session {
   return {
     user: mapUser(user),
     accessToken: session.access_token,
+    refreshToken: session.refresh_token,
     expiresAt: session.expires_at
       ? new Date(session.expires_at * 1000).toISOString()
       : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
