@@ -31,6 +31,7 @@
 - [x] T019 Open PR #43.
 - [x] T020 Inspect failed GitHub guard log and identify missing feature-memory requirement.
 - [x] T021 Add this SENAR feature memory package.
+- [x] T022 Address Codex review feedback by replacing the legal document switcher hard-coded glass values with nav glass tokens.
 
 ## Process Memory
 
@@ -39,6 +40,7 @@
 - Port 3000 was occupied by an existing SSH-backed process and served stale output, so visual verification used a fresh local Next.js dev server on port 3001.
 - The current repository worktree contained many unrelated modified and untracked files, so the PR was created from a separate clean worktree instead of staging from the dirty tree.
 - The initial PR guard failed because product `app/` paths changed without a matching `.specify/specs/<feature-id>/spec.md`, `plan.md`, and `tasks.md` package.
+- AI Review later timed out waiting for review output on head `7b78644`, so the PR needed a fresh `@codex review` trigger after the feedback fix.
 
 ### Decisions
 
@@ -46,6 +48,7 @@
 - Keep `summary`, `intro`, and `highlights` in the legal document data model for metadata and future editorial flexibility, but omit the intro and highlights from the current rendered layout per the user's redesign request.
 - Create the PR from fresh `origin/main` to avoid carrying unrelated local work from `codex/sidebar-language-fixes`.
 - Open the PR as draft because it is intended for another agent/legal-review pass before merge readiness.
+- Reuse `--glass-nav-bg`, `--glass-nav-blur`, and `--glass-nav-border` for the legal document switcher so it follows the established nav glass surface instead of creating a local variant.
 
 ### Known Issues
 
