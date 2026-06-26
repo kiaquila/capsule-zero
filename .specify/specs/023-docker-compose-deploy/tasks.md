@@ -40,11 +40,16 @@
 - [x] T028 Run runtime env validation for stage/prod examples.
 - [x] T029 Run exact CI Docker image build command.
 - [x] T030 Run `git diff --check`.
-- [ ] T031 Stage the intended files and commit with Codex co-author trailer.
-- [ ] T032 Push branch `codex/docker-compose-prod-stage`.
-- [ ] T033 Mark PR #45 ready for review and update its description.
-- [ ] T034 Trigger Codex review with a top-level `@codex review` comment.
+- [x] T031 Stage the intended files and commit with Codex co-author trailer.
+- [x] T032 Push branch `codex/docker-compose-prod-stage`.
+- [x] T033 Mark PR #45 ready for review and update its description.
+- [x] T034 Trigger Codex review with a top-level `@codex review` comment.
 - [ ] T035 Watch GitHub checks and fix any failing iteration until merge-ready.
+- [x] T036 Address Codex AI Review findings for signed sessions, atomic coin debits, and marketplace confirmation foreign keys.
+- [x] T037 Apply `0004_atomic_coin_spend.sql` through the Compose `migrate` service.
+- [x] T038 Rerun local preflight and whitespace checks after the AI Review fixes.
+- [ ] T039 Commit and push the AI Review fix iteration.
+- [ ] T040 Trigger a fresh `@codex review` comment on the final pushed head.
 
 ## Process Memory
 
@@ -64,6 +69,9 @@
 - Use named Docker volumes for database, storage, config, and Deno cache so the stack can survive container recreation.
 - Keep demo Supabase JWT values only in `deploy/compose.env.example` for local smoke tests and document that every secret must be rotated before shared/stage/prod startup.
 - Preserve existing page imports of `readMockSession` through aliases while introducing the real `readAppSession` naming.
+- Treat the app session cookie as a signed server artifact. The legacy mock cookie remains readable only for explicit non-production mock mode so Supabase production runtime cannot accept forged JSON identity.
+- Move coin spends into a database RPC that serializes idempotency keys and uses a conditional profile balance update, keeping concurrent debits atomic in Postgres instead of in application memory.
+- Confirm marketplace imports with the underlying `items.id` from the wardrobe entry so `marketplace_imports.confirmed_item_id` satisfies its real foreign key.
 
 ### Known Issues
 

@@ -20,6 +20,7 @@ In scope:
 - Make `CAPSULE_PROVIDER_MODE=supabase` the default runtime mode and disable `mock` in production.
 - Keep external SaaS calls real but gated: Photoroom, Lava.top, marketplace import, Google OAuth, and Apple Sign-In must require real credentials instead of falling back to local mocks.
 - Add migration-backed runtime alignment for statuses, Lava invoices, auth profile creation, and public catalog seed data.
+- Harden real-runtime follow-ups from AI Review: signed app sessions, Supabase token verification, atomic coin debits, and marketplace confirmation foreign keys.
 - Update env examples and deployment docs for local, staging, and production operation.
 - Preserve local smoke-testability with clearly marked demo Supabase JWT values that must be rotated outside local runs.
 
@@ -56,6 +57,7 @@ The app can create users through Supabase Auth, persist profiles in Postgres, an
 1. **Given** a new email/password signup reaches Supabase Auth, **When** the user is created, **Then** a `public.profiles` row is created or updated with email and display name.
 2. **Given** the app session is persisted, **When** server routes read it, **Then** they use the real app session cookie and retain the Supabase access token when available.
 3. **Given** storage buckets are queried through Kong, **When** the service role key is used, **Then** Capsule Zero buckets are visible and governed by committed storage policies.
+4. **Given** a protected route reads a session cookie, **When** the cookie is unsigned, expired, or mismatched with Supabase Auth, **Then** it is rejected instead of being trusted as user identity.
 
 ### User Story 3 - Keep External Provider Gates Honest (Priority: P2)
 
@@ -94,6 +96,9 @@ Operators can see which real external integrations still need credentials, and t
 - **FR-012**: External provider calls MUST require real credentials/endpoints and report `pending-gate` when absent.
 - **FR-013**: Env examples MUST distinguish local smoke demo values from values that must be rotated in shared/stage/prod environments.
 - **FR-014**: Deployment docs MUST describe topology, first start, health checks, migrations, backups, upgrades, and production cutover notes.
+- **FR-015**: App session cookies MUST be server-signed, and Supabase provider session reads MUST verify the persisted access token against Supabase Auth.
+- **FR-016**: Coin spend operations MUST debit balances atomically with idempotency preserved under concurrent requests.
+- **FR-017**: Marketplace import confirmation MUST persist the confirmed `items.id`, not the `wardrobe_entries.id`, in `marketplace_imports.confirmed_item_id`.
 
 ### Key Entities
 
@@ -114,3 +119,4 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-007**: A Supabase Auth signup creates a real `public.profiles` row through the trigger.
 - **SC-008**: The in-app browser can load `/en` from the rebuilt web image with no console errors.
 - **SC-009**: GitHub PR #45 is ready for review, not draft, with green required checks and a fresh Codex review trigger on the final head.
+- **SC-010**: AI Review follow-up fixes for session trust, coin debits, and marketplace confirmation links pass local verification and a fresh Codex review cycle.

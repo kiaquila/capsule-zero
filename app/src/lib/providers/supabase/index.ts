@@ -4,7 +4,10 @@ import { randomUUID } from "node:crypto";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-import { readAppSession } from "@/features/auth/session";
+import {
+  readAppSession,
+  type PersistedAppSession,
+} from "@/features/auth/session";
 import { getCategoriesByGender } from "@/lib/categories";
 import type {
   Capsule,
@@ -207,6 +210,25 @@ interface DbLavaInvoice {
   updated_at: string;
 }
 
+interface DbCoinSpendResult {
+  id: string;
+  user_id: string;
+  lava_event_id: string | null;
+  amount: number;
+  reason: CoinLedgerEntry["reason"];
+  target_id: string | null;
+  idempotency_key: string;
+  created_at: string;
+  profile_email: string | null;
+  profile_display_name: string | null;
+  profile_language: Locale | null;
+  profile_country: string | null;
+  profile_city: string | null;
+  profile_coin_balance: number;
+  profile_created_at: string;
+  profile_updated_at: string;
+}
+
 const ACCEPTED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
@@ -359,16 +381,7 @@ function buildAuthPort(
         return null;
       }
 
-      return {
-        user: {
-          id: persisted.userId,
-          email: persisted.email,
-          name: persisted.name,
-          createdAt: persisted.createdAt ?? persisted.expiresAt,
-        },
-        accessToken: persisted.accessToken ?? "",
-        expiresAt: persisted.expiresAt,
-      };
+      return verifyPersistedSession(clients, persisted);
     },
 
     async signUpWithPassword(credentials) {
@@ -443,6 +456,31 @@ function buildAuthPort(
       }
       void profiles;
     },
+  };
+}
+
+async function verifyPersistedSession(
+  clients: ReturnType<typeof createSupabaseClients>,
+  persisted: PersistedAppSession,
+): Promise<Session | null> {
+  if (!persisted.accessToken) {
+    return null;
+  }
+
+  const { data, error } = await clients.anon.auth.getUser(persisted.accessToken);
+  if (error || !data.user || data.user.id !== persisted.userId) {
+    return null;
+  }
+
+  return {
+    user: {
+      id: data.user.id,
+      email: data.user.email ?? persisted.email,
+      name: readMetadataName(data.user.user_metadata) ?? persisted.name,
+      createdAt: data.user.created_at ?? persisted.createdAt ?? persisted.expiresAt,
+    },
+    accessToken: persisted.accessToken,
+    expiresAt: persisted.expiresAt,
   };
 }
 
@@ -952,10 +990,19 @@ function buildMarketplaceImportPort(
         price: candidate.price,
         sourceUrl: candidate.sourceUrl,
       });
+      const confirmedItemId = await loadWardrobeEntryItemId(
+        service,
+        userId,
+        item.id,
+      );
 
       const { error } = await service
         .from("marketplace_imports")
-        .update({ status: "completed", confirmed_item_id: item.id })
+        .update({
+          status: "confirmed",
+          confirmed_item_id: confirmedItemId,
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", importId)
         .eq("user_id", userId);
       throwIfError(error, "Failed to confirm marketplace candidate");
@@ -1121,52 +1168,24 @@ function buildBillingPort(
 
     async spendCoins(userId, request: CoinSpendRequest) {
       const spendAmount = request.reason === "extra_capsule" ? 5 : 1;
-      const profile = await profiles.getProfile(userId);
-      if (profile.coinBalance < spendAmount) {
+      const { data, error } = await service.rpc("spend_coins_atomic", {
+        p_user_id: userId,
+        p_amount: spendAmount,
+        p_reason: request.reason,
+        p_target_id: request.targetId,
+        p_idempotency_key: request.idempotencyKey,
+      });
+      if (error?.message.includes("INSUFFICIENT_BALANCE")) {
         throw new Error("INSUFFICIENT_BALANCE: Not enough coins.");
       }
+      throwIfError(error, "Failed to spend coins");
 
-      const { data: existing, error: existingError } = await service
-        .from("coin_ledger")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("idempotency_key", request.idempotencyKey)
-        .maybeSingle();
-      throwIfError(existingError, "Failed to check coin spend idempotency");
-      if (existing) {
-        return {
-          profile,
-          ledgerEntry: mapCoinLedger(existing as Record<string, unknown>),
-        };
-      }
-
-      const { data: ledger, error: ledgerError } = await service
-        .from("coin_ledger")
-        .insert({
-          user_id: userId,
-          amount: -spendAmount,
-          reason: request.reason,
-          target_id: request.targetId,
-          idempotency_key: request.idempotencyKey,
-        })
-        .select("*")
-        .single();
-      throwIfError(ledgerError, "Failed to spend coins");
-
-      const updatedProfile = await profiles.updateProfile(userId, {});
-      const { error: balanceError } = await service
-        .from("profiles")
-        .update({
-          coin_balance: profile.coinBalance - spendAmount,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId);
-      throwIfError(balanceError, "Failed to update coin balance");
-
-      return {
-        profile: { ...updatedProfile, coinBalance: profile.coinBalance - spendAmount },
-        ledgerEntry: mapCoinLedger(ledger as Record<string, unknown>),
-      };
+      return mapCoinSpendResult(
+        requireValue(
+          ((data ?? []) as DbCoinSpendResult[])[0],
+          "Failed to spend coins: no ledger row returned.",
+        ),
+      );
     },
 
     async replayLavaWebhook(event: LavaWebhookReplay) {
@@ -2005,6 +2024,24 @@ async function updateMarketplaceImportStatus(
   return data as DbMarketplaceImport;
 }
 
+async function loadWardrobeEntryItemId(
+  service: DbClient,
+  userId: string,
+  wardrobeEntryId: string,
+): Promise<string> {
+  const { data, error } = await service
+    .from("wardrobe_entries")
+    .select("item_id")
+    .eq("id", wardrobeEntryId)
+    .eq("user_id", userId)
+    .single();
+  throwIfError(error, "Failed to load confirmed marketplace item");
+  return requireValue(
+    asString((data as { item_id?: unknown } | null)?.item_id),
+    "Failed to load confirmed marketplace item.",
+  );
+}
+
 function mapMarketplaceImport(row: DbMarketplaceImport): MarketplaceImport {
   return {
     id: row.id,
@@ -2088,6 +2125,26 @@ async function updateLavaInvoiceStatus(
     .update({ status, updated_at: new Date().toISOString() })
     .or(`id.eq.${invoiceId},lava_invoice_id.eq.${invoiceId}`);
   throwIfError(error, "Failed to update Lava invoice status");
+}
+
+function mapCoinSpendResult(row: DbCoinSpendResult): {
+  profile: Profile;
+  ledgerEntry: CoinLedgerEntry;
+} {
+  return {
+    profile: mapProfile({
+      user_id: row.user_id,
+      email: row.profile_email,
+      display_name: row.profile_display_name,
+      language: row.profile_language,
+      country: row.profile_country,
+      city: row.profile_city,
+      coin_balance: row.profile_coin_balance,
+      created_at: row.profile_created_at,
+      updated_at: row.profile_updated_at,
+    }),
+    ledgerEntry: mapCoinLedger(row as unknown as Record<string, unknown>),
+  };
 }
 
 function mapCoinLedger(row: Record<string, unknown>): CoinLedgerEntry {
