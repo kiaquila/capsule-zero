@@ -50,6 +50,9 @@
 - [x] T038 Rerun local preflight and whitespace checks after the AI Review fixes.
 - [ ] T039 Commit and push the AI Review fix iteration.
 - [ ] T040 Trigger a fresh `@codex review` comment on the final pushed head.
+- [x] T041 Address second Codex AI Review findings for upload asset attach, Lava purchase credits, and processed image polling.
+- [x] T042 Apply `0005_atomic_coin_credit.sql` through the Compose `migrate` service.
+- [x] T043 Verify `credit_coins_atomic` idempotency through PostgREST RPC smoke.
 
 ## Process Memory
 
@@ -72,6 +75,9 @@
 - Treat the app session cookie as a signed server artifact. The legacy mock cookie remains readable only for explicit non-production mock mode so Supabase production runtime cannot accept forged JSON identity.
 - Move coin spends into a database RPC that serializes idempotency keys and uses a conditional profile balance update, keeping concurrent debits atomic in Postgres instead of in application memory.
 - Confirm marketplace imports with the underlying `items.id` from the wardrobe entry so `marketplace_imports.confirmed_item_id` satisfies its real foreign key.
+- Attach completed photo-upload assets with an upsert by `(bucket, object_path)` because the upload-completion step already owns the storage object row before an item is created from it.
+- Move Lava purchase credits into a sibling database RPC to keep webhook retries idempotent under concurrent delivery.
+- Resolve processed image URLs from persisted storage coordinates during upload-job polling so a reload does not lose the processed asset URL.
 
 ### Known Issues
 

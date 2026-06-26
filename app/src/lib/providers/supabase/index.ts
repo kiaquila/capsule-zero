@@ -322,7 +322,7 @@ export function createSupabaseProviderRegistry(): ProviderRegistry {
       colorCatalog,
       categoryCatalog,
     ),
-    billing: buildBillingPort(clients.service, profiles),
+    billing: buildBillingPort(clients.service),
     capsules,
     methodology: buildMethodologyPort(
       clients.service,
@@ -871,6 +871,11 @@ function buildImageProcessingPort(
           upsert: true,
         });
       throwIfError(upload.error, "Failed to store processed image");
+      const processedUrl = await createSignedAssetUrl(
+        clients,
+        "item-processed",
+        processedPath,
+      );
 
       const { data, error } = await service
         .from("upload_jobs")
@@ -882,6 +887,7 @@ function buildImageProcessingPort(
             ...existing.payload,
             processedBucket: "item-processed",
             processedPath,
+            processedUrl,
           },
           updated_at: new Date().toISOString(),
         })
@@ -891,16 +897,12 @@ function buildImageProcessingPort(
         .single();
       throwIfError(error, "Failed to update background removal job");
 
-      return mapUploadJob(
-        data as DbUploadJob,
-        undefined,
-        await createSignedAssetUrl(clients, "item-processed", processedPath),
-      );
+      return mapUploadJob(data as DbUploadJob, undefined, processedUrl);
     },
 
     async getUploadJob(userId, jobId) {
       const job = await loadUploadJob(service, userId, jobId);
-      return job ? mapUploadJob(job) : null;
+      return job ? mapUploadJobWithAssets(clients, job) : null;
     },
   };
 }
@@ -1084,10 +1086,7 @@ function buildCatalogSearchPort(
   };
 }
 
-function buildBillingPort(
-  service: DbClient,
-  profiles: ProfileRepository,
-): BillingPort {
+function buildBillingPort(service: DbClient): BillingPort {
   return {
     async listCoinPacks() {
       const { data, error } = await service
@@ -1204,39 +1203,24 @@ function buildBillingPort(
         ),
         "NOT_FOUND: Coin pack not found.",
       );
-      const idempotencyKey = event.eventId;
-      const { data: existing, error: existingError } = await service
-        .from("coin_ledger")
-        .select("*")
-        .eq("user_id", invoice.user_id)
-        .eq("idempotency_key", idempotencyKey)
-        .maybeSingle();
-      throwIfError(existingError, "Failed to check Lava webhook replay");
-      if (existing) {
-        return mapCoinLedger(existing as Record<string, unknown>);
-      }
-
-      const profile = await profiles.getProfile(invoice.user_id);
-      await service
-        .from("profiles")
-        .update({
-          coin_balance: profile.coinBalance + coinPack.coins,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", invoice.user_id);
-      await updateLavaInvoiceStatus(service, invoice.id, "paid");
-      const { data, error } = await service
-        .from("coin_ledger")
-        .insert({
-          user_id: invoice.user_id,
-          amount: coinPack.coins,
-          reason: "purchase",
-          idempotency_key: idempotencyKey,
-        })
-        .select("*")
-        .single();
+      const idempotencyKey = `lava:${invoice.id}:paid`;
+      const { data, error } = await service.rpc("credit_coins_atomic", {
+        p_user_id: invoice.user_id,
+        p_amount: coinPack.coins,
+        p_reason: "purchase",
+        p_target_id: invoice.id,
+        p_idempotency_key: idempotencyKey,
+        p_lava_event_id: null,
+      });
       throwIfError(error, "Failed to apply Lava webhook");
-      return mapCoinLedger(data as Record<string, unknown>);
+
+      await updateLavaInvoiceStatus(service, invoice.id, "paid");
+      return mapCoinSpendResult(
+        requireValue(
+          ((data ?? []) as DbCoinSpendResult[])[0],
+          "Failed to apply Lava webhook: no ledger row returned.",
+        ),
+      ).ledgerEntry;
     },
   };
 }
@@ -1827,14 +1811,45 @@ async function maybeAttachDraftAsset(
   if (!parsed) {
     return;
   }
-  const { error } = await service.from("item_assets").insert({
-    user_id: userId,
-    item_id: item.id,
-    bucket: parsed.bucket,
-    object_path: parsed.objectPath,
-    variant: draft.sourceType === "marketplace" ? "marketplace" : "original",
-  });
+  if (parsed.bucket === "catalog-public") {
+    return;
+  }
+
+  const { error } = await service.from("item_assets").upsert(
+    {
+      user_id: userId,
+      item_id: item.id,
+      bucket: parsed.bucket,
+      object_path: parsed.objectPath,
+      variant: draft.sourceType === "marketplace" ? "marketplace" : "original",
+    },
+    { onConflict: "bucket,object_path" },
+  );
   throwIfError(error, "Failed to attach item asset");
+}
+
+async function mapUploadJobWithAssets(
+  clients: ReturnType<typeof createSupabaseClients>,
+  job: DbUploadJob,
+): Promise<UploadJob> {
+  return mapUploadJob(
+    job,
+    undefined,
+    await resolveProcessedUploadUrl(clients, job),
+  );
+}
+
+async function resolveProcessedUploadUrl(
+  clients: ReturnType<typeof createSupabaseClients>,
+  job: DbUploadJob,
+): Promise<string | undefined> {
+  const bucket = asString(job.payload?.processedBucket);
+  const objectPath = asString(job.payload?.processedPath);
+  if (bucket && objectPath) {
+    return createSignedAssetUrl(clients, bucket, objectPath);
+  }
+
+  return asString(job.payload?.processedUrl);
 }
 
 function pickDisplayAsset(assets: DbAsset[]): DbAsset | undefined {

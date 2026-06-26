@@ -20,7 +20,7 @@ In scope:
 - Make `CAPSULE_PROVIDER_MODE=supabase` the default runtime mode and disable `mock` in production.
 - Keep external SaaS calls real but gated: Photoroom, Lava.top, marketplace import, Google OAuth, and Apple Sign-In must require real credentials instead of falling back to local mocks.
 - Add migration-backed runtime alignment for statuses, Lava invoices, auth profile creation, and public catalog seed data.
-- Harden real-runtime follow-ups from AI Review: signed app sessions, Supabase token verification, atomic coin debits, and marketplace confirmation foreign keys.
+- Harden real-runtime follow-ups from AI Review: signed app sessions, Supabase token verification, atomic coin ledger mutations, upload asset attachment, processed image polling, and marketplace confirmation foreign keys.
 - Update env examples and deployment docs for local, staging, and production operation.
 - Preserve local smoke-testability with clearly marked demo Supabase JWT values that must be rotated outside local runs.
 
@@ -97,8 +97,10 @@ Operators can see which real external integrations still need credentials, and t
 - **FR-013**: Env examples MUST distinguish local smoke demo values from values that must be rotated in shared/stage/prod environments.
 - **FR-014**: Deployment docs MUST describe topology, first start, health checks, migrations, backups, upgrades, and production cutover notes.
 - **FR-015**: App session cookies MUST be server-signed, and Supabase provider session reads MUST verify the persisted access token against Supabase Auth.
-- **FR-016**: Coin spend operations MUST debit balances atomically with idempotency preserved under concurrent requests.
+- **FR-016**: Coin ledger debit and credit operations MUST mutate balances atomically with idempotency preserved under concurrent requests.
 - **FR-017**: Marketplace import confirmation MUST persist the confirmed `items.id`, not the `wardrobe_entries.id`, in `marketplace_imports.confirmed_item_id`.
+- **FR-018**: Completed photo-upload assets MUST be attachable to created items without violating the unique storage object constraint.
+- **FR-019**: Completed background-removal jobs MUST expose a processed image URL when later polled or reloaded.
 
 ### Key Entities
 
@@ -120,3 +122,4 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-008**: The in-app browser can load `/en` from the rebuilt web image with no console errors.
 - **SC-009**: GitHub PR #45 is ready for review, not draft, with green required checks and a fresh Codex review trigger on the final head.
 - **SC-010**: AI Review follow-up fixes for session trust, coin debits, and marketplace confirmation links pass local verification and a fresh Codex review cycle.
+- **SC-011**: AI Review follow-up fixes for upload asset attachment, purchase credit idempotency, and processed image polling pass local verification and a fresh Codex review cycle.
