@@ -81,7 +81,7 @@ A visitor with Global Privacy Control enabled sees the consent UI acknowledge th
 ## Negative Scenarios _(mandatory - required by SENAR; waive explicitly if none apply)_
 
 1. **Given** no explicit non-essential consent has been saved, **When** app code reads cookie consent state, **Then** Preferences, Analytics, and Marketing must not default to true.
-2. **Given** localStorage contains the legacy boolean-string format or malformed JSON, **When** the hook reads consent state, **Then** the app must treat consent as undecided and return safe defaults instead of crashing or granting non-essential consent.
+2. **Given** localStorage contains the legacy boolean-string format, malformed JSON, or a parseable object with an empty or invalid `decidedAt`, **When** the hook reads consent state, **Then** the app must treat consent as undecided and return safe defaults instead of crashing or granting non-essential consent.
 3. **Given** ES-AR is deferred to MVP v2, **When** cookie UI strings are updated, **Then** no ES-AR active route, switcher option, enum, or message surface is introduced.
 4. **Given** legal page styles are already present on `origin/main`, **When** this PR is merged with current main, **Then** global CSS must not duplicate legal document style blocks or regress nav glass token usage.
 

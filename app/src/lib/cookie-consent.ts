@@ -70,6 +70,10 @@ function isPreferences(value: unknown): value is CookieConsentPreferences {
   );
 }
 
+function hasValidDecisionTimestamp(value: string): boolean {
+  return value.trim().length > 0 && !Number.isNaN(Date.parse(value));
+}
+
 function readState(): CookieConsentState {
   if (typeof window === "undefined") return SERVER_STATE;
 
@@ -85,7 +89,10 @@ function readState(): CookieConsentState {
     if (!isPreferences(parsed)) {
       return { decided: false, gpc, preferences: defaultPreferences(gpc) };
     }
-    return { decided: parsed.decidedAt.length > 0, gpc, preferences: parsed };
+    if (!hasValidDecisionTimestamp(parsed.decidedAt)) {
+      return { decided: false, gpc, preferences: defaultPreferences(gpc) };
+    }
+    return { decided: true, gpc, preferences: parsed };
   } catch {
     return { decided: false, gpc, preferences: defaultPreferences(gpc) };
   }

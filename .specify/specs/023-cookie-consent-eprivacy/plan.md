@@ -42,12 +42,12 @@ Replace the single-action landing cookie banner with a structured consent flow t
 | US3-AC2 GPC starts analytics and marketing off | Source evidence: `defaultPreferences(gpc)` always returns Analytics and Marketing false, and no default path grants non-essential consent. |
 | US3-AC3 future integrations can check consent without parsing storage | Source evidence: `useCookieConsent()` returns `hasConsent(category)` and the current validated `preferences`. |
 | Negative scenario 1 no implicit non-essential consent | Source evidence: `emptyPreferences()` and `defaultPreferences()` set Preferences, Analytics, and Marketing false. |
-| Negative scenario 2 malformed / legacy storage is safe | Source evidence: `readState()` catches JSON errors and invalid shapes, returning undecided safe defaults. |
+| Negative scenario 2 malformed / legacy storage is safe | Source evidence: `readState()` catches JSON errors and invalid shapes, and also discards parseable consent objects with an empty or invalid `decidedAt`, returning undecided safe defaults. |
 | Negative scenario 3 ES-AR remains deferred | Source evidence: PR diff touches only `en.json` and `ru.json` message files for cookie copy; no ES-AR active routing or switcher changes are present. |
 | Negative scenario 4 merged legal CSS is not duplicated | Source evidence: after merging current `origin/main`, the duplicate raw-value legal CSS block was removed and `git diff origin/main...HEAD -- app/src/app/globals.css` no longer adds `.legal-*` blocks. |
 | SC-001 local checks | Commands passed on 2026-06-26: `npm --prefix app run lint`; `npm --prefix app run typecheck`; `npm --prefix app run build`. Build output generated 30/30 static pages and kept `/en`, `/ru`, `/en/privacy-policy`, `/ru/privacy-policy`, `/en/terms-of-use`, and `/ru/terms-of-use`. |
 | SC-002 feature-memory guard | Commands passed on 2026-06-26: `node scripts/check-feature-memory.mjs --worktree`; `node scripts/check-feature-memory.mjs origin/main HEAD`, both output `Feature-memory gate passed via .specify/specs/023-cookie-consent-eprivacy/{spec,plan,tasks}.md`. |
-| SC-003 / SC-004 source safety checks | Commands passed on 2026-06-26: `git diff --check origin/main...HEAD` exited 0; `git diff origin/main...HEAD -- app/src/app/globals.css | rg -n "^\\+\\.legal|^\\+  \\.legal|blur\\(24px\\)"` returned no added legal CSS duplicates; source evidence above covers ES-AR and malformed-storage safety. |
+| SC-003 / SC-004 source safety checks | Commands passed on 2026-06-26: `git diff --check origin/main...HEAD` exited 0; `git diff origin/main...HEAD -- app/src/app/globals.css | rg -n "^\\+\\.legal|^\\+  \\.legal|blur\\(24px\\)"` returned no added legal CSS duplicates; source evidence above covers ES-AR and malformed-storage safety, including the Codex P2 case for empty `decidedAt`. |
 | SC-005 GitHub pipeline | Pending after push: `baseline-checks`, `guard`, `osv-scan`, and `AI Review` on PR #44 head. |
 
 ## Project Structure
