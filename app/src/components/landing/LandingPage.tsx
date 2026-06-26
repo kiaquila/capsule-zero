@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { AuthPanel } from "@/components/auth/AuthPanel";
+import { openCookieSettings } from "@/lib/cookie-consent";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { CookieBanner } from "./CookieBanner";
 
@@ -43,6 +44,14 @@ export function LandingPage() {
         <a href="#terms">{t("terms")}</a>
         <span aria-hidden="true">·</span>
         <a href="#privacy">{t("privacy")}</a>
+        <span aria-hidden="true">·</span>
+        <button
+          className="landing-footer-button"
+          onClick={openCookieSettings}
+          type="button"
+        >
+          {t("cookieSettings")}
+        </button>
         <span aria-hidden="true">·</span>
         <span>{t("copyright")}</span>
       </footer>
