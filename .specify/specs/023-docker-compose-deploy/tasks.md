@@ -1,66 +1,73 @@
-# Tasks: Docker Compose Stage And Production Deploy
+# Tasks: Production Docker Compose Supabase Runtime
 
 **Input**: `.specify/specs/023-docker-compose-deploy/spec.md`, `plan.md`
 
 ## Phase 1: Setup
 
 - [x] T001 Refresh GitHub state with `git fetch --all --prune`.
-- [x] T002 Confirm `gh` is installed and authenticated.
-- [x] T003 Create clean worktree branch `codex/docker-compose-prod-stage` from `origin/main`.
-- [x] T004 Fetch current Next.js standalone Docker deployment documentation through Context7.
-- [x] T005 Inspect existing app package, Next config, env examples, provider registry, health route, runtime env checker, and deploy docs.
+- [x] T002 Confirm `gh` is authenticated and inspect PR #45 state.
+- [x] T003 Compare current branch with `origin/main`; branch was 0 behind before the production-runtime iteration.
+- [x] T004 Inspect prior web-only Compose scope and identify the feature-memory conflict with the new real Supabase scope.
+- [x] T005 Use current Supabase self-hosted Docker references for service topology.
 
 ## Phase 2: Implementation
 
-- [x] T006 Enable `output: "standalone"` in `app/next.config.ts`.
-- [x] T007 Add `app/Dockerfile` with deps, builder, and non-root standalone runner stages.
-- [x] T008 Add `app/.dockerignore` for smaller and safer build contexts.
-- [x] T009 Add `docker-compose.yml` for production-oriented web runtime.
-- [x] T010 Add Compose interpolation and stage/prod runtime env examples.
-- [x] T011 Ignore generated `deploy/runtime.env` secrets in git.
-- [x] T012 Add Docker Compose deployment docs.
-- [x] T013 Link deploy docs from Sprint 0 runtime provisioning and backend docs.
-- [x] T014 Add Docker image build coverage to CI.
-- [x] T015 Add SENAR feature memory package.
+- [x] T006 Add Supabase client dependencies to the app.
+- [x] T007 Implement `createSupabaseProviderRegistry()` for real provider ports.
+- [x] T008 Switch provider registry default to `supabase` and forbid `mock` in production.
+- [x] T009 Rename persisted session cookie from mock-specific to app session while keeping legacy read compatibility.
+- [x] T010 Add `0003_runtime_provider_alignment.sql` for runtime statuses, Lava invoices, profile trigger, catalog seed, and grants.
+- [x] T011 Add Supabase self-host config under `deploy/supabase/`.
+- [x] T012 Replace web-only Compose with web plus Supabase services and a one-shot migration runner.
+- [x] T013 Update local/stage/prod env examples for Supabase runtime and real external-provider gates.
+- [x] T014 Update Docker Compose deployment documentation for topology, health, migrations, backups, upgrades, and cutover.
+- [x] T015 Update this feature-memory package to reflect the real Supabase runtime instead of the previous web-only scope.
 
 ## Phase 3: Verification
 
-- [x] T016 Install root dependencies with `npm ci --ignore-scripts`.
-- [x] T017 Install app dependencies with `npm ci --prefix app`.
-- [x] T018 Run runtime env validation for stage/prod examples.
-- [x] T019 Run Compose config validation with the stage env example.
-- [x] T020 Run `git check-ignore -v deploy/runtime.env`.
-- [x] T021 Run `npm run check:feature-memory -- --worktree`.
-- [x] T022 Run `npm run check:repo`.
-- [x] T023 Run `npm run check:api-contract`.
-- [x] T024 Run `npm run lint`.
-- [x] T025 Run `npm run typecheck`.
-- [x] T026 Run `npm run build`.
-- [x] T027 Run `docker build --target runner -t capsule-zero-web:local ./app`.
-- [x] T028 Prepare ignored `deploy/runtime.env` from the stage example and run `docker compose up -d --build web`.
-- [x] T029 Verify `/api/health` returns HTTP 200 from the Compose service.
+- [x] T016 Run `npm run lint && npm run typecheck` in `app/`.
+- [x] T017 Run `docker compose --env-file deploy/compose.env.example config`.
+- [x] T018 Run `docker compose --env-file deploy/compose.env.example up -d --build`.
+- [x] T019 Verify `docker compose ps -a` shows long-lived services healthy and `migrate` exited 0.
+- [x] T020 Verify `/api/health` reports `providerMode: "supabase"`, configured Supabase/storage, and pending external gates.
+- [x] T021 Verify Supabase Storage buckets are reachable through Kong with the service role key.
+- [x] T022 Verify PostgREST can read seeded catalog/color data with the service role key.
+- [x] T023 Verify Supabase Auth signup creates a `public.profiles` row through the trigger.
+- [x] T024 Remove temporary smoke-test auth user from the local database.
+- [x] T025 Rebuild/recreate the web container after the final provider sign-out fix.
+- [x] T026 Reload `/en` in the in-app browser and confirm no console errors.
+- [x] T027 Rerun full local preflight after feature-memory update.
+- [x] T028 Run runtime env validation for stage/prod examples.
+- [x] T029 Run exact CI Docker image build command.
 - [x] T030 Run `git diff --check`.
-- [ ] T031 Commit, push, and open a draft PR.
+- [ ] T031 Stage the intended files and commit with Codex co-author trailer.
+- [ ] T032 Push branch `codex/docker-compose-prod-stage`.
+- [ ] T033 Mark PR #45 ready for review and update its description.
+- [ ] T034 Trigger Codex review with a top-level `@codex review` comment.
+- [ ] T035 Watch GitHub checks and fix any failing iteration until merge-ready.
 
 ## Process Memory
 
 ### Dead Ends
 
-- The active repository worktree contained many unrelated modified and untracked files, so this PR was created from a clean sibling worktree instead of staging from the dirty checkout.
-- `docker compose --env-file deploy/compose.env.example config` failed when `deploy/runtime.env` did not exist. This is intentional fail-fast behavior for real deploys; validation uses `CAPSULE_RUNTIME_ENV_FILE=./deploy/stage.env.example`.
-- The first feature-memory guard failed because app product paths changed before this `.specify/specs/023-docker-compose-deploy` package existed.
+- The original PR scope was web-only Compose. The user's follow-up explicitly expanded the scope to real database/storage/backend operation, so the old feature memory became stale and had to be rewritten.
+- Mounting Capsule Zero app migrations directly into the Supabase database init phase caused startup ordering issues for Auth/Storage. The fix was to keep upstream Supabase init files on `db` and apply app migrations in a separate `migrate` service after Supabase core services are healthy.
+- `docker compose --env-file deploy/compose.env.example config` succeeds for Compose interpolation, but shell `source deploy/compose.env.example` is not reliable because some Compose values contain spaces. Smoke commands use `awk` to read keys instead.
+- A first REST smoke query asked for the wrong profile column name (`id`/`name` instead of `user_id`/`display_name`) and returned 400. Inspecting `public.profiles` confirmed the schema and the corrected query showed the trigger-created row.
+- Local feature-memory guard failed after app provider changes because no spec files were modified in the uncommitted worktree; this update touches all three required files.
 
 ### Decisions
 
-- Keep `docker-compose.yml` production-oriented. Local hot-reload/dev runtime is a separate concern.
-- Bind the web service to `127.0.0.1:3000` by default so TLS/public ingress can be handled by a host proxy or load balancer.
-- Use one image and one Compose service for stage and prod; env files carry environment-specific domains, ports, image tags, and provider values.
-- Keep runtime examples on `CAPSULE_PROVIDER_MODE=mock` because current `main` still gates real Supabase mode.
-- Fail fast if `deploy/runtime.env` is missing so production does not start with incomplete secret configuration.
-- Avoid BuildKit-only Dockerfile cache mounts so VM Docker builds have fewer compatibility assumptions.
+- Keep `mock` provider source available for non-production fixture development, but throw if it is selected in production.
+- Use the official self-hosted Supabase service split and keep Capsule Zero SQL migrations as a separate idempotent operation.
+- Keep external provider integrations real and explicit: missing Photoroom, Lava.top, marketplace import, Google OAuth, and Apple Sign-In credentials produce `pending-gate` or integration errors rather than fake success.
+- Use named Docker volumes for database, storage, config, and Deno cache so the stack can survive container recreation.
+- Keep demo Supabase JWT values only in `deploy/compose.env.example` for local smoke tests and document that every secret must be rotated before shared/stage/prod startup.
+- Preserve existing page imports of `readMockSession` through aliases while introducing the real `readAppSession` naming.
 
 ### Known Issues
 
-- This PR does not publish a registry image or configure GHCR/DigitalOcean Container Registry credentials.
-- This PR does not provision TLS, DNS, reverse proxy config, monitoring, log retention, or VM backups.
-- `CAPSULE_PROVIDER_MODE=supabase` is still intentionally unavailable on current `main`; real provider deployment requires a later integration-gate PR.
+- `/api/health` remains `ok: false` locally until real external provider credentials are supplied; this is expected and safer than pretending those integrations are live.
+- The Compose stack does not configure TLS, public DNS, firewall policy, VM backups, log retention, metrics, or a secret manager.
+- Real production Photoroom, Lava.top, marketplace parser, Google OAuth, and Apple Sign-In credentials still need provider-account setup outside git.
+- Supabase self-hosted image versions are pinned in Compose and should be upgraded deliberately with database backups.

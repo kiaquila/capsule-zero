@@ -1,96 +1,175 @@
 # Docker Compose Deployment
 
-Capsule Zero can build and run the web app as a production Next.js standalone
-container with Docker Compose. The same image and Compose file are used for
-staging and production; environment files decide the domain, provider mode, and
-secret values.
+Capsule Zero now ships a production-shaped Docker Compose runtime: the Next.js
+web app runs against self-hosted Supabase core services instead of fixture
+mocks. Compose is the single local/stage/prod process supervisor; VM-level TLS,
+firewalling, backups, and secret delivery remain outside git.
 
-This runtime is for the web application container. It does not self-host
-Supabase, object storage, OAuth providers, Lava.top, or image-processing
-providers.
+## Topology
+
+| Service | Purpose | Default host exposure |
+| --- | --- | --- |
+| `web` | Next.js standalone app, `CAPSULE_PROVIDER_MODE=supabase` | `127.0.0.1:3000` |
+| `kong` | Supabase API gateway for Auth, REST, Storage, Realtime, Functions | `127.0.0.1:8000`, `127.0.0.1:8443` |
+| `db` | Supabase PostgreSQL 17 with pgvector and Capsule Zero migrations | internal only |
+| `auth` | Supabase Auth / GoTrue | via Kong |
+| `rest` | PostgREST over `public,storage,graphql_public` | via Kong |
+| `storage` | Supabase Storage file backend | via Kong |
+| `imgproxy` | Storage image transformation backend | internal only |
+| `realtime` | Supabase Realtime tenant `realtime-dev` | via Kong |
+| `meta` | Postgres metadata service for Studio | internal only |
+| `studio` | Supabase Studio admin UI | `127.0.0.1:3001` |
+| `supavisor` | Postgres pooler | `127.0.0.1:54329`, `127.0.0.1:6543` |
+| `functions` | Supabase Edge Runtime shell for future functions | via Kong |
+| `migrate` | One-shot Capsule Zero SQL migration runner | none |
+
+Persistent data lives in named Docker volumes:
+
+- `capsule-zero_supabase-db-data`
+- `capsule-zero_supabase-db-config`
+- `capsule-zero_supabase-storage`
+- `capsule-zero_deno-cache`
 
 ## Files
 
 | File | Purpose |
 | --- | --- |
 | `app/Dockerfile` | Builds the Next.js standalone production image. |
-| `docker-compose.yml` | Runs the web image with restart policy, port binding, and healthcheck. |
-| `deploy/compose.env.example` | Template for Compose interpolation values; copy to `.env` on the VM. |
-| `deploy/stage.env.example` | Staging runtime env template; copy to `deploy/runtime.env` on staging. |
-| `deploy/prod.env.example` | Production runtime env template; copy to `deploy/runtime.env` on production. |
+| `docker-compose.yml` | Runs web plus Supabase core services, volumes, dependencies, healthchecks. |
+| `deploy/compose.env.example` | Compose interpolation template; copy to `.env` and rotate secrets. |
+| `deploy/runtime.env` | Non-secret local runtime defaults for the web container. |
+| `deploy/stage.env.example` | Staging web runtime template. |
+| `deploy/prod.env.example` | Production web runtime template. |
+| `deploy/supabase/` | Upstream Supabase self-host config files and migration runner used by Compose. |
+| `supabase/migrations/` | Capsule Zero schema, storage buckets/RLS, provider runtime alignment. |
 
-## One-Command Runtime
+## First Start
 
-On each VM, prepare env files once:
+Prepare env files:
 
 ```bash
 cp deploy/compose.env.example .env
 cp deploy/stage.env.example deploy/runtime.env
 ```
 
-For production, copy `deploy/prod.env.example` instead:
+For production, use:
 
 ```bash
 cp deploy/prod.env.example deploy/runtime.env
 ```
 
-Fill real values in `.env` and `deploy/runtime.env`, then start or update the
-service:
+Before starting any shared environment, rotate all values in `.env` marked as
+secret: `POSTGRES_PASSWORD`, `JWT_SECRET`, `ANON_KEY`, `SERVICE_ROLE_KEY`,
+`DASHBOARD_PASSWORD`, `SECRET_KEY_BASE`, `VAULT_ENC_KEY`,
+`PG_META_CRYPTO_KEY`, S3 protocol keys, SMTP credentials, and external provider
+keys.
+
+Start the stack:
 
 ```bash
 docker compose up -d --build
 ```
 
-Older Docker Compose installations may use:
+For a local port override:
 
 ```bash
-docker-compose up -d --build
+CAPSULE_HOST_PORT=3100 docker compose up -d --build
 ```
 
-The service binds to `127.0.0.1:3000` by default so a host-level reverse proxy
-or load balancer can terminate TLS and forward to the container. Change
-`CAPSULE_HOST_BIND` and `CAPSULE_HOST_PORT` in `.env` if the VM should expose
-the container directly.
+## Health Checks
 
-## Image Reuse
-
-The default flow builds locally on the VM. To use a registry-hosted image,
-publish the same `app/Dockerfile` target and set `CAPSULE_WEB_IMAGE` in `.env`:
+Primary app health:
 
 ```bash
-CAPSULE_WEB_IMAGE=ghcr.io/<owner>/capsule-zero-web:<sha>
+curl -fsS http://127.0.0.1:3000/api/health
 ```
 
-Then run:
+Supabase gateway checks:
 
 ```bash
-docker compose pull
-docker compose up -d
+curl -fsS http://127.0.0.1:8000/auth/v1/health
+curl -fsS http://127.0.0.1:8000/storage/v1/status
 ```
 
-## Healthcheck
+Expected app health uses:
 
-Compose checks:
+- `providerMode: "supabase"`
+- `providerHealth.integrations.supabase: "configured"`
+- `providerHealth.integrations.storage: "configured"`
+
+`backgroundRemoval`, `marketplaceImport`, and `lavaTop` stay `pending-gate`
+until real Photoroom, marketplace import, and Lava.top credentials are supplied.
+They are no longer mocked inside the app runtime.
+
+## Migrations
+
+The first database initialization mounts official Supabase init scripts from
+`deploy/supabase/db/`. Capsule Zero migrations run separately in the one-shot
+`migrate` service after Auth, PostgREST, and Storage are healthy. This keeps app
+schema changes after Supabase has created `auth` and `storage` internals.
+
+The migration runner records applied files in:
 
 ```text
-GET /api/health
+public.capsule_zero_schema_migrations
 ```
 
-The endpoint reports the active provider mode and provider health. In the
-current Stage 1 posture, `CAPSULE_PROVIDER_MODE=mock` is the only mode that can
-run successfully on `main`; `supabase` remains an integration gate until the
-real provider implementation and evidence are merged.
+Do not delete or reorder existing migration files after a volume has been
+initialized. For schema changes, add a new timestamped or numbered SQL file.
 
-## Production Boundaries
+For a destructive local reset only:
 
-Before using this as a real production deployment:
+```bash
+docker compose down -v
+docker compose up -d --build
+```
 
-- put TLS, compression, and public ingress in Caddy, Nginx, a DigitalOcean Load
-  Balancer, or an equivalent edge layer;
-- keep real secrets only in VM env files or provider dashboards, never in git;
-- configure log retention and host metrics outside the container;
-- configure backups in the canonical data provider, not in the web container;
-- replace placeholder Supabase, Lava.top, Photoroom, and remove.bg values only
-  after each integration gate is approved;
-- keep `CAPSULE_PROVIDER_MODE=mock` for screenshot/staging review deployments
-  until the Supabase provider path is actually available on `main`.
+Never use `down -v` on staging or production unless a restore plan has already
+been tested.
+
+## Backups
+
+Production backups must cover both database and object storage.
+
+Database backup:
+
+```bash
+docker compose exec db pg_dump -U postgres -d postgres --format=custom > capsule-zero.dump
+```
+
+Storage backup:
+
+```bash
+docker run --rm \
+  -v capsule-zero_supabase-storage:/storage:ro \
+  -v "$PWD/backups:/backup" \
+  alpine tar czf /backup/capsule-zero-storage.tgz -C /storage .
+```
+
+Restore into an empty stack by restoring Postgres first, then the storage
+volume, then starting `web`.
+
+## Upgrades
+
+1. Read upstream Supabase self-host release notes before changing image tags.
+2. Update `docker-compose.yml` image tags and refreshed files under
+   `deploy/supabase/` together.
+3. Validate config:
+
+```bash
+docker compose --env-file deploy/compose.env.example config
+```
+
+4. Run local smoke checks against a fresh volume set.
+5. Back up staging/production before pulling new images.
+
+## Ingress
+
+Compose binds public-facing ports to localhost by default. Put Caddy, Nginx,
+a load balancer, or another TLS layer in front of:
+
+- web app: `http://127.0.0.1:3000`
+- Supabase API: `http://127.0.0.1:8000`
+
+Keep Studio and Postgres/pooler ports private unless an operator explicitly
+opens them through a VPN or bastion.

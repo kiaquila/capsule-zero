@@ -1,51 +1,72 @@
-# Implementation Plan: Docker Compose Stage And Production Deploy
+# Implementation Plan: Production Docker Compose Supabase Runtime
 
 **Branch**: `codex/docker-compose-prod-stage` | **Date**: 2026-06-26 | **Spec**: `.specify/specs/023-docker-compose-deploy/spec.md`
 
 ## Summary
 
-Package the web app as a production Next.js standalone Docker image and add a Docker Compose runtime that can be used on staging or production VMs with env-file differences only. Keep the deployment web-only and explicitly preserve provider integration gates.
+Promote the Docker Compose PR from web-only packaging to a production-shaped runtime: the web app runs against self-hosted Supabase core services, real persisted storage/database/auth, and explicit external-provider gates instead of mock provider responses.
 
 ## Technical Context
 
 **Language/Version**: TypeScript, React 19.2, Next.js 16.2.6 App Router, Node 22 Docker base image
-**Primary Dependencies**: Next.js standalone output, Docker, Docker Compose
-**Storage**: No containerized data storage; provider storage remains Supabase integration-gate work
-**Testing**: Repo checks, Next build, Docker build, Compose config, Compose smoke-test, `/api/health`
+**Primary Dependencies**: Docker Compose, Supabase self-hosted services, `@supabase/supabase-js`, `@supabase/ssr`, Postgres 17, pgvector
+**Storage**: Supabase Postgres and Supabase Storage named Docker volumes
+**Testing**: Repo checks, API contract check, lint, typecheck, Next build, Docker build, Compose config, Compose smoke, Supabase Auth/PostgREST/Storage smoke, browser smoke
 **Target Platform**: Linux VM with Docker Engine and Docker Compose
-**Project Type**: Next.js web application container
-**Performance Goals**: Build a small standalone runtime image instead of copying full source and dev dependencies into the final image
-**Constraints**: No production secrets in git, mock-first Stage 1 provider posture, one image across stage/prod
-**Scale/Scope**: Web container packaging, Compose service, env examples, docs, CI build check
+**Project Type**: Next.js web app plus self-hosted backend services
+**Performance Goals**: Use production Next standalone image and Supabase services with health/dependency ordering
+**Constraints**: No production secrets in git, EN/RU MVP scope unchanged, external providers must not silently mock production behavior
+**Scale/Scope**: Compose topology, provider adapter, migrations, env templates, operation docs
 
 ## Constitution Check
 
-- Glassmorphism/Achromatic UI: N/A; no user-facing UI changes.
-- Capsule methodology: N/A; no domain methodology changes.
-- Direct, Not Dictate: PASS; docs state exactly what this deployment does and where provider gates remain.
-- Premium quality bar: PASS; `/api/health` healthcheck, restart policy, and CI Docker build reduce deployment ambiguity.
-- Three upload methods: N/A; no upload flow changed.
-- Engineering reuse: PASS; existing `/api/health` and runtime env validation are reused instead of adding new deploy checks.
+- Glassmorphism/Achromatic UI: N/A; no user-facing UI styling changes.
+- Capsule methodology: PASS; methodology stays behind the existing provider port and database-backed catalog data.
+- Direct, Not Dictate: PASS; external provider gates explain what is configured or pending instead of pretending credentials exist.
+- Premium quality bar: PASS; startup health, migration idempotency, and browser smoke reduce deployment ambiguity.
+- Three upload methods: PASS for provider boundaries; storage and marketplace import now use real Supabase/external-gated paths rather than mock URLs.
+- Engineering reuse: PASS; implementation reuses the existing provider contracts, health route, migrations, storage policies, and route/page call sites.
 
 ## Verification
 
 | Acceptance criterion | Evidence |
 | --- | --- |
-| SC-001 feature memory guard | `npm run check:feature-memory -- --worktree` exited 0 and printed `Feature-memory gate passed via .specify/specs/023-docker-compose-deploy/{spec,plan,tasks}.md`. |
-| SC-002 repo/app checks | `npm run check:repo`, `npm run check:api-contract`, `npm run lint`, `npm run typecheck`, and `npm run build` exited 0. Build output included `/api/health`, localized `/en`/`/ru` routes, legal SSG routes, and dynamic wardrobe routes. |
-| SC-003 env templates validate | `npm run check:runtime-env -- --env deploy/stage.env.example --allow-placeholders` and `npm run check:runtime-env -- --env deploy/prod.env.example --allow-placeholders` exited 0. |
-| SC-004 Docker image builds | `docker build --target runner -t capsule-zero-web:local ./app` exited 0 and exported `docker.io/library/capsule-zero-web:local`. |
-| SC-005 Compose config renders | `CAPSULE_RUNTIME_ENV_FILE=./deploy/stage.env.example docker compose --env-file deploy/compose.env.example config` exited 0 and rendered the `web` service with `image: capsule-zero-web:local`, `target: runner`, `restart: unless-stopped`, `127.0.0.1:3000`, and `/api/health` healthcheck. |
-| SC-006 Compose starts service | `cp deploy/stage.env.example deploy/runtime.env && CAPSULE_HOST_PORT=3010 docker compose --env-file deploy/compose.env.example up -d --build web` exited 0; `docker compose ps` showed `capsule-zero-docker-deploy-web-1` as `Up ... (healthy)` with `127.0.0.1:3010->3000/tcp`. |
-| SC-007 `/api/health` returns 200 | `curl -sS -i http://127.0.0.1:3010/api/health` returned `HTTP/1.1 200 OK` with JSON `{"ok":true,"apiVersion":"0.1.0","providerMode":"mock",...}`. |
-| SC-008 runtime env is ignored | `git check-ignore -v deploy/runtime.env` returned `.gitignore:7:deploy/*.env deploy/runtime.env`. |
-| Negative scenario 2 provider gate remains explicit | Source audit: `app/src/lib/providers/registry.ts` still throws for `CAPSULE_PROVIDER_MODE=supabase`, and deploy docs state `mock` is the only runnable mode on current `main`. |
-| FR-001 through FR-010 implementation coverage | Source audit: `app/Dockerfile`, `app/next.config.ts`, `docker-compose.yml`, `deploy/*.env.example`, `.gitignore`, `docs_capsule_zero/project/devops/docker-compose-deploy.md`, and `.github/workflows/ci.yml`. |
+| SC-001 feature memory guard | Passed on 2026-06-26 inside `npm run preflight`: `Feature-memory gate passed via .specify/specs/023-docker-compose-deploy/{spec,plan,tasks}.md`. |
+| SC-002 local repo/app checks | Passed on 2026-06-26: `npm run preflight` completed feature-memory, repo baseline, API contract, lint, typecheck, Next build, and tests. `docker build --target runner -t capsule-zero-web:ci ./app` also completed successfully and exported `capsule-zero-web:ci`. |
+| SC-003 Compose config renders | Passed on 2026-06-26: `CAPSULE_HOST_PORT=3100 SITE_URL=http://127.0.0.1:3100 ADDITIONAL_REDIRECT_URLS=http://127.0.0.1:3100/en/auth,http://localhost:3100/en/auth docker compose --env-file deploy/compose.env.example config >/tmp/capsule-zero-compose-config.yml`; output had 636 rendered lines. |
+| SC-004 real stack starts | Passed on 2026-06-26: `CAPSULE_HOST_PORT=3100 SITE_URL=http://127.0.0.1:3100 ADDITIONAL_REDIRECT_URLS=http://127.0.0.1:3100/en/auth,http://localhost:3100/en/auth docker compose --env-file deploy/compose.env.example up -d --build web`; image `capsule-zero-web:local` rebuilt and web container recreated. |
+| SC-005 services healthy and migrate exits 0 | Passed on 2026-06-26: `docker compose --env-file deploy/compose.env.example ps -a` showed `auth`, `db`, `functions`, `imgproxy`, `kong`, `meta`, `rest`, `storage`, `studio`, `supavisor`, `web`, and `realtime` healthy; `capsule-zero-migrate-1` showed `Exited (0)`. |
+| SC-006 health reflects real Supabase mode | Passed on 2026-06-26: `curl -fsS http://127.0.0.1:3100/api/health | jq .` returned `providerMode: "supabase"`, `supabase: "configured"`, `storage: "configured"`, `semanticSearch: "configured"`, and `pending-gate` for missing external provider credentials. |
+| SC-007 Supabase Auth creates profile | Passed on 2026-06-26: POST to `http://127.0.0.1:8000/auth/v1/signup` with anon key created a real auth user; service-role REST query to `/rest/v1/profiles?select=*` showed the matching `public.profiles` row; cleanup command deleted the temporary `compose-smoke-%@example.test` user. |
+| SC-008 browser smoke | Passed on 2026-06-26 after rebuild: in-app browser loaded `http://127.0.0.1:3100/en`, title `Capsule Zero`, H1 `When new money mindset meets old money taste`, and no browser console errors. |
+| SC-009 GitHub merge-readiness | Pending after commit/push: mark PR #45 ready for review, update PR body, trigger `@codex review`, then wait for `baseline-checks`, `guard`, `AI Review`, and `osv-scan`. |
+| Negative scenario 1 no real production secrets in git | Source evidence: stage/prod env examples use `replace-with-*` placeholders; `deploy/compose.env.example` labels demo JWT values local-only and instructs rotation before shared/stage/prod use. |
+| Negative scenario 2 app change has feature memory | Source evidence: this PR updates `.specify/specs/023-docker-compose-deploy/spec.md`, `plan.md`, and `tasks.md`. |
+| Negative scenario 3 blank external providers degrade honestly | Runtime evidence: `/api/health` returned `ok: false`, `status: "degraded"`, and `pending-gate` for marketplace import, background removal, Lava.top, Google OAuth, and Apple Sign-In. |
+| Negative scenario 4 migrations are idempotent | Runtime evidence: after web rebuild, `migrate` logs showed `Skipping already applied Capsule Zero migration: 0001_initial_schema.sql`, `0002_storage_policies.sql`, and `0003_runtime_provider_alignment.sql`, then exited 0. |
+| Stage/prod env templates validate | Passed on 2026-06-26: `npm run check:runtime-env -- --env deploy/stage.env.example --allow-placeholders` and `npm run check:runtime-env -- --env deploy/prod.env.example --allow-placeholders`. |
+| Whitespace safety | Passed on 2026-06-26: `git diff --check` exited 0. |
 
 ## SENAR Done Gate
 
 - [x] Feature memory names goal and scope in `spec.md`.
 - [x] Verification table names evidence for every acceptance criterion.
-- [x] At least one negative scenario is covered.
+- [x] Negative scenarios are covered.
 - [x] `tasks.md` process memory is updated before completion.
 - [ ] PR description includes the SENAR Done Gate checklist.
+- [ ] GitHub required checks are green on the final head SHA.
+- [ ] A fresh Codex review is triggered on the final head SHA.
+
+## Project Structure
+
+```text
+app/src/lib/providers/supabase/index.ts
+deploy/supabase/
+docker-compose.yml
+supabase/migrations/0003_runtime_provider_alignment.sql
+docs_capsule_zero/project/devops/docker-compose-deploy.md
+```
+
+## Complexity Tracking
+
+The implementation intentionally adds a substantial self-hosted service topology. The complexity is contained in `docker-compose.yml`, `deploy/supabase/`, and one Supabase provider adapter while preserving existing UI and provider contracts.
