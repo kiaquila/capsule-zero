@@ -32,6 +32,7 @@
 - [x] T020 Inspect failed GitHub guard log and identify missing feature-memory requirement.
 - [x] T021 Add this SENAR feature memory package.
 - [x] T022 Address Codex review feedback by replacing the legal document switcher hard-coded glass values with nav glass tokens.
+- [x] T023 Address Codex review feedback by replacing summary-like `plan.md` verification rows with concrete command, DOM JSON, source, build, and guard evidence artifacts.
 
 ## Process Memory
 
@@ -41,6 +42,7 @@
 - The current repository worktree contained many unrelated modified and untracked files, so the PR was created from a separate clean worktree instead of staging from the dirty tree.
 - The initial PR guard failed because product `app/` paths changed without a matching `.specify/specs/<feature-id>/spec.md`, `plan.md`, and `tasks.md` package.
 - AI Review later timed out waiting for review output on head `7b78644`, so the PR needed a fresh `@codex review` trigger after the feedback fix.
+- AI Review then blocked on summary-like SENAR verification rows in `plan.md`; replacing those rows with concrete artifacts was required before retriggering review.
 
 ### Decisions
 
@@ -49,6 +51,7 @@
 - Create the PR from fresh `origin/main` to avoid carrying unrelated local work from `codex/sidebar-language-fixes`.
 - Open the PR as draft because it is intended for another agent/legal-review pass before merge readiness.
 - Reuse `--glass-nav-bg`, `--glass-nav-blur`, and `--glass-nav-border` for the legal document switcher so it follows the established nav glass surface instead of creating a local variant.
+- Keep SENAR evidence inside the feature plan as command-backed artifacts so reviewers can validate acceptance criteria without relying on prose summaries.
 
 ### Known Issues
 
