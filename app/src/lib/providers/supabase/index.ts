@@ -748,12 +748,15 @@ function buildStoragePort(
       const { bucket, objectPath } = parseStoragePath(completion.storagePath);
       const { data: asset, error: assetError } = await service
         .from("item_assets")
-        .insert({
-          user_id: userId,
-          bucket,
-          object_path: objectPath,
-          variant: "original",
-        })
+        .upsert(
+          {
+            user_id: userId,
+            bucket,
+            object_path: objectPath,
+            variant: "original",
+          },
+          { onConflict: "bucket,object_path" },
+        )
         .select("*")
         .single();
       throwIfError(assetError, "Failed to register uploaded asset");
@@ -1741,21 +1744,43 @@ async function upsertProfileFromAuthUser(
   name: string | undefined,
 ): Promise<Profile> {
   const now = new Date().toISOString();
+  const { data: existing, error: existingError } = await service
+    .from("profiles")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  throwIfError(existingError, "Failed to load Supabase profile");
+
+  if (existing) {
+    const existingProfile = existing as DbProfile;
+    const { data, error } = await service
+      .from("profiles")
+      .update(
+        stripUndefined({
+          email,
+          display_name: existingProfile.display_name ? undefined : name ?? email,
+          updated_at: now,
+        }),
+      )
+      .eq("user_id", userId)
+      .select("*")
+      .single();
+    throwIfError(error, "Failed to sync Supabase profile");
+    return mapProfile(data as DbProfile);
+  }
+
   const { data, error } = await service
     .from("profiles")
-    .upsert(
-      {
-        user_id: userId,
-        email,
-        display_name: name ?? email,
-        language: "en",
-        updated_at: now,
-      },
-      { onConflict: "user_id" },
-    )
+    .insert({
+      user_id: userId,
+      email,
+      display_name: name ?? email,
+      language: "en",
+      updated_at: now,
+    })
     .select("*")
     .single();
-  throwIfError(error, "Failed to upsert Supabase profile");
+  throwIfError(error, "Failed to create Supabase profile");
   return mapProfile(data as DbProfile);
 }
 

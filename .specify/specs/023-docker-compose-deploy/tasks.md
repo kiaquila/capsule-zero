@@ -48,11 +48,13 @@
 - [x] T036 Address Codex AI Review findings for signed sessions, atomic coin debits, and marketplace confirmation foreign keys.
 - [x] T037 Apply `0004_atomic_coin_spend.sql` through the Compose `migrate` service.
 - [x] T038 Rerun local preflight and whitespace checks after the AI Review fixes.
-- [ ] T039 Commit and push the AI Review fix iteration.
-- [ ] T040 Trigger a fresh `@codex review` comment on the final pushed head.
+- [x] T039 Commit and push the AI Review fix iteration.
+- [x] T040 Trigger a fresh `@codex review` comment on the pushed fix iterations.
 - [x] T041 Address second Codex AI Review findings for upload asset attach, Lava purchase credits, and processed image polling.
 - [x] T042 Apply `0005_atomic_coin_credit.sql` through the Compose `migrate` service.
 - [x] T043 Verify `credit_coins_atomic` idempotency through PostgREST RPC smoke.
+- [x] T044 Address third Codex AI Review findings for verified protected-route sessions, preserved profile sync fields, and idempotent upload completion.
+- [x] T045 Rerun local preflight and Docker build after third AI Review fixes.
 
 ## Process Memory
 
@@ -78,6 +80,9 @@
 - Attach completed photo-upload assets with an upsert by `(bucket, object_path)` because the upload-completion step already owns the storage object row before an item is created from it.
 - Move Lava purchase credits into a sibling database RPC to keep webhook retries idempotent under concurrent delivery.
 - Resolve processed image URLs from persisted storage coordinates during upload-job polling so a reload does not lose the processed asset URL.
+- Keep `readMockSession` as a compatibility export, but route it through provider auth verification in Supabase mode so protected pages do not bypass token validation.
+- Preserve existing profile display name and locale during Supabase auth sync; sign-in should refresh email/metadata without discarding user-edited preferences.
+- Upsert upload-completion assets by storage object identity so retrying completion after the asset exists still reaches the job update.
 
 ### Known Issues
 

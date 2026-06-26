@@ -24,14 +24,7 @@ export type PersistedMockSession = PersistedAppSession;
 
 export async function persistAppSession(session: Session) {
   const cookieStore = await cookies();
-  const value: PersistedAppSession = {
-    userId: session.user.id,
-    email: session.user.email,
-    name: session.user.name,
-    accessToken: session.accessToken,
-    createdAt: session.user.createdAt,
-    expiresAt: session.expiresAt,
-  };
+  const value = toPersistedAppSession(session);
 
   cookieStore.set(APP_SESSION_COOKIE, serializeSignedSession(value), {
     httpOnly: true,
@@ -58,10 +51,36 @@ export async function readAppSession(): Promise<PersistedAppSession | null> {
   return null;
 }
 
+export async function readVerifiedAppSession(): Promise<PersistedAppSession | null> {
+  const persisted = await readAppSession();
+  if (!persisted) {
+    return null;
+  }
+
+  if (process.env.CAPSULE_PROVIDER_MODE === "mock") {
+    return persisted;
+  }
+
+  const { createProviderRegistry } = await import("@/lib/providers/registry");
+  const session = await createProviderRegistry().auth.getCurrentSession();
+  return session ? toPersistedAppSession(session) : null;
+}
+
 export async function clearAppSession() {
   const cookieStore = await cookies();
   cookieStore.delete(APP_SESSION_COOKIE);
   cookieStore.delete(LEGACY_MOCK_SESSION_COOKIE);
+}
+
+function toPersistedAppSession(session: Session): PersistedAppSession {
+  return {
+    userId: session.user.id,
+    email: session.user.email,
+    name: session.user.name,
+    accessToken: session.accessToken,
+    createdAt: session.user.createdAt,
+    expiresAt: session.expiresAt,
+  };
 }
 
 function serializeSignedSession(value: PersistedAppSession): string {
@@ -161,5 +180,5 @@ function allowLegacyMockSession(): boolean {
 }
 
 export const persistMockSession = persistAppSession;
-export const readMockSession = readAppSession;
+export const readMockSession = readVerifiedAppSession;
 export const clearMockSession = clearAppSession;
