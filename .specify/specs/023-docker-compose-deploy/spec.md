@@ -27,6 +27,7 @@ In scope:
 - Keep migration tracking metadata outside the PostgREST-exposed `public` schema and migrate any earlier public tracking table into the private ledger.
 - Resolve Supabase color catalog references by stable palette/catalog color IDs when they are supplied, falling back to HEX matching only for legacy or ad hoc color points.
 - Harden critic/architect/OMX review boundaries for confirmation-required Supabase signups, Lava product IDs, dedicated app-session signing, verified user-scoped service-role access, JWT-verified Edge Functions, JSON-aware health checks, and scripted ordered Compose deploys.
+- Preserve marketplace external image assets per confirmed item so repeated retailer/CDN image URLs cannot move an existing asset away from an earlier wardrobe item.
 - Update env examples and deployment docs for local, staging, and production operation.
 - Preserve local smoke-testability with clearly marked demo Supabase JWT values that must be rotated outside local runs.
 
@@ -90,6 +91,7 @@ Operators can see which real external integrations still need credentials, and t
 8. **Given** a local developer runs the app without `CAPSULE_PROVIDER_MODE`, **When** fixture-backed auth actions or `/api/health` initialize providers, **Then** the app uses the mock provider instead of requiring Supabase credentials.
 9. **Given** a Journey palette color such as White (`A3`) has a UI HEX value that differs from the seeded catalog HEX, **When** Supabase validates or creates a capsule from that palette, **Then** the color resolves by catalog ID before any HEX fallback.
 10. **Given** production app sessions must be signed, **When** `SESSION_SIGNING_SECRET` is missing, **Then** runtime validation and session signing fail instead of falling back to Supabase service-role or JWT secrets.
+11. **Given** two marketplace imports share the same external HTTP image URL, **When** both are confirmed into wardrobe items, **Then** each item keeps its own marketplace asset reference instead of reassigning the first item's image to the second item.
 
 ## Requirements
 
@@ -156,6 +158,7 @@ Operators can see which real external integrations still need credentials, and t
 - **FR-059**: The canonical Compose deploy command MUST run the ordered dependency, migration, and web startup sequence through `npm run deploy:compose`.
 - **FR-060**: Lava.top invoice creation and Lava health readiness MUST require real Lava product IDs for every supported coin pack when Lava is enabled, and MUST NOT substitute local pack IDs such as `coins_5`.
 - **FR-061**: Public health status MUST distinguish core Supabase/storage readiness from external SaaS gates so missing external credentials remain `pending-gate` without making a configured core runtime look unavailable.
+- **FR-062**: Marketplace external image asset paths MUST be scoped by confirmed item identity as well as user identity so two items with the same retailer/CDN image URL cannot collide on `item_assets(bucket, object_path)`.
 
 ### Key Entities
 
@@ -197,3 +200,4 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-026**: Codex follow-up fixes for private migration tracking metadata pass local verification and a fresh Codex review cycle.
 - **SC-027**: Codex follow-up fixes for palette color ID resolution and unset local provider mode pass local verification and a fresh Codex review cycle.
 - **SC-028**: Critic/architect/OMX follow-up fixes for confirmation-required signups, Lava product ID gates, shared session signing, user-scoped service-role access, Edge Function auth defaults, strict healthchecks, and scripted Compose deploys pass local verification and a fresh Codex review cycle.
+- **SC-029**: Codex follow-up fixes for item-scoped marketplace external image assets pass local verification and a fresh Codex review cycle.

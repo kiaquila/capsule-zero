@@ -2276,7 +2276,7 @@ async function maybeAttachDraftAsset(
           user_id: userId,
           item_id: item.id,
           bucket: EXTERNAL_ASSET_BUCKET,
-          object_path: toExternalAssetObjectPath(userId, draft.imageUrl),
+          object_path: toExternalAssetObjectPath(userId, item.id, draft.imageUrl),
           variant: "marketplace",
         },
         { onConflict: "bucket,object_path" },
@@ -2399,12 +2399,18 @@ function isHttpUrl(value: string): boolean {
   return /^https?:\/\//i.test(value.trim());
 }
 
-function toExternalAssetObjectPath(userId: string, imageUrl: string): string {
-  return `${userId}/${Buffer.from(imageUrl, "utf8").toString("base64url")}`;
+function toExternalAssetObjectPath(
+  userId: string,
+  itemId: string,
+  imageUrl: string,
+): string {
+  return `${userId}/${itemId}/${Buffer.from(imageUrl, "utf8").toString(
+    "base64url",
+  )}`;
 }
 
 function readExternalAssetUrl(objectPath: string): string | undefined {
-  const encodedUrl = objectPath.split("/").slice(1).join("/");
+  const encodedUrl = objectPath.split("/").at(-1);
   if (!encodedUrl) {
     return undefined;
   }

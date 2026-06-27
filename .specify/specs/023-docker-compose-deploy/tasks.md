@@ -114,6 +114,10 @@
 - [x] T102 Rerun local lint/typecheck/build, Compose config, runtime env checks, repo/API checks, feature-memory guard, and whitespace checks after critic/architect/OMX fixes.
 - [x] T103 Commit and push the critic/architect/OMX fix iteration.
 - [x] T104 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed critic/architect/OMX fix iteration.
+- [x] T105 Address nineteenth Codex Review finding for item-scoped marketplace external image asset paths.
+- [x] T106 Rerun local lint/typecheck/build, Compose config, and whitespace checks after nineteenth Codex fix.
+- [ ] T107 Commit and push the nineteenth Codex fix iteration.
+- [ ] T108 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed nineteenth fix iteration.
 
 ## Process Memory
 
@@ -183,6 +187,7 @@
 - Make the Docker web healthcheck parse `/api/health` and require JSON `ok: true` instead of trusting HTTP 200.
 - Require configured Lava API credentials plus real Lava product IDs for all coin packs before Lava is considered ready or invoice creation can call Lava.top.
 - Use `npm run deploy:compose` as the canonical ordered Compose deploy command so migrations are force-recreated before `web` starts.
+- Scope marketplace external asset object paths by confirmed item id as well as user id, while decoding the final path segment for legacy `userId/encodedUrl` references, so two imported items with the same retailer/CDN image URL cannot reassign one asset row between items.
 
 ### Known Issues
 
