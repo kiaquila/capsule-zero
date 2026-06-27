@@ -2,7 +2,9 @@
 
 import { spawnSync } from "node:child_process";
 
-const baseServices = [
+const legacyComposeFile = "docker-compose.legacy-supabase.yml";
+
+const legacyBaseServices = [
   "db",
   "auth",
   "rest",
@@ -17,9 +19,13 @@ const baseServices = [
 ];
 
 function run(args) {
-  const result = spawnSync("docker", ["compose", ...args], {
-    stdio: "inherit",
-  });
+  const result = spawnSync(
+    "docker",
+    ["compose", "-f", legacyComposeFile, ...args],
+    {
+      stdio: "inherit",
+    },
+  );
 
   if (result.error) {
     throw result.error;
@@ -31,7 +37,10 @@ function run(args) {
 }
 
 function main() {
-  run(["up", "-d", "--build", "--wait", ...baseServices]);
+  console.warn(
+    `deploy:compose targets the legacy Supabase runtime via ${legacyComposeFile}.`,
+  );
+  run(["up", "-d", "--build", "--wait", ...legacyBaseServices]);
   run(["up", "--force-recreate", "--no-deps", "migrate"]);
   run(["up", "-d", "--build", "--wait", "web"]);
 }

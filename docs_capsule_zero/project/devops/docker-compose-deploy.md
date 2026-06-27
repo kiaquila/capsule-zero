@@ -15,7 +15,7 @@ Each service is declared as a separate `services:` entry in one root `docker-com
 | `api`       | local build of `/api`            | Go modular monolith                                            | internal only (behind Traefik)|
 | `worker`    | local build of `/worker`         | Redis-queue consumer (image jobs, embeddings, webhook fanout)  | internal only                 |
 | `kratos`    | `oryd/kratos`                    | Identity provider (email/password Stage 1)                     | internal only (behind Traefik)|
-| `postgres`  | `postgres:16-alpine` + pgvector  | App database + Kratos database (separate logical DBs)          | internal only                 |
+| `postgres`  | `pgvector/pgvector:pg16`         | App database + Kratos database (separate logical DBs)          | internal only                 |
 | `pgbouncer` | `edoburu/pgbouncer`              | Connection pool in front of Postgres                           | internal only                 |
 | `redis`     | `redis:7-alpine`                 | Cache, sessions, job queue                                     | internal only                 |
 | `imgproxy`  | `darthsim/imgproxy`              | On-the-fly image resize/WebP for derived sizes                 | internal only (behind Traefik)|

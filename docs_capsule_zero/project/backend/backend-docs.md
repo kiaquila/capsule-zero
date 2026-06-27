@@ -152,7 +152,7 @@ The full runtime is delivered by `.specify/specs/024-production-stack-runtime/`.
 | -------------- | -------------------------------- | ---------------------------------------------------------- |
 | `traefik`      | `traefik:v3`                     | API gateway, TLS, rate-limit, forward-auth                 |
 | `kratos`       | `oryd/kratos`                    | Identity provider                                          |
-| `postgres`     | `postgres:16-alpine` + pgvector  | Application database + Kratos database                     |
+| `postgres`     | `pgvector/pgvector:pg16`         | Application database + Kratos database                     |
 | `pgbouncer`    | `edoburu/pgbouncer`              | Connection pool in front of Postgres                       |
 | `redis`        | `redis:7-alpine`                 | Cache, sessions, job queue                                 |
 | `api`          | local build of `/api`            | Go monolith                                                |
