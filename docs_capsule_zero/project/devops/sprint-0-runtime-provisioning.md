@@ -40,8 +40,8 @@ Until these gates open, the corresponding API surface exists as stubs (Lava.top)
 ### 1. DNS and Cloudflare
 
 - Confirm Spaceship nameservers point to Cloudflare.
-- In Cloudflare, add an `A` record for `capsulezero.app` and `grafana.capsulezero.app` pointing to the droplet IP, with proxy (orange cloud) enabled.
-- SSL/TLS mode: `Full (strict)`.
+- In Cloudflare, add an `A` record for `capsulezero.app` and `grafana.capsulezero.app` pointing to the droplet IP, with proxy disabled (`DNS only`) for first certificate issuance.
+- SSL/TLS mode: `Full (strict)` for the steady state after the proxy is enabled.
 - Enable `Bot Fight Mode` and `Always Use HTTPS`.
 - Add a Page Rule (or Rules Engine entry) for `capsulezero.app/api/*` with cache level `Bypass`.
 
@@ -51,17 +51,21 @@ Until these gates open, the corresponding API surface exists as stubs (Lava.top)
 - Configure `ufw` to allow `22/tcp`, `80/tcp`, `443/tcp` only.
 - Create a `capsule-zero` user; disable root password login.
 - Install Docker Engine + docker-compose plugin from the official Docker apt repository.
-- Place the encrypted `.env` under `/srv/capsule-zero/.env` with mode `600`.
+- Prepare the encrypted `.env`; after cloning the repo, install it under `/srv/capsule-zero/repo/.env` with mode `600` so Compose loads it from the project directory.
 
 ### 3. Pull repo and start the stack
 
 ```bash
 git clone git@github.com:kiaquila/capsule-zero.git /srv/capsule-zero/repo
 cd /srv/capsule-zero/repo
-docker compose up -d
+install -m 600 /path/to/encrypted/.env ./.env
+docker compose --env-file ./.env up -d
+docker compose logs traefik --tail=50 # confirm Let's Encrypt issued certificates
 ```
 
 This brings up Traefik, Kratos, Postgres, PgBouncer, Redis, the Go API, the Go worker, the Next.js web container, imgproxy, and Grafana. golang-migrate runs at API boot. Kratos runs its own migrations through its init container.
+
+After Traefik logs successful ACME issuance for `capsulezero.app` and `grafana.capsulezero.app`, enable the Cloudflare proxy (orange cloud) on both records.
 
 ### 4. Verify health end-to-end
 

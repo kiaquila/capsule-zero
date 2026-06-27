@@ -13,7 +13,7 @@
 - [ ] Cloudflare proxy on `capsulezero.app`; SSL/TLS Full (strict); Bot Fight Mode on
 - [ ] DigitalOcean Spaces bucket `capsulezero` created with CORS for `https://capsulezero.app`
 - [ ] Resend account verified for `no-reply@capsulezero.app`; SPF + DKIM published
-- [ ] Encrypted `.env` placed at `/srv/capsule-zero/.env` with mode `600`
+- [ ] Encrypted `.env` placed at `/srv/capsule-zero/repo/.env` with mode `600`
 - [ ] `api/migrations/0001_initial_schema.sql` with full schema + methodology seed
 - [ ] Traefik config: TLS, rate-limit, forward-auth into Kratos
 - [ ] Kratos identity schema + Resend SMTP courier + self-service flows configured
@@ -43,6 +43,8 @@
 - 2026-06-27 PR #48 review fix: the insecure Traefik dev dashboard published by `docker-compose.dev.yml` binds to `127.0.0.1:8081`, matching the file comment and avoiding exposure on shared hosts.
 - 2026-06-27 PR #48 review fix: `npm run deploy:compose` now explicitly targets `docker-compose.legacy-supabase.yml`; the production-stack deploy command lands with spec 024 implementation once real Dockerfiles/configs exist.
 - 2026-06-27 PR #48 review fix: the production scaffold uses `pgvector/pgvector:pg16` instead of vanilla `postgres:16-alpine` so `CREATE EXTENSION vector` can succeed when migrations land.
+- 2026-06-27 PR #48 review fix: first ACME issuance keeps Cloudflare records DNS-only until Traefik has certificates, then enables the proxy; the encrypted `.env` is installed in the Compose project directory so `env_file: ./.env` is actually loaded.
+- 2026-06-27 PR #48 review fix: API and worker fallback DSNs derive both username and database from `POSTGRES_USER` / `POSTGRES_DB`, matching the compose env template instead of hard-coding `capsule_zero`.
 
 ### Known Issues
 

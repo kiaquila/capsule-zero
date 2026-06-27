@@ -140,7 +140,7 @@ services:
       - path: ./.env
         required: false
     environment:
-      POSTGRES_URL: ${POSTGRES_URL:-postgres://capsule_zero:${POSTGRES_PASSWORD:-PLACEHOLDER_ROTATE_ME}@pgbouncer:5432/capsule_zero?sslmode=disable}
+      POSTGRES_URL: ${POSTGRES_URL:-postgres://${POSTGRES_USER:-capsule_zero}:${POSTGRES_PASSWORD:-PLACEHOLDER_ROTATE_ME}@pgbouncer:5432/${POSTGRES_DB:-capsule_zero}?sslmode=disable}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       KRATOS_PUBLIC_URL: http://kratos:4433
       KRATOS_ADMIN_URL: http://kratos:4434
@@ -166,7 +166,7 @@ services:
       - path: ./.env
         required: false
     environment:
-      POSTGRES_URL: ${POSTGRES_URL:-postgres://capsule_zero:${POSTGRES_PASSWORD:-PLACEHOLDER_ROTATE_ME}@pgbouncer:5432/capsule_zero?sslmode=disable}
+      POSTGRES_URL: ${POSTGRES_URL:-postgres://${POSTGRES_USER:-capsule_zero}:${POSTGRES_PASSWORD:-PLACEHOLDER_ROTATE_ME}@pgbouncer:5432/${POSTGRES_DB:-capsule_zero}?sslmode=disable}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
     networks: [internal]
 

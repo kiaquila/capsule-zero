@@ -29,7 +29,7 @@ This spec delivers the **runtime**. It does not implement product features — t
 - Nightly cron uploading `pg_dump` to `backups/` prefix in Spaces with a 14 day lifecycle rule
 - Grafana dashboard provisioning for syslog files and the OpenTelemetry trace exporter
 - Operator runbook update: `docs_capsule_zero/project/devops/sprint-0-runtime-provisioning.md` and `docker-compose-deploy.md` already rewritten in the documentation pivot PR; this spec verifies them end-to-end on the droplet
-- Encrypted `.env` file shipped via the operator's machine to `/srv/capsule-zero/.env` with mode `600`
+- Encrypted `.env` file shipped via the operator's machine to `/srv/capsule-zero/repo/.env` with mode `600`
 
 ### Out of scope
 
