@@ -1,23 +1,16 @@
 import createMiddleware from "next-intl/middleware";
 import type { NextRequest, NextResponse } from "next/server";
 import { NextResponse as MiddlewareResponse } from "next/server";
+import {
+  parseSignedSession,
+  serializeSignedSession,
+  type PersistedAppSession,
+} from "@/features/auth/session-codec";
 import { routing } from "./i18n/routing";
 
 const APP_SESSION_COOKIE = "capsule_zero_session";
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
-const SESSION_COOKIE_VERSION = "v1";
-const LOCAL_SESSION_SIGNING_SECRET = "capsule-zero-local-session-secret";
 const REFRESH_WINDOW_MS = 60_000;
-
-interface PersistedAppSession {
-  userId: string;
-  email: string;
-  name?: string;
-  accessToken?: string;
-  refreshToken?: string;
-  createdAt?: string;
-  expiresAt: string;
-}
 
 interface SupabaseRefreshResponse {
   access_token?: string;
@@ -214,116 +207,6 @@ function applyRequestHeaderOverrides(
   });
 }
 
-async function serializeSignedSession(
-  value: PersistedAppSession,
-): Promise<string> {
-  const payload = bytesToBase64Url(
-    new TextEncoder().encode(JSON.stringify(value)),
-  );
-  const signature = await signSessionPayload(payload);
-  return `${SESSION_COOKIE_VERSION}.${payload}.${signature}`;
-}
-
-async function parseSignedSession(
-  rawValue: string,
-): Promise<PersistedAppSession | null> {
-  const parts = rawValue.split(".");
-  if (parts.length !== 3) {
-    return null;
-  }
-
-  const [version, payload, signature] = parts;
-  if (version !== SESSION_COOKIE_VERSION || !payload || !signature) {
-    return null;
-  }
-
-  if (!(await verifySessionSignature(payload, signature))) {
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(
-      new TextDecoder().decode(base64UrlToBytes(payload)),
-    ) as PersistedAppSession;
-    return validatePersistedSession(parsed);
-  } catch {
-    return null;
-  }
-}
-
-function validatePersistedSession(
-  parsed: PersistedAppSession,
-): PersistedAppSession | null {
-  const expiresAt = Date.parse(parsed.expiresAt);
-  if (
-    !parsed.email ||
-    !parsed.userId ||
-    !Number.isFinite(expiresAt) ||
-    (expiresAt < Date.now() && !parsed.refreshToken)
-  ) {
-    return null;
-  }
-  return parsed;
-}
-
-async function signSessionPayload(payload: string): Promise<string> {
-  const secret = sessionSigningSecret();
-  if (!secret) {
-    return "";
-  }
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    new TextEncoder().encode(payload),
-  );
-
-  return bytesToBase64Url(new Uint8Array(signature));
-}
-
-async function verifySessionSignature(
-  payload: string,
-  signature: string,
-): Promise<boolean> {
-  const expected = await signSessionPayload(payload);
-  return Boolean(expected) && timingSafeEqualString(signature, expected);
-}
-
-function sessionSigningSecret(): string | undefined {
-  const configuredSecret =
-    process.env.SESSION_SIGNING_SECRET?.trim() ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ||
-    process.env.JWT_SECRET?.trim() ||
-    process.env.AUTH_SECRET?.trim();
-
-  if (configuredSecret) {
-    return configuredSecret;
-  }
-
-  return process.env.NODE_ENV !== "production"
-    ? LOCAL_SESSION_SIGNING_SECRET
-    : undefined;
-}
-
-function timingSafeEqualString(left: string, right: string): boolean {
-  if (left.length !== right.length) {
-    return false;
-  }
-
-  let diff = 0;
-  for (let index = 0; index < left.length; index += 1) {
-    diff |= left.charCodeAt(index) ^ right.charCodeAt(index);
-  }
-  return diff === 0;
-}
-
 function upsertCookieHeader(
   cookieHeader: string | null,
   name: string,
@@ -336,29 +219,4 @@ function upsertCookieHeader(
     .filter((cookie) => cookie && !cookie.startsWith(`${name}=`));
 
   return [nextCookie, ...otherCookies].join("; ");
-}
-
-function bytesToBase64Url(bytes: Uint8Array): string {
-  let binary = "";
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
-
-  return btoa(binary)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
-}
-
-function base64UrlToBytes(value: string): Uint8Array {
-  const base64 = value
-    .replace(/-/g, "+")
-    .replace(/_/g, "/")
-    .padEnd(Math.ceil(value.length / 4) * 4, "=");
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1) {
-    bytes[index] = binary.charCodeAt(index);
-  }
-  return bytes;
 }

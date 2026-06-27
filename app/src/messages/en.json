@@ -73,6 +73,7 @@
     "recoveryHint": "Enter your email and we will send reset instructions.",
     "recoveryCta": "Send recovery email",
     "recoverySent": "Recovery email sent. Check your inbox.",
+    "confirmationRequired": "Account created. Check your inbox to confirm your email, then log in.",
     "backToLogin": "Back to log in",
     "successRedirect": "Redirecting to dashboard...",
     "close": "Close"

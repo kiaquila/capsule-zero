@@ -21,6 +21,7 @@ const serverValidationMessages: AuthValidationMessages = {
 export interface AuthActionResult {
   ok: boolean;
   message?: string;
+  requiresEmailConfirmation?: boolean;
 }
 
 export async function signInWithPasswordAction(
@@ -59,6 +60,9 @@ export async function signUpWithPasswordAction(
       password: parsed.data.password,
       name: parsed.data.name,
     });
+    if (!session) {
+      return { ok: true, requiresEmailConfirmation: true };
+    }
     await persistMockSession(session);
   } catch (error) {
     return { ok: false, message: authActionErrorMessage(error) };

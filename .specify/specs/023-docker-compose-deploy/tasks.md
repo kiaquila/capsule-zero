@@ -110,8 +110,10 @@
 - [x] T098 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed seventeenth fix iteration.
 - [x] T099 Address eighteenth Codex Review findings for palette color ID resolution and unset local provider mode.
 - [x] T100 Rerun local preflight, Compose config, focused code checks, whitespace, and Docker image checks after eighteenth Codex fixes.
-- [ ] T101 Commit and push the eighteenth Codex fix iteration.
-- [ ] T102 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed eighteenth fix iteration.
+- [x] T101 Address critic, architect, and OMX reviewer findings for confirmation-required signups, Lava product ID gates, shared session signing, user-scoped service-role access, function auth defaults, strict healthchecks, and scripted Compose deploys.
+- [x] T102 Rerun local lint/typecheck/build, Compose config, runtime env checks, repo/API checks, feature-memory guard, and whitespace checks after critic/architect/OMX fixes.
+- [x] T103 Commit and push the critic/architect/OMX fix iteration.
+- [x] T104 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed critic/architect/OMX fix iteration.
 
 ## Process Memory
 
@@ -124,6 +126,7 @@
 - Local feature-memory guard failed after app provider changes because no spec files were modified in the uncommitted worktree; this update touches all three required files.
 - The first `0006_catalog_search_filters.sql` migration attempt failed because Postgres does not allow a CTE field directly inside `LIMIT`. The migration now uses a scalar subquery for the dynamic limit and applied cleanly.
 - The first private migration-ledger script used `:'version'` psql variables inside `-c`; a live `migrate` run showed those placeholders were not expanded there, so the script now SQL-escapes migration filenames before lookup/insert statements.
+- Moving every user-scoped Supabase operation from service-role clients to per-request RLS clients would be a larger adapter split than this PR can safely absorb. This iteration adds a verified-session guard before service-role user operations and keeps the full adapter split as a follow-up.
 
 ### Decisions
 
@@ -173,10 +176,18 @@
 - Recreate the canonical one-shot `migrate` service before starting `web` on deploys that may include SQL changes, because Compose can otherwise reuse an old completed migration container when only bind-mounted SQL files changed.
 - Store migration tracking metadata in `capsule_zero_internal.schema_migrations`, copy any earlier public tracking rows, and drop the public tracking table so PostgREST clients cannot alter the migration ledger.
 - Preserve color catalog IDs on hydrated `ColorPoint` values and resolve Supabase color references by those IDs before HEX fallback, because UI palette HEX values intentionally do not always match seeded catalog HEX values.
+- Treat Supabase signup responses with a created user but no session as confirmation-required success, not as a provider failure.
+- Require a dedicated `SESSION_SIGNING_SECRET` for app-session signatures and share one codec between server helpers and Next proxy.
+- Guard user-scoped Supabase provider ports with signed-session verification before service-role repositories can act on private user ids.
+- Keep Edge Functions JWT verification enabled by default and avoid passing service-role secrets into the functions container.
+- Make the Docker web healthcheck parse `/api/health` and require JSON `ok: true` instead of trusting HTTP 200.
+- Require configured Lava API credentials plus real Lava product IDs for all coin packs before Lava is considered ready or invoice creation can call Lava.top.
+- Use `npm run deploy:compose` as the canonical ordered Compose deploy command so migrations are force-recreated before `web` starts.
 
 ### Known Issues
 
-- `/api/health` remains `ok: false` locally until real external provider credentials are supplied; this is expected and safer than pretending those integrations are live.
+- External provider gates remain `pending-gate` until real Photoroom, Lava.top, marketplace parser, Google OAuth, and Apple Sign-In credentials are supplied; core `/api/health` can still be `ok` when Supabase/storage readiness is satisfied.
 - The Compose stack does not configure TLS, public DNS, firewall policy, VM backups, log retention, metrics, or a secret manager.
 - Real production Photoroom, Lava.top, marketplace parser, Google OAuth, and Apple Sign-In credentials still need provider-account setup outside git.
 - Supabase self-hosted image versions are pinned in Compose and should be upgraded deliberately with database backups.
+- The Supabase provider adapter remains large; splitting it by provider port and moving more operations to explicit RLS-scoped clients is deferred beyond this review-hardening iteration.

@@ -26,6 +26,7 @@ In scope:
 - Document deploy startup as an ordered Compose sequence that explicitly recreates the one-shot `migrate` service before starting `web`, so migration-only releases cannot reuse a stale completed migration container.
 - Keep migration tracking metadata outside the PostgREST-exposed `public` schema and migrate any earlier public tracking table into the private ledger.
 - Resolve Supabase color catalog references by stable palette/catalog color IDs when they are supplied, falling back to HEX matching only for legacy or ad hoc color points.
+- Harden critic/architect/OMX review boundaries for confirmation-required Supabase signups, Lava product IDs, dedicated app-session signing, verified user-scoped service-role access, JWT-verified Edge Functions, JSON-aware health checks, and scripted ordered Compose deploys.
 - Update env examples and deployment docs for local, staging, and production operation.
 - Preserve local smoke-testability with clearly marked demo Supabase JWT values that must be rotated outside local runs.
 
@@ -81,13 +82,14 @@ Operators can see which real external integrations still need credentials, and t
 
 1. **Given** real production secrets are needed, **When** repository files are committed, **Then** only placeholders or local demo values are present and docs require rotation before shared/stage/prod use.
 2. **Given** app product paths changed, **When** the PR is validated, **Then** `.specify/specs/023-docker-compose-deploy/{spec,plan,tasks}.md` is present in the diff so feature-memory guard passes.
-3. **Given** external SaaS provider credentials are blank, **When** `/api/health` runs, **Then** the stack is `degraded` rather than falsely `ok`.
+3. **Given** external SaaS provider credentials are blank, **When** `/api/health` runs after Supabase/storage are configured, **Then** core readiness can remain `ok` while those external integrations stay `pending-gate`.
 4. **Given** Compose is restarted after the first migration run, **When** `migrate` starts again, **Then** it skips already applied migrations and exits successfully.
 5. **Given** a fresh checkout has not created `deploy/runtime.env`, **When** Compose renders the local stack with `deploy/compose.env.example`, **Then** config rendering does not fail on a missing optional web runtime env file.
 6. **Given** a migration-only release changes no Compose service configuration or web image, **When** an operator deploys, **Then** docs require explicit `migrate` service recreation before `web` so old `service_completed_successfully` state cannot mask unapplied SQL.
 7. **Given** Kong/PostgREST is reachable with the public anon key, **When** migration tracking metadata exists, **Then** it is not readable or writable through the public Data API schema.
 8. **Given** a local developer runs the app without `CAPSULE_PROVIDER_MODE`, **When** fixture-backed auth actions or `/api/health` initialize providers, **Then** the app uses the mock provider instead of requiring Supabase credentials.
 9. **Given** a Journey palette color such as White (`A3`) has a UI HEX value that differs from the seeded catalog HEX, **When** Supabase validates or creates a capsule from that palette, **Then** the color resolves by catalog ID before any HEX fallback.
+10. **Given** production app sessions must be signed, **When** `SESSION_SIGNING_SECRET` is missing, **Then** runtime validation and session signing fail instead of falling back to Supabase service-role or JWT secrets.
 
 ## Requirements
 
@@ -146,6 +148,14 @@ Operators can see which real external integrations still need credentials, and t
 - **FR-051**: Migration tracking metadata MUST live outside the PostgREST-exposed `public` schema, and existing public tracking rows MUST be copied into the private ledger before the public table is removed.
 - **FR-052**: Supabase color resolution MUST prefer supplied palette/catalog color IDs before falling back to exact HEX matching.
 - **FR-053**: Production runtime MUST reject the unset local mock default by treating it as `mock` and throwing unless `CAPSULE_PROVIDER_MODE=supabase` is explicitly configured.
+- **FR-054**: Supabase email/password signup MUST treat a created user with no immediate session as a successful confirmation-required state, sync the profile, and avoid redirecting to the dashboard until a real session exists.
+- **FR-055**: App-session signing MUST use a dedicated `SESSION_SIGNING_SECRET` in production, and server/session/proxy code MUST share one codec instead of duplicating HMAC payload logic or falling back to Supabase service-role/JWT secrets.
+- **FR-056**: User-scoped Supabase provider operations that use service-role clients MUST verify the signed Supabase session user id matches the requested user id before reading or mutating private user data.
+- **FR-057**: Compose Edge Functions MUST verify JWTs by default and MUST NOT receive `SUPABASE_SERVICE_ROLE_KEY` in their container environment.
+- **FR-058**: The web container healthcheck MUST parse `/api/health` JSON and require `ok: true`; HTTP 200 alone MUST NOT mark the container healthy.
+- **FR-059**: The canonical Compose deploy command MUST run the ordered dependency, migration, and web startup sequence through `npm run deploy:compose`.
+- **FR-060**: Lava.top invoice creation and Lava health readiness MUST require real Lava product IDs for every supported coin pack when Lava is enabled, and MUST NOT substitute local pack IDs such as `coins_5`.
+- **FR-061**: Public health status MUST distinguish core Supabase/storage readiness from external SaaS gates so missing external credentials remain `pending-gate` without making a configured core runtime look unavailable.
 
 ### Key Entities
 
@@ -154,6 +164,8 @@ Operators can see which real external integrations still need credentials, and t
 - **Migration Runner**: One-shot `migrate` service that records applied SQL files in `capsule_zero_internal.schema_migrations`.
 - **External Provider Gate**: Runtime health/configuration state for Photoroom, Lava.top, marketplace import, Google OAuth, and Apple Sign-In.
 - **Runtime Env Template**: Example env files for local, stage, and production Compose operation.
+- **App Session Codec**: Shared signing/parsing/validation module for persisted app sessions used by server code and Next proxy.
+- **User-Scoped Service-Role Guard**: Supabase-provider boundary that checks a verified signed session before service-role repositories act on private user ids.
 
 ## Success Criteria
 
@@ -184,3 +196,4 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-025**: Codex follow-up fixes for explicit migration reruns in the documented deploy path pass local verification and a fresh Codex review cycle.
 - **SC-026**: Codex follow-up fixes for private migration tracking metadata pass local verification and a fresh Codex review cycle.
 - **SC-027**: Codex follow-up fixes for palette color ID resolution and unset local provider mode pass local verification and a fresh Codex review cycle.
+- **SC-028**: Critic/architect/OMX follow-up fixes for confirmation-required signups, Lava product ID gates, shared session signing, user-scoped service-role access, Edge Function auth defaults, strict healthchecks, and scripted Compose deploys pass local verification and a fresh Codex review cycle.

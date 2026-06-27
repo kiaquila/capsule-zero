@@ -38,13 +38,14 @@ services:
       NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_PUBLIC_URL}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${ANON_KEY}
       SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      SESSION_SIGNING_SECRET: ${SESSION_SIGNING_SECRET}
     ports:
       - "${CAPSULE_HOST_BIND:-127.0.0.1}:${CAPSULE_HOST_PORT:-3000}:${CAPSULE_CONTAINER_PORT:-3000}"
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "node -e \"fetch('http://127.0.0.1:' + (process.env.PORT || '3000') + '/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))\"",
+          "node -e \"fetch('http://127.0.0.1:' + (process.env.PORT || '3000') + '/api/health').then(async (response) => { if (!response.ok) process.exit(1); const body = await response.json(); process.exit(body && body.ok === true ? 0 : 1); }).catch(() => process.exit(1))\"",
         ]
       interval: 30s
       timeout: 10s
@@ -358,11 +359,10 @@ services:
       SUPABASE_URL: http://kong:8000
       SUPABASE_PUBLIC_URL: ${SUPABASE_PUBLIC_URL}
       SUPABASE_ANON_KEY: ${ANON_KEY}
-      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
       SUPABASE_PUBLISHABLE_KEYS: "{\"default\":\"${SUPABASE_PUBLISHABLE_KEY:-}\"}"
       SUPABASE_SECRET_KEYS: "{\"default\":\"${SUPABASE_SECRET_KEY:-}\"}"
       SUPABASE_DB_URL: postgresql://postgres:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
-      VERIFY_JWT: ${FUNCTIONS_VERIFY_JWT:-false}
+      VERIFY_JWT: ${FUNCTIONS_VERIFY_JWT:-true}
     command: ["start", "--main-service", "/home/deno/functions/main"]
 
   migrate:

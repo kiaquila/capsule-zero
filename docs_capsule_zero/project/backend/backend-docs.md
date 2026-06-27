@@ -154,14 +154,15 @@ Feature PRs must not introduce ad hoc schema changes outside migrations.
 | `NEXT_PUBLIC_SUPABASE_URL`      | browser/server        | Supabase project URL                                                                         |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser/server        | Supabase anon key                                                                            |
 | `SUPABASE_SERVICE_ROLE_KEY`     | server only           | Admin/server operations                                                                      |
+| `SESSION_SIGNING_SECRET`        | server only           | Dedicated HMAC secret for app-session cookies; do not reuse Supabase service keys             |
 | `PHOTOROOM_API_KEY`             | server only           | Primary background removal provider; optional until image integration gate                   |
 | `REMOVE_BG_API_KEY`             | server only, optional | Fallback background removal provider; optional until image integration gate                  |
 | `LAVA_API_KEY`                  | server only           | API key for requests to Lava.top; optional until payment integration gate                    |
 | `LAVA_WEBHOOK_API_KEY`          | server only           | Key expected in Lava.top webhook `X-Api-Key` header; optional until payment integration gate |
 | `LAVA_API_URL`                  | server only           | Lava.top API base URL; may point to mock adapter in Stage 1                                  |
-| `LAVA_COINS_5_PRODUCT_ID`       | server only           | Lava.top product ID for the 5-coin pack; mock ID allowed in Stage 1                          |
-| `LAVA_COINS_15_PRODUCT_ID`      | server only           | Lava.top product ID for the 15-coin pack; mock ID allowed in Stage 1                         |
-| `LAVA_COINS_30_PRODUCT_ID`      | server only           | Lava.top product ID for the 30-coin pack; mock ID allowed in Stage 1                         |
+| `LAVA_COINS_5_PRODUCT_ID`       | server only           | Real Lava.top product ID for the 5-coin pack when Lava invoices are enabled                  |
+| `LAVA_COINS_15_PRODUCT_ID`      | server only           | Real Lava.top product ID for the 15-coin pack when Lava invoices are enabled                 |
+| `LAVA_COINS_30_PRODUCT_ID`      | server only           | Real Lava.top product ID for the 30-coin pack when Lava invoices are enabled                 |
 | `NEXT_PUBLIC_APP_URL`           | browser/server        | Absolute app URL for callbacks                                                               |
 | `MOBILE_DEEP_LINK_SCHEME`       | server/mobile         | Mobile return URL scheme for auth callbacks                                                  |
 | `EMBEDDING_PROVIDER`            | server only           | Catalog embedding provider switch                                                            |

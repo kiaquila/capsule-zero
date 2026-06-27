@@ -65,24 +65,20 @@ cp deploy/prod.env.example deploy/runtime.env
 
 Before starting any shared environment, rotate all values in `.env` marked as
 secret: `POSTGRES_PASSWORD`, `JWT_SECRET`, `ANON_KEY`, `SERVICE_ROLE_KEY`,
-`DASHBOARD_PASSWORD`, `SECRET_KEY_BASE`, `VAULT_ENC_KEY`,
+`SESSION_SIGNING_SECRET`, `DASHBOARD_PASSWORD`, `SECRET_KEY_BASE`, `VAULT_ENC_KEY`,
 `PG_META_CRYPTO_KEY`, S3 protocol keys, SMTP credentials, and external provider
 keys.
 
 Start or deploy the stack:
 
 ```bash
-docker compose up -d --build --wait db auth rest storage realtime functions kong imgproxy meta studio supavisor
-docker compose up --force-recreate --no-deps migrate
-docker compose up -d --build web
+npm run deploy:compose
 ```
 
 For a local port override:
 
 ```bash
-CAPSULE_HOST_PORT=3100 docker compose up -d --build --wait db auth rest storage realtime functions kong imgproxy meta studio supavisor
-CAPSULE_HOST_PORT=3100 docker compose up --force-recreate --no-deps migrate
-CAPSULE_HOST_PORT=3100 docker compose up -d --build web
+CAPSULE_HOST_PORT=3100 npm run deploy:compose
 ```
 
 Always recreate the canonical `migrate` service before starting `web` on any
@@ -140,9 +136,7 @@ initialized. For schema changes, add a new timestamped or numbered SQL file.
 Apply pending migrations explicitly during every deploy:
 
 ```bash
-docker compose up -d --wait db auth rest storage
-docker compose up --force-recreate --no-deps migrate
-docker compose up -d --build web
+npm run deploy:compose
 ```
 
 This keeps the `web` dependency on `migrate: service_completed_successfully`

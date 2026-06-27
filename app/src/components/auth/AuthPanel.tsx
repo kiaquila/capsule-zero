@@ -129,6 +129,14 @@ export function AuthPanel({
       return;
     }
 
+    if (result.requiresEmailConfirmation) {
+      signInForm.setValue("email", values.email);
+      signUpForm.reset();
+      setMode("signIn");
+      setServerMessage(t("confirmationRequired"));
+      return;
+    }
+
     redirectToDashboard();
   });
 

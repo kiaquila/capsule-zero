@@ -8,8 +8,8 @@ import {
   canWriteAppSessionCookie,
   persistAppSession,
   readSignedAppSession,
-  type PersistedAppSession,
 } from "@/features/auth/session";
+import type { PersistedAppSession } from "@/features/auth/session-codec";
 import { getCategoriesByGender } from "@/lib/categories";
 import type {
   Capsule,
@@ -25,6 +25,7 @@ import type {
 } from "@/types";
 import type {
   BillingPort,
+  CapsuleRepository,
   CapsuleDraft,
   CatalogSearchFilters,
   CatalogSearchPort,
@@ -301,6 +302,8 @@ export function createSupabaseProviderRegistry(): ProviderRegistry {
   const clients = createSupabaseClients();
   const colorCatalog = memoize(() => loadColorCatalog(clients.service));
   const categoryCatalog = memoize(() => loadCategoryCatalog(clients.service));
+  const authorizeUser: UserAuthorizer = (userId) =>
+    requireVerifiedProviderUser(clients, userId);
 
   const profiles = buildProfileRepository(clients.service);
   const wardrobe = buildWardrobeRepository(
@@ -317,27 +320,204 @@ export function createSupabaseProviderRegistry(): ProviderRegistry {
   return {
     mode: "supabase",
     auth: buildAuthPort(clients, profiles),
-    profiles,
-    wardrobe,
-    storage: buildStoragePort(clients),
-    imageProcessing: buildImageProcessingPort(clients),
-    marketplaceImports: buildMarketplaceImportPort(
-      clients.service,
-      wardrobe,
+    profiles: guardProfileRepository(profiles, authorizeUser),
+    wardrobe: guardWardrobeRepository(wardrobe, authorizeUser),
+    storage: guardStoragePort(buildStoragePort(clients), authorizeUser),
+    imageProcessing: guardImageProcessingPort(
+      buildImageProcessingPort(clients),
+      authorizeUser,
     ),
-    catalogSearch: buildCatalogSearchPort(
-      clients,
-      colorCatalog,
-      categoryCatalog,
+    marketplaceImports: guardMarketplaceImportPort(
+      buildMarketplaceImportPort(
+        clients.service,
+        wardrobe,
+      ),
+      authorizeUser,
     ),
-    billing: buildBillingPort(clients.service),
-    capsules,
+    catalogSearch: guardCatalogSearchPort(
+      buildCatalogSearchPort(
+        clients,
+        colorCatalog,
+        categoryCatalog,
+      ),
+      authorizeUser,
+    ),
+    billing: guardBillingPort(buildBillingPort(clients.service), authorizeUser),
+    capsules: guardCapsuleRepository(capsules, authorizeUser),
     methodology: buildMethodologyPort(
       clients.service,
       colorCatalog,
       categoryCatalog,
     ),
     health: () => readHealth(clients.service),
+  };
+}
+
+type UserAuthorizer = (userId: string) => Promise<void>;
+
+async function requireVerifiedProviderUser(
+  clients: ReturnType<typeof createSupabaseClients>,
+  userId: string,
+): Promise<void> {
+  const persisted = await readSignedAppSession();
+  if (!persisted) {
+    throw new Error("AUTH_REQUIRED: Sign in before accessing wardrobe data.");
+  }
+
+  const session = await verifyPersistedSession(clients, persisted);
+  if (session?.user.id !== userId) {
+    throw new Error("AUTH_FORBIDDEN: Session user does not match request user.");
+  }
+}
+
+function guardProfileRepository(
+  port: ProfileRepository,
+  authorize: UserAuthorizer,
+): ProfileRepository {
+  return {
+    async getProfile(userId) {
+      await authorize(userId);
+      return port.getProfile(userId);
+    },
+    async updateProfile(userId, input) {
+      await authorize(userId);
+      return port.updateProfile(userId, input);
+    },
+  };
+}
+
+function guardWardrobeRepository(
+  port: WardrobeRepository,
+  authorize: UserAuthorizer,
+): WardrobeRepository {
+  return {
+    async listItems(userId, filters) {
+      await authorize(userId);
+      return port.listItems(userId, filters);
+    },
+    async getItem(userId, itemId) {
+      await authorize(userId);
+      return port.getItem(userId, itemId);
+    },
+    async createItem(userId, draft) {
+      await authorize(userId);
+      return port.createItem(userId, draft);
+    },
+    async updateItemStatus(userId, itemId, status) {
+      await authorize(userId);
+      return port.updateItemStatus(userId, itemId, status);
+    },
+    async setFavorite(userId, itemId, favorite) {
+      await authorize(userId);
+      return port.setFavorite(userId, itemId, favorite);
+    },
+  };
+}
+
+function guardStoragePort(port: StoragePort, authorize: UserAuthorizer): StoragePort {
+  return {
+    async createPhotoUploadTarget(userId, metadata) {
+      await authorize(userId);
+      return port.createPhotoUploadTarget(userId, metadata);
+    },
+    async completePhotoUpload(userId, completion) {
+      await authorize(userId);
+      return port.completePhotoUpload(userId, completion);
+    },
+    async getSignedAssetUrl(userId, storagePath) {
+      await authorize(userId);
+      return port.getSignedAssetUrl(userId, storagePath);
+    },
+  };
+}
+
+function guardImageProcessingPort(
+  port: ImageProcessingPort,
+  authorize: UserAuthorizer,
+): ImageProcessingPort {
+  return {
+    async startBackgroundRemoval(userId, jobId) {
+      await authorize(userId);
+      return port.startBackgroundRemoval(userId, jobId);
+    },
+    async getUploadJob(userId, jobId) {
+      await authorize(userId);
+      return port.getUploadJob(userId, jobId);
+    },
+  };
+}
+
+function guardMarketplaceImportPort(
+  port: MarketplaceImportPort,
+  authorize: UserAuthorizer,
+): MarketplaceImportPort {
+  return {
+    async createImport(userId, url) {
+      await authorize(userId);
+      return port.createImport(userId, url);
+    },
+    async getImport(userId, importId) {
+      await authorize(userId);
+      return port.getImport(userId, importId);
+    },
+    async confirmCandidate(userId, importId, candidateId) {
+      await authorize(userId);
+      return port.confirmCandidate(userId, importId, candidateId);
+    },
+  };
+}
+
+function guardCatalogSearchPort(
+  port: CatalogSearchPort,
+  authorize: UserAuthorizer,
+): CatalogSearchPort {
+  return {
+    async search(userId, query, filters) {
+      await authorize(userId);
+      return port.search(userId, query, filters);
+    },
+    async addCatalogItem(userId, itemId) {
+      await authorize(userId);
+      return port.addCatalogItem(userId, itemId);
+    },
+  };
+}
+
+function guardBillingPort(
+  port: BillingPort,
+  authorize: UserAuthorizer,
+): BillingPort {
+  return {
+    listCoinPacks: port.listCoinPacks,
+    async createLavaInvoice(userId, coinPackId) {
+      await authorize(userId);
+      return port.createLavaInvoice(userId, coinPackId);
+    },
+    async getLavaInvoiceStatus(userId, invoiceId) {
+      await authorize(userId);
+      return port.getLavaInvoiceStatus(userId, invoiceId);
+    },
+    async spendCoins(userId, request) {
+      await authorize(userId);
+      return port.spendCoins(userId, request);
+    },
+    replayLavaWebhook: port.replayLavaWebhook,
+  };
+}
+
+function guardCapsuleRepository(
+  port: CapsuleRepository,
+  authorize: UserAuthorizer,
+): CapsuleRepository {
+  return {
+    async getCurrentCapsule(userId) {
+      await authorize(userId);
+      return port.getCurrentCapsule(userId);
+    },
+    async createCapsule(userId, draft) {
+      await authorize(userId);
+      return port.createCapsule(userId, draft);
+    },
   };
 }
 
@@ -402,10 +582,8 @@ function buildAuthPort(
       });
       throwIfError(error, "Supabase sign-up failed");
 
-      if (!data.user || !data.session) {
-        throw new Error(
-          "AUTH_CONFIRMATION_REQUIRED: Supabase sign-up requires email confirmation before a web session can be created.",
-        );
+      if (!data.user) {
+        throw new Error("AUTH_FAILED: Supabase did not return a user.");
       }
 
       await upsertProfileFromAuthUser(
@@ -414,6 +592,10 @@ function buildAuthPort(
         data.user.email ?? credentials.email,
         credentials.name,
       );
+
+      if (!data.session) {
+        return null;
+      }
 
       return mapSession(data.user, data.session);
     },
@@ -1231,6 +1413,7 @@ function buildBillingPort(service: DbClient): BillingPort {
         (await this.listCoinPacks()).find((pack) => pack.id === coinPackId),
         "NOT_FOUND: Coin pack not found.",
       );
+      const productId = resolveLavaInvoiceProductId(coinPack);
       const invoiceId = randomUUID();
       const response = await fetch(lavaApiUrl, {
         method: "POST",
@@ -1240,7 +1423,7 @@ function buildBillingPort(service: DbClient): BillingPort {
         },
         body: JSON.stringify({
           id: invoiceId,
-          product_id: coinPack.providerProductId,
+          product_id: productId,
           metadata: { userId, coinPackId },
         }),
       });
@@ -2442,14 +2625,34 @@ function mapMarketplaceStatus(status: string): MarketplaceImportStatus {
 }
 
 function mapCoinPack(row: DbCoinPack): CoinPack {
-  const envKey = `LAVA_${row.id.toUpperCase()}_PRODUCT_ID`;
   return {
     id: row.id,
     coins: row.coins,
     priceUsd: toNumber(row.price_usd) ?? defaultCoinPackPrice(row.coins),
     providerProductId:
-      configuredEnv(envKey) ?? row.provider_product_id ?? `${row.id}`,
+      configuredEnv(lavaProductEnvKey(row.id)) ?? row.provider_product_id ?? row.id,
   };
+}
+
+function resolveLavaInvoiceProductId(coinPack: CoinPack): string {
+  const envKey = lavaProductEnvKey(coinPack.id);
+  const envProductId = configuredEnv(envKey);
+  if (envProductId) {
+    return envProductId;
+  }
+
+  const providerProductId = configuredValue(coinPack.providerProductId);
+  if (providerProductId && providerProductId !== coinPack.id) {
+    return providerProductId;
+  }
+
+  throw new Error(
+    `INTEGRATION_NOT_CONFIGURED: ${envKey} is required for Lava invoices.`,
+  );
+}
+
+function lavaProductEnvKey(coinPackId: string): string {
+  return `LAVA_${coinPackId.toUpperCase()}_PRODUCT_ID`;
 }
 
 function defaultCoinPackPrice(coins: number): number {
@@ -2717,15 +2920,16 @@ async function readHealth(service: DbClient): Promise<ProviderHealth> {
   const storageConfigured =
     !storageBuckets.error &&
     storageBuckets.data.some((bucket) => bucket.id === "item-originals");
-  const externalConfigured = [
-    configuredEnv("PHOTOROOM_API_KEY"),
+  const lavaConfigured = [
     configuredEnv("LAVA_API_URL"),
     configuredEnv("LAVA_API_KEY"),
-    configuredEnv("MARKETPLACE_IMPORT_API_URL"),
+    configuredEnv("LAVA_COINS_5_PRODUCT_ID"),
+    configuredEnv("LAVA_COINS_15_PRODUCT_ID"),
+    configuredEnv("LAVA_COINS_30_PRODUCT_ID"),
   ].every(Boolean);
 
   return {
-    status: storageConfigured && externalConfigured ? "ok" : "degraded",
+    status: storageConfigured ? "ok" : "degraded",
     mode: "supabase",
     fixtures: {
       users: 0,
@@ -2743,10 +2947,7 @@ async function readHealth(service: DbClient): Promise<ProviderHealth> {
       backgroundRemoval: configuredEnv("PHOTOROOM_API_KEY")
         ? "configured"
         : "pending-gate",
-      lavaTop:
-        configuredEnv("LAVA_API_URL") && configuredEnv("LAVA_API_KEY")
-          ? "configured"
-          : "pending-gate",
+      lavaTop: lavaConfigured ? "configured" : "pending-gate",
       googleOAuth: configuredEnv("SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID")
         ? "configured"
         : "pending-gate",
