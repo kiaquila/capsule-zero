@@ -2,18 +2,17 @@
 
 ## Status
 
-Accepted for MVP planning. Before Stage 1 feature implementation, Sprint 0 must create the implementation OpenAPI contract at `docs_capsule_zero/adr/openapi.yaml`. Every feature slice must preserve the resource boundaries and auth rules below.
+Accepted for v0.1 planning. Before Stage 1 feature implementation, Sprint 0 must finalize the implementation OpenAPI contract at `docs_capsule_zero/adr/openapi.yaml`. Every feature slice must preserve the resource boundaries and auth rules below.
 
 ## API Principles
 
-- Supabase Auth owns identity and session state.
-- Next.js Route Handlers expose REST endpoints for public API boundaries, uploads, imports, catalog search, and webhooks.
-- Server Actions may call the same domain services for in-app mutations.
-- Flutter mobile apps consume the same Supabase schema, RPC functions, storage policies, and documented REST endpoints.
-- Supabase RPC functions handle database-heavy operations such as compatibility validation, outfit regeneration, OPR, gap analysis, and hybrid search.
-- All request payloads are validated with Zod.
+- Ory Kratos owns identity and session state. Traefik runs a forward-auth middleware against Kratos in front of protected routes; the Go API re-validates the Kratos session on every authenticated request.
+- The Go modular monolith exposes the REST API at `/api/*`; the Next.js web app and React Native mobile app both consume the same OpenAPI contract through generated clients.
+- Next.js Server Actions may wrap calls to the Go API for in-app mutations; they never embed admin credentials.
+- The Go monolith owns database-heavy operations: compatibility validation, outfit regeneration, OPR, gap analysis, and hybrid FTS + pgvector search.
+- All request payloads are validated against the OpenAPI schema in Go (via a typed router such as `oapi-codegen`) and mirrored on the web with Zod where useful for inline form validation.
 - All mutating routes require an authenticated user unless explicitly marked as webhook.
-- Server-only routes never expose `SUPABASE_SERVICE_ROLE_KEY`.
+- Authorization is enforced in Go on every request — there is no Postgres RLS.
 
 ## Implementation Contract Artifacts
 
@@ -22,14 +21,14 @@ Sprint 0 must create and verify these artifacts before Stage 1 product feature w
 | Artifact                | Location                                      | Purpose                                                                |
 | ----------------------- | --------------------------------------------- | ---------------------------------------------------------------------- |
 | OpenAPI contract        | `docs_capsule_zero/adr/openapi.yaml`          | Authoritative REST path, auth, request, response, and error schemas    |
-| TypeScript client/types | `app/src/lib/api/generated/`                  | Web client/server API types generated from OpenAPI                     |
-| Dart client/types       | `mobile/lib/api/generated/`                   | Flutter API types generated from OpenAPI                               |
-| Supabase schema/RPC     | `supabase/migrations/`                        | Tables, indexes, RLS, storage policies, and RPC signatures             |
-| Contract tests          | `app/tests/contract/` or equivalent CI target | Auth/error conventions and representative endpoint schema verification |
+| TypeScript client/types | `web/src/lib/api/generated/`                  | Web client/server API types generated from OpenAPI                     |
+| React Native client     | `mobile/lib/api/generated/`                   | TypeScript client for the React Native app generated from OpenAPI      |
+| Go schema/handlers      | `api/internal/httpapi/` + `api/migrations/`   | Typed Go handlers from OpenAPI and golang-migrate SQL files            |
+| Contract tests          | `api/tests/contract/` or equivalent CI target | Auth/error conventions and representative endpoint schema verification |
 
 Endpoint names may change only with the OpenAPI contract, generated clients, and contract tests updated in the same PR.
 
-OpenAPI operations marked `x-client-availability: web` must not be wired into Flutter purchase UI. Dart generation may include low-level types for status reads, but mobile v0.1 must not expose invoice creation as a user action.
+OpenAPI operations marked `x-client-availability: web` must not be wired into mobile purchase UI. Mobile generation may include low-level types for status reads, but mobile v0.1 must not expose invoice creation as a user action.
 
 ## Common Schemas
 
@@ -107,16 +106,16 @@ The server derives the coin amount from the reason, verifies the user's balance,
 
 - `reason=extra_capsule` requires the capsule UUID receiving the paid expansion.
 - `reason=photo_enhancement` requires the item UUID or upload job UUID being enhanced.
-- `targetId=null` is invalid for both MVP spend reasons unless a future server-owned reason explicitly documents that null target.
+- `targetId=null` is invalid for both v0.1 spend reasons unless a future server-owned reason explicitly documents that null target.
 
 ## Error Contract
 
-Every REST operation returns the common `ErrorResponse` shape for failures. The OpenAPI contract is authoritative for operation-specific status codes, but the MVP taxonomy is:
+Every REST operation returns the common `ErrorResponse` shape for failures. The OpenAPI contract is authoritative for operation-specific status codes, but the v0.1 taxonomy is:
 
 | HTTP | `ErrorResponse.error.code`   | Meaning                                                                                                    |
 | ---: | ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
 |  400 | `VALIDATION_ERROR`           | Request syntax, shape, enum, file metadata, or query validation failed                                     |
-|  401 | `UNAUTHENTICATED`            | Supabase session is missing, expired, or invalid                                                           |
+|  401 | `UNAUTHENTICATED`            | Kratos session is missing, expired, or invalid                                                             |
 |  402 | `INSUFFICIENT_BALANCE`       | Coin balance is too low for a paid action                                                                  |
 |  403 | `FORBIDDEN`                  | User is authenticated but cannot access the resource or webhook key is invalid                             |
 |  404 | `NOT_FOUND`                  | Resource does not exist or is intentionally hidden by ownership rules                                      |
@@ -127,12 +126,12 @@ Server logs may include provider/raw details, but client responses must keep mes
 
 ## Auth
 
-Supabase Auth endpoints handle sign-up, login, session refresh, and password recovery in MVP Stage 1. OAuth callbacks are kept in the contract as MVP Stage 2 boundaries for Google OAuth and Apple Sign-In.
+Ory Kratos self-service endpoints handle sign-up, login, session refresh, and password recovery in Stage 1. OAuth callbacks are kept in the contract as Stage 2 boundaries for Google OAuth and Apple Sign-In.
 
 | Route                   | Method | Auth   | Purpose                                                               |
 | ----------------------- | -----: | ------ | --------------------------------------------------------------------- |
 | `/auth/callback`        |    GET | Public | Stage 2 web OAuth callback; exchanges code and redirects to dashboard |
-| `/auth/mobile-callback` |    GET | Public | Stage 2 mobile OAuth callback; redirects into Flutter deep link       |
+| `/auth/mobile-callback` |    GET | Public | Stage 2 mobile OAuth callback; redirects into React Native deep link  |
 | `/api/profile`          |    GET | User   | Read current profile                                                  |
 | `/api/profile`          |  PATCH | User   | Update display name, language, country, city                          |
 | `/api/profile/avatar`   |   POST | User   | Upload or replace avatar metadata after storage upload                |

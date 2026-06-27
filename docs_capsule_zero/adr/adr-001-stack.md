@@ -2,100 +2,124 @@
 
 ## Status
 
-Accepted.
+Accepted (rewritten 2026-06-27 for the production-stack pivot).
 
 ## Context
 
-Capsule Zero needs to move from approved prototypes to Phase 5 implementation. The MVP must support:
+Capsule Zero is targeting production-grade v0.1 directly. There is no Stage 1 mock-first posture: the team ships against real services from the first feature slice. The stack must support:
 
-- premium mobile-first Next.js frontend matching the HTML prototypes
-- Flutter iOS and Android apps in the MVP
-- MVP Stage 1 email/password authentication, with Google and Apple authentication deferred to MVP Stage 2
+- a premium mobile-first Next.js web frontend matching the HTML prototypes
+- a React Native iOS and Android app sharing the same backend
+- email/password authentication in v0.1, with Google OAuth and Apple Sign-In deferred to Stage 2
 - private user wardrobe data and photos
 - three upload methods: photo upload, marketplace link import, semantic catalog search
-- optional background removal under the 5 second quality gate
-- shared item database for public marketplace imports
-- EN and RU from MVP v1 day 1, with ES-AR deferred globally to MVP v2
-- coins-only monetization through Lava.top one-time purchases on web, with mobile balance display in v0.1
-- PR-first delivery with existing `baseline-checks`, `guard`, and `AI Review` gates
+- self-hosted image processing under a 5 second quality gate (deferred to Stage 2)
+- a shared item database for public marketplace imports
+- EN and RU from v0.1 day 1, with ES-AR globally deferred to v0.2
+- coins-only monetization through Lava.top one-time purchases — coins and image enhancement are in the v0.2 backlog; v0.1 ships with a Lava.top stub
+- a single DigitalOcean droplet running docker-compose with every service declared explicitly
+- self-hosted observability under tight RAM budget (no Sentry/Prometheus in v0.1)
+- a Cloudflare front-door for DDoS protection and CDN
 
-The project should optimize for delivery speed and operational simplicity without creating a throwaway architecture.
+The previous Phase 4 stack (Supabase / Vercel / Flutter / Photoroom / mock-first Stage 1) is dropped before any product code derived from it lands in production. Existing legacy code under `/app` is scheduled for removal in the implementation iteration that follows `.specify/specs/024-production-stack-runtime/`.
 
 ## Decision
 
-Use the following MVP stack:
+Adopt the following production stack:
 
-| Layer                | Decision                                                                                                                                                                                         |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Frontend             | Next.js App Router, React, TypeScript                                                                                                                                                            |
-| Mobile               | Flutter + Dart for iOS and Android                                                                                                                                                               |
-| Styling              | Tailwind CSS v4 with Capsule Zero glass tokens                                                                                                                                                   |
-| Hosting/distribution | Vercel for web, Apple App Store and Google Play for Flutter apps                                                                                                                                 |
-| Backend/BaaS         | Supabase                                                                                                                                                                                         |
-| Database             | Supabase PostgreSQL with RLS                                                                                                                                                                     |
-| Vector/search        | PostgreSQL full-text search + pgvector hybrid search                                                                                                                                             |
-| Auth                 | Supabase Auth; Stage 1 email/password, Stage 2 Google OAuth and Apple Sign-In                                                                                                                    |
-| File storage         | Supabase Storage                                                                                                                                                                                 |
-| Background removal   | Photoroom API through an adapter, with remove.bg kept as fallback                                                                                                                                |
-| Payments             | Lava.top one-time product payments on web, Lava.top webhooks, mobile read-only balance for v0.1                                                                                                  |
-| i18n                 | next-intl                                                                                                                                                                                        |
-| Local UI state       | Zustand                                                                                                                                                                                          |
-| Client server-state  | TanStack Query                                                                                                                                                                                   |
-| Forms                | React Hook Form + Zod                                                                                                                                                                            |
-| API boundary         | Shared backend contract for web and mobile: Supabase clients/RPC for core data, Route Handlers/Edge Functions for trusted vendor operations, OpenAPI-documented REST endpoints for mobile parity |
+| Layer                   | Decision                                                                                                                            |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Web frontend            | Next.js App Router, React, TypeScript                                                                                               |
+| Mobile                  | React Native (iOS + Android), sharing the same Go API contract                                                                      |
+| Styling                 | Tailwind CSS v4 with Capsule Zero glass tokens                                                                                       |
+| Backend                 | Go modular monolith (single binary, bounded contexts: auth, wardrobe, capsule, search, billing, moderation)                          |
+| API gateway             | Traefik v3 with Let's Encrypt TLS, rate-limit middleware, forward-auth into Ory Kratos                                              |
+| Database                | PostgreSQL 16 with pgvector (semantic) and Postgres FTS (full-text), PgBouncer for connection pooling                                |
+| Cache / sessions / queue| Redis 7 with a Redis-based job queue (River or asynq) — Kafka is deferred until services split                                       |
+| Auth                    | Ory Kratos email/password in v0.1; Google OAuth and Apple Sign-In in Stage 2                                                         |
+| File storage            | DigitalOcean Spaces (S3-compatible) with the built-in Spaces CDN                                                                     |
+| Image processing        | Self-hosted Capsule Zero model behind a Go worker, deferred to Stage 2                                                               |
+| Email                   | Resend for transactional email (verification, password reset, security notifications), MailHog for local dev                         |
+| DNS / anti-DDoS         | Spaceship registrar pointed at Cloudflare nameservers; Cloudflare proxy enabled on `capsulezero.app` for DDoS and CDN                |
+| Observability           | Grafana dashboards + syslog (file) logs + a tracing exporter; Sentry and Prometheus deferred to Stage 2                              |
+| Hosting                 | Single DigitalOcean droplet running docker-compose; minimum 4 GB RAM / 2 vCPU / 80 GB disk                                            |
+| Payments                | Lava.top one-time product payments on web; stubbed in v0.1, integrated after core wardrobe and capsule flows ship                    |
+| i18n                    | next-intl                                                                                                                            |
+| Local web state         | Zustand                                                                                                                              |
+| Client server-state     | TanStack Query                                                                                                                       |
+| Forms                   | React Hook Form + Zod                                                                                                                |
+| API boundary            | Go HTTP API behind Traefik; OpenAPI is the contract source. Web/Next.js Server Actions and Route Handlers call the Go API; mobile consumes the same OpenAPI surface |
 
-Supabase is the canonical backend for v0.1 across web and mobile. Do not introduce a custom NestJS or FastAPI backend unless a measured MVP requirement cannot be met through Supabase, Vercel Functions, or Supabase Edge Functions.
+### Why a Go modular monolith and not microservices
 
-Stage 1 implementation follows ADR-006: external provider calls may be mocked behind the same domain/provider interfaces until the relevant integration gate requires real Supabase, Lava.top, Photoroom, or OAuth evidence.
+For v0.1 the team is small and the operational budget is one droplet. A modular monolith gives the architectural cleanliness of microservices (bounded contexts, ownership boundaries, explicit interfaces) with the operational simplicity of one binary, one set of migrations, one deploy. Services can be extracted later when a real bottleneck or independent scaling pattern justifies it; the first natural extraction is the image-processing worker, which uses its own scaling profile.
 
-Locale scope update on 2026-06-07: active MVP v1 locales are EN and RU. ES-AR is moved to MVP v2 and must stay out of active route, database, and API-client enums until the v2 locale scope is accepted.
+### Why not Node.js or Python for the API
+
+Go gives small static binaries (~15 MB images), low memory footprint (essential on a 4 GB droplet), goroutine concurrency for the upload/search workload, and a calm operational story (no JVM tuning, no GIL). Node.js would force us to add a process manager and accept a heavier baseline image; Python (FastAPI) is convenient but ships heavy runtimes and is best reserved for ML inference if/when we self-host an image model.
+
+### Why React Native and not Flutter
+
+The previous Phase 4 chose Flutter. The pivot replaces it with React Native: shared TypeScript ecosystem with the web frontend, easier hiring overlap with web engineers, and a faster path to publishing the iOS/Android shell once the core wardrobe API is up. The cost is some platform-specific glue we previously did not need; the benefit is one less language in the stack and a much smaller mental tax for engineers moving between web and mobile.
+
+### Why DigitalOcean Spaces and not Cloudflare R2
+
+Hosting is on DigitalOcean, so Spaces ships in one bill, with one set of credentials, and includes a CDN with no extra wiring. R2 has cheaper egress on paper, but requires gluing two providers together and is a Stage 2 optimization if storage cost becomes a real line item.
+
+### Why no Kafka in v0.1
+
+The droplet cannot host Kafka (JVM eats > 1 GB of RAM) and we do not yet have multiple consumers. A Redis-based job queue covers image processing, embedding generation, marketplace parsing, and webhook fanout. Kafka becomes interesting only when the image worker, the API, and a second downstream consumer all need durable, replayable streams — i.e. when we extract the image worker into its own service.
+
+### Why Cloudflare and not the Traefik bot middleware alone
+
+Cloudflare is free at the level we need, gives DNS, DDoS protection, bot fight mode, CDN, and TLS edge — all in one provider — and lets the droplet stay behind a proxy. Traefik then handles app-level TLS and routing without also having to play "first line of defense".
+
+### Implementation rules
+
+- Every external dependency lives behind an interface inside the Go monolith (`internal/auth`, `internal/storage`, `internal/email`, `internal/billing`, …). Tests substitute fakes; production wires the real client.
+- The OpenAPI spec at `docs_capsule_zero/adr/openapi.yaml` is the contract. Web and mobile both consume generated clients from it.
+- All services run inside docker-compose. There is one `docker-compose.yml`; environment overrides live in `docker-compose.dev.yml` and (when ready) `docker-compose.prod.yml`. Every service is declared as a separate `services:` block.
+- Production secrets live only in the droplet's encrypted `.env` and provider dashboards; never in repo.
+- ES-AR stays a deferred locale: active routing, OpenAPI enums, and generated clients carry `en` and `ru` only.
 
 ## Consequences
 
 Positive:
 
-- One platform covers auth, DB, storage, policies, functions, and vector search.
-- RLS can enforce user ownership close to the data.
-- The frontend team can move quickly with App Router and Supabase SSR clients.
-- Flutter can reuse Supabase Auth, Storage, RLS, and the same domain API instead of creating a second backend.
-- Shared catalog search can start in Postgres and avoid a separate vector database.
-- Vercel preview deployments remain the natural delivery surface.
-- Lava.top matches the founder payment constraint and supports webhook-based coin fulfillment.
-- Mobile avoids app-store payment-policy risk in v0.1 by displaying balance and purchase status only.
-- Mock-first Stage 1 lets product screens and domain flows move before all provider dashboards are registered.
+- The stack is self-hostable on one droplet, with a clean migration path to multi-node Kubernetes when load justifies it.
+- Bounded contexts inside the monolith map directly to future microservice extractions.
+- One language (Go) for backend, one (TypeScript) for web + mobile — smaller cognitive surface than Supabase + Flutter + Vercel + RLS DSL.
+- No BaaS lock-in. The schema, auth, and storage all run on commodity software the team owns.
+- Cloudflare absorbs the noisy traffic floor for free.
+- Resend keeps Kratos email flows working without rolling our own SMTP.
 
 Tradeoffs:
 
-- Supabase-specific policies and functions become part of the architecture.
-- Background removal depends on an external image API for v0.1.
-- Marketplace parsing remains inherently best-effort and must have clear failure states.
-- TanStack Query and next-intl must be added to the app dependencies before their feature slices.
-- Flutter materially increases MVP delivery scope and requires mobile-specific QA, release signing, deep links, and store-review work.
-- Lava.top payments for digital coins inside mobile apps carry App Store and Google Play policy risk; v0.1 therefore ships web purchases only, while mobile reflects ledger state after webhook fulfillment.
-- Real provider evidence remains required before mocked flows are promoted to real-provider QA, staging, or launch.
+- The team owns auth (Ory Kratos config), storage CORS, RLS-equivalent enforcement in the Go layer, observability, migrations, and backups. Supabase used to do most of these for us.
+- A 4 GB droplet leaves little headroom; we will hit a wall under spiky AI tagging traffic and must size up or extract the image worker early.
+- React Native means writing some native bridges if the camera/upload UX needs deep platform features. Flutter would have given a richer out-of-the-box widget set.
+- Self-hosting the image model is a future build cost; until it ships, background removal is best-effort or manual.
 
 ## Alternatives Considered
 
-- Custom Node/NestJS backend: more control, but unnecessary operational load for v0.1.
-- Python/FastAPI backend: useful for ML-heavy systems, but Capsule Zero outfit generation is algorithmic and the MVP does not require a Python service.
-- Clerk/Auth0 plus separate Postgres/storage: strong auth products, but adds integration surface and separates identity from RLS-backed data ownership.
-- Cloudflare R2/S3 for storage: viable later, but Supabase Storage keeps storage policies next to Postgres ownership for MVP.
-- Web-only mobile-responsive MVP: lower scope, but rejected by updated founder requirement for native iOS and Android support.
-- Stripe Checkout: previously accepted for coins, superseded by founder requirement to use Lava.top.
-- In-app Lava.top purchase CTA for mobile: deferred until store-policy approval or a store-specific fallback is selected.
-- Google OAuth and Apple Sign-In in Stage 1: deferred to MVP Stage 2 to reduce provider setup and callback complexity before the core product is moving.
+- **Supabase (previous Phase 4 choice):** fast to ship, but locks data, auth, and storage into one vendor. Rejected during the production-stack pivot.
+- **Custom Node/NestJS backend:** acceptable, but pays a higher memory tax than Go on a small droplet and forces ProcessManager + cluster discipline.
+- **Python/FastAPI backend:** keep on the table for ML inference services only.
+- **Microservices from Day 1 with Kafka and API Gateway routing across services:** real overhead for one engineer team with no scaling justification. Rejected; the monolith stays modular so extraction is cheap later.
+- **Vercel + serverless:** fast preview deployments, but ties prod to a vendor and complicates background workers and pgvector tuning.
+- **Cloudflare R2 + AWS SES + Mailgun:** equivalent feature set, but adds two extra billing relationships compared with Spaces + Resend.
+- **Flutter mobile (previous Phase 4 choice):** great DX, dropped to align languages with the web team.
+- **Stripe Checkout for payments:** previously accepted, then superseded by the Lava.top constraint.
 
 ## References
 
-- Supabase Next.js SSR guide: https://supabase.com/docs/guides/auth/server-side/nextjs
-- Supabase AI and vectors: https://supabase.com/docs/guides/ai
-- Supabase pgvector: https://supabase.com/docs/guides/database/extensions/pgvector
-- Supabase hybrid search: https://supabase.com/docs/guides/ai/hybrid-search
-- Flutter Supabase client: https://supabase.com/docs/reference/dart/introduction
-- Flutter deep linking: https://docs.flutter.dev/ui/navigation/deep-linking
+- Go std library: https://pkg.go.dev/std
+- Traefik v3: https://doc.traefik.io/traefik/
+- Ory Kratos: https://www.ory.sh/docs/kratos/
+- PostgreSQL pgvector: https://github.com/pgvector/pgvector
+- DigitalOcean Spaces: https://www.digitalocean.com/products/spaces
+- Cloudflare proxy & DDoS: https://developers.cloudflare.com/ddos-protection/
+- Resend: https://resend.com/docs
 - Lava.top developer API: https://developers.lava.top/en
-- Apple External Purchase: https://developer.apple.com/documentation/storekit/external-purchase
-- Google Play external offers: https://developer.android.com/google/play/billing/external/integration
 - next-intl: https://next-intl.dev/
-- Vercel environment variables: https://vercel.com/docs/environment-variables
-- Mock-first Stage 1 ADR: `docs_capsule_zero/adr/adr-006-mock-first-mvp-stage-one.md`
+- Production runtime spec: `.specify/specs/024-production-stack-runtime/`

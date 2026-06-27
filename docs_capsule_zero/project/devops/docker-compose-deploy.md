@@ -1,52 +1,55 @@
 # Docker Compose Deployment
 
-Capsule Zero now ships a production-shaped Docker Compose runtime: the Next.js
-web app runs against self-hosted Supabase core services instead of fixture
-mocks. Compose is the single local/stage/prod process supervisor; VM-level TLS,
-firewalling, backups, and secret delivery remain outside git.
+Capsule Zero ships a production-shaped Docker Compose runtime that runs the **Go modular monolith API**, the **Next.js web frontend**, and the supporting infrastructure (Ory Kratos, PostgreSQL with pgvector, Redis, Traefik, imgproxy, Grafana) as separate services on a single DigitalOcean droplet. Compose is the only process supervisor; VM-level firewalling, backups, and secret delivery remain outside git.
 
-Outside this Compose runtime, an unset `CAPSULE_PROVIDER_MODE` remains the
-non-production fixture-backed local default. Compose sets
-`CAPSULE_PROVIDER_MODE=supabase` explicitly for the `web` service, and
-production must keep that explicit setting because mock mode is rejected there.
+The full runtime is delivered by `.specify/specs/024-production-stack-runtime/`. This document describes the steady-state operational contract once that spec ships.
 
 ## Topology
 
-| Service | Purpose | Default host exposure |
-| --- | --- | --- |
-| `web` | Next.js standalone app, `CAPSULE_PROVIDER_MODE=supabase` | `127.0.0.1:3000` |
-| `kong` | Supabase API gateway for Auth, REST, Storage, Realtime, Functions | `127.0.0.1:8000`, `127.0.0.1:8443` |
-| `db` | Supabase PostgreSQL 17 with pgvector and Capsule Zero migrations | internal only |
-| `auth` | Supabase Auth / GoTrue | via Kong |
-| `rest` | PostgREST over `public,storage,graphql_public` | via Kong |
-| `storage` | Supabase Storage file backend | via Kong |
-| `imgproxy` | Storage image transformation backend | internal only |
-| `realtime` | Supabase Realtime tenant `realtime-dev` | via Kong |
-| `meta` | Postgres metadata service for Studio | internal only |
-| `studio` | Supabase Studio admin UI | `127.0.0.1:3001` |
-| `supavisor` | Postgres pooler | `127.0.0.1:54329`, `127.0.0.1:6543` |
-| `functions` | Supabase Edge Runtime shell for future functions | via Kong |
-| `migrate` | One-shot Capsule Zero SQL migration runner | none |
+Each service is declared as a separate `services:` entry in one root `docker-compose.yml`. Environment overrides for local dev (MailHog instead of Resend, hot-reload for `api` and `worker`) live in `docker-compose.dev.yml`.
+
+| Service     | Image                            | Purpose                                                        | Default host exposure         |
+| ----------- | -------------------------------- | -------------------------------------------------------------- | ----------------------------- |
+| `traefik`   | `traefik:v3`                     | Edge: TLS (Let's Encrypt), rate-limit, forward-auth into Kratos| `80`, `443`                   |
+| `web`       | local build of `/web`            | Next.js App Router web frontend                                | internal only (behind Traefik)|
+| `api`       | local build of `/api`            | Go modular monolith                                            | internal only (behind Traefik)|
+| `worker`    | local build of `/worker`         | Redis-queue consumer (image jobs, embeddings, webhook fanout)  | internal only                 |
+| `kratos`    | `oryd/kratos`                    | Identity provider (email/password Stage 1)                     | internal only (behind Traefik)|
+| `postgres`  | `postgres:16-alpine` + pgvector  | App database + Kratos database (separate logical DBs)          | internal only                 |
+| `pgbouncer` | `edoburu/pgbouncer`              | Connection pool in front of Postgres                           | internal only                 |
+| `redis`     | `redis:7-alpine`                 | Cache, sessions, job queue                                     | internal only                 |
+| `imgproxy`  | `darthsim/imgproxy`              | On-the-fly image resize/WebP for derived sizes                 | internal only (behind Traefik)|
+| `grafana`   | `grafana/grafana`                | Dashboards over syslog files and OTLP traces                   | `https://grafana.capsulezero.app` via Traefik |
+| `mailhog`   | `mailhog/mailhog`                | Dev-only courier sink; replaced by Resend in prod              | `127.0.0.1:8025` (dev only)   |
 
 Persistent data lives in named Docker volumes:
 
-- `capsule-zero_supabase-db-data`
-- `capsule-zero_supabase-db-config`
-- `capsule-zero_supabase-storage`
-- `capsule-zero_deno-cache`
+- `capsule-zero_postgres-data`
+- `capsule-zero_redis-data`
+- `capsule-zero_kratos-data`
+- `capsule-zero_traefik-letsencrypt`
+- `capsule-zero_grafana-data`
+- `capsule-zero_syslog`
+
+Object storage and email leave the droplet:
+
+- **DigitalOcean Spaces** for user/avatar/catalog assets and Postgres backups.
+- **Resend** for transactional email (Kratos verification, password recovery, security notifications).
 
 ## Files
 
-| File | Purpose |
-| --- | --- |
-| `app/Dockerfile` | Builds the Next.js standalone production image. |
-| `docker-compose.yml` | Runs web plus Supabase core services, volumes, dependencies, healthchecks. |
-| `deploy/compose.env.example` | Compose interpolation template; copy to `.env` and rotate secrets. |
-| `deploy/runtime.env` | Non-secret local runtime defaults for the web container. |
-| `deploy/stage.env.example` | Staging web runtime template. |
-| `deploy/prod.env.example` | Production web runtime template. |
-| `deploy/supabase/` | Upstream Supabase self-host config files and migration runner used by Compose. |
-| `supabase/migrations/` | Capsule Zero schema, storage buckets/RLS, provider runtime alignment. |
+| Path                                | Purpose                                                                       |
+| ----------------------------------- | ----------------------------------------------------------------------------- |
+| `docker-compose.yml`                | Production-shape topology, declared per service                               |
+| `docker-compose.dev.yml`            | Local dev overrides (MailHog, hot-reload, debug logs)                          |
+| `infra/traefik/`                    | Traefik static + dynamic config: TLS, middlewares, forward-auth               |
+| `infra/kratos/`                     | Kratos identity schema, courier (Resend SMTP), self-service flow config       |
+| `infra/postgres/`                   | Postgres init scripts (pgvector extension, role grants, Kratos DB creation)   |
+| `api/Dockerfile`                    | Go API multi-stage build (distroless runtime image)                           |
+| `worker/Dockerfile`                 | Go worker multi-stage build                                                   |
+| `web/Dockerfile`                    | Next.js standalone production image                                            |
+| `api/migrations/`                   | golang-migrate SQL files; applied at API boot                                  |
+| `deploy/compose.env.example`        | Env template for compose interpolation; copy to `.env` and fill secrets        |
 
 ## First Start
 
@@ -54,150 +57,115 @@ Prepare env files:
 
 ```bash
 cp deploy/compose.env.example .env
-cp deploy/stage.env.example deploy/runtime.env
 ```
 
-For production, use:
+Fill the real values for the droplet's encrypted `.env`. Required keys at minimum:
+
+- `POSTGRES_PASSWORD`, `KRATOS_DSN`, `KRATOS_SECRETS_COOKIE`, `KRATOS_SECRETS_CIPHER`
+- `SPACES_ACCESS_KEY`, `SPACES_SECRET_KEY`, `SPACES_BUCKET`, `SPACES_REGION`, `SPACES_CDN_BASE`
+- `RESEND_API_KEY`, `RESEND_FROM`
+- `APP_BASE_URL`, `MOBILE_DEEP_LINK_SCHEME`
+- `GRAFANA_ADMIN_PASSWORD`
+
+Start the stack:
 
 ```bash
-cp deploy/prod.env.example deploy/runtime.env
+docker compose up -d
 ```
 
-Before starting any shared environment, rotate all values in `.env` marked as
-secret: `POSTGRES_PASSWORD`, `JWT_SECRET`, `ANON_KEY`, `SERVICE_ROLE_KEY`,
-`SESSION_SIGNING_SECRET`, `DASHBOARD_PASSWORD`, `SECRET_KEY_BASE`, `VAULT_ENC_KEY`,
-`PG_META_CRYPTO_KEY`, S3 protocol keys, SMTP credentials, and external provider
-keys.
-
-Start or deploy the stack:
+For local development against the dev override:
 
 ```bash
-npm run deploy:compose
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
-For a local port override:
-
-```bash
-CAPSULE_HOST_PORT=3100 npm run deploy:compose
-```
-
-Always recreate the canonical `migrate` service before starting `web` on any
-deploy that may include SQL changes. A plain `docker compose up -d --build` can
-reuse an already-exited `migrate` container when only files under
-`supabase/migrations/` changed, which lets `web` start against a database that
-has not applied the new migration yet.
+Schema migrations apply during API startup (golang-migrate runs against `postgres` before the API serves traffic). Kratos manages its own migrations against its own database via its built-in `kratos migrate sql` step run from an init container.
 
 ## Health Checks
 
-Primary app health:
+Primary stack health:
 
 ```bash
-curl -fsS http://127.0.0.1:3000/api/health
+curl -fsS https://capsulezero.app/api/health
 ```
 
-Supabase gateway checks:
+The Go API `/api/health` reports:
+
+- API process status
+- Postgres reachability (through PgBouncer)
+- Redis reachability
+- Kratos public API reachability
+- Spaces bucket reachability (HEAD probe)
+- Resend reachability (lightweight metadata call)
+
+Per-service probes:
 
 ```bash
-curl -fsS http://127.0.0.1:8000/auth/v1/health
-curl -fsS http://127.0.0.1:8000/storage/v1/status
+docker compose ps                    # all services healthy
+docker compose logs traefik --tail=50
+docker compose logs kratos --tail=50
+docker compose logs api --tail=100
 ```
-
-Expected app health uses:
-
-- `providerMode: "supabase"`
-- `providerHealth.integrations.supabase: "configured"`
-- `providerHealth.integrations.storage: "configured"`
-
-`backgroundRemoval`, `marketplaceImport`, and `lavaTop` stay `pending-gate`
-until real Photoroom, marketplace import, and Lava.top credentials are supplied.
-They are no longer mocked inside the app runtime.
 
 ## Migrations
 
-The first database initialization mounts official Supabase init scripts from
-`deploy/supabase/db/`. Capsule Zero migrations run separately in the one-shot
-`migrate` service after Auth, PostgREST, and Storage are healthy. This keeps app
-schema changes after Supabase has created `auth` and `storage` internals.
+API migrations live in `api/migrations/` and apply via golang-migrate at API boot. The runner records applied versions in a dedicated `schema_migrations` table inside the app schema.
 
-The migration runner records applied files in:
+Rules:
 
-```text
-capsule_zero_internal.schema_migrations
-```
-
-The tracking table lives outside the PostgREST-exposed `public` schema. On
-stacks that already created the earlier public tracking table, the runner copies
-its rows into `capsule_zero_internal.schema_migrations` and drops the public
-table before applying pending migrations.
-
-Do not delete or reorder existing migration files after a volume has been
-initialized. For schema changes, add a new timestamped or numbered SQL file.
-
-Apply pending migrations explicitly during every deploy:
-
-```bash
-npm run deploy:compose
-```
-
-This keeps the `web` dependency on `migrate: service_completed_successfully`
-meaningful for the current release instead of relying on a previously completed
-one-shot container.
+- Add a new timestamped SQL file for every schema change; do not edit applied migrations.
+- Never run destructive `down` migrations against staging or production unless a restore plan has been tested.
+- Kratos schema changes follow Kratos's own migration tool; do not hand-edit Kratos tables.
 
 For a destructive local reset only:
 
 ```bash
 docker compose down -v
-docker compose up -d --build --wait db auth rest storage realtime functions kong imgproxy meta studio supavisor
-docker compose up --force-recreate --no-deps migrate
-docker compose up -d --build web
+docker compose up -d
 ```
-
-Never use `down -v` on staging or production unless a restore plan has already
-been tested.
 
 ## Backups
 
-Production backups must cover both database and object storage.
-
-Database backup:
+Database backup (nightly cron — shipped with spec 024):
 
 ```bash
-docker compose exec db pg_dump -U postgres -d postgres --format=custom > capsule-zero.dump
+docker compose exec postgres pg_dump -U capsule_zero -d capsule_zero --format=custom | \
+  aws --endpoint-url "https://${SPACES_REGION}.digitaloceanspaces.com" \
+      s3 cp - "s3://${SPACES_BUCKET}/backups/capsule-zero-$(date -u +%Y-%m-%dT%H-%M-%SZ).dump"
 ```
 
-Storage backup:
+Retention: 14 days, enforced by a lifecycle policy on the `backups/` prefix.
 
-```bash
-docker run --rm \
-  -v capsule-zero_supabase-storage:/storage:ro \
-  -v "$PWD/backups:/backup" \
-  alpine tar czf /backup/capsule-zero-storage.tgz -C /storage .
-```
-
-Restore into an empty stack by restoring Postgres first, then the storage
-volume, then starting `web`.
+Object storage durability is provided by DigitalOcean Spaces; no extra backup of Spaces objects is required for v0.1. Restore plans must be exercised on staging at least once per quarter.
 
 ## Upgrades
 
-1. Read upstream Supabase self-host release notes before changing image tags.
-2. Update `docker-compose.yml` image tags and refreshed files under
-   `deploy/supabase/` together.
+1. Read upstream release notes for any image tag changes (Postgres, Kratos, Traefik, Redis, Grafana).
+2. Update image tags in `docker-compose.yml` together with any required config changes under `infra/`.
 3. Validate config:
-
-```bash
-docker compose --env-file deploy/compose.env.example config
-```
-
+   ```bash
+   docker compose --env-file deploy/compose.env.example config
+   ```
 4. Run local smoke checks against a fresh volume set.
-5. Back up staging/production before pulling new images.
+5. Back up production Postgres before pulling new images on the droplet.
 
 ## Ingress
 
-Compose binds public-facing ports to localhost by default. Put Caddy, Nginx,
-a load balancer, or another TLS layer in front of:
+Public traffic enters through Cloudflare → Traefik on the droplet (ports 80/443). Traefik:
 
-- web app: `http://127.0.0.1:3000`
-- Supabase API: `http://127.0.0.1:8000`
+- terminates Let's Encrypt TLS for `capsulezero.app` and `grafana.capsulezero.app`,
+- runs a rate-limit middleware per IP,
+- runs a forward-auth middleware against Kratos for protected routes,
+- routes `/` to `web`,
+- routes `/api/*` to `api`,
+- routes `/self-service/*` and `/sessions/*` to `kratos` (public API),
+- routes `grafana.capsulezero.app` to `grafana`.
 
-Keep Studio and Postgres/pooler ports private unless an operator explicitly
-opens them through a VPN or bastion.
+Cloudflare proxy provides edge TLS, DDoS protection, Bot Fight Mode, and CDN. Postgres, Redis, and Kratos admin APIs stay internal to the compose network; no host port is exposed.
+
+## Operational Constraints
+
+- Single droplet, single Docker daemon; no Kubernetes, no Docker Swarm in v0.1.
+- All secrets live in the droplet's encrypted `.env` and provider dashboards; never in repo or chat.
+- syslog files are rotated by the host (`/etc/logrotate.d/capsule-zero-syslog`) with 7 day retention; Grafana reads them through Loki only after Stage 2 (until then, the syslog file is the primary log surface).
+- Sentry and Prometheus are deferred to Stage 2.

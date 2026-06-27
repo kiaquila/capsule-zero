@@ -2,57 +2,59 @@
 
 ## Status
 
-Accepted.
+Accepted (rewritten 2026-06-27 for the production-stack pivot).
 
 ## Context
 
-US-002 and US-003 now use staged auth scope.
+US-002 and US-003 use staged auth scope.
 
-MVP Stage 1 requires registration and login through:
+v0.1 requires registration and login through:
 
 - email/password
 
-MVP Stage 2 adds:
+Stage 2 adds:
 
 - Google OAuth
 - Apple Sign-In
 
-The app must preserve sessions between visits, support password recovery, store optional location and language preferences, and redirect authenticated users to the dashboard. Auth must also support secure access to private wardrobe items, photos, capsules, payments, and profile data across web and Flutter mobile apps.
+The app must preserve sessions between visits, support password recovery, store optional location and language preferences, and redirect authenticated users to the dashboard. Auth must also secure private wardrobe items, photos, capsules, payments, and profile data across web and React Native mobile clients.
+
+The previous Phase 4 choice (Supabase Auth) is dropped together with Supabase. The replacement must run self-hosted on the production droplet, integrate cleanly with the Go monolith and React Native client, and deliver email verification and password reset using Resend.
 
 ## Decision
 
-Use Supabase Auth for Capsule Zero MVP authentication. Stage 1 can use a local mock auth adapter behind the same application boundary until Supabase staging is required for persistence/RLS validation.
+Use **Ory Kratos** as the identity provider, fronted by Traefik forward-auth, with the Go monolith owning the application-level session cookie/JWT.
 
 Implementation rules:
 
-- Use `@supabase/supabase-js` and `@supabase/ssr` for browser/server clients in Next.js App Router.
-- Use `supabase_flutter` for iOS and Android.
-- Configure Supabase Auth email/password for Stage 1.
-- Configure Google OAuth and Apple Sign-In only for MVP Stage 2 or an explicit social-auth integration gate.
-- Store application profile data in `public.profiles`, keyed by `auth.users.id`.
-- Use Supabase RLS for user-owned tables.
-- Keep service-role access server-only in Route Handlers, Server Actions, and Edge Functions.
-- Keep Next.js auth callback routes as the Stage 2 OAuth boundary; they are not required for Stage 1 email/password implementation.
-- Configure mobile deep links/universal links/app links for Flutter OAuth callbacks in Stage 2. Payment-return deep links are deferred unless a later mobile payment posture is approved.
-- Persist language preference on `profiles.language`.
+- Run Ory Kratos as a docker-compose service, configured headless: the Capsule Zero UI (Next.js for web, React Native for mobile) renders all auth screens, while Kratos handles the identity/session machinery over its self-service API.
+- Use Kratos identity schema fields: `traits.email`, `traits.name.first` (optional), `traits.locale`.
+- Email flows (verification, recovery, password change confirmation) are delivered by Kratos through the SMTP courier connected to Resend.
+- Traefik runs a `forward-auth` middleware against Kratos session check on protected routes; the Go API also validates the Kratos session cookie on every request.
+- The Go monolith maps `kratos_identity_id` → `profiles.id` on first sign-in and stores `display_name`, `language`, `country`, `city`, and `coin_balance` in its own Postgres tables.
+- Email/password registration and recovery are active in v0.1. Google OAuth and Apple Sign-In are configured in Kratos only when the Stage 2 social-auth integration gate opens.
+- Configure mobile deep links for OAuth callbacks in Stage 2 (React Native handles the redirect; Kratos validates the flow). Payment-return deep links are deferred — v0.1 mobile has no purchase CTA.
+- Persist language preference on `profiles.language` (allowed values: `en`, `ru`).
 - Persist optional `country` and `city` on `profiles`, but never block registration if absent.
 - Use inline UI errors with Capsule Zero yellow `#FFD600`; no alert popups.
+- Production secrets (Kratos cookie/session secret, Resend API key) live only in the droplet's encrypted `.env` and provider dashboards.
 
 ## Data Model
 
 `profiles`
 
-| Field             | Type          | Notes                                             |
-| ----------------- | ------------- | ------------------------------------------------- |
-| `id`              | uuid PK       | References `auth.users.id`                        |
-| `display_name`    | text          | User-editable                                     |
-| `avatar_asset_id` | uuid nullable | References selected avatar asset                  |
-| `language`        | text          | `en`, `ru`; default `en`. `es-AR` is deferred to MVP v2 |
-| `country`         | text nullable | Optional                                          |
-| `city`            | text nullable | Optional                                          |
-| `coin_balance`    | integer       | Derived from coin ledger or cached for fast reads |
-| `created_at`      | timestamptz   | Server-generated                                  |
-| `updated_at`      | timestamptz   | Server-generated                                  |
+| Field             | Type          | Notes                                                                  |
+| ----------------- | ------------- | ---------------------------------------------------------------------- |
+| `id`              | uuid PK       | Internal app primary key                                               |
+| `kratos_identity_id` | uuid unique | References Kratos identity                                            |
+| `display_name`    | text          | User-editable                                                          |
+| `avatar_asset_id` | uuid nullable | References selected avatar asset                                      |
+| `language`        | text          | `en`, `ru`; default `en`. `es-AR` is deferred to v0.2                  |
+| `country`         | text nullable | Optional                                                              |
+| `city`            | text nullable | Optional                                                              |
+| `coin_balance`    | integer       | Cached from coin ledger; ledger is canonical                          |
+| `created_at`      | timestamptz   | Server-generated                                                      |
+| `updated_at`      | timestamptz   | Server-generated                                                      |
 
 `coin_ledger`
 
@@ -80,38 +82,44 @@ Implementation rules:
 | `processed_at`      | timestamptz nullable | Set after fulfillment attempt                                      |
 | `error_message`     | text nullable        | Internal failure detail                                            |
 
-## RLS Policy Summary
+The coin tables ship in the schema from Day 1 so the ledger contract is stable, but coin purchases and image-enhancement spends are v0.2 features. v0.1 keeps Lava.top stubbed and the spend reasons unused.
 
-- Users can select and update only their own `profiles` row.
-- Users can select only their own `coin_ledger` rows.
-- Coin ledger inserts are server-only through Route Handlers or Edge Functions using server credentials after balance, reason, target, and idempotency validation.
-- Public catalog item reads are allowed only for items with `visibility = 'public'`.
-- Private item, capsule, outfit, upload, and asset rows require `user_id = auth.uid()` or equivalent ownership through a join such as `wardrobe_entries.user_id`.
+## Authorization
+
+Postgres RLS is not used. Authorization is enforced in the Go monolith on every request:
+
+- Every authenticated handler resolves `user_id` from the Kratos session before any data access.
+- Repository methods take `user_id` as a parameter and only return rows owned by that user, except for explicit public-catalog reads.
+- Public catalog reads (`items.visibility = 'public'`) are served through a dedicated read path that does not require a session.
+- Coin ledger inserts are server-only and only callable from internal billing/webhook handlers.
+- Admin moderation routes require an admin role claim attached to the Kratos identity.
 
 ## Consequences
 
 Positive:
 
-- Auth identity, RLS, and user data share one backend.
-- Stage 1 auth can ship with a smaller email/password surface.
-- Google and Apple OAuth requirements remain covered by Supabase Auth in Stage 2.
-- Web and mobile use the same auth authority and RLS policies.
-- The profile model stays simple and avoids duplicating auth credentials.
-- Future account deletion/privacy workflows can be implemented by traversing user-owned records.
+- Auth identity lives in a self-hosted, open-source product the team controls.
+- Kratos handles password hashing, MFA upgrade paths, recovery tokens, and verification flows — we do not roll our own.
+- The Go monolith owns the business identity (`profiles.id`) and is free to evolve independent of Kratos schema.
+- Email flows reuse the same Resend account the rest of the platform uses, with SPF/DKIM published once for `capsulezero.app`.
+- Web and mobile share one auth authority and one set of session semantics.
+- No vendor lock-in: Kratos can move droplets or be swapped out behind the same Go interface.
 
 Tradeoffs:
 
-- OAuth provider setup must happen in Supabase and provider dashboards before Stage 2 social auth QA, staging, or launch.
+- We own the Kratos config, migrations, and upgrade cycle.
+- The forward-auth path adds one in-cluster hop on protected requests (cheap, but real).
+- OAuth provider setup must happen in Kratos and provider dashboards before Stage 2 social auth QA, staging, or launch.
 - Apple Sign-In may not always provide name metadata on repeat sign-ins, so Stage 2 profile completion must tolerate missing provider names.
-- Supabase SSR clients and cookie refresh behavior must be implemented carefully in App Router.
-- Flutter requires deep-link configuration, secure token storage, and platform-specific OAuth redirect testing.
+- React Native requires deep-link configuration, secure token storage, and platform-specific OAuth redirect testing in Stage 2.
 
 ## References
 
-- Supabase Auth overview: https://supabase.com/docs/guides/auth
-- Supabase Social Login: https://supabase.com/docs/guides/auth/social-login
-- Supabase Apple login: https://supabase.com/docs/guides/auth/social-login/auth-apple
-- Supabase Next.js SSR auth: https://supabase.com/docs/guides/auth/server-side/nextjs
-- Supabase Flutter client: https://supabase.com/docs/reference/dart/introduction
-- Flutter deep linking: https://docs.flutter.dev/ui/navigation/deep-linking
-- Next.js authentication guide: https://nextjs.org/docs/app/guides/authentication
+- Ory Kratos docs: https://www.ory.sh/docs/kratos/
+- Kratos self-service flows: https://www.ory.sh/docs/kratos/self-service
+- Kratos identity schema: https://www.ory.sh/docs/kratos/manage-identities/identity-schema
+- Resend SMTP: https://resend.com/docs/send-with-smtp
+- Traefik forward-auth: https://doc.traefik.io/traefik/middlewares/http/forwardauth/
+- React Native deep links: https://reactnative.dev/docs/linking
+- Apple Sign-In: https://developer.apple.com/sign-in-with-apple/
+- Google OAuth: https://developers.google.com/identity/protocols/oauth2

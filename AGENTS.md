@@ -6,9 +6,19 @@
 
 **Capsule Zero** is a premium fashion-tech platform — "the Aesop of wardrobe apps". It helps affluent users (25–40 yo) build maximally productive capsule wardrobes using a proprietary color and wardrobe methodology. Core metric: **Outfit Productivity Ratio** (outfits / items).
 
-**Tech stack:** Next.js 14+ App Router, React, TypeScript, Tailwind CSS v4, Flutter mobile app (iOS + Android), Supabase backend
-**Languages:** EN (primary) and RU are active in MVP v1 — i18n from Day 1. ES-AR is globally deferred to MVP v2.
-**Target:** Buenos Aires-based startup, global premium segment
+**Tech stack:** Next.js 14+ App Router web frontend, React Native mobile app (iOS + Android), Go modular monolith backend, Traefik API gateway, Ory Kratos auth, PostgreSQL + pgvector, Redis, DigitalOcean Spaces, Cloudflare front-door, all wired through docker-compose on a DigitalOcean droplet.
+**Languages:** EN (primary) and RU are active in v0.1 — i18n from Day 1. ES-AR is retained as reference copy and deferred to v0.2.
+**Target:** Buenos Aires-based startup, global premium segment.
+
+## Always Work From Fresh Git State
+
+Before research, doc edits, code changes, or even quick lookups, run:
+
+```bash
+git fetch --all --prune
+```
+
+Then start from `origin/main` (or the named PR head). Local working state is untrusted until reconciled with `origin`. If the working tree has uncommitted changes that block a checkout, stash them with `git stash push -u -m "..."` — do not lose work, but do not let stale state contaminate analysis either.
 
 ## Current Phase & Status
 
@@ -18,12 +28,14 @@
 | 1. Market Research            | COMPLETE — `docs_capsule_zero/marketing/go-to-market.md`                                                                                                                           |
 | 2. Product Definition         | COMPLETE — `.specify/specs/001-capsule-zero-mvp/spec.md`, `docs_capsule_zero/project/methodology/`, `docs_capsule_zero/ux/emotion-map.md`, `docs_capsule_zero/ux/ux-validation.md` |
 | 3. UX/UI Design               | COMPLETE — 16 logical screens across 12 HTML files + `html-prototypes/design-system.html`, `html-prototypes/color-system.html` — all in `html-prototypes/`                         |
-| **4. Technical Architecture** | **DECISIONS DOCUMENTED** — mock-first Stage 1 posture accepted; integration gates pending before real provider flows                                                               |
-| 5. Development Sprint         | Upcoming                                                                                                                                                                           |
+| **4. Technical Architecture** | **PIVOTED TO PRODUCTION STACK** — Go modular monolith + Traefik + Ory Kratos + Postgres/pgvector + Redis + DO Spaces + Cloudflare + Resend; React Native replaces Flutter        |
+| 5. Development Sprint         | Upcoming — starts with `.specify/specs/024-production-stack-runtime/`                                                                                                              |
 | 6. QA & Soft Launch           | Upcoming                                                                                                                                                                           |
 | 7. Commercial Launch          | Upcoming                                                                                                                                                                           |
 
-**Locale scope decision, 2026-06-07:** Spanish / ES-AR is removed from active MVP v1 scope and moved globally to MVP v2. Keep Spanish source copy as future reference only; do not expose ES-AR in active routing, language switchers, profile language persistence, OpenAPI enums, generated clients, or launch acceptance criteria until the MVP v2 locale scope is reopened.
+**Locale scope decision, 2026-06-07:** Spanish / ES-AR is removed from active v0.1 scope and moved globally to v0.2. Keep Spanish source copy as future reference only; do not expose ES-AR in active routing, language switchers, profile language persistence, OpenAPI enums, generated clients, or launch acceptance criteria until v0.2 locale scope is reopened.
+
+**Production-stack pivot decision, 2026-06-27:** Phase 4 architecture was rewritten from a Supabase BaaS posture to a production-grade self-hosted stack. The previous Supabase-based code under `/app` is treated as legacy and will be removed in the implementation iteration after `.specify/specs/024-production-stack-runtime/` ships. The mock-first Stage 1 posture (previously ADR-006) is dropped entirely — implementation goes straight to real services behind production-shape contracts.
 
 ## Where to Find Specifications
 
@@ -35,9 +47,15 @@
     market-context.md    ← Competitors, persona, market size, pricing
   specs/
     001-capsule-zero-mvp/
-      spec.md            ← Full MVP spec: 25 user stories, flows, requirements
+      spec.md            ← Full v0.1 spec: 25 user stories, flows, requirements
       prototype-map.md   ← Maps HTML files → spec sections → screens
+    024-production-stack-runtime/
+      spec.md            ← Production runtime delivery spec (next implementation iteration)
+      plan.md            ← Verification table for the runtime delivery
+      tasks.md           ← Process Memory
 ```
+
+> The folder name `001-capsule-zero-mvp` is historical and remains for git stability; the content is the v0.1 product spec. Do not rename grandfathered spec folders.
 
 ## HTML Prototypes
 
@@ -124,13 +142,13 @@ If a product or technical object type already exists in code, reuse its componen
 | `docs_capsule_zero/project/frontend/styling.md`                        | Glass tokens, colors, typography, component patterns (source of truth for visual tokens and component styling) |
 | `docs_capsule_zero/project/frontend/frontend-docs.md`                  | Web frontend architecture, libraries, state management, env vars                                               |
 | `docs_capsule_zero/project/frontend/components.md`                     | Component conventions, glass patterns, mobile-first rules                                                      |
-| `docs_capsule_zero/project/backend/backend-docs.md`                    | Backend stack, API structure, DB schema, env vars                                                              |
-| `docs_capsule_zero/project/mobile/mobile-docs.md`                      | Flutter app architecture, mobile auth/deep links, mobile payment constraints                                   |
-| `docs_capsule_zero/project/architecture/phase-4-council.md`            | Architecture council decision register and validation notes                                                    |
-| `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` | Stage 1 mock-first entrance gate and provider integration gates                                                |
+| `docs_capsule_zero/project/backend/backend-docs.md`                    | Go monolith stack, API structure, DB schema, env vars                                                          |
+| `docs_capsule_zero/project/mobile/mobile-docs.md`                      | React Native app architecture, mobile auth/deep links, mobile payment constraints                              |
+| `docs_capsule_zero/project/architecture/phase-4-council.md`            | Architecture council decision register (production-stack pivot)                                                |
+| `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` | Production runtime entrance gate                                                                               |
 | `docs_capsule_zero/adr/`                                               | ADRs for stack, auth, storage, and API contract                                                                |
-| `docs_capsule_zero/glossary.md`                                        | Domain terminology with active RU equivalents and ES-AR reference entries for MVP v2                            |
-| `docs_capsule_zero/i18n/ui-texts.md`                                   | i18n content (EN and RU active in MVP v1; ES-AR retained as MVP v2 reference) — all 16 screens                  |
+| `docs_capsule_zero/glossary.md`                                        | Domain terminology with active RU equivalents                                                                  |
+| `docs_capsule_zero/i18n/ui-texts.md`                                   | i18n content (EN and RU active in v0.1; ES-AR retained as reference) — all 16 screens                          |
 | `docs_capsule_zero/ux/emotion-map.md`                                  | Emotional targets per screen, UX principles                                                                    |
 | `docs_capsule_zero/ux/ux-validation.md`                                | Competitor analysis, UX benchmarks, 6 critical insights                                                        |
 | `docs_capsule_zero/features/f-XXX-name.md`                             | Per-feature requirements, acceptance criteria, edge cases (15 files)                                           |
@@ -168,13 +186,20 @@ When assigned to implement a specific feature, read in this order:
 | f-014-wardrobe-management | screen-my-items, uncapsulated, for-sale, for-repair | html-prototypes/my-items.html + others |
 | f-015-opr | screen-dashboard, capsule-result | html-prototypes/dashboard.html |
 
-## App Directory
+## Repository Layout (target after spec 024 ships)
 
-`/app` contains a Next.js 14+ project initialized with Tailwind. Structure:
+```
+/api/             ← Go modular monolith (bounded contexts: auth, wardrobe, capsule, search, billing)
+/worker/          ← Go background worker (Redis-queue consumer for image jobs, embeddings, webhooks)
+/web/             ← Next.js App Router web frontend
+/mobile/          ← React Native iOS + Android app
+/infra/           ← docker-compose.yml + service configs + Traefik dynamic config + Kratos config + migrations
+/html-prototypes/ ← Phase 3 design source of truth
+/docs_capsule_zero/ ← Product, methodology, devops, architecture docs
+/.specify/        ← spec-kit feature memory
+```
 
-- `app/src/` — source code
-- `app/src/styles/tokens.css` — Tailwind v4 @theme tokens (from design system)
-- `app/public/` — static assets
+The current `/app` directory contains the legacy Supabase-based Next.js shell. It is scheduled for removal in the implementation iteration that follows `.specify/specs/024-production-stack-runtime/`.
 
 ## Delivery Workflow
 
@@ -223,79 +248,80 @@ A task is **not complete** until the current PR head SHA has:
 
 ---
 
-## Phase 4 — Technical Architecture (DECISIONS DOCUMENTED)
+## Phase 4 — Technical Architecture (PIVOTED TO PRODUCTION STACK)
 
-Architecture decisions have been made through an Architectura-style council and documented in the repository. Phase 5 starts with mock-first Stage 1 implementation: product work can proceed behind provider adapters and fixtures, while real provider registration remains an integration gate before provider-backed QA, staging, or launch.
+Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-load production from Day 1, no BaaS lock-in, single DigitalOcean droplet running docker-compose, self-hosted observability, React Native instead of Flutter, and a self-hosted Capsule Zero image-processing model in place of external Photoroom/remove.bg. Phase 5 starts directly with the production runtime (no Stage 1 mock-first posture).
 
 ### What's already done
 
-| Item                        | Status                                       | Location                                                               |
-| --------------------------- | -------------------------------------------- | ---------------------------------------------------------------------- |
-| Frontend framework          | ✅ Next.js 14+ App Router, React, TypeScript | `/app`                                                                 |
-| Styling                     | ✅ Tailwind CSS v4 with custom @theme tokens | `app/src/styles/tokens.css`                                            |
-| Design tokens               | ✅ Glass tokens, colors, typography          | `docs_capsule_zero/project/frontend/styling.md`                        |
-| Folder structure            | ✅ Basic boilerplate (`/app/src/`)           | `/app/src/`                                                            |
-| Architecture council        | ✅ Decisions + validation                    | `docs_capsule_zero/project/architecture/phase-4-council.md`            |
-| Phase 5 entrance checklist  | ✅ Required Sprint 0 gate documented         | `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` |
-| ADR-001: Stack Overview     | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-001-stack.md`                               |
-| ADR-002: Auth               | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-002-auth.md`                                |
-| ADR-003: Storage            | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-003-storage.md`                             |
-| ADR-006: Mock-first Stage 1 | ✅ Accepted                                  | `docs_capsule_zero/adr/adr-006-mock-first-mvp-stage-one.md`            |
-| API spec                    | ✅ MVP planning contract                     | `docs_capsule_zero/adr/api-spec.md`                                    |
-| Backend docs                | ✅ Stack, API structure, DB schema           | `docs_capsule_zero/project/backend/backend-docs.md`                    |
-| Frontend docs               | ✅ Libraries, state management, env vars     | `docs_capsule_zero/project/frontend/frontend-docs.md`                  |
-| Components guide            | ✅ Component conventions, glass patterns     | `docs_capsule_zero/project/frontend/components.md`                     |
-| Mobile docs                 | ✅ Flutter stack, deep links, mobile QA      | `docs_capsule_zero/project/mobile/mobile-docs.md`                      |
+| Item                                | Status                                            | Location                                                               |
+| ----------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------- |
+| Frontend framework                  | ✅ Next.js 14+ App Router, React, TypeScript      | `/app` (legacy, scheduled removal); future `/web`                      |
+| Styling                             | ✅ Tailwind CSS v4 with custom @theme tokens      | `app/src/styles/tokens.css`                                            |
+| Design tokens                       | ✅ Glass tokens, colors, typography               | `docs_capsule_zero/project/frontend/styling.md`                        |
+| Production-stack ADR refresh        | ✅ Rewritten in-place                              | `docs_capsule_zero/adr/adr-001-stack.md` through `adr-006-…`            |
+| Architecture council                | ✅ Decisions + validation (updated for the pivot) | `docs_capsule_zero/project/architecture/phase-4-council.md`            |
+| Phase 5 entrance checklist          | ✅ Updated for production runtime gate            | `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` |
+| API spec                            | ✅ Product contract                                | `docs_capsule_zero/adr/api-spec.md`                                    |
+| Backend docs                        | ✅ Go modular monolith                            | `docs_capsule_zero/project/backend/backend-docs.md`                    |
+| Frontend docs                       | ✅ Next.js against Go API                          | `docs_capsule_zero/project/frontend/frontend-docs.md`                  |
+| Components guide                    | ✅ Component conventions, glass patterns          | `docs_capsule_zero/project/frontend/components.md`                     |
+| Mobile docs                         | ✅ React Native stack                              | `docs_capsule_zero/project/mobile/mobile-docs.md`                      |
 
 ### Accepted Phase 4 decisions
 
-| Decision               | Accepted option                                                                                    |
-| ---------------------- | -------------------------------------------------------------------------------------------------- |
-| **Backend / BaaS**     | Supabase                                                                                           |
-| **Database**           | Supabase PostgreSQL with RLS, pgvector, and Postgres full-text search                              |
-| **Auth**               | Supabase Auth with Email in Stage 1; Google OAuth and Apple Sign-In deferred to MVP Stage 2        |
-| **File Storage**       | Supabase Storage                                                                                   |
-| **Background Removal** | Mocked in Stage 1; Photoroom API behind an adapter, with remove.bg fallback if SLA/quality fails   |
-| **Hosting**            | Vercel frontend + Supabase backend services                                                        |
-| **State Management**   | Zustand for local Journey/UI state; TanStack Query for interactive server-state                    |
-| **API Client**         | Server Components/Actions + typed fetch/TanStack Query; Route Handlers for explicit API boundaries |
-| **Forms**              | React Hook Form + Zod                                                                              |
-| **i18n**               | next-intl                                                                                          |
-| **Payments**           | Mocked in Stage 1; Lava.top web purchases + Postgres coin ledger; mobile read-only balance in v0.1 |
-| **Mobile App**         | Flutter + Dart for iOS and Android                                                                 |
+| Decision               | Accepted option                                                                                                              |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Backend**            | Go modular monolith (single binary, bounded contexts inside the same process)                                                |
+| **Database**           | PostgreSQL 16 with pgvector (semantic) and Postgres FTS (full-text), PgBouncer for connection pooling                        |
+| **Cache / queue**      | Redis 7 (cache, sessions, Redis-based job queue — Kafka deferred until multi-service split)                                  |
+| **Auth**               | Ory Kratos with email/password Stage 1; Google OAuth and Apple Sign-In deferred to Stage 2                                   |
+| **File Storage**       | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                            |
+| **Image processing**   | Self-hosted Capsule Zero model behind a worker (deferred — first ship core wardrobe flows with manual/placeholder behavior)  |
+| **API gateway**        | Traefik v3 with Let's Encrypt TLS, rate-limit middleware, and forward-auth into Kratos                                       |
+| **Hosting**            | Single DigitalOcean droplet running docker-compose; Cloudflare in front of Traefik for DDoS protection and CDN               |
+| **Email**              | Resend for transactional email (verification, password reset, security notifications)                                        |
+| **Observability**      | Grafana dashboards + syslog file logs + tracing; Sentry and Prometheus deferred to Stage 2                                   |
+| **State Management**   | Zustand for local Journey/UI state; TanStack Query for interactive server-state                                              |
+| **API Client**         | Next.js Server Components/Actions and Route Handlers call the Go API through Traefik (typed fetch + TanStack Query)          |
+| **Forms**              | React Hook Form + Zod                                                                                                        |
+| **i18n**               | next-intl                                                                                                                    |
+| **Payments**           | Lava.top web purchases — stubbed in v0.1, integrated after the core wardrobe and capsule flows ship                          |
+| **Mobile App**         | React Native (iOS + Android) sharing the Go API contract                                                                     |
+| **Coins/image enhance**| Backlog — deferred until after v0.1 launch                                                                                   |
 
-### Required Sprint 0 follow-ups before Phase 5 Stage 1 feature work
+### Required Sprint 0 follow-ups before Phase 5 production-stack runtime work
 
-- Founder approval on the accepted stack.
-- Configure linting and local commit hooks before first Phase 5 product-code PR.
-- Keep external service calls behind mockable provider/domain adapters.
-- Create migration-backed Supabase schema, storage buckets, RLS policies, and seed data.
-- Scaffold Flutter app and shared web/mobile domain contract.
-- Generate TypeScript and Dart API clients from `docs_capsule_zero/adr/openapi.yaml`.
+- Founder approval on the rewritten Phase 4 ADRs.
+- DigitalOcean droplet upgrade to at least 4 GB RAM / 2 vCPU / 80 GB disk (current 512 MB / 1 vCPU droplet cannot host the new stack).
+- Spaceship DNS pointed at Cloudflare; Cloudflare proxy enabled for `capsulezero.app`.
+- Resend account created and SPF/DKIM published on `capsulezero.app`.
+- DigitalOcean Spaces bucket created with CORS configured for `capsulezero.app`.
+- Ship `.specify/specs/024-production-stack-runtime/` to bring the stack up in docker-compose on the droplet, with every service health-checked end-to-end.
+- After spec 024 ships: delete legacy `/app` Supabase code in a follow-up PR.
 
 ### Provider integration gates before real-provider QA/staging/launch
 
-- Create Supabase local/staging project credentials when persistence/RLS validation needs real Supabase.
-- Configure Google and Apple OAuth providers only for MVP Stage 2 social auth.
+- Configure Google and Apple OAuth providers only for Stage 2 social auth.
 - Configure Lava.top products/API key/webhook before real web purchases are tested.
-- Run a real-image Photoroom latency/quality test against the < 5 sec background removal gate before enabling real image processing.
-- Production credentials must be stored only in production deployment/provider dashboards and must not be shared with agents.
+- Self-hosted image processing model: training/inference spike against the < 5 sec latency gate before enabling real image processing.
+- Production credentials must be stored only in the droplet's encrypted env file or production dashboards and must not be shared with agents.
 
 ### Phase 4 quality gate (from launch-plan.md)
 
-- All stack decisions documented as ADRs: ✅ done
+- All stack decisions documented as ADRs: ✅ done (rewritten for the production-stack pivot)
 - CI/CD pipeline set up (auto-build, preview deployments): ✅ baseline GitHub checks documented and configured
 - Local dev setup documented (env vars, seed data): ✅ documented in backend/frontend docs
 - Repository has linting + commit hooks configured: pending Sprint 0 follow-up
-- Founder approval on stack/mock-first Stage 1 posture: recorded in ADR-006; final launch sign-off remains pending
+- Founder approval on the production-stack pivot: pending
 
 ### Key constraints for architecture decisions
 
-- **No subscription model** — coins only (Lava.top one-time purchases)
+- **No subscription model** — coins only (Lava.top one-time purchases), and coins are in v0.2 backlog
 - **3 upload methods:** photo upload · marketplace link import · semantic search (shared DB)
-- **Background removal < 5 sec** per quality gate
-- **Multilingual from Day 1:** EN and RU in MVP v1 — use `next-intl` or `react-i18next`; ES-AR is globally deferred to MVP v2
+- **Background removal < 5 sec** per quality gate (gated by self-hosted model delivery in Stage 2)
+- **Multilingual from Day 1:** EN and RU in v0.1 — use `next-intl`; ES-AR is globally deferred to v0.2
 - **i18n strings:** `docs_capsule_zero/i18n/ui-texts.md`
-- **Mobile-first:** phone UX first on web and Flutter; iPhone 14+ (375px), Android small/standard, iPad/tablet (768px), Desktop 1280px+
-- **Native mobile MVP:** Flutter app for iOS and Android uses the same Supabase backend and documented API contract
+- **Mobile-first:** phone UX first on web and React Native; iPhone 14+ (375px), Android small/standard, iPad/tablet (768px), Desktop 1280px+
+- **Native mobile app:** React Native iOS + Android consumes the same Go API contract through Traefik
 - **Mobile payments:** Lava.top is canonical for web purchases; iOS/Android v0.1 must not expose purchase CTAs or external payment links, only balance/status

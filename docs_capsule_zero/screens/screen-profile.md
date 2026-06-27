@@ -45,7 +45,7 @@ Prototype: `html-prototypes/profile.html`
 ## Elements
 - **Avatar:** Circular photo with Change/Remove options
 - **Fields:** Name, email, language, location
-- **Language dropdown:** EN / RU in MVP v1; ES-AR deferred to MVP v2
+- **Language dropdown:** EN / RU in v0.1; ES-AR deferred to v0.2
 - **Advanced sections in prototype:** Notifications, security, sessions, and delete account are future-state design only
 - **Save:** Glass primary button
 

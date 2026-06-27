@@ -130,11 +130,23 @@ The platform guides the user through methodology without imposing. It suggests, 
 
 ## V. Technology Decisions
 
-- **Frontend:** Next.js 14+ App Router, React, TypeScript
+- **Web frontend:** Next.js 14+ App Router, React, TypeScript
+- **Mobile:** React Native (iOS + Android) sharing the same Go API contract
 - **Styling:** Tailwind CSS v4 with custom @theme tokens
-- **Languages:** EN (primary) and RU in MVP v1 — i18n from Day 1, switching without reload. ES-AR is deferred globally to MVP v2.
+- **Backend:** Go modular monolith (single binary, bounded contexts inside the same process) served behind Traefik
+- **API gateway:** Traefik v3 with Let's Encrypt TLS, rate-limit middleware, forward-auth into Kratos
+- **Auth:** Ory Kratos (email/password in v0.1; Google OAuth and Apple Sign-In in Stage 2)
+- **Database:** PostgreSQL 16 with pgvector (semantic) and Postgres FTS (full-text), PgBouncer for connection pooling
+- **Cache / queue:** Redis 7 (cache, sessions, Redis-based job queue)
+- **File storage:** DigitalOcean Spaces (S3-compatible with built-in CDN)
+- **Email:** Resend for transactional email (verification, password reset, security alerts)
+- **Image processing:** Self-hosted Capsule Zero model behind a worker (deferred to Stage 2)
+- **DNS / front-door:** Spaceship registrar with Cloudflare proxy for DDoS protection and CDN
+- **Observability:** Grafana + syslog file logs + tracing (Sentry and Prometheus deferred to Stage 2)
+- **Hosting:** Single DigitalOcean droplet running docker-compose; every service declared as a separate `services:` entry
+- **Languages:** EN (primary) and RU in v0.1 — i18n from Day 1, switching without reload. ES-AR is retained as reference copy and deferred globally to v0.2.
 - **Responsive:** iPhone 14+ (375px), iPad (768px), Desktop 1280px+
-- **Performance targets:** Page load < 2 sec on 4G, Upload + bg removal < 5 sec
+- **Performance targets:** Page load < 2 sec on 4G, Upload + bg removal < 5 sec (gated by self-hosted image model Stage 2 delivery)
 - **Supported upload formats:** JPEG, PNG, WebP (max 10 MB)
 - **Supported import sources:** Best-effort generic product URL parsing, with retailer-specific adapters added where needed for higher accuracy
 

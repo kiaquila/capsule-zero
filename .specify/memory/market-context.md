@@ -95,7 +95,7 @@ No existing player combines premium editorial aesthetics, methodology-driven cap
 | Photo enhancement | Editorial transformation (coin-based) | Basic bg removal | Auto bg removal | Auto bg removal |
 | B2B brand platform | Separate commission-based platform (v2.0) | None | Marketplace (curated) | Resale marketplace |
 | Gap analysis | Automated + shopping list + brand bridge | Shopping suggestions (generic) | None | Stylist suggestions |
-| Multilingual | EN + RU in MVP v1; ES-AR planned for MVP v2 | EN only | EN (+ limited) | EN only |
+| Multilingual | EN + RU in v0.1; ES-AR planned for v0.2 | EN only | EN (+ limited) | EN only |
 
 ## 6. Pricing Hypothesis
 
