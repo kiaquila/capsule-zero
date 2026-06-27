@@ -49,7 +49,7 @@ The runtime must survive the following without silently degrading. Each is cover
 1. **Postgres unreachable from the Go API.** `GET /api/health` must return HTTP 503 with `postgres: "error"`, not HTTP 200 with stale cached data. Traefik must not serve cached 200 from a previous probe.
 2. **Resend rejects an email send.** Kratos verification flow must surface a safe inline error on the web UI; the API must log the failure to syslog with a correlation id; no half-created identity is left orphaned.
 3. **Spaces credentials invalid or bucket misconfigured CORS.** Signed PUT round-trip must fail closed; the API health probe must report `storage: "error"`; the web upload UI must show a safe inline error.
-4. **Cloudflare proxy off while Traefik is still negotiating Let's Encrypt.** The DNS-01 / HTTP-01 challenge must complete; Traefik must not fall into a serve-without-TLS loop. (Mitigation: pause Cloudflare proxy while issuing certs the first time, then re-enable.)
+4. **Cloudflare DNS-01 token missing or invalid while proxy is enabled.** Traefik must fail certificate issuance loudly, the runbook must call out the `CF_DNS_API_TOKEN` requirement, and smoke verification must stop before declaring the stack healthy.
 5. **`docker compose up` on a droplet that already has data volumes.** Migrations must be idempotent — golang-migrate must not double-apply, Kratos migrations must respect their tracking table. A repeated `docker compose up -d` on a healthy stack must be a no-op.
 
 ## Constraints
@@ -62,6 +62,7 @@ The runtime must survive the following without silently degrading. Each is cover
 - Backups are not optional: the nightly `pg_dump` cron lands in this spec, not in a follow-up.
 - Compose scaffolds must validate on a clean checkout before secrets are present: service-level `./.env` references use optional `env_file` entries, while real production secrets still come from the droplet `.env` during deploy.
 - Dev-only dashboards and inspection UIs bind to `127.0.0.1` unless explicitly placed behind Traefik auth.
+- Let's Encrypt runs through Traefik ACME DNS-01 with Cloudflare (`CF_DNS_API_TOKEN`) so Cloudflare proxy can stay enabled for initial issuance and renewal.
 
 ## Out-of-Spec Follow-Ups
 

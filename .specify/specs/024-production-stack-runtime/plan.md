@@ -5,7 +5,7 @@
 1. **Scaffold the repo layout.** Create `/api`, `/worker`, `/web`, `/mobile`, `/infra/{traefik,kratos,postgres}`, `/api/migrations/` per the target layout in `AGENTS.md`. Add a minimal Dockerfile to each of `/api`, `/worker`, `/web` (Go for first two, Node multi-stage for `web`).
 2. **Write `docker-compose.yml`.** Each service declared as a separate `services:` block. Add a healthcheck per service. Add explicit named volumes for persistent data.
 3. **Write `docker-compose.dev.yml`.** Override `kratos` courier to MailHog SMTP; mount `/api` and `/worker` as volumes for hot-reload; bind MailHog UI to `127.0.0.1:8025`.
-4. **Provision infrastructure on the droplet.** Resize to ≥ 4 GB / 2 vCPU / 80 GB. Install Docker + compose plugin. Point Spaceship DNS at Cloudflare; keep records DNS-only for first Traefik ACME issuance, then enable Cloudflare proxy and SSL/TLS Full (strict); enable Bot Fight Mode. Create the Spaces bucket and configure CORS. Verify Resend domain (SPF/DKIM) on `capsulezero.app`.
+4. **Provision infrastructure on the droplet.** Resize to ≥ 4 GB / 2 vCPU / 80 GB. Install Docker + compose plugin. Point Spaceship DNS at Cloudflare; enable Cloudflare proxy and SSL/TLS Full (strict); create a scoped DNS API token for Traefik DNS-01 ACME; enable Bot Fight Mode. Create the Spaces bucket and configure CORS. Verify Resend domain (SPF/DKIM) on `capsulezero.app`.
 5. **Ship migrations.** `api/migrations/0001_initial_schema.sql` covering the full schema in `backend-docs.md` plus methodology seed. `migrations/0002_kratos_bootstrap.sql` if Kratos needs role/db setup beyond the postgres init script.
 6. **Wire Traefik.** TLS via Let's Encrypt, rate-limit middleware, forward-auth into Kratos for `/api/*` (except `/api/health`).
 7. **Wire Kratos.** Identity schema with `traits.email`, `traits.name.first`, `traits.locale`; Resend SMTP courier in prod, MailHog in dev; self-service flows for sign-up, sign-in, recovery, settings.
@@ -37,7 +37,7 @@ Every acceptance criterion below is verifiable by a command, screenshot, or link
 | 12 | Grafana reachable at `https://grafana.capsulezero.app` behind Traefik forward-auth; syslog data source resolves | screenshot of Grafana home dashboard + admin login test |
 | 13 | Negative scenario 2: forced Resend 5xx surfaces as inline error in web UI, no orphan identity | test script that swaps Resend env var temporarily + Kratos admin list output proving no identity created |
 | 14 | Negative scenario 3: invalid Spaces CORS surfaces as inline upload error and `/api/health` reports `storage: "error"` | repro script + `curl` output |
-| 15 | Negative scenario 4: Let's Encrypt first-issue completes with Cloudflare proxy off, then proxy re-enabled without 5xx | Traefik log excerpt showing successful ACME challenge + CF post-enable curl |
+| 15 | Negative scenario 4: missing or invalid `CF_DNS_API_TOKEN` blocks DNS-01 certificate issuance before launch is declared healthy | Traefik log excerpt showing ACME failure + corrected token rerun showing successful issuance with Cloudflare proxy enabled |
 | 16 | Compose scaffold validates on a clean checkout without a committed `./.env` | `docker compose --env-file deploy/compose.env.example config` and `docker compose --env-file deploy/compose.env.example -f docker-compose.yml -f docker-compose.dev.yml config` |
 | 17 | OpenAPI generated clients stay in sync with `docs_capsule_zero/adr/openapi.yaml` | `npm run check:api-contract` |
 
@@ -45,7 +45,7 @@ Every acceptance criterion below is verifiable by a command, screenshot, or link
 
 - **Memory pressure on 4 GB droplet.** Mitigation: monitor Grafana for OOM kills during smoke; document droplet upgrade path if `grafana` + `kratos` + `postgres` together exceed 70% RAM under idle.
 - **Let's Encrypt rate limits.** Mitigation: first issue with staging endpoint, then swap to production endpoint after smoke success.
-- **Cloudflare proxy + Let's Encrypt HTTP-01 challenge interaction.** Mitigation: documented in negative scenario 4 with the proxy-off-then-on sequence.
+- **Cloudflare DNS API token scope/rotation.** Mitigation: use a scoped Zone Read + DNS Edit token for `capsulezero.app`, store only in the droplet `.env`, and verify DNS-01 issuance in negative scenario 4.
 - **Spaces CORS misconfiguration silently allowing wildcard origins.** Mitigation: verification step explicitly lists `AllowedOrigins` and rejects `*`.
 
 ## Rollback

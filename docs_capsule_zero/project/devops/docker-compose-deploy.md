@@ -62,6 +62,7 @@ cp deploy/compose.env.example .env
 Fill the real values for the droplet's encrypted `.env`. Required keys at minimum:
 
 - `POSTGRES_PASSWORD`, `KRATOS_DSN`, `KRATOS_SECRETS_COOKIE`, `KRATOS_SECRETS_CIPHER`
+- `CF_DNS_API_TOKEN` for Traefik DNS-01 ACME against Cloudflare
 - `SPACES_ACCESS_KEY`, `SPACES_SECRET_KEY`, `SPACES_BUCKET`, `SPACES_REGION`, `SPACES_CDN_BASE`
 - `RESEND_API_KEY`, `RESEND_FROM`
 - `APP_BASE_URL`, `MOBILE_DEEP_LINK_SCHEME`

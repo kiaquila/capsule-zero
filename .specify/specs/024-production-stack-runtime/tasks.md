@@ -43,7 +43,7 @@
 - 2026-06-27 PR #48 review fix: the insecure Traefik dev dashboard published by `docker-compose.dev.yml` binds to `127.0.0.1:8081`, matching the file comment and avoiding exposure on shared hosts.
 - 2026-06-27 PR #48 review fix: `npm run deploy:compose` now explicitly targets `docker-compose.legacy-supabase.yml`; the production-stack deploy command lands with spec 024 implementation once real Dockerfiles/configs exist.
 - 2026-06-27 PR #48 review fix: the production scaffold uses `pgvector/pgvector:pg16` instead of vanilla `postgres:16-alpine` so `CREATE EXTENSION vector` can succeed when migrations land.
-- 2026-06-27 PR #48 review fix: first ACME issuance keeps Cloudflare records DNS-only until Traefik has certificates, then enables the proxy; the encrypted `.env` is installed in the Compose project directory so `env_file: ./.env` is actually loaded.
+- 2026-06-27 PR #48 review fix: Traefik ACME uses Cloudflare DNS-01 via `CF_DNS_API_TOKEN`, so Cloudflare proxy can stay enabled for issuance and renewal; the encrypted `.env` is installed in the Compose project directory so `env_file: ./.env` is actually loaded.
 - 2026-06-27 PR #48 review fix: API and worker fallback DSNs derive both username and database from `POSTGRES_USER` / `POSTGRES_DB`, matching the compose env template instead of hard-coding `capsule_zero`.
 
 ### Known Issues

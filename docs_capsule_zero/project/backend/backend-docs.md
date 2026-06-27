@@ -167,6 +167,7 @@ The full runtime is delivered by `.specify/specs/024-production-stack-runtime/`.
 | Variable                  | Scope        | Purpose                                                                |
 | ------------------------- | ------------ | ---------------------------------------------------------------------- |
 | `POSTGRES_URL`            | server       | Postgres connection string (via PgBouncer)                              |
+| `CF_DNS_API_TOKEN`        | server       | Cloudflare DNS API token for Traefik DNS-01 ACME                         |
 | `REDIS_URL`               | server       | Redis connection string                                                 |
 | `KRATOS_PUBLIC_URL`       | server       | Kratos public API base URL                                              |
 | `KRATOS_ADMIN_URL`        | server       | Kratos admin API base URL                                               |

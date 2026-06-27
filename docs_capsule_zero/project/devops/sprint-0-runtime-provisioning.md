@@ -9,6 +9,7 @@ This runbook describes how to bring up the production-shape Capsule Zero stack o
 - GitHub `main` is current and required checks are green.
 - DigitalOcean droplet of at least 4 GB / 2 vCPU / 80 GB, Ubuntu 24.04 LTS, Docker + docker-compose installed.
 - Cloudflare account with the `capsulezero.app` zone.
+- Cloudflare API token with Zone Read + DNS Edit on `capsulezero.app`, stored as `CF_DNS_API_TOKEN` in the droplet `.env` for Traefik DNS-01 ACME.
 - Spaceship registrar account with `capsulezero.app` set to Cloudflare nameservers.
 - Resend account with API key and `no-reply@capsulezero.app` verified.
 - DigitalOcean Spaces bucket `capsulezero` with CORS for `https://capsulezero.app` (and the dev origin) configured.
@@ -40,8 +41,8 @@ Until these gates open, the corresponding API surface exists as stubs (Lava.top)
 ### 1. DNS and Cloudflare
 
 - Confirm Spaceship nameservers point to Cloudflare.
-- In Cloudflare, add an `A` record for `capsulezero.app` and `grafana.capsulezero.app` pointing to the droplet IP, with proxy disabled (`DNS only`) for first certificate issuance.
-- SSL/TLS mode: `Full (strict)` for the steady state after the proxy is enabled.
+- In Cloudflare, add an `A` record for `capsulezero.app` and `grafana.capsulezero.app` pointing to the droplet IP, with proxy (orange cloud) enabled.
+- SSL/TLS mode: `Full (strict)`.
 - Enable `Bot Fight Mode` and `Always Use HTTPS`.
 - Add a Page Rule (or Rules Engine entry) for `capsulezero.app/api/*` with cache level `Bypass`.
 
@@ -60,12 +61,10 @@ git clone git@github.com:kiaquila/capsule-zero.git /srv/capsule-zero/repo
 cd /srv/capsule-zero/repo
 install -m 600 /path/to/encrypted/.env ./.env
 docker compose --env-file ./.env up -d
-docker compose logs traefik --tail=50 # confirm Let's Encrypt issued certificates
+docker compose logs traefik --tail=50 # confirm DNS-01 ACME issued certificates
 ```
 
 This brings up Traefik, Kratos, Postgres, PgBouncer, Redis, the Go API, the Go worker, the Next.js web container, imgproxy, and Grafana. golang-migrate runs at API boot. Kratos runs its own migrations through its init container.
-
-After Traefik logs successful ACME issuance for `capsulezero.app` and `grafana.capsulezero.app`, enable the Cloudflare proxy (orange cloud) on both records.
 
 ### 4. Verify health end-to-end
 
