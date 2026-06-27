@@ -100,6 +100,10 @@
 - [x] T088 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after fifteenth Codex fix.
 - [x] T089 Commit and push the fifteenth Codex fix iteration.
 - [x] T090 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed fifteenth fix iteration.
+- [x] T091 Address sixteenth Codex Review finding for explicit migration reruns in the documented deploy path.
+- [x] T092 Rerun local preflight, whitespace, focused doc checks, Compose config, and Docker image checks after sixteenth Codex fix.
+- [x] T093 Commit and push the sixteenth Codex fix iteration.
+- [x] T094 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed sixteenth fix iteration.
 
 ## Process Memory
 
@@ -157,6 +161,7 @@
 - Validate capsule item membership ownership inside the capsule RPC before inserting any `capsule_items` rows, since provider service-role writes bypass RLS.
 - Map public catalog search results to neutral `userId: "catalog"` so real contributor auth UUIDs are not exposed to clients.
 - Treat marketplace provider JSON parse errors and invalid `candidates` shape as failed imports, using the same persisted failure path as provider fetch and non-OK HTTP responses.
+- Recreate the canonical one-shot `migrate` service before starting `web` on deploys that may include SQL changes, because Compose can otherwise reuse an old completed migration container when only bind-mounted SQL files changed.
 
 ### Known Issues
 

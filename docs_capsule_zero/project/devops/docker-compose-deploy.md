@@ -64,17 +64,27 @@ secret: `POSTGRES_PASSWORD`, `JWT_SECRET`, `ANON_KEY`, `SERVICE_ROLE_KEY`,
 `PG_META_CRYPTO_KEY`, S3 protocol keys, SMTP credentials, and external provider
 keys.
 
-Start the stack:
+Start or deploy the stack:
 
 ```bash
-docker compose up -d --build
+docker compose up -d --build --wait db auth rest storage realtime functions kong imgproxy meta studio supavisor
+docker compose up --force-recreate --no-deps migrate
+docker compose up -d --build web
 ```
 
 For a local port override:
 
 ```bash
-CAPSULE_HOST_PORT=3100 docker compose up -d --build
+CAPSULE_HOST_PORT=3100 docker compose up -d --build --wait db auth rest storage realtime functions kong imgproxy meta studio supavisor
+CAPSULE_HOST_PORT=3100 docker compose up --force-recreate --no-deps migrate
+CAPSULE_HOST_PORT=3100 docker compose up -d --build web
 ```
+
+Always recreate the canonical `migrate` service before starting `web` on any
+deploy that may include SQL changes. A plain `docker compose up -d --build` can
+reuse an already-exited `migrate` container when only files under
+`supabase/migrations/` changed, which lets `web` start against a database that
+has not applied the new migration yet.
 
 ## Health Checks
 
@@ -117,11 +127,25 @@ public.capsule_zero_schema_migrations
 Do not delete or reorder existing migration files after a volume has been
 initialized. For schema changes, add a new timestamped or numbered SQL file.
 
+Apply pending migrations explicitly during every deploy:
+
+```bash
+docker compose up -d --wait db auth rest storage
+docker compose up --force-recreate --no-deps migrate
+docker compose up -d --build web
+```
+
+This keeps the `web` dependency on `migrate: service_completed_successfully`
+meaningful for the current release instead of relying on a previously completed
+one-shot container.
+
 For a destructive local reset only:
 
 ```bash
 docker compose down -v
-docker compose up -d --build
+docker compose up -d --build --wait db auth rest storage realtime functions kong imgproxy meta studio supavisor
+docker compose up --force-recreate --no-deps migrate
+docker compose up -d --build web
 ```
 
 Never use `down -v` on staging or production unless a restore plan has already

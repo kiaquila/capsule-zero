@@ -23,6 +23,7 @@ In scope:
 - Harden real-runtime follow-ups from AI Review: signed and verified app sessions, Supabase token verification and refresh state, writable refresh-token persistence, proxy-level expired-token refresh before Server Component renders, proxy refresh network-failure fallback, read-only refresh avoidance, auth form error handling, profile sync preservation, atomic coin ledger mutations, atomic capsule creation, capsule item ownership validation, upload target storage paths, upload asset attachment/completion idempotency, background-removal timeout persistence, processed image polling, marketplace provider failure persistence, marketplace malformed-response persistence, marketplace confirmation foreign keys, catalog search filtering/no-match behavior, catalog contributor privacy, optional local runtime env files, render-safe session reads, marketplace external image preservation, category/color post-filter normalization, PostgREST JWKS validation for opaque keys, service-role-only billing RPC access, and redacted public health counts.
 - Preserve operator-supplied external-provider secrets from optional runtime env files and refresh expired Supabase sessions in memory without mutating cookies during Server Component rendering.
 - Reject cross-user private Supabase Storage paths before any service-role asset upsert/signing path and keep Lava webhook invoice matching safe for non-UUID provider invoice IDs.
+- Document deploy startup as an ordered Compose sequence that explicitly recreates the one-shot `migrate` service before starting `web`, so migration-only releases cannot reuse a stale completed migration container.
 - Update env examples and deployment docs for local, staging, and production operation.
 - Preserve local smoke-testability with clearly marked demo Supabase JWT values that must be rotated outside local runs.
 
@@ -38,15 +39,16 @@ Out of scope:
 
 ### User Story 1 - Run A Real Local Production Stack (Priority: P1)
 
-An operator can run `docker compose up -d --build` and get the web app plus real Supabase core services without starting separate local emulators.
+An operator can run the documented Docker Compose deploy sequence and get the web app plus real Supabase core services without starting separate local emulators.
 
-**Independent Test**: Run Compose with `deploy/compose.env.example`, then verify every long-lived service is healthy and `migrate` exits 0.
+**Independent Test**: Run the documented Compose deploy sequence with `deploy/compose.env.example`, then verify every long-lived service is healthy and `migrate` exits 0.
 
 **Acceptance Scenarios**:
 
 1. **Given** `.env` values are supplied from the Compose template, **When** Compose starts, **Then** `web`, `db`, `auth`, `rest`, `storage`, `realtime`, `kong`, `studio`, `meta`, `supavisor`, `imgproxy`, and `functions` start in one project.
 2. **Given** Capsule Zero SQL migrations exist, **When** the `migrate` service runs, **Then** all unapplied migrations are recorded and subsequent runs skip already applied files.
 3. **Given** the web service starts, **When** `/api/health` is requested, **Then** the provider mode is `supabase` and Supabase/storage integrations are reported as configured.
+4. **Given** a later release adds only files under `supabase/migrations/`, **When** the operator follows the documented deploy sequence, **Then** the canonical `migrate` service is recreated before `web` starts so pending SQL is applied for the current release.
 
 ### User Story 2 - Use Real Auth, Database, And Storage Boundaries (Priority: P1)
 
@@ -80,6 +82,7 @@ Operators can see which real external integrations still need credentials, and t
 3. **Given** external SaaS provider credentials are blank, **When** `/api/health` runs, **Then** the stack is `degraded` rather than falsely `ok`.
 4. **Given** Compose is restarted after the first migration run, **When** `migrate` starts again, **Then** it skips already applied migrations and exits successfully.
 5. **Given** a fresh checkout has not created `deploy/runtime.env`, **When** Compose renders the local stack with `deploy/compose.env.example`, **Then** config rendering does not fail on a missing optional web runtime env file.
+6. **Given** a migration-only release changes no Compose service configuration or web image, **When** an operator deploys, **Then** docs require explicit `migrate` service recreation before `web` so old `service_completed_successfully` state cannot mask unapplied SQL.
 
 ## Requirements
 
@@ -134,6 +137,7 @@ Operators can see which real external integrations still need credentials, and t
 - **FR-047**: Capsule item membership writes MUST verify every requested wardrobe entry belongs to the current user before service-role inserts bypass RLS.
 - **FR-048**: Public catalog search results MUST NOT expose real contributor `owner_user_id` values to clients; results MUST use a neutral catalog owner identity.
 - **FR-049**: Marketplace import provider HTTP 200 responses with malformed JSON or invalid candidate shape MUST update the created import to `failed`.
+- **FR-050**: Deployment docs MUST instruct operators to explicitly recreate the canonical one-shot `migrate` service before starting `web` on deploys that may include SQL changes.
 
 ### Key Entities
 
@@ -148,7 +152,7 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-001**: Feature-memory guard passes for this PR.
 - **SC-002**: Repository baseline, API contract, lint, typecheck, build, and tests pass locally and in GitHub Actions.
 - **SC-003**: `docker compose --env-file deploy/compose.env.example config` renders successfully.
-- **SC-004**: `docker compose --env-file deploy/compose.env.example up -d --build` starts the real stack.
+- **SC-004**: The documented Docker Compose deploy sequence starts the real stack.
 - **SC-005**: `docker compose ps -a` shows every long-lived Supabase/web service healthy and `migrate` exited 0.
 - **SC-006**: `/api/health` returns HTTP 200 with `providerMode: "supabase"`, Supabase/storage configured, and external providers pending until secrets exist.
 - **SC-007**: A Supabase Auth signup creates a real `public.profiles` row through the trigger.
@@ -169,3 +173,4 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-022**: Codex follow-up fixes for proxy refresh failure fallback pass local verification and a fresh Codex review cycle.
 - **SC-023**: Codex follow-up fixes for atomic capsule creation, capsule item ownership validation, and catalog contributor privacy pass local verification and a fresh Codex review cycle.
 - **SC-024**: Codex follow-up fixes for malformed marketplace import provider responses pass local verification and a fresh Codex review cycle.
+- **SC-025**: Codex follow-up fixes for explicit migration reruns in the documented deploy path pass local verification and a fresh Codex review cycle.
