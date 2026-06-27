@@ -96,6 +96,10 @@
 - [x] T084 Rerun local preflight, whitespace, focused code checks, Compose config, Compose migration, and Docker image checks after fourteenth Codex fixes.
 - [x] T085 Commit and push the fourteenth Codex fix iteration.
 - [x] T086 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed fourteenth fix iteration.
+- [x] T087 Address fifteenth Codex Review finding for malformed marketplace provider response failure persistence.
+- [x] T088 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after fifteenth Codex fix.
+- [x] T089 Commit and push the fifteenth Codex fix iteration.
+- [x] T090 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed fifteenth fix iteration.
 
 ## Process Memory
 
@@ -152,6 +156,7 @@
 - Move capsule creation into a service-role-only `create_capsule_atomic` RPC so the capsule row, palette colors, category targets, and item memberships commit or roll back together.
 - Validate capsule item membership ownership inside the capsule RPC before inserting any `capsule_items` rows, since provider service-role writes bypass RLS.
 - Map public catalog search results to neutral `userId: "catalog"` so real contributor auth UUIDs are not exposed to clients.
+- Treat marketplace provider JSON parse errors and invalid `candidates` shape as failed imports, using the same persisted failure path as provider fetch and non-OK HTTP responses.
 
 ### Known Issues
 

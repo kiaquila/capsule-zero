@@ -1031,10 +1031,26 @@ function buildMarketplaceImportPort(
         return mapMarketplaceImport(failed);
       }
 
-      const payload = (await response.json()) as {
-        candidates?: MarketplaceCandidate[];
-      };
-      const candidates = payload.candidates ?? [];
+      let candidates: MarketplaceCandidate[];
+      try {
+        const payload = (await response.json()) as { candidates?: unknown };
+        if (payload.candidates === undefined) {
+          candidates = [];
+        } else if (Array.isArray(payload.candidates)) {
+          candidates = payload.candidates as MarketplaceCandidate[];
+        } else {
+          throw new Error("MARKETPLACE_IMPORT_CANDIDATES_INVALID");
+        }
+      } catch {
+        const failed = await updateMarketplaceImportStatus(
+          service,
+          created.id,
+          "failed",
+          [],
+        );
+        return mapMarketplaceImport(failed);
+      }
+
       const { data, error } = await service
         .from("marketplace_imports")
         .update({ status: "completed", candidates })
