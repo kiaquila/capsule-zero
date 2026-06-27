@@ -58,7 +58,7 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - Implementation and review run through native Claude GitHub Actions workflows.
 - Canonical commands are comment-driven and handled through `anthropics/claude-code-action@v1`.
 - Comment-driven Claude implementation runs in native tag mode so file edits on the active branch are auto-accepted within the repository workspace.
-- Review runs with the repository-selected model, currently pinned to `claude-opus-4-6`.
+- Review runs with the repository-selected model, currently pinned to `claude-opus-4-7`.
 - Claude review output is comment-driven, not a formal GitHub PR review.
 - Claude review must follow `docs_capsule_zero/project/devops/review-contract.md` so the repository gate can validate the result.
 
