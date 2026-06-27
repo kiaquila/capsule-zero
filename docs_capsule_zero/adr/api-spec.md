@@ -28,6 +28,8 @@ Sprint 0 must create and verify these artifacts before Stage 1 product feature w
 
 Endpoint names may change only with the OpenAPI contract, generated clients, and contract tests updated in the same PR.
 
+Until the legacy `/app` shell and Flutter scaffold are removed, the generator also mirrors compatibility artifacts into `app/src/lib/api/generated/openapi.ts` and `mobile/lib/api/generated/openapi.dart`. The canonical production-stack clients are the TypeScript outputs under `/web` and `/mobile`.
+
 OpenAPI operations marked `x-client-availability: web` must not be wired into mobile purchase UI. Mobile generation may include low-level types for status reads, but mobile v0.1 must not expose invoice creation as a user action.
 
 ## Common Schemas

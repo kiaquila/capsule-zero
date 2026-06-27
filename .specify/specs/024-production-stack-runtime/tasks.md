@@ -45,6 +45,8 @@
 - 2026-06-27 PR #48 review fix: the production scaffold uses `pgvector/pgvector:pg16` instead of vanilla `postgres:16-alpine` so `CREATE EXTENSION vector` can succeed when migrations land.
 - 2026-06-27 PR #48 review fix: Traefik ACME uses Cloudflare DNS-01 via `CF_DNS_API_TOKEN`, so Cloudflare proxy can stay enabled for issuance and renewal; the encrypted `.env` is installed in the Compose project directory so `env_file: ./.env` is actually loaded.
 - 2026-06-27 PR #48 review fix: API and worker fallback DSNs derive both username and database from `POSTGRES_USER` / `POSTGRES_DB`, matching the compose env template instead of hard-coding `capsule_zero`.
+- 2026-06-27 PR #48 review fix: `deploy/compose.env.example` now describes the production-stack env contract (Traefik, Kratos, Postgres, Redis, Spaces, Resend, Grafana) instead of the legacy Supabase runtime.
+- 2026-06-27 PR #48 review fix: the OpenAPI security scheme models the Kratos browser session as a cookie (`ory_kratos_session`), and generated API clients now land in the canonical `/web` and React Native TypeScript paths while mirroring legacy compatibility outputs until the old scaffolds are removed.
 
 ### Known Issues
 

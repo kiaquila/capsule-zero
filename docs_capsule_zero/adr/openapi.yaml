@@ -12,7 +12,7 @@ servers:
       host:
         default: app.capsule-zero.local
 security:
-  - bearerAuth: []
+  - kratosSession: []
 tags:
   - name: Auth
   - name: Profile
@@ -27,10 +27,13 @@ tags:
   - name: Health
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: Kratos session token
+    kratosSession:
+      type: apiKey
+      in: cookie
+      name: ory_kratos_session
+      description: >
+        Ory Kratos browser session cookie forwarded through Traefik and
+        revalidated by the Go API on authenticated requests.
     lavaWebhookKey:
       type: apiKey
       in: header
