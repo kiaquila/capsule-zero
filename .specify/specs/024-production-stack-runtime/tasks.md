@@ -49,6 +49,7 @@
 - 2026-06-27 PR #48 review fix: the OpenAPI security scheme models the Kratos browser session as a cookie (`ory_kratos_session`), and generated API clients now land in the canonical `/web` and React Native TypeScript paths while mirroring legacy compatibility outputs until the old scaffolds are removed.
 - 2026-06-27 PR #48 review fix: the legacy `npm run deploy:compose` helper was retired instead of keeping a second Supabase env contract beside the production-stack `deploy/compose.env.example`.
 - 2026-06-27 PR #48 review fix: `check-feature-memory.mjs` now treats `api/`, `worker/`, `web/`, and `mobile/` as product roots alongside legacy `app/`, and the active workflow docs describe the same gate.
+- 2026-06-27 PR #48 review fix: Traefik now routes browser-visible Kratos self-service paths (`/self-service`, `/sessions`) to the `kratos` public port before the catch-all web router, matching the web env and deployment runbook.
 
 ### Known Issues
 

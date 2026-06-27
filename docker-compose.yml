@@ -76,6 +76,13 @@ services:
       - "all"
       - "--config=/etc/config/kratos/kratos.yml"
     networks: [internal]
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.kratos-public.rule: "Host(`${APP_HOST:-capsulezero.app}`) && (PathPrefix(`/self-service`) || PathPrefix(`/sessions`))"
+      traefik.http.routers.kratos-public.entrypoints: "websecure"
+      traefik.http.routers.kratos-public.priority: "100"
+      traefik.http.routers.kratos-public.tls.certresolver: "letsencrypt"
+      traefik.http.services.kratos-public.loadbalancer.server.port: "4433"
 
   # App + Kratos database. pgvector enabled in init scripts.
   postgres:
