@@ -5,7 +5,6 @@ import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import {
-  persistAppSession,
   readSignedAppSession,
   type PersistedAppSession,
 } from "@/features/auth/session";
@@ -471,54 +470,22 @@ async function verifyPersistedSession(
     return null;
   }
 
-  let accessToken = persisted.accessToken;
-  let refreshToken = persisted.refreshToken;
-  let expiresAt = persisted.expiresAt;
-  const expiresAtMs = Date.parse(persisted.expiresAt);
-  let refreshedSession = false;
-
-  if (
-    refreshToken &&
-    (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now() + 60_000)
-  ) {
-    const refreshed = await clients.anon.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    });
-    if (refreshed.error || !refreshed.data.session) {
-      return null;
-    }
-
-    accessToken = refreshed.data.session.access_token;
-    refreshToken = refreshed.data.session.refresh_token;
-    expiresAt = refreshed.data.session.expires_at
-      ? new Date(refreshed.data.session.expires_at * 1000).toISOString()
-      : expiresAt;
-    refreshedSession = true;
-  }
-
-  const { data, error } = await clients.anon.auth.getUser(accessToken);
+  const { data, error } = await clients.anon.auth.getUser(persisted.accessToken);
   if (error || !data.user || data.user.id !== persisted.userId) {
     return null;
   }
 
-  const session = {
+  return {
     user: {
       id: data.user.id,
       email: data.user.email ?? persisted.email,
       name: readMetadataName(data.user.user_metadata) ?? persisted.name,
       createdAt: data.user.created_at ?? persisted.createdAt ?? persisted.expiresAt,
     },
-    accessToken,
-    refreshToken,
-    expiresAt,
+    accessToken: persisted.accessToken,
+    refreshToken: persisted.refreshToken,
+    expiresAt: persisted.expiresAt,
   };
-
-  if (refreshedSession) {
-    await persistAppSession(session);
-  }
-
-  return session;
 }
 
 function buildProfileRepository(service: DbClient): ProfileRepository {
@@ -2560,19 +2527,7 @@ function memoize<T>(factory: () => Promise<T>): () => Promise<T> {
 }
 
 async function readHealth(service: DbClient): Promise<ProviderHealth> {
-  const [
-    profiles,
-    wardrobeItems,
-    catalogItems,
-    coinPacks,
-    storageBuckets,
-  ] = await Promise.all([
-    countRows(service, "profiles"),
-    countRows(service, "wardrobe_entries"),
-    countPublicItems(service),
-    countRows(service, "coin_packs"),
-    service.storage.listBuckets(),
-  ]);
+  const storageBuckets = await service.storage.listBuckets();
   const storageConfigured =
     !storageBuckets.error &&
     storageBuckets.data.some((bucket) => bucket.id === "item-originals");
@@ -2587,10 +2542,10 @@ async function readHealth(service: DbClient): Promise<ProviderHealth> {
     status: storageConfigured && externalConfigured ? "ok" : "degraded",
     mode: "supabase",
     fixtures: {
-      users: profiles,
-      wardrobeItems,
-      catalogItems,
-      coinPacks,
+      users: 0,
+      wardrobeItems: 0,
+      catalogItems: 0,
+      coinPacks: 0,
     },
     integrations: {
       supabase: "configured",
@@ -2614,21 +2569,4 @@ async function readHealth(service: DbClient): Promise<ProviderHealth> {
         : "pending-gate",
     },
   };
-}
-
-async function countRows(service: DbClient, table: string): Promise<number> {
-  const { count, error } = await service
-    .from(table)
-    .select("*", { head: true, count: "exact" });
-  throwIfError(error, `Failed to count ${table}`);
-  return count ?? 0;
-}
-
-async function countPublicItems(service: DbClient): Promise<number> {
-  const { count, error } = await service
-    .from("items")
-    .select("*", { head: true, count: "exact" })
-    .eq("visibility", "public");
-  throwIfError(error, "Failed to count public catalog items");
-  return count ?? 0;
 }

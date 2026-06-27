@@ -132,6 +132,8 @@ end;
 $$;
 
 revoke all on function public.credit_coins_atomic(uuid, integer, text, uuid, text, text) from public;
+revoke all on function public.credit_coins_atomic(uuid, integer, text, uuid, text, text) from anon;
+revoke all on function public.credit_coins_atomic(uuid, integer, text, uuid, text, text) from authenticated;
 grant execute on function public.credit_coins_atomic(uuid, integer, text, uuid, text, text) to service_role;
 
 notify pgrst, 'reload schema';

@@ -20,7 +20,7 @@ In scope:
 - Make `CAPSULE_PROVIDER_MODE=supabase` the default runtime mode and disable `mock` in production.
 - Keep external SaaS calls real but gated: Photoroom, Lava.top, marketplace import, Google OAuth, and Apple Sign-In must require real credentials instead of falling back to local mocks.
 - Add migration-backed runtime alignment for statuses, Lava invoices, auth profile creation, and public catalog seed data.
-- Harden real-runtime follow-ups from AI Review: signed and verified app sessions, Supabase token verification and refresh state, auth form error handling, profile sync preservation, atomic coin ledger mutations, upload asset attachment/completion idempotency, processed image polling, marketplace confirmation foreign keys, catalog search filtering/no-match behavior, optional local runtime env files, refreshed session cookie persistence, marketplace external image handling, and ID-based color post-filtering.
+- Harden real-runtime follow-ups from AI Review: signed and verified app sessions, Supabase token verification and refresh state, auth form error handling, profile sync preservation, atomic coin ledger mutations, upload asset attachment/completion idempotency, processed image polling, marketplace confirmation foreign keys, catalog search filtering/no-match behavior, optional local runtime env files, render-safe session reads, marketplace external image handling, ID-based color post-filtering, service-role-only billing RPC access, and redacted public health counts.
 - Update env examples and deployment docs for local, staging, and production operation.
 - Preserve local smoke-testability with clearly marked demo Supabase JWT values that must be rotated outside local runs.
 
@@ -105,13 +105,15 @@ Operators can see which real external integrations still need credentials, and t
 - **FR-020**: Protected route/session helpers MUST verify Supabase-backed sessions before returning a user id used with service-role repositories.
 - **FR-021**: Auth profile synchronization MUST preserve user-edited profile fields such as display name and locale.
 - **FR-022**: Photo upload completion MUST be safe to retry after the asset row already exists.
-- **FR-023**: Supabase-backed app sessions MUST persist refresh tokens so expired access tokens can be refreshed before trusted server verification.
+- **FR-023**: Supabase-backed app sessions MUST persist refresh tokens from auth write boundaries so future route/action refresh flows can rotate sessions without exposing refresh tokens to clients.
 - **FR-024**: Supabase auth provider failures from normal sign-in, sign-up, and recovery attempts MUST return inline form errors instead of escaping to an error boundary.
 - **FR-025**: Supabase catalog search MUST apply category/color/wardrobe filters and return an empty result for non-empty no-match searches.
 - **FR-026**: Compose MUST allow a fresh checkout to render/start with the committed env templates even when the operator has not created a local `deploy/runtime.env`.
-- **FR-027**: Refreshed Supabase access/refresh tokens MUST be written back into the signed app session cookie.
+- **FR-027**: Supabase session read helpers MUST verify persisted access tokens without mutating cookies during Server Component rendering.
 - **FR-028**: Marketplace candidate image URLs that are not Supabase Storage paths MUST NOT be recorded as signed Supabase storage assets.
 - **FR-029**: Catalog search local post-filtering MUST normalize requested color IDs and HEX values the same way as the SQL filter.
+- **FR-030**: Atomic billing RPCs MUST revoke execution from client roles and grant execution only to `service_role`.
+- **FR-031**: The public health endpoint MUST NOT expose live user, wardrobe-item, catalog, or coin-pack counts from service-role queries.
 
 ### Key Entities
 
@@ -136,4 +138,5 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-011**: AI Review follow-up fixes for upload asset attachment, purchase credit idempotency, and processed image polling pass local verification and a fresh Codex review cycle.
 - **SC-012**: AI Review follow-up fixes for verified protected-route sessions, profile preservation, and upload-completion idempotency pass local verification and a fresh Codex review cycle.
 - **SC-013**: AI Review follow-up fixes for session refresh state, inline auth errors, and catalog search filters/no-match behavior pass local verification and a fresh Codex review cycle.
-- **SC-014**: AI Review follow-up fixes for optional runtime env files, refreshed token persistence, marketplace external image handling, and ID-based color post-filtering pass local verification and a fresh Codex review cycle.
+- **SC-014**: AI Review follow-up fixes for optional runtime env files, render-safe session reads, marketplace external image handling, and ID-based color post-filtering pass local verification and a fresh Codex review cycle.
+- **SC-015**: AI Review follow-up fixes for service-role-only billing RPC access and redacted public health counts pass local verification and a fresh Codex review cycle.
