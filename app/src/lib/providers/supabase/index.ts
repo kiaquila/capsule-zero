@@ -470,7 +470,31 @@ async function verifyPersistedSession(
     return null;
   }
 
-  const { data, error } = await clients.anon.auth.getUser(persisted.accessToken);
+  let accessToken = persisted.accessToken;
+  let refreshToken = persisted.refreshToken;
+  let expiresAt = persisted.expiresAt;
+  const expiresAtMs = Date.parse(expiresAt);
+
+  if (
+    refreshToken &&
+    (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now() + 60_000)
+  ) {
+    const refreshed = await clients.anon.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+    if (refreshed.error || !refreshed.data.session) {
+      return null;
+    }
+
+    accessToken = refreshed.data.session.access_token;
+    refreshToken = refreshed.data.session.refresh_token;
+    expiresAt = refreshed.data.session.expires_at
+      ? new Date(refreshed.data.session.expires_at * 1000).toISOString()
+      : expiresAt;
+  }
+
+  const { data, error } = await clients.anon.auth.getUser(accessToken);
   if (error || !data.user || data.user.id !== persisted.userId) {
     return null;
   }
@@ -482,9 +506,9 @@ async function verifyPersistedSession(
       name: readMetadataName(data.user.user_metadata) ?? persisted.name,
       createdAt: data.user.created_at ?? persisted.createdAt ?? persisted.expiresAt,
     },
-    accessToken: persisted.accessToken,
-    refreshToken: persisted.refreshToken,
-    expiresAt: persisted.expiresAt,
+    accessToken,
+    refreshToken,
+    expiresAt,
   };
 }
 

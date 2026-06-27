@@ -60,10 +60,14 @@
 - [x] T048 Rerun local preflight and Docker build after fourth AI Review fixes.
 - [x] T049 Address fifth Codex AI Review findings for optional runtime env files, refreshed session persistence, marketplace external image paths, and ID-based color post-filtering.
 - [x] T050 Rerun local preflight, Compose config, whitespace, and Docker image checks after fifth AI Review fixes.
-- [ ] T051 Commit and push the fifth AI Review fix iteration.
-- [ ] T052 Trigger a fresh `@codex review` comment on the pushed fifth fix iteration.
+- [x] T051 Commit and push the fifth AI Review fix iteration.
+- [x] T052 Trigger a fresh `@codex review` comment on the pushed fifth fix iteration.
 - [x] T053 Address sixth Codex AI Review findings for service-role-only billing RPC grants, render-safe session reads, and public health count redaction.
 - [x] T054 Rerun local preflight, whitespace, and focused migration grant checks after sixth AI Review fixes.
+- [x] T055 Address seventh Codex AI Review findings for Compose env precedence and render-safe Supabase token refresh.
+- [x] T056 Rerun local preflight, Compose config, whitespace, and Docker image checks after seventh AI Review fixes.
+- [x] T057 Commit and push the seventh AI Review fix iteration.
+- [x] T058 Trigger a fresh `@codex review` comment on the pushed seventh fix iteration.
 
 ## Process Memory
 
@@ -97,12 +101,14 @@
 - Persist Supabase refresh tokens in the signed app session and refresh near-expired/expired sessions before calling trusted `getUser()`.
 - Apply catalog filters both in SQL and after mapping results locally so Supabase mode cannot return items outside requested category/color/wardrobe criteria.
 - Treat `deploy/runtime.env` as an optional operator override in Compose so a fresh checkout using committed env templates can render before local/stage/prod secrets are supplied.
-- Persist refreshed Supabase access and refresh tokens back into the signed app session cookie after token rotation.
+- Return refreshed Supabase access and refresh tokens from provider session reads in memory, while leaving cookie persistence to explicit route/action boundaries.
 - Reject external marketplace image URLs as Supabase Storage paths; provider image ingestion can be added later as an explicit import step instead of creating broken signed URLs.
 - Normalize color filter IDs through the color catalog before local post-filtering so catalog IDs and HEX values match SQL filter behavior.
 - Keep session reads side-effect free during Server Component rendering; token refresh persistence needs a route/action boundary rather than `cookies().set` inside provider reads.
 - Revoke atomic billing RPC execution from `anon` and `authenticated` explicitly because default privileges grant routines to client roles in the base schema.
 - Redact public health fixture counts in Supabase mode so unauthenticated health checks expose status booleans instead of live user or wardrobe totals.
+- Leave external provider secrets out of the Compose `environment` block so optional `deploy/runtime.env` can supply them without being shadowed by empty Compose interpolation values.
+- Refresh expired or near-expired Supabase sessions before trusted `getUser()` verification even when the read path cannot mutate cookies.
 
 ### Known Issues
 
