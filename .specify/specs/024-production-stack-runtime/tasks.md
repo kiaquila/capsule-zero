@@ -47,6 +47,7 @@
 - 2026-06-27 PR #48 review fix: API and worker fallback DSNs derive both username and database from `POSTGRES_USER` / `POSTGRES_DB`, matching the compose env template instead of hard-coding `capsule_zero`.
 - 2026-06-27 PR #48 review fix: `deploy/compose.env.example` now describes the production-stack env contract (Traefik, Kratos, Postgres, Redis, Spaces, Resend, Grafana) instead of the legacy Supabase runtime.
 - 2026-06-27 PR #48 review fix: the OpenAPI security scheme models the Kratos browser session as a cookie (`ory_kratos_session`), and generated API clients now land in the canonical `/web` and React Native TypeScript paths while mirroring legacy compatibility outputs until the old scaffolds are removed.
+- 2026-06-27 PR #48 review fix: the legacy `npm run deploy:compose` helper was retired instead of keeping a second Supabase env contract beside the production-stack `deploy/compose.env.example`.
 
 ### Known Issues
 
