@@ -92,6 +92,10 @@
 - [x] T080 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after thirteenth Codex fix.
 - [x] T081 Commit and push the thirteenth Codex fix iteration.
 - [x] T082 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed thirteenth fix iteration.
+- [x] T083 Address fourteenth Codex Review findings for atomic capsule creation, capsule item ownership validation, and catalog contributor privacy.
+- [x] T084 Rerun local preflight, whitespace, focused code checks, Compose config, Compose migration, and Docker image checks after fourteenth Codex fixes.
+- [x] T085 Commit and push the fourteenth Codex fix iteration.
+- [x] T086 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed fourteenth fix iteration.
 
 ## Process Memory
 
@@ -145,6 +149,9 @@
 - Enforce one 5 second abort budget across the background-removal source image fetch and Photoroom provider call, and persist `timeout` when that quality gate is exceeded.
 - Mark marketplace imports `failed` when the provider fetch throws before a response is received so created import rows cannot remain permanently `processing`.
 - Keep proxy-level Supabase session refresh best-effort; refresh, payload parsing, or signing failures return `null` so normal routing and downstream session validation/redirect behavior can handle the request.
+- Move capsule creation into a service-role-only `create_capsule_atomic` RPC so the capsule row, palette colors, category targets, and item memberships commit or roll back together.
+- Validate capsule item membership ownership inside the capsule RPC before inserting any `capsule_items` rows, since provider service-role writes bypass RLS.
+- Map public catalog search results to neutral `userId: "catalog"` so real contributor auth UUIDs are not exposed to clients.
 
 ### Known Issues
 

@@ -1350,52 +1350,32 @@ function buildCapsuleRepository(
     },
 
     async createCapsule(userId, draft: CapsuleDraft) {
-      const itemCount = draft.itemIds.length;
-      const outfitCount = Math.max(itemCount * draft.categories.length, 0);
-      const { data, error } = await service
-        .from("capsules")
-        .insert({
-          user_id: userId,
-          name: draft.name,
-          wardrobe_type: draft.garderType,
-          item_count: itemCount,
-          outfit_count: outfitCount,
-          opr: itemCount ? outfitCount / itemCount : 0,
-        })
-        .select("*")
-        .single();
-      throwIfError(error, "Failed to create capsule");
-
-      const capsule = data as DbCapsule;
-      const colorIds = await resolvePaletteColorIds(colorCatalog, draft.palette);
+      const itemIds = unique(draft.itemIds);
+      const colorIds = unique(
+        await resolvePaletteColorIds(colorCatalog, draft.palette),
+      );
       const categories = await Promise.all(
         draft.categories.map(async (category) => ({
           category,
           dbCategory: await findDbCategory(categoryCatalog, category.categoryId),
         })),
       );
-
-      await insertRows(
-        service,
-        "capsule_palette_colors",
-        colorIds.map((colorId) => ({ capsule_id: capsule.id, color_id: colorId })),
-      );
-      await insertRows(
-        service,
-        "capsule_category_targets",
-        categories.map(({ category, dbCategory }) => ({
-          capsule_id: capsule.id,
-          category_id: dbCategory.id,
+      const { data, error } = await service.rpc("create_capsule_atomic", {
+        p_user_id: userId,
+        p_name: draft.name,
+        p_wardrobe_type: draft.garderType,
+        p_color_ids: colorIds,
+        p_category_targets: categories.map(({ category, dbCategory }) => ({
+          categoryId: dbCategory.id,
           quantity: category.count,
         })),
-      );
-      await insertRows(
-        service,
-        "capsule_items",
-        draft.itemIds.map((wardrobeEntryId) => ({
-          capsule_id: capsule.id,
-          wardrobe_entry_id: wardrobeEntryId,
-        })),
+        p_wardrobe_entry_ids: itemIds,
+      });
+      throwIfError(error, "Failed to create capsule");
+
+      const capsule = requireValue(
+        ((data ?? []) as DbCapsule[])[0],
+        "Failed to create capsule: no capsule row returned.",
       );
 
       return mapCapsule(service, colorCatalog, categoryCatalog, capsule);
@@ -1702,7 +1682,7 @@ async function mapCatalogItems(
 
       return {
         id: item.id,
-        userId: item.owner_user_id ?? "catalog",
+        userId: "catalog",
         name: item.name,
         categoryId: toUiCategoryId(category?.slug ?? item.category_id),
         photoUrl: imageUrl,
@@ -1866,18 +1846,6 @@ async function selectRows<T>(
   const { data, error } = await service.from(table).select("*").in(column, values);
   throwIfError(error, `Failed to load ${table}`);
   return (data ?? []) as T[];
-}
-
-async function insertRows(
-  service: DbClient,
-  table: string,
-  rows: Record<string, unknown>[],
-): Promise<void> {
-  if (!rows.length) {
-    return;
-  }
-  const { error } = await service.from(table).insert(rows);
-  throwIfError(error, `Failed to insert ${table}`);
 }
 
 async function insertCatalogWardrobeEntry(
