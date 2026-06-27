@@ -11,6 +11,7 @@ const groups = {
     { name: "NEXT_PUBLIC_SUPABASE_URL", kind: "url" },
     { name: "NEXT_PUBLIC_SUPABASE_ANON_KEY", kind: "secret" },
     { name: "SUPABASE_SERVICE_ROLE_KEY", kind: "secret", serverOnly: true },
+    { name: "SESSION_SIGNING_SECRET", kind: "secret", serverOnly: true },
     { name: "MOBILE_DEEP_LINK_SCHEME", kind: "scheme" },
   ],
   mobile: [

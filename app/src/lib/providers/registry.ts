@@ -2,6 +2,7 @@ import "server-only";
 
 import type { ProviderMode, ProviderRegistry } from "./contracts";
 import { createMockProviderRegistry } from "./mock";
+import { createSupabaseProviderRegistry } from "./supabase";
 
 interface ProviderRegistryOptions {
   mode?: ProviderMode;
@@ -13,13 +14,15 @@ export function createProviderRegistry(
   const mode = options.mode ?? readProviderMode();
 
   if (mode === "mock") {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "Provider mode 'mock' is disabled in production. Use CAPSULE_PROVIDER_MODE=supabase.",
+      );
+    }
     return createMockProviderRegistry();
   }
 
-  throw new Error(
-    "Provider mode 'supabase' is an integration gate. Keep Stage 1 on mock " +
-      "until Supabase credentials, RLS validation, and provider evidence are ready.",
-  );
+  return createSupabaseProviderRegistry();
 }
 
 function readProviderMode(): ProviderMode {
@@ -34,6 +37,6 @@ function readProviderMode(): ProviderMode {
   }
 
   throw new Error(
-    `Unsupported CAPSULE_PROVIDER_MODE '${rawMode}'. Use 'mock' for Stage 1.`,
+    `Unsupported CAPSULE_PROVIDER_MODE '${rawMode}'. Use 'supabase' for production or 'mock' for local fixture-only development.`,
   );
 }

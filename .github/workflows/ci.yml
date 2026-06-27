@@ -49,5 +49,8 @@ jobs:
       - name: Run build
         run: npm run build
 
+      - name: Build Docker image
+        run: docker build --target runner -t capsule-zero-web:ci ./app
+
       - name: Run tests if present
         run: npm test

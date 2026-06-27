@@ -21,6 +21,7 @@ const serverValidationMessages: AuthValidationMessages = {
 export interface AuthActionResult {
   ok: boolean;
   message?: string;
+  requiresEmailConfirmation?: boolean;
 }
 
 export async function signInWithPasswordAction(
@@ -33,8 +34,12 @@ export async function signInWithPasswordAction(
   }
 
   const providers = createProviderRegistry();
-  const session = await providers.auth.signInWithPassword(parsed.data);
-  await persistMockSession(session);
+  try {
+    const session = await providers.auth.signInWithPassword(parsed.data);
+    await persistMockSession(session);
+  } catch (error) {
+    return { ok: false, message: authActionErrorMessage(error) };
+  }
 
   return { ok: true };
 }
@@ -49,12 +54,19 @@ export async function signUpWithPasswordAction(
   }
 
   const providers = createProviderRegistry();
-  const session = await providers.auth.signUpWithPassword({
-    email: parsed.data.email,
-    password: parsed.data.password,
-    name: parsed.data.name,
-  });
-  await persistMockSession(session);
+  try {
+    const session = await providers.auth.signUpWithPassword({
+      email: parsed.data.email,
+      password: parsed.data.password,
+      name: parsed.data.name,
+    });
+    if (!session) {
+      return { ok: true, requiresEmailConfirmation: true };
+    }
+    await persistMockSession(session);
+  } catch (error) {
+    return { ok: false, message: authActionErrorMessage(error) };
+  }
 
   return { ok: true };
 }
@@ -69,7 +81,11 @@ export async function requestPasswordRecoveryAction(
   }
 
   const providers = createProviderRegistry();
-  await providers.auth.requestPasswordRecovery(parsed.data.email);
+  try {
+    await providers.auth.requestPasswordRecovery(parsed.data.email);
+  } catch (error) {
+    return { ok: false, message: authActionErrorMessage(error) };
+  }
 
   return { ok: true };
 }
@@ -80,4 +96,18 @@ export async function signOutAction(): Promise<AuthActionResult> {
   await clearMockSession();
 
   return { ok: true };
+}
+
+function authActionErrorMessage(error: unknown): string {
+  const message =
+    error instanceof Error && error.message.trim()
+      ? error.message
+      : "Authentication failed. Please try again.";
+
+  const providerMessage = message.split(":").at(-1)?.trim();
+  if (providerMessage) {
+    return providerMessage;
+  }
+
+  return "Authentication failed. Please try again.";
 }

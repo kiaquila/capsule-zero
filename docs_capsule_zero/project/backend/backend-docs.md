@@ -23,6 +23,12 @@ Stage 1 web provider boundaries live under `app/src/lib/providers/`:
 - `mock/fixtures.ts` and `mock/index.ts` provide deterministic fixtures for auth, profiles, wardrobe entries, storage, marketplace import, semantic catalog search, background removal states, billing, capsule reads, and methodology checks.
 - `app/src/app/api/health/route.ts` verifies the active provider mode and fixture-backed health state without exposing secrets.
 
+The web app can also be packaged as a Next.js standalone Docker image for
+staging or production review environments. The Docker Compose runtime is
+documented in `docs_capsule_zero/project/devops/docker-compose-deploy.md` and
+does not change the provider gate: `CAPSULE_PROVIDER_MODE=mock` is still the
+only runnable mode on `main` until real provider evidence lands.
+
 ## Core Backend Modules
 
 | Module             | Responsibility                                                                       |
@@ -148,14 +154,15 @@ Feature PRs must not introduce ad hoc schema changes outside migrations.
 | `NEXT_PUBLIC_SUPABASE_URL`      | browser/server        | Supabase project URL                                                                         |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser/server        | Supabase anon key                                                                            |
 | `SUPABASE_SERVICE_ROLE_KEY`     | server only           | Admin/server operations                                                                      |
+| `SESSION_SIGNING_SECRET`        | server only           | Dedicated HMAC secret for app-session cookies; do not reuse Supabase service keys             |
 | `PHOTOROOM_API_KEY`             | server only           | Primary background removal provider; optional until image integration gate                   |
 | `REMOVE_BG_API_KEY`             | server only, optional | Fallback background removal provider; optional until image integration gate                  |
 | `LAVA_API_KEY`                  | server only           | API key for requests to Lava.top; optional until payment integration gate                    |
 | `LAVA_WEBHOOK_API_KEY`          | server only           | Key expected in Lava.top webhook `X-Api-Key` header; optional until payment integration gate |
 | `LAVA_API_URL`                  | server only           | Lava.top API base URL; may point to mock adapter in Stage 1                                  |
-| `LAVA_COINS_5_PRODUCT_ID`       | server only           | Lava.top product ID for the 5-coin pack; mock ID allowed in Stage 1                          |
-| `LAVA_COINS_15_PRODUCT_ID`      | server only           | Lava.top product ID for the 15-coin pack; mock ID allowed in Stage 1                         |
-| `LAVA_COINS_30_PRODUCT_ID`      | server only           | Lava.top product ID for the 30-coin pack; mock ID allowed in Stage 1                         |
+| `LAVA_COINS_5_PRODUCT_ID`       | server only           | Real Lava.top product ID for the 5-coin pack when Lava invoices are enabled                  |
+| `LAVA_COINS_15_PRODUCT_ID`      | server only           | Real Lava.top product ID for the 15-coin pack when Lava invoices are enabled                 |
+| `LAVA_COINS_30_PRODUCT_ID`      | server only           | Real Lava.top product ID for the 30-coin pack when Lava invoices are enabled                 |
 | `NEXT_PUBLIC_APP_URL`           | browser/server        | Absolute app URL for callbacks                                                               |
 | `MOBILE_DEEP_LINK_SCHEME`       | server/mobile         | Mobile return URL scheme for auth callbacks                                                  |
 | `EMBEDDING_PROVIDER`            | server only           | Catalog embedding provider switch                                                            |

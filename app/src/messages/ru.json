@@ -73,6 +73,7 @@
     "recoveryHint": "Введите email, и мы отправим инструкции.",
     "recoveryCta": "Отправить email",
     "recoverySent": "Письмо отправлено. Проверьте почту.",
+    "confirmationRequired": "Аккаунт создан. Подтвердите email из письма, затем войдите.",
     "backToLogin": "Вернуться ко входу",
     "successRedirect": "Переходим в кабинет...",
     "close": "Закрыть"
