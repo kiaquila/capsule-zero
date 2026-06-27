@@ -120,8 +120,12 @@
 - [x] T108 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed nineteenth fix iteration.
 - [x] T109 Address twentieth Codex Review finding for preserving `paid` Lava invoice status during delayed non-paid webhook replay.
 - [x] T110 Rerun local lint/typecheck/build, Compose config, feature-memory, and whitespace checks after twentieth Codex fix.
-- [ ] T111 Commit and push the twentieth Codex fix iteration.
-- [ ] T112 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed twentieth fix iteration.
+- [x] T111 Commit and push the twentieth Codex fix iteration.
+- [x] T112 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed twentieth fix iteration.
+- [x] T113 Address twenty-first Codex Review finding for crediting paid Lava invoices whose coin pack later becomes inactive.
+- [x] T114 Rerun local lint/typecheck/build, Compose config, feature-memory, and whitespace checks after twenty-first Codex fix.
+- [x] T115 Commit and push the twenty-first Codex fix iteration.
+- [x] T116 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed twenty-first fix iteration.
 
 ## Process Memory
 
@@ -193,6 +197,7 @@
 - Use `npm run deploy:compose` as the canonical ordered Compose deploy command so migrations are force-recreated before `web` starts.
 - Scope marketplace external asset object paths by confirmed item id as well as user id, while decoding the final path segment for legacy `userId/encodedUrl` references, so two imported items with the same retailer/CDN image URL cannot reassign one asset row between items.
 - Load Lava invoices before replay status handling and keep existing `paid` invoices immutable to delayed non-paid webhook statuses so out-of-order replay cannot contradict an already-credited purchase.
+- Load Lava invoice coin packs by referenced id during paid webhook replay instead of reusing active-only purchase listings, so historic purchases still credit after a pack is deactivated for new sales.
 
 ### Known Issues
 

@@ -1504,9 +1504,7 @@ function buildBillingPort(service: DbClient): BillingPort {
       }
 
       const coinPack = requireValue(
-        (await this.listCoinPacks()).find(
-          (pack) => pack.id === invoice.coin_pack_id,
-        ),
+        await loadCoinPackById(service, invoice.coin_pack_id),
         "NOT_FOUND: Coin pack not found.",
       );
       const idempotencyKey = `lava:${invoice.id}:paid`;
@@ -2701,6 +2699,19 @@ async function loadInvoiceByAnyId(
   const { data, error } = await query.maybeSingle();
   throwIfError(error, "Failed to load Lava invoice");
   return data ? (data as DbLavaInvoice) : null;
+}
+
+async function loadCoinPackById(
+  service: DbClient,
+  coinPackId: string,
+): Promise<CoinPack | null> {
+  const { data, error } = await service
+    .from("coin_packs")
+    .select("*")
+    .eq("id", coinPackId)
+    .maybeSingle();
+  throwIfError(error, "Failed to load coin pack");
+  return data ? mapCoinPack(data as DbCoinPack) : null;
 }
 
 async function updateLavaInvoiceStatus(

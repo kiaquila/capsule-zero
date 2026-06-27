@@ -29,6 +29,7 @@ In scope:
 - Harden critic/architect/OMX review boundaries for confirmation-required Supabase signups, Lava product IDs, dedicated app-session signing, verified user-scoped service-role access, JWT-verified Edge Functions, JSON-aware health checks, and scripted ordered Compose deploys.
 - Preserve marketplace external image assets per confirmed item so repeated retailer/CDN image URLs cannot move an existing asset away from an earlier wardrobe item.
 - Preserve already-paid Lava invoices during webhook replay so delayed non-paid events cannot downgrade invoice status after purchase credit is applied.
+- Credit paid Lava invoices against their purchased coin pack even if that pack has since been deactivated for new purchases.
 - Update env examples and deployment docs for local, staging, and production operation.
 - Preserve local smoke-testability with clearly marked demo Supabase JWT values that must be rotated outside local runs.
 
@@ -94,6 +95,7 @@ Operators can see which real external integrations still need credentials, and t
 10. **Given** production app sessions must be signed, **When** `SESSION_SIGNING_SECRET` is missing, **Then** runtime validation and session signing fail instead of falling back to Supabase service-role or JWT secrets.
 11. **Given** two marketplace imports share the same external HTTP image URL, **When** both are confirmed into wardrobe items, **Then** each item keeps its own marketplace asset reference instead of reassigning the first item's image to the second item.
 12. **Given** a Lava invoice has already been credited and marked `paid`, **When** a delayed replay sends `failed` or `expired` for the same invoice, **Then** the stored invoice remains `paid`.
+13. **Given** a user paid for a coin pack that was later deactivated, **When** the paid Lava webhook is replayed, **Then** the invoice still credits the purchased coin amount instead of failing active-pack lookup.
 
 ## Requirements
 
@@ -162,6 +164,7 @@ Operators can see which real external integrations still need credentials, and t
 - **FR-061**: Public health status MUST distinguish core Supabase/storage readiness from external SaaS gates so missing external credentials remain `pending-gate` without making a configured core runtime look unavailable.
 - **FR-062**: Marketplace external image asset paths MUST be scoped by confirmed item identity as well as user identity so two items with the same retailer/CDN image URL cannot collide on `item_assets(bucket, object_path)`.
 - **FR-063**: Lava webhook replay MUST NOT overwrite an existing `paid` invoice with a non-paid terminal status from a delayed or out-of-order replay.
+- **FR-064**: Paid Lava webhook replay MUST load the invoice's referenced coin pack regardless of whether the pack is currently active for new purchases.
 
 ### Key Entities
 
@@ -205,3 +208,4 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-028**: Critic/architect/OMX follow-up fixes for confirmation-required signups, Lava product ID gates, shared session signing, user-scoped service-role access, Edge Function auth defaults, strict healthchecks, and scripted Compose deploys pass local verification and a fresh Codex review cycle.
 - **SC-029**: Codex follow-up fixes for item-scoped marketplace external image assets pass local verification and a fresh Codex review cycle.
 - **SC-030**: Codex follow-up fixes for preserving paid Lava invoice status during replay pass local verification and a fresh Codex review cycle.
+- **SC-031**: Codex follow-up fixes for crediting paid Lava invoices whose coin pack was later deactivated pass local verification and a fresh Codex review cycle.
