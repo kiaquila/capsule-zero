@@ -9,13 +9,13 @@ This layer is **lightweight on purpose**:
 - No change to branch-protection required checks or approvals.
 - No new runtime dependency or npm script.
 
-Enforcement is split: structural completeness of feature memory is enforced by `pr-guard.yml` (spec/plan/tasks must exist for `app/` changes); the SENAR Done Gate is enforced by the review agent and the human merge owner.
+Enforcement is split: structural completeness of feature memory is enforced by `pr-guard.yml` (spec/plan/tasks must exist for product-root changes under `app/`, `api/`, `worker/`, `web/`, or `mobile/`); the SENAR Done Gate is enforced by the review agent and the human merge owner.
 
 ## Mapping
 
 | SENAR practice              | Capsule Zero artifact                                                                                                       |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Task before code            | `.specify/specs/<feature-id>/spec.md` and `plan.md` before any `app/` change                                                |
+| Task before code            | `.specify/specs/<feature-id>/spec.md` and `plan.md` before any product-root change                                          |
 | Scope boundaries            | one worktree, one branch, one PR + the `## Scope` (in/out) section in `spec.md`                                             |
 | Acceptance criteria         | `## Requirements` (FR-###) and `### Acceptance Scenarios` in `spec.md`                                                      |
 | Negative scenario           | `## Negative Scenarios` in `spec.md` (added by this layer)                                                                  |
@@ -47,7 +47,7 @@ This gate is mirrored as a checklist in `.github/pull_request_template.md` so th
 
 - SENAR **applies to every spec authored after this layer ships** (i.e. starting with `005-…`).
 - It **does not retrofit** `001-capsule-zero-mvp`, `002-pipeline-hardening`, or `003-sprint-0-foundation`. Those folders keep their original shape; readers should not expect them to follow the SENAR template structure.
-- Infrastructure-only PRs that do not touch `app/` are not required to carry feature memory at all (per `pr-guard.yml`); when they do choose to carry a spec folder, that folder should follow the SENAR template.
+- Infrastructure-only PRs that do not touch product roots (`app/`, `api/`, `worker/`, `web/`, or `mobile/`) are not required to carry feature memory at all (per `pr-guard.yml`); when they do choose to carry a spec folder, that folder should follow the SENAR template.
 
 ## Why Not Make It A Required CI Check
 

@@ -91,6 +91,6 @@ The Unicorn Hub comparison hardening adds:
 
 - root `npm run preflight`
 - trusted default-branch gate scripts for `guard` and `AI Review`
-- complete feature-memory enforcement for `app/` changes
+- complete feature-memory enforcement for product-root changes (`app/`, `api/`, `worker/`, `web/`, `mobile/`)
 - app typecheck and build inside the required `baseline-checks` job
 - `osv-scan` dependency vulnerability scanning as a visible, non-required security signal

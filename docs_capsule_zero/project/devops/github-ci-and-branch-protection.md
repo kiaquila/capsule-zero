@@ -5,7 +5,7 @@ GitHub is the control plane for pull requests, checks, AI review routing, and de
 ## Required Workflows
 
 - `ci.yml`: runs repository baseline validation, app typecheck, app build, and optional app tests as the required `baseline-checks` job.
-- `pr-guard.yml`: enforces feature-memory coverage for `app/` product changes and validates baseline files as the required `guard` job.
+- `pr-guard.yml`: enforces feature-memory coverage for product-root changes (`app/`, `api/`, `worker/`, `web/`, `mobile/`) and validates baseline files as the required `guard` job.
 - `ai-command-policy.yml`: rejects untrusted or policy-mismatched AI command comments.
 - `ai-review.yml`: normalizes selected native review output into the required `AI Review` check.
 - `osv-scan.yml`: scans dependencies for known vulnerabilities on pull requests, pushes to `main`, weekly schedule, and manual dispatch.
@@ -28,7 +28,7 @@ Branch protection for `main` must require:
 - Missing selected-reviewer evidence fails `AI Review`.
 - Review evidence must match the current pull request head SHA.
 - Required gate scripts run from the trusted default branch when available, not from pull-request-supplied code.
-- Product changes under `app/` require complete feature memory in `.specify/specs/<feature-id>/spec.md`, `plan.md`, and `tasks.md`.
+- Product changes under `app/`, `api/`, `worker/`, `web/`, or `mobile/` require complete feature memory in `.specify/specs/<feature-id>/spec.md`, `plan.md`, and `tasks.md`.
 - Skipped required gates must not be treated as successful merge readiness.
 
 ## Local Preflight
