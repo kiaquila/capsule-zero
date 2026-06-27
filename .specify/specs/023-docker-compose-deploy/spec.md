@@ -24,6 +24,7 @@ In scope:
 - Preserve operator-supplied external-provider secrets from optional runtime env files and refresh expired Supabase sessions in memory without mutating cookies during Server Component rendering.
 - Reject cross-user private Supabase Storage paths before any service-role asset upsert/signing path and keep Lava webhook invoice matching safe for non-UUID provider invoice IDs.
 - Document deploy startup as an ordered Compose sequence that explicitly recreates the one-shot `migrate` service before starting `web`, so migration-only releases cannot reuse a stale completed migration container.
+- Keep migration tracking metadata outside the PostgREST-exposed `public` schema and migrate any earlier public tracking table into the private ledger.
 - Update env examples and deployment docs for local, staging, and production operation.
 - Preserve local smoke-testability with clearly marked demo Supabase JWT values that must be rotated outside local runs.
 
@@ -83,6 +84,7 @@ Operators can see which real external integrations still need credentials, and t
 4. **Given** Compose is restarted after the first migration run, **When** `migrate` starts again, **Then** it skips already applied migrations and exits successfully.
 5. **Given** a fresh checkout has not created `deploy/runtime.env`, **When** Compose renders the local stack with `deploy/compose.env.example`, **Then** config rendering does not fail on a missing optional web runtime env file.
 6. **Given** a migration-only release changes no Compose service configuration or web image, **When** an operator deploys, **Then** docs require explicit `migrate` service recreation before `web` so old `service_completed_successfully` state cannot mask unapplied SQL.
+7. **Given** Kong/PostgREST is reachable with the public anon key, **When** migration tracking metadata exists, **Then** it is not readable or writable through the public Data API schema.
 
 ## Requirements
 
@@ -138,12 +140,13 @@ Operators can see which real external integrations still need credentials, and t
 - **FR-048**: Public catalog search results MUST NOT expose real contributor `owner_user_id` values to clients; results MUST use a neutral catalog owner identity.
 - **FR-049**: Marketplace import provider HTTP 200 responses with malformed JSON or invalid candidate shape MUST update the created import to `failed`.
 - **FR-050**: Deployment docs MUST instruct operators to explicitly recreate the canonical one-shot `migrate` service before starting `web` on deploys that may include SQL changes.
+- **FR-051**: Migration tracking metadata MUST live outside the PostgREST-exposed `public` schema, and existing public tracking rows MUST be copied into the private ledger before the public table is removed.
 
 ### Key Entities
 
 - **Compose Supabase Runtime**: The Docker Compose project containing web and Supabase services.
 - **Supabase Provider Registry**: The real implementation of Capsule Zero provider ports backed by Supabase.
-- **Migration Runner**: One-shot `migrate` service that records applied SQL files in `public.capsule_zero_schema_migrations`.
+- **Migration Runner**: One-shot `migrate` service that records applied SQL files in `capsule_zero_internal.schema_migrations`.
 - **External Provider Gate**: Runtime health/configuration state for Photoroom, Lava.top, marketplace import, Google OAuth, and Apple Sign-In.
 - **Runtime Env Template**: Example env files for local, stage, and production Compose operation.
 
@@ -174,3 +177,4 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-023**: Codex follow-up fixes for atomic capsule creation, capsule item ownership validation, and catalog contributor privacy pass local verification and a fresh Codex review cycle.
 - **SC-024**: Codex follow-up fixes for malformed marketplace import provider responses pass local verification and a fresh Codex review cycle.
 - **SC-025**: Codex follow-up fixes for explicit migration reruns in the documented deploy path pass local verification and a fresh Codex review cycle.
+- **SC-026**: Codex follow-up fixes for private migration tracking metadata pass local verification and a fresh Codex review cycle.

@@ -121,8 +121,13 @@ schema changes after Supabase has created `auth` and `storage` internals.
 The migration runner records applied files in:
 
 ```text
-public.capsule_zero_schema_migrations
+capsule_zero_internal.schema_migrations
 ```
+
+The tracking table lives outside the PostgREST-exposed `public` schema. On
+stacks that already created the earlier public tracking table, the runner copies
+its rows into `capsule_zero_internal.schema_migrations` and drops the public
+table before applying pending migrations.
 
 Do not delete or reorder existing migration files after a volume has been
 initialized. For schema changes, add a new timestamped or numbered SQL file.

@@ -104,6 +104,10 @@
 - [x] T092 Rerun local preflight, whitespace, focused doc checks, Compose config, and Docker image checks after sixteenth Codex fix.
 - [x] T093 Commit and push the sixteenth Codex fix iteration.
 - [x] T094 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed sixteenth fix iteration.
+- [x] T095 Address seventeenth Codex Review finding for private migration tracking metadata.
+- [x] T096 Rerun local preflight, whitespace, focused migration-ledger checks, Compose config, and Docker image checks after seventeenth Codex fix.
+- [x] T097 Commit and push the seventeenth Codex fix iteration.
+- [x] T098 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed seventeenth fix iteration.
 
 ## Process Memory
 
@@ -115,6 +119,7 @@
 - A first REST smoke query asked for the wrong profile column name (`id`/`name` instead of `user_id`/`display_name`) and returned 400. Inspecting `public.profiles` confirmed the schema and the corrected query showed the trigger-created row.
 - Local feature-memory guard failed after app provider changes because no spec files were modified in the uncommitted worktree; this update touches all three required files.
 - The first `0006_catalog_search_filters.sql` migration attempt failed because Postgres does not allow a CTE field directly inside `LIMIT`. The migration now uses a scalar subquery for the dynamic limit and applied cleanly.
+- The first private migration-ledger script used `:'version'` psql variables inside `-c`; a live `migrate` run showed those placeholders were not expanded there, so the script now SQL-escapes migration filenames before lookup/insert statements.
 
 ### Decisions
 
@@ -162,6 +167,7 @@
 - Map public catalog search results to neutral `userId: "catalog"` so real contributor auth UUIDs are not exposed to clients.
 - Treat marketplace provider JSON parse errors and invalid `candidates` shape as failed imports, using the same persisted failure path as provider fetch and non-OK HTTP responses.
 - Recreate the canonical one-shot `migrate` service before starting `web` on deploys that may include SQL changes, because Compose can otherwise reuse an old completed migration container when only bind-mounted SQL files changed.
+- Store migration tracking metadata in `capsule_zero_internal.schema_migrations`, copy any earlier public tracking rows, and drop the public tracking table so PostgREST clients cannot alter the migration ledger.
 
 ### Known Issues
 
