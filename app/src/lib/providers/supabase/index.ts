@@ -774,6 +774,7 @@ function buildStoragePort(
 
     async completePhotoUpload(userId, completion: UploadCompletion) {
       const { bucket, objectPath } = parseStoragePath(completion.storagePath);
+      assertUserOwnedStoragePath(userId, { bucket, objectPath });
       const { data: asset, error: assetError } = await service
         .from("item_assets")
         .upsert(
@@ -811,8 +812,8 @@ function buildStoragePort(
     },
 
     async getSignedAssetUrl(userId, storagePath) {
-      void userId;
       const { bucket, objectPath } = parseStoragePath(storagePath);
+      assertUserOwnedStoragePath(userId, { bucket, objectPath });
       const url = await createSignedAssetUrl(clients, bucket, objectPath);
       return url;
     },
@@ -2018,6 +2019,7 @@ async function maybeAttachDraftAsset(
   if (parsed.bucket === "catalog-public") {
     return;
   }
+  assertUserOwnedStoragePath(userId, parsed);
 
   const { error } = await service.from("item_assets").upsert(
     {
@@ -2103,6 +2105,21 @@ function normalizeSupabaseUrl(
 function parseStoragePath(storagePath: string): { bucket: string; objectPath: string } {
   const parsed = tryParseStoragePath(storagePath);
   return requireValue(parsed, `VALIDATION_ERROR: Invalid storage path ${storagePath}.`);
+}
+
+function assertUserOwnedStoragePath(
+  userId: string,
+  parsed: { bucket: string; objectPath: string },
+): void {
+  if (parsed.bucket === "catalog-public") {
+    return;
+  }
+
+  if (!parsed.objectPath.startsWith(`${userId}/`)) {
+    throw new Error(
+      "VALIDATION_ERROR: Storage path does not belong to the current user.",
+    );
+  }
 }
 
 function tryParseStoragePath(
@@ -2331,11 +2348,15 @@ async function loadInvoiceByAnyId(
   service: DbClient,
   invoiceId: string,
 ): Promise<DbLavaInvoice | null> {
-  const { data, error } = await service
+  let query = service
     .from("lava_invoices")
-    .select("*")
-    .or(`id.eq.${invoiceId},lava_invoice_id.eq.${invoiceId}`)
-    .maybeSingle();
+    .select("*");
+
+  query = isUuid(invoiceId)
+    ? query.or(`id.eq.${invoiceId},lava_invoice_id.eq.${invoiceId}`)
+    : query.eq("lava_invoice_id", invoiceId);
+
+  const { data, error } = await query.maybeSingle();
   throwIfError(error, "Failed to load Lava invoice");
   return data ? (data as DbLavaInvoice) : null;
 }
@@ -2345,11 +2366,22 @@ async function updateLavaInvoiceStatus(
   invoiceId: string,
   status: InvoiceStatus,
 ): Promise<void> {
-  const { error } = await service
+  let query = service
     .from("lava_invoices")
-    .update({ status, updated_at: new Date().toISOString() })
-    .or(`id.eq.${invoiceId},lava_invoice_id.eq.${invoiceId}`);
+    .update({ status, updated_at: new Date().toISOString() });
+
+  query = isUuid(invoiceId)
+    ? query.or(`id.eq.${invoiceId},lava_invoice_id.eq.${invoiceId}`)
+    : query.eq("lava_invoice_id", invoiceId);
+
+  const { error } = await query;
   throwIfError(error, "Failed to update Lava invoice status");
+}
+
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value.trim(),
+  );
 }
 
 function mapCoinSpendResult(row: DbCoinSpendResult): {

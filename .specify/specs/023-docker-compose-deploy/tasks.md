@@ -68,6 +68,10 @@
 - [x] T056 Rerun local preflight, Compose config, whitespace, and Docker image checks after seventh AI Review fixes.
 - [x] T057 Commit and push the seventh AI Review fix iteration.
 - [x] T058 Trigger a fresh `@codex review` comment on the pushed seventh fix iteration.
+- [x] T059 Address eighth Codex Review findings for cross-user private storage paths and non-UUID Lava invoice IDs.
+- [x] T060 Rerun local preflight, whitespace, focused code checks, and Docker image checks after eighth Codex fixes.
+- [x] T061 Commit and push the eighth Codex fix iteration.
+- [x] T062 Trigger fresh Codex and selected-gate review comments on the pushed eighth fix iteration.
 
 ## Process Memory
 
@@ -109,6 +113,8 @@
 - Redact public health fixture counts in Supabase mode so unauthenticated health checks expose status booleans instead of live user or wardrobe totals.
 - Leave external provider secrets out of the Compose `environment` block so optional `deploy/runtime.env` can supply them without being shadowed by empty Compose interpolation values.
 - Refresh expired or near-expired Supabase sessions before trusted `getUser()` verification even when the read path cannot mutate cookies.
+- Reject private Supabase Storage paths that are not namespaced under the current user id before using service-role asset upserts or signed URLs.
+- Treat Lava provider invoice ids as text unless they are valid UUIDs, so webhook replay can match `lava_invoice_id` without triggering a UUID cast error on `lava_invoices.id`.
 
 ### Known Issues
 

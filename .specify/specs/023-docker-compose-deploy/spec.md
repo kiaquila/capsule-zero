@@ -22,6 +22,7 @@ In scope:
 - Add migration-backed runtime alignment for statuses, Lava invoices, auth profile creation, and public catalog seed data.
 - Harden real-runtime follow-ups from AI Review: signed and verified app sessions, Supabase token verification and refresh state, auth form error handling, profile sync preservation, atomic coin ledger mutations, upload asset attachment/completion idempotency, processed image polling, marketplace confirmation foreign keys, catalog search filtering/no-match behavior, optional local runtime env files, render-safe session reads, marketplace external image handling, ID-based color post-filtering, service-role-only billing RPC access, and redacted public health counts.
 - Preserve operator-supplied external-provider secrets from optional runtime env files and refresh expired Supabase sessions in memory without mutating cookies during Server Component rendering.
+- Reject cross-user private Supabase Storage paths before any service-role asset upsert/signing path and keep Lava webhook invoice matching safe for non-UUID provider invoice IDs.
 - Update env examples and deployment docs for local, staging, and production operation.
 - Preserve local smoke-testability with clearly marked demo Supabase JWT values that must be rotated outside local runs.
 
@@ -117,6 +118,8 @@ Operators can see which real external integrations still need credentials, and t
 - **FR-031**: The public health endpoint MUST NOT expose live user, wardrobe-item, catalog, or coin-pack counts from service-role queries.
 - **FR-032**: Compose MUST NOT override optional runtime env-file provider secrets with empty Compose interpolation values.
 - **FR-033**: Supabase session reads MUST refresh expired or near-expired access tokens with persisted refresh tokens before trusted `getUser()` verification, while keeping the read path cookie-mutation free.
+- **FR-034**: Service-role storage helpers MUST reject private object paths whose first path segment does not match the current user id.
+- **FR-035**: Lava invoice lookup/status updates MUST avoid UUID-column filters when webhook provider invoice IDs are not UUIDs.
 
 ### Key Entities
 
@@ -144,3 +147,4 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-014**: AI Review follow-up fixes for optional runtime env files, render-safe session reads, marketplace external image handling, and ID-based color post-filtering pass local verification and a fresh Codex review cycle.
 - **SC-015**: AI Review follow-up fixes for service-role-only billing RPC access and redacted public health counts pass local verification and a fresh Codex review cycle.
 - **SC-016**: AI Review follow-up fixes for Compose env precedence and render-safe Supabase token refresh pass local verification and a fresh Codex review cycle.
+- **SC-017**: Codex follow-up fixes for cross-user private storage path rejection and non-UUID Lava invoice IDs pass local verification and a fresh Codex review cycle.
