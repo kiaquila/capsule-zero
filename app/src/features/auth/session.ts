@@ -24,15 +24,14 @@ export interface PersistedAppSession {
 export type PersistedMockSession = PersistedAppSession;
 
 export async function persistAppSession(session: Session) {
-  const cookieStore = await cookies();
-  const value = toPersistedAppSession(session);
+  await writeAppSessionCookie(toPersistedAppSession(session));
+}
 
-  cookieStore.set(APP_SESSION_COOKIE, serializeSignedSession(value), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: MAX_AGE_SECONDS,
+export async function persistAppSessionIfWritable(
+  session: Session,
+): Promise<boolean> {
+  return writeAppSessionCookie(toPersistedAppSession(session), {
+    ignoreReadonly: true,
   });
 }
 
@@ -87,6 +86,36 @@ function toPersistedAppSession(session: Session): PersistedAppSession {
     createdAt: session.user.createdAt,
     expiresAt: session.expiresAt,
   };
+}
+
+async function writeAppSessionCookie(
+  value: PersistedAppSession,
+  options: { ignoreReadonly?: boolean } = {},
+): Promise<boolean> {
+  const cookieStore = await cookies();
+
+  try {
+    cookieStore.set(APP_SESSION_COOKIE, serializeSignedSession(value), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: MAX_AGE_SECONDS,
+    });
+    return true;
+  } catch (error) {
+    if (options.ignoreReadonly && isReadonlyCookieMutationError(error)) {
+      return false;
+    }
+    throw error;
+  }
+}
+
+function isReadonlyCookieMutationError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.message.includes("Cookies can only be modified")
+  );
 }
 
 function serializeSignedSession(value: PersistedAppSession): string {

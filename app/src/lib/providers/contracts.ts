@@ -140,6 +140,7 @@ export interface UploadTarget {
   uploadId: string;
   jobId: string;
   uploadUrl: string;
+  storagePath: string;
   maxBytes: number;
   acceptedMimeTypes: string[];
   expiresAt: string;

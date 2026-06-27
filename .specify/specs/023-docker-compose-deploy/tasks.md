@@ -72,6 +72,10 @@
 - [x] T060 Rerun local preflight, whitespace, focused code checks, and Docker image checks after eighth Codex fixes.
 - [x] T061 Commit and push the eighth Codex fix iteration.
 - [x] T062 Trigger fresh Codex and selected-gate review comments on the pushed eighth fix iteration.
+- [x] T063 Address ninth Codex Review findings for writable refreshed-token persistence, upload target storage paths, marketplace external images, and category alias post-filtering.
+- [x] T064 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after ninth Codex fixes.
+- [x] T065 Commit and push the ninth Codex fix iteration.
+- [x] T066 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed ninth fix iteration.
 
 ## Process Memory
 
@@ -115,6 +119,10 @@
 - Refresh expired or near-expired Supabase sessions before trusted `getUser()` verification even when the read path cannot mutate cookies.
 - Reject private Supabase Storage paths that are not namespaced under the current user id before using service-role asset upserts or signed URLs.
 - Treat Lava provider invoice ids as text unless they are valid UUIDs, so webhook replay can match `lava_invoice_id` without triggering a UUID cast error on `lava_invoices.id`.
+- Persist refreshed Supabase access and refresh tokens opportunistically when the current route/action boundary can write cookies, while treating read-only Server Component cookies as a safe no-op.
+- Return the concrete upload storage path from provider upload-target calls so clients can complete uploads without reconstructing hidden provider paths.
+- Store imported marketplace HTTP image URLs as explicit external asset references instead of trying to sign retailer/CDN URLs through Supabase Storage.
+- Normalize catalog category aliases through the same UI-to-DB mapping before local post-filtering so SQL-matched aliases are not dropped after result hydration.
 
 ### Known Issues
 

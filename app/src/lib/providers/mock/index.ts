@@ -171,6 +171,7 @@ export function createMockProviderRegistry(
         uploadId,
         jobId,
         uploadUrl: `mock://storage/item-originals/${userId}/${uploadId}`,
+        storagePath: `item-originals/${userId}/${uploadId}/${metadata.fileName}`,
         maxBytes: MAX_UPLOAD_BYTES,
         acceptedMimeTypes: ACCEPTED_IMAGE_MIME_TYPES,
         expiresAt: "2026-06-01T15:15:00.000Z",

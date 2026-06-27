@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import {
+  persistAppSessionIfWritable,
   readSignedAppSession,
   type PersistedAppSession,
 } from "@/features/auth/session";
@@ -235,12 +236,14 @@ const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 const MAX_PALETTE_COLORS = 15;
 const MAX_CHROMATIC_COLORS = 12;
+const EXTERNAL_ASSET_BUCKET = "external-url";
 const KNOWN_STORAGE_BUCKETS = new Set([
   "avatars",
   "item-originals",
   "item-processed",
   "marketplace-imports",
   "catalog-public",
+  EXTERNAL_ASSET_BUCKET,
 ]);
 
 const CATEGORY_TO_DB_SLUG: Record<string, string> = {
@@ -473,6 +476,7 @@ async function verifyPersistedSession(
   let accessToken = persisted.accessToken;
   let refreshToken = persisted.refreshToken;
   let expiresAt = persisted.expiresAt;
+  let refreshedSession = false;
   const expiresAtMs = Date.parse(expiresAt);
 
   if (
@@ -489,6 +493,7 @@ async function verifyPersistedSession(
 
     accessToken = refreshed.data.session.access_token;
     refreshToken = refreshed.data.session.refresh_token;
+    refreshedSession = true;
     expiresAt = refreshed.data.session.expires_at
       ? new Date(refreshed.data.session.expires_at * 1000).toISOString()
       : expiresAt;
@@ -499,7 +504,7 @@ async function verifyPersistedSession(
     return null;
   }
 
-  return {
+  const session = {
     user: {
       id: data.user.id,
       email: data.user.email ?? persisted.email,
@@ -510,6 +515,12 @@ async function verifyPersistedSession(
     refreshToken,
     expiresAt,
   };
+
+  if (refreshedSession) {
+    await persistAppSessionIfWritable(session);
+  }
+
+  return session;
 }
 
 function buildProfileRepository(service: DbClient): ProfileRepository {
@@ -766,6 +777,7 @@ function buildStoragePort(
         uploadId,
         jobId: (job as DbUploadJob).id,
         uploadUrl: normalizeSupabaseUrl(clients, signedUrl),
+        storagePath: `item-originals/${objectPath}`,
         maxBytes: MAX_UPLOAD_BYTES,
         acceptedMimeTypes: ACCEPTED_IMAGE_MIME_TYPES,
         expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
@@ -814,6 +826,12 @@ function buildStoragePort(
     async getSignedAssetUrl(userId, storagePath) {
       const { bucket, objectPath } = parseStoragePath(storagePath);
       assertUserOwnedStoragePath(userId, { bucket, objectPath });
+      if (bucket === EXTERNAL_ASSET_BUCKET) {
+        return requireValue(
+          readExternalAssetUrl(objectPath),
+          "VALIDATION_ERROR: Invalid external asset path.",
+        );
+      }
       const url = await createSignedAssetUrl(clients, bucket, objectPath);
       return url;
     },
@@ -1434,8 +1452,14 @@ function itemMatchesCatalogFilters(
   categories: Map<string, DbCategory>,
   colors: Map<string, ColorPoint>,
 ): boolean {
-  if (filters?.categoryIds?.length && !filters.categoryIds.includes(item.categoryId)) {
-    return false;
+  if (filters?.categoryIds?.length) {
+    const requestedCategories = buildRequestedCategorySet(
+      categories,
+      filters.categoryIds,
+    );
+    if (!requestedCategories.has(normalizeUiCategoryId(item.categoryId))) {
+      return false;
+    }
   }
 
   if (filters?.colorIds?.length) {
@@ -1469,6 +1493,27 @@ function buildRequestedColorHexSet(
     .map((colorIdOrHex) => colorIdOrHex.toLowerCase());
 
   return new Set(hexValues);
+}
+
+function buildRequestedCategorySet(
+  categories: Map<string, DbCategory>,
+  categoryIds: string[],
+): Set<string> {
+  const resolvedCategoryIds = resolveSearchCategoryIds(categories, categoryIds);
+  const rowsById = categories;
+  const categoryValues = [
+    ...categoryIds,
+    ...resolvedCategoryIds.map((categoryId) => {
+      const row = rowsById.get(categoryId);
+      return row?.slug ?? categoryId;
+    }),
+  ].map(normalizeUiCategoryId);
+
+  return new Set(categoryValues);
+}
+
+function normalizeUiCategoryId(categoryId: string): string {
+  return toUiCategoryId(CATEGORY_TO_DB_SLUG[categoryId] ?? categoryId);
 }
 
 function resolveSearchCategoryIds(
@@ -2014,6 +2059,19 @@ async function maybeAttachDraftAsset(
   }
   const parsed = tryParseStoragePath(draft.imageUrl);
   if (!parsed) {
+    if (draft.sourceType === "marketplace" && isHttpUrl(draft.imageUrl)) {
+      const { error } = await service.from("item_assets").upsert(
+        {
+          user_id: userId,
+          item_id: item.id,
+          bucket: EXTERNAL_ASSET_BUCKET,
+          object_path: toExternalAssetObjectPath(userId, draft.imageUrl),
+          variant: "marketplace",
+        },
+        { onConflict: "bucket,object_path" },
+      );
+      throwIfError(error, "Failed to attach external marketplace asset");
+    }
     return;
   }
   if (parsed.bucket === "catalog-public") {
@@ -2069,7 +2127,11 @@ function pickDisplayAsset(assets: DbAsset[]): DbAsset | undefined {
 async function createAssetUrl(
   clients: ReturnType<typeof createSupabaseClients>,
   asset: DbAsset,
-): Promise<string> {
+): Promise<string | undefined> {
+  if (asset.bucket === EXTERNAL_ASSET_BUCKET) {
+    return readExternalAssetUrl(asset.object_path);
+  }
+
   if (asset.bucket === "catalog-public") {
     const { data } = clients.service.storage
       .from(asset.bucket)
@@ -2122,6 +2184,28 @@ function assertUserOwnedStoragePath(
   }
 }
 
+function isHttpUrl(value: string): boolean {
+  return /^https?:\/\//i.test(value.trim());
+}
+
+function toExternalAssetObjectPath(userId: string, imageUrl: string): string {
+  return `${userId}/${Buffer.from(imageUrl, "utf8").toString("base64url")}`;
+}
+
+function readExternalAssetUrl(objectPath: string): string | undefined {
+  const encodedUrl = objectPath.split("/").slice(1).join("/");
+  if (!encodedUrl) {
+    return undefined;
+  }
+
+  try {
+    const imageUrl = Buffer.from(encodedUrl, "base64url").toString("utf8");
+    return isHttpUrl(imageUrl) ? imageUrl : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function tryParseStoragePath(
   storagePath: string,
 ): { bucket: string; objectPath: string } | null {
@@ -2130,7 +2214,7 @@ function tryParseStoragePath(
     return null;
   }
   const storageObjectUrlPattern = /^https?:\/\/[^/]+\/storage\/v1\/object\/[^/]+\//;
-  if (/^https?:\/\//.test(value) && !storageObjectUrlPattern.test(value)) {
+  if (isHttpUrl(value) && !storageObjectUrlPattern.test(value)) {
     return null;
   }
   const withoutOrigin = value
