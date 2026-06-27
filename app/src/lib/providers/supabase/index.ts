@@ -235,6 +235,7 @@ interface DbCoinSpendResult {
 const ACCEPTED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
+const BACKGROUND_REMOVAL_TIMEOUT_MS = 5_000;
 const MAX_PALETTE_COLORS = 15;
 const MAX_CHROMATIC_COLORS = 12;
 const EXTERNAL_ASSET_BUCKET = "external-url";
@@ -883,41 +884,66 @@ function buildImageProcessingPort(
             )
           : source.url;
 
-      const image = await fetch(sourceUrl);
-      if (!image.ok) {
-        return markUploadJobFailed(
-          service,
-          existing,
-          `UPLOAD_FETCH_FAILED_${image.status}`,
+      const timeout = createTimeoutController(BACKGROUND_REMOVAL_TIMEOUT_MS);
+      let processedImage: ArrayBuffer | undefined;
+      try {
+        const image = await fetch(sourceUrl, { signal: timeout.signal });
+        if (!image.ok) {
+          return markUploadJobFailed(
+            service,
+            existing,
+            `UPLOAD_FETCH_FAILED_${image.status}`,
+          );
+        }
+
+        const form = new FormData();
+        form.append(
+          "image_file",
+          new Blob([await image.arrayBuffer()], {
+            type: image.headers.get("content-type") ?? "image/jpeg",
+          }),
+          "original.jpg",
         );
-      }
 
-      const form = new FormData();
-      form.append(
-        "image_file",
-        new Blob([await image.arrayBuffer()], {
-          type: image.headers.get("content-type") ?? "image/jpeg",
-        }),
-        "original.jpg",
-      );
-
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "x-api-key": apiKey },
-        body: form,
-      });
-      if (!response.ok) {
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: { "x-api-key": apiKey },
+          body: form,
+          signal: timeout.signal,
+        });
+        if (!response.ok) {
+          return markUploadJobFailed(
+            service,
+            existing,
+            `PHOTOROOM_FAILED_${response.status}`,
+          );
+        }
+        processedImage = await response.arrayBuffer();
+      } catch (error) {
+        const code = isAbortError(error)
+          ? "BACKGROUND_REMOVAL_TIMEOUT"
+          : "BACKGROUND_REMOVAL_FETCH_FAILED";
         return markUploadJobFailed(
           service,
           existing,
-          `PHOTOROOM_FAILED_${response.status}`,
+          code,
+          isAbortError(error) ? "timeout" : "failed",
+        );
+      } finally {
+        timeout.clear();
+      }
+      if (!processedImage) {
+        return markUploadJobFailed(
+          service,
+          existing,
+          "PHOTOROOM_RESPONSE_MISSING",
         );
       }
 
       const processedPath = `${userId}/${jobId}/processed.png`;
       const upload = await service.storage
         .from("item-processed")
-        .upload(processedPath, await response.arrayBuffer(), {
+        .upload(processedPath, processedImage, {
           contentType: "image/png",
           upsert: true,
         });
@@ -978,11 +1004,22 @@ function buildMarketplaceImportPort(
         .single();
       throwIfError(createError, "Failed to create marketplace import");
 
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: buildExternalJsonHeaders("MARKETPLACE_IMPORT_API_KEY"),
-        body: JSON.stringify({ url, userId, importId: created.id }),
-      });
+      let response: Response;
+      try {
+        response = await fetch(apiUrl, {
+          method: "POST",
+          headers: buildExternalJsonHeaders("MARKETPLACE_IMPORT_API_KEY"),
+          body: JSON.stringify({ url, userId, importId: created.id }),
+        });
+      } catch {
+        const failed = await updateMarketplaceImportStatus(
+          service,
+          created.id,
+          "failed",
+          [],
+        );
+        return mapMarketplaceImport(failed);
+      }
 
       if (!response.ok) {
         const failed = await updateMarketplaceImportStatus(
@@ -2318,11 +2355,12 @@ async function markUploadJobFailed(
   service: DbClient,
   job: DbUploadJob,
   code: string,
+  status: "failed" | "timeout" = "failed",
 ): Promise<UploadJob> {
   const { data, error } = await service
     .from("upload_jobs")
     .update({
-      status: "failed",
+      status,
       error_message: code,
       payload: { ...job.payload, errorCode: code },
       updated_at: new Date().toISOString(),
@@ -2333,6 +2371,23 @@ async function markUploadJobFailed(
     .single();
   throwIfError(error, "Failed to mark upload job failed");
   return mapUploadJob(data as DbUploadJob);
+}
+
+function createTimeoutController(timeoutMs: number): {
+  signal: AbortSignal;
+  clear: () => void;
+} {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  return {
+    signal: controller.signal,
+    clear: () => clearTimeout(timeoutId),
+  };
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === "AbortError";
 }
 
 async function updateMarketplaceImportStatus(

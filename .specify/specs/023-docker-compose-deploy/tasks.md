@@ -84,6 +84,10 @@
 - [x] T072 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after eleventh Codex fixes.
 - [x] T073 Commit and push the eleventh Codex fix iteration.
 - [x] T074 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed eleventh fix iteration.
+- [x] T075 Address twelfth Codex Review findings for background-removal timeout persistence and marketplace provider fetch failure handling.
+- [x] T076 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after twelfth Codex fixes.
+- [x] T077 Commit and push the twelfth Codex fix iteration.
+- [x] T078 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed twelfth fix iteration.
 
 ## Process Memory
 
@@ -134,6 +138,8 @@
 - Probe cookie mutability before calling Supabase `setSession()` so read-only Server Component renders do not rotate refresh tokens they cannot persist back to the browser.
 - Refresh expired or near-expired Supabase app sessions in Next proxy before protected Server Components read cookies, then propagate the refreshed signed app cookie through middleware request-header overrides.
 - Configure PostgREST JWT verification with `${JWT_JWKS:-${JWT_SECRET}}` because PostgREST v14 accepts JWK/JWKS JSON through `jwt-secret`/`PGRST_JWT_SECRET`, while local legacy JWTs still use the shared secret fallback.
+- Enforce one 5 second abort budget across the background-removal source image fetch and Photoroom provider call, and persist `timeout` when that quality gate is exceeded.
+- Mark marketplace imports `failed` when the provider fetch throws before a response is received so created import rows cannot remain permanently `processing`.
 
 ### Known Issues
 
