@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import {
+  persistAppSession,
   readSignedAppSession,
   type PersistedAppSession,
 } from "@/features/auth/session";
@@ -474,6 +475,7 @@ async function verifyPersistedSession(
   let refreshToken = persisted.refreshToken;
   let expiresAt = persisted.expiresAt;
   const expiresAtMs = Date.parse(persisted.expiresAt);
+  let refreshedSession = false;
 
   if (
     refreshToken &&
@@ -492,6 +494,7 @@ async function verifyPersistedSession(
     expiresAt = refreshed.data.session.expires_at
       ? new Date(refreshed.data.session.expires_at * 1000).toISOString()
       : expiresAt;
+    refreshedSession = true;
   }
 
   const { data, error } = await clients.anon.auth.getUser(accessToken);
@@ -499,7 +502,7 @@ async function verifyPersistedSession(
     return null;
   }
 
-  return {
+  const session = {
     user: {
       id: data.user.id,
       email: data.user.email ?? persisted.email,
@@ -510,6 +513,12 @@ async function verifyPersistedSession(
     refreshToken,
     expiresAt,
   };
+
+  if (refreshedSession) {
+    await persistAppSession(session);
+  }
+
+  return session;
 }
 
 function buildProfileRepository(service: DbClient): ProfileRepository {
@@ -1054,13 +1063,14 @@ function buildCatalogSearchPort(
   return {
     async search(_userId, query, filters) {
       const normalizedQuery = query.trim();
-      const [dbFilters, categories] = await Promise.all([
+      const [dbFilters, categories, colors] = await Promise.all([
         buildCatalogSearchDbFilters(
           colorCatalog,
           categoryCatalog,
           filters,
         ),
         categoryCatalog(),
+        colorCatalog(),
       ]);
       const rpc = await service.rpc("search_catalog_hybrid", {
         query: normalizedQuery || null,
@@ -1084,7 +1094,9 @@ function buildCatalogSearchPort(
         colorCatalog,
         categoryCatalog,
         items,
-      )).filter((item) => itemMatchesCatalogFilters(item, filters, categories));
+      )).filter((item) =>
+        itemMatchesCatalogFilters(item, filters, categories, colors),
+      );
       const rank = new Map(
         ((rpc.data ?? []) as Array<{ item_id: string; rank: number }>).map(
           (row) => [row.item_id, Number(row.rank)],
@@ -1428,15 +1440,14 @@ function itemMatchesCatalogFilters(
   item: WardrobeEntry,
   filters: CatalogSearchFilters | undefined,
   categories: Map<string, DbCategory>,
+  colors: Map<string, ColorPoint>,
 ): boolean {
   if (filters?.categoryIds?.length && !filters.categoryIds.includes(item.categoryId)) {
     return false;
   }
 
   if (filters?.colorIds?.length) {
-    const requestedColors = new Set(
-      filters.colorIds.map((colorId) => colorId.toLowerCase()),
-    );
+    const requestedColors = buildRequestedColorHexSet(colors, filters.colorIds);
     if (
       !item.colorPoints.some((color) =>
         requestedColors.has(color.hex.toLowerCase()),
@@ -1454,6 +1465,18 @@ function itemMatchesCatalogFilters(
   }
 
   return true;
+}
+
+function buildRequestedColorHexSet(
+  colors: Map<string, ColorPoint>,
+  colorIds: string[],
+): Set<string> {
+  const resolvedColorIds = resolveSearchColorIds(colors, colorIds);
+  const hexValues = resolvedColorIds
+    .map((colorId) => colors.get(colorId)?.hex ?? colorId)
+    .map((colorIdOrHex) => colorIdOrHex.toLowerCase());
+
+  return new Set(hexValues);
 }
 
 function resolveSearchCategoryIds(
@@ -2098,7 +2121,13 @@ function tryParseStoragePath(
   if (!value) {
     return null;
   }
-  const withoutOrigin = value.replace(/^https?:\/\/[^/]+\/storage\/v1\/object\/[^/]+\//, "");
+  const storageObjectUrlPattern = /^https?:\/\/[^/]+\/storage\/v1\/object\/[^/]+\//;
+  if (/^https?:\/\//.test(value) && !storageObjectUrlPattern.test(value)) {
+    return null;
+  }
+  const withoutOrigin = value
+    .replace(storageObjectUrlPattern, "")
+    .split("?")[0] ?? "";
   const [first, ...rest] = withoutOrigin.split("/");
   if (KNOWN_STORAGE_BUCKETS.has(first) && rest.length) {
     return { bucket: first, objectPath: rest.join("/") };

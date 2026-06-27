@@ -58,6 +58,10 @@
 - [x] T046 Address fourth Codex AI Review findings for refreshable sessions, inline auth errors, catalog filters, and no-match search behavior.
 - [x] T047 Apply `0006_catalog_search_filters.sql` through the Compose `migrate` service and smoke SQL filter/no-match results.
 - [x] T048 Rerun local preflight and Docker build after fourth AI Review fixes.
+- [x] T049 Address fifth Codex AI Review findings for optional runtime env files, refreshed session persistence, marketplace external image paths, and ID-based color post-filtering.
+- [x] T050 Rerun local preflight, Compose config, whitespace, and Docker image checks after fifth AI Review fixes.
+- [ ] T051 Commit and push the fifth AI Review fix iteration.
+- [ ] T052 Trigger a fresh `@codex review` comment on the pushed fifth fix iteration.
 
 ## Process Memory
 
@@ -90,6 +94,10 @@
 - Keep raw signed-cookie parsing behind `readSignedAppSession`; `readAppSession` and `readMockSession` now return only provider-verified sessions in Supabase mode.
 - Persist Supabase refresh tokens in the signed app session and refresh near-expired/expired sessions before calling trusted `getUser()`.
 - Apply catalog filters both in SQL and after mapping results locally so Supabase mode cannot return items outside requested category/color/wardrobe criteria.
+- Treat `deploy/runtime.env` as an optional operator override in Compose so a fresh checkout using committed env templates can render before local/stage/prod secrets are supplied.
+- Persist refreshed Supabase access and refresh tokens back into the signed app session cookie after token rotation.
+- Reject external marketplace image URLs as Supabase Storage paths; provider image ingestion can be added later as an explicit import step instead of creating broken signed URLs.
+- Normalize color filter IDs through the color catalog before local post-filtering so catalog IDs and HEX values match SQL filter behavior.
 
 ### Known Issues
 

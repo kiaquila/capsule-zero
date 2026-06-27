@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/docker-compose-prod-stage`
 **Created**: 2026-06-26
-**Updated**: 2026-06-26
+**Updated**: 2026-06-27
 **Status**: Ready for PR verification
 **Input**: User description: "Add all production-operation components to compose: database, storage, etc.; make everything real and remove mocks/emulations."
 
@@ -20,7 +20,7 @@ In scope:
 - Make `CAPSULE_PROVIDER_MODE=supabase` the default runtime mode and disable `mock` in production.
 - Keep external SaaS calls real but gated: Photoroom, Lava.top, marketplace import, Google OAuth, and Apple Sign-In must require real credentials instead of falling back to local mocks.
 - Add migration-backed runtime alignment for statuses, Lava invoices, auth profile creation, and public catalog seed data.
-- Harden real-runtime follow-ups from AI Review: signed and verified app sessions, Supabase token verification and refresh state, auth form error handling, profile sync preservation, atomic coin ledger mutations, upload asset attachment/completion idempotency, processed image polling, marketplace confirmation foreign keys, and catalog search filtering/no-match behavior.
+- Harden real-runtime follow-ups from AI Review: signed and verified app sessions, Supabase token verification and refresh state, auth form error handling, profile sync preservation, atomic coin ledger mutations, upload asset attachment/completion idempotency, processed image polling, marketplace confirmation foreign keys, catalog search filtering/no-match behavior, optional local runtime env files, refreshed session cookie persistence, marketplace external image handling, and ID-based color post-filtering.
 - Update env examples and deployment docs for local, staging, and production operation.
 - Preserve local smoke-testability with clearly marked demo Supabase JWT values that must be rotated outside local runs.
 
@@ -77,6 +77,7 @@ Operators can see which real external integrations still need credentials, and t
 2. **Given** app product paths changed, **When** the PR is validated, **Then** `.specify/specs/023-docker-compose-deploy/{spec,plan,tasks}.md` is present in the diff so feature-memory guard passes.
 3. **Given** external SaaS provider credentials are blank, **When** `/api/health` runs, **Then** the stack is `degraded` rather than falsely `ok`.
 4. **Given** Compose is restarted after the first migration run, **When** `migrate` starts again, **Then** it skips already applied migrations and exits successfully.
+5. **Given** a fresh checkout has not created `deploy/runtime.env`, **When** Compose renders the local stack with `deploy/compose.env.example`, **Then** config rendering does not fail on a missing optional web runtime env file.
 
 ## Requirements
 
@@ -107,6 +108,10 @@ Operators can see which real external integrations still need credentials, and t
 - **FR-023**: Supabase-backed app sessions MUST persist refresh tokens so expired access tokens can be refreshed before trusted server verification.
 - **FR-024**: Supabase auth provider failures from normal sign-in, sign-up, and recovery attempts MUST return inline form errors instead of escaping to an error boundary.
 - **FR-025**: Supabase catalog search MUST apply category/color/wardrobe filters and return an empty result for non-empty no-match searches.
+- **FR-026**: Compose MUST allow a fresh checkout to render/start with the committed env templates even when the operator has not created a local `deploy/runtime.env`.
+- **FR-027**: Refreshed Supabase access/refresh tokens MUST be written back into the signed app session cookie.
+- **FR-028**: Marketplace candidate image URLs that are not Supabase Storage paths MUST NOT be recorded as signed Supabase storage assets.
+- **FR-029**: Catalog search local post-filtering MUST normalize requested color IDs and HEX values the same way as the SQL filter.
 
 ### Key Entities
 
@@ -131,3 +136,4 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-011**: AI Review follow-up fixes for upload asset attachment, purchase credit idempotency, and processed image polling pass local verification and a fresh Codex review cycle.
 - **SC-012**: AI Review follow-up fixes for verified protected-route sessions, profile preservation, and upload-completion idempotency pass local verification and a fresh Codex review cycle.
 - **SC-013**: AI Review follow-up fixes for session refresh state, inline auth errors, and catalog search filters/no-match behavior pass local verification and a fresh Codex review cycle.
+- **SC-014**: AI Review follow-up fixes for optional runtime env files, refreshed token persistence, marketplace external image handling, and ID-based color post-filtering pass local verification and a fresh Codex review cycle.
