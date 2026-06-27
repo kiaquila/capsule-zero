@@ -20,7 +20,7 @@ In scope:
 - Make `CAPSULE_PROVIDER_MODE=supabase` the default runtime mode and disable `mock` in production.
 - Keep external SaaS calls real but gated: Photoroom, Lava.top, marketplace import, Google OAuth, and Apple Sign-In must require real credentials instead of falling back to local mocks.
 - Add migration-backed runtime alignment for statuses, Lava invoices, auth profile creation, and public catalog seed data.
-- Harden real-runtime follow-ups from AI Review: signed and verified app sessions, Supabase token verification and refresh state, writable refresh-token persistence, auth form error handling, profile sync preservation, atomic coin ledger mutations, upload target storage paths, upload asset attachment/completion idempotency, processed image polling, marketplace confirmation foreign keys, catalog search filtering/no-match behavior, optional local runtime env files, render-safe session reads, marketplace external image preservation, category/color post-filter normalization, service-role-only billing RPC access, and redacted public health counts.
+- Harden real-runtime follow-ups from AI Review: signed and verified app sessions, Supabase token verification and refresh state, writable refresh-token persistence, read-only refresh avoidance, auth form error handling, profile sync preservation, atomic coin ledger mutations, upload target storage paths, upload asset attachment/completion idempotency, processed image polling, marketplace confirmation foreign keys, catalog search filtering/no-match behavior, optional local runtime env files, render-safe session reads, marketplace external image preservation, category/color post-filter normalization, service-role-only billing RPC access, and redacted public health counts.
 - Preserve operator-supplied external-provider secrets from optional runtime env files and refresh expired Supabase sessions in memory without mutating cookies during Server Component rendering.
 - Reject cross-user private Supabase Storage paths before any service-role asset upsert/signing path and keep Lava webhook invoice matching safe for non-UUID provider invoice IDs.
 - Update env examples and deployment docs for local, staging, and production operation.
@@ -124,6 +124,7 @@ Operators can see which real external integrations still need credentials, and t
 - **FR-037**: Photo-upload target responses MUST include the storage path required by upload completion.
 - **FR-038**: Marketplace item confirmation MUST preserve external HTTP image URLs without attempting to sign them as Supabase Storage objects.
 - **FR-039**: Catalog search local post-filtering MUST normalize requested category aliases before comparing mapped UI category IDs.
+- **FR-040**: Supabase session reads MUST NOT consume or rotate refresh tokens unless the current request boundary can persist the rotated session cookie.
 
 ### Key Entities
 
@@ -153,3 +154,4 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-016**: AI Review follow-up fixes for Compose env precedence and render-safe Supabase token refresh pass local verification and a fresh Codex review cycle.
 - **SC-017**: Codex follow-up fixes for cross-user private storage path rejection and non-UUID Lava invoice IDs pass local verification and a fresh Codex review cycle.
 - **SC-018**: Codex follow-up fixes for writable refresh-token persistence, upload target storage paths, marketplace external image preservation, and category alias post-filtering pass local verification and a fresh Codex review cycle.
+- **SC-019**: Codex follow-up fixes for avoiding refresh-token rotation during read-only renders pass local verification and a fresh Codex review cycle.

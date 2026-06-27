@@ -5,7 +5,8 @@ import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 import {
-  persistAppSessionIfWritable,
+  canWriteAppSessionCookie,
+  persistAppSession,
   readSignedAppSession,
   type PersistedAppSession,
 } from "@/features/auth/session";
@@ -478,11 +479,11 @@ async function verifyPersistedSession(
   let expiresAt = persisted.expiresAt;
   let refreshedSession = false;
   const expiresAtMs = Date.parse(expiresAt);
+  const shouldRefreshSession =
+    Boolean(refreshToken) &&
+    (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now() + 60_000);
 
-  if (
-    refreshToken &&
-    (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now() + 60_000)
-  ) {
+  if (refreshToken && shouldRefreshSession && (await canWriteAppSessionCookie())) {
     const refreshed = await clients.anon.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
@@ -517,7 +518,7 @@ async function verifyPersistedSession(
   };
 
   if (refreshedSession) {
-    await persistAppSessionIfWritable(session);
+    await persistAppSession(session);
   }
 
   return session;

@@ -7,6 +7,7 @@ import type { Session } from "@/lib/providers";
 
 const APP_SESSION_COOKIE = "capsule_zero_session";
 const LEGACY_MOCK_SESSION_COOKIE = "capsule_zero_mock_session";
+const COOKIE_WRITE_PROBE = "capsule_zero_cookie_write_probe";
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 const SESSION_COOKIE_VERSION = "v1";
 const LOCAL_SESSION_SIGNING_SECRET = "capsule-zero-local-session-secret";
@@ -27,14 +28,6 @@ export async function persistAppSession(session: Session) {
   await writeAppSessionCookie(toPersistedAppSession(session));
 }
 
-export async function persistAppSessionIfWritable(
-  session: Session,
-): Promise<boolean> {
-  return writeAppSessionCookie(toPersistedAppSession(session), {
-    ignoreReadonly: true,
-  });
-}
-
 export async function readSignedAppSession(): Promise<PersistedAppSession | null> {
   const cookieStore = await cookies();
   const rawValue = cookieStore.get(APP_SESSION_COOKIE)?.value;
@@ -49,6 +42,23 @@ export async function readSignedAppSession(): Promise<PersistedAppSession | null
   }
 
   return null;
+}
+
+export async function canWriteAppSessionCookie(): Promise<boolean> {
+  const cookieStore = await cookies();
+
+  try {
+    cookieStore.set(COOKIE_WRITE_PROBE, "", {
+      path: "/",
+      maxAge: 0,
+    });
+    return true;
+  } catch (error) {
+    if (isReadonlyCookieMutationError(error)) {
+      return false;
+    }
+    throw error;
+  }
 }
 
 export async function readAppSession(): Promise<PersistedAppSession | null> {
@@ -90,25 +100,16 @@ function toPersistedAppSession(session: Session): PersistedAppSession {
 
 async function writeAppSessionCookie(
   value: PersistedAppSession,
-  options: { ignoreReadonly?: boolean } = {},
 ): Promise<boolean> {
   const cookieStore = await cookies();
-
-  try {
-    cookieStore.set(APP_SESSION_COOKIE, serializeSignedSession(value), {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: MAX_AGE_SECONDS,
-    });
-    return true;
-  } catch (error) {
-    if (options.ignoreReadonly && isReadonlyCookieMutationError(error)) {
-      return false;
-    }
-    throw error;
-  }
+  cookieStore.set(APP_SESSION_COOKIE, serializeSignedSession(value), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: MAX_AGE_SECONDS,
+  });
+  return true;
 }
 
 function isReadonlyCookieMutationError(error: unknown): boolean {
