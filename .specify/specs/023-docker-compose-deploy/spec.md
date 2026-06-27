@@ -17,7 +17,7 @@ In scope:
 - Expand `docker-compose.yml` from a web-only runtime to a Supabase-backed stack.
 - Run Postgres, GoTrue Auth, PostgREST, Storage, Realtime, Kong, Supabase Studio, Supavisor, imgproxy, Edge Runtime, and a one-shot Capsule Zero migration service.
 - Add real Supabase provider code for auth, profiles, wardrobe data, storage uploads, catalog search, billing records, capsules, methodology, and health.
-- Make `CAPSULE_PROVIDER_MODE=supabase` the default runtime mode and disable `mock` in production.
+- Make Compose/web production runtime set `CAPSULE_PROVIDER_MODE=supabase` explicitly, keep unset local checkout mode on fixture-backed `mock`, and disable `mock` in production.
 - Keep external SaaS calls real but gated: Photoroom, Lava.top, marketplace import, Google OAuth, and Apple Sign-In must require real credentials instead of falling back to local mocks.
 - Add migration-backed runtime alignment for statuses, Lava invoices, auth profile creation, and public catalog seed data.
 - Harden real-runtime follow-ups from AI Review: signed and verified app sessions, Supabase token verification and refresh state, writable refresh-token persistence, proxy-level expired-token refresh before Server Component renders, proxy refresh network-failure fallback, read-only refresh avoidance, auth form error handling, profile sync preservation, atomic coin ledger mutations, atomic capsule creation, capsule item ownership validation, upload target storage paths, upload asset attachment/completion idempotency, background-removal timeout persistence, processed image polling, marketplace provider failure persistence, marketplace malformed-response persistence, marketplace confirmation foreign keys, catalog search filtering/no-match behavior, catalog contributor privacy, optional local runtime env files, render-safe session reads, marketplace external image preservation, category/color post-filter normalization, PostgREST JWKS validation for opaque keys, service-role-only billing RPC access, and redacted public health counts.
@@ -25,6 +25,7 @@ In scope:
 - Reject cross-user private Supabase Storage paths before any service-role asset upsert/signing path and keep Lava webhook invoice matching safe for non-UUID provider invoice IDs.
 - Document deploy startup as an ordered Compose sequence that explicitly recreates the one-shot `migrate` service before starting `web`, so migration-only releases cannot reuse a stale completed migration container.
 - Keep migration tracking metadata outside the PostgREST-exposed `public` schema and migrate any earlier public tracking table into the private ledger.
+- Resolve Supabase color catalog references by stable palette/catalog color IDs when they are supplied, falling back to HEX matching only for legacy or ad hoc color points.
 - Update env examples and deployment docs for local, staging, and production operation.
 - Preserve local smoke-testability with clearly marked demo Supabase JWT values that must be rotated outside local runs.
 
@@ -85,13 +86,15 @@ Operators can see which real external integrations still need credentials, and t
 5. **Given** a fresh checkout has not created `deploy/runtime.env`, **When** Compose renders the local stack with `deploy/compose.env.example`, **Then** config rendering does not fail on a missing optional web runtime env file.
 6. **Given** a migration-only release changes no Compose service configuration or web image, **When** an operator deploys, **Then** docs require explicit `migrate` service recreation before `web` so old `service_completed_successfully` state cannot mask unapplied SQL.
 7. **Given** Kong/PostgREST is reachable with the public anon key, **When** migration tracking metadata exists, **Then** it is not readable or writable through the public Data API schema.
+8. **Given** a local developer runs the app without `CAPSULE_PROVIDER_MODE`, **When** fixture-backed auth actions or `/api/health` initialize providers, **Then** the app uses the mock provider instead of requiring Supabase credentials.
+9. **Given** a Journey palette color such as White (`A3`) has a UI HEX value that differs from the seeded catalog HEX, **When** Supabase validates or creates a capsule from that palette, **Then** the color resolves by catalog ID before any HEX fallback.
 
 ## Requirements
 
 ### Functional Requirements
 
 - **FR-001**: `docker-compose.yml` MUST run a production-shaped Supabase stack alongside the web service.
-- **FR-002**: The web service MUST default to `CAPSULE_PROVIDER_MODE=supabase`.
+- **FR-002**: The Compose web service MUST set `CAPSULE_PROVIDER_MODE=supabase` explicitly, while an unset provider mode in non-production local app commands MUST remain fixture-backed `mock`.
 - **FR-003**: Production runtime MUST reject `CAPSULE_PROVIDER_MODE=mock`.
 - **FR-004**: Compose MUST persist Postgres, database config, storage objects, and Deno cache in named Docker volumes.
 - **FR-005**: Compose MUST expose only configured host ports for web, Kong, Studio, and Supavisor.
@@ -141,6 +144,8 @@ Operators can see which real external integrations still need credentials, and t
 - **FR-049**: Marketplace import provider HTTP 200 responses with malformed JSON or invalid candidate shape MUST update the created import to `failed`.
 - **FR-050**: Deployment docs MUST instruct operators to explicitly recreate the canonical one-shot `migrate` service before starting `web` on deploys that may include SQL changes.
 - **FR-051**: Migration tracking metadata MUST live outside the PostgREST-exposed `public` schema, and existing public tracking rows MUST be copied into the private ledger before the public table is removed.
+- **FR-052**: Supabase color resolution MUST prefer supplied palette/catalog color IDs before falling back to exact HEX matching.
+- **FR-053**: Production runtime MUST reject the unset local mock default by treating it as `mock` and throwing unless `CAPSULE_PROVIDER_MODE=supabase` is explicitly configured.
 
 ### Key Entities
 
@@ -178,3 +183,4 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-024**: Codex follow-up fixes for malformed marketplace import provider responses pass local verification and a fresh Codex review cycle.
 - **SC-025**: Codex follow-up fixes for explicit migration reruns in the documented deploy path pass local verification and a fresh Codex review cycle.
 - **SC-026**: Codex follow-up fixes for private migration tracking metadata pass local verification and a fresh Codex review cycle.
+- **SC-027**: Codex follow-up fixes for palette color ID resolution and unset local provider mode pass local verification and a fresh Codex review cycle.

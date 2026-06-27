@@ -14,7 +14,7 @@
 
 - [x] T006 Add Supabase client dependencies to the app.
 - [x] T007 Implement `createSupabaseProviderRegistry()` for real provider ports.
-- [x] T008 Switch provider registry default to `supabase` and forbid `mock` in production.
+- [x] T008 Configure Compose/web runtime for `supabase` and forbid `mock` in production while keeping unset local checkout mode on `mock`.
 - [x] T009 Rename persisted session cookie from mock-specific to app session while keeping legacy read compatibility.
 - [x] T010 Add `0003_runtime_provider_alignment.sql` for runtime statuses, Lava invoices, profile trigger, catalog seed, and grants.
 - [x] T011 Add Supabase self-host config under `deploy/supabase/`.
@@ -108,6 +108,10 @@
 - [x] T096 Rerun local preflight, whitespace, focused migration-ledger checks, Compose config, and Docker image checks after seventeenth Codex fix.
 - [x] T097 Commit and push the seventeenth Codex fix iteration.
 - [x] T098 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed seventeenth fix iteration.
+- [x] T099 Address eighteenth Codex Review findings for palette color ID resolution and unset local provider mode.
+- [x] T100 Rerun local preflight, Compose config, focused code checks, whitespace, and Docker image checks after eighteenth Codex fixes.
+- [ ] T101 Commit and push the eighteenth Codex fix iteration.
+- [ ] T102 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed eighteenth fix iteration.
 
 ## Process Memory
 
@@ -123,7 +127,7 @@
 
 ### Decisions
 
-- Keep `mock` provider source available for non-production fixture development, but throw if it is selected in production.
+- Keep `mock` provider source and unset local provider mode available for non-production fixture development, but throw if `mock` is selected or inferred in production.
 - Use the official self-hosted Supabase service split and keep Capsule Zero SQL migrations as a separate idempotent operation.
 - Keep external provider integrations real and explicit: missing Photoroom, Lava.top, marketplace import, Google OAuth, and Apple Sign-In credentials produce `pending-gate` or integration errors rather than fake success.
 - Use named Docker volumes for database, storage, config, and Deno cache so the stack can survive container recreation.
@@ -168,6 +172,7 @@
 - Treat marketplace provider JSON parse errors and invalid `candidates` shape as failed imports, using the same persisted failure path as provider fetch and non-OK HTTP responses.
 - Recreate the canonical one-shot `migrate` service before starting `web` on deploys that may include SQL changes, because Compose can otherwise reuse an old completed migration container when only bind-mounted SQL files changed.
 - Store migration tracking metadata in `capsule_zero_internal.schema_migrations`, copy any earlier public tracking rows, and drop the public tracking table so PostgREST clients cannot alter the migration ledger.
+- Preserve color catalog IDs on hydrated `ColorPoint` values and resolve Supabase color references by those IDs before HEX fallback, because UI palette HEX values intentionally do not always match seeded catalog HEX values.
 
 ### Known Issues
 

@@ -71,7 +71,7 @@ export async function readVerifiedAppSession(): Promise<PersistedAppSession | nu
     return null;
   }
 
-  if (process.env.CAPSULE_PROVIDER_MODE === "mock") {
+  if (isNonProductionMockProviderMode()) {
     return persisted;
   }
 
@@ -212,7 +212,14 @@ function sessionSigningSecret(): string {
 }
 
 function allowLegacyMockSession(): boolean {
-  return process.env.CAPSULE_PROVIDER_MODE === "mock" && process.env.NODE_ENV !== "production";
+  return isNonProductionMockProviderMode();
+}
+
+function isNonProductionMockProviderMode(): boolean {
+  return (
+    (process.env.CAPSULE_PROVIDER_MODE ?? "mock") === "mock" &&
+    process.env.NODE_ENV !== "production"
+  );
 }
 
 export const persistMockSession = persistAppSession;

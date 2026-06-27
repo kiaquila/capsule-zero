@@ -66,7 +66,7 @@ export const config = {
 async function maybeRefreshAppSessionCookie(
   request: NextRequest,
 ): Promise<RefreshedSessionCookie | null> {
-  if (process.env.CAPSULE_PROVIDER_MODE === "mock") {
+  if (isNonProductionMockProviderMode()) {
     return null;
   }
 
@@ -112,6 +112,13 @@ function needsRefresh(expiresAt: string): boolean {
   return (
     !Number.isFinite(expiresAtMs) ||
     expiresAtMs <= Date.now() + REFRESH_WINDOW_MS
+  );
+}
+
+function isNonProductionMockProviderMode(): boolean {
+  return (
+    (process.env.CAPSULE_PROVIDER_MODE ?? "mock") === "mock" &&
+    process.env.NODE_ENV !== "production"
   );
 }
 

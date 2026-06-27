@@ -5,6 +5,11 @@ web app runs against self-hosted Supabase core services instead of fixture
 mocks. Compose is the single local/stage/prod process supervisor; VM-level TLS,
 firewalling, backups, and secret delivery remain outside git.
 
+Outside this Compose runtime, an unset `CAPSULE_PROVIDER_MODE` remains the
+non-production fixture-backed local default. Compose sets
+`CAPSULE_PROVIDER_MODE=supabase` explicitly for the `web` service, and
+production must keep that explicit setting because mock mode is rejected there.
+
 ## Topology
 
 | Service | Purpose | Default host exposure |

@@ -177,13 +177,15 @@ function categoryName(categoryId: string, locale: AppLocale): string {
 
 function toPaletteColorOption(colorPoint: ColorPoint): PaletteColorOption {
   const existing = JOURNEY_PALETTE_COLORS.find(
-    (color) => color.hex.toLowerCase() === colorPoint.hex.toLowerCase(),
+    (color) =>
+      color.id === colorPoint.id ||
+      color.hex.toLowerCase() === colorPoint.hex.toLowerCase(),
   );
 
   return (
     existing ?? {
       ...colorPoint,
-      id: colorPoint.hex,
+      id: colorPoint.id ?? colorPoint.hex,
       light: colorPoint.hex.toLowerCase() === "#ffffff",
     }
   );

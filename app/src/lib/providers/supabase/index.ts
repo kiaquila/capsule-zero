@@ -1913,16 +1913,21 @@ async function resolveColorIds(
   const rows = [...catalog.entries()];
   return unique(
     colors.map((color) => {
-      const byId = catalog.get(color.hex);
-      if (byId) {
+      if (color.id && catalog.has(color.id)) {
+        return color.id;
+      }
+
+      const byHexAsId = catalog.get(color.hex);
+      if (byHexAsId) {
         return color.hex;
       }
+
       const byHex = rows.find(
         ([, value]) => value.hex.toLowerCase() === color.hex.toLowerCase(),
       );
       return requireValue(
         byHex?.[0],
-        `NOT_FOUND: Color ${color.hex} not found in Supabase catalog.`,
+        `NOT_FOUND: Color ${color.id ?? color.hex} not found in Supabase catalog.`,
       );
     }),
   );
@@ -1941,6 +1946,7 @@ function mapColorPoint(row: DbColor): ColorPoint {
   const hue = colorHueFromId(row.id);
   const group = row.color_group;
   return {
+    id: row.id,
     hex: row.hex,
     name: row.name,
     temperature: colorTemperature(hue),

@@ -29,7 +29,7 @@ function readProviderMode(): ProviderMode {
   const rawMode = process.env.CAPSULE_PROVIDER_MODE;
 
   if (!rawMode) {
-    return "supabase";
+    return "mock";
   }
 
   if (rawMode === "mock" || rawMode === "supabase") {

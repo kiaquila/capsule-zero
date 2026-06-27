@@ -32,6 +32,7 @@ export type ColorHue =
   | "achromatic";
 
 export interface ColorPoint {
+  id?: string;
   hex: string;
   name: string;
   temperature: ColorTemperature;
