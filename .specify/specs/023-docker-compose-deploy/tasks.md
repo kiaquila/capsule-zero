@@ -116,8 +116,12 @@
 - [x] T104 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed critic/architect/OMX fix iteration.
 - [x] T105 Address nineteenth Codex Review finding for item-scoped marketplace external image asset paths.
 - [x] T106 Rerun local lint/typecheck/build, Compose config, and whitespace checks after nineteenth Codex fix.
-- [ ] T107 Commit and push the nineteenth Codex fix iteration.
-- [ ] T108 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed nineteenth fix iteration.
+- [x] T107 Commit and push the nineteenth Codex fix iteration.
+- [x] T108 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed nineteenth fix iteration.
+- [x] T109 Address twentieth Codex Review finding for preserving `paid` Lava invoice status during delayed non-paid webhook replay.
+- [x] T110 Rerun local lint/typecheck/build, Compose config, feature-memory, and whitespace checks after twentieth Codex fix.
+- [ ] T111 Commit and push the twentieth Codex fix iteration.
+- [ ] T112 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed twentieth fix iteration.
 
 ## Process Memory
 
@@ -188,6 +192,7 @@
 - Require configured Lava API credentials plus real Lava product IDs for all coin packs before Lava is considered ready or invoice creation can call Lava.top.
 - Use `npm run deploy:compose` as the canonical ordered Compose deploy command so migrations are force-recreated before `web` starts.
 - Scope marketplace external asset object paths by confirmed item id as well as user id, while decoding the final path segment for legacy `userId/encodedUrl` references, so two imported items with the same retailer/CDN image URL cannot reassign one asset row between items.
+- Load Lava invoices before replay status handling and keep existing `paid` invoices immutable to delayed non-paid webhook statuses so out-of-order replay cannot contradict an already-credited purchase.
 
 ### Known Issues
 

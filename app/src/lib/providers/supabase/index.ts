@@ -1491,15 +1491,18 @@ function buildBillingPort(service: DbClient): BillingPort {
     },
 
     async replayLavaWebhook(event: LavaWebhookReplay) {
-      if (event.status !== "paid") {
-        await updateLavaInvoiceStatus(service, event.invoiceId, event.status);
-        return null;
-      }
-
       const invoice = await loadInvoiceByAnyId(service, event.invoiceId);
       if (!invoice) {
         return null;
       }
+
+      if (event.status !== "paid") {
+        if (invoice.status !== "paid") {
+          await updateLavaInvoiceStatus(service, invoice.id, event.status);
+        }
+        return null;
+      }
+
       const coinPack = requireValue(
         (await this.listCoinPacks()).find(
           (pack) => pack.id === invoice.coin_pack_id,
