@@ -7,8 +7,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Capsule Zero** — premium fashion-tech platform, "the Aesop of wardrobe apps". A system for creating maximally productive capsule wardrobes using proprietary color methodology.
 
 - **Audience:** 25–40, upper-middle income, "new money mindset meets old money taste"
-- **Languages:** EN (primary), ES-AR, RU — i18n from Day 1
+- **Languages:** EN (primary) and RU active in v0.1; ES-AR retained as reference copy, deferred to v0.2
 - **Core metric:** Outfit Productivity Ratio (outfits / items)
+
+## Always Work From Fresh Git State
+
+Before every task — including research, doc edits, code changes, and even quick lookups — pull the latest state from origin:
+
+```bash
+git fetch --all --prune
+```
+
+Then start work from `origin/main` (or the named PR head) rather than whatever happens to be in the working tree. Stale local state silently produces wrong answers: a "missing" file may have been renamed last week, a "broken" check may have been fixed yesterday, a doc you're about to edit may already have been rewritten on `main`. Treat local working state as untrusted until reconciled with `origin`.
+
+If the working tree has uncommitted changes that block a checkout, stash them (`git stash push -u -m "..."`) — do not lose work, but do not let stale state contaminate analysis either.
 
 ## Read Before Coding
 
@@ -19,20 +31,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current Phase
 
-**Phase 4 — Technical Architecture (DECISIONS DOCUMENTED).** Phase 3 (UX/UI Design) is complete. All 16 MVP logical screens have approved hi-fi prototypes, implemented across 12 HTML files (some files contain multiple screens as tabs/modals). Phase 5 feature work requires Sprint 0 entrance-gate completion first.
+**Phase 4 — Technical Architecture (PIVOTED TO PRODUCTION STACK).** Phase 3 (UX/UI Design) is complete. All 16 v0.1 logical screens have approved hi-fi prototypes, implemented across 12 HTML files (some files contain multiple screens as tabs/modals). Phase 5 starts with the production stack runtime — there is no Stage 1 mock-first posture.
 
 **Phase 4 status:**
 
-- ✅ Web: Next.js 14+ App Router, React, TypeScript, Tailwind v4 initialized (`/app`)
-- ✅ Mobile decision: Flutter + Dart for iOS and Android
-- ✅ Backend stack decided: Supabase
-- ✅ Auth provider decided: Supabase Auth
-- ✅ File storage decided: Supabase Storage
-- ✅ Payments decided: Lava.top web purchases + Postgres coin ledger; mobile read-only balance for v0.1
-- ✅ Phase 4 stack ADRs written under `docs_capsule_zero/adr/`
+- ✅ Production stack accepted: Go modular monolith, PostgreSQL + pgvector, Redis, Traefik gateway, Ory Kratos auth, DigitalOcean Spaces, self-hosted observability
+- ✅ Mobile decision: React Native (Flutter previously considered, dropped before implementation)
+- ✅ Frontend remains Next.js App Router for web, but talks to the Go API through Traefik instead of Supabase clients
+- ✅ Payments: Lava.top web purchases, stubbed at first and integrated later
+- ✅ ADRs rewritten for production stack under `docs_capsule_zero/adr/`
 - ✅ CI/CD baseline configured via GitHub Actions (`baseline-checks`, `guard`, `AI Review`)
-- ✅ API spec written
-- ⚠️ Remaining Sprint 0 gate: founder approval, OpenAPI/generated clients, Supabase migrations/RLS/storage tests, Flutter scaffold, Lava.top web setup, Photoroom spike, linting + local hooks
+- ⚠️ Remaining Sprint 0 gate: founder approval on rewritten ADRs, DigitalOcean VM upgrade, Cloudflare anti-DDoS, Resend email account, `.specify/specs/024-production-stack-runtime/` implementation, deletion of the legacy `/app` Supabase code
 
 **See AGENTS.md → "Phase 4" section** for full task list and deliverables.
 
@@ -48,9 +57,11 @@ This project uses spec-kit for structured development. **Always read the relevan
     market-context.md    ← Competitors, persona, market size, pricing
   specs/
     001-capsule-zero-mvp/
-      spec.md            ← Full MVP spec: 25 user stories, acceptance criteria, requirements
+      spec.md            ← Full v0.1 spec: 25 user stories, acceptance criteria, requirements
       prototype-map.md   ← Maps HTML prototypes → spec sections → screens
 ```
+
+> The folder name `001-capsule-zero-mvp` is historical and remains for git stability; the content is the v0.1 product spec. Do not rename grandfathered spec folders.
 
 **AGENTS.md** (project root) — universal onboarding for any AI agent.
 
@@ -69,15 +80,28 @@ Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-founda
 
 ## Tech Stack
 
-- **Web:** Next.js 14+ App Router (`/app` directory)
-- **Mobile:** Flutter + Dart for iOS and Android
-- **Backend:** Supabase Auth, PostgreSQL/RLS, Storage, Edge Functions/RPC
-- **Payments:** Lava.top web purchases, fulfilled by webhooks into coin ledger; mobile read-only balance in v0.1
-- **Languages:** TypeScript/React for web, Dart for Flutter
-- **Styling:** Tailwind CSS v4 with custom @theme tokens
-- **Tokens:** `app/src/styles/tokens.css` (from design system)
+- **Web frontend:** Next.js 14+ App Router, React, TypeScript, Tailwind CSS v4 with custom @theme tokens (`app/src/styles/tokens.css`)
+- **Mobile:** React Native (iOS + Android), production scaffold delivered in a later spec
+- **API gateway:** Traefik v3 with built-in TLS (Let's Encrypt), rate-limit middleware, and auth-forward middleware in front of Ory Kratos
+- **Backend:** Go modular monolith (single binary with bounded contexts), exposed behind Traefik; separate image-processing worker introduced when the self-hosted image model lands
+- **Auth:** Ory Kratos (email/password Stage 1; Google OAuth and Apple Sign-In in Stage 2)
+- **Database:** PostgreSQL 16 with pgvector (semantic search) and Postgres FTS (full-text), PgBouncer for connection pooling
+- **Cache / sessions / background queues:** Redis 7 (Redis-based job queue replaces Kafka for v0.1)
+- **Object storage:** DigitalOcean Spaces (S3-compatible) with built-in CDN
+- **Email:** Resend (transactional) for verification, password reset, security alerts
+- **Image processing:** Self-hosted Capsule Zero model behind a worker service (deferred — scope decision recorded in ADR-003)
+- **DNS / anti-DDoS:** Spaceship registrar with Cloudflare proxy for DDoS protection and CDN
+- **Observability:** Grafana dashboards + syslog file logs + tracing exporter (Sentry and Prometheus deferred to Stage 2)
+- **Hosting:** DigitalOcean droplet running docker-compose; all services declared as separate `services:` entries in one root `docker-compose.yml` plus environment overrides
+- **Payments:** Lava.top web purchases (stubbed in v0.1, real integration after core wardrobe flows ship)
+- **i18n:** next-intl for EN and RU
+- **Local web state:** Zustand
+- **Client server-state:** TanStack Query
+- **Forms:** React Hook Form + Zod
 
 ## Build & Dev Commands
+
+Web app (Next.js):
 
 ```bash
 cd app
@@ -85,6 +109,13 @@ npm run dev          # Development server
 npm run typecheck    # TypeScript validation
 npm run build        # Production build
 npm run ci:check     # CI baseline checks
+```
+
+Full runtime (after spec 024 ships):
+
+```bash
+docker compose up -d                 # Production-shape stack
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up   # Dev with MailHog, hot-reload, debug logging
 ```
 
 ## Design Principles (NON-NEGOTIABLE)
@@ -100,7 +131,7 @@ npm run ci:check     # CI baseline checks
 
 Pixel-perfect Phase 3 prototypes in `html-prototypes/` (pure HTML+CSS). This folder contains:
 
-- **All 16 approved MVP screens** — source of truth for approved behavior, layout, and scope
+- **All 16 approved v0.1 screens** — source of truth for approved behavior, layout, and scope
 - **Design system** (`html-prototypes/design-system.html`) — all design tokens, glass panel variants, typography, component patterns, spacing grid
 - **Color palette** (`html-prototypes/color-system.html`) — the full 51-color capsule palette with HEX values and compatibility groups
 
@@ -124,10 +155,10 @@ Pixel-perfect Phase 3 prototypes in `html-prototypes/` (pure HTML+CSS). This fol
 
 ## Product Documentation
 
-- `.specify/specs/001-capsule-zero-mvp/spec.md` — 25 user stories + flows
+- `.specify/specs/001-capsule-zero-mvp/spec.md` — 25 user stories + flows (v0.1 product spec)
 - `docs_capsule_zero/project/methodology/` — Methodology, categories, colors, outfit generation, gap analysis
-- `docs_capsule_zero/glossary.md` — Domain terminology (RU/ES-AR equivalents)
-- `docs_capsule_zero/i18n/ui-texts.md` — i18n content (EN, ES-AR, RU)
+- `docs_capsule_zero/glossary.md` — Domain terminology (RU equivalents)
+- `docs_capsule_zero/i18n/ui-texts.md` — i18n content (EN, RU active; ES-AR retained as reference)
 - `docs_capsule_zero/ux/emotion-map.md` — Emotional targets per screen
 - `docs_capsule_zero/ux/ux-validation.md` — Competitor UX analysis, 6 critical insights
 - `docs_capsule_zero/marketing/go-to-market.md` — TAM/SAM/SOM, competitors, pricing
@@ -136,9 +167,9 @@ Pixel-perfect Phase 3 prototypes in `html-prototypes/` (pure HTML+CSS). This fol
 - `docs_capsule_zero/project/devops/ai-orchestration-protocol.md` — cloud-native agent routing and policy contract
 - `docs_capsule_zero/project/devops/ai-runner.md` — cloud AI integrations and `AI Review` gate contract
 - `docs_capsule_zero/project/architecture/phase-4-council.md` — architecture decision register
-- `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` — required Sprint 0 gate before feature work
+- `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` — production runtime entrance gate
 - `docs_capsule_zero/adr/` — ADRs for stack, auth, storage, and API contract
-- `docs_capsule_zero/project/mobile/mobile-docs.md` — Flutter app architecture and mobile constraints
+- `docs_capsule_zero/project/mobile/mobile-docs.md` — React Native app architecture and mobile constraints
 
 ## Repository Delivery Protocol
 
@@ -182,8 +213,8 @@ Pixel-perfect Phase 3 prototypes in `html-prototypes/` (pure HTML+CSS). This fol
 - Screens = designs to 2px precision (reference: HTML prototypes)
 - Lighthouse: Performance 90+, Accessibility 95+
 - Page load < 2 sec on 4G
-- Upload + bg removal < 5 sec
+- Upload + bg removal < 5 sec (self-hosted model SLA target; gated by Stage 2 image processing)
 - Mobile-first web: iPhone 14+ (375px), iPad (768px), Desktop 1280px+
-- Flutter smoke tests: iOS and Android small/standard phone sizes
+- React Native smoke tests: iOS and Android small/standard phone sizes
 - Zero console errors, zero FOUC
 - Every screen: min 3 states (default, loading, empty/error)

@@ -16,8 +16,8 @@
   "grandfathered (spec ≤003)".
   Spec `004-senar-process-layer` is the SENAR rollout itself; it dogfoods
   the contract on its own PR as a self-test (SC-003), not as policy.
-  Infrastructure-only PRs (no `app/` changes) may mark items N/A with a
-  one-line reason.
+  Infrastructure-only PRs (no product-root changes: `app/`, `api/`, `worker/`,
+  `web/`, `mobile/`) may mark items N/A with a one-line reason.
   Full contract: docs_capsule_zero/project/devops/senar-mapping.md
 -->
 

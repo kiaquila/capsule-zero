@@ -13,7 +13,6 @@
     "check:repo": "node scripts/check-repo-baseline.mjs",
     "check:runtime-env": "node scripts/check-runtime-env.mjs",
     "check:runtime-tooling": "node scripts/check-runtime-tooling.mjs",
-    "deploy:compose": "node scripts/deploy-compose.mjs",
     "check:supabase-local": "supabase db reset && supabase test db",
     "generate:api": "node scripts/generate-api-clients.mjs",
     "spike:photoroom": "node scripts/photoroom-spike.mjs",

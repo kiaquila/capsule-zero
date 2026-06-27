@@ -48,7 +48,7 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - A mismatched trigger is a policy violation.
 - One scoped task maps to one branch and one pull request.
 - A task must stay scoped to an approved `.specify/specs/<feature-id>/` folder.
-- Product code changes under `app/` must include complete feature memory: `spec.md`, `plan.md`, and `tasks.md` in one `.specify/specs/<feature-id>/` folder.
+- Product code changes under `app/`, `api/`, `worker/`, `web/`, or `mobile/` must include complete feature memory: `spec.md`, `plan.md`, and `tasks.md` in one `.specify/specs/<feature-id>/` folder.
 - Durable docs remain part of the delivery contract for any change that affects architecture, workflow, or behavior.
 
 ## Native Backends

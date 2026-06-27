@@ -536,15 +536,13 @@ function writeOrCheck(path, contents) {
 
 const operations = collectOperations();
 const errorCodes = openApi.components?.schemas?.ErrorCode?.enum || [];
+const typeScriptClient = generateTypeScript(operations, errorCodes);
+const dartMetadata = generateDart(operations, errorCodes);
 
-writeOrCheck(
-  "app/src/lib/api/generated/openapi.ts",
-  generateTypeScript(operations, errorCodes),
-);
-writeOrCheck(
-  "mobile/lib/api/generated/openapi.dart",
-  generateDart(operations, errorCodes),
-);
+writeOrCheck("web/src/lib/api/generated/openapi.ts", typeScriptClient);
+writeOrCheck("mobile/lib/api/generated/openapi.ts", typeScriptClient);
+writeOrCheck("app/src/lib/api/generated/openapi.ts", typeScriptClient);
+writeOrCheck("mobile/lib/api/generated/openapi.dart", dartMetadata);
 
 if (!process.exitCode) {
   console.log(

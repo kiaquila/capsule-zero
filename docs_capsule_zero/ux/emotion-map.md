@@ -1,6 +1,6 @@
 # Emotion Map — Capsule Zero
 
-> Phase 2 artifact for Phase 3 (UX/UI Design). For each MVP screen: target emotion, UX principle, and design implication. Co-created by UX/UI Researcher and AI Stylist-Consultant.
+> Phase 2 artifact for Phase 3 (UX/UI Design). For each v0.1 screen: target emotion, UX principle, and design implication. Co-created by UX/UI Researcher and AI Stylist-Consultant.
 >
 > Sources: FVD v1.2, User Stories v1.4, Styling Guide v1.3, UX Validation v1.0.
 

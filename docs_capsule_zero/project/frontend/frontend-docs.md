@@ -6,28 +6,24 @@
 - React
 - TypeScript
 - Tailwind CSS v4
-- next-intl for EN and RU in MVP v1; ES-AR is deferred to MVP v2
+- next-intl for EN and RU in v0.1; ES-AR is retained as reference and deferred to v0.2
 - Zustand for local workflow state
 - TanStack Query for interactive server-state
 - React Hook Form + Zod for forms
 
-Current app baseline:
+The web frontend talks to the Go API monolith through Traefik; there is no Supabase client and no Vercel runtime. Auth flows are rendered by the web app against Ory Kratos self-service endpoints, with the Kratos session validated by the Go API on every request.
 
-- Next.js `16.2.6`
-- React `19.2.x`
-- Tailwind CSS v4
-- next-intl `4.13.x`
-- Source code under `app/src/`
+The current `/app` directory hosts the legacy Supabase shell and is scheduled for removal after the production runtime spec ships (`.specify/specs/024-production-stack-runtime/`). The new home for the web frontend is `/web` — same Next.js stack, no Supabase clients, generated API client from `docs_capsule_zero/adr/openapi.yaml`.
 
 ## Delivery Rules
 
-- Frontend code lives under `app/src/`.
+- Frontend code lives under `web/src/` (target). Legacy code at `app/src/` is read-only — do not extend it.
 - Approved behavior and layout come from `html-prototypes/`.
-- Visual tokens come from `app/src/styles/tokens.css` and `docs_capsule_zero/project/frontend/styling.md`.
+- Visual tokens come from `web/src/styles/tokens.css` (carried over from `app/src/styles/tokens.css`) and `docs_capsule_zero/project/frontend/styling.md`.
 - CI frontend baseline is `npm run typecheck` plus `npm run build`.
 - Web implementation remains mobile-first: 375px is the primary layout target, then tablet and desktop.
 - Keep Server Components as the default. Add `use client` only for interactivity, forms, uploads, local state, and browser APIs.
-- Initialize server SDK clients lazily inside functions or request-scoped utilities. Do not create service clients at module scope with required runtime env vars.
+- Initialize the API client lazily inside functions or request-scoped utilities. Do not instantiate at module scope with required runtime env vars.
 - User-facing text must route through next-intl message files, seeded from `docs_capsule_zero/i18n/ui-texts.md`.
 - Product screens must match the HTML prototypes before new design invention.
 
@@ -65,7 +61,7 @@ app/src/app/
 
 Use locale-aware routing for app pages. The language switcher appears on landing and profile, and the selected locale is also persisted to `profiles.language`.
 
-Decision: active MVP v1 web locales are `en` and `ru`. `es-AR` remains a future locale for MVP v2 and must not be exposed in routing, UI controls, generated clients, or the profile language enum until that scope is reactivated.
+Decision: active v0.1 web locales are `en` and `ru`. `es-AR` remains a future locale for v0.2 and must not be exposed in routing, UI controls, generated clients, or the profile language enum until that scope is reactivated.
 
 ## State Management
 
@@ -75,22 +71,23 @@ Decision: active MVP v1 web locales are `en` and `ru`. `es-AR` remains a future 
 | Interactive server-state | TanStack Query | Wardrobe grid, imports, uploads, catalog search, favorites |
 | Local workflow state | Zustand | Guided Journey steps and in-progress selections |
 | Form state | React Hook Form + Zod | Auth, profile, item edit, upload confirmation |
-| Persistent source of truth | Supabase/Postgres | Profiles, items, capsules, outfits, coins |
+| Persistent source of truth | PostgreSQL via the Go API | Profiles, items, capsules, outfits, coins |
 
 ## API Client Rules
 
-- Use server actions for simple authenticated app mutations.
-- Use Route Handlers for uploads, background removal, marketplace parsing, catalog search, Lava.top webhooks, and externally callable endpoints.
-- Keep Zod request/response schemas near the feature module and reuse them across Server Actions and Route Handlers.
-- Keep generated OpenAPI types in `app/src/lib/api/generated/`; update them whenever `docs_capsule_zero/adr/openapi.yaml` changes.
-- Never call service-role endpoints from Client Components.
+- Use Server Actions for simple authenticated app mutations; they call the Go API over HTTP with the Kratos session cookie forwarded.
+- Use Route Handlers only when an external caller needs a Next.js endpoint (rare — most surfaces talk directly to the Go API via Traefik).
+- Keep Zod request/response schemas near the feature module and reuse them across Server Actions and components.
+- Keep generated OpenAPI client/types in `web/src/lib/api/generated/`; update them whenever `docs_capsule_zero/adr/openapi.yaml` changes.
+- Never embed admin/service credentials in Client Components — there are none on the web side; admin actions go through admin routes on the Go API.
 - Client Components should use TanStack Query for fetch/mutate flows that need loading, retry, optimistic updates, or cache invalidation.
+- Auth flows render the Kratos self-service UI inside the web app; the Go API validates the Kratos session on every protected request.
 
 ## i18n
 
 - Primary locale: `en`
-- Supported MVP v1 locales: `en`, `ru`
-- Deferred MVP v2 locale: `es-AR`
+- Supported v0.1 locales: `en`, `ru`
+- Deferred v0.2 locale: `es-AR`
 - Source text: `docs_capsule_zero/i18n/ui-texts.md`
 - Fallback locale: `en`
 - Missing translations fail development review.
@@ -111,14 +108,13 @@ Already present:
 
 Add before dependent feature slices:
 
-- `@supabase/supabase-js`
-- `@supabase/ssr`
 - `@tanstack/react-query`
-- `lava-top-sdk` only if it is adopted after a small integration spike; otherwise use typed server-side HTTP against Lava.top OpenAPI endpoints
+- `@ory/client` (Kratos SDK) and `@ory/kratos-client` for self-service flows
+- generated TypeScript client from `docs_capsule_zero/adr/openapi.yaml` (e.g. via `openapi-typescript` + `openapi-fetch`)
 
 ## Payments
 
-The web app owns Lava.top purchase entrypoints for v0.1. Native mobile apps must not show purchase CTAs or external payment links; they only reflect coin balance after webhook-backed fulfillment.
+The web app owns Lava.top purchase entrypoints (v0.2 integration; stubbed in v0.1). Native mobile apps must not show purchase CTAs or external payment links; they only reflect coin balance after webhook-backed fulfillment.
 
 ## Quality Follow-Up
 

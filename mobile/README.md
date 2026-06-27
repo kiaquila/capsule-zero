@@ -1,25 +1,28 @@
 # Capsule Zero Mobile
 
-Sprint 0 Flutter shell for iOS and Android. The app uses the same Supabase
-backend contract as web and intentionally keeps v0.1 mobile payments read-only:
-mobile may display coin balance and web-originated payment status, but must not
-show Lava.top purchase CTAs or external payment links.
+React Native is the accepted mobile target for iOS and Android in the
+production-stack pivot. The app consumes the same Go API contract as web through
+the generated TypeScript client and intentionally keeps v0.1 mobile payments
+read-only: mobile may display coin balance and web-originated payment status,
+but must not show Lava.top purchase CTAs or external payment links.
 
-## Local Boot
+The tracked Flutter scaffold is legacy and is scheduled for removal after
+`.specify/specs/024-production-stack-runtime/` ships. Until that cleanup lands,
+the OpenAPI generator keeps a Dart metadata mirror for the old scaffold, but the
+canonical mobile contract is TypeScript.
+
+## Target Local Boot
 
 ```bash
 cd mobile
-flutter pub get
-flutter run \
-  --dart-define=SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
-  --dart-define=SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
-  --dart-define=MOBILE_DEEP_LINK_SCHEME=capsulezero
+npm install
+npx expo start
 ```
 
-The tracked `mobile/.env.example` mirrors these values for local operators. Copy
-it to `mobile/.env.local`, keep real values out of git, and pass them through
-`--dart-define` or the IDE run configuration.
+These are the target commands once the React Native scaffold lands in spec 024.
+The tracked `mobile/.env.example` mirrors the React Native runtime values for
+local operators. Copy it to `mobile/.env.local` and keep real values out of git.
 
-Generated API metadata lives in `lib/api/generated/openapi.dart` and is updated
-from `docs_capsule_zero/adr/openapi.yaml` by running `npm run generate:api` at
-the repository root.
+Generated API types live in `lib/api/generated/openapi.ts` and are updated from
+`docs_capsule_zero/adr/openapi.yaml` by running `npm run generate:api` at the
+repository root.

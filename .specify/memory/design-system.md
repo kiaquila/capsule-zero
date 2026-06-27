@@ -117,7 +117,7 @@ color: rgba(255, 255, 255, 0.95);
 
 ## 6. i18n Content Reference
 
-All active MVP v1 UI text exists in EN and RU, with ES-AR retained as MVP v2 reference copy. See Styling Guide v1.3 Section 7 for exact copy per screen per language, covering:
+All active v0.1 UI text exists in EN and RU, with ES-AR retained as v0.2 reference copy. See Styling Guide v1.3 Section 7 for exact copy per screen per language, covering:
 - Guided Journey Steps 1-3
 - Capsule Result screen
 - All CTA buttons and error messages

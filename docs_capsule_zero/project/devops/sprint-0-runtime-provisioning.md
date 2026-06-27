@@ -2,146 +2,117 @@
 
 ## Purpose
 
-This runbook turns the Sprint 0 foundation into a runnable local/staging setup
-when a feature reaches an integration gate. It is not required before
-mock-first Stage 1 product implementation.
-
-It does not store secrets in git. Use the committed `.env.example` files as
-templates and keep real credentials in local env files, Vercel env vars,
-Supabase dashboard settings, or the relevant provider dashboard.
+This runbook describes how to bring up the production-shape Capsule Zero stack on the DigitalOcean droplet for the first time. It is the operational companion to `.specify/specs/024-production-stack-runtime/`. It does not store secrets in git.
 
 ## Preconditions
 
 - GitHub `main` is current and required checks are green.
-- Install runtime tools: Node/npm, Supabase CLI, Docker, and Flutter.
-- Copy env templates:
+- DigitalOcean droplet of at least 4 GB / 2 vCPU / 80 GB, Ubuntu 24.04 LTS, Docker + docker-compose installed.
+- Cloudflare account with the `capsulezero.app` zone.
+- Cloudflare API token with Zone Read + DNS Edit on `capsulezero.app`, stored as `CF_DNS_API_TOKEN` in the droplet `.env` for Traefik DNS-01 ACME.
+- Spaceship registrar account with `capsulezero.app` set to Cloudflare nameservers.
+- Resend account with API key and `no-reply@capsulezero.app` verified.
+- DigitalOcean Spaces bucket `capsulezero` with CORS for `https://capsulezero.app` (and the dev origin) configured.
+
+Local tools on the operator machine: Node/npm, Go, Docker (for running the local stack), `gh` CLI.
+
+Copy the env template and fill it with real values:
 
 ```bash
-cp app/.env.local.example app/.env.local
-cp mobile/.env.example mobile/.env.local
+cp deploy/compose.env.example .env
 ```
 
-- For Docker Compose staging or production web deploys, use `npm run
-  deploy:compose`, documented in
-  `docs_capsule_zero/project/devops/docker-compose-deploy.md`.
+Required keys at minimum: see `docs_capsule_zero/project/devops/docker-compose-deploy.md` → *First Start*.
 
-- For mock-first Stage 1, placeholders or local mock values are acceptable.
-  Fill real values only when running the relevant integration gate.
-- Run:
+## Production-First Posture
+
+There is no Stage 1 mock-first layer (see ADR-006). Every service in the runtime comes up against real Postgres / real Kratos / real Spaces / real Resend / real Cloudflare from the first deploy. Local development uses the same stack with a `docker-compose.dev.yml` override that swaps Resend for MailHog and enables hot-reload for `api` and `worker`.
+
+Real provider integration gates that remain:
+
+- **Google / Apple OAuth in Kratos** — Stage 2.
+- **Lava.top live integration** — Stage 2.
+- **Self-hosted Capsule Zero image model** — Stage 2.
+
+Until these gates open, the corresponding API surface exists as stubs (Lava.top) or is absent (image processing).
+
+## Bring-Up Steps
+
+### 1. DNS and Cloudflare
+
+- Confirm Spaceship nameservers point to Cloudflare.
+- In Cloudflare, add an `A` record for `capsulezero.app` and `grafana.capsulezero.app` pointing to the droplet IP, with proxy (orange cloud) enabled.
+- SSL/TLS mode: `Full (strict)`.
+- Enable `Bot Fight Mode` and `Always Use HTTPS`.
+- Add a Page Rule (or Rules Engine entry) for `capsulezero.app/api/*` with cache level `Bypass`.
+
+### 2. Droplet baseline
+
+- Set the hostname to `capsulezero-prod`.
+- Configure `ufw` to allow `22/tcp`, `80/tcp`, `443/tcp` only.
+- Create a `capsule-zero` user; disable root password login.
+- Install Docker Engine + docker-compose plugin from the official Docker apt repository.
+- Prepare the encrypted `.env`; after cloning the repo, install it under `/srv/capsule-zero/repo/.env` with mode `600` so Compose loads it from the project directory.
+
+### 3. Pull repo and start the stack
 
 ```bash
-npm run check:runtime-tooling
-npm run check:runtime-env -- --env app/.env.local --env mobile/.env.local --allow-placeholders
+git clone git@github.com:kiaquila/capsule-zero.git /srv/capsule-zero/repo
+cd /srv/capsule-zero/repo
+install -m 600 /path/to/encrypted/.env ./.env
+docker compose --env-file ./.env up -d
+docker compose logs traefik --tail=50 # confirm DNS-01 ACME issued certificates
 ```
 
-When an integration gate opens and real values are present, rerun the runtime
-env check without `--allow-placeholders`.
+This brings up Traefik, Kratos, Postgres, PgBouncer, Redis, the Go API, the Go worker, the Next.js web container, imgproxy, and Grafana. golang-migrate runs at API boot. Kratos runs its own migrations through its init container.
 
-## Mock-First Stage 1
-
-Stage 1 development can proceed without real Supabase cloud, Google, Apple,
-Lava.top, Photoroom, remove.bg, or production Vercel credentials.
-
-Use this posture until a feature explicitly needs real provider evidence:
-
-- auth: email/password only; mock auth adapter is acceptable until Supabase
-  staging is needed for persistence or RLS validation;
-- database/search: use migrations, seed fixtures, and deterministic repository
-  fixtures;
-- storage: use local/mock storage responses for uploads, signed URL states, and
-  failures;
-- billing: use mock coin packs, invoice IDs, webhook replay, and ledger effects;
-- image processing: use mock processed images plus timeout/failure states;
-- social auth: defer Google OAuth and Apple Sign-In to MVP Stage 2.
-
-Production credentials are never placed in local env files or shared with
-agents. Test/staging credentials may be shared only when the owner explicitly
-permits the integration work.
-
-## Supabase Local Validation
-
-The repo now has `supabase/config.toml`, migrations, storage policies, and RLS
-contract tests. Use local validation before touching a linked cloud project.
+### 4. Verify health end-to-end
 
 ```bash
-supabase start
-npm run check:supabase-local
+curl -fsS https://capsulezero.app/api/health
+docker compose ps
+docker compose logs traefik --tail=50
 ```
 
-Expected result:
+Expected `/api/health` response includes:
 
-- migrations `0001_initial_schema.sql` and `0002_storage_policies.sql` apply cleanly;
-- `supabase/tests/rls_contract.sql` passes;
-- local Studio is available at `http://127.0.0.1:54323`;
-- local API is available at `http://127.0.0.1:54321`.
+- `api: "ok"`
+- `postgres: "ok"`
+- `redis: "ok"`
+- `kratos: "ok"`
+- `storage: "ok"`
+- `email: "ok"`
 
-If local OAuth testing is needed, configure provider callback URLs with the
-local Supabase Auth callback:
+If any reports `pending` or `error`, fix the env file or the service config and rerun.
 
-```text
-http://localhost:54321/auth/v1/callback
-```
+### 5. Smoke flows
 
-## Supabase Cloud Provisioning
+- Open `https://capsulezero.app` and register a test user with a real inbox.
+- Confirm the verification email arrives via Resend.
+- Sign in, update profile, sign out.
+- Upload a wardrobe photo via the Journey flow; confirm the file lands in Spaces under the correct prefix.
+- Open `https://grafana.capsulezero.app`, log in with `GRAFANA_ADMIN_PASSWORD`, confirm the syslog data source resolves.
 
-After local validation passes:
+### 6. Backups
 
-```bash
-supabase login
-supabase link --project-ref <project-ref>
-supabase db push
-supabase test db --linked
-```
+The nightly `pg_dump` cron is shipped with spec 024. Verify the first night's backup landed at `s3://capsulezero/backups/capsule-zero-YYYY-MM-DDTHH-MM-SSZ.dump` and that the lifecycle rule on the `backups/` prefix is active with 14 day retention.
 
-Do not run `supabase db reset --linked` against a shared/staging project unless
-the founder explicitly approves destructive reset for that project.
+## Stage 2 Integration Gates
 
-Dashboard checks:
+Run these only when the corresponding product slice opens.
 
-- Storage buckets exist: `avatars`, `item-originals`, `item-processed`,
-  `marketplace-imports`, `catalog-public`.
-- Auth Site URL is the production/staging web URL.
-- Auth additional redirect URLs include exact web callback URLs, local callback
-  URLs, Vercel preview URLs, and the mobile deep-link callback.
-- Data API access works through anon/authenticated keys while RLS still blocks
-  cross-user reads/writes.
+### Google / Apple OAuth in Kratos
 
-## Google And Apple OAuth
+- Add the provider config to `infra/kratos/kratos.yml` under `selfservice.methods.oidc.config.providers`.
+- Configure the provider callback URL in the provider dashboard:
+  - `https://capsulezero.app/self-service/methods/oidc/callback/google`
+  - `https://capsulezero.app/self-service/methods/oidc/callback/apple`
+- Add mobile deep-link callback URLs once React Native auth integrates.
+- Restart Kratos: `docker compose up -d kratos`.
 
-Google OAuth and Apple Sign-In are MVP Stage 2. Run this section only when the
-social-auth integration gate opens.
+### Lava.top
 
-Provider dashboard callback URL must point to Supabase Auth:
-
-```text
-https://<project-ref>.supabase.co/auth/v1/callback
-```
-
-Local OAuth callback URL, when testing through the Supabase CLI:
-
-```text
-http://localhost:54321/auth/v1/callback
-```
-
-Supabase redirect allow-list should include:
-
-```text
-http://localhost:3000/auth/callback
-http://localhost:3000/auth/mobile-callback
-https://<staging-or-production-domain>/auth/callback
-https://<staging-or-production-domain>/auth/mobile-callback
-capsulezero://auth/callback
-```
-
-Use exact production URLs. Use preview wildcards only for Vercel preview
-deployments, and keep those narrower than a global `**` whenever possible.
-
-## Lava.top Setup
-
-Run this section only when the payment integration gate opens. Stage 1 uses
-mock coin packs, invoice creation, webhook replay, and ledger effects.
-
-Create the web-only coin products in Lava.top and map their provider IDs:
+- Create coin products in Lava.top and map their provider IDs into env:
 
 | Coin pack | Env variable               |
 | --------- | -------------------------- |
@@ -149,54 +120,20 @@ Create the web-only coin products in Lava.top and map their provider IDs:
 | 15 coins  | `LAVA_COINS_15_PRODUCT_ID` |
 | 30 coins  | `LAVA_COINS_30_PRODUCT_ID` |
 
-Create two separate secret values:
+- Set `LAVA_API_KEY` (outbound) and `LAVA_WEBHOOK_API_KEY` (inbound).
+- Configure the webhook URL `https://capsulezero.app/api/webhooks/lava` for `Payment result` events.
+- Verify a real test purchase end-to-end on staging before enabling on production.
 
-- `LAVA_API_KEY`: outbound API key used by Capsule Zero server code.
-- `LAVA_WEBHOOK_API_KEY`: inbound webhook key shared with Lava.top and checked
-  from the `X-Api-Key` header.
+### Self-hosted image model
 
-Webhook URL:
-
-```text
-https://<staging-or-production-domain>/api/webhooks/lava
-```
-
-Configure Lava.top webhook event type `Payment result` for one-time product
-purchases. The handler must accept `payment.success`, record the raw event in
-`lava_events`, and credit `coin_ledger` idempotently. Mobile remains read-only:
-no Lava.top CTA, external payment link, or in-app purchase prompt in v0.1.
-
-## Photoroom Spike
-
-Run this section only when the image-processing integration gate opens. Stage 1
-uses mock processed-image success, timeout, and failure states.
-
-Run the spike on at least 10 representative real wardrobe images:
-
-```bash
-PHOTOROOM_API_KEY=... npm run spike:photoroom -- \
-  --image ./samples/wardrobe/coat.jpg \
-  --image ./samples/wardrobe/shoes.webp \
-  --markdown .runtime/photoroom/results.md
-```
-
-The runner calls the Photoroom Remove Background endpoint, writes processed
-images under `.runtime/photoroom/`, and records P50/P95/P99 latency plus a
-manual quality checklist. The Sprint 0 gate passes only when P99 is at or below
-5000 ms and founder review approves visual quality on representative garments.
-
-If the gate fails, document one of these decisions:
-
-- keep Photoroom and add async polling/retry before broad testing;
-- switch the adapter to remove.bg for v0.1;
-- rerun with controlled image size/capture guidance if the sample set was not
-  representative.
+- Bring up the model training/inference container as a new service in compose (`image-model`).
+- Add the `background_removal` job consumer to the worker.
+- Run a latency/quality spike against at least 10 representative wardrobe photos. P99 latency must be ≤ 5 seconds at v0.1 droplet size.
+- Enable the model for real users only after founder review approves visual quality.
 
 ## Evidence Template
 
-Post this as a GitHub issue comment, PR comment, or committed measurement note
-once real credentials and dashboards are configured for the relevant
-integration gate.
+Post this as a GitHub issue comment, PR comment, or committed measurement note once the stack is live.
 
 ```markdown
 Sprint 0 runtime provisioning evidence
@@ -205,43 +142,48 @@ Date:
 Operator:
 Branch/commit:
 
-Supabase
+Droplet
+- Plan: 4 GB / 2 vCPU / 80 GB (or larger)
+- IP:
+- Hostname: capsulezero-prod
+- ufw status: pass/fail
 
-- Project ref:
-- `supabase db push`: pass/fail
-- `supabase test db --linked`: pass/fail
-- Storage buckets verified: pass/fail
-- RLS spot check: pass/fail
+DNS / Cloudflare
+- Spaceship → Cloudflare NS: pass/fail
+- Cloudflare A records (apex + grafana): pass/fail
+- Proxy enabled: pass/fail
+- SSL/TLS Full (strict): pass/fail
+- Bot Fight Mode: enabled
 
-OAuth
+docker-compose
+- All services healthy: pass/fail
+- Traefik TLS issued: pass/fail
+- API /api/health: pass/fail
 
-- Google provider enabled: pass/fail
-- Apple provider enabled: pass/fail
-- Web callback verified: pass/fail
-- Mobile callback/deep link verified: pass/fail
+Kratos / Resend
+- Identity schema applied: pass/fail
+- Verification email received: pass/fail
+- Password recovery email received: pass/fail
 
-Lava.top
+Spaces
+- Bucket reachable: pass/fail
+- Signed PUT round-trip: pass/fail
+- CORS verified: pass/fail
 
-- Coin products mapped: pass/fail
-- Webhook URL configured: pass/fail
-- `X-Api-Key` webhook auth verified: pass/fail
-- Idempotent webhook replay verified: pass/fail
-
-Photoroom
-
-- Sample count:
-- P50:
-- P95:
-- P99:
-- Quality review outcome:
-- Decision:
+Backups
+- Nightly pg_dump landed in s3://capsulezero/backups/: pass/fail
+- Lifecycle rule active (14 day): pass/fail
 
 Remaining blockers:
 ```
 
 ## References
 
-- Supabase CLI config and local testing: https://supabase.com/docs/guides/local-development/cli/config
-- Supabase redirect URLs: https://supabase.com/docs/guides/auth/redirect-urls
-- Lava.top API and webhook auth: https://developers.lava.top/en
-- Photoroom Remove Background API: https://docs.photoroom.com/api-reference-openapi
+- Traefik docs: https://doc.traefik.io/traefik/
+- Ory Kratos: https://www.ory.sh/docs/kratos/
+- PostgreSQL pgvector: https://github.com/pgvector/pgvector
+- DigitalOcean Spaces: https://www.digitalocean.com/products/spaces
+- Resend: https://resend.com/docs
+- Cloudflare DDoS protection: https://developers.cloudflare.com/ddos-protection/
+- Lava.top developer API: https://developers.lava.top/en
+- Production runtime spec: `.specify/specs/024-production-stack-runtime/`

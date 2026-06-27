@@ -3,7 +3,7 @@
 > Source: US-005 (spec.md). Prototype: `html-prototypes/profile.html`
 
 ## Overview
-- **Purpose:** MVP profile personalization and preferences; advanced security/account sections shown in prototype are post-MVP
+- **Purpose:** Profile personalization and preferences; advanced security/account sections shown in prototype are post-v0.1
 - **User:** Authenticated user
 - **Entry point:** `/profile` (from navigation/dashboard)
 
@@ -30,7 +30,7 @@
 4. Replace or delete (revert to default) options available
 5. Avatar appears in navigation and profile
 6. Language preference saved in profile (see f-012-i18n.md)
-7. Advanced security/settings sections shown in the prototype are design-only post-MVP and not required for MVP delivery
+7. Advanced security/settings sections shown in the prototype are design-only post-v0.1 and not required for v0.1 delivery
 
 ## Key Components
 - **AvatarUpload** — circular crop zone with upload/replace/delete actions

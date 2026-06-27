@@ -1,10 +1,10 @@
 openapi: 3.1.0
 info:
-  title: Capsule Zero MVP API
+  title: Capsule Zero API
   version: 0.1.0
   description: >
-    Sprint 0 implementation contract for the MVP REST boundary. This file is
-    the source for generated web TypeScript and Flutter Dart API metadata.
+    Sprint 0 implementation contract for the v0.1 REST boundary. This file is
+    the source for generated TypeScript clients consumed by both the Next.js web frontend and the React Native mobile app.
 x-status: sprint-0-foundation
 servers:
   - url: https://{host}
@@ -12,7 +12,7 @@ servers:
       host:
         default: app.capsule-zero.local
 security:
-  - bearerAuth: []
+  - kratosSession: []
 tags:
   - name: Auth
   - name: Profile
@@ -27,10 +27,13 @@ tags:
   - name: Health
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: Supabase JWT
+    kratosSession:
+      type: apiKey
+      in: cookie
+      name: ory_kratos_session
+      description: >
+        Ory Kratos browser session cookie forwarded through Traefik and
+        revalidated by the Go API on authenticated requests.
     lavaWebhookKey:
       type: apiKey
       in: header
@@ -85,7 +88,7 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
     Unauthorized:
-      description: Supabase session is missing or invalid.
+      description: Kratos session is missing or invalid.
       content:
         application/json:
           schema:
@@ -716,7 +719,7 @@ components:
           description: >
             reason=extra_capsule requires the capsule UUID that receives the
             extra slot. reason=photo_enhancement requires the item UUID or
-            upload job UUID being enhanced. Null is rejected for both MVP
+            upload job UUID being enhanced. Null is rejected for both v0.1
             reasons unless a future server-owned reason explicitly allows it.
         idempotencyKey:
           type: string
@@ -805,7 +808,7 @@ paths:
       summary: Exchange mobile OAuth callback code and redirect to app deep link.
       responses:
         "302":
-          description: Redirect to Flutter deep link.
+          description: Redirect to React Native deep link.
         "400":
           $ref: "#/components/responses/BadRequest"
   /api/profile:

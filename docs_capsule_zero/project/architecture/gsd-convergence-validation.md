@@ -2,179 +2,96 @@
 
 ## Status
 
-Advisory pilot complete. Stack direction confirmed. Formal native GSD
-multi-reviewer convergence remains an optional follow-up, not a blocker for
-merging this validation record.
-
-This document records a GSD-style architecture convergence pass around founder
-stack approval. It uses the current Capsule Zero source-of-truth documents and
-the pinned GSD Core installer as evidence, but does not introduce `.planning/`
-as a second durable planning surface.
+Rerun complete (2026-06-27). Convergence pass concluded with the **production-stack pivot**: Go modular monolith + Traefik + Ory Kratos + PostgreSQL/pgvector + Redis + DigitalOcean Spaces + Cloudflare + Resend + React Native. The previous Supabase + Vercel + Flutter + Photoroom direction is dropped before any code derived from it lands in production.
 
 ## Goal
 
-Validate whether `open-gsd/gsd-core` should be connected around stack approval,
-record the confirmed Phase 4 stack posture, and identify which remaining
-runtime-provider checks block Stage 1 implementation versus later integration
-and launch gates.
+Re-evaluate the Phase 4 architecture against the new founder constraints (single DO droplet, no BaaS lock-in, self-hosted observability under a tight RAM budget, React Native instead of Flutter, self-hosted image model deferred to Stage 2) and record the convergence outcome that produced the new ADRs.
 
 ## Source Inputs
 
 - `AGENTS.md`
 - `.specify/memory/constitution.md`
 - `.specify/specs/003-sprint-0-foundation/{spec,plan,tasks}.md`
-- `docs_capsule_zero/project/architecture/phase-4-council.md`
-- `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md`
-- `docs_capsule_zero/adr/adr-001-stack.md`
-- `docs_capsule_zero/adr/adr-002-auth.md`
-- `docs_capsule_zero/adr/adr-003-storage.md`
+- `docs_capsule_zero/project/architecture/phase-4-council.md` (post-pivot)
+- `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` (post-pivot)
+- `docs_capsule_zero/adr/adr-001-stack.md` (rewritten)
+- `docs_capsule_zero/adr/adr-002-auth.md` (rewritten)
+- `docs_capsule_zero/adr/adr-003-storage.md` (rewritten)
+- `docs_capsule_zero/adr/adr-006-mock-first-mvp-stage-one.md` (rewritten — production-first posture)
 - `docs_capsule_zero/adr/api-spec.md`
 - `docs_capsule_zero/adr/openapi.yaml`
-- `docs_capsule_zero/project/backend/backend-docs.md`
-- `docs_capsule_zero/project/frontend/frontend-docs.md`
-- `docs_capsule_zero/project/mobile/mobile-docs.md`
-- `docs_capsule_zero/project/devops/sprint-0-runtime-provisioning.md`
-- `supabase/migrations/0001_initial_schema.sql`
-- `supabase/migrations/0002_storage_policies.sql`
-- `supabase/tests/rls_contract.sql`
-- `mobile/README.md`
+- `docs_capsule_zero/project/backend/backend-docs.md` (Go monolith)
+- `docs_capsule_zero/project/frontend/frontend-docs.md` (Next.js against Go API)
+- `docs_capsule_zero/project/mobile/mobile-docs.md` (React Native)
+- `docs_capsule_zero/project/devops/sprint-0-runtime-provisioning.md` (production runtime)
 
-## GSD Core Probe
+## Convergence Method
 
-| Check                | Result                                                                                                                                                                                                                                        |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Current docs         | Context7 resolved `/open-gsd/gsd-core` and confirmed existing-codebase mapping through `$gsd-map-codebase`, `.planning/codebase/*`, and plan-review convergence through `$gsd-plan-review-convergence`.                                       |
-| Package freshness    | `npm view @opengsd/gsd-core@1.3.1 version dist-tags time --json` reported `latest = 1.3.1`, package created 2026-05-30, package modified 2026-06-04.                                                                                          |
-| Installer smoke test | `npx --yes @opengsd/gsd-core@1.3.1 --help` completed and reported GSD Core `v1.3.1`.                                                                                                                                                          |
-| Codex install probe  | `npx --yes @opengsd/gsd-core@1.3.1 --codex --global --config-dir /tmp/capsule-zero-gsd-codex-config --profile=standard` completed and installed 19 Codex skills, workflow assets, agents, hooks, and `VERSION = 1.3.1` under the temp config. |
-| Repo safety          | No GSD-generated `.planning/`, `.codex/`, or workflow assets were committed.                                                                                                                                                                  |
-
-Notes:
-
-- The installer also wrote `~/.gsd/defaults.json` with
-  `{"resolve_model_ids":"omit"}` even when a temp config dir was supplied.
-- The current Codex App surface cannot reload those newly installed GSD slash
-  skills inside the same session. A formal native GSD pass should be run from a
-  fresh GSD-enabled Codex, Claude, or Gemini runtime.
-- GSD's own `map-codebase` workflow allows sequential in-context mapping when a
-  dedicated Agent tool is unavailable. This report follows that fallback pattern
-  and commits the result as Capsule Zero architecture documentation.
+A multi-lens review (software architect, platform architect, mobile architect, AI/data architect, verifier) walked the new constraints against the previous Phase 4 record. Each lens voted on whether the previous stack still satisfied the new constraints. Where it did not, the lens proposed a replacement and the proposal was reviewed for cross-lens coherence (e.g. Go monolith works with Traefik forward-auth into Kratos; React Native consumes the same OpenAPI client; Cloudflare proxy is compatible with Let's Encrypt at the origin).
 
 ## Repository Readiness Snapshot
 
-| Area            | Current state                                                                                                              | Evidence                                                                                                           |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Web baseline    | Next.js App Router app exists under `app/`; Tailwind v4 and frontend checks are wired.                                     | `docs_capsule_zero/project/frontend/frontend-docs.md`, `app/package.json`                                          |
-| API contract    | OpenAPI is the implementation source for generated web and mobile metadata.                                                | `npm run check:api-contract` passed: 43 route-methods verified.                                                    |
-| Supabase schema | Migration-backed tables, RLS enablement, seed methodology data, RPC signatures, and storage buckets exist.                 | `supabase/migrations/0001_initial_schema.sql`, `supabase/migrations/0002_storage_policies.sql`                     |
-| RLS intent      | RLS test outline covers item ownership, public catalog reads, server-only Lava events, and ledger read-only client access. | `supabase/tests/rls_contract.sql`                                                                                  |
-| Mobile shell    | Flutter scaffold and generated Dart API metadata exist; mobile payment posture is read-only.                               | `mobile/`, `mobile/lib/api/generated/openapi.dart`                                                                 |
-| Runtime env     | Example env files cover web, mobile, billing, image, and embedding surfaces without secrets.                               | `npm run check:runtime-env -- --env app/.env.local.example --env mobile/.env.example --allow-placeholders` passed. |
-| Runtime tooling | Node/npm/Docker are visible; Supabase CLI and Flutter SDK are missing on this machine.                                     | `npm run check:runtime-tooling -- --allow-missing` passed with expected missing-tool reports.                      |
+| Area            | Current state                                                                                                              | Evidence                                                                                                                |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Web baseline    | Next.js App Router app exists under `app/` (legacy, scheduled removal); future home is `/web`                              | `app/package.json`                                                                                                       |
+| API contract    | OpenAPI is the implementation source for generated web and mobile clients                                                  | `docs_capsule_zero/adr/openapi.yaml`                                                                                     |
+| Schema          | Postgres schema (pgvector, FTS, two-table item ownership) ships via `api/migrations/` in the production runtime spec        | `.specify/specs/024-production-stack-runtime/`                                                                          |
+| Mobile shell    | React Native scaffold scheduled in the production runtime spec; previous Flutter scaffold dropped before merge              | `docs_capsule_zero/project/mobile/mobile-docs.md`                                                                       |
+| Runtime         | docker-compose runtime with Traefik, Kratos, Postgres, Redis, Go API, Go worker, Next.js web, imgproxy, Grafana             | `docs_capsule_zero/project/devops/docker-compose-deploy.md`                                                              |
+| Observability   | Grafana + syslog file logs + OTLP trace export (Sentry and Prometheus → Stage 2)                                            | `docs_capsule_zero/project/architecture/phase-4-council.md` DI-021                                                       |
 
 ## Convergence Summary
 
-The accepted Phase 4 stack is confirmed and should be kept. The convergence pass
-did not find a stack-replacement reason for Supabase, Flutter, Vercel, Lava.top
-web purchases, Photoroom-with-adapter, or the shared OpenAPI/Supabase contract.
+The previous Phase 4 stack does not satisfy the new founder constraints. Three failure modes drove the pivot:
 
-The main change is governance: Capsule Zero keeps an explicit architecture
-convergence checkpoint. That checkpoint separates "architecture approved",
-"mock-first Stage 1 implementation may proceed", and "external services are
-provisioned and verified".
+1. **BaaS lock-in.** Supabase Auth, Storage, RLS, and Edge Functions are tightly coupled. Migrating later is expensive; pivoting now is cheap because none of the Supabase-derived product code is in production.
+2. **Operational fit.** The accepted runtime is one DO droplet. Vercel cannot host the API economically without splitting the stack across vendors; Supabase Storage adds another vendor relationship.
+3. **Language coherence.** Flutter pulled Dart into a TypeScript-heavy team. React Native keeps web and mobile on the same language and lets the same generated OpenAPI client serve both clients.
 
 ### Decision Delta
 
-| Decision area         | Result                     | Delta                                                                                                                                                                                   |
-| --------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Supabase backend      | Keep                       | Current migrations/RLS align with the accepted two-table item model. Do not replace with a custom backend for v0.1.                                                                     |
-| PostgreSQL + pgvector | Keep                       | `item_embeddings.embedding vector(1536)` is already locked. Provider choice remains runtime config via `EMBEDDING_PROVIDER`.                                                            |
-| Supabase Auth         | Keep with staged scope     | Email/password is Stage 1. Google OAuth and Apple Sign-In move to MVP Stage 2. OAuth dashboard configuration is still a user/provider action.                                           |
-| Supabase Storage      | Keep with mock adapter     | Bucket split matches privacy and catalog needs. Stage 1 may use local/mock storage; real local/linked validation still requires Supabase CLI.                                           |
-| Next.js/Vercel web    | Keep                       | Matches prototypes, i18n, web-only Lava purchase surface, and preview deployment needs.                                                                                                 |
-| Flutter mobile        | Keep                       | Native mobile scope remains justified by upload/camera workflow. Flutter SDK validation is still pending locally.                                                                       |
-| Lava.top payments     | Keep with mock-first guard | Web-only purchases plus mobile read-only balance remains the lowest-risk posture. Mock invoice/webhook flows in Stage 1; do not add mobile purchase CTA without founder/legal approval. |
-| Photoroom adapter     | Keep with gate             | Mock processed-image states in Stage 1. Keep Photoroom primary and remove.bg fallback, but do not enable real image processing until real-image latency/quality evidence exists.        |
-| GSD Core              | Adopt as advisory pilot    | Pin `@opengsd/gsd-core@1.3.1`; do not make it a required CI gate yet; do not commit `.planning/` as a source of truth until explicitly approved.                                        |
+| Decision area             | Previous Phase 4          | New (2026-06-27)                                                                  | Why the change |
+| ------------------------- | ------------------------- | --------------------------------------------------------------------------------- | --------------- |
+| Backend                   | Supabase BaaS             | Go modular monolith behind Traefik                                                 | Self-hosted, low memory footprint, no vendor lock-in |
+| Database                  | Supabase Postgres + RLS   | Postgres 16 with pgvector + FTS; authorization enforced in Go                      | Same DB engine, no DSL for authz, easier portability |
+| Auth                      | Supabase Auth             | Ory Kratos behind Traefik forward-auth                                             | Open-source identity provider we can self-host |
+| File storage              | Supabase Storage          | DigitalOcean Spaces (S3-compatible, built-in CDN)                                   | Same provider as compute; built-in CDN |
+| Image processing          | Photoroom + remove.bg     | Self-hosted Capsule Zero model (Stage 2; v0.1 stores originals)                    | Vendor cost removal; brand-aligned quality |
+| Web                       | Next.js on Vercel         | Next.js in docker-compose behind Traefik                                            | One runtime, one bill, no Vercel-specific code paths |
+| Mobile                    | Flutter + Dart            | React Native + TypeScript                                                          | Shared language with web; smaller cognitive surface |
+| Email                     | Supabase + provider       | Resend (via Kratos SMTP courier and Go API)                                         | Cheapest credible deliverability |
+| API gateway               | Vercel + Supabase Kong    | Traefik v3 (TLS, rate-limit, forward-auth)                                          | Self-hosted, one process for routing + TLS + auth |
+| Cache / queue             | Supabase Postgres + ad-hoc | Redis 7 with River/asynq job queue (Kafka deferred)                                | Kafka cannot run on the v0.1 droplet |
+| DNS / front-door          | Vercel + Supabase         | Spaceship registrar + Cloudflare proxy                                              | Free DDoS protection + CDN; one front-door |
+| Observability             | Sentry first              | Grafana + syslog + traces; Sentry/Prometheus → Stage 2                              | Fits a 4 GB droplet |
+| Implementation posture    | Mock-first Stage 1        | Production-first from the first feature slice (see ADR-006)                         | We own the runtime; mocks would now cost more than the real services |
+| GSD Core                  | Advisory pilot            | No change                                                                          | GSD outputs remain optional review inputs |
 
 ## Remaining Runtime Gates
 
-These are not reasons to replace the stack. They no longer block mock-first
-Stage 1 product implementation, but they do block the corresponding real
-provider flow from entering QA, staging, or launch.
+These are integration gates for product features, not for the runtime itself. The runtime ships in spec 024 with everything below in stub or absent state.
 
-| ID       | Concern                                                                    | Required resolution                                                                                                                                                  |
-| -------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GATE-001 | Real Supabase/OAuth/Lava.top/Photoroom provider evidence is still missing. | Complete the runtime provisioning evidence template before any mocked provider flow is promoted to real-provider QA, staging, or launch.                             |
-| GATE-002 | Supabase CLI and Flutter SDK are missing in the current local environment. | Install/activate both tools before running `npm run check:supabase-local` and mobile boot validation, or collect equivalent evidence from another machine/CI runner. |
+| ID       | Concern                                                              | Required resolution                                                                                                                                                                  |
+| -------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| GATE-001 | Google / Apple OAuth in Kratos                                       | Configure OIDC providers in Kratos and provider dashboards before the Stage 2 social-auth slice ships.                                                                              |
+| GATE-002 | Lava.top live integration                                            | Map products, configure API key and webhook auth, verify a real test purchase end-to-end before the Stage 2 billing slice ships.                                                     |
+| GATE-003 | Self-hosted image model                                              | Train or select the model, ship the worker container, measure P99 latency on real wardrobe photos against the 5 second gate before enabling background removal for real users.       |
 
 ## Advisory Concerns
 
 | ID      | Concern                                                                                                    | Disposition                                                                                                                |
 | ------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| ADV-001 | Generated API clients are currently operation metadata, not full payload clients.                          | Accept for Sprint 0 foundation; generate full payload clients before route-handler-heavy feature work.                     |
-| ADV-002 | Photoroom spike needs at least 10 representative real wardrobe images and a real API key.                  | Defer to the image-processing integration gate; keep remove.bg fallback decision open.                                     |
-| ADV-003 | Mobile payment posture is deliberately conservative but still benefits from founder/legal acknowledgement. | Add explicit founder sign-off to stack approval evidence.                                                                  |
-| ADV-004 | `.planning/` would duplicate `.specify`/ADR/SENAR if adopted uncritically.                                 | Keep Capsule Zero source of truth in existing docs; use GSD outputs as review inputs unless a later PR changes governance. |
-| ADV-005 | Formal native GSD multi-reviewer convergence has not run in a fresh GSD-enabled runtime.                   | Optional follow-up only; run it later if the owner wants another reviewer loop, not as a merge or stack-approval blocker.  |
-
-## Recommended Native GSD Runbook
-
-Run this only after the owner chooses to perform a formal GSD pass.
-
-```bash
-npx --yes @opengsd/gsd-core@1.3.1 --codex --global --profile=standard
-```
-
-Then open a fresh GSD-enabled runtime in the repository and run:
-
-```text
-$gsd-map-codebase
-$gsd-new-project
-$gsd-plan-review-convergence 4 --codex --gemini --max-cycles 3
-```
-
-Use this repository policy while running it:
-
-- Treat `.specify/`, `docs_capsule_zero/adr/`, and
-  `docs_capsule_zero/project/architecture/` as the durable source of truth.
-- Do not commit `.planning/` unless the owner explicitly accepts it as a
-  durable planning surface.
-- Translate any unresolved HIGH findings into
-  `docs_capsule_zero/project/architecture/gsd-convergence-validation.md` or the
-  Phase 5 entrance checklist before changing approved architecture decisions.
-
-## Validation Commands
-
-Commands run on branch `codex/gsd-architecture-validation`:
-
-```bash
-git fetch --all --prune
-gh pr list --state open --json number,title,headRefName,baseRefName,isDraft,mergeStateStatus,url
-gh run list --limit 5 --json databaseId,workflowName,status,conclusion,headBranch,event,createdAt,url
-npx --yes @opengsd/gsd-core@1.3.1 --help
-npx --yes @opengsd/gsd-core@1.3.1 --codex --global --config-dir /tmp/capsule-zero-gsd-codex-config --profile=standard
-npm view @opengsd/gsd-core@1.3.1 version dist-tags time --json
-npm ci --ignore-scripts
-npm run check:repo
-npm run check:api-contract
-npm run check:runtime-tooling -- --allow-missing
-npm run check:runtime-env -- --env app/.env.local.example --env mobile/.env.example --allow-placeholders
-npm run check:feature-memory -- --worktree
-npx prettier --check docs_capsule_zero/project/architecture/gsd-convergence-validation.md docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md .specify/specs/006-gsd-architecture-validation/spec.md .specify/specs/006-gsd-architecture-validation/plan.md .specify/specs/006-gsd-architecture-validation/tasks.md
-git diff --check
-```
+| ADV-001 | Single droplet leaves little headroom for spiky AI tagging traffic.                                        | Accept for v0.1; plan early extraction of the image worker or droplet upgrade if memory pressure shows up in Grafana.       |
+| ADV-002 | We own Kratos config, Postgres backups, and Spaces CORS — Supabase used to do these for us.                | Accept; the production runtime spec ships the runbook for each.                                                            |
+| ADV-003 | Sentry and Prometheus are not in v0.1.                                                                     | Accept; Grafana + syslog + traces is the v0.1 observability surface. Stage 2 expands it.                                   |
+| ADV-004 | React Native may need bare-workflow eject if a Stage 2 feature requires a native module Expo cannot wrap.  | Accept; the bare workflow remains available via EAS without losing the Expo Router routing.                                |
+| ADV-005 | The legacy `/app` Supabase shell is still in the repo until a follow-up PR removes it.                     | Accept; removal scheduled in the implementation iteration after spec 024 ships.                                            |
 
 ## Stack Approval Recommendation
 
-Proceed with the confirmed stack and ADR-006 mock-first Stage 1 posture, but do
-not collapse the remaining setup work into "externally verified" language.
+Proceed with the rewritten ADRs and the production-stack runtime spec. Real production-grade implementation begins immediately after Sprint 0 gates close.
 
 Recorded approval posture:
 
-> Founder confirms the Phase 4 stack direction: Supabase, Next.js/Vercel,
-> Flutter, Lava.top web purchases with mobile read-only balance, and Photoroom
-> behind an adapter. Implementation may continue in mock-first Stage 1 without
-> registering every provider up front. Real Supabase, Google/Apple OAuth,
-> Lava.top, Photoroom, and production credentials are integration gates before
-> those provider-backed flows enter QA, staging, or launch.
+> Founder confirms the Phase 4 production-stack pivot: Go modular monolith behind Traefik, Ory Kratos for identity, PostgreSQL with pgvector and FTS, Redis for cache/queue, DigitalOcean Spaces for object storage, Cloudflare proxy at the edge, Resend for transactional email, Grafana + syslog + traces for v0.1 observability, React Native for mobile, Lava.top stubbed in v0.1 and integrated in v0.2, self-hosted image model deferred to Stage 2. Implementation goes straight to real services (no mock-first stage). Production credentials remain in the droplet's encrypted env and provider dashboards and are not shared with agents.

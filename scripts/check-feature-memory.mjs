@@ -5,7 +5,10 @@ import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const SPECS_DIR = ".specify/specs";
-const PRODUCT_PATHS = ["app/"];
+const PRODUCT_PATHS = ["app/", "api/", "worker/", "web/", "mobile/"];
+const PRODUCT_PATH_LABEL = PRODUCT_PATHS.map((path) => `\`${path}\``).join(
+  ", ",
+);
 const REQUIRED_FEATURE_FILES = ["spec.md", "plan.md", "tasks.md"];
 
 function parseArgs(argv = process.argv.slice(2)) {
@@ -97,7 +100,7 @@ const files = changedFiles();
 const productChanges = files.filter((file) => pathMatches(file, PRODUCT_PATHS));
 
 if (productChanges.length === 0) {
-  console.log("No app product paths changed; feature-memory gate passes.");
+  console.log("No product roots changed; feature-memory gate passes.");
   process.exit(0);
 }
 
@@ -132,10 +135,10 @@ for (const featureId of featureIds) {
 }
 
 console.error(
-  "App product paths changed without a complete feature-memory update.",
+  "Product roots changed without a complete feature-memory update.",
 );
 console.error(`Product changes: ${productChanges.join(", ")}`);
 console.error(
-  `Touch one ${SPECS_DIR}/<feature-id>/ folder with spec.md, plan.md, and tasks.md in the same PR.`,
+  `Touch one ${SPECS_DIR}/<feature-id>/ folder with spec.md, plan.md, and tasks.md in the same PR. Product roots: ${PRODUCT_PATH_LABEL}.`,
 );
 process.exit(1);

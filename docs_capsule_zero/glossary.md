@@ -1,6 +1,6 @@
 # Glossary — Capsule Zero
 
-> Domain-specific terminology used across the project. Multilingual equivalents where available. Active MVP v1 locales are EN and RU; ES-AR entries are retained as MVP v2 reference material.
+> Domain-specific terminology used across the project. Multilingual equivalents where available. Active v0.1 locales are EN and RU; ES-AR entries are retained as v0.2 reference material.
 
 ## A
 

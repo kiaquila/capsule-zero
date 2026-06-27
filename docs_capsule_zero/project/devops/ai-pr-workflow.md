@@ -72,8 +72,8 @@ Routing details live in `docs_capsule_zero/project/devops/ai-orchestration-proto
 
 - `baseline-checks` runs repository baseline validation, `app` typecheck, `app` build, and optional app tests.
 - `guard` runs repository-owned gate scripts from the trusted default branch when those scripts are available there.
-- Product code changes under `app/` require complete feature memory in `.specify/specs/<feature-id>/spec.md`, `plan.md`, and `tasks.md`.
-- Infrastructure-only PRs that do not change `app/` are validated through baseline files and durable devops documentation instead of feature memory.
+- Product code changes under `app/`, `api/`, `worker/`, `web/`, or `mobile/` require complete feature memory in `.specify/specs/<feature-id>/spec.md`, `plan.md`, and `tasks.md`.
+- Infrastructure-only PRs that do not change product roots are validated through baseline files and durable devops documentation instead of feature memory.
 - Local preflight is `npm run preflight`.
 
 Detailed CI and branch-protection policy lives in `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md`.
@@ -88,7 +88,7 @@ Before merge, the author and the human merge owner confirm that:
 - `tasks.md` records the relevant dead ends, decisions, and known issues under `## Process Memory`.
 - Any remaining known issue is explicitly accepted by the human merge owner.
 
-This gate is enforced by the review agent and the human merge owner, not by an additional GitHub Actions check. Structural completeness of feature memory continues to be enforced by `pr-guard.yml` (spec/plan/tasks must exist for `app/` changes). Full mapping and rationale: `docs_capsule_zero/project/devops/senar-mapping.md`.
+This gate is enforced by the review agent and the human merge owner, not by an additional GitHub Actions check. Structural completeness of feature memory continues to be enforced by `pr-guard.yml` (spec/plan/tasks must exist for product-root changes). Full mapping and rationale: `docs_capsule_zero/project/devops/senar-mapping.md`.
 
 The gate applies to every spec authored after the SENAR layer shipped (`005-…` and onward). Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered.
 
