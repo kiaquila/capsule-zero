@@ -1163,7 +1163,7 @@ const apiSchemasJson = r'''{
           "null"
         ],
         "format": "uuid",
-        "description": "reason=extra_capsule requires the capsule UUID that receives the extra slot. reason=photo_enhancement requires the item UUID or upload job UUID being enhanced. Null is rejected for both MVP reasons unless a future server-owned reason explicitly allows it.\n"
+        "description": "reason=extra_capsule requires the capsule UUID that receives the extra slot. reason=photo_enhancement requires the item UUID or upload job UUID being enhanced. Null is rejected for both v0.1 reasons unless a future server-owned reason explicitly allows it.\n"
       },
       "idempotencyKey": {
         "type": "string",

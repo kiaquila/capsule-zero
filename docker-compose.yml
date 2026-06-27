@@ -137,7 +137,8 @@ services:
       kratos:
         condition: service_started
     env_file:
-      - ./.env
+      - path: ./.env
+        required: false
     environment:
       POSTGRES_URL: ${POSTGRES_URL:-postgres://capsule_zero:${POSTGRES_PASSWORD:-PLACEHOLDER_ROTATE_ME}@pgbouncer:5432/capsule_zero?sslmode=disable}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
@@ -162,7 +163,8 @@ services:
       pgbouncer:
         condition: service_started
     env_file:
-      - ./.env
+      - path: ./.env
+        required: false
     environment:
       POSTGRES_URL: ${POSTGRES_URL:-postgres://capsule_zero:${POSTGRES_PASSWORD:-PLACEHOLDER_ROTATE_ME}@pgbouncer:5432/capsule_zero?sslmode=disable}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
@@ -177,7 +179,8 @@ services:
     depends_on:
       - api
     env_file:
-      - ./.env
+      - path: ./.env
+        required: false
     environment:
       NEXT_PUBLIC_APP_URL: ${APP_BASE_URL:-https://capsulezero.app}
       NEXT_PUBLIC_API_BASE: /api

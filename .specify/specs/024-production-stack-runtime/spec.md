@@ -1,10 +1,10 @@
-# Spec 022 — Production Stack Runtime
+# Spec 024 — Production Stack Runtime
 
 ## Goal
 
 Bring up the full Capsule Zero production stack on the DigitalOcean droplet via docker-compose so that `https://capsulezero.app` serves a healthy stack with every service declared, configured, and health-checked. After this spec ships, every subsequent feature slice can run against real Kratos / Postgres / Redis / DigitalOcean Spaces / Resend from the first PR with no mock-first layer (see ADR-006).
 
-This spec delivers the **runtime**. It does not implement product features — the Go API ships with `GET /api/health` and the auth/profile bounded contexts wired only enough for the health probe and a smoke sign-up. Product features ship in spec 023 onwards (see `docs_capsule_zero/project/backend/backend-stateful-slices-plan.md`).
+This spec delivers the **runtime**. It does not implement product features — the Go API ships with `GET /api/health` and the auth/profile bounded contexts wired only enough for the health probe and a smoke sign-up. Product features ship in later stateful slices (see `docs_capsule_zero/project/backend/backend-stateful-slices-plan.md`).
 
 ## Scope
 
@@ -33,7 +33,7 @@ This spec delivers the **runtime**. It does not implement product features — t
 
 ### Out of scope
 
-- Product features beyond `/api/health` and a smoke sign-up that exercises Kratos email verification through Resend (e.g. the wardrobe domain, capsule engine, catalog search — those are spec 023+)
+- Product features beyond `/api/health` and a smoke sign-up that exercises Kratos email verification through Resend (e.g. the wardrobe domain, capsule engine, catalog search — those are later stateful slices)
 - Lava.top live integration (v0.2 — Lava.top remains stubbed)
 - Self-hosted Capsule Zero image-processing model (Stage 2)
 - Google OAuth and Apple Sign-In (Stage 2)
@@ -60,10 +60,12 @@ The runtime must survive the following without silently degrading. Each is cover
 - Every service in `docker-compose.yml` is its own `services:` block. No consolidating multiple processes into one image.
 - syslog files rotate daily with 7 day retention.
 - Backups are not optional: the nightly `pg_dump` cron lands in this spec, not in a follow-up.
+- Compose scaffolds must validate on a clean checkout before secrets are present: service-level `./.env` references use optional `env_file` entries, while real production secrets still come from the droplet `.env` during deploy.
+- Dev-only dashboards and inspection UIs bind to `127.0.0.1` unless explicitly placed behind Traefik auth.
 
 ## Out-of-Spec Follow-Ups
 
 - Delete the legacy `/app` directory in a follow-up PR after this spec is green.
 - Move `app/src/styles/tokens.css` to `web/src/styles/tokens.css` in the legacy-removal PR.
-- Configure linting and local commit hooks if not already in place before the first product-code PR (spec 023).
+- Configure linting and local commit hooks if not already in place before the first product-code PR after this runtime lands.
 - Stage 2: Google / Apple OAuth provider configuration in Kratos; Lava.top live integration; self-hosted image-processing model; Sentry and Prometheus introduction.

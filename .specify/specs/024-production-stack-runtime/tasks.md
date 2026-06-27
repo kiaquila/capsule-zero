@@ -1,4 +1,4 @@
-# Tasks 022 — Production Stack Runtime
+# Tasks 024 — Production Stack Runtime
 
 ## Tasks
 
@@ -23,7 +23,7 @@
 - [ ] React Native Expo scaffold with routing and env config
 - [ ] Nightly `pg_dump` cron uploading to `s3://capsulezero/backups/` with 14 day lifecycle rule
 - [ ] Grafana dashboards provisioned for syslog + OTLP traces
-- [ ] Smoke verification on the droplet — all 15 acceptance criteria in `plan.md`
+- [ ] Smoke verification on the droplet — all 17 acceptance criteria in `plan.md`
 
 ## Process Memory
 
@@ -39,14 +39,16 @@
 
 > Non-obvious decisions made during implementation, with rationale. Fill in during implementation.
 
-- *(none yet — to be filled during execution)*
+- 2026-06-27 PR #48 review fix: service-level `./.env` references in `docker-compose.yml` use `env_file` object form with `required: false` so `docker compose ... config` works on a fresh checkout before secrets are present.
+- 2026-06-27 PR #48 review fix: the insecure Traefik dev dashboard published by `docker-compose.dev.yml` binds to `127.0.0.1:8081`, matching the file comment and avoiding exposure on shared hosts.
 
 ### Known Issues
 
 > Limitations or follow-ups accepted as out-of-scope. Fill in before merge.
 
 - The legacy `/app` Supabase shell stays in the repo until a follow-up PR removes it after this spec is green. Reason: keeping the working tree pristine during the runtime bring-up so we can rollback DNS to the old shell if needed.
-- React Native scaffold ships in this spec, but real auth integration with Kratos lands in spec 023 (auth/profile slice).
+- React Native scaffold ships in this spec, but real auth integration with Kratos lands in a follow-up auth/profile slice.
 - Sentry and Prometheus are deferred to Stage 2 — observability in v0.1 is Grafana + syslog + OTLP traces only.
 - Lava.top remains stubbed in `/api/billing/*` — the routes exist with stub responses so the OpenAPI contract is stable, but no real money moves until v0.2.
 - Self-hosted Capsule Zero image-processing model is deferred to Stage 2 — v0.1 stores originals only and the 5 second processing gate is dormant.
+- `npm run check:runtime-env` still validates the legacy Supabase/Lava/Photoroom env contract and fails with local placeholder values on this branch. Spec 024 must replace or retire that checker when the production-stack env contract lands.

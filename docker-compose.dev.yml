@@ -20,7 +20,7 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
     ports:
-      - "8081:8080"
+      - "127.0.0.1:8081:8080"
 
   kratos:
     environment:

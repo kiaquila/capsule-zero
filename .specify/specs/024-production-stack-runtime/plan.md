@@ -1,4 +1,4 @@
-# Plan 022 — Production Stack Runtime
+# Plan 024 — Production Stack Runtime
 
 ## Implementation Order
 
@@ -9,10 +9,10 @@
 5. **Ship migrations.** `api/migrations/0001_initial_schema.sql` covering the full schema in `backend-docs.md` plus methodology seed. `migrations/0002_kratos_bootstrap.sql` if Kratos needs role/db setup beyond the postgres init script.
 6. **Wire Traefik.** TLS via Let's Encrypt, rate-limit middleware, forward-auth into Kratos for `/api/*` (except `/api/health`).
 7. **Wire Kratos.** Identity schema with `traits.email`, `traits.name.first`, `traits.locale`; Resend SMTP courier in prod, MailHog in dev; self-service flows for sign-up, sign-in, recovery, settings.
-8. **Wire the Go API skeleton.** `GET /api/health` exercises Postgres / Redis / Kratos / Spaces / Resend reachability. A smoke handler resolves the Kratos session for a logged-in user (used by the smoke flow only — full profile routes ship in spec 023).
+8. **Wire the Go API skeleton.** `GET /api/health` exercises Postgres / Redis / Kratos / Spaces / Resend reachability. A smoke handler resolves the Kratos session for a logged-in user (used by the smoke flow only — full profile routes ship in a later auth/profile slice).
 9. **Wire the worker skeleton.** Boots, connects to Redis, idles cleanly, exposes a liveness endpoint Traefik can probe internally.
 10. **Wire the web skeleton.** Next.js App Router serving landing + sign-up/sign-in pages rendered against Kratos self-service. No business pages yet.
-11. **Wire the mobile scaffold.** Expo project with routing structure (`(auth)` + `(app)` groups) and env config for API base URL and deep-link scheme. No real auth flow yet — that ships with spec 023 mobile integration.
+11. **Wire the mobile scaffold.** Expo project with routing structure (`(auth)` + `(app)` groups) and env config for API base URL and deep-link scheme. No real auth flow yet — that ships with a later mobile auth integration slice.
 12. **Backups.** Cron job inside an `ofelia`-style sidecar or host cron that runs nightly `pg_dump` and uploads to `backups/`. Spaces lifecycle rule for 14 day retention.
 13. **Observability.** Grafana provisioned with the syslog dashboard and OTLP trace receiver. syslog file rotation set up on the droplet.
 14. **Smoke end-to-end on the droplet.** Bring the stack up, run the verification script.
@@ -38,6 +38,8 @@ Every acceptance criterion below is verifiable by a command, screenshot, or link
 | 13 | Negative scenario 2: forced Resend 5xx surfaces as inline error in web UI, no orphan identity | test script that swaps Resend env var temporarily + Kratos admin list output proving no identity created |
 | 14 | Negative scenario 3: invalid Spaces CORS surfaces as inline upload error and `/api/health` reports `storage: "error"` | repro script + `curl` output |
 | 15 | Negative scenario 4: Let's Encrypt first-issue completes with Cloudflare proxy off, then proxy re-enabled without 5xx | Traefik log excerpt showing successful ACME challenge + CF post-enable curl |
+| 16 | Compose scaffold validates on a clean checkout without a committed `./.env` | `docker compose --env-file deploy/compose.env.example config` and `docker compose --env-file deploy/compose.env.example -f docker-compose.yml -f docker-compose.dev.yml config` |
+| 17 | OpenAPI generated clients stay in sync with `docs_capsule_zero/adr/openapi.yaml` | `npm run check:api-contract` |
 
 ## Risks
 
