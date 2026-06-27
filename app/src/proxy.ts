@@ -75,28 +75,36 @@ async function maybeRefreshAppSessionCookie(
     return null;
   }
 
-  const persisted = await parseSignedSession(rawSession);
-  if (
-    !persisted?.accessToken ||
-    !persisted.refreshToken ||
-    !needsRefresh(persisted.expiresAt)
-  ) {
+  try {
+    const persisted = await parseSignedSession(rawSession);
+    if (
+      !persisted?.accessToken ||
+      !persisted.refreshToken ||
+      !needsRefresh(persisted.expiresAt)
+    ) {
+      return null;
+    }
+
+    const refreshed = await refreshSupabaseSession(persisted);
+    if (!refreshed) {
+      return null;
+    }
+
+    const value = await serializeSignedSession(refreshed);
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set(
+      "cookie",
+      upsertCookieHeader(
+        request.headers.get("cookie"),
+        APP_SESSION_COOKIE,
+        value,
+      ),
+    );
+
+    return { requestHeaders, value };
+  } catch {
     return null;
   }
-
-  const refreshed = await refreshSupabaseSession(persisted);
-  if (!refreshed) {
-    return null;
-  }
-
-  const value = await serializeSignedSession(refreshed);
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set(
-    "cookie",
-    upsertCookieHeader(request.headers.get("cookie"), APP_SESSION_COOKIE, value),
-  );
-
-  return { requestHeaders, value };
 }
 
 function needsRefresh(expiresAt: string): boolean {

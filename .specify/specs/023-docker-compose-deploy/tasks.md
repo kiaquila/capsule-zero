@@ -88,6 +88,10 @@
 - [x] T076 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after twelfth Codex fixes.
 - [x] T077 Commit and push the twelfth Codex fix iteration.
 - [x] T078 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed twelfth fix iteration.
+- [x] T079 Address thirteenth Codex Review finding for best-effort proxy refresh failure handling.
+- [x] T080 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after thirteenth Codex fix.
+- [x] T081 Commit and push the thirteenth Codex fix iteration.
+- [x] T082 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed thirteenth fix iteration.
 
 ## Process Memory
 
@@ -140,6 +144,7 @@
 - Configure PostgREST JWT verification with `${JWT_JWKS:-${JWT_SECRET}}` because PostgREST v14 accepts JWK/JWKS JSON through `jwt-secret`/`PGRST_JWT_SECRET`, while local legacy JWTs still use the shared secret fallback.
 - Enforce one 5 second abort budget across the background-removal source image fetch and Photoroom provider call, and persist `timeout` when that quality gate is exceeded.
 - Mark marketplace imports `failed` when the provider fetch throws before a response is received so created import rows cannot remain permanently `processing`.
+- Keep proxy-level Supabase session refresh best-effort; refresh, payload parsing, or signing failures return `null` so normal routing and downstream session validation/redirect behavior can handle the request.
 
 ### Known Issues
 
