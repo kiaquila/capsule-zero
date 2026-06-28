@@ -36,7 +36,7 @@ DigitalOcean droplet
     │  host ports 80/443
     ▼
 docker compose stack (network: internal)
-    ├── nginx (TLS + reverse_proxy → web:3000)
+    ├── nginx (TLS + reverse_proxy → web:3000 via Docker DNS)
     └── web   (Next.js, listens on :3000 inside the network)
 ```
 
@@ -49,6 +49,11 @@ post-deploy hook.
 The nginx config serves `/.well-known/acme-challenge/` before app proxying on
 both HTTP and HTTPS. This keeps HTTP-01 renewals valid even if an upstream
 Cloudflare rule redirects the original HTTP challenge request to HTTPS.
+
+The app upstream is resolved through Docker's embedded DNS (`127.0.0.11`) with
+a short TTL instead of a static nginx upstream block. That lets
+`docker compose up -d --build web` replace the `web` container without leaving
+nginx pinned to the old container IP.
 
 ## First-time bootstrap (one-shot)
 
