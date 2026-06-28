@@ -43,7 +43,7 @@ docker compose stack (network: internal)
 TLS material lives on the host at `/etc/letsencrypt/live/capsulezero.app/`
 and is mounted read-only into the nginx container. Renewal is driven by
 `certbot.timer` on the host, which writes to `/var/www/certbot/` (mounted
-read-write into nginx for ACME http-01 challenges) and reloads nginx through a
+read-only into nginx for ACME http-01 challenges) and reloads nginx through a
 post-deploy hook.
 
 ## First-time bootstrap (one-shot)
@@ -83,6 +83,9 @@ Run on the droplet as root.
    ```
 6. **Smoke-check from the droplet.**
    ```bash
+   docker compose ps
+   curl -fsS http://127.0.0.1/nginx-health
+   # expected: ok
    curl -fsS -o /dev/null -w '%{http_code}\n' https://capsulezero.app/en
    # expected: 200
    ```

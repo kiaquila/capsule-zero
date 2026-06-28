@@ -27,9 +27,12 @@ Persistent data lives in named Docker volumes:
 - `capsule-zero_postgres-data`
 - `capsule-zero_redis-data`
 - `capsule-zero_kratos-data`
-- `capsule-zero_certbot-webroot` (host `/etc/letsencrypt` is bind-mounted; certbot lives on the host)
 - `capsule-zero_grafana-data`
 - `capsule-zero_syslog`
+
+TLS certificate material and the ACME webroot are host-managed paths, not
+Docker volumes: `/etc/letsencrypt` and `/var/www/certbot` are bind-mounted into
+nginx while certbot runs on the host.
 
 Object storage and email leave the droplet:
 
