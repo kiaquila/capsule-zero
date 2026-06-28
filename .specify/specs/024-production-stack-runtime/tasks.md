@@ -7,7 +7,7 @@
 ### Phase 1 — nginx + web (current PR)
 
 - [x] Write `infra/nginx/nginx.conf` (main config: events, http, gzip, log format, websocket upgrade map)
-- [x] Write `infra/nginx/conf.d/capsulezero.conf` (server :80 with ACME + redirect; server :443 with TLS + reverse_proxy to `web:3000`)
+- [x] Write `infra/nginx/conf.d/capsulezero.conf` (server :80 with ACME + redirect; server :443 with TLS + ACME + reverse_proxy to `web:3000`)
 - [x] Replace top-level `docker-compose.yml` scaffold with `nginx + web` minimal stack
 - [x] Remove `docker-compose.dev.yml` (no Phase 1 need; comes back with Postgres/Kratos in Phase 2)
 - [x] Slim `deploy/compose.env.example` to Phase 1 contract + documented legacy `/app` Supabase placeholders
@@ -75,7 +75,7 @@
 - **2026-06-28 incremental phased delivery.** Originally spec 024 shipped as a single big PR. The droplet currently has no production traffic, but rolling 10 services at once still risks a multi-day rollback if any one of them has a config bug. Phased delivery makes each PR independently verifiable and revertable.
 - **2026-06-28 keep `/app`, defer rename to `/web` to Phase 6.** Phase 1 builds `web` from `app/Dockerfile` to avoid a rename diff that would obscure the actual compose change being reviewed.
 - **2026-06-28 retain legacy Supabase env keys in `compose.env.example` as documented placeholders.** The Next.js bundle in `/app` imports `@supabase/ssr` at module load; missing keys would throw at container start. Keys are removed in Phase 6 alongside the `/app` removal.
-- **2026-06-28 PR #49 review fix: certbot webroot is host-managed, not a Docker named volume.** Host `certbot.timer` writes HTTP-01 challenge files to `/var/www/certbot`; nginx bind-mounts that path read-only via `CERTBOT_WEBROOT_HOST_DIR` and serves it from the port-80 ACME location. The nginx container healthcheck uses `/nginx-health`, a real static endpoint, instead of probing a challenge token that certbot creates only during renewals.
+- **2026-06-28 PR #49 review fix: certbot webroot is host-managed, not a Docker named volume.** Host `certbot.timer` writes HTTP-01 challenge files to `/var/www/certbot`; nginx bind-mounts that path read-only via `CERTBOT_WEBROOT_HOST_DIR` and serves it from both the port-80 and port-443 ACME locations so HTTP-01 renewals still work after an HTTP→HTTPS redirect. The nginx container healthcheck uses `/nginx-health`, a real static endpoint, instead of probing a challenge token that certbot creates only during renewals.
 
 ### Known Issues
 

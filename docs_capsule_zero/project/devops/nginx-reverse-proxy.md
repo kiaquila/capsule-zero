@@ -46,6 +46,10 @@ and is mounted read-only into the nginx container. Renewal is driven by
 read-only into nginx for ACME http-01 challenges) and reloads nginx through a
 post-deploy hook.
 
+The nginx config serves `/.well-known/acme-challenge/` before app proxying on
+both HTTP and HTTPS. This keeps HTTP-01 renewals valid even if an upstream
+Cloudflare rule redirects the original HTTP challenge request to HTTPS.
+
 ## First-time bootstrap (one-shot)
 
 Run on the droplet as root.
@@ -112,8 +116,8 @@ docker compose --project-directory /opt/capsule-zero exec -T nginx nginx -s relo
 
 `chmod +x` it. The next renewal will reload nginx in-place, no downtime.
 
-Switch certbot to webroot mode for renewals so port 80 stays available to the
-public — edit `/etc/letsencrypt/renewal/capsulezero.app.conf` and set:
+Switch certbot to webroot mode for renewals so public traffic can keep flowing
+through nginx — edit `/etc/letsencrypt/renewal/capsulezero.app.conf` and set:
 
 ```
 authenticator = webroot
