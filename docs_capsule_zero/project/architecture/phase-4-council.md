@@ -2,7 +2,9 @@
 
 ## Status
 
-Rerun complete (2026-06-27). Production-stack pivot accepted: Go modular monolith + Traefik + Ory Kratos + Postgres/pgvector + Redis + DigitalOcean Spaces + Cloudflare + Resend + React Native. Phase 5 starts with `.specify/specs/024-production-stack-runtime/`.
+Rerun complete (2026-06-27). Production-stack pivot accepted: Go modular monolith + nginx + Ory Kratos + Postgres/pgvector + Redis + DigitalOcean Spaces + Cloudflare + Resend + React Native. Phase 5 starts with `.specify/specs/024-production-stack-runtime/`.
+
+API-gateway choice revised 2026-06-28: nginx 1.27 replaces Traefik v3 in DI-017. Rationale recorded in ADR-001 § "Why nginx and not Traefik or Caddy".
 
 ## Purpose
 
@@ -19,7 +21,7 @@ The council was rerun after the founder accepted these new constraints:
 - Observability stays self-hosted and lightweight in v0.1: Grafana + syslog + traces. Sentry and Prometheus deferred to Stage 2.
 - Auth provider is Ory Kratos (self-hosted) instead of Supabase Auth.
 - Object storage is DigitalOcean Spaces (S3-compatible, built-in CDN) instead of Supabase Storage.
-- API gateway is Traefik v3 with auth/rate-limit middlewares.
+- API gateway is nginx 1.27 with `auth_request` into Kratos and `limit_req_zone` rate-limit (Traefik was the original pick on 2026-06-27; revised on 2026-06-28).
 - Email is Resend.
 - DNS is Spaceship; Cloudflare proxy fronts the droplet for DDoS and CDN.
 - No Kafka in v0.1 — Redis-based job queue is enough for the worker count we have.
@@ -68,7 +70,7 @@ The council was rerun after the founder accepted these new constraints:
 | DI-014 | Quality tooling           | Existing CI accepted; linting and commit hooks remain a Phase 4 setup follow-up before first product-code PR                                   | 5/5 approve             | CI/branch protection docs exist; local hooks land before Phase 5 implementation branches.                                                |
 | DI-015 | Mobile app                | React Native (Expo + Expo Router + EAS Build) sharing the Go API and OpenAPI client                                                            | 5/5 approve             | Aligns language with web; smaller cognitive surface than Flutter.                                                                        |
 | DI-016 | Mobile-first impl         | Design, API, and QA optimize for phone workflows first: 375px web baseline and React Native phone UX before tablet/desktop                     | 5/5 approve             | Mobile is the dominant wardrobe-capture context.                                                                                         |
-| DI-017 | API gateway               | Traefik v3 with Let's Encrypt TLS, rate-limit middleware, forward-auth into Kratos                                                             | 5/5 approve             | One process for routing, TLS, rate-limit, and Kratos session check.                                                                      |
+| DI-017 | API gateway               | nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos                                  | 5/5 approve (revised 2026-06-28; original choice was Traefik v3) | Universal mental model, predictable directives, no Docker-socket exposure on the edge container, fits the v0.1 service count. See ADR-001. |
 | DI-018 | Cache / sessions / queue  | Redis 7 with a Redis-based job queue (River or asynq) — Kafka deferred until multi-service split                                              | 5/5 approve             | Kafka cannot run on the v0.1 droplet; Redis covers cache + queue + idempotency at low memory cost.                                       |
 | DI-019 | Email                     | Resend for transactional email; MailHog for local dev                                                                                          | 5/5 approve             | Cheapest credible deliverability for Kratos verification/recovery flows; supports SPF/DKIM on `capsulezero.app`.                          |
 | DI-020 | DNS / anti-DDoS           | Spaceship registrar pointed at Cloudflare; Cloudflare proxy on `capsulezero.app`                                                              | 5/5 approve             | DDoS, bot fight, CDN, edge TLS — all free at our scale; Spaceship stays the registrar.                                                  |
@@ -82,7 +84,7 @@ Capsule Zero is a mobile-first product with two clients over one self-hosted bac
 - **Web** — Next.js App Router served by the `web` container.
 - **Mobile** — React Native iOS/Android app distributed through TestFlight and Google Play internal testing.
 
-A **Go modular monolith** behind **Traefik** owns identity (via Kratos), relational data, signed-URL issuance, background jobs, and semantic search. Postgres handles structured data, FTS, and pgvector. Redis handles cache, sessions, and the job queue. DigitalOcean Spaces handles object storage with a built-in CDN. Resend handles transactional email. Cloudflare absorbs the noisy traffic floor.
+A **Go modular monolith** behind **nginx** owns identity (via Kratos), relational data, signed-URL issuance, background jobs, and semantic search. Postgres handles structured data, FTS, and pgvector. Redis handles cache, sessions, and the job queue. DigitalOcean Spaces handles object storage with a built-in CDN. Resend handles transactional email. Cloudflare absorbs the noisy traffic floor.
 
 Custom Go services can be extracted out of the monolith later — the first natural extraction is the image-processing worker when the self-hosted Capsule Zero model lands.
 

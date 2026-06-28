@@ -30,3 +30,7 @@ deploy/*.env
 
 # dependencies
 /node_modules/
+
+# supabase CLI local scratch
+supabase/.branches/
+supabase/.temp/

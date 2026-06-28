@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (rewritten 2026-06-27 for the production-stack pivot).
+Accepted (rewritten 2026-06-27 for the production-stack pivot; API-gateway row updated 2026-06-28 from Traefik to nginx).
 
 ## Context
 
@@ -33,7 +33,7 @@ Adopt the following production stack:
 | Mobile                  | React Native (iOS + Android), sharing the same Go API contract                                                                      |
 | Styling                 | Tailwind CSS v4 with Capsule Zero glass tokens                                                                                       |
 | Backend                 | Go modular monolith (single binary, bounded contexts: auth, wardrobe, capsule, search, billing, moderation)                          |
-| API gateway             | Traefik v3 with Let's Encrypt TLS, rate-limit middleware, forward-auth into Ory Kratos                                              |
+| API gateway             | nginx 1.27 with Let's Encrypt TLS (certbot on host), rate-limit (`limit_req_zone`), `auth_request` into Ory Kratos                  |
 | Database                | PostgreSQL 16 with pgvector (semantic) and Postgres FTS (full-text), PgBouncer for connection pooling                                |
 | Cache / sessions / queue| Redis 7 with a Redis-based job queue (River or asynq) — Kafka is deferred until services split                                       |
 | Auth                    | Ory Kratos email/password in v0.1; Google OAuth and Apple Sign-In in Stage 2                                                         |
@@ -48,7 +48,7 @@ Adopt the following production stack:
 | Local web state         | Zustand                                                                                                                              |
 | Client server-state     | TanStack Query                                                                                                                       |
 | Forms                   | React Hook Form + Zod                                                                                                                |
-| API boundary            | Go HTTP API behind Traefik; OpenAPI is the contract source. Web/Next.js Server Actions and Route Handlers call the Go API; mobile consumes the same OpenAPI surface |
+| API boundary            | Go HTTP API behind nginx; OpenAPI is the contract source. Web/Next.js Server Actions and Route Handlers call the Go API; mobile consumes the same OpenAPI surface |
 
 ### Why a Go modular monolith and not microservices
 
@@ -70,15 +70,25 @@ Hosting is on DigitalOcean, so Spaces ships in one bill, with one set of credent
 
 The droplet cannot host Kafka (JVM eats > 1 GB of RAM) and we do not yet have multiple consumers. A Redis-based job queue covers image processing, embedding generation, marketplace parsing, and webhook fanout. Kafka becomes interesting only when the image worker, the API, and a second downstream consumer all need durable, replayable streams — i.e. when we extract the image worker into its own service.
 
-### Why Cloudflare and not the Traefik bot middleware alone
+### Why Cloudflare and not nginx rate-limit alone
 
-Cloudflare is free at the level we need, gives DNS, DDoS protection, bot fight mode, CDN, and TLS edge — all in one provider — and lets the droplet stay behind a proxy. Traefik then handles app-level TLS and routing without also having to play "first line of defense".
+Cloudflare is free at the level we need, gives DNS, DDoS protection, bot fight mode, CDN, and TLS edge — all in one provider — and lets the droplet stay behind a proxy. nginx then handles app-level TLS, rate-limit, and auth routing without also having to play "first line of defense".
+
+### Why nginx and not Traefik or Caddy
+
+The pivot ADR originally accepted Traefik v3, then revisited the choice when Phase 1 of spec 024 had to migrate the already-live droplet (Caddy + a single web container) onto the new stack. Three options were back on the table — keep Caddy, take Traefik, or move to nginx:
+
+- **Caddy** is the simplest TLS story (auto Let's Encrypt out of the box), but it stores cert material in a JSON-encoded internal format that is awkward to share with sidecar tooling, and its config DSL is one more thing the team has to learn versus reuse.
+- **Traefik** shines when many services are discovered through Docker labels and you want one process to do DNS-01 ACME, forward-auth, and rate-limit. It also wants `docker.sock` on the edge container, which we did not want exposed.
+- **nginx** is universally understood, has the smallest mental tax for ops engineers joining later, and its first-class directives (`limit_req_zone`, `auth_request`, `proxy_pass`, `proxy_cache`) cover everything we need for the Go API + Kratos forward-auth in one config file we own. Cert lifecycle moves to `certbot` on the host (the certbot apt package already ships a renewal timer) and a deploy hook reloads nginx in-place.
+
+We chose nginx 1.27 for v0.1. Reconsider if and when we add per-service routing for more than ~10 containers, at which point Traefik's label-driven model would start paying off.
 
 ### Implementation rules
 
 - Every external dependency lives behind an interface inside the Go monolith (`internal/auth`, `internal/storage`, `internal/email`, `internal/billing`, …). Tests substitute fakes; production wires the real client.
 - The OpenAPI spec at `docs_capsule_zero/adr/openapi.yaml` is the contract. Web and mobile both consume generated clients from it.
-- All services run inside docker-compose. There is one `docker-compose.yml`; environment overrides live in `docker-compose.dev.yml` and (when ready) `docker-compose.prod.yml`. Every service is declared as a separate `services:` block.
+- All services run inside docker-compose. There is one `docker-compose.yml`; environment overrides live in `docker-compose.dev.yml` (reintroduced when there is a service worth running locally next to Next.js) and (when ready) `docker-compose.prod.yml`. Every service is declared as a separate `services:` block.
 - Production secrets live only in the droplet's encrypted `.env` and provider dashboards; never in repo.
 - ES-AR stays a deferred locale: active routing, OpenAPI enums, and generated clients carry `en` and `ru` only.
 
@@ -114,7 +124,8 @@ Tradeoffs:
 ## References
 
 - Go std library: https://pkg.go.dev/std
-- Traefik v3: https://doc.traefik.io/traefik/
+- nginx documentation: https://nginx.org/en/docs/
+- certbot (Let's Encrypt client): https://eff-certbot.readthedocs.io/
 - Ory Kratos: https://www.ory.sh/docs/kratos/
 - PostgreSQL pgvector: https://github.com/pgvector/pgvector
 - DigitalOcean Spaces: https://www.digitalocean.com/products/spaces
