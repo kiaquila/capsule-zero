@@ -14,17 +14,17 @@ Each phase below is its own PR. The phases are intentionally additive — each o
 
 ### Phase 2 — Postgres + Kratos
 
-6. Add `postgres` (pgvector image) and `pgbouncer` to compose with persistent volume and healthcheck.
+6. Add `postgres` (pgvector image) to compose with persistent volume and healthcheck. API connections use direct Postgres URLs in v0.1; PgBouncer is deferred by ADR-007.
 7. Add `kratos` to compose with Resend SMTP courier in prod and MailHog in `docker-compose.dev.yml` (reintroduced this phase).
 8. Wire `infra/postgres/` init scripts to enable `pgvector`, create the Kratos database, and create app + Kratos roles.
 9. Wire `infra/kratos/` identity schema with `traits.email`, `traits.name.first`, `traits.locale`; self-service flows for sign-up, sign-in, recovery, settings.
 10. Add nginx `auth_request` middleware that calls the Kratos session API for protected routes (`/dashboard`, future `/api/*` non-public endpoints).
 
-### Phase 3 — Go API + worker + Redis
+### Phase 3 — Go API + Redis + in-process worker
 
 11. Add `redis` to compose with persistent volume.
 12. Add `api` to compose: Go monolith built from `/api/Dockerfile`, exposing `GET /api/health` that probes Postgres / Redis / Kratos.
-13. Add `worker` to compose: Redis-queue consumer that idles cleanly.
+13. Start the Redis-queue consumer as goroutines inside `api`; standalone `worker` compose service remains deferred by ADR-007.
 14. Ship `api/migrations/0001_initial_schema.sql` (full schema + methodology seed). Migrations run via `golang-migrate` invoked by the API on boot, idempotent.
 15. Update nginx to route `/api/*` to `api:8080`.
 
@@ -36,8 +36,8 @@ Each phase below is its own PR. The phases are intentionally additive — each o
 
 ### Phase 5 — Observability + backups
 
-19. Add `grafana` to compose with provisioning for syslog and OTLP traces.
-20. Configure syslog rotation on the droplet (daily, 7-day retention).
+19. Configure syslog rotation on the droplet (daily, 7-day retention).
+20. Wire the OpenTelemetry trace exporter target used by the Go API.
 21. Nightly `pg_dump` cron (`ofelia`-style sidecar or host cron) uploading to `s3://capsulezero/backups/`. Spaces lifecycle rule for 14-day retention.
 
 ### Phase 6 — Legacy `/app` removal
@@ -61,7 +61,7 @@ Every acceptance criterion below is verifiable by a command, screenshot, or link
 | 6 | 1 | `curl -fsSI http://capsulezero.app/` returns HTTP 301 redirecting to `https://capsulezero.app/` | curl output committed to PR description |
 | 7 | 1 | Negative scenario 2 (`web` exits) → `curl -fsS -o /dev/null -w '%{http_code}\n' https://capsulezero.app/en` returns 502; `docker compose ps` shows `web` unhealthy | shell output collected during droplet smoke |
 | 8 | 1 | TLS certificate renewal dry-run succeeds without restarting nginx: `certbot renew --dry-run` exits 0 and the post-deploy hook reloads nginx | command output collected during droplet smoke |
-| 9 | 2 | `docker compose up -d postgres pgbouncer kratos` reaches healthy within 90 s; pgvector extension present in Postgres | `docker compose ps` + `psql -c '\dx vector'` output |
+| 9 | 2 | `docker compose up -d postgres kratos` reaches healthy within 90 s; pgvector extension present in Postgres; `POSTGRES_URL` points directly at `postgres` | `docker compose ps` + `psql -c '\dx vector'` output + env diff |
 | 10 | 2 | Smoke sign-up via Kratos self-service flow delivers a real verification email via Resend | screenshot of inbox + Kratos identity record (admin API JSON) |
 | 11 | 3 | `curl -fsS https://capsulezero.app/api/health` returns 200 with `postgres`, `redis`, `kratos` all `"ok"` | curl output committed to PR |
 | 12 | 3 | Negative scenario 3 (`docker compose stop postgres`) → `/api/health` returns 503 with `postgres: "error"` | log committed |
@@ -71,14 +71,14 @@ Every acceptance criterion below is verifiable by a command, screenshot, or link
 | 16 | 4 | Negative scenario 4 (forced Resend 5xx) surfaces as inline error in web UI, no orphan identity | test script output + Kratos admin list proving no identity created |
 | 17 | 4 | Negative scenario 5 (invalid Spaces CORS) surfaces as inline upload error and `/api/health` reports `storage: "error"` | repro script + curl output |
 | 18 | 5 | Nightly `pg_dump` cron landed at `s3://capsulezero/backups/capsule-zero-*.dump` within 24 hours; 14-day lifecycle rule active | Spaces console screenshot + `aws s3api get-bucket-lifecycle-configuration` |
-| 19 | 5 | Grafana reachable at `https://grafana.capsulezero.app` behind nginx `auth_request`; syslog data source resolves | screenshot of Grafana home dashboard + admin login test |
+| 19 | 5 | Syslog rotation is active and the Go API trace exporter resolves its configured OTLP endpoint; Grafana remains deferred by ADR-007 | `logrotate -d` output + API trace-export smoke |
 | 20 | 6 | `docker-compose.legacy-supabase.yml` removed; `/app` directory no longer present; web service builds from `/web/Dockerfile` | `git ls-tree -r HEAD -- app web docker-compose.legacy-supabase.yml` |
 
 ## Risks
 
 - **TLS bootstrap window during Caddy → nginx migration.** Stopping Caddy frees ports 80/443 for the standalone `certbot certonly`, then compose comes up with the new cert. During this window the site returns connection refused. Mitigation: rollout is documented as a single sequence in `nginx-reverse-proxy.md`; the droplet has no production traffic today, so the window is acceptable.
 - **`/app` boot still requires legacy Supabase env keys.** The Next.js bundle initialises the Supabase SSR client at module load, so missing keys can throw at boot. Mitigation: keep the keys with placeholder values in `deploy/compose.env.example` until Phase 6.
-- **Memory pressure on 4 GB droplet** (returns in Phase 5). Mitigation: monitor Grafana for OOM kills during smoke; document droplet upgrade path if `grafana` + `kratos` + `postgres` together exceed 70% RAM under idle.
+- **Memory pressure on 4 GB droplet** (returns as data services arrive). Mitigation: monitor syslog and `docker stats` for OOM kills during smoke; document droplet upgrade path if `kratos` + `postgres` + `api` together exceed 70% RAM under idle.
 - **Let's Encrypt rate limits.** Mitigation: first issue with staging endpoint when reproducing locally; production droplet issues directly because we have one apex domain and use case is small.
 - **Cloudflare DNS API token scope/rotation** (Phase 4 onwards). Mitigation: use a scoped Zone Read + DNS Edit token for `capsulezero.app`, store only in the droplet `.env`, and verify DNS-01 issuance if Cloudflare proxy is later enabled.
 - **Spaces CORS misconfiguration silently allowing wildcard origins.** Mitigation: verification step explicitly lists `AllowedOrigins` and rejects `*`.
