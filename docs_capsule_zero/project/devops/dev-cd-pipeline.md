@@ -58,6 +58,35 @@ ssh-keyscan -t ed25519 <droplet-ip-or-host>
 The deploy step syncs config from a git checkout at `/opt/capsule-zero` (compose file +
 nginx vhosts). Secrets stay out of git.
 
+Before cloning, give the droplet's `deploy` user read-only GitHub access for this repository.
+Recommended: create a dedicated **repo deploy key** on the droplet and add its public key in
+GitHub → repository **Settings → Deploy keys** with **Allow write access** unchecked:
+
+```bash
+sudo -u deploy ssh-keygen -t ed25519 \
+  -f /home/deploy/.ssh/github_deploy_key \
+  -N '' \
+  -C 'capsule-zero-dev-deploy'
+
+sudo -u deploy tee /home/deploy/.ssh/config >/dev/null <<'EOF'
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/github_deploy_key
+  IdentitiesOnly yes
+EOF
+sudo -u deploy chmod 600 /home/deploy/.ssh/config
+
+# Add this public key to GitHub as the read-only deploy key:
+sudo -u deploy cat /home/deploy/.ssh/github_deploy_key.pub
+```
+
+After adding the deploy key in GitHub, verify repo access before cloning:
+
+```bash
+sudo -u deploy git ls-remote git@github.com:kiaquila/capsule-zero.git HEAD
+```
+
 ```bash
 sudo mkdir -p /opt/capsule-zero && sudo chown deploy:deploy /opt/capsule-zero
 sudo -u deploy git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero

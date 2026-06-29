@@ -131,12 +131,24 @@ jobs:
     steps:
       - name: Resolve image ref
         id: ref
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ROLLBACK_IMAGE_SHA: ${{ github.event.inputs.image_sha }}
+          BUILT_IMAGE_REF: ${{ needs.build.outputs.image }}
         run: |
           set -euo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.image_sha }}" ]; then
-            echo "image=${IMAGE}:${{ github.event.inputs.image_sha }}" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "${ROLLBACK_IMAGE_SHA:-}" ]; then
+            if [[ ! "$ROLLBACK_IMAGE_SHA" =~ ^sha-[0-9a-f]{40}$ ]]; then
+              echo "::error::image_sha must match sha-<40 lowercase hex characters>"
+              exit 1
+            fi
+            echo "image=${IMAGE}:${ROLLBACK_IMAGE_SHA}" >> "$GITHUB_OUTPUT"
           else
-            echo "image=${{ needs.build.outputs.image }}" >> "$GITHUB_OUTPUT"
+            if [ -z "${BUILT_IMAGE_REF:-}" ]; then
+              echo "::error::build job did not produce an image ref"
+              exit 1
+            fi
+            echo "image=${BUILT_IMAGE_REF}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Deploy over SSH
@@ -149,6 +161,15 @@ jobs:
           DEPLOY_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
+          if [[ ! "$IMAGE_REF" =~ ^ghcr\.io/kiaquila/capsule-zero-web:sha-[0-9a-f]{40}$ ]]; then
+            echo "::error::resolved image ref is not an expected immutable web image tag"
+            exit 1
+          fi
+          if [[ ! "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::deploy SHA must be a 40-character lowercase hex commit"
+            exit 1
+          fi
+
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
@@ -169,8 +190,9 @@ jobs:
           $COMPOSE pull web
           $COMPOSE up -d --remove-orphans
 
-          # Pick up any nginx config change from the checkout (no-op on a fresh start).
-          $COMPOSE exec -T nginx nginx -t  >/dev/null 2>&1 && $COMPOSE exec -T nginx nginx -s reload || true
+          # Pick up any nginx config change from the checkout and fail on invalid config.
+          $COMPOSE exec -T nginx nginx -t
+          $COMPOSE exec -T nginx nginx -s reload
 
           # Wait for the web container to report healthy.
           web_cid="$($COMPOSE ps -q web)"
