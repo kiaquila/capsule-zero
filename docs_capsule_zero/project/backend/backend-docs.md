@@ -148,19 +148,21 @@ Jobs are produced by API handlers and consumed by the `/worker` process. Job que
 
 The full runtime is delivered by `.specify/specs/024-production-stack-runtime/`. Running services (each declared as a separate `services:` block in `docker-compose.yml`):
 
-| Service        | Image                            | Role                                                       |
-| -------------- | -------------------------------- | ---------------------------------------------------------- |
-| `traefik`      | `traefik:v3`                     | API gateway, TLS, rate-limit, forward-auth                 |
-| `kratos`       | `oryd/kratos`                    | Identity provider                                          |
-| `postgres`     | `pgvector/pgvector:pg16`         | Application database + Kratos database                     |
-| `pgbouncer`    | `edoburu/pgbouncer`              | Connection pool in front of Postgres                       |
-| `redis`        | `redis:7-alpine`                 | Cache, sessions, job queue                                 |
-| `api`          | local build of `/api`            | Go monolith                                                |
-| `worker`       | local build of `/worker`         | Background job consumer                                    |
-| `web`          | local build of `/web`            | Next.js App Router web frontend                            |
-| `imgproxy`     | `darthsim/imgproxy`              | On-the-fly image resize/WebP conversion for derived sizes  |
-| `grafana`      | `grafana/grafana`                | Dashboards over syslog and traces                          |
-| `mailhog`      | `mailhog/mailhog`                | Dev-only; replaced by Resend in prod                       |
+| Service        | Image                            | Role                                                       | v0.1 |
+| -------------- | -------------------------------- | ---------------------------------------------------------- | ---- |
+| `traefik`      | `traefik:v3`                     | API gateway, TLS, rate-limit, forward-auth                 | yes  |
+| `kratos`       | `oryd/kratos`                    | Identity provider                                          | yes  |
+| `postgres`     | `pgvector/pgvector:pg16`         | Application database + Kratos database                     | yes  |
+| `pgbouncer`    | `edoburu/pgbouncer`              | Connection pool in front of Postgres                       | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md) |
+| `redis`        | `redis:7-alpine`                 | Cache, sessions, job queue                                 | yes  |
+| `api`          | local build of `/api`            | Go monolith (also runs worker goroutines in v0.1)          | yes  |
+| `worker`       | local build of `/worker`         | Background job consumer                                    | folded into `api` — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md) |
+| `web`          | local build of `/web`            | Next.js App Router web frontend                            | yes  |
+| `imgproxy`     | `darthsim/imgproxy`              | On-the-fly image resize/WebP conversion for derived sizes  | yes  |
+| `grafana`      | `grafana/grafana`                | Dashboards over syslog and traces                          | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md) |
+| `mailhog`      | `mailhog/mailhog`                | Dev-only; replaced by Resend in prod                       | dev only |
+
+For v0.1 the runtime ships with **`pgbouncer`, `grafana`, and the standalone `worker` container deferred**. Each has an explicit promotion trigger in [ADR-007](../../adr/adr-007-v01-slim-runtime.md). The Redis-queue contract for background jobs is unchanged — only the deployment topology changes.
 
 ## Environment Variables
 
