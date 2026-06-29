@@ -99,7 +99,7 @@ PR reviewers (human and AI) reject PRs that introduce product behavior without a
 
 | Today                                                                 | After `/web` ships                                       |
 | --------------------------------------------------------------------- | -------------------------------------------------------- |
-| `playwright.config.ts` webServer = `npm --prefix ../../app run start` | `npm --prefix ../../web run start`                       |
+| `playwright.config.ts` webServer = `npm --prefix ../../app run dev` | `npm --prefix ../../web run dev`                         |
 | `pages/LandingPage.path` = `/en`                                      | `/en` (same — next-intl routes match)                    |
 | `data-testid` attrs on `/app/src/components/landing/*`                | re-add the same attrs on `/web/src/components/landing/*` |
 

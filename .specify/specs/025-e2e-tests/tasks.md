@@ -59,6 +59,8 @@
 - Considered making the TDD doctrine block in `AGENTS.md` and `CLAUDE.md` long and self-contained. Rejected on user direction: the two files only host short pointers to `tests/README.md`; full TDD doctrine and POM rules live in `tests/README.md` to avoid duplication.
 - Considered installing Playwright into `/app/package.json` so it lives next to the app it tests. Rejected because `/app` is scheduled for removal after spec-024 — coupling test tooling to a directory that disappears would leave the gate orphaned. Standalone `tests/e2e/` survives the pivot.
 - Considered leaving e2e ESLint as a documented local command only. Rejected after Codex review on PR #52: the POM rule must run inside the required `test` gate before Playwright, otherwise raw `page.locator()` calls in specs could merge.
+- Considered keeping Playwright on `next start` with `.env.local.example`. Rejected after Codex review on PR #52: that env sets `CAPSULE_PROVIDER_MODE=mock`, and provider-backed code forbids mock mode in production. The workflow keeps `npm run build` as the production build smoke and runs e2e against `next dev` so the mock provider can support future tests.
+- Considered adding a product-side hydration marker for Playwright. Rejected because it would add app behavior only for tests; the POM instead owns a one-retry cookie accept action that handles the Next dev-server hydration window while still failing if the button remains broken.
 
 ### Decisions
 
@@ -67,6 +69,8 @@
 - **Two `data-testid` additions to `/app`, no logic change**. Reason: keeps the `/app` diff trivially reviewable and survives the eventual `/app` → `/web` retarget — when the test attrs are added to the new React components, the same POM works without spec edits.
 - **POM enforced by ESLint, not just docs**. Reason: rules people can violate without immediate feedback decay; `no-restricted-syntax` makes the violation a visible lint failure in CI.
 - **`test` gate runs e2e lint and typecheck before Playwright**. Reason: the gate owns merge readiness for tests; syntax, POM, and type errors should fail before browser work starts.
+- **Playwright e2e runs `/app` in dev mode after a production build smoke**. Reason: current legacy `/app` provider-backed flows rely on mock fixtures until the post-spec-024 runtime replaces them; `next dev` keeps those fixtures legal while `npm run build` still catches production build regressions.
+- **Cookie consent interaction lives behind a POM action**. Reason: specs should express user intent, while the POM absorbs dev-server hydration timing without weakening the negative assertions.
 - **chromium + webkit projects only**. Reason: covers desktop + iPhone-like rendering. Firefox is skipped for first iteration to keep job runtime under 5 min; can be added later by appending a project entry.
 - **No branch-protection update in this PR**. Reason: admin UI action; documented as Known Issue with explicit owner expectation in the PR description.
 - **Playwright `webServer` over manual background-start**. Reason: Playwright manages port detection, readiness, and process lifecycle; one fewer step to write and one fewer race condition to debug in CI.
@@ -75,6 +79,6 @@
 
 - The `test` check is created by this PR but is NOT yet listed in `main`'s required status checks. Until the merge owner adds it under GitHub Settings → Branches → main → Required checks, the gate exists but does not block merges. Acknowledged in the PR description.
 - The Playwright suite runs against `/app`, which is scheduled for removal after `.specify/specs/024-production-stack-runtime/`. When `/web` replaces `/app`, the POM classes carry over but `playwright.config.ts` `webServer.command` and `LandingPage.path` will need to retarget. Documented in `tests/README.md` and in spec-024's follow-up list.
-- `/app` build in CI relies on stub values for Supabase / Photoroom / Lava env vars (copied from `.env.local.example`). The current cookie-banner and auth-popup tests do not exercise server actions, so the stubs are sufficient. If a future spec adds tests that hit server actions, the workflow will need real test-only credentials or a mock layer — out of scope here.
+- `/app` build in CI relies on stub values for Supabase / Photoroom / Lava env vars (copied from `.env.local.example`). The Playwright server intentionally runs in dev mode so the legacy mock provider remains available for future tests until `/app` is removed.
 - Only chromium + webkit projects run in CI. Firefox is not covered; if a Firefox-only regression ships, this gate misses it. Accepted trade-off until job-runtime budget changes.
 - Detox setup for `tests/mobile/` and `go test` setup for `tests/unit/` are stubs only; first real tests in those folders will arrive with the spec that introduces real RN or Go product code.

@@ -113,7 +113,7 @@ No new abstraction in `/app`. In `tests/`, POM is the only abstraction — requi
 
 ## Risks
 
-- **Risk**: `npm run build` in `/app` requires env vars from `.env.local.example`. **Mitigation**: workflow copies `app/.env.local.example` to `app/.env.local` before build; stub values suffice because the cookie-banner and auth-popup tests do not exercise server actions or Supabase.
+- **Risk**: `npm run build` in `/app` requires env vars from `.env.local.example`, but `next start` rejects `CAPSULE_PROVIDER_MODE=mock` for provider-backed routes in production. **Mitigation**: workflow copies `app/.env.local.example` before build for the production build smoke, while Playwright's `webServer` runs `/app` in non-production dev mode so mock-backed e2e paths remain executable.
 - **Risk**: Adding the `test` check as required on `main` is an admin UI action. **Mitigation**: documented in `tasks.md` Known Issues and called out in the PR description as a post-merge follow-up.
 - **Risk**: Tests bound to `/app` will break when `/app` is deleted. **Mitigation**: POM isolates selectors; only `playwright.config.ts` `webServer` and `LandingPage.path` need to change to retarget to `/web`. Documented in `tests/README.md`.
 - **Risk**: First-time Playwright browser install is slow. **Mitigation**: cache `~/.cache/ms-playwright` by hash of `tests/e2e/package-lock.json`.

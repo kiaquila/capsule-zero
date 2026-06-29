@@ -104,7 +104,7 @@ As any agent or human writing product code, I want TDD enforcement to be quotabl
 
 ### Edge Cases
 
-- The `/app` build requires environment variables but no real Supabase backend; CI must seed `app/.env.local` with the stub values from `.env.local.example` so `next build` and `next start` succeed without real credentials.
+- The `/app` build requires environment variables but no real Supabase backend; CI must seed `app/.env.local` with the stub values from `.env.local.example` so `next build` succeeds. Playwright runs `/app` in non-production dev mode so the legacy mock provider remains legal for future provider-backed e2e scenarios.
 - The cookie banner uses `localStorage`, not cookies; reloading in a fresh Playwright context resets state. Use `page.reload()` inside the same context for the "does not reappear" assertion.
 - next-intl routes redirect `/` to `/{locale}`; tests navigate to `/en` directly to avoid timing on the redirect.
 

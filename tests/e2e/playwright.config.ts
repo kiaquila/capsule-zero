@@ -33,7 +33,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm --prefix ../../app run start",
+    command: "npm --prefix ../../app run dev",
     url: baseURL,
     reuseExistingServer: !isCI,
     timeout: 180_000,

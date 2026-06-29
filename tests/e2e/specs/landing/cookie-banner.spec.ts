@@ -10,9 +10,7 @@ test.describe("Landing — cookie banner", () => {
 
     await expect(landing.cookieBanner).toBeVisible();
 
-    await landing.cookieAcceptAll.click();
-
-    await expect(landing.cookieBanner).toHaveCount(0);
+    await landing.acceptAllCookies();
 
     const raw = await landing.readLocalStorage(COOKIE_STORAGE_KEY);
     expect(raw).not.toBeNull();
@@ -31,8 +29,7 @@ test.describe("Landing — cookie banner", () => {
     landing,
   }) => {
     await landing.goto();
-    await landing.cookieAcceptAll.click();
-    await expect(landing.cookieBanner).toHaveCount(0);
+    await landing.acceptAllCookies();
 
     await landing.reload();
 

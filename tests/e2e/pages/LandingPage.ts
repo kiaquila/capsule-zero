@@ -36,13 +36,33 @@ export class LandingPage extends BasePage {
   }
 
   /**
+   * Accept all cookie categories. Retries once to survive the Next dev-server
+   * hydration window where static HTML is visible before React handlers attach.
+   */
+  async acceptAllCookies(): Promise<void> {
+    await this.cookieBanner.waitFor({ state: "visible" });
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      await this.cookieAcceptAll.click();
+
+      try {
+        await this.cookieBanner.waitFor({ state: "detached", timeout: 5_000 });
+        return;
+      } catch (error) {
+        if (attempt === 1) {
+          throw error;
+        }
+      }
+    }
+  }
+
+  /**
    * If the cookie banner is currently visible, accept all and wait for
    * it to be removed from DOM. Safe no-op if the banner is already gone.
    */
   async dismissCookieBannerIfPresent(): Promise<void> {
     if (await this.cookieBanner.isVisible()) {
-      await this.cookieAcceptAll.click();
-      await this.cookieBanner.waitFor({ state: "detached" });
+      await this.acceptAllCookies();
     }
   }
 }
