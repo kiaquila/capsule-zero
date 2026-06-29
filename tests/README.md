@@ -27,6 +27,8 @@ The loop is non-negotiable:
 
 PR reviewers (human and AI) reject PRs for specs `025` and onward that introduce product behavior without a corresponding test commit that landed first. Specs `001-024` are grandfathered for the TDD-history requirement.
 
+**This loop applies to application code only** — user-visible web UI, the React Native app, and Go API behaviors. Infrastructure and delivery wiring (CI/CD workflows, Dockerfiles, `docker-compose` files, nginx and service config, deploy/provisioning scripts), documentation, and other non-product support changes are **out of scope** for the failing-test-first loop. They still need Supervised Verification, but the evidence is layer-appropriate — `docker compose config`, `nginx -t`, a smoke/health check against the deployed surface, or a linked successful run, recorded in the spec's `## Verification` table. A change that is entirely infra/docs/support carries a one-line waiver in `spec.md`, and the `test` check does not gate it.
+
 ## What lives where
 
 ### `tests/e2e/` — Playwright web tests

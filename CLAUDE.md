@@ -122,7 +122,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up   # Dev with M
 
 All automated tests live under `tests/` at the repo root: `tests/e2e/` (Playwright web e2e, currently against `/app`), `tests/unit/` (Go API, stub), `tests/mobile/` (Detox, stub). The required GitHub check is **`test`** (`.github/workflows/test.yml`).
 
-When adding or changing a test, follow [`tests/README.md`](tests/README.md) — it owns the TDD loop, POM/selector rules, and run commands. **TDD is mandatory for every spec ≥ 025**: write the failing test first, commit it, then make it pass.
+When adding or changing a test, follow [`tests/README.md`](tests/README.md) — it owns the TDD loop, POM/selector rules, and run commands. **TDD is mandatory for every spec ≥ 025, but only for application code** (web UI, React Native, Go API behaviors): write the failing test first, commit it, then make it pass. Infrastructure and delivery wiring (CI/CD workflows, Dockerfiles, `docker-compose`, nginx config, deploy scripts), docs, and other support changes are out of scope for the failing-test-first loop — verify them with config validation and smoke/health checks recorded in the `## Verification` table instead.
 
 ## Design Principles (NON-NEGOTIABLE)
 
