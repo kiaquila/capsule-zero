@@ -118,6 +118,12 @@ docker compose up -d                 # Production-shape stack
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up   # Dev with MailHog, hot-reload, debug logging
 ```
 
+## Tests
+
+All automated tests live under `tests/` at the repo root: `tests/e2e/` (Playwright web e2e, currently against `/app`), `tests/unit/` (Go API, stub), `tests/mobile/` (Detox, stub). The required GitHub check is **`test`** (`.github/workflows/test.yml`).
+
+When adding or changing a test, follow [`tests/README.md`](tests/README.md) — it owns the TDD loop, POM/selector rules, and run commands. **TDD is mandatory for every spec ≥ 025**: write the failing test first, commit it, then make it pass.
+
 ## Design Principles (NON-NEGOTIABLE)
 
 - **Glassmorphism UI** — frosted glass surfaces, backdrop blur, translucent layers. See `.specify/memory/design-system.md` for exact tokens.

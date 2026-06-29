@@ -25,6 +25,7 @@
 - [ ] Every acceptance criterion has evidence in the PR diff, `plan.md` Verification table, or a linked check.
 - [ ] At least one negative scenario is covered, or the spec explicitly waives the requirement with a one-line reason.
 - [ ] `tasks.md` records the relevant dead ends, decisions, and known issues under `## Process Memory`.
+- [ ] **TDD evidence (specs ≥ 025)**: link to the commit that landed the failing test before the implementation that makes it pass — or a one-line waiver if the change is doc-only / infra-only and the `test` check does not apply.
 - [ ] Any remaining known issue is accepted by the human merge owner.
 
 ## Validation

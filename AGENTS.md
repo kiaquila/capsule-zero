@@ -221,6 +221,16 @@ The current `/app` directory contains the legacy Supabase-based Next.js shell. I
 - Native review normalization is documented in `docs_capsule_zero/project/devops/review-contract.md`.
 - Local PowerShell and worktree orchestration scripts are no longer part of the repository.
 
+## Tests
+
+All automated tests live under `tests/` at the repo root:
+
+- `tests/e2e/` — Playwright web e2e (TypeScript). Currently targets `/app`; retargets to `/web` when `/app` is removed. Gated by the required GitHub check **`test`** (`.github/workflows/test.yml`).
+- `tests/unit/` — `go test` for the Go API. Stub today; populated once spec-024 lands product code.
+- `tests/mobile/` — Detox e2e for the React Native app. Stub today; populated once `/mobile/` ships its first build.
+
+When adding or changing a test, read [`tests/README.md`](tests/README.md) — it owns the TDD loop, POM/selector rules, and run commands. **TDD is mandatory for every spec ≥ 025**: write the failing test first, commit it, then make it pass.
+
 ## SENAR Completion Contract
 
 Capsule Zero adds a lightweight supervised-verification layer (SENAR) on top of the spec-first PR workflow. Full mapping: `docs_capsule_zero/project/devops/senar-mapping.md`.
