@@ -1,0 +1,80 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            app/package-lock.json
+            tests/e2e/package-lock.json
+
+      - name: Install repository tooling
+        run: npm ci --ignore-scripts
+
+      - name: Install app dependencies
+        run: npm ci --prefix app
+
+      - name: Install e2e dependencies
+        run: npm ci --prefix tests/e2e
+
+      - name: Lint e2e suite
+        run: npm run lint:e2e
+
+      - name: Typecheck e2e suite
+        run: npm run typecheck:e2e
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('tests/e2e/package-lock.json') }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx --prefix tests/e2e playwright install --with-deps chromium webkit
+
+      - name: Install Playwright system deps
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx --prefix tests/e2e playwright install-deps chromium webkit
+
+      - name: Seed app env from example (CI stub credentials)
+        run: cp app/.env.local.example app/.env.local
+
+      - name: Build /app
+        run: npm --prefix app run build
+
+      - name: Run Playwright e2e suite
+        env:
+          CI: "true"
+        run: npm --prefix tests/e2e test
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-report
+          path: tests/e2e/playwright-report
+          retention-days: 14

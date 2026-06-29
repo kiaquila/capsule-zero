@@ -189,6 +189,10 @@ Every product-code PR must name its goal, scope (in/out), acceptance criteria, *
 
 Each feature folder must record what was tried and rejected, what decisions were made and why, and what limitations or follow-ups are accepted. This lives per-feature in `.specify/specs/<feature-id>/tasks.md` under `## Process Memory` (Dead Ends / Decisions / Known Issues). Process memory is written _before_ declaring work complete, not after. Future agents inherit it on read.
 
+### Test-First Verification
+
+Every spec ≥ 025 must follow test-driven development. The acceptance criterion from `spec.md` is expressed as an automated test first (Playwright e2e for web, Detox for mobile, `go test` for the Go API). The failing test is committed before the product code that makes it pass. The required GitHub check `test` enforces that the resulting suite is green on the PR head SHA; the SENAR Done Gate row in the PR template binds the TDD evidence to the merge decision. Selectors and assertions follow the conventions in `tests/README.md`. Specs `001` through `024` are grandfathered.
+
 These principles apply to every spec authored after the SENAR layer shipped. Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered and keep their original shape.
 
-**Version**: 1.1 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-04-30
+**Version**: 1.2 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-06-29

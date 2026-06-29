@@ -27,6 +27,7 @@ export function LandingPage() {
             className="landing-auth-button"
             onClick={() => setAuthOpen((value) => !value)}
             type="button"
+            data-testid="auth-trigger"
           >
             {t("authCta")}
           </button>
@@ -57,7 +58,7 @@ export function LandingPage() {
       </footer>
 
       {authOpen ? (
-        <div className="landing-auth-popover">
+        <div className="landing-auth-popover" data-testid="auth-popover">
           <AuthPanel onClose={() => setAuthOpen(false)} variant="popup" />
         </div>
       ) : null}

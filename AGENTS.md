@@ -204,7 +204,7 @@ The current `/app` directory contains the legacy Supabase-based Next.js shell. I
 ## Delivery Workflow
 
 - Product code lands through pull requests only.
-- Required GitHub checks are `baseline-checks`, `guard`, and `AI Review`.
+- Required GitHub checks are `baseline-checks`, `guard`, `test`, and `AI Review`.
 - Durable workflow docs live under `docs_capsule_zero/project/devops/`.
 - The canonical orchestration contract is documented in `docs_capsule_zero/project/devops/ai-orchestration-protocol.md`.
 - Cloud AI integration and review-gate requirements are documented in `docs_capsule_zero/project/devops/ai-runner.md`.
@@ -221,6 +221,16 @@ The current `/app` directory contains the legacy Supabase-based Next.js shell. I
 - Native review normalization is documented in `docs_capsule_zero/project/devops/review-contract.md`.
 - Local PowerShell and worktree orchestration scripts are no longer part of the repository.
 
+## Tests
+
+All automated tests live under `tests/` at the repo root:
+
+- `tests/e2e/` — Playwright web e2e (TypeScript). Currently targets `/app`; retargets to `/web` when `/app` is removed. Gated by the required GitHub check **`test`** (`.github/workflows/test.yml`).
+- `tests/unit/` — `go test` for the Go API. Stub today; populated once spec-024 lands product code.
+- `tests/mobile/` — Detox e2e for the React Native app. Stub today; populated once `/mobile/` ships its first build.
+
+When adding or changing a test, read [`tests/README.md`](tests/README.md) — it owns the TDD loop, POM/selector rules, and run commands. **TDD is mandatory for every spec ≥ 025**: write the failing test first, commit it, then make it pass.
+
 ## SENAR Completion Contract
 
 Capsule Zero adds a lightweight supervised-verification layer (SENAR) on top of the spec-first PR workflow. Full mapping: `docs_capsule_zero/project/devops/senar-mapping.md`.
@@ -232,7 +242,7 @@ A task is **not complete** until the current PR head SHA has:
 - At least one negative scenario covered, or an explicit one-line waiver in `spec.md`.
 - `## Process Memory` (Dead Ends / Decisions / Known Issues) updated in `tasks.md` _before_ declaring the work complete.
 - The SENAR Done Gate checklist filled in the PR description.
-- The standard merge-ready conditions: green `baseline-checks` / `guard` / `AI Review`, no blocking review findings, no merge conflicts.
+- The standard merge-ready conditions: green `baseline-checks` / `guard` / `test` / `AI Review`, no blocking review findings, no merge conflicts.
 
 **Scope of application:** SENAR fields are required for every spec authored after the SENAR layer shipped (i.e. starting with `005-…`). Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered and keep their original shape; do not retrofit them.
 

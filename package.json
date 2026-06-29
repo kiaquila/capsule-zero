@@ -21,9 +21,13 @@
     "typecheck": "npm --prefix app run typecheck",
     "build": "npm --prefix app run build",
     "test": "npm --prefix app run test --if-present",
+    "lint:e2e": "npm --prefix tests/e2e run lint",
+    "typecheck:e2e": "npm --prefix tests/e2e run typecheck",
+    "test:e2e": "npm --prefix tests/e2e test",
+    "test:e2e:install": "npm --prefix tests/e2e ci && npx --prefix tests/e2e playwright install --with-deps chromium webkit",
     "prepare": "husky",
     "precommit": "npm run check:feature-memory -- --worktree && lint-staged",
-    "preflight": "npm run check:feature-memory -- --worktree && npm run check:repo && npm run check:api-contract && npm run lint && npm run typecheck && npm run build && npm run test"
+    "preflight": "npm run check:feature-memory -- --worktree && npm run check:repo && npm run check:api-contract && npm run lint && npm run typecheck && npm run lint:e2e && npm run typecheck:e2e && npm run build && npm run test && npm run test:e2e"
   },
   "devDependencies": {
     "husky": "^9.1.7",

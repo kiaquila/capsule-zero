@@ -88,7 +88,7 @@ Repository default workflow permissions may remain `read` so long as individual 
 
 - protect `main`
 - require pull requests before merge
-- require status checks `baseline-checks`, `guard`, and `AI Review`
+- require status checks `baseline-checks`, `guard`, `test`, and `AI Review`
 - run `osv-scan` on pull requests and review dependency vulnerability findings before merge
 - require conversation resolution
 - enforce admins

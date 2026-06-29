@@ -6,6 +6,7 @@ GitHub is the control plane for pull requests, checks, AI review routing, and de
 
 - `ci.yml`: runs repository baseline validation, app typecheck, app build, and optional app tests as the required `baseline-checks` job.
 - `pr-guard.yml`: enforces feature-memory coverage for product-root changes (`app/`, `api/`, `worker/`, `web/`, `mobile/`) and validates baseline files as the required `guard` job.
+- `test.yml`: runs e2e lint, e2e typecheck, `/app` build, and Playwright browser tests as the required `test` job.
 - `ai-command-policy.yml`: rejects untrusted or policy-mismatched AI command comments.
 - `ai-review.yml`: normalizes selected native review output into the required `AI Review` check.
 - `osv-scan.yml`: scans dependencies for known vulnerabilities on pull requests, pushes to `main`, weekly schedule, and manual dispatch.
@@ -18,6 +19,7 @@ Branch protection for `main` must require:
 
 - `baseline-checks`
 - `guard`
+- `test`
 - `AI Review`
 
 `osv-scan` should run on every pull request and should be treated as a security signal. It is intentionally not part of the required branch-protection baseline until the repository has observed the scanner on real dependency updates and decided whether security findings should block all merges.
@@ -39,7 +41,7 @@ Run before pushing whenever possible:
 npm run preflight
 ```
 
-The preflight command runs the feature-memory gate against the worktree, repository baseline validation, app typecheck, app build, and optional app tests.
+The preflight command runs the feature-memory gate against the worktree, repository baseline validation, app typecheck, app build, e2e lint/typecheck, Playwright, and optional app tests.
 
 ## Branch Protection Baseline
 
@@ -49,6 +51,7 @@ Apply after workflows are merged into the default branch:
 required checks:
   - baseline-checks
   - guard
+  - test
   - AI Review
 enforce admins: true
 dismiss stale reviews: true

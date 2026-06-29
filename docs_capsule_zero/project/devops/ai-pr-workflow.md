@@ -5,7 +5,7 @@ This is the canonical PR loop for implementation, AI review, and merge readiness
 ## Process Invariants
 
 - Product code lands through pull requests only.
-- The required checks are always `baseline-checks`, `guard`, and `AI Review`.
+- The required checks are always `baseline-checks`, `guard`, `test`, and `AI Review`.
 - `osv-scan` runs on pull requests as a dependency-security signal and may be promoted to a required check after scanner behavior is validated on real dependency updates.
 - Implementation agent selection and review agent selection are separate decisions.
 - Codex acts as the repository orchestrator and architecture owner.
@@ -32,7 +32,7 @@ The workflow may change tools, integrations, and automation layers, but these ru
 3. Route implementation to the selected agent using the canonical GitHub comment trigger for that agent.
 4. The implementation agent works on one scoped branch and one pull request for that task.
 5. The pull request updates validation notes and any required durable docs.
-6. GitHub runs `baseline-checks`, `guard`, `AI Review`, and the `osv-scan` security workflow.
+6. GitHub runs `baseline-checks`, `guard`, `test`, `AI Review`, and the `osv-scan` security workflow.
 7. Route review to the selected reviewer using the native review trigger for that agent.
 8. Let the repository-owned `AI Review` gate validate the selected native review result against the review contract.
 9. If follow-up is needed, continue on the same branch and update the same PR.
@@ -72,6 +72,7 @@ Routing details live in `docs_capsule_zero/project/devops/ai-orchestration-proto
 
 - `baseline-checks` runs repository baseline validation, `app` typecheck, `app` build, and optional app tests.
 - `guard` runs repository-owned gate scripts from the trusted default branch when those scripts are available there.
+- `test` runs the Playwright e2e gate from `tests/e2e/`: e2e lint, e2e typecheck, `/app` build, and browser tests against the running app.
 - Product code changes under `app/`, `api/`, `worker/`, `web/`, or `mobile/` require complete feature memory in `.specify/specs/<feature-id>/spec.md`, `plan.md`, and `tasks.md`.
 - Infrastructure-only PRs that do not change product roots are validated through baseline files and durable devops documentation instead of feature memory.
 - Local preflight is `npm run preflight`.
@@ -88,7 +89,7 @@ Before merge, the author and the human merge owner confirm that:
 - `tasks.md` records the relevant dead ends, decisions, and known issues under `## Process Memory`.
 - Any remaining known issue is explicitly accepted by the human merge owner.
 
-This gate is enforced by the review agent and the human merge owner, not by an additional GitHub Actions check. Structural completeness of feature memory continues to be enforced by `pr-guard.yml` (spec/plan/tasks must exist for product-root changes). Full mapping and rationale: `docs_capsule_zero/project/devops/senar-mapping.md`.
+This gate is enforced by the review agent, the human merge owner, and the required `test` GitHub check for behavioral verification. Structural completeness of feature memory continues to be enforced by `pr-guard.yml` (spec/plan/tasks must exist for product-root changes). Full mapping and rationale: `docs_capsule_zero/project/devops/senar-mapping.md`.
 
 The gate applies to every spec authored after the SENAR layer shipped (`005-…` and onward). Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered.
 
