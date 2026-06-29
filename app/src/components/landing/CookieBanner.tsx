@@ -107,6 +107,7 @@ export function CookieBanner() {
       aria-modal="false"
       aria-labelledby={titleId}
       aria-live="polite"
+      data-testid="cookie-banner"
     >
       {customizing ? (
         <CustomizePanel
@@ -155,6 +156,7 @@ function Summary({ titleId, gpc, onAcceptAll, onRejectAll, onCustomize }: Summar
           className="cookie-action cookie-action-primary"
           onClick={onAcceptAll}
           type="button"
+          data-testid="cookie-accept-all"
         >
           {t("cookieAccept")}
         </button>
@@ -162,6 +164,7 @@ function Summary({ titleId, gpc, onAcceptAll, onRejectAll, onCustomize }: Summar
           className="cookie-action cookie-action-primary"
           onClick={onRejectAll}
           type="button"
+          data-testid="cookie-reject-all"
         >
           {t("cookieReject")}
         </button>
