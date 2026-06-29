@@ -36,7 +36,7 @@ Stand up a Playwright e2e harness under `tests/e2e/` (POM, OOP, ESLint with `esl
 ## Constitution Check
 
 - **Spec-First Development**: this PR carries `.specify/specs/025-e2e-tests/{spec,plan,tasks}.md`.
-- **Supervised Verification**: SC-002 binds the test outcome to a runnable command (`npm run test:e2e`) and the green `test` check.
+- **Supervised Verification**: SC-002 binds the test outcome to runnable commands (`npm run lint:e2e`, `npm run typecheck:e2e`, `npm run test:e2e`) and the green `test` check.
 - **Process Memory**: `tasks.md` records TDD-loop decisions, dead ends, and the data-testid trade-off before completion.
 - **Test-First Bias**: this PR establishes the bias; the test commits land before the `/app` changes.
 - **Simplicity**: one new workspace (`tests/e2e/`), one new workflow, minimal `/app` change.
@@ -54,18 +54,18 @@ Stand up a Playwright e2e harness under `tests/e2e/` (POM, OOP, ESLint with `esl
 | US5 / FR-008         | `git grep "tests/README.md" AGENTS.md CLAUDE.md` returns matches in both files.                                                                                                         |
 | US5 / FR-009         | `.specify/memory/constitution.md` contains a `### Test-First Verification` heading inside section VII.                                                                                  |
 | FR-003               | `tests/e2e/package.json` and `tests/e2e/package-lock.json` exist; `/app/package.json` is unchanged on the test-tooling dimension (no Playwright entry added).                           |
-| FR-004 / SC-003      | `grep -RnE "page\.(locator\|getBy)" tests/e2e/specs/` returns empty; `tests/e2e/eslint.config.mjs` declares `no-restricted-syntax` for `page.locator`/`page.getBy` calls in `specs/**`. |
+| FR-004 / SC-003      | `npm run lint:e2e` exits 0; `.github/workflows/test.yml` runs `npm run lint:e2e` before Playwright; `tests/e2e/eslint.config.mjs` declares `no-restricted-syntax` for `page.locator`/`page.getBy` calls in `specs/**`. |
 | FR-010               | `docs_capsule_zero/project/devops/senar-mapping.md` no longer contains "No new GitHub Actions check" verbatim; it lists `test` as a required check.                                     |
 | FR-011               | `.github/pull_request_template.md` SENAR Done Gate contains a new row mentioning TDD evidence.                                                                                          |
-| FR-012               | `package.json` (root) contains `test:e2e` script and `preflight` invokes `npm run test:e2e`.                                                                                            |
+| FR-012               | `package.json` (root) contains `lint:e2e`, `typecheck:e2e`, `test:e2e`, and `test:e2e:install` scripts; `preflight` invokes e2e lint, typecheck, and Playwright.                         |
 | FR-013 / SC-005      | `git diff --stat origin/main...HEAD -- app/` shows only `data-testid` additions (small line count, no new imports, no logic).                                                           |
 | SC-001               | Reproducible after merge by opening any new PR.                                                                                                                                         |
-| SC-002               | Local `npm run test:e2e` exits 0; CI run on this PR is green.                                                                                                                           |
+| SC-002               | Local `npm run lint:e2e`, `npm run typecheck:e2e`, and `npm run test:e2e` exit 0; CI run on this PR is green.                                                                            |
 
 Negative scenario evidence:
 
 - A purposefully-broken cookie banner (commented-out render) was confirmed to fail the spec locally before reverting — captured in `tasks.md` Process Memory.
-- A sample `page.locator('xyz')` line was added to a spec to confirm the `no-restricted-syntax` ESLint rule fires, then removed — captured in `tasks.md` Process Memory.
+- A sample `page.locator('xyz')` line was added to a spec to confirm the `no-restricted-syntax` ESLint rule fires through `npm run lint:e2e`, then removed — captured in `tasks.md` Process Memory.
 
 ## Project Structure
 

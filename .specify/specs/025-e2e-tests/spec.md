@@ -24,7 +24,7 @@ In scope:
 - New constitution sub-principle `Test-First Verification` under principle VII.
 - Update `docs_capsule_zero/project/devops/senar-mapping.md` to replace its current "No new GitHub Actions check" stance with the new `test` gate description.
 - New row in the SENAR Done Gate of `.github/pull_request_template.md` for TDD evidence.
-- Root `package.json`: new `test:e2e` / `test:e2e:install` scripts; `preflight` extended to run e2e.
+- Root `package.json`: new `lint:e2e` / `typecheck:e2e` / `test:e2e` / `test:e2e:install` scripts; `preflight` extended to run e2e lint, typecheck, and Playwright.
 
 Out of scope:
 
@@ -111,7 +111,7 @@ As any agent or human writing product code, I want TDD enforcement to be quotabl
 ## Negative Scenarios _(mandatory — required by SENAR; waive explicitly if none apply)_
 
 1. **Given** a contributor opens a PR that breaks the cookie banner (e.g., never renders it), **When** `test` runs, **Then** the workflow fails with a red `test` check and the PR is not mergeable on policy.
-2. **Given** a contributor adds a new spec under `tests/e2e/specs/` that uses raw `page.locator()` or `page.getBy*()` calls, **When** `npm run lint` runs in `tests/e2e/`, **Then** ESLint reports a `no-restricted-syntax` violation and exits non-zero.
+2. **Given** a contributor adds a new spec under `tests/e2e/specs/` that uses raw `page.locator()` or `page.getBy*()` calls, **When** `npm run lint:e2e` or the required `test` job runs, **Then** ESLint reports a `no-restricted-syntax` violation and exits non-zero before Playwright starts.
 3. **Given** a contributor opens a PR that touches `app/src/components/landing/CookieBanner.tsx` without re-running tests, **When** the `test` job runs, **Then** the job re-validates the cookie banner spec automatically and reports failure visibly — there is no path that lets the change land without an e2e signal.
 
 ## Requirements _(mandatory)_
@@ -119,9 +119,9 @@ As any agent or human writing product code, I want TDD enforcement to be quotabl
 ### Functional Requirements
 
 - **FR-001**: A GitHub Actions workflow at `.github/workflows/test.yml` MUST define a job whose `name` field is exactly `test` and MUST run on every `pull_request`.
-- **FR-002**: The `test` job MUST install Playwright browsers, build the `/app` Next.js project, start it on `http://localhost:3000`, and execute the Playwright suite in `tests/e2e/`.
+- **FR-002**: The `test` job MUST run `tests/e2e/` lint and typecheck, install Playwright browsers, build the `/app` Next.js project, start it on `http://localhost:3000`, and execute the Playwright suite in `tests/e2e/`.
 - **FR-003**: `tests/e2e/` MUST be a standalone npm project with its own `package.json` and `package-lock.json`, isolated from `/app` dependencies.
-- **FR-004**: All test selectors MUST live in `tests/e2e/pages/*.ts` files using the Page Object Model; specs MUST consume the POM and MUST NOT call `page.locator()` or `page.getBy*` directly. This MUST be enforced by ESLint (`no-restricted-syntax`).
+- **FR-004**: All test selectors MUST live in `tests/e2e/pages/*.ts` files using the Page Object Model; specs MUST consume the POM and MUST NOT call `page.locator()` or `page.getBy*` directly. This MUST be enforced by ESLint (`no-restricted-syntax`) in local scripts and in the required `test` job.
 - **FR-005**: The cookie-banner spec MUST cover both the accept-flow happy path and the "does not reappear after consent" negative reload scenario.
 - **FR-006**: The auth-popup spec MUST cover open, close, and mode-switch, and MUST assert that the sign-up form is not in DOM until the user switches mode.
 - **FR-007**: `tests/README.md` MUST describe (a) the TDD loop, (b) the POM/lint rule, (c) the locale-neutral assertion approach, (d) how to run tests locally and in CI.
@@ -129,7 +129,7 @@ As any agent or human writing product code, I want TDD enforcement to be quotabl
 - **FR-009**: `.specify/memory/constitution.md` principle VII MUST gain a sub-principle `Test-First Verification` codifying TDD as the standard for specs ≥ 025.
 - **FR-010**: `docs_capsule_zero/project/devops/senar-mapping.md` MUST reflect that `test` is a new required CI check (replacing the prior "No new GitHub Actions check" stance for SENAR verification).
 - **FR-011**: `.github/pull_request_template.md` SENAR Done Gate MUST include a row requiring a link to the failing-then-passing test commit (or an explicit waiver line).
-- **FR-012**: Root `package.json` MUST expose `test:e2e` and `test:e2e:install` scripts and extend `preflight` to run e2e.
+- **FR-012**: Root `package.json` MUST expose `lint:e2e`, `typecheck:e2e`, `test:e2e`, and `test:e2e:install` scripts and extend `preflight` to run e2e lint, typecheck, and Playwright.
 - **FR-013**: The `data-testid` additions in `/app` MUST NOT change rendered output, classnames, accessibility attributes, or component props — only test attributes are added.
 
 ### Key Entities
@@ -142,7 +142,7 @@ As any agent or human writing product code, I want TDD enforcement to be quotabl
 ### Measurable Outcomes
 
 - **SC-001**: After merge, every new PR shows `test` in its Checks tab and the job runs to completion.
-- **SC-002**: Locally and in CI, `npm run test:e2e` exits 0 with two spec files passing all `test()` cases (each spec covers at least one negative scenario).
+- **SC-002**: Locally and in CI, `npm run lint:e2e`, `npm run typecheck:e2e`, and `npm run test:e2e` exit 0 with two spec files passing all `test()` cases (each spec covers at least one negative scenario).
 - **SC-003**: `grep -RnE "page\.(locator|getBy)" tests/e2e/specs/` returns zero matches; the same grep in `tests/e2e/pages/` returns multiple matches.
 - **SC-004**: `tests/README.md`, `AGENTS.md`, `CLAUDE.md`, `.specify/memory/constitution.md`, `docs_capsule_zero/project/devops/senar-mapping.md`, and `.github/pull_request_template.md` all contain the new content per FR-007 through FR-011.
 - **SC-005**: The PR's diff under `/app` contains only `data-testid` additions; `git diff --stat origin/main...HEAD -- app/` shows a small line count and no new imports, props, or logic.

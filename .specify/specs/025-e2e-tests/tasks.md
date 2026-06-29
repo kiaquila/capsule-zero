@@ -30,7 +30,7 @@
 
 ## Phase 5: CI gate
 
-- [ ] T015 [US1] Create `.github/workflows/test.yml` with job name `test`; install deps, build /app, run Playwright via `webServer`.
+- [ ] T015 [US1] Create `.github/workflows/test.yml` with job name `test`; install deps, run e2e lint/typecheck, build /app, run Playwright via `webServer`.
 - [ ] T016 Push branch and confirm `test` check appears and goes green on the PR.
 
 ## Phase 6: Doctrine and policy
@@ -40,11 +40,11 @@
 - [ ] T019 [US5] Update `.specify/memory/constitution.md` principle VII with a `Test-First Verification` sub-principle. Bump Last Amended date.
 - [ ] T020 Update `docs_capsule_zero/project/devops/senar-mapping.md`: replace "No new GitHub Actions check" stance with the `test` gate description.
 - [ ] T021 Update `.github/pull_request_template.md` SENAR Done Gate with a TDD evidence row.
-- [ ] T022 Update root `package.json` with `test:e2e`, `test:e2e:install`, and extend `preflight`.
+- [ ] T022 Update root `package.json` with `lint:e2e`, `typecheck:e2e`, `test:e2e`, `test:e2e:install`, and extend `preflight`.
 
 ## Phase 7: Verification
 
-- [ ] T023 Run `npm run lint && npm run typecheck && npm run build` (existing root scripts) — confirm clean.
+- [ ] T023 Run `npm run lint && npm run typecheck && npm run lint:e2e && npm run typecheck:e2e && npm run build` — confirm clean.
 - [ ] T024 Run `npm run test:e2e` locally — confirm GREEN.
 - [ ] T025 Confirm `grep -RnE "page\.(locator|getBy)" tests/e2e/specs/` returns empty.
 - [ ] T026 Open PR; fill SENAR Done Gate including the new TDD row; request `@codex review`.
@@ -58,6 +58,7 @@
 - Considered enforcing TDD purely as a doctrine in `AGENTS.md` without a CI check. Rejected because the user explicitly asked for a mandatory `test` gate; a doctrine without enforcement decays.
 - Considered making the TDD doctrine block in `AGENTS.md` and `CLAUDE.md` long and self-contained. Rejected on user direction: the two files only host short pointers to `tests/README.md`; full TDD doctrine and POM rules live in `tests/README.md` to avoid duplication.
 - Considered installing Playwright into `/app/package.json` so it lives next to the app it tests. Rejected because `/app` is scheduled for removal after spec-024 — coupling test tooling to a directory that disappears would leave the gate orphaned. Standalone `tests/e2e/` survives the pivot.
+- Considered leaving e2e ESLint as a documented local command only. Rejected after Codex review on PR #52: the POM rule must run inside the required `test` gate before Playwright, otherwise raw `page.locator()` calls in specs could merge.
 
 ### Decisions
 
@@ -65,6 +66,7 @@
 - **TDD shown in git history**: tests committed first against not-yet-existing `data-testid`s (Phase 3), `/app` updated second (Phase 4). Reason: dogfood the TDD loop the PR is establishing.
 - **Two `data-testid` additions to `/app`, no logic change**. Reason: keeps the `/app` diff trivially reviewable and survives the eventual `/app` → `/web` retarget — when the test attrs are added to the new React components, the same POM works without spec edits.
 - **POM enforced by ESLint, not just docs**. Reason: rules people can violate without immediate feedback decay; `no-restricted-syntax` makes the violation a visible lint failure in CI.
+- **`test` gate runs e2e lint and typecheck before Playwright**. Reason: the gate owns merge readiness for tests; syntax, POM, and type errors should fail before browser work starts.
 - **chromium + webkit projects only**. Reason: covers desktop + iPhone-like rendering. Firefox is skipped for first iteration to keep job runtime under 5 min; can be added later by appending a project entry.
 - **No branch-protection update in this PR**. Reason: admin UI action; documented as Known Issue with explicit owner expectation in the PR description.
 - **Playwright `webServer` over manual background-start**. Reason: Playwright manages port detection, readiness, and process lifecycle; one fewer step to write and one fewer race condition to debug in CI.

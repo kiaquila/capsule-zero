@@ -4,20 +4,23 @@ import type { Locale } from "./locales";
 
 interface Fixtures {
   /**
-   * Locale segment used by the Page Objects (defaults to "en"). Override in
-   * a spec via `test.use({ locale: "ru" })` to run the same scenarios in RU.
-   */
-  locale: Locale;
-  /**
-   * The landing page POM, pre-bound to the active locale.
+   * The landing page POM, pre-bound to the active app route locale.
    */
   landing: LandingPage;
 }
 
-export const test = base.extend<Fixtures>({
-  locale: ["en", { option: true }],
-  landing: async ({ page, locale }, use) => {
-    const landing = new LandingPage(page, locale);
+interface Options {
+  /**
+   * App route locale segment used by the Page Objects (defaults to "en").
+   * Override via `test.use({ appLocale: "ru" })` to run scenarios in RU.
+   */
+  appLocale: Locale;
+}
+
+export const test = base.extend<Fixtures & Options>({
+  appLocale: ["en", { option: true }],
+  landing: async ({ page, appLocale }, use) => {
+    const landing = new LandingPage(page, appLocale);
     await use(landing);
   },
 });

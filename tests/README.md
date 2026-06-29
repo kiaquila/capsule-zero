@@ -36,6 +36,8 @@ PR reviewers (human and AI) reject PRs that introduce product behavior without a
 - **Run locally**:
   ```bash
   npm run test:e2e:install   # one-time: install Playwright deps and browsers
+  npm run lint:e2e           # enforce POM selector rules
+  npm run typecheck:e2e      # typecheck test fixtures, pages, and specs
   npm run test:e2e           # run all specs against /app
   ```
   From `tests/e2e/` directly:
@@ -44,7 +46,7 @@ PR reviewers (human and AI) reject PRs that introduce product behavior without a
   npm run test:headed        # with visible browser
   npm run test:report        # open last HTML report
   ```
-- **Run in CI**: job `test` in `.github/workflows/test.yml`. Required check on `main`.
+- **Run in CI**: job `test` in `.github/workflows/test.yml` runs e2e lint, e2e typecheck, `/app` build, and Playwright. Required check on `main`.
 
 ### `tests/unit/` — Go unit tests (stub)
 
@@ -60,7 +62,7 @@ PR reviewers (human and AI) reject PRs that introduce product behavior without a
 
 - **All selectors live in `tests/e2e/pages/`.** Subclasses of `BasePage`, named after the screen or component.
 - **Specs MUST NOT call `page.locator()` or `page.getBy*()` directly.** Use a POM accessor.
-- This rule is enforced by ESLint (`no-restricted-syntax`) in `tests/e2e/eslint.config.mjs`. Running `npm --prefix tests/e2e run lint` fails the build on a violation.
+- This rule is enforced by ESLint (`no-restricted-syntax`) in `tests/e2e/eslint.config.mjs`. Running `npm run lint:e2e` fails the build on a violation, and the required `test` job runs it before Playwright.
 
 ### Selector strategy
 
