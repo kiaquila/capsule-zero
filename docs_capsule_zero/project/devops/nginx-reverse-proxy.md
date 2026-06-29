@@ -159,17 +159,61 @@ incident review.
 
 ## Local development
 
-The compose stack assumes a real Let's Encrypt cert; it is not designed for
-laptop use. Local web work continues to use the existing flow:
+The compose stack runs on the laptop against the **same `nginx:1.27-alpine`
+and `web` images that ship to prod**. Only three things differ from the
+droplet:
+
+1. The cert is issued by [mkcert](https://github.com/FiloSottile/mkcert)
+   (locally-trusted CA installed into the system trust store) instead of
+   Let's Encrypt.
+2. The vhost serves `capsulezero.local` instead of `capsulezero.app`, and the
+   cert lives at `/etc/nginx/certs/{cert,key}.pem` (bind-mounted from
+   `infra/dev-certs/`) instead of `/etc/letsencrypt/live/capsulezero.app/`.
+3. `NEXT_PUBLIC_APP_URL=https://capsulezero.local` so the web app emits the
+   correct absolute URLs.
+
+All three are handled by `docker-compose.dev.yml`. The base
+`docker-compose.yml` is unchanged.
+
+### One-time setup
+
+1. **Install mkcert.**
+   ```bash
+   brew install mkcert nss   # macOS; Linux: see mkcert's README
+   ```
+2. **Install the local CA and issue the cert.**
+   ```bash
+   node scripts/local-certs.mjs
+   ```
+   This runs `mkcert -install` (adds the mkcert root CA to the system trust
+   store, idempotent) and writes `infra/dev-certs/cert.pem` +
+   `infra/dev-certs/key.pem`. The directory is gitignored.
+3. **Add the hostname to `/etc/hosts`:**
+   ```
+   127.0.0.1 capsulezero.local
+   ```
+   We use `capsulezero.local` rather than overriding `capsulezero.app` so a
+   developer who later visits production is not silently rerouted to a
+   stopped local stack.
+
+### Daily flow
 
 ```bash
-cd app
-npm run dev
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# open https://capsulezero.local
 ```
 
-A local compose dev override will come back in a later PR when there is a
-service worth running locally next to the Next.js bundle (Postgres, Kratos,
-or the Go API).
+Smoke check:
+
+```bash
+curl -fsSI https://capsulezero.local/en | head -5
+# expected: HTTP/2 200, server: nginx
+```
+
+### Renewing the local cert
+
+mkcert certs are valid for ~2 years 3 months by default. To re-issue, just
+run `node scripts/local-certs.mjs` again and `docker compose ... restart nginx`.
 
 ## What is intentionally not here yet
 
