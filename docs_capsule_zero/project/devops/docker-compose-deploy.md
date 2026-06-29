@@ -1,8 +1,8 @@
 # Docker Compose Deployment
 
-Capsule Zero ships a production-shaped Docker Compose runtime that runs the **Go modular monolith API**, the **Next.js web frontend**, and the supporting infrastructure (Ory Kratos, PostgreSQL with pgvector, Redis, Traefik, imgproxy, Grafana) as separate services on a single DigitalOcean droplet. Compose is the only process supervisor; VM-level firewalling, backups, and secret delivery remain outside git.
+Capsule Zero ships a production-shaped Docker Compose runtime that runs the **Go modular monolith API**, the **Next.js web frontend**, and the supporting infrastructure (Ory Kratos, PostgreSQL with pgvector, Redis, nginx, imgproxy, Grafana) as separate services on a single DigitalOcean droplet. Compose is the only process supervisor; VM-level firewalling, backups, and secret delivery remain outside git.
 
-The full runtime is delivered by `.specify/specs/024-production-stack-runtime/`. This document describes the steady-state operational contract once that spec ships.
+The full runtime is delivered by `.specify/specs/024-production-stack-runtime/` across six phases. Phase 1 ships nginx + web (operational runbook: `docs_capsule_zero/project/devops/nginx-reverse-proxy.md`); this document describes the steady-state operational contract once every phase has shipped.
 
 ## Topology
 
@@ -10,16 +10,16 @@ Each service is declared as a separate `services:` entry in one root `docker-com
 
 | Service     | Image                            | Purpose                                                        | Default host exposure         |
 | ----------- | -------------------------------- | -------------------------------------------------------------- | ----------------------------- |
-| `traefik`   | `traefik:v3`                     | Edge: TLS (Let's Encrypt), rate-limit, forward-auth into Kratos| `80`, `443`                   |
-| `web`       | local build of `/web`            | Next.js App Router web frontend                                | internal only (behind Traefik)|
-| `api`       | local build of `/api`            | Go modular monolith                                            | internal only (behind Traefik)|
+| `nginx`     | `nginx:1.27-alpine`              | Edge: TLS (Let's Encrypt via host certbot), rate-limit, `auth_request` into Kratos | `80`, `443`        |
+| `web`       | local build of `/app` (Phase 1) → `/web` (Phase 6) | Next.js App Router web frontend                  | internal only (behind nginx)  |
+| `api`       | local build of `/api`            | Go modular monolith                                            | internal only (behind nginx)  |
 | `worker`    | local build of `/worker`         | Redis-queue consumer (image jobs, embeddings, webhook fanout)  | internal only                 |
-| `kratos`    | `oryd/kratos`                    | Identity provider (email/password Stage 1)                     | internal only (behind Traefik)|
+| `kratos`    | `oryd/kratos`                    | Identity provider (email/password Stage 1)                     | internal only (behind nginx)  |
 | `postgres`  | `pgvector/pgvector:pg16`         | App database + Kratos database (separate logical DBs)          | internal only                 |
 | `pgbouncer` | `edoburu/pgbouncer`              | Connection pool in front of Postgres                           | internal only                 |
 | `redis`     | `redis:7-alpine`                 | Cache, sessions, job queue                                     | internal only                 |
-| `imgproxy`  | `darthsim/imgproxy`              | On-the-fly image resize/WebP for derived sizes                 | internal only (behind Traefik)|
-| `grafana`   | `grafana/grafana`                | Dashboards over syslog files and OTLP traces                   | `https://grafana.capsulezero.app` via Traefik |
+| `imgproxy`  | `darthsim/imgproxy`              | On-the-fly image resize/WebP for derived sizes                 | internal only (behind nginx)  |
+| `grafana`   | `grafana/grafana`                | Dashboards over syslog files and OTLP traces                   | `https://grafana.capsulezero.app` via nginx   |
 | `mailhog`   | `mailhog/mailhog`                | Dev-only courier sink; replaced by Resend in prod              | `127.0.0.1:8025` (dev only)   |
 
 Persistent data lives in named Docker volumes:
@@ -27,9 +27,12 @@ Persistent data lives in named Docker volumes:
 - `capsule-zero_postgres-data`
 - `capsule-zero_redis-data`
 - `capsule-zero_kratos-data`
-- `capsule-zero_traefik-letsencrypt`
 - `capsule-zero_grafana-data`
 - `capsule-zero_syslog`
+
+TLS certificate material and the ACME webroot are host-managed paths, not
+Docker volumes: `/etc/letsencrypt` and `/var/www/certbot` are bind-mounted into
+nginx while certbot runs on the host.
 
 Object storage and email leave the droplet:
 
@@ -42,7 +45,7 @@ Object storage and email leave the droplet:
 | ----------------------------------- | ----------------------------------------------------------------------------- |
 | `docker-compose.yml`                | Production-shape topology, declared per service                               |
 | `docker-compose.dev.yml`            | Local dev overrides (MailHog, hot-reload, debug logs)                          |
-| `infra/traefik/`                    | Traefik static + dynamic config: TLS, middlewares, forward-auth               |
+| `infra/nginx/`                      | nginx main config + `conf.d/` server blocks (TLS, redirects, reverse_proxy)   |
 | `infra/kratos/`                     | Kratos identity schema, courier (Resend SMTP), self-service flow config       |
 | `infra/postgres/`                   | Postgres init scripts (pgvector extension, role grants, Kratos DB creation)   |
 | `api/Dockerfile`                    | Go API multi-stage build (distroless runtime image)                           |
@@ -62,7 +65,7 @@ cp deploy/compose.env.example .env
 Fill the real values for the droplet's encrypted `.env`. Required keys at minimum:
 
 - `POSTGRES_PASSWORD`, `KRATOS_DSN`, `KRATOS_SECRETS_COOKIE`, `KRATOS_SECRETS_CIPHER`
-- `CF_DNS_API_TOKEN` for Traefik DNS-01 ACME against Cloudflare
+- `CF_DNS_API_TOKEN` for certbot DNS-01 ACME against Cloudflare (only once the Cloudflare proxy is enabled; until then certbot uses HTTP-01 directly)
 - `SPACES_ACCESS_KEY`, `SPACES_SECRET_KEY`, `SPACES_BUCKET`, `SPACES_REGION`, `SPACES_CDN_BASE`
 - `RESEND_API_KEY`, `RESEND_FROM`
 - `APP_BASE_URL`, `MOBILE_DEEP_LINK_SCHEME`
@@ -103,7 +106,7 @@ Per-service probes:
 
 ```bash
 docker compose ps                    # all services healthy
-docker compose logs traefik --tail=50
+docker compose logs nginx --tail=50
 docker compose logs kratos --tail=50
 docker compose logs api --tail=100
 ```
@@ -141,7 +144,7 @@ Object storage durability is provided by DigitalOcean Spaces; no extra backup of
 
 ## Upgrades
 
-1. Read upstream release notes for any image tag changes (Postgres, Kratos, Traefik, Redis, Grafana).
+1. Read upstream release notes for any image tag changes (Postgres, Kratos, nginx, Redis, Grafana).
 2. Update image tags in `docker-compose.yml` together with any required config changes under `infra/`.
 3. Validate config:
    ```bash
@@ -152,11 +155,11 @@ Object storage durability is provided by DigitalOcean Spaces; no extra backup of
 
 ## Ingress
 
-Public traffic enters through Cloudflare → Traefik on the droplet (ports 80/443). Traefik:
+Public traffic enters through Cloudflare → nginx on the droplet (ports 80/443). nginx:
 
-- terminates Let's Encrypt TLS for `capsulezero.app` and `grafana.capsulezero.app`,
-- runs a rate-limit middleware per IP,
-- runs a forward-auth middleware against Kratos for protected routes,
+- terminates Let's Encrypt TLS for `capsulezero.app` and `grafana.capsulezero.app` (certs issued by host certbot, mounted from `/etc/letsencrypt`),
+- runs a per-IP `limit_req_zone` rate-limit,
+- runs an `auth_request` against Kratos for protected routes,
 - routes `/` to `web`,
 - routes `/api/*` to `api`,
 - routes `/self-service/*` and `/sessions/*` to `kratos` (public API),
