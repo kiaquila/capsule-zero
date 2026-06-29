@@ -1,0 +1,155 @@
+# Dev Continuous Deployment — Operator Runbook
+
+Auto-deploy to the **dev** environment (`https://dev.capsulezero.app`) on every merge to
+`main` that changes deploy-relevant code. Spec: `.specify/specs/026-dev-cd-pipeline/`.
+
+## How it works
+
+1. Merge to `main` triggers `.github/workflows/cd-dev.yml`.
+2. **gate** — deploys only if a deploy-relevant path changed (`app/** web/** api/** worker/**
+   infra/** docker-compose.yml docker-compose.dev-server.yml`, lockfiles, the workflow
+   itself). Docs/tests/`.specify`-only merges are skipped (green, no deploy).
+3. **build** — `docker buildx` builds `app/Dockerfile` (`--target runner`) and pushes
+   `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>` plus a moving `:dev` tag to GHCR.
+4. **deploy** — SSH to the droplet, sync the repo checkout to the deployed SHA, then
+   `docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml pull web && up -d`,
+   reload dev nginx, wait for `web` healthy, and smoke-check the dev nginx origin.
+
+Dev runs on the **same droplet** as prod, as the separate compose project `capsule-zero-dev`
+with its **own nginx on host port 8443** and its **own TLS cert** — a broken dev deploy
+cannot touch prod (project `capsule-zero`, nginx `:443`).
+
+## One-time operator setup
+
+All steps below run once. **No secret is ever passed to or stored in CI beyond the GitHub
+secrets listed; the droplet's `.env.dev`, GHCR pull token, and Cloudflare DNS token live only
+on the host / in Cloudflare.**
+
+### 1. Cloudflare DNS + origin port
+
+- Add a proxied `A` record `dev.capsulezero.app` → droplet IP (orange cloud).
+- Add an **Origin Rule**: when hostname equals `dev.capsulezero.app`, rewrite the
+  **destination port** to `8443` (Cloudflare allows HTTPS origin ports 443/2053/2083/2087/
+  2096/8443).
+- SSL/TLS mode: **Full (strict)**. Enable **Always Use HTTPS** so the edge handles
+  http→https (dev nginx publishes only 8443).
+
+### 2. Deploy user on the droplet
+
+```bash
+sudo adduser --disabled-password --gecos "" deploy
+sudo usermod -aG docker deploy
+sudo -u deploy mkdir -p /home/deploy/.ssh && sudo -u deploy chmod 700 /home/deploy/.ssh
+# add the deploy public key:
+sudo -u deploy tee -a /home/deploy/.ssh/authorized_keys < deploy_key.pub
+sudo -u deploy chmod 600 /home/deploy/.ssh/authorized_keys
+```
+
+Generate the keypair locally (`ssh-keygen -t ed25519 -f deploy_key -N ''`); the **private**
+key goes into the GitHub secret `DEV_DEPLOY_SSH_KEY`, the public key into
+`authorized_keys`. Capture the host key for `DEV_DEPLOY_KNOWN_HOSTS`:
+
+```bash
+ssh-keyscan -t ed25519 <droplet-ip-or-host>
+```
+
+### 3. Repo checkout on the droplet
+
+The deploy step syncs config from a git checkout at `/opt/capsule-zero` (compose file +
+nginx vhosts). Secrets stay out of git.
+
+```bash
+sudo mkdir -p /opt/capsule-zero && sudo chown deploy:deploy /opt/capsule-zero
+sudo -u deploy git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero
+# optional dev runtime env (gitignored):
+sudo -u deploy tee /opt/capsule-zero/.env.dev >/dev/null <<'EOF'
+APP_BASE_URL=https://dev.capsulezero.app
+EOF
+```
+
+### 4. GHCR pull auth on the droplet
+
+Create a fine-grained PAT (or classic) with **`read:packages`** only, then:
+
+```bash
+sudo -u deploy bash -lc 'echo "<token>" | docker login ghcr.io -u kiaquila --password-stdin'
+```
+
+### 5. GitHub repository secrets
+
+| Secret | Value |
+| --- | --- |
+| `DEV_DEPLOY_HOST` | droplet IP or hostname |
+| `DEV_DEPLOY_USER` | `deploy` |
+| `DEV_DEPLOY_SSH_KEY` | private SSH key (matches `authorized_keys`) |
+| `DEV_DEPLOY_KNOWN_HOSTS` | output of `ssh-keyscan` for the droplet |
+
+`GITHUB_TOKEN` (built-in) authenticates the GHCR push from CI — no extra secret needed.
+Optional hardening: scope these to a GitHub **Environment** named `dev` and add the deploy
+job an `environment: dev` for a protection rule / deployment history.
+
+### 6. Dev TLS certificate
+
+Install certbot + Cloudflare DNS plugin on the host and store a scoped Cloudflare API token
+(Zone:DNS:Edit for the zone) at `/root/.secrets/cloudflare.ini` (chmod 600):
+
+```ini
+dns_cloudflare_api_token = <cloudflare-dns-edit-token>
+```
+
+**Bootstrap (first deploy only).** nginx will not start without a cert at the dev path, so
+seed a self-signed placeholder before the first deploy, then issue the real cert:
+
+```bash
+sudo mkdir -p /etc/letsencrypt/live/dev.capsulezero.app
+sudo openssl req -x509 -newkey rsa:2048 -nodes -days 2 \
+  -keyout /etc/letsencrypt/live/dev.capsulezero.app/privkey.pem \
+  -out   /etc/letsencrypt/live/dev.capsulezero.app/fullchain.pem \
+  -subj "/CN=dev.capsulezero.app"
+```
+
+Then issue the real Let's Encrypt cert (DNS-01 needs no open port and works behind the
+Cloudflare proxy on the 8443 origin):
+
+```bash
+sudo certbot certonly --dns-cloudflare \
+  --dns-cloudflare-credentials /root/.secrets/cloudflare.ini \
+  -d dev.capsulezero.app
+```
+
+Renewal is handled by the host certbot timer. Add a deploy-hook to reload the dev nginx:
+
+```bash
+# /etc/letsencrypt/renewal-hooks/deploy/reload-dev-nginx.sh  (chmod +x)
+#!/usr/bin/env bash
+cd /opt/capsule-zero && \
+  docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml exec -T nginx nginx -s reload
+```
+
+## First deploy
+
+After steps 1–6, either merge a code change to `main` or run the workflow manually
+(**Actions → CD Dev → Run workflow**, leave `image_sha` blank). Verify:
+
+```bash
+# on the droplet
+docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml ps   # all healthy
+curl -fsS -k -H 'Host: dev.capsulezero.app' https://127.0.0.1:8443/en >/dev/null && echo origin-ok
+# public, once Cloudflare DNS + Origin Rule are live
+curl -fsS https://dev.capsulezero.app/en >/dev/null && echo edge-ok
+```
+
+## Rollback
+
+Every build is tagged immutably by commit SHA. To roll back, run **CD Dev** via
+**workflow_dispatch** with `image_sha = sha-<previous-gitsha>` — it skips the build and
+redeploys that image. List available tags in the repo's **Packages → capsule-zero-web**.
+
+## Notes
+
+- The smoke gate validates the **origin** (`127.0.0.1:8443` with the dev `Host`), so it does
+  not depend on Cloudflare/public DNS being live.
+- When spec 024 adds the Go API / worker, declare them in `docker-compose.dev-server.yml`;
+  the change-gate allowlist already covers `api/**` and `worker/**`.
+- Do **not** confuse this with `docker-compose.dev.yml` (laptop/mkcert local dev,
+  `capsulezero.local`).

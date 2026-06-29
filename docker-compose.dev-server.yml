@@ -1,0 +1,71 @@
+# Capsule Zero — dev SERVER stack (https://dev.capsulezero.app).
+#
+# NOT the laptop override (`docker-compose.dev.yml`, mkcert + capsulezero.local).
+# This is a remote dev environment that runs on the SAME droplet as production but as a
+# fully separate compose project (`capsule-zero-dev`) with its OWN nginx and OWN TLS cert.
+# Prod (project `capsule-zero`, nginx on :443) is never touched by a dev deploy.
+#
+# Deployed automatically by `.github/workflows/cd-dev.yml` on merge to main.
+# Operator setup (Cloudflare, deploy user, GHCR pull token, TLS cert):
+#   docs_capsule_zero/project/devops/dev-cd-pipeline.md
+#
+# Run on the droplet:
+#   export CAPSULE_WEB_IMAGE=ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>
+#   docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml up -d
+
+name: capsule-zero-dev
+
+networks:
+  dev-internal:
+    driver: bridge
+
+services:
+  # Dedicated dev nginx. Binds host 8443 (prod nginx owns 80/443); Cloudflare rewrites the
+  # origin port for dev.capsulezero.app to 8443. http->https is done at the Cloudflare edge,
+  # so no host :80 is published — the internal :80 server exists only for the health probe.
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_started
+    ports:
+      - "${DEV_NGINX_HOST_BIND:-0.0.0.0}:8443:443"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/conf.d.dev-server:/etc/nginx/conf.d:ro
+      - ${LETSENCRYPT_HOST_DIR:-/etc/letsencrypt}:/etc/letsencrypt:ro
+      - ${CERTBOT_WEBROOT_HOST_DIR:-/var/www/certbot}:/var/www/certbot:ro
+    networks: [dev-internal]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/nginx-health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  # Next.js landing — pulled from GHCR, never built on the droplet.
+  web:
+    image: ${CAPSULE_WEB_IMAGE:-ghcr.io/kiaquila/capsule-zero-web:dev}
+    init: true
+    restart: unless-stopped
+    env_file:
+      - path: ./.env.dev
+        required: false
+    environment:
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_APP_URL: ${APP_BASE_URL:-https://dev.capsulezero.app}
+    expose:
+      - "3000"
+    networks: [dev-internal]
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "node -e \"fetch('http://127.0.0.1:3000/en').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s

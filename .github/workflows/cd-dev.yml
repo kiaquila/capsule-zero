@@ -1,0 +1,193 @@
+name: CD Dev
+
+# Auto-deploy to the dev environment (https://dev.capsulezero.app) on merge to main.
+#
+# Build-in-CI, pull-on-droplet: GitHub Actions builds and pushes the web image to GHCR;
+# the droplet only pulls the SHA-pinned image and rolls the isolated `capsule-zero-dev`
+# compose project. Merges that touch only docs/tests/specs do NOT deploy.
+#
+# Spec: .specify/specs/026-dev-cd-pipeline/
+# Runbook (operator setup): docs_capsule_zero/project/devops/dev-cd-pipeline.md
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      image_sha:
+        description: "Existing image tag to redeploy without rebuilding (e.g. sha-<40hex>). Leave blank to build HEAD."
+        required: false
+        default: ""
+
+concurrency:
+  group: cd-dev
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/kiaquila/capsule-zero-web
+
+jobs:
+  gate:
+    name: detect-deploy-relevant-changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Decide whether to deploy
+        id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            echo "manual dispatch -> deploy"
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          zero="0000000000000000000000000000000000000000"
+          if [ -z "${BEFORE:-}" ] || [ "$BEFORE" = "$zero" ] \
+             || ! git rev-parse --verify --quiet "${BEFORE}^{commit}" >/dev/null; then
+            echo "no usable 'before' SHA -> deploy to be safe"
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Changed files in ${BEFORE}..${AFTER}:"
+          changed="$(git diff --name-only "$BEFORE" "$AFTER")"
+          echo "$changed"
+
+          if printf '%s\n' "$changed" | grep -Eq \
+            '^(app/|web/|api/|worker/|infra/|docker-compose\.yml$|docker-compose\.dev-server\.yml$|package-lock\.json$|app/package-lock\.json$|\.github/workflows/cd-dev\.yml$)'; then
+            echo "deploy-relevant paths changed -> deploy"
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "only non-deploy paths changed -> skip deploy"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: build-and-push
+    needs: gate
+    if: >-
+      needs.gate.outputs.run == 'true' &&
+      !(github.event_name == 'workflow_dispatch' && github.event.inputs.image_sha != '')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Compute image ref
+        id: meta
+        run: echo "image=${IMAGE}:sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Set up Buildx (container driver for registry cache)
+        run: docker buildx create --use --name czbuilder --driver docker-container
+
+      - name: Build and push web image
+        run: |
+          set -euo pipefail
+          docker buildx build \
+            --target runner \
+            --tag "${IMAGE}:sha-${GITHUB_SHA}" \
+            --tag "${IMAGE}:dev" \
+            --cache-from "type=registry,ref=${IMAGE}:buildcache" \
+            --cache-to   "type=registry,ref=${IMAGE}:buildcache,mode=max" \
+            --push \
+            ./app
+
+  deploy:
+    name: deploy-to-dev-droplet
+    needs: [gate, build]
+    # Run when gated true and build either succeeded (push / build-HEAD dispatch)
+    # or was skipped (workflow_dispatch redeploy of an existing image_sha).
+    if: >-
+      always() &&
+      needs.gate.outputs.run == 'true' &&
+      needs.build.result != 'failure' &&
+      needs.build.result != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Resolve image ref
+        id: ref
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.image_sha }}" ]; then
+            echo "image=${IMAGE}:${{ github.event.inputs.image_sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "image=${{ needs.build.outputs.image }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy over SSH
+        env:
+          SSH_KEY: ${{ secrets.DEV_DEPLOY_SSH_KEY }}
+          SSH_HOST: ${{ secrets.DEV_DEPLOY_HOST }}
+          SSH_USER: ${{ secrets.DEV_DEPLOY_USER }}
+          KNOWN_HOSTS: ${{ secrets.DEV_DEPLOY_KNOWN_HOSTS }}
+          IMAGE_REF: ${{ steps.ref.outputs.image }}
+          DEPLOY_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "$SSH_USER@$SSH_HOST" \
+            "IMAGE_REF='$IMAGE_REF' DEPLOY_SHA='$DEPLOY_SHA' bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd /opt/capsule-zero
+
+          # Sync compose + nginx config to the deployed commit (secrets in .env.dev are untouched).
+          git fetch --prune origin
+          git checkout --force "$DEPLOY_SHA"
+
+          export CAPSULE_WEB_IMAGE="$IMAGE_REF"
+          COMPOSE="docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml"
+
+          $COMPOSE pull web
+          $COMPOSE up -d --remove-orphans
+
+          # Pick up any nginx config change from the checkout (no-op on a fresh start).
+          $COMPOSE exec -T nginx nginx -t  >/dev/null 2>&1 && $COMPOSE exec -T nginx nginx -s reload || true
+
+          # Wait for the web container to report healthy.
+          web_cid="$($COMPOSE ps -q web)"
+          status="starting"
+          for _ in $(seq 1 30); do
+            status="$(docker inspect -f '{{.State.Health.Status}}' "$web_cid" 2>/dev/null || echo starting)"
+            [ "$status" = "healthy" ] && break
+            sleep 5
+          done
+          if [ "$status" != "healthy" ]; then
+            echo "web did not become healthy (status=$status)"
+            $COMPOSE logs --tail=80 web
+            exit 1
+          fi
+
+          # Origin smoke check through the dev nginx (independent of Cloudflare/public DNS).
+          curl -fsS -k -H 'Host: dev.capsulezero.app' https://127.0.0.1:8443/en >/dev/null
+          echo "smoke ok"
+          $COMPOSE ps
+          REMOTE
