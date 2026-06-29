@@ -2,20 +2,20 @@
 
 ## Stack
 
-Capsule Zero v0.1 backend is a **Go modular monolith** running behind Traefik on a single DigitalOcean droplet. All services are declared as separate `services:` entries in one root `docker-compose.yml`.
+Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a single DigitalOcean droplet. Every deployed v0.1 container is declared as a separate `services:` entry in one root `docker-compose.yml`; the Redis queue consumer runs inside the `api` process until the standalone worker promotion trigger in ADR-007 fires.
 
 | Layer                  | Choice                                                                                                |
 | ---------------------- | ----------------------------------------------------------------------------------------------------- |
 | API process            | Go monolith (`/api`) — single binary with bounded contexts                                            |
-| Background worker      | Go worker (`/worker`) — Redis-queue consumer for image jobs, embeddings, webhook fanout               |
-| API gateway / TLS      | Traefik v3 with Let's Encrypt, rate-limit middleware, forward-auth into Ory Kratos                    |
+| Background worker      | Redis-queue consumer goroutines inside `/api` for v0.1; standalone `/worker` container deferred by ADR-007 |
+| API gateway / TLS      | nginx 1.27 with host-managed Let's Encrypt certbot, rate-limit middleware, `auth_request` into Ory Kratos |
 | Auth                   | Ory Kratos email/password (Stage 1); Google OAuth and Apple Sign-In in Stage 2                        |
-| Database               | PostgreSQL 16 with `pgvector` and Postgres FTS, PgBouncer pool in front                               |
+| Database               | PostgreSQL 16 with `pgvector` and Postgres FTS; API connects directly in v0.1, PgBouncer deferred by ADR-007 |
 | Cache / sessions / queue| Redis 7 (cache, idempotency keys, River/asynq job queue)                                             |
 | Object storage         | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                     |
 | Email                  | Resend (SMTP courier for Kratos; transactional sends from `internal/email`)                           |
 | Front-door             | Cloudflare proxy on `capsulezero.app` for DDoS, bot fight, CDN                                        |
-| Observability          | Grafana dashboards + syslog file logs + OpenTelemetry trace export (Sentry/Prometheus → Stage 2)      |
+| Observability          | syslog file logs + OpenTelemetry trace export; Grafana dashboards deferred by ADR-007 (Sentry/Prometheus → Stage 2) |
 | Migrations             | `golang-migrate` SQL files applied at API boot                                                        |
 
 The Go monolith owns all business logic; the database has no RLS. Authorization is enforced in every Go handler against the Kratos session before any data access. Internal interfaces (`internal/auth`, `internal/storage`, `internal/email`, `internal/billing`, …) let tests substitute fakes per call site, but there is **no global mock mode** — production code wires the real client (see ADR-006).
@@ -42,7 +42,7 @@ The Go monolith owns all business logic; the database has no RLS. Authorization 
     httpapi/                      ← chi router, OpenAPI-typed handlers, middleware
     obs/                          ← logger, tracer, syslog sink
   migrations/                     ← golang-migrate SQL files
-/worker
+/worker                            ← deferred until ADR-007 promotes the standalone worker container
   cmd/worker/                     ← main.go: queue consumer
   internal/
     jobs/                         ← image jobs (Stage 2), embeddings, webhook fanout
@@ -66,7 +66,7 @@ Route groups (full list in OpenAPI):
 - `POST /api/webhooks/lava` (stub in v0.1)
 - `GET/POST /api/admin/moderation/items` (admin role required)
 
-Auth: every authenticated route runs through Traefik forward-auth into Kratos and re-validates the session in the handler. Public routes (`health`, `catalog/search` public reads) skip session resolution.
+Auth: every authenticated route runs through nginx `auth_request` into Kratos and re-validates the session in the handler. Public routes (`health`, `catalog/search` public reads) skip session resolution.
 
 ## Database Schema
 
@@ -142,15 +142,15 @@ Job types:
 - `webhook_fanout` — forward a verified Lava.top webhook to downstream handlers (v0.2)
 - `background_removal` — Stage 2, when the self-hosted image model ships
 
-Jobs are produced by API handlers and consumed by the `/worker` process. Job queue is Redis-based (River or asynq), with retries and dead-letter handling. Job status writes back to `upload_jobs`.
+Jobs are produced by API handlers and consumed by queue-worker goroutines in the `/api` process for v0.1. The queue remains Redis-based (River or asynq), with retries and dead-letter handling, so the same contract can move into `/worker` when ADR-007's promotion trigger fires. Job status writes back to `upload_jobs`.
 
 ## Production Runtime
 
-The full runtime is delivered by `.specify/specs/024-production-stack-runtime/`. Running services (each declared as a separate `services:` block in `docker-compose.yml`):
+The v0.1 runtime is delivered by `.specify/specs/024-production-stack-runtime/`. Active v0.1 services are declared as separate `services:` blocks in `docker-compose.yml`; deferred rows remain in the catalog only to document their promotion path:
 
 | Service        | Image                            | Role                                                       | v0.1 |
 | -------------- | -------------------------------- | ---------------------------------------------------------- | ---- |
-| `traefik`      | `traefik:v3`                     | API gateway, TLS, rate-limit, forward-auth                 | yes  |
+| `nginx`        | `nginx:1.27-alpine`              | API gateway, TLS termination, HTTP redirect, rate-limit, Kratos `auth_request` | yes  |
 | `kratos`       | `oryd/kratos`                    | Identity provider                                          | yes  |
 | `postgres`     | `pgvector/pgvector:pg16`         | Application database + Kratos database                     | yes  |
 | `pgbouncer`    | `edoburu/pgbouncer`              | Connection pool in front of Postgres                       | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md) |
@@ -168,8 +168,8 @@ For v0.1 the runtime ships with **`pgbouncer`, `grafana`, and the standalone `wo
 
 | Variable                  | Scope        | Purpose                                                                |
 | ------------------------- | ------------ | ---------------------------------------------------------------------- |
-| `POSTGRES_URL`            | server       | Postgres connection string (via PgBouncer)                              |
-| `CF_DNS_API_TOKEN`        | server       | Cloudflare DNS API token for Traefik DNS-01 ACME                         |
+| `POSTGRES_URL`            | server       | Direct Postgres connection string for v0.1 (PgBouncer DSN is introduced only after ADR-007 promotion) |
+| `CF_DNS_API_TOKEN`        | server       | Cloudflare DNS API token only if a future DNS-01 automation path replaces v0.1 HTTP-01 certbot |
 | `REDIS_URL`               | server       | Redis connection string                                                 |
 | `KRATOS_PUBLIC_URL`       | server       | Kratos public API base URL                                              |
 | `KRATOS_ADMIN_URL`        | server       | Kratos admin API base URL                                               |
@@ -192,23 +192,23 @@ For v0.1 the runtime ships with **`pgbouncer`, `grafana`, and the standalone `wo
 
 1. Clone the repo and `git fetch --all --prune`.
 2. Copy `.env.example` files into `.env.local` for each service.
-3. Run the production-shape stack with the dev override (`docker-compose.dev.yml` swaps Resend for MailHog and enables hot-reload for `api` and `worker`):
+3. Run the production-shape stack. Phase 1 uses the root compose directly; `docker-compose.dev.yml` returns in Phase 2 when MailHog/Kratos local overrides are useful:
    ```bash
-   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+   docker compose up
    ```
 4. Seed methodology data (`color_catalog`, `category_catalog`, `compatibility_rules`) from `docs_capsule_zero/project/methodology/`.
-5. Open `http://localhost:3000` for the web frontend; Traefik proxies the API at `http://localhost/api/...`.
-6. Kratos UI flows are rendered by the web frontend; MailHog catches verification/recovery emails at `http://localhost:8025`.
+5. Open `http://localhost:3000` for the web frontend; nginx proxies the API at `http://localhost/api/...` once Phase 3 lands.
+6. Kratos UI flows are rendered by the web frontend. When the Phase 2 dev override lands, MailHog catches verification/recovery emails at `http://localhost:8025`.
 
 ## Sprint 0 Backend Gate
 
 Before the first feature slice (slice 01 — auth/session/profile), the production runtime spec must deliver:
 
-- `docker-compose.yml` with every service in the table above declared explicitly;
+- `docker-compose.yml` with every active v0.1 service in the table above declared explicitly; `pgbouncer`, standalone `worker`, and `grafana` are excluded until ADR-007 promotion;
 - `migrations/0001_initial_schema.sql` with all tables, indexes, FKs, enum/check constraints, and seed references;
 - `migrations/0002_kratos_schema.sql` for Kratos (or Kratos managing its own migrations against a separate database in Postgres);
 - Kratos identity schema, courier (Resend SMTP) configured, sample identity admin script;
-- Traefik dynamic config with TLS, rate-limit, and forward-auth middlewares;
+- nginx config with TLS, rate-limit, and Kratos `auth_request` middleware;
 - Health-check on every service plus a smoke script that walks the stack end-to-end;
 - Cloudflare proxy active on `capsulezero.app`;
 - DigitalOcean Spaces bucket with CORS configured;

@@ -6,7 +6,7 @@ Accepted (2026-06-29).
 
 ## Context
 
-[ADR-001](adr-001-stack.md) accepted the full production stack as the long-term target: Traefik, Kratos, Postgres + pgvector, PgBouncer, Redis, Go API, Go worker, Next.js web, imgproxy, Grafana, MailHog (dev-only). That set is the right shape for steady-state operation, but the v0.1 launch sits on a single DigitalOcean droplet (4 GB RAM / 2 vCPU / 80 GB disk) and ships before there is any real load to defend against.
+[ADR-001](adr-001-stack.md) accepted the full production stack as the long-term target: nginx, Kratos, Postgres + pgvector, PgBouncer, Redis, Go API, Go worker, Next.js web, imgproxy, Grafana, MailHog (dev-only). That set is the right shape for steady-state operation, but the v0.1 launch sits on a single DigitalOcean droplet (4 GB RAM / 2 vCPU / 80 GB disk) and ships before there is any real load to defend against.
 
 Three services in the full stack are not load-bearing for v0.1 traffic and add operational surface, RAM, and image-pull weight without paying for themselves yet:
 
@@ -30,7 +30,7 @@ This is a v0.1 bootstrap decision, not a long-term stack change. Each deferred s
 
 ### Services that stay in v0.1
 
-`traefik`, `kratos`, `postgres` (with `pgvector`), `redis`, `api`, `web`, `imgproxy` (for derived image sizes). `mailhog` stays as a dev-only override.
+`nginx`, `kratos`, `postgres` (with `pgvector`), `redis`, `api`, `web`, `imgproxy` (for derived image sizes). `mailhog` stays as a dev-only override.
 
 ## Consequences
 
@@ -53,7 +53,7 @@ Reverse path is mechanical for all three: add the `services:` block back, re-poi
 
 This ADR amends [ADR-001](adr-001-stack.md)'s service list for v0.1 only. The full production stack remains the long-term target.
 
-The matching change to `docker-compose.yml`, the services table in [backend-docs](../project/backend/backend-docs.md), and the `.specify/specs/024-production-stack-runtime/` deliverables lands in the implementation PR that ships spec 024 — this ADR records the decision ahead of that work.
+The matching changes to `docker-compose.yml`, the services table in [backend-docs](../project/backend/backend-docs.md), and the `.specify/specs/024-production-stack-runtime/` deliverables are part of this decision PR. Later spec-024 phase PRs must keep `pgbouncer`, a standalone `worker` container, and `grafana` out of v0.1 acceptance gates until the promotion triggers above fire.
 
 ## Out of scope
 
