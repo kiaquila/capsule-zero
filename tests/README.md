@@ -25,7 +25,7 @@ The loop is non-negotiable:
 6. **Commit the implementation.**
 7. **Refactor with the safety net of the green test.**
 
-PR reviewers (human and AI) reject PRs that introduce product behavior without a corresponding test commit that landed first. Specs `001-003` are grandfathered and out of scope.
+PR reviewers (human and AI) reject PRs for specs `025` and onward that introduce product behavior without a corresponding test commit that landed first. Specs `001-024` are grandfathered for the TDD-history requirement.
 
 ## What lives where
 

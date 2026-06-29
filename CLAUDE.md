@@ -40,7 +40,7 @@ If the working tree has uncommitted changes that block a checkout, stash them (`
 - ✅ Frontend remains Next.js App Router for web, but talks to the Go API through nginx instead of Supabase clients
 - ✅ Payments: Lava.top web purchases, stubbed at first and integrated later
 - ✅ ADRs rewritten for production stack under `docs_capsule_zero/adr/`
-- ✅ CI/CD baseline configured via GitHub Actions (`baseline-checks`, `guard`, `AI Review`)
+- ✅ CI/CD baseline configured via GitHub Actions (`baseline-checks`, `guard`, `test`, `AI Review`)
 - ⚠️ Remaining Sprint 0 gate: founder approval on rewritten ADRs, DigitalOcean VM upgrade, Cloudflare anti-DDoS, Resend email account, `.specify/specs/024-production-stack-runtime/` implementation, deletion of the legacy `/app` Supabase code
 
 **See AGENTS.md → "Phase 4" section** for full task list and deliverables.
@@ -180,7 +180,7 @@ Pixel-perfect Phase 3 prototypes in `html-prototypes/` (pure HTML+CSS). This fol
 ## Repository Delivery Protocol
 
 - Product code lands through pull requests only.
-- Required GitHub checks are `baseline-checks`, `guard`, and `AI Review`.
+- Required GitHub checks are `baseline-checks`, `guard`, `test`, and `AI Review`.
 - Claude is the default implementation agent, selected through `AI_IMPLEMENTATION_AGENT`.
 - Review selection is separate and controlled through `AI_REVIEW_AGENT`.
 - Canonical execution uses the selected vendor's native remote surface:

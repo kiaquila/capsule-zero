@@ -6,7 +6,7 @@ Legacy migration artifacts were removed after all scenarios below passed.
 
 ## Preconditions
 
-- `baseline-checks`, `guard`, and `AI Review` are green on the current migration branch.
+- `baseline-checks`, `guard`, `test`, and `AI Review` are green on the current migration branch.
 - `osv-scan` has run on the current migration branch or has been consciously reviewed as a non-required dependency-security signal.
 - Claude GitHub Actions workflows are enabled and can access `ANTHROPIC_API_KEY`.
 - Codex GitHub integration is enabled for `kiaquila/capsule-zero`.

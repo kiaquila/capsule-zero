@@ -103,6 +103,7 @@ This is a fail-closed system by design.
 
 - `baseline-checks` is the required CI check for repository baseline validation, app typecheck, app build, and optional app tests.
 - `guard` is the required policy check for feature-memory coverage and baseline-file validation.
+- `test` is the required e2e check for Playwright lint, typecheck, app build, and browser verification.
 - `osv-scan` runs dependency vulnerability scanning on pull requests, pushes to `main`, a weekly schedule, and manual dispatch.
 - Required gate scripts are loaded from trusted default-branch code when available, so pull requests cannot weaken the checks that judge them.
 
