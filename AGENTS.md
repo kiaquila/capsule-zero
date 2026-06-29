@@ -6,7 +6,7 @@
 
 **Capsule Zero** is a premium fashion-tech platform — "the Aesop of wardrobe apps". It helps affluent users (25–40 yo) build maximally productive capsule wardrobes using a proprietary color and wardrobe methodology. Core metric: **Outfit Productivity Ratio** (outfits / items).
 
-**Tech stack:** Next.js 14+ App Router web frontend, React Native mobile app (iOS + Android), Go modular monolith backend, Traefik API gateway, Ory Kratos auth, PostgreSQL + pgvector, Redis, DigitalOcean Spaces, Cloudflare front-door, all wired through docker-compose on a DigitalOcean droplet.
+**Tech stack:** Next.js 14+ App Router web frontend, React Native mobile app (iOS + Android), Go modular monolith backend, nginx 1.27 reverse proxy / API gateway, Ory Kratos auth, PostgreSQL + pgvector, Redis, DigitalOcean Spaces, Cloudflare front-door, all wired through docker-compose on a DigitalOcean droplet.
 **Languages:** EN (primary) and RU are active in v0.1 — i18n from Day 1. ES-AR is retained as reference copy and deferred to v0.2.
 **Target:** Buenos Aires-based startup, global premium segment.
 
@@ -28,7 +28,7 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
 | 1. Market Research            | COMPLETE — `docs_capsule_zero/marketing/go-to-market.md`                                                                                                                           |
 | 2. Product Definition         | COMPLETE — `.specify/specs/001-capsule-zero-mvp/spec.md`, `docs_capsule_zero/project/methodology/`, `docs_capsule_zero/ux/emotion-map.md`, `docs_capsule_zero/ux/ux-validation.md` |
 | 3. UX/UI Design               | COMPLETE — 16 logical screens across 12 HTML files + `html-prototypes/design-system.html`, `html-prototypes/color-system.html` — all in `html-prototypes/`                         |
-| **4. Technical Architecture** | **PIVOTED TO PRODUCTION STACK** — Go modular monolith + Traefik + Ory Kratos + Postgres/pgvector + Redis + DO Spaces + Cloudflare + Resend; React Native replaces Flutter        |
+| **4. Technical Architecture** | **PIVOTED TO PRODUCTION STACK** — Go modular monolith + nginx + Ory Kratos + Postgres/pgvector + Redis + DO Spaces + Cloudflare + Resend; React Native replaces Flutter        |
 | 5. Development Sprint         | Upcoming — starts with `.specify/specs/024-production-stack-runtime/`                                                                                                              |
 | 6. QA & Soft Launch           | Upcoming                                                                                                                                                                           |
 | 7. Commercial Launch          | Upcoming                                                                                                                                                                           |
@@ -193,7 +193,7 @@ When assigned to implement a specific feature, read in this order:
 /worker/          ← Go background worker (Redis-queue consumer for image jobs, embeddings, webhooks)
 /web/             ← Next.js App Router web frontend
 /mobile/          ← React Native iOS + Android app
-/infra/           ← docker-compose.yml + service configs + Traefik dynamic config + Kratos config + migrations
+/infra/           ← docker-compose.yml + service configs + nginx conf.d + Kratos config + migrations
 /html-prototypes/ ← Phase 3 design source of truth
 /docs_capsule_zero/ ← Product, methodology, devops, architecture docs
 /.specify/        ← spec-kit feature memory
@@ -278,12 +278,12 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 | **Auth**               | Ory Kratos with email/password Stage 1; Google OAuth and Apple Sign-In deferred to Stage 2                                   |
 | **File Storage**       | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                            |
 | **Image processing**   | Self-hosted Capsule Zero model behind a worker (deferred — first ship core wardrobe flows with manual/placeholder behavior)  |
-| **API gateway**        | Traefik v3 with Let's Encrypt TLS, rate-limit middleware, and forward-auth into Kratos                                       |
-| **Hosting**            | Single DigitalOcean droplet running docker-compose; Cloudflare in front of Traefik for DDoS protection and CDN               |
+| **API gateway**        | nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos                  |
+| **Hosting**            | Single DigitalOcean droplet running docker-compose; Cloudflare in front of nginx for DDoS protection and CDN                  |
 | **Email**              | Resend for transactional email (verification, password reset, security notifications)                                        |
 | **Observability**      | Grafana dashboards + syslog file logs + tracing; Sentry and Prometheus deferred to Stage 2                                   |
 | **State Management**   | Zustand for local Journey/UI state; TanStack Query for interactive server-state                                              |
-| **API Client**         | Next.js Server Components/Actions and Route Handlers call the Go API through Traefik (typed fetch + TanStack Query)          |
+| **API Client**         | Next.js Server Components/Actions and Route Handlers call the Go API through nginx (typed fetch + TanStack Query)            |
 | **Forms**              | React Hook Form + Zod                                                                                                        |
 | **i18n**               | next-intl                                                                                                                    |
 | **Payments**           | Lava.top web purchases — stubbed in v0.1, integrated after the core wardrobe and capsule flows ship                          |
@@ -323,5 +323,5 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 - **Multilingual from Day 1:** EN and RU in v0.1 — use `next-intl`; ES-AR is globally deferred to v0.2
 - **i18n strings:** `docs_capsule_zero/i18n/ui-texts.md`
 - **Mobile-first:** phone UX first on web and React Native; iPhone 14+ (375px), Android small/standard, iPad/tablet (768px), Desktop 1280px+
-- **Native mobile app:** React Native iOS + Android consumes the same Go API contract through Traefik
+- **Native mobile app:** React Native iOS + Android consumes the same Go API contract through nginx
 - **Mobile payments:** Lava.top is canonical for web purchases; iOS/Android v0.1 must not expose purchase CTAs or external payment links, only balance/status

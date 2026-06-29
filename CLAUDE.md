@@ -35,9 +35,9 @@ If the working tree has uncommitted changes that block a checkout, stash them (`
 
 **Phase 4 status:**
 
-- ✅ Production stack accepted: Go modular monolith, PostgreSQL + pgvector, Redis, Traefik gateway, Ory Kratos auth, DigitalOcean Spaces, self-hosted observability
+- ✅ Production stack accepted: Go modular monolith, PostgreSQL + pgvector, Redis, nginx gateway, Ory Kratos auth, DigitalOcean Spaces, self-hosted observability
 - ✅ Mobile decision: React Native (Flutter previously considered, dropped before implementation)
-- ✅ Frontend remains Next.js App Router for web, but talks to the Go API through Traefik instead of Supabase clients
+- ✅ Frontend remains Next.js App Router for web, but talks to the Go API through nginx instead of Supabase clients
 - ✅ Payments: Lava.top web purchases, stubbed at first and integrated later
 - ✅ ADRs rewritten for production stack under `docs_capsule_zero/adr/`
 - ✅ CI/CD baseline configured via GitHub Actions (`baseline-checks`, `guard`, `AI Review`)
@@ -82,8 +82,8 @@ Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-founda
 
 - **Web frontend:** Next.js 14+ App Router, React, TypeScript, Tailwind CSS v4 with custom @theme tokens (`app/src/styles/tokens.css`)
 - **Mobile:** React Native (iOS + Android), production scaffold delivered in a later spec
-- **API gateway:** Traefik v3 with built-in TLS (Let's Encrypt), rate-limit middleware, and auth-forward middleware in front of Ory Kratos
-- **Backend:** Go modular monolith (single binary with bounded contexts), exposed behind Traefik; separate image-processing worker introduced when the self-hosted image model lands
+- **API gateway:** nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Ory Kratos
+- **Backend:** Go modular monolith (single binary with bounded contexts), exposed behind nginx; separate image-processing worker introduced when the self-hosted image model lands
 - **Auth:** Ory Kratos (email/password Stage 1; Google OAuth and Apple Sign-In in Stage 2)
 - **Database:** PostgreSQL 16 with pgvector (semantic search) and Postgres FTS (full-text), PgBouncer for connection pooling
 - **Cache / sessions / background queues:** Redis 7 (Redis-based job queue replaces Kafka for v0.1)

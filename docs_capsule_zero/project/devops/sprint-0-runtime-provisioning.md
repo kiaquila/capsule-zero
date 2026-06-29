@@ -2,14 +2,16 @@
 
 ## Purpose
 
-This runbook describes how to bring up the production-shape Capsule Zero stack on the DigitalOcean droplet for the first time. It is the operational companion to `.specify/specs/024-production-stack-runtime/`. It does not store secrets in git.
+This runbook describes how to bring up the production-shape Capsule Zero stack on the DigitalOcean droplet across the phased rollout in `.specify/specs/024-production-stack-runtime/`. It is the operational companion to that spec and does not store secrets in git.
+
+Phase 1 delivers the `nginx + web` runtime that replaces the host Caddy + legacy Supabase compose currently on the droplet. The dedicated runbook for Phase 1 lives at `docs_capsule_zero/project/devops/nginx-reverse-proxy.md`; this document keeps the steady-state operational contract for the whole stack once every phase has shipped.
 
 ## Preconditions
 
 - GitHub `main` is current and required checks are green.
 - DigitalOcean droplet of at least 4 GB / 2 vCPU / 80 GB, Ubuntu 24.04 LTS, Docker + docker-compose installed.
 - Cloudflare account with the `capsulezero.app` zone.
-- Cloudflare API token with Zone Read + DNS Edit on `capsulezero.app`, stored as `CF_DNS_API_TOKEN` in the droplet `.env` for Traefik DNS-01 ACME.
+- (Phase 4+ when Cloudflare proxy is enabled.) Cloudflare API token with Zone Read + DNS Edit on `capsulezero.app`, stored as `CF_DNS_API_TOKEN` in the droplet `.env` for ACME DNS-01. Until the proxy is on, nginx + certbot use HTTP-01 with port 80 directly.
 - Spaceship registrar account with `capsulezero.app` set to Cloudflare nameservers.
 - Resend account with API key and `no-reply@capsulezero.app` verified.
 - DigitalOcean Spaces bucket `capsulezero` with CORS for `https://capsulezero.app` (and the dev origin) configured.
@@ -26,7 +28,7 @@ Required keys at minimum: see `docs_capsule_zero/project/devops/docker-compose-d
 
 ## Production-First Posture
 
-There is no Stage 1 mock-first layer (see ADR-006). Every service in the runtime comes up against real Postgres / real Kratos / real Spaces / real Resend / real Cloudflare from the first deploy. Local development uses the same stack with a `docker-compose.dev.yml` override that swaps Resend for MailHog and enables hot-reload for `api` and `worker`.
+There is no Stage 1 mock-first layer (see ADR-006). Every service in the runtime comes up against real Postgres / real Kratos / real Spaces / real Resend / real Cloudflare from the first deploy. Local development uses the same stack with a `docker-compose.dev.yml` override that swaps Resend for MailHog and enables hot-reload for `api` and `worker` (the override is reintroduced in Phase 2 alongside Kratos).
 
 Real provider integration gates that remain:
 
@@ -57,21 +59,21 @@ Until these gates open, the corresponding API surface exists as stubs (Lava.top)
 ### 3. Pull repo and start the stack
 
 ```bash
-git clone git@github.com:kiaquila/capsule-zero.git /srv/capsule-zero/repo
-cd /srv/capsule-zero/repo
+git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero
+cd /opt/capsule-zero
 install -m 600 /path/to/encrypted/.env ./.env
 docker compose --env-file ./.env up -d
-docker compose logs traefik --tail=50 # confirm DNS-01 ACME issued certificates
+docker compose logs nginx --tail=50 # confirm nginx is up and serving 443
 ```
 
-This brings up Traefik, Kratos, Postgres, PgBouncer, Redis, the Go API, the Go worker, the Next.js web container, imgproxy, and Grafana. golang-migrate runs at API boot. Kratos runs its own migrations through its init container.
+This brings up nginx, Kratos, Postgres, PgBouncer, Redis, the Go API, the Go worker, the Next.js web container, imgproxy, and Grafana once every phase of spec 024 has shipped. In earlier phases only the services delivered so far come up. golang-migrate runs at API boot from Phase 3 onward. Kratos runs its own migrations through its init container from Phase 2 onward.
 
 ### 4. Verify health end-to-end
 
 ```bash
 curl -fsS https://capsulezero.app/api/health
 docker compose ps
-docker compose logs traefik --tail=50
+docker compose logs nginx --tail=50
 ```
 
 Expected `/api/health` response includes:
@@ -157,7 +159,7 @@ DNS / Cloudflare
 
 docker-compose
 - All services healthy: pass/fail
-- Traefik TLS issued: pass/fail
+- nginx TLS serving on 443: pass/fail
 - API /api/health: pass/fail
 
 Kratos / Resend
@@ -179,7 +181,8 @@ Remaining blockers:
 
 ## References
 
-- Traefik docs: https://doc.traefik.io/traefik/
+- nginx docs: https://nginx.org/en/docs/
+- certbot docs: https://eff-certbot.readthedocs.io/
 - Ory Kratos: https://www.ory.sh/docs/kratos/
 - PostgreSQL pgvector: https://github.com/pgvector/pgvector
 - DigitalOcean Spaces: https://www.digitalocean.com/products/spaces

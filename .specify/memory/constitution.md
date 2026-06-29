@@ -133,8 +133,8 @@ The platform guides the user through methodology without imposing. It suggests, 
 - **Web frontend:** Next.js 14+ App Router, React, TypeScript
 - **Mobile:** React Native (iOS + Android) sharing the same Go API contract
 - **Styling:** Tailwind CSS v4 with custom @theme tokens
-- **Backend:** Go modular monolith (single binary, bounded contexts inside the same process) served behind Traefik
-- **API gateway:** Traefik v3 with Let's Encrypt TLS, rate-limit middleware, forward-auth into Kratos
+- **Backend:** Go modular monolith (single binary, bounded contexts inside the same process) served behind nginx
+- **API gateway:** nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos
 - **Auth:** Ory Kratos (email/password in v0.1; Google OAuth and Apple Sign-In in Stage 2)
 - **Database:** PostgreSQL 16 with pgvector (semantic) and Postgres FTS (full-text), PgBouncer for connection pooling
 - **Cache / queue:** Redis 7 (cache, sessions, Redis-based job queue)
