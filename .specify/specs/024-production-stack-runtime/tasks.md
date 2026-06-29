@@ -19,16 +19,16 @@
 - [ ] First droplet rollout: stop Caddy, `certbot certonly --standalone`, `docker compose up -d`, smoke `curl https://capsulezero.app/en` (operator-driven; evidence lands on PR after the rollout)
 
 ### Phase 2 — Postgres + Kratos
-- [ ] Add `postgres` (pgvector image) + `pgbouncer` services with healthchecks and persistent volume
+- [ ] Add `postgres` (pgvector image) service with healthcheck and persistent volume; keep PgBouncer deferred by ADR-007
 - [ ] Add `kratos` service + `infra/kratos/` identity schema, Resend SMTP courier, self-service flow config
 - [ ] Reintroduce `docker-compose.dev.yml` with MailHog override for Kratos courier
 - [ ] Wire nginx `auth_request` against Kratos for protected routes
 - [ ] Smoke sign-up via web UI delivering a real verification email through Resend (requires Phase 4 email setup gated separately, or MailHog in dev)
 
-### Phase 3 — Go API + worker + Redis
+### Phase 3 — Go API + Redis + in-process worker
 - [ ] Add `redis` service with persistent volume
 - [ ] Scaffold `/api` Go module with `GET /api/health` probing every dep
-- [ ] Scaffold `/worker` Go module idling on Redis queue
+- [ ] Wire Redis queue consumer goroutines inside `/api`; standalone `/worker` container remains deferred by ADR-007
 - [ ] `api/migrations/0001_initial_schema.sql` with full schema + methodology seed
 - [ ] nginx routes `/api/*` to `api:8080`
 
@@ -38,7 +38,7 @@
 - [ ] Add `imgproxy` service
 
 ### Phase 5 — Observability + backups
-- [ ] Add `grafana` service with provisioning for syslog + OTLP traces
+- [ ] Configure syslog rotation and OTLP trace exporter target; Grafana remains deferred by ADR-007
 - [ ] Nightly `pg_dump` cron uploading to `s3://capsulezero/backups/` with 14-day lifecycle
 
 ### Phase 6 — Legacy `/app` removal
@@ -77,12 +77,13 @@
 - **2026-06-28 retain legacy Supabase env keys in `compose.env.example` as documented placeholders.** The Next.js bundle in `/app` imports `@supabase/ssr` at module load; missing keys would throw at container start. Keys are removed in Phase 6 alongside the `/app` removal.
 - **2026-06-28 PR #49 review fix: certbot webroot is host-managed, not a Docker named volume.** Host `certbot.timer` writes HTTP-01 challenge files to `/var/www/certbot`; nginx bind-mounts that path read-only via `CERTBOT_WEBROOT_HOST_DIR` and serves it from both the port-80 and port-443 ACME locations so HTTP-01 renewals still work after an HTTP→HTTPS redirect. The nginx container healthcheck uses `/nginx-health`, a real static endpoint, instead of probing a challenge token that certbot creates only during renewals.
 - **2026-06-28 PR #49 review fix: nginx resolves the `web` service dynamically.** Static nginx upstream blocks resolve Docker service names only at config load, so replacing the `web` container can leave nginx proxying to a removed container IP. The Phase 1 config now uses Docker embedded DNS (`127.0.0.11`) plus variable `proxy_pass` to re-resolve `web:3000` with a short TTL.
+- **2026-06-29 PR #50 review fix: spec 024 aligns with ADR-007's slim v0.1 runtime.** Phase 2 uses direct Postgres URLs without PgBouncer, Phase 3 runs the Redis queue consumer inside `api` instead of deploying a standalone `worker`, and Phase 5 verifies syslog/OTLP/backups without requiring Grafana. Promotion triggers for all three deferred services stay in ADR-007.
 
 ### Known Issues
 
 - The legacy `/app` Supabase shell stays in the repo until Phase 6. Reason: keeping the working tree pristine across phases so we can rollback DNS to the old shell if needed.
 - React Native scaffold ships in this spec, but real auth integration with Kratos lands in a follow-up auth/profile slice.
-- Sentry and Prometheus are deferred to Stage 2 — observability in v0.1 is Grafana + syslog + OTLP traces only.
+- Sentry and Prometheus are deferred to Stage 2. v0.1 observability is syslog + OTLP traces only; Grafana is also deferred by ADR-007 until its promotion trigger fires.
 - Lava.top remains stubbed in `/api/billing/*` — the routes exist with stub responses so the OpenAPI contract is stable, but no real money moves until v0.2.
 - Self-hosted Capsule Zero image-processing model is deferred to Stage 2 — v0.1 stores originals only and the 5 second processing gate is dormant.
 - `npm run check:runtime-env` still validates the legacy Supabase/Lava/Photoroom env contract and fails with local placeholder values on this branch. It is **not** invoked from CI (`ci.yml` runs only `check:repo`, `check:api-contract`, `lint`, `typecheck`, `build`, `docker build`, `npm test`). Phase 6 retires the script alongside the legacy `/app` removal.

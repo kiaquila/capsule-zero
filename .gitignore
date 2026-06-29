@@ -31,6 +31,7 @@ deploy/*.env
 # dependencies
 /node_modules/
 
-# supabase CLI local scratch
+# supabase CLI local scratch (legacy stack — kept ignored so the CLI
+# does not pollute git status while the legacy code is retired)
 supabase/.branches/
 supabase/.temp/

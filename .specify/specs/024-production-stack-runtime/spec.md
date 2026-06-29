@@ -2,7 +2,7 @@
 
 ## Goal
 
-Bring up the full Capsule Zero production stack on the DigitalOcean droplet via docker-compose so that `https://capsulezero.app` serves a healthy stack with every service declared, configured, and health-checked. After the spec ships in full, every subsequent feature slice runs against real Kratos / Postgres / Redis / DigitalOcean Spaces / Resend from the first PR with no mock-first layer (see ADR-006).
+Bring up Capsule Zero's v0.1 production runtime on the DigitalOcean droplet via docker-compose so that `https://capsulezero.app` serves a healthy stack with every active v0.1 service declared, configured, and health-checked. After the spec ships in full, every subsequent feature slice runs against real Kratos / direct Postgres / Redis / DigitalOcean Spaces / Resend from the first PR with no mock-first layer (see ADR-006 and ADR-007).
 
 This spec delivers the **runtime**. It does not implement product features beyond what is required to prove that each service is wired correctly — the Go API ships with `GET /api/health` and the auth/profile bounded contexts wired only enough for the health probe and a smoke sign-up. Product features ship in later stateful slices (see `docs_capsule_zero/project/backend/backend-stateful-slices-plan.md`).
 
@@ -13,10 +13,10 @@ The spec ships in incremental PRs against the same feature folder. Each phase ke
 | Phase | Scope | Status |
 | ----- | ----- | ------ |
 | Phase 1 — nginx + web | Replace the host Caddy + legacy Supabase compose with `nginx + web` in `docker-compose.yml`. `https://capsulezero.app/en` keeps serving the existing Next.js landing. | **In progress** |
-| Phase 2 — Postgres + Kratos | Add `postgres` (pgvector image), `pgbouncer`, and `kratos` to compose. nginx `auth_request` middleware against Kratos. Wire Kratos self-service flows for sign-up/sign-in. | Pending |
-| Phase 3 — Go API + worker + Redis | Add `redis`, `api` (Go modular monolith with `GET /api/health`), and `worker` (Redis queue consumer). nginx routes `/api/*` to the Go API. | Pending |
+| Phase 2 — Postgres + Kratos | Add `postgres` (pgvector image) and `kratos` to compose. nginx `auth_request` middleware against Kratos. Wire Kratos self-service flows for sign-up/sign-in. | Pending |
+| Phase 3 — Go API + Redis + in-process worker | Add `redis` and `api` (Go modular monolith with `GET /api/health` plus Redis queue consumer goroutines). nginx routes `/api/*` to the Go API. | Pending |
 | Phase 4 — Storage + email + imgproxy | DigitalOcean Spaces bucket with CORS for `https://capsulezero.app`. Resend domain verified with SPF + DKIM. `imgproxy` deployed for on-the-fly derivatives. | Pending |
-| Phase 5 — Observability + backups | Grafana dashboards, syslog rotation, OTLP trace exporter. Nightly `pg_dump` cron with 14-day Spaces lifecycle. | Pending |
+| Phase 5 — Observability + backups | syslog rotation, OTLP trace exporter, and nightly `pg_dump` cron with 14-day Spaces lifecycle. Grafana remains deferred by ADR-007. | Pending |
 | Phase 6 — Legacy `/app` removal | Move `app/src/styles/tokens.css` to `web/src/styles/tokens.css`, retire `docker-compose.legacy-supabase.yml`, delete the legacy Supabase `/app` shell. | Pending |
 
 Each phase ships as its own PR with feature-memory updates against this folder. The `## Verification` table in `plan.md` records acceptance criteria for each phase separately.
@@ -25,12 +25,12 @@ Each phase ships as its own PR with feature-memory updates against this folder. 
 
 ### In scope across all phases
 
-- A single root `docker-compose.yml` with every service declared as a separate `services:` block.
+- A single root `docker-compose.yml` with every active v0.1 container declared as a separate `services:` block.
 - A reverse-proxy / API-gateway tier owned by nginx 1.27 (see ADR-001 § "Why nginx and not Traefik or Caddy").
 - TLS via Let's Encrypt with certbot on the host. The certificate lives at `/etc/letsencrypt/live/capsulezero.app/` and is mounted read-only into the nginx container.
 - Service stubs for our own code:
-  - `/api` Go skeleton: `cmd/api/main.go` boots an HTTP server with `GET /api/health` reporting reachability of Postgres, Redis, Kratos, Spaces, Resend (Phase 3)
-  - `/worker` Go skeleton: `cmd/worker/main.go` boots a Redis-queue consumer that idles cleanly (Phase 3)
+  - `/api` Go skeleton: `cmd/api/main.go` boots an HTTP server with `GET /api/health` reporting reachability of Postgres, Redis, Kratos, Spaces, Resend, and starts the v0.1 Redis queue consumer goroutines (Phase 3)
+  - `/worker` Go skeleton is deferred until ADR-007 promotes the standalone worker container; the Redis queue contract is still introduced in `/api` during Phase 3
   - `/web` Next.js skeleton — until the legacy `/app` removal PR, web is served from `/app/Dockerfile`; the `/web` directory replaces it in Phase 6
   - `/mobile` React Native scaffold (Expo project; ships builds locally; deploy to TestFlight/Google Play remains a Stage 2 follow-up)
 - Infrastructure configs under `/infra/`:
@@ -42,7 +42,7 @@ Each phase ships as its own PR with feature-memory updates against this folder. 
 - DigitalOcean Spaces bucket `capsulezero` with CORS for `https://capsulezero.app` and the dev origin (Phase 4)
 - Resend account verified for `no-reply@capsulezero.app` with SPF/DKIM published (Phase 4)
 - Nightly cron uploading `pg_dump` to `backups/` prefix in Spaces with a 14 day lifecycle rule (Phase 5)
-- Grafana dashboard provisioning for syslog files and the OpenTelemetry trace exporter (Phase 5)
+- syslog rotation plus OpenTelemetry trace exporter wiring (Phase 5); Grafana dashboard provisioning is deferred by ADR-007
 - Operator runbook updates per phase. `docs_capsule_zero/project/devops/nginx-reverse-proxy.md` covers Phase 1; `sprint-0-runtime-provisioning.md` and `docker-compose-deploy.md` are updated as services arrive.
 - Encrypted `.env` file shipped via the operator's machine to `/opt/capsule-zero/.env` with mode `600` (kept up to date per phase)
 
@@ -53,6 +53,7 @@ Each phase ships as its own PR with feature-memory updates against this folder. 
 - Self-hosted Capsule Zero image-processing model (Stage 2)
 - Google OAuth and Apple Sign-In (Stage 2)
 - Sentry and Prometheus (Stage 2)
+- PgBouncer, a standalone `worker` container, and Grafana dashboards until ADR-007 promotion triggers fire
 - Kubernetes / multi-droplet topology (deferred until objective scale demands it)
 - HTTP/3 at the origin (Cloudflare provides HTTP/3 at the edge once the proxy is on)
 - ES-AR locale activation (v0.2)
@@ -75,7 +76,7 @@ The runtime must survive the following without silently degrading. Each is cover
 - DigitalOcean droplet ≥ 4 GB RAM / 2 vCPU / 80 GB disk. The runtime fails closed if memory pressure drives any service into OOM during the first-start smoke.
 - Spaceship registrar → Cloudflare nameservers → Cloudflare proxy → nginx on the droplet. No third-party CDN beyond the Cloudflare proxy and the DigitalOcean Spaces CDN for catalog images. Cloudflare cut-over may land in any phase before Phase 4 because it is an organisational gate independent of compose service rollout.
 - All secrets live only in the droplet's encrypted `.env` and provider dashboards. Never in git, never in chat with agents.
-- Every service in `docker-compose.yml` is its own `services:` block. No consolidating multiple processes into one image.
+- Every deployed v0.1 container in `docker-compose.yml` is its own `services:` block. The one explicit exception is the Redis queue consumer, which runs as goroutines inside `api` until ADR-007 promotes the standalone worker.
 - syslog files rotate daily with 7 day retention (Phase 5).
 - Backups are not optional: the nightly `pg_dump` cron lands in Phase 5, not in a follow-up.
 - Compose scaffolds must validate on a clean checkout before secrets are present: service-level `./.env` references use optional `env_file` entries, while real production secrets still come from the droplet `.env` during deploy.
