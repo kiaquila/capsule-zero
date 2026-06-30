@@ -101,6 +101,39 @@ services:
       retries: 5
       start_period: 20s
 
+  # Go modular monolith — Phase 2 serves the auth/profile bounded context plus
+  # GET /api/health. The browser reaches it only through nginx (/api/* -> api).
+  # Published on loopback so the host (systemd) nginx edge can proxy to it.
+  api:
+    image: ${CAPSULE_API_IMAGE:-capsule-zero-api:local}
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      args:
+        GO_VERSION: ${GO_VERSION_API:-1.23}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kratos:
+        condition: service_healthy
+    environment:
+      API_PORT: "8080"
+      DATABASE_URL: ${API_DATABASE_URL:?set API_DATABASE_URL in the env file}
+      KRATOS_PUBLIC_URL: ${KRATOS_INTERNAL_PUBLIC_URL:-http://kratos:4433}
+      KRATOS_ADMIN_URL: ${KRATOS_INTERNAL_ADMIN_URL:-http://kratos:4434}
+    expose:
+      - "8080"
+    ports:
+      - "${API_HOST_BIND:-127.0.0.1}:8080:8080"
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "/api", "-healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
   # Retired as edge: a host (systemd) nginx now terminates TLS and reverse-proxies to the
   # web container published on 127.0.0.1:3000. See infra/nginx-host/ and
   # docs_capsule_zero/project/devops/dev-cd-pipeline.md. Kept (profile-gated) for rollback:
