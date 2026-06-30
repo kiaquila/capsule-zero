@@ -1,0 +1,51 @@
+{
+  "$id": "https://capsulezero.app/identity.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CapsuleZeroIdentity",
+  "type": "object",
+  "properties": {
+    "traits": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "title": "E-Mail",
+          "minLength": 3,
+          "maxLength": 320,
+          "ory.sh/kratos": {
+            "credentials": {
+              "password": {
+                "identifier": true
+              }
+            },
+            "verification": {
+              "via": "email"
+            },
+            "recovery": {
+              "via": "email"
+            }
+          }
+        },
+        "name": {
+          "type": "object",
+          "title": "Name",
+          "properties": {
+            "first": {
+              "type": "string",
+              "title": "First name",
+              "maxLength": 256
+            }
+          }
+        },
+        "locale": {
+          "type": "string",
+          "title": "Locale",
+          "enum": ["en", "ru"]
+        }
+      },
+      "required": ["email"],
+      "additionalProperties": false
+    }
+  }
+}

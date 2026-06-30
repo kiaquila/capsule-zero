@@ -51,6 +51,55 @@ services:
       retries: 5
       start_period: 20s
 
+  # Ory Kratos identity schema migration — one-shot, runs to completion then
+  # exits. Idempotent: Kratos tracks applied migrations in its own database, so a
+  # repeat run on an up-to-date schema is a no-op (negative scenario 6).
+  kratos-migrate:
+    image: oryd/kratos:v1.1.0
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DSN: ${KRATOS_DSN:?set KRATOS_DSN in the env file}
+    volumes:
+      - ./infra/kratos:/etc/config/kratos:ro
+    command: migrate sql -e --yes
+    networks: [internal]
+
+  # Ory Kratos identity provider. Internal only — the Go API drives Kratos over
+  # the private network via its API self-service flows; the browser never talks
+  # to Kratos directly. `--dev` relaxes HTTPS assumptions for this internal,
+  # non-internet-facing service (hardening tracked in spec-024 Known Issues).
+  kratos:
+    image: oryd/kratos:v1.1.0
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kratos-migrate:
+        condition: service_completed_successfully
+    environment:
+      DSN: ${KRATOS_DSN:?set KRATOS_DSN in the env file}
+      COURIER_SMTP_CONNECTION_URI: ${KRATOS_SMTP_CONNECTION_URI:-smtp://mailhog:1025/?disable_starttls=true}
+      SERVE_PUBLIC_BASE_URL: ${KRATOS_PUBLIC_BASE_URL:-http://127.0.0.1:4433/}
+      SECRETS_COOKIE: ${KRATOS_COOKIE_SECRET:-dev-only-kratos-cookie-secret-change-me-32}
+      SECRETS_CIPHER: ${KRATOS_CIPHER_SECRET:-dev0only0kratos0cipher0secret032}
+    volumes:
+      - ./infra/kratos:/etc/config/kratos:ro
+    command: serve --config /etc/config/kratos/kratos.yml --dev --watch-courier
+    expose:
+      - "4433"
+      - "4434"
+    ports:
+      - "${KRATOS_PUBLIC_HOST_BIND:-127.0.0.1}:4433:4433"
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:4433/health/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   # Retired as edge: a host (systemd) nginx now terminates TLS and reverse-proxies to the
   # web container published on 127.0.0.1:3000. See infra/nginx-host/ and

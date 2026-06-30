@@ -33,3 +33,12 @@ services:
   web:
     environment:
       NEXT_PUBLIC_APP_URL: https://capsulezero.local
+
+  # MailHog — dev-only courier sink. Kratos sends verification/recovery email
+  # here instead of Resend; inspect at http://127.0.0.1:8025. Bound to loopback.
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    restart: unless-stopped
+    networks: [internal]
+    ports:
+      - "127.0.0.1:8025:8025"
