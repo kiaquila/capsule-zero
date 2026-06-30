@@ -11,8 +11,12 @@
 - [x] Host-nginx edge deployed on the droplet; prod cut over from in-docker nginx (live, 200).
 - [x] Dev stack up on the droplet (web 127.0.0.1:3001); dev TLS cert issued; live `https://dev.capsulezero.app` → 200.
 - [x] `docs_capsule_zero/project/devops/dev-cd-pipeline.md` — operator runbook (host nginx + cutover + cert).
-- [ ] Operator one-time setup for the pipeline: `deploy` user + CI key, GitHub secrets,
-      GHCR pull login, required `.env.dev`, dev checkout owned by `deploy`. Until then dev serves a seed image.
+- [x] Operator setup done by tooling: `deploy` user (+docker, limited sudoers), CI key in
+      authorized_keys, GitHub Actions secrets (`DEV_DEPLOY_HOST/USER/SSH_KEY/KNOWN_HOSTS`),
+      read-only GitHub deploy key, github.com in deploy's known_hosts, `.env.dev`, dev checkout
+      owned by `deploy`. Verified: git fetch, `sudo nginx -t`/`reload`, docker access all OK.
+- [ ] Remaining manual step (needs a user-minted PAT): `read:packages` GHCR `docker login`
+      as `deploy`. Until done, `docker compose pull` is denied and dev serves the seed image.
 - [ ] First green `main` run (post-merge): build → GHCR → deploy replaces the seed image.
 
 ## Process Memory
