@@ -5,62 +5,61 @@
 - [x] Amend Constitution VII + CLAUDE.md/AGENTS.md/tests/README.md: TDD failing-test-first
       loop applies to application code only; infra/docs/support out of scope.
 - [x] `.github/workflows/cd-dev.yml` — gate / build / deploy on push to `main` + dispatch.
-- [x] `docker-compose.dev-server.yml` — isolated `capsule-zero-dev` project (own nginx + web).
-- [x] `infra/nginx/conf.d.dev-server/dev.capsulezero.conf` — dev vhost.
-- [x] `docs_capsule_zero/project/devops/dev-cd-pipeline.md` — operator runbook.
-- [ ] Operator one-time setup (off-repo): Cloudflare DNS + Origin Rule, `deploy` user + key,
-      GHCR pull token, GitHub secrets, dev TLS cert. Tracked in the runbook.
-- [ ] First green `main` run + dev smoke check (post-merge evidence for `plan.md`).
+- [x] `docker-compose.dev-server.yml` — isolated `capsule-zero-dev` project, web on 127.0.0.1:3001.
+- [x] `docker-compose.yml` — publish prod web on 127.0.0.1:3000; gate in-docker nginx behind `docker-edge`.
+- [x] `infra/nginx-host/` — host nginx vhosts (prod 3000, dev 3001) + shared snippet + README.
+- [x] Host-nginx edge deployed on the droplet; prod cut over from in-docker nginx (live, 200).
+- [x] Dev stack up on the droplet (web 127.0.0.1:3001); dev TLS cert issued; live `https://dev.capsulezero.app` → 200.
+- [x] `docs_capsule_zero/project/devops/dev-cd-pipeline.md` — operator runbook (host nginx + cutover + cert).
+- [ ] Operator one-time setup for the pipeline: `deploy` user + CI key, GitHub secrets,
+      GHCR pull login, dev checkout owned by `deploy`. Until then dev serves a seed image.
+- [ ] First green `main` run (post-merge): build → GHCR → deploy replaces the seed image.
 
 ## Process Memory
 
 ### Dead Ends
 
-- **Build on the droplet (`git pull && docker compose build`).** Rejected: a 4 GB / 2 vCPU
-  droplet running the prod stack cannot also build a Next.js image without risking OOM and
-  prod latency/downtime. CI builds; the droplet only pulls.
+- **Build on the droplet (`git pull && docker compose build`).** Rejected: a small droplet
+  running prod cannot also build a Next.js image without risking OOM/latency. CI builds; the
+  droplet only pulls.
 - **`docker/build-push-action` + `type=gha` cache.** Avoided in favor of raw `docker buildx`
-  with a `type=registry` cache image. Reason: raw run-step buildx does not get the GitHub
-  Actions cache runtime tokens (`ACTIONS_*`) that `type=gha` needs, and pinning third-party
-  action SHAs offline was error-prone. Registry cache needs only `docker login` to GHCR.
+  with a `type=registry` cache image — raw run-step buildx lacks the GitHub Actions cache
+  runtime tokens `type=gha` needs, and pinning third-party action SHAs offline was error-prone.
 - **`dorny/paths-filter` for the change gate.** Replaced with a plain `git diff
-  --name-only event.before..sha` + `grep` allowlist — no external action SHA to pin/verify,
-  and the push before/after range is exactly the merged commits.
-- **HTTP-01 for the dev cert.** Rejected: prod nginx owns host `:80`, and Cloudflare proxies
-  dev on a non-standard origin port (`8443`), so HTTP-01 origin validation is unreliable.
-  DNS-01 via the Cloudflare plugin needs no inbound port.
-- **Renaming `docker-compose.dev.yml` → `docker-compose.local.yml`.** Considered to reduce
-  "dev" ambiguity; rejected. It diverges from the documented convention (ADR-001, phase-5
-  entrance checklist) and the spec-024 plan that reintroduces that exact filename. The new
-  remote-dev file is named `docker-compose.dev-server.yml` instead — unambiguous, zero churn.
+  --name-only before..sha` + `grep` allowlist (no external action SHA to verify). The grep
+  consumes input via a here-string under `pipefail` so an early-match SIGPIPE can't false-skip.
+- **Cloudflare + DNS-01 + in-docker nginx on 8443.** This was the first design and is fully
+  reverted. Founder chose **no Cloudflare**: a single host (systemd) nginx terminates TLS for
+  both domains and proxies plain HTTP to the containers. No origin-port tricks, no in-docker
+  nginx, HTTP-01 webroot for certs.
+- **`nginx 1.25 `http2 on;` directive.** Ubuntu ships nginx 1.24 → use `listen 443 ssl http2;`.
+- **Renaming `docker-compose.dev.yml` → `docker-compose.local.yml`.** Rejected — diverges from
+  the documented convention (ADR-001, phase-5 checklist) and the spec-024 plan that
+  reintroduces that filename. The remote-dev file is `docker-compose.dev-server.yml` instead.
 
 ### Decisions
 
-- **Dev shares the droplet but is a separate compose project** (`capsule-zero-dev`) with its
-  own nginx (`8443`), own cert, and dedicated checkout at `/opt/capsule-zero-dev` so dev
-  deploys never mutate prod's `/opt/capsule-zero` bind-mounted config tree. Chosen by the
-  founder for isolation without a second VM.
-- **Image registry: GHCR.** Free for the private repo, native `GITHUB_TOKEN` auth in CI,
+- **Single host nginx edge, no Cloudflare.** One systemd nginx terminates TLS for prod and
+  dev and reverse-proxies to web containers on loopback (prod 3000, dev 3001). Keeps the
+  auto-deploy path off the shared edge — deploys only recreate the dev web container.
+- **Prod cutover** kept the in-docker nginx defined but profile-gated (`docker-edge`) for a
+  one-command rollback (`docker start capsule-zero-nginx-1`); the swap window was ~1–2s.
+- **Image registry: GHCR.** Free for the private repo, native `GITHUB_TOKEN` push auth,
   SHA-immutable tags. Droplet pulls with a read-only `read:packages` token.
-- **Change gate allowlist, not ignore-list.** Deploy only when `app/** web/** api/** worker/**
-  infra/** docker-compose.yml docker-compose.dev-server.yml`, lockfiles, or the workflow
-  itself change. Docs/tests/`.specify` never deploy. The grep check consumes its input through
-  a here-string under `pipefail` so early-match SIGPIPE cannot false-skip a deploy.
-- **Immutable `sha-<gitsha>` tags** enable `workflow_dispatch` rollback to any prior build
-  without rebuilding. Rollback also checks out the matching commit SHA so compose/nginx config
-  matches the image.
-- **Secrets stay on the droplet / in Cloudflare.** CI ships only the image ref over SSH; the
-  dev `.env.dev`, GHCR pull token, and Cloudflare DNS token live on the host (AGENTS.md).
+- **Dedicated dev checkout `/opt/capsule-zero-dev`** separate from prod's `/opt/capsule-zero`
+  (prod bind-mounts nothing from git now, but isolation avoids any cross-impact).
+- **Change-gate allowlist, not ignore-list.** Docs/tests/`.specify` never deploy.
+- **Immutable `sha-<gitsha>` tags** enable `workflow_dispatch` rollback; rollback also checks
+  out the matching commit so compose config matches the image.
+- **Secrets stay on the droplet / in GitHub secrets.** CI ships only the image ref over SSH.
 
 ### Known Issues
 
-- First deploy is a chicken-and-egg with TLS: nginx will not start without a cert in its
-  mounted TLS directory. Mitigation in the runbook — bootstrap a self-signed cert in
-  `/var/lib/capsule-zero-dev/tls`, keep Certbot's `/etc/letsencrypt/live/...` lineage
-  clean, then copy the real DNS-01 cert into the nginx-facing directory and reload. DNS-01
-  does not require the stack to be up.
-- The smoke gate validates the **origin** (`127.0.0.1:8443` with the dev `Host`). End-to-end
-  through Cloudflare depends on the operator having created the DNS record + Origin Rule;
-  until then the public `dev.capsulezero.app` check in `plan.md` is deferred to post-setup.
-- When the Go API/worker land (spec 024), they must be added to `docker-compose.dev-server.yml`
-  and the change-gate allowlist already covers `api/** worker/**`.
+- The CD pipeline is not yet live: it needs the operator one-time setup (deploy user, GitHub
+  secrets, GHCR pull login). Until the first run, dev serves a seed image (the local prod
+  image retagged `ghcr.io/kiaquila/capsule-zero-web:dev`).
+- A stale certbot deploy-hook (`reload-nginx.sh`, reloading the retired in-docker nginx) was
+  removed during cutover; renewals now use `reload-host-nginx.sh` (`nginx -t && systemctl
+  reload nginx`).
+- When the Go API/worker land (spec 024), add them to `docker-compose.dev-server.yml`; the
+  change-gate allowlist already covers `api/** worker/**`.

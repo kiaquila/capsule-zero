@@ -7,6 +7,11 @@ droplet only pulls a pre-built, SHA-pinned image and rolls the isolated `capsule
 compose project. The droplet never builds (it would compete with running services for
 RAM/CPU on a small VM).
 
+A single **host (systemd) nginx** is the sole TLS edge for both prod and dev (no Cloudflare,
+no in-docker nginx). It proxies plain HTTP to web containers published on loopback. This
+keeps the auto-deploy path off the shared edge entirely: deploys only recreate the dev web
+container behind a stable proxy target.
+
 ### Pipeline stages (`.github/workflows/cd-dev.yml`)
 
 1. **gate** — on `push`, diff `github.event.before..github.sha`; set `run=true` only if a
@@ -15,43 +20,46 @@ RAM/CPU on a small VM).
 2. **build** — `docker buildx` (`--target runner`) → push `sha-<gitsha>` + `:dev` to
    `ghcr.io/kiaquila/capsule-zero-web`, with registry-backed build cache. Skipped on a
    `workflow_dispatch` rollback that supplies an existing `image_sha`.
-3. **deploy** — SSH to the droplet as the `deploy` user, `cd /opt/capsule-zero-dev`
-   (dedicated dev checkout, separate from prod), `git checkout` the deployed SHA (current
-   commit for normal deploys, SHA embedded in `image_sha` for rollbacks, to sync compose +
-   nginx config), `export CAPSULE_WEB_IMAGE=<ref>`,
-   `docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml pull web && up -d`,
-   reload dev nginx, wait for `web` healthy, smoke `https://127.0.0.1:8443/en` with the dev
-   `Host` header.
+3. **deploy** — SSH as the `deploy` user, `cd /opt/capsule-zero-dev` (dedicated dev checkout,
+   separate from prod's `/opt/capsule-zero`), `git checkout` the deployed SHA (current commit
+   for normal deploys, the SHA embedded in `image_sha` for rollbacks), `export
+   CAPSULE_WEB_IMAGE=<ref>`, `docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml
+   pull web && up -d`, wait for `web` healthy, smoke `http://127.0.0.1:3001/en` and the
+   host-nginx edge.
 
-### Dev stack topology (same droplet, separate project)
+### Edge topology (same droplet)
 
-- `docker-compose.dev-server.yml` → project `capsule-zero-dev`, isolated network.
-- `nginx` host bind `8443:443`; mounts the shared `nginx.conf` + `conf.d.dev-server/` + the
-  host nginx-facing TLS copy directory (read-only). Internal port 80 (unpublished) serves the
-  `/nginx-health` probe only.
-- `web` runs the GHCR image (no `build:`), internal `:3000`.
-- Cloudflare proxies `dev.capsulezero.app`; an Origin Rule rewrites the origin port to `8443`.
-  Edge "Always Use HTTPS" handles the http→https redirect, so dev nginx needs no host `:80`.
+```
+Internet → host nginx :80/:443 (TLS: capsulezero.app + dev.capsulezero.app, separate certs)
+   ├─ capsulezero.app     → http://127.0.0.1:3000   (prod web)
+   └─ dev.capsulezero.app → http://127.0.0.1:3001   (dev web)
+```
+
+- `docker-compose.yml` (prod): web published on `127.0.0.1:3000`; the in-docker nginx is
+  gated behind the `docker-edge` profile (rollback only).
+- `docker-compose.dev-server.yml`: `web` only, published on `127.0.0.1:3001`, project
+  `capsule-zero-dev`.
+- `infra/nginx-host/`: the host nginx vhosts + shared http snippet, installed per the runbook.
 
 ### Dev TLS
 
-Let's Encrypt **DNS-01** via the Cloudflare plugin (no open port needed; works behind the
-Cloudflare proxy on a non-standard origin port and matches prod's LE posture). Certbot owns
-the real lineage at `/etc/letsencrypt/live/dev.capsulezero.app/`; a deploy-hook copies the
-current cert/key into `/var/lib/capsule-zero-dev/tls/`, which dev nginx mounts read-only.
-First-deploy bootstrap uses a self-signed cert in that copy directory so nginx can start
-without polluting Certbot's managed lineage (runbook).
+Let's Encrypt **HTTP-01 webroot** via the host certbot (`/var/www/certbot`, served by the
+host nginx) — no Cloudflare, dev DNS already points at the droplet. Cert lives at
+`/etc/letsencrypt/live/dev.capsulezero.app/`, a separate lineage from prod. Renewal via the
+certbot systemd timer; a deploy-hook (`reload-host-nginx.sh`) runs `nginx -t && systemctl
+reload nginx` so renewed certs take effect.
 
 ## Verification
 
 | Acceptance criterion (from spec) | Evidence |
 | --- | --- |
-| Workflow YAML is valid and jobs/conditions parse | `actionlint .github/workflows/cd-dev.yml` (or GitHub's own parse on push); job graph renders in the Actions run |
-| Dev compose file is valid and self-contained | `CAPSULE_WEB_IMAGE=ghcr.io/kiaquila/capsule-zero-web:dev docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml config` exits 0 |
-| Dev nginx config is syntactically valid | `docker run --rm -v "$PWD/infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro" -v "$PWD/infra/nginx/conf.d.dev-server:/etc/nginx/conf.d:ro" -v /var/lib/capsule-zero-dev/tls:/etc/nginx/dev-tls:ro nginx:1.27-alpine nginx -t` on the droplet |
+| Workflow YAML is valid and jobs/conditions parse | `actionlint .github/workflows/cd-dev.yml` → exit 0 |
+| Dev compose file is valid and self-contained | `CAPSULE_WEB_IMAGE=… docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml config` exits 0 |
+| Prod compose still valid; nginx gated out of default set | `docker compose -f docker-compose.yml config --services` → `web` only; `--profile docker-edge` → `web` + `nginx` |
+| Host nginx config is syntactically valid | `nginx -t` on the droplet → "syntax is ok / test is successful" (done) |
 | Docs/tests-only merge does not deploy | `gate` job logs show `run=false` and `build`/`deploy` skipped on a docs-only commit; workflow run is green |
-| Code merge builds + pushes a SHA-pinned image | Actions run shows `build` pushing `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>`; tag visible in GHCR package versions |
-| Deploy rolls the dev stack and proves health | `deploy` job log: `docker compose ps` all healthy + `smoke ok`; `https://dev.capsulezero.app/en` returns 200 through Cloudflare |
-| A broken dev deploy does not touch prod | Prod `https://capsulezero.app/en` still 200 during/after a failed dev deploy (separate project, separate nginx on `:443`) |
-| Rollback works | `workflow_dispatch` with a prior `image_sha` redeploys without rebuilding; deploy checks out the matching SHA and dev serves the older image/config |
-| Dev has its own TLS cert | `echo \| openssl s_client -connect dev.capsulezero.app:443 -servername dev.capsulezero.app 2>/dev/null \| openssl x509 -noout -subject` shows `CN=dev.capsulezero.app`, distinct from prod |
+| Code merge builds + pushes a SHA-pinned image | Actions run shows `build` pushing `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>`; tag visible in GHCR |
+| Deploy rolls the dev stack and proves health | `deploy` job log: `docker compose ps` healthy + `smoke ok`; verified live: `https://dev.capsulezero.app/en` → **HTTP 200** |
+| Prod unaffected by the dev edge cutover | verified live: `https://capsulezero.app/en` → **HTTP 200** after the swap; rollback path documented |
+| Rollback works | `workflow_dispatch` with a prior `image_sha` redeploys without rebuilding; deploy checks out the matching SHA |
+| Dev has its own TLS cert | verified live: `openssl s_client -connect dev.capsulezero.app:443` → `CN=dev.capsulezero.app`, distinct lineage/expiry from `CN=capsulezero.app` |

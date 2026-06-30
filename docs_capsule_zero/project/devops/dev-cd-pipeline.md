@@ -3,7 +3,23 @@
 Auto-deploy to the **dev** environment (`https://dev.capsulezero.app`) on every merge to
 `main` that changes deploy-relevant code. Spec: `.specify/specs/026-dev-cd-pipeline/`.
 
-## How it works
+## Architecture
+
+A single **host (systemd) nginx** — installed via `apt`, **not** in Docker — is the sole TLS
+edge on the droplet. There is **no Cloudflare**. It terminates TLS for both domains and
+reverse-proxies plain HTTP to the web containers, which publish only on loopback:
+
+```
+Internet → host nginx :80/:443 (TLS: capsulezero.app + dev.capsulezero.app, separate certs)
+   ├─ capsulezero.app     → http://127.0.0.1:3000   (prod web,  compose project capsule-zero)
+   └─ dev.capsulezero.app → http://127.0.0.1:3001   (dev  web,  compose project capsule-zero-dev)
+```
+
+The containerized stacks have **no nginx of their own**. Host nginx vhosts are version-
+controlled in `infra/nginx-host/` and installed on the droplet (see below). A broken dev
+deploy only recreates the dev web container behind a stable proxy target — prod is untouched.
+
+## How the pipeline works
 
 1. Merge to `main` triggers `.github/workflows/cd-dev.yml`.
 2. **gate** — deploys only if a deploy-relevant path changed (`app/** web/** api/** worker/**
@@ -11,210 +27,137 @@ Auto-deploy to the **dev** environment (`https://dev.capsulezero.app`) on every 
    itself). Docs/tests/`.specify`-only merges are skipped (green, no deploy).
 3. **build** — `docker buildx` builds `app/Dockerfile` (`--target runner`) and pushes
    `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>` plus a moving `:dev` tag to GHCR.
-4. **deploy** — SSH to the droplet, sync the repo checkout to the deployed SHA (the current
-   commit for normal deploys, or the SHA embedded in `image_sha` for rollbacks), then
+4. **deploy** — SSH to the droplet, `cd /opt/capsule-zero-dev`, `git checkout` the deployed
+   SHA (current commit, or the SHA in `image_sha` for rollbacks), then
    `docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml pull web && up -d`,
-   reload dev nginx, wait for `web` healthy, and smoke-check the dev nginx origin.
-
-Dev runs on the **same droplet** as prod, as the separate compose project `capsule-zero-dev`
-with its **own nginx on host port 8443** and its **own TLS cert** — a broken dev deploy
-cannot touch prod (project `capsule-zero`, nginx `:443`).
+   wait for `web` healthy, smoke `http://127.0.0.1:3001/en` and the host-nginx edge. The
+   pipeline never touches the host nginx (the proxy target `127.0.0.1:3001` is stable).
 
 ## One-time operator setup
 
-All steps below run once. **No secret is ever passed to or stored in CI beyond the GitHub
-secrets listed; the droplet's `.env.dev`, GHCR pull token, nginx-facing TLS key copy, and
-Cloudflare DNS token live only on the host / in Cloudflare.**
+> The droplet is `137.184.205.153` (`cz`). DNS A records `capsulezero.app` and
+> `dev.capsulezero.app` already point straight at it (no Cloudflare). All secrets stay on the
+> droplet / in GitHub secrets — CI ships only the image ref over SSH.
 
-### 1. Cloudflare DNS + origin port
+### 1. Host nginx + the prod edge cutover (already performed; documented for reference / rebuild)
 
-- Add a proxied `A` record `dev.capsulezero.app` → droplet IP (orange cloud).
-- Add an **Origin Rule**: when hostname equals `dev.capsulezero.app`, rewrite the
-  **destination port** to `8443` (Cloudflare allows HTTPS origin ports 443/2053/2083/2087/
-  2096/8443).
-- SSL/TLS mode: **Full (strict)**. Enable **Always Use HTTPS** so the edge handles
-  http→https (dev nginx publishes only 8443).
+Install the host nginx and move the prod edge off the in-docker nginx onto it:
 
-### 2. Deploy user on the droplet
+```bash
+# Publish prod web on loopback and gate the in-docker nginx behind a profile:
+#   docker-compose.yml -> web: ports ["127.0.0.1:3000:3000"]; nginx: profiles ["docker-edge"]
+cd /opt/capsule-zero
+docker compose up -d web                       # recreate web with the loopback port
+
+apt-get install -y nginx                        # auto-start fails to bind :80 (docker holds it) — expected
+rm -f /etc/nginx/sites-enabled/default
+install -m 644 infra/nginx-host/00-capsule-zero.conf /etc/nginx/conf.d/00-capsule-zero.conf
+install -m 644 infra/nginx-host/capsulezero.app.conf /etc/nginx/sites-available/capsulezero.app.conf
+ln -sf /etc/nginx/sites-available/capsulezero.app.conf /etc/nginx/sites-enabled/
+nginx -t
+
+# Swap (brief downtime, ~1-2s):
+docker compose -p capsule-zero stop nginx       # frees :80/:443
+systemctl enable --now nginx                    # host nginx binds :80/:443
+curl -fsS https://capsulezero.app/en >/dev/null && echo prod-ok
+```
+
+**Rollback** the prod edge to the in-docker nginx:
+
+```bash
+systemctl stop nginx
+docker start capsule-zero-nginx-1     # or: docker compose -p capsule-zero --profile docker-edge up -d nginx
+```
+
+### 2. Deploy user + SSH access for CI
 
 ```bash
 sudo adduser --disabled-password --gecos "" deploy
 sudo usermod -aG docker deploy
-sudo -u deploy mkdir -p /home/deploy/.ssh && sudo -u deploy chmod 700 /home/deploy/.ssh
-# add the deploy public key:
-sudo -u deploy tee -a /home/deploy/.ssh/authorized_keys < deploy_key.pub
+sudo -u deploy install -d -m 700 /home/deploy/.ssh
+# append the CI deploy public key:
+sudo -u deploy tee -a /home/deploy/.ssh/authorized_keys < ci_deploy_key.pub
 sudo -u deploy chmod 600 /home/deploy/.ssh/authorized_keys
 ```
 
-Generate the keypair locally (`ssh-keygen -t ed25519 -f deploy_key -N ''`); the **private**
-key goes into the GitHub secret `DEV_DEPLOY_SSH_KEY`, the public key into
-`authorized_keys`. Capture the host key for `DEV_DEPLOY_KNOWN_HOSTS`:
+Generate the CI keypair (`ssh-keygen -t ed25519 -f ci_deploy_key -N ''`); the **private** key
+becomes the GitHub secret `DEV_DEPLOY_SSH_KEY`, the public key goes into `authorized_keys`.
+Capture the host key for `DEV_DEPLOY_KNOWN_HOSTS`:
 
 ```bash
-ssh-keyscan -t ed25519 <droplet-ip-or-host>
+ssh-keyscan -t ed25519 137.184.205.153
 ```
 
-### 3. Repo checkout on the droplet
+### 3. Dev git checkout + GHCR pull auth
 
-The deploy step syncs config from a dedicated dev git checkout at `/opt/capsule-zero-dev`
-(compose file + nginx vhosts). Do not reuse the production checkout at `/opt/capsule-zero`;
-prod bind-mounts config from that tree, so dev deploys must never mutate it. Secrets stay out
-of git.
-
-Before cloning, give the droplet's `deploy` user read-only GitHub access for this repository.
-Recommended: create a dedicated **repo deploy key** on the droplet and add its public key in
-GitHub → repository **Settings → Deploy keys** with **Allow write access** unchecked:
+The deploy step uses a dedicated dev checkout at `/opt/capsule-zero-dev` (never the prod
+`/opt/capsule-zero`). Give the `deploy` user read-only repo access (GitHub **Settings →
+Deploy keys**, write access unchecked) and a `read:packages` GHCR login:
 
 ```bash
-sudo -u deploy ssh-keygen -t ed25519 \
-  -f /home/deploy/.ssh/github_deploy_key \
-  -N '' \
-  -C 'capsule-zero-dev-deploy'
-
-sudo -u deploy tee /home/deploy/.ssh/config >/dev/null <<'EOF'
-Host github.com
-  HostName github.com
-  User git
-  IdentityFile ~/.ssh/github_deploy_key
-  IdentitiesOnly yes
-EOF
-sudo -u deploy chmod 600 /home/deploy/.ssh/config
-
-# Add this public key to GitHub as the read-only deploy key:
-sudo -u deploy cat /home/deploy/.ssh/github_deploy_key.pub
-```
-
-After adding the deploy key in GitHub, verify repo access before cloning:
-
-```bash
-sudo -u deploy git ls-remote git@github.com:kiaquila/capsule-zero.git HEAD
-```
-
-```bash
-sudo mkdir -p /opt/capsule-zero-dev && sudo chown deploy:deploy /opt/capsule-zero-dev
 sudo -u deploy git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero-dev
-# optional dev runtime env (gitignored):
-sudo -u deploy tee /opt/capsule-zero-dev/.env.dev >/dev/null <<'EOF'
-APP_BASE_URL=https://dev.capsulezero.app
-EOF
+printf 'APP_BASE_URL=https://dev.capsulezero.app\n' | sudo -u deploy tee /opt/capsule-zero-dev/.env.dev
+sudo -u deploy bash -lc 'echo "<read:packages token>" | docker login ghcr.io -u kiaquila --password-stdin'
 ```
 
-### 4. GHCR pull auth on the droplet
-
-Create a fine-grained PAT (or classic) with **`read:packages`** only, then:
-
-```bash
-sudo -u deploy bash -lc 'echo "<token>" | docker login ghcr.io -u kiaquila --password-stdin'
-```
-
-### 5. GitHub repository secrets
+### 4. GitHub repository secrets
 
 | Secret | Value |
 | --- | --- |
-| `DEV_DEPLOY_HOST` | droplet IP or hostname |
+| `DEV_DEPLOY_HOST` | `137.184.205.153` |
 | `DEV_DEPLOY_USER` | `deploy` |
-| `DEV_DEPLOY_SSH_KEY` | private SSH key (matches `authorized_keys`) |
-| `DEV_DEPLOY_KNOWN_HOSTS` | output of `ssh-keyscan` for the droplet |
+| `DEV_DEPLOY_SSH_KEY` | private CI SSH key (matches `authorized_keys`) |
+| `DEV_DEPLOY_KNOWN_HOSTS` | `ssh-keyscan` output for the droplet |
 
-`GITHUB_TOKEN` (built-in) authenticates the GHCR push from CI — no extra secret needed.
-Optional hardening: scope these to a GitHub **Environment** named `dev` and add the deploy
-job an `environment: dev` for a protection rule / deployment history.
+`GITHUB_TOKEN` (built-in) authenticates the GHCR **push** from CI — no extra secret needed.
+Optional hardening: scope these to a GitHub Environment `dev` and add `environment: dev` to
+the deploy job.
 
-### 6. Dev TLS certificate
-
-Install certbot + Cloudflare DNS plugin on the host and store a scoped Cloudflare API token
-(Zone:DNS:Edit for the zone) at `/root/.secrets/cloudflare.ini` (chmod 600):
-
-```ini
-dns_cloudflare_api_token = <cloudflare-dns-edit-token>
-```
-
-The dev nginx reads cert files from `/var/lib/capsule-zero-dev/tls`, mounted into the
-container as `/etc/nginx/dev-tls`. Certbot owns the real Let's Encrypt lineage under
-`/etc/letsencrypt/live/dev.capsulezero.app`; do not place bootstrap files in that lineage or
-Certbot may create a suffixed replacement lineage.
-
-**Bootstrap (first deploy only).** nginx will not start without cert files, so seed a
-self-signed placeholder in the nginx-facing copy directory before the first deploy:
+### 5. Dev stack + TLS certificate (already performed; documented for rebuild)
 
 ```bash
-sudo install -d -m 755 /var/lib/capsule-zero-dev/tls
-sudo openssl req -x509 -newkey rsa:2048 -nodes -days 2 \
-  -keyout /var/lib/capsule-zero-dev/tls/privkey.pem \
-  -out   /var/lib/capsule-zero-dev/tls/fullchain.pem \
-  -subj "/CN=dev.capsulezero.app"
-sudo chmod 600 /var/lib/capsule-zero-dev/tls/privkey.pem
-sudo chmod 644 /var/lib/capsule-zero-dev/tls/fullchain.pem
-```
-
-Renewal is handled by the host certbot timer. Add a deploy-hook that installs the issued or
-renewed cert into the nginx-facing copy directory, validates nginx, and reloads it:
-
-```bash
-# /etc/letsencrypt/renewal-hooks/deploy/install-dev-nginx-cert.sh  (chmod +x)
-#!/usr/bin/env bash
-set -euo pipefail
-
-install -d -m 755 /var/lib/capsule-zero-dev/tls
-install -m 644 /etc/letsencrypt/live/dev.capsulezero.app/fullchain.pem \
-  /var/lib/capsule-zero-dev/tls/fullchain.pem
-install -m 600 /etc/letsencrypt/live/dev.capsulezero.app/privkey.pem \
-  /var/lib/capsule-zero-dev/tls/privkey.pem
-
 cd /opt/capsule-zero-dev
-COMPOSE="docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml"
-nginx_cid="$($COMPOSE ps -q nginx || true)"
-nginx_running="$(docker inspect -f '{{.State.Running}}' "$nginx_cid" 2>/dev/null || echo false)"
-if [ "$nginx_running" = "true" ]; then
-  $COMPOSE exec -T nginx nginx -t
-  $COMPOSE exec -T nginx nginx -s reload
-else
-  echo "dev nginx is not running; installed cert copy for the next deploy"
-fi
+docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml up -d   # web on 127.0.0.1:3001
+
+# Issue the dev cert (HTTP-01 webroot; host nginx already serves /.well-known/acme-challenge):
+certbot certonly --webroot -w /var/www/certbot -d dev.capsulezero.app --non-interactive --keep-until-expiring
+
+# Enable the dev vhost now that its cert exists:
+install -m 644 infra/nginx-host/dev.capsulezero.app.conf /etc/nginx/sites-available/dev.capsulezero.app.conf
+ln -sf /etc/nginx/sites-available/dev.capsulezero.app.conf /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+curl -fsS https://dev.capsulezero.app/en >/dev/null && echo dev-ok
 ```
 
-Then issue the real Let's Encrypt cert into Certbot's normal lineage (DNS-01 needs no open
-port and works behind the Cloudflare proxy on the 8443 origin):
+Renewals: certbot's systemd timer renews both certs; the deploy hook
+`/etc/letsencrypt/renewal-hooks/deploy/reload-host-nginx.sh` (`nginx -t && systemctl reload
+nginx`) makes a renewed cert take effect. Verify with `certbot renew --dry-run`.
+
+## First deploy / verifying the pipeline
+
+After steps 2–4, merge a code change to `main` or run **Actions → CD Dev → Run workflow**
+(leave `image_sha` blank). The job builds, pushes to GHCR, and rolls the dev stack. Verify:
 
 ```bash
-sudo certbot certonly --dns-cloudflare \
-  --dns-cloudflare-credentials /root/.secrets/cloudflare.ini \
-  -d dev.capsulezero.app
-```
-
-Immediately install that real cert into the nginx-facing copy directory. This step is
-mandatory for Cloudflare **Full (strict)**; otherwise dev nginx keeps serving the self-signed
-bootstrap cert and the public edge check fails:
-
-```bash
-sudo /etc/letsencrypt/renewal-hooks/deploy/install-dev-nginx-cert.sh
-```
-
-## First deploy
-
-After steps 1–6, either merge a code change to `main` or run the workflow manually
-(**Actions → CD Dev → Run workflow**, leave `image_sha` blank). Verify:
-
-```bash
-# on the droplet
-docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml ps   # all healthy
-curl -fsS -k -H 'Host: dev.capsulezero.app' https://127.0.0.1:8443/en >/dev/null && echo origin-ok
-# public, once Cloudflare DNS + Origin Rule are live
+docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml ps   # web healthy
+curl -fsS http://127.0.0.1:3001/en >/dev/null && echo origin-ok
 curl -fsS https://dev.capsulezero.app/en >/dev/null && echo edge-ok
 ```
 
-## Rollback
+Until the pipeline first runs, dev serves a seed image (the local prod image retagged
+`ghcr.io/kiaquila/capsule-zero-web:dev`); the first pipeline run replaces it with a real
+GHCR build.
 
-Every build is tagged immutably by commit SHA. To roll back, run **CD Dev** via
-**workflow_dispatch** with `image_sha = sha-<previous-gitsha>` — it skips the build and
-checks out the matching repo commit before redeploying that image, so compose/nginx config
-matches the image. List available tags in the repo's **Packages → capsule-zero-web**.
+## Rollback (dev app)
+
+Every build is tagged immutably by commit SHA. Run **CD Dev** via **workflow_dispatch** with
+`image_sha = sha-<previous-gitsha>` — it skips the build, checks out the matching commit, and
+redeploys that image. List tags in **Packages → capsule-zero-web**.
 
 ## Notes
 
-- The smoke gate validates the **origin** (`127.0.0.1:8443` with the dev `Host`), so it does
-  not depend on Cloudflare/public DNS being live.
+- Ubuntu ships nginx 1.24 — vhosts use `listen 443 ssl http2;` (not the 1.25+ `http2 on;`).
 - When spec 024 adds the Go API / worker, declare them in `docker-compose.dev-server.yml`;
   the change-gate allowlist already covers `api/**` and `worker/**`.
-- Do **not** confuse this with `docker-compose.dev.yml` (laptop/mkcert local dev,
+- Do not confuse this with `docker-compose.dev.yml` (laptop/mkcert local dev,
   `capsulezero.local`).
