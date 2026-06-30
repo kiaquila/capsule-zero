@@ -57,9 +57,17 @@
   dev certificate, SNI route, or default vhost fails the deploy instead of being hidden by
   `curl -k`.
 - **Host-nginx config changes deploy with the app rollout.** The deploy job compares the
-  previous dev checkout with the target SHA; when `infra/nginx-host/**` changed, it installs
-  the versioned files, validates with `nginx -t`, reloads host nginx, and smokes the prod edge
-  before the dev edge smoke.
+  last successful nginx sync marker with the target SHA; when `infra/nginx-host/**` changed,
+  it installs the versioned files, validates with `nginx -t`, reloads host nginx, and smokes
+  the prod edge before the dev edge smoke.
+- **Failed host-nginx reload/smoke restores the old config.** The wrapper backs up the
+  currently installed host-nginx files/symlinks before applying versioned config; if install,
+  `nginx -t`, reload, or the prod smoke fails, it restores the previous files and reloads
+  nginx before exiting non-zero.
+- **Last-successful nginx sync marker prevents false skips.** The marker at
+  `/var/lib/capsule-zero-dev/last-host-nginx-sync-sha` is updated only after deploy smokes
+  pass, so failed image pulls or unhealthy app deploys do not make a retry skip pending
+  `infra/nginx-host/**` changes merely because the checkout moved to the new SHA.
 - **Dev deploy is mediated by a root-owned wrapper.** The CI SSH user stays out of the Docker
   group and has sudo only for `/usr/local/sbin/capsule-zero-dev-deploy`; the wrapper source is
   versioned in `infra/scripts/capsule-zero-dev-deploy`, validates image/SHA/mode inputs, and

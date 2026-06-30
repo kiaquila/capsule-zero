@@ -34,9 +34,11 @@ changes are installed explicitly with `nginx -t` before reload.
    `/opt/capsule-zero-dev` checkout, runs
    `docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml
    pull web && up -d`, waits for `web` healthy, installs/reloads host nginx only when
-   `infra/nginx-host/**` changed, smokes the prod edge after any shared nginx reload, then
-   smokes `http://127.0.0.1:3001/en`, `/api/health` with JSON `ok: true`, plus the dev
-   host-nginx edge.
+   `infra/nginx-host/**` changed since the last successful nginx sync marker, rolls nginx
+   back to its previous config if the post-reload prod smoke fails, then smokes
+   `http://127.0.0.1:3001/en`, `/api/health` with JSON `ok: true`, plus the dev host-nginx
+   edge. The marker lives at `/var/lib/capsule-zero-dev/last-host-nginx-sync-sha` and is
+   updated only after the deploy smokes pass.
 
 ## One-time operator setup
 
@@ -107,6 +109,7 @@ sudo visudo -cf /etc/sudoers.d/capsule-zero-dev-deploy
 
 When `infra/scripts/capsule-zero-dev-deploy` changes in a future PR, update the installed
 `/usr/local/sbin/capsule-zero-dev-deploy` copy as root before relying on that change in CD.
+The wrapper creates `/var/lib/capsule-zero-dev` for its last-successful nginx sync marker.
 
 ### 3. Root-owned dev checkout + GHCR pull auth
 
@@ -196,6 +199,9 @@ redeploys that image. List tags in **Packages → capsule-zero-web**.
 ## Notes
 
 - Ubuntu ships nginx 1.24 — vhosts use `listen 443 ssl http2;` (not the 1.25+ `http2 on;`).
+- Host-nginx sync is based on `/var/lib/capsule-zero-dev/last-host-nginx-sync-sha`, not the
+  dev checkout's current HEAD, so a failed image pull or unhealthy app cannot make a later
+  retry skip a required nginx config install.
 - When spec 024 adds the Go API / worker, declare them in `docker-compose.dev-server.yml`;
   the change-gate allowlist already covers `api/**` and `worker/**`.
 - Do not confuse this with `docker-compose.dev.yml` (laptop/mkcert local dev,
