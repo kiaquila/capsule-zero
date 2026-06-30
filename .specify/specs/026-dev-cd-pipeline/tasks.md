@@ -14,7 +14,7 @@
 - [x] Operator setup documented: unprivileged `deploy` user (no Docker group), CI key in
       authorized_keys, GitHub Actions secrets (`DEV_DEPLOY_HOST/USER/SSH_KEY/KNOWN_HOSTS`),
       root-owned deploy wrapper in `/usr/local/sbin`, root-owned read-only GitHub deploy key,
-      root-owned `/opt/capsule-zero-dev` checkout, and root-owned `.env.dev`.
+      root-owned `/opt/capsule-zero-dev` checkout, and root-owned interpolation-only `.env.dev`.
 - [ ] Remaining manual step (needs a user-minted PAT): `read:packages` GHCR `docker login`
       as root. Until done, `docker compose pull` is denied and dev serves the seed image.
 - [ ] First green `main` run (post-merge): build → GHCR → deploy replaces the seed image.
@@ -76,10 +76,13 @@
 - **Image rollbacks never roll back host nginx.** `workflow_dispatch image_sha=sha-...` checks
   out the matching app/compose commit for the dev image rollback but sets host-nginx sync off,
   so production vhost config is not reverted by a dev-only rollback.
-- **Dev web runs in production provider mode.** `.env.dev` is required and must include
-  `CAPSULE_PROVIDER_MODE=supabase`, Supabase URLs/keys, and `SESSION_SIGNING_SECRET`; container
-  health and deploy smoke parse `/api/health` and require JSON `ok: true`, not just HTTP 200
-  from the static landing page.
+- **Dev web is frontend-only until the new backend lands.** Supabase is retired after the
+  production-stack pivot, and the legacy `/app` provider is frozen. `.env.dev` is used only
+  as `docker compose --env-file` interpolation input for `APP_BASE_URL`; the dev compose file
+  deliberately has no service-level `env_file`, so stale `CAPSULE_PROVIDER_MODE`,
+  `SUPABASE_*`, or `SESSION_SIGNING_SECRET` values from an older host file cannot enter the
+  runtime container. Container health and deploy smoke use the provider-free `/en` page, not
+  `/api/health`, until the Go/Postgres/Kratos backend wires its own env and health contract.
 - **Image registry: GHCR.** Free for the private repo, native `GITHUB_TOKEN` push auth,
   SHA-immutable tags. Droplet pulls with a read-only `read:packages` token.
 - **Dedicated root-owned dev checkout `/opt/capsule-zero-dev`** separate from prod's
@@ -95,9 +98,9 @@
 ### Known Issues
 
 - The CD pipeline is not yet live: it needs the operator one-time setup (deploy user, wrapper
-  sudoers entry, root-owned checkout/deploy key, GitHub secrets, GHCR pull login, required
-  `.env.dev`). Until the first run, dev serves a seed image (the local prod image retagged
-  `ghcr.io/kiaquila/capsule-zero-web:dev`).
+  sudoers entry, root-owned checkout/deploy key, GitHub secrets, GHCR pull login, and
+  interpolation-only `.env.dev`). Until the first run, dev serves a seed image (the local prod
+  image retagged `ghcr.io/kiaquila/capsule-zero-web:dev`).
 - A stale certbot deploy-hook (`reload-nginx.sh`, reloading the retired in-docker nginx) was
   removed during cutover; renewals now use `reload-host-nginx.sh` (`nginx -t && systemctl
   reload nginx`).

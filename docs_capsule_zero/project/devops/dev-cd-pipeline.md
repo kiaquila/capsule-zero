@@ -33,11 +33,12 @@ changes are installed explicitly with `nginx -t` before reload.
    The wrapper validates the immutable image ref and SHA, updates the root-owned
    `/opt/capsule-zero-dev` checkout, runs
    `docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml
-   pull web && up -d`, waits for `web` healthy, installs/reloads host nginx only when
+   pull web && up -d` (`.env.dev` is interpolation-only, not a service env file), waits for
+   `web` healthy, installs/reloads host nginx only when
    `infra/nginx-host/**` changed since the last successful nginx sync marker, rolls nginx
    back to its previous config if the post-reload prod smoke or dev edge smoke fails, then
-   reports success only after `http://127.0.0.1:3001/en`, `/api/health` with JSON `ok: true`,
-   and the dev host-nginx edge all pass. The marker lives at
+   reports success only after the provider-free `http://127.0.0.1:3001/en` page and the dev
+   host-nginx edge (`https://dev.capsulezero.app/en`) both pass. The marker lives at
    `/var/lib/capsule-zero-dev/last-host-nginx-sync-sha` and is updated only after the deploy
    smokes pass.
 
@@ -127,14 +128,15 @@ sudo install -d -o root -g root -m 755 /opt/capsule-zero-dev
 sudo GIT_SSH_COMMAND='ssh -i /root/.ssh/capsule-zero-dev-github -o IdentitiesOnly=yes' \
   git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero-dev
 sudo git -C /opt/capsule-zero-dev config core.sshCommand 'ssh -i /root/.ssh/capsule-zero-dev-github -o IdentitiesOnly=yes'
+# Frontend-only dev edge: the dev environment previews the frontend of `main` with NO
+# provider backend wired (Supabase is being retired; the Postgres/Kratos backend wires its
+# own env when it lands). This file is used only by `docker compose --env-file` for
+# interpolation; `docker-compose.dev-server.yml` deliberately does NOT attach it as a
+# service-level `env_file`, so stale provider secrets cannot leak into the web container.
+# Keep only APP_BASE_URL here. Remove any old CAPSULE_PROVIDER_MODE / SUPABASE_* /
+# SESSION_SIGNING_SECRET entries if this file was created from the previous runbook.
 sudo tee /opt/capsule-zero-dev/.env.dev >/dev/null <<'EOF'
 APP_BASE_URL=https://dev.capsulezero.app
-CAPSULE_PROVIDER_MODE=supabase
-SUPABASE_INTERNAL_URL=<supabase-internal-or-public-url>
-NEXT_PUBLIC_SUPABASE_URL=<supabase-public-url>
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<supabase-anon-key>
-SUPABASE_SERVICE_ROLE_KEY=<supabase-service-role-key>
-SESSION_SIGNING_SECRET=<64-plus-random-characters>
 EOF
 sudo chown root:root /opt/capsule-zero-dev/.env.dev
 sudo chmod 600 /opt/capsule-zero-dev/.env.dev
@@ -182,9 +184,9 @@ After steps 2–4, merge a code change to `main` or run **Actions → CD Dev →
 ```bash
 sudo docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml ps   # web healthy
 curl -fsS http://127.0.0.1:3001/en >/dev/null && echo origin-ok
-curl -fsS http://127.0.0.1:3001/api/health | node -e 'let d=""; process.stdin.on("data", c => d += c); process.stdin.on("end", () => process.exit(JSON.parse(d).ok === true ? 0 : 1))' && echo health-ok
 curl -fsS https://dev.capsulezero.app/en >/dev/null && echo edge-ok
-curl -fsS https://dev.capsulezero.app/api/health | node -e 'let d=""; process.stdin.on("data", c => d += c); process.stdin.on("end", () => process.exit(JSON.parse(d).ok === true ? 0 : 1))' && echo edge-health-ok
+# NOTE: /api/health is intentionally NOT smoked — the frontend-only dev edge has no provider
+# backend, so that route 500s by design. /en is the liveness signal until the new backend lands.
 ```
 
 Until the pipeline first runs, dev serves a seed image (the local prod image retagged

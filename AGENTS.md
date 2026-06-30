@@ -129,6 +129,15 @@ If a product or technical object type already exists in code, reuse its componen
 - Shared structure belongs in a shared abstraction; feature-specific screens or endpoints should pass only section-specific labels, metadata, behavior, and policy.
 - Code review must reject copy-pasted markup, logic, schemas, or one-off classes/modules when an established object type can cover the same responsibility.
 
+### 8. No Supabase / Legacy-Backend Recoupling (NON-NEGOTIABLE)
+
+Supabase is **retired** (production-stack pivot, 2026-06-27). The legacy `/app` provider is frozen and slated for deletion — **do not extend it, and do not re-introduce it into anything new.**
+
+- No new spec, `docker-compose*.yml`, GitHub workflow, deploy/provisioning script, infra/nginx config, or doc may add or re-introduce Supabase or provider coupling: no `SUPABASE_*` / `CAPSULE_PROVIDER_MODE` / provider env, no Supabase client imports, and **no health or smoke checks that hit provider-backed routes** (`/api/health`, other `/api/*`).
+- New deploy/infra artifacts must **reuse the established web-only contract** (the `web` service in `docker-compose.yml`) and stay provider-agnostic until the Go / Postgres / Kratos backend lands and wires **its own** env behind production-shape contracts.
+- The dev edge (`dev.capsulezero.app`) deploys `main`, which is still the legacy frontend shell. Until the new backend is wired, deploys preview the **frontend only** and smoke **provider-free routes (`/en`)** — never `/api/*`.
+- **Reviewers must reject** any diff that recouples deployment, CI/CD, or runtime to the retired backend. Regression that motivated this rule: PR #53 (spec 026) grafted a full `SUPABASE_*` env contract + `/api/health` healthcheck into the brand-new `docker-compose.dev-server.yml` instead of mirroring the web-only `docker-compose.yml`, silently breaking dev CD.
+
 ## Source Documentation
 
 | Document                                                               | Content                                                                                                        |

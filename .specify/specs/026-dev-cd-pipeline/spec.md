@@ -31,14 +31,16 @@ host-nginx config changes are applied explicitly with `nginx -t` before reload.
   droplet and rolls the `capsule-zero-dev` stack via `docker compose pull && up -d`.
 - A self-contained dev compose file (`docker-compose.dev-server.yml`) with a single `web`
   service (image pulled from GHCR, no on-droplet build) published on `127.0.0.1:3001`.
-- Required production runtime env for the dev web container (`CAPSULE_PROVIDER_MODE=supabase`,
-  Supabase URLs/keys, and `SESSION_SIGNING_SECRET`) loaded from `/opt/capsule-zero-dev/.env.dev`.
+- A frontend-only dev runtime contract: `/opt/capsule-zero-dev/.env.dev` is used only as
+  `docker compose --env-file` interpolation input for `APP_BASE_URL`; it is **not** attached
+  as a service-level `env_file`, and no `CAPSULE_PROVIDER_MODE`, `SUPABASE_*`, or
+  `SESSION_SIGNING_SECRET` values are injected into the dev `web` container.
 - Host-nginx vhosts in `infra/nginx-host/` (prod → 3000, dev → 3001) plus the prod compose
   change that publishes web on loopback and gates the retired in-docker nginx behind a
   `docker-edge` profile.
 - A `workflow_dispatch` rollback path: redeploy any prior `sha-<gitsha>` tag without rebuilding.
 - An operator runbook covering the host-nginx install + prod cutover, the deploy SSH user,
-  root-owned wrapper/checkout, GHCR pull auth, required `.env.dev`, and the dev TLS
+  root-owned wrapper/checkout, GHCR pull auth, interpolation-only `.env.dev`, and the dev TLS
   certificate (issue + renew).
 
 ### Out
@@ -65,6 +67,11 @@ host-nginx config changes are applied explicitly with `nginx -t` before reload.
 - **Unhealthy image is not silently accepted.** If the freshly deployed dev `web` container
   does not reach `healthy`, or the loopback / host-nginx smoke check fails, the deploy job
   exits non-zero and surfaces container logs.
+- **Stale provider env cannot recouple dev.** If an existing droplet `.env.dev` still
+  contains old `CAPSULE_PROVIDER_MODE`, `SUPABASE_*`, or `SESSION_SIGNING_SECRET` keys from
+  the previous runbook, those keys are not passed into the runtime container because
+  `docker-compose.dev-server.yml` has no service-level `env_file`; the wrapper uses
+  `.env.dev` only for Compose interpolation.
 - **Shared nginx reload must prove prod and dev still route.** If `infra/nginx-host/**`
   changed, the deploy job reloads host nginx only after `nginx -t`, smokes
   `https://capsulezero.app/en` through loopback-resolved TLS, and keeps the old config backup

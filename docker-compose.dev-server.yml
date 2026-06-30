@@ -31,28 +31,28 @@ services:
     image: ${CAPSULE_WEB_IMAGE:-ghcr.io/kiaquila/capsule-zero-web:dev}
     init: true
     restart: unless-stopped
-    env_file:
-      - path: ./.env.dev
-        required: false
+    # Frontend-only contract — mirrors the web service in docker-compose.yml (spec 023).
+    # The dev environment deploys main, which is the legacy Supabase /app shell, but the
+    # dev edge only previews the frontend: no provider backend is wired here, so NO
+    # Supabase/provider/session env is set and the healthcheck targets the provider-free
+    # /en page (NOT /api/health, which calls the provider registry and 500s without a
+    # backend). The wrapper still passes .env.dev via docker compose --env-file for
+    # interpolation only; do NOT attach it as a service env_file, because stale provider
+    # vars in older host files must never be injected into the runtime container.
+    # The new Postgres/Kratos backend wires its own env when it lands.
     environment:
       HOSTNAME: 0.0.0.0
       PORT: "3000"
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
-      NEXT_PUBLIC_APP_URL: ${APP_BASE_URL:?set APP_BASE_URL=https://dev.capsulezero.app in .env.dev}
-      CAPSULE_PROVIDER_MODE: ${CAPSULE_PROVIDER_MODE:?set CAPSULE_PROVIDER_MODE=supabase in .env.dev}
-      SUPABASE_INTERNAL_URL: ${SUPABASE_INTERNAL_URL:?set SUPABASE_INTERNAL_URL in .env.dev}
-      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?set NEXT_PUBLIC_SUPABASE_URL in .env.dev}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:?set NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.dev}
-      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?set SUPABASE_SERVICE_ROLE_KEY in .env.dev}
-      SESSION_SIGNING_SECRET: ${SESSION_SIGNING_SECRET:?set SESSION_SIGNING_SECRET in .env.dev}
+      NEXT_PUBLIC_APP_URL: ${APP_BASE_URL:-https://dev.capsulezero.app}
     ports:
       - "${DEV_WEB_HOST_BIND:-127.0.0.1}:3001:3000"
     networks: [dev-internal]
     healthcheck:
       test:
         - CMD-SHELL
-        - "node -e \"fetch('http://127.0.0.1:3000/api/health').then(async r => { if (!r.ok) process.exit(1); const h = await r.json(); process.exit(h.ok === true ? 0 : 1); }).catch(() => process.exit(1))\""
+        - "node -e \"fetch('http://127.0.0.1:3000/en').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""
       interval: 30s
       timeout: 10s
       retries: 5
