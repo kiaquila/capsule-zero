@@ -16,8 +16,9 @@ Internet → host nginx :80/:443 (TLS: capsulezero.app + dev.capsulezero.app, se
 ```
 
 The containerized stacks have **no nginx of their own**. Host nginx vhosts are version-
-controlled in `infra/nginx-host/` and installed on the droplet (see below). A broken dev
-deploy only recreates the dev web container behind a stable proxy target — prod is untouched.
+controlled in `infra/nginx-host/` and installed on the droplet (see below). Routine app
+deploys only recreate the dev web container behind a stable proxy target; host-nginx config
+changes are installed explicitly with `nginx -t` before reload.
 
 ## How the pipeline works
 
@@ -30,8 +31,8 @@ deploy only recreates the dev web container behind a stable proxy target — pro
 4. **deploy** — SSH to the droplet, `cd /opt/capsule-zero-dev`, `git checkout` the deployed
    SHA (current commit, or the SHA in `image_sha` for rollbacks), then
    `docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml pull web && up -d`,
-   wait for `web` healthy, smoke `http://127.0.0.1:3001/en` and the host-nginx edge. The
-   pipeline never touches the host nginx (the proxy target `127.0.0.1:3001` is stable).
+   wait for `web` healthy, install/reload host nginx only when `infra/nginx-host/**` changed,
+   and smoke `http://127.0.0.1:3001/en` plus the host-nginx edge.
 
 ## One-time operator setup
 
@@ -74,6 +75,11 @@ docker start capsule-zero-nginx-1     # or: docker compose -p capsule-zero --pro
 ```bash
 sudo adduser --disabled-password --gecos "" deploy
 sudo usermod -aG docker deploy
+sudo tee /etc/sudoers.d/capsule-zero-dev-deploy >/dev/null <<'EOF'
+deploy ALL=(root) NOPASSWD: /usr/bin/install, /usr/bin/ln, /usr/bin/rm, /usr/sbin/nginx, /usr/bin/systemctl reload nginx
+EOF
+sudo chmod 440 /etc/sudoers.d/capsule-zero-dev-deploy
+sudo visudo -cf /etc/sudoers.d/capsule-zero-dev-deploy
 sudo -u deploy install -d -m 700 /home/deploy/.ssh
 # append the CI deploy public key:
 sudo -u deploy tee -a /home/deploy/.ssh/authorized_keys < ci_deploy_key.pub

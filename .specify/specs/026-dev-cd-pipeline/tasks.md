@@ -40,8 +40,9 @@
 ### Decisions
 
 - **Single host nginx edge, no Cloudflare.** One systemd nginx terminates TLS for prod and
-  dev and reverse-proxies to web containers on loopback (prod 3000, dev 3001). Keeps the
-  auto-deploy path off the shared edge — deploys only recreate the dev web container.
+  dev and reverse-proxies to web containers on loopback (prod 3000, dev 3001). Routine app
+  deploys only recreate the dev web container; versioned host-nginx changes are explicitly
+  installed, validated, and reloaded before the edge smoke.
 - **Prod cutover** kept the in-docker nginx defined but profile-gated (`docker-edge`) for a
   one-command rollback (`docker start capsule-zero-nginx-1`); the swap window was ~1–2s.
 - **Local dev keeps in-docker nginx in the default path.** `docker-compose.dev.yml` removes
@@ -51,6 +52,9 @@
   `curl --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/en` so a bad
   dev certificate, SNI route, or default vhost fails the deploy instead of being hidden by
   `curl -k`.
+- **Host-nginx config changes deploy with the app rollout.** The deploy job compares the
+  previous dev checkout with the target SHA; when `infra/nginx-host/**` changed, it installs
+  the versioned files, validates with `nginx -t`, and reloads host nginx before the edge smoke.
 - **Image registry: GHCR.** Free for the private repo, native `GITHUB_TOKEN` push auth,
   SHA-immutable tags. Droplet pulls with a read-only `read:packages` token.
 - **Dedicated dev checkout `/opt/capsule-zero-dev`** separate from prod's `/opt/capsule-zero`
@@ -65,9 +69,9 @@
 
 ### Known Issues
 
-- The CD pipeline is not yet live: it needs the operator one-time setup (deploy user, GitHub
-  secrets, GHCR pull login). Until the first run, dev serves a seed image (the local prod
-  image retagged `ghcr.io/kiaquila/capsule-zero-web:dev`).
+- The CD pipeline is not yet live: it needs the operator one-time setup (deploy user, limited
+  sudoers entry for host-nginx reloads, GitHub secrets, GHCR pull login). Until the first run,
+  dev serves a seed image (the local prod image retagged `ghcr.io/kiaquila/capsule-zero-web:dev`).
 - A stale certbot deploy-hook (`reload-nginx.sh`, reloading the retired in-docker nginx) was
   removed during cutover; renewals now use `reload-host-nginx.sh` (`nginx -t && systemctl
   reload nginx`).

@@ -12,8 +12,8 @@ The dev environment runs on the **same DigitalOcean droplet** as production but 
 (systemd) nginx** — not in Docker, no Cloudflare — is the sole TLS edge for both prod and
 dev, reverse-proxying plain HTTP to the web containers published on loopback (prod
 `127.0.0.1:3000`, dev `127.0.0.1:3001`). Dev has its **own TLS certificate**, separate from
-prod. A broken dev deploy only recreates the dev web container behind a stable proxy target,
-so it cannot affect production.
+prod. Routine app deploys only recreate the dev web container behind a stable proxy target;
+host-nginx config changes are applied explicitly with `nginx -t` before reload.
 
 ## Scope
 
@@ -54,9 +54,10 @@ so it cannot affect production.
   `docs_capsule_zero/**`, `**/*.md`, `tests/**`, or `.specify/**` leaves the change-gate
   `run=false`; no image is built and no deploy runs, and the workflow still reports success
   (green, skipped) so branch protection is not blocked.
-- **A broken dev deploy cannot reach production.** The dev stack is a separate compose
+- **A broken app deploy cannot reach production.** The dev stack is a separate compose
   project; the host nginx proxies prod and dev to different loopback ports. An unhealthy dev
-  `web` fails the deploy job and leaves prod (`127.0.0.1:3000`) and the host nginx untouched.
+  `web` fails the deploy job before host-nginx reload and leaves prod (`127.0.0.1:3000`)
+  serving through the existing nginx config.
 - **Unhealthy image is not silently accepted.** If the freshly deployed dev `web` container
   does not reach `healthy`, or the loopback / host-nginx smoke check fails, the deploy job
   exits non-zero and surfaces container logs.

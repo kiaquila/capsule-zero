@@ -188,8 +188,16 @@ jobs:
           cd /opt/capsule-zero-dev
 
           # Sync compose + nginx config to the deployed commit (secrets in .env.dev are untouched).
+          previous_sha="$(git rev-parse HEAD 2>/dev/null || true)"
           git fetch --prune origin
           git checkout --force "$DEPLOY_SHA"
+
+          host_nginx_changed=false
+          if [ -z "$previous_sha" ] || ! git rev-parse --verify --quiet "${previous_sha}^{commit}" >/dev/null; then
+            host_nginx_changed=true
+          elif [ -n "$(git diff --name-only "$previous_sha" "$DEPLOY_SHA" -- infra/nginx-host/)" ]; then
+            host_nginx_changed=true
+          fi
 
           export CAPSULE_WEB_IMAGE="$IMAGE_REF"
           COMPOSE="docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml"
@@ -209,6 +217,20 @@ jobs:
             echo "web did not become healthy (status=$status)"
             $COMPOSE logs --tail=80 web
             exit 1
+          fi
+
+          if [ "$host_nginx_changed" = "true" ]; then
+            echo "host nginx config changed; installing and reloading"
+            sudo install -m 644 infra/nginx-host/00-capsule-zero.conf /etc/nginx/conf.d/00-capsule-zero.conf
+            sudo install -m 644 infra/nginx-host/capsulezero.app.conf /etc/nginx/sites-available/capsulezero.app.conf
+            sudo install -m 644 infra/nginx-host/dev.capsulezero.app.conf /etc/nginx/sites-available/dev.capsulezero.app.conf
+            sudo ln -sf /etc/nginx/sites-available/capsulezero.app.conf /etc/nginx/sites-enabled/
+            sudo ln -sf /etc/nginx/sites-available/dev.capsulezero.app.conf /etc/nginx/sites-enabled/
+            sudo rm -f /etc/nginx/sites-enabled/default
+            sudo nginx -t
+            sudo systemctl reload nginx
+          else
+            echo "host nginx config unchanged"
           fi
 
           # Smoke the dev web on its loopback port, then end-to-end through the host nginx.
