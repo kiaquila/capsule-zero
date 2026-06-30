@@ -2,18 +2,26 @@
 
 Implementation in [`.specify/specs/024-production-stack-runtime/`](../.specify/specs/024-production-stack-runtime/).
 
+Reverse proxy / API gateway is nginx 1.27 (not Traefik — see ADR-001). The
+live production edge is a host (systemd) nginx in `nginx-host/`; the in-container
+`nginx/` config is profile-gated for rollback and used by local dev.
+
 Contents:
 
 ```
-traefik/                        ← Traefik dynamic config
-  middlewares.yml               ← Rate-limit, forward-auth into Kratos
-  routers.yml                   ← Route definitions for api, web, grafana
+nginx/                          ← in-container nginx config (rollback + local dev)
+  nginx.conf                    ← main config
+  conf.d/                       ← prod-shape vhost (capsulezero.app)
+  conf.d.dev/                   ← mkcert vhost (capsulezero.local)
+nginx-host/                     ← host (systemd) nginx vhosts — the live edge
+postgres/                       ← Postgres init scripts (run once on empty volume)
+  00-kratos-db.sh               ← provision the Kratos role + database
 kratos/                         ← Ory Kratos config
-  kratos.yml                    ← Identity schema, courier, self-service flows
+  kratos.yml                    ← courier, self-service flows
   identity.schema.json          ← traits.email, traits.name.first, traits.locale
-postgres/                       ← Postgres init scripts
-  00-extensions.sql             ← CREATE EXTENSION pgvector
-  01-kratos-db.sql              ← Create the Kratos database and role
 ```
 
-Until spec 024 lands, this directory holds only this README. The `docker-compose.yml` scaffold mounts these paths as read-only volumes; spec 024 fills them in.
+Postgres is plain `postgres:16` for v0.1 — pgvector is deferred until the
+semantic catalog-search slice (US-012) actually needs vectors.
+
+Filled in phase by phase per `.specify/specs/024-production-stack-runtime/`.

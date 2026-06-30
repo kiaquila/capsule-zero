@@ -11,11 +11,11 @@ Each service is declared as a separate `services:` entry in one root `docker-com
 | Service     | Image                            | Purpose                                                        | Default host exposure         |
 | ----------- | -------------------------------- | -------------------------------------------------------------- | ----------------------------- |
 | `nginx`     | `nginx:1.27-alpine`              | Edge: TLS (Let's Encrypt via host certbot), rate-limit, `auth_request` into Kratos | `80`, `443`        |
-| `web`       | local build of `/app` (Phase 1) → `/web` (Phase 6) | Next.js App Router web frontend                  | internal only (behind nginx)  |
+| `web`       | local build of `/app`            | Next.js App Router web frontend (`/app` stays — no rename) | internal only (behind nginx)  |
 | `api`       | local build of `/api`            | Go modular monolith                                            | internal only (behind nginx)  |
 | `worker`    | local build of `/worker`         | Redis-queue consumer (image jobs, embeddings, webhook fanout)  | internal only                 |
 | `kratos`    | `oryd/kratos`                    | Identity provider (email/password Stage 1)                     | internal only (behind nginx)  |
-| `postgres`  | `pgvector/pgvector:pg16`         | App database + Kratos database (separate logical DBs)          | internal only                 |
+| `postgres`  | `postgres:16`                    | App database + Kratos database (separate logical DBs; pgvector deferred by ADR-007) | internal only                 |
 | `pgbouncer` | `edoburu/pgbouncer`              | Connection pool in front of Postgres                           | internal only                 |
 | `redis`     | `redis:7-alpine`                 | Cache, sessions, job queue                                     | internal only                 |
 | `imgproxy`  | `darthsim/imgproxy`              | On-the-fly image resize/WebP for derived sizes                 | internal only (behind nginx)  |

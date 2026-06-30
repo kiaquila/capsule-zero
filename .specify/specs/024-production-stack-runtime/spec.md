@@ -13,11 +13,11 @@ The spec ships in incremental PRs against the same feature folder. Each phase ke
 | Phase | Scope | Status |
 | ----- | ----- | ------ |
 | Phase 1 — nginx + web | Replace the host Caddy + legacy Supabase compose with `nginx + web` in `docker-compose.yml`. `https://capsulezero.app/en` keeps serving the existing Next.js landing. | **In progress** |
-| Phase 2 — Postgres + Kratos | Add `postgres` (pgvector image) and `kratos` to compose. nginx `auth_request` middleware against Kratos. Wire Kratos self-service flows for sign-up/sign-in. | Pending |
-| Phase 3 — Go API + Redis + in-process worker | Add `redis` and `api` (Go modular monolith with `GET /api/health` plus Redis queue consumer goroutines). nginx routes `/api/*` to the Go API. | Pending |
+| Phase 2 — Auth vertical slice (Postgres + Kratos + Go API auth + `api` provider) | Add `postgres` (plain `postgres:16`) and `kratos` to compose; scaffold the Go `api` with the auth/profile bounded context (`GET /api/health`, Kratos session validation, `profiles` mapping); nginx `auth_request`; add the `api` provider mode in `/app` implementing `AuthPort` + `ProfileRepository` against Kratos self-service + the Go API. Registration/login work end-to-end on the existing `/app` UI. | Pending |
+| Phase 3 — Redis + remaining `/api/*` surface | Add `redis` and the Redis queue consumer goroutines inside `api`; widen `/api/*` coverage as the next domain slices land. | Pending |
 | Phase 4 — Storage + email + imgproxy | DigitalOcean Spaces bucket with CORS for `https://capsulezero.app`. Resend domain verified with SPF + DKIM. `imgproxy` deployed for on-the-fly derivatives. | Pending |
 | Phase 5 — Observability + backups | syslog rotation, OTLP trace exporter, and nightly `pg_dump` cron with 14-day Spaces lifecycle. Grafana remains deferred by ADR-007. | Pending |
-| Phase 6 — Legacy `/app` removal | Move `app/src/styles/tokens.css` to `web/src/styles/tokens.css`, retire `docker-compose.legacy-supabase.yml`, delete the legacy Supabase `/app` shell. | Pending |
+| Phase 6 — Supabase provider retirement | `/app` **stays** (it is the real frontend). Once every domain is on the `api` provider, remove the Supabase provider and `@supabase/*`, drop the unused `/web` placeholder, and retire `docker-compose.legacy-supabase.yml` + the Supabase env keys. No `/app` → `/web` rename. | Pending |
 
 Each phase ships as its own PR with feature-memory updates against this folder. The `## Verification` table in `plan.md` records acceptance criteria for each phase separately.
 
@@ -31,7 +31,7 @@ Each phase ships as its own PR with feature-memory updates against this folder. 
 - Service stubs for our own code:
   - `/api` Go skeleton: `cmd/api/main.go` boots an HTTP server with `GET /api/health` reporting reachability of Postgres, Redis, Kratos, Spaces, Resend, and starts the v0.1 Redis queue consumer goroutines (Phase 3)
   - `/worker` Go skeleton is deferred until ADR-007 promotes the standalone worker container; the Redis queue contract is still introduced in `/api` during Phase 3
-  - `/web` Next.js skeleton — until the legacy `/app` removal PR, web is served from `/app/Dockerfile`; the `/web` directory replaces it in Phase 6
+  - The web frontend is the existing `/app` Next.js project (built on the provider port/adapter abstraction); it stays and is served from `/app/Dockerfile`. The unused `/web` placeholder is dropped when the Supabase provider is fully retired. No `/app` → `/web` rename.
   - `/mobile` React Native scaffold (Expo project; ships builds locally; deploy to TestFlight/Google Play remains a Stage 2 follow-up)
 - Infrastructure configs under `/infra/`:
   - `infra/nginx/` — nginx 1.27 config (Phase 1)
@@ -85,6 +85,5 @@ The runtime must survive the following without silently degrading. Each is cover
 
 ## Out-of-Spec Follow-Ups
 
-- Move `app/src/styles/tokens.css` to `web/src/styles/tokens.css` in Phase 6 alongside the legacy `/app` removal.
 - Configure linting and local commit hooks if not already in place before the first product-code PR after Phase 3 lands.
 - Stage 2: Google / Apple OAuth provider configuration in Kratos; Lava.top live integration; self-hosted image-processing model; Sentry and Prometheus introduction.

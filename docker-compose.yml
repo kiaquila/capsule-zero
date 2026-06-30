@@ -15,7 +15,43 @@ networks:
   internal:
     driver: bridge
 
+volumes:
+  pgdata:
+
 services:
+  # PostgreSQL 16 — the v0.1 data tier (spec 024 Phase 2, auth slice).
+  # Plain postgres: users/profiles/wardrobe are relational. pgvector is NOT
+  # enabled here — it is deferred to the semantic catalog-search slice (US-012),
+  # which is the first feature that actually needs vectors. The API connects
+  # directly; PgBouncer is deferred by ADR-007. Init scripts in infra/postgres/
+  # run once on an empty volume: they provision the Kratos role + database so the
+  # Kratos container attaches to an already-prepared data tier. Published on
+  # loopback only — nothing outside the droplet talks to Postgres directly.
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in the env file}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in the env file}
+      POSTGRES_DB: ${POSTGRES_DB:-capsule_zero}
+      # Consumed by infra/postgres/00-kratos-db.sh during first-time init.
+      KRATOS_DB_USER: ${KRATOS_DB_USER:-kratos}
+      KRATOS_DB_PASSWORD: ${KRATOS_DB_PASSWORD:?set KRATOS_DB_PASSWORD in the env file}
+      KRATOS_DB_NAME: ${KRATOS_DB_NAME:-kratos}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${POSTGRES_HOST_BIND:-127.0.0.1}:5432:5432"
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+
   # Retired as edge: a host (systemd) nginx now terminates TLS and reverse-proxies to the
   # web container published on 127.0.0.1:3000. See infra/nginx-host/ and
   # docs_capsule_zero/project/devops/dev-cd-pipeline.md. Kept (profile-gated) for rollback:

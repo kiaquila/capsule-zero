@@ -11,8 +11,8 @@ The previous Phase 4 plan staged implementation behind mock provider adapters an
 The production-stack pivot changes the calculus:
 
 - the team owns the runtime end-to-end (docker-compose on a droplet), so there is no third-party registration overhead blocking work;
-- Ory Kratos, Postgres, Redis, Traefik, DigitalOcean Spaces, and Resend all come up directly from the production runtime spec;
-- the previous Supabase code under `/app` is being thrown away rather than promoted from mock to real;
+- Ory Kratos, Postgres, Redis, nginx, DigitalOcean Spaces, and Resend all come up directly from the production runtime spec;
+- the `/app` frontend stays (it is already built on a provider port/adapter abstraction); its Supabase provider is replaced by a real `api` provider that calls the Go API + Kratos, domain by domain, rather than being promoted from mock to real;
 - coins, image enhancement, and the self-hosted image model are pushed to v0.2 backlog — there are no expensive vendor flows in v0.1 to defer.
 
 Continuing to maintain a "mock-first" layer would now add structure for no benefit: the real services are cheaper to bring up than the fakes.
@@ -67,7 +67,7 @@ v0.1 screens must not expose active Google or Apple buttons. The current standal
 Positive:
 
 - One implementation path. No fakes to keep honest against the real schema.
-- The first feature PR exercises Kratos, Postgres, Spaces, Traefik, and Resend end-to-end. Integration risk surfaces immediately, not at a deferred "gate".
+- The first feature PR exercises Kratos, Postgres, Spaces, nginx, and Resend end-to-end. Integration risk surfaces immediately, not at a deferred "gate".
 - Test surface stays focused: contract tests against the real OpenAPI, integration tests against the real services running in docker-compose, no parallel fake suite.
 - The "what's stubbed" list is small and explicit (Lava.top, image processing) instead of an open-ended fake matrix.
 

@@ -11,7 +11,7 @@
 - TanStack Query for interactive server-state
 - React Hook Form + Zod for forms
 
-The web frontend talks to the Go API monolith through Traefik; there is no Supabase client and no Vercel runtime. Auth flows are rendered by the web app against Ory Kratos self-service endpoints, with the Kratos session validated by the Go API on every request.
+The web frontend talks to the Go API monolith through nginx; there is no Supabase client and no Vercel runtime. Auth flows are rendered by the web app against Ory Kratos self-service endpoints, with the Kratos session validated by the Go API on every request.
 
 The current `/app` directory hosts the legacy Supabase shell and is scheduled for removal after the production runtime spec ships (`.specify/specs/024-production-stack-runtime/`). The new home for the web frontend is `/web` — same Next.js stack, no Supabase clients, generated API client from `docs_capsule_zero/adr/openapi.yaml`.
 
@@ -76,7 +76,7 @@ Decision: active v0.1 web locales are `en` and `ru`. `es-AR` remains a future lo
 ## API Client Rules
 
 - Use Server Actions for simple authenticated app mutations; they call the Go API over HTTP with the Kratos session cookie forwarded.
-- Use Route Handlers only when an external caller needs a Next.js endpoint (rare — most surfaces talk directly to the Go API via Traefik).
+- Use Route Handlers only when an external caller needs a Next.js endpoint (rare — most surfaces talk directly to the Go API via nginx).
 - Keep Zod request/response schemas near the feature module and reuse them across Server Actions and components.
 - Keep generated OpenAPI client/types in `web/src/lib/api/generated/`; update them whenever `docs_capsule_zero/adr/openapi.yaml` changes.
 - Never embed admin/service credentials in Client Components — there are none on the web side; admin actions go through admin routes on the Go API.

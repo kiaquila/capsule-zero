@@ -18,19 +18,24 @@
 - [x] Update spec.md, plan.md, this tasks.md for the phased delivery model
 - [ ] First droplet rollout: stop Caddy, `certbot certonly --standalone`, `docker compose up -d`, smoke `curl https://capsulezero.app/en` (operator-driven; evidence lands on PR after the rollout)
 
-### Phase 2 — Postgres + Kratos
-- [ ] Add `postgres` (pgvector image) service with healthcheck and persistent volume; keep PgBouncer deferred by ADR-007
-- [ ] Add `kratos` service + `infra/kratos/` identity schema, Resend SMTP courier, self-service flow config
-- [ ] Reintroduce `docker-compose.dev.yml` with MailHog override for Kratos courier
-- [ ] Wire nginx `auth_request` against Kratos for protected routes
-- [ ] Smoke sign-up via web UI delivering a real verification email through Resend (requires Phase 4 email setup gated separately, or MailHog in dev)
+### Phase 2 — Auth vertical slice (working registration/login)
 
-### Phase 3 — Go API + Redis + in-process worker
-- [ ] Add `redis` service with persistent volume
-- [ ] Scaffold `/api` Go module with `GET /api/health` probing every dep
-- [ ] Wire Redis queue consumer goroutines inside `/api`; standalone `/worker` container remains deferred by ADR-007
-- [ ] `api/migrations/0001_initial_schema.sql` with full schema + methodology seed
-- [ ] nginx routes `/api/*` to `api:8080`
+One slice to a **working** end-to-end auth flow on the existing `/app` UI (which is already provider-abstracted). Postgres groundwork is done; the rest of the slice is next.
+
+- [x] Add `postgres` (plain `postgres:16`, pgvector deferred by ADR-007) with healthcheck + persistent `pgdata` volume, loopback-bound; PgBouncer deferred by ADR-007
+- [x] Add `infra/postgres/00-kratos-db.sh` (provision `kratos` role + database + app DB in one first-init pass)
+- [x] Add Postgres/Kratos-DB env keys to `deploy/compose.env.example`; refresh `infra/README.md` to the real nginx + postgres layout
+- [ ] Add `kratos` service (`oryd/kratos`) attaching to the prepared `kratos` DB; migrations on boot
+- [ ] Add `infra/kratos/` identity schema (`traits.email`, `traits.name.first`, `traits.locale`) + self-service flows; Resend SMTP courier (prod placeholder), MailHog in dev
+- [ ] Reintroduce `docker-compose.dev.yml` with the MailHog override for the Kratos courier
+- [ ] Scaffold the Go `api` auth/profile context: `GET /api/health`, Kratos session validation, `profiles` table + `kratos_identity_id → profiles.id` mapping, profile/session endpoints; golang-migrate at boot
+- [ ] nginx routes `/api/*` to `api:8080` + `auth_request` against Kratos for protected routes
+- [ ] Add the `api` provider mode in `app/src/lib/providers/api/` (AuthPort + ProfileRepository) against Kratos self-service + the Go API; register it, default `CAPSULE_PROVIDER_MODE=api` for prod; remove the Supabase provider's auth/profile paths
+- [ ] Verify acceptance 9a–9d: registration + login work end-to-end on `/app`
+
+### Phase 3 — Redis + remaining `/api/*` surface
+- [ ] Add `redis` service with persistent volume; Redis queue consumer goroutines inside `/api` (standalone `/worker` deferred by ADR-007)
+- [ ] Widen the Go API + `api` provider to wardrobe / capsule / catalog / billing, retiring the matching Supabase provider paths per domain
 
 ### Phase 4 — Storage + email + imgproxy
 - [ ] DigitalOcean Spaces bucket `capsulezero` created with CORS for `https://capsulezero.app`
@@ -41,9 +46,9 @@
 - [ ] Configure syslog rotation and OTLP trace exporter target; Grafana remains deferred by ADR-007
 - [ ] Nightly `pg_dump` cron uploading to `s3://capsulezero/backups/` with 14-day lifecycle
 
-### Phase 6 — Legacy `/app` removal
-- [ ] `git mv app web`; update compose build context
-- [ ] Move `app/src/styles/tokens.css` to `web/src/styles/tokens.css`
+### Phase 6 — Supabase provider retirement (no `/app` rename)
+- [ ] Remove `app/src/lib/providers/supabase/` and `@supabase/*`; drop `supabase` from `ProviderMode`
+- [ ] Delete the unused `/web` placeholder directory
 - [ ] Delete `docker-compose.legacy-supabase.yml`
 - [ ] Drop legacy Supabase env keys from `deploy/compose.env.example` and droplet `.env`
 
@@ -56,13 +61,15 @@
 - 2026-06-27 PR #48 explored a 10-service compose scaffold (Traefik + Kratos + Postgres + …) shipping in a single iteration. Rejected after the migration plan turned out to need a separate, smaller "swap the reverse proxy" step ahead of any data service. The scaffold becomes the long-term target; this spec now ships it phase by phase.
 - 2026-06-28 considered `--standalone` certbot inside a sidecar container so the compose stack would be self-contained for TLS. Rejected: it duplicates what the `certbot` apt package already does on the host with a `certbot.timer`, and forces an extra container running 24/7 to do work that fires twice a day.
 - 2026-06-28 considered exporting the existing Caddy ACME state to nginx-readable PEM files. Rejected: Caddy stores certs in a JSON envelope that has to be parsed and rewritten; cleaner to run a fresh `certbot certonly --standalone` during the migration window.
+- 2026-06-30 considered creating the Kratos database/role later, alongside the Kratos container. Rejected: Postgres `/docker-entrypoint-initdb.d` scripts run **only** on first init of an empty volume. Provisioning `kratos` in a later commit would skip a populated droplet volume, leaving Kratos pointed at a non-existent database. We provision both databases up front in one pass.
+- 2026-06-30 considered a `.sql` init file for the Kratos role. Rejected: plain SQL files in initdb cannot read env vars, so the role password could not come from the droplet `.env`. Used a `.sh` script (`00-kratos-db.sh`) that reads `KRATOS_DB_*` and guards `CREATE DATABASE` via `\gexec`.
 
 ### Decisions
 
 - 2026-06-27 PR #48 review fix: service-level `./.env` references in `docker-compose.yml` use `env_file` object form with `required: false` so `docker compose ... config` works on a fresh checkout before secrets are present.
 - 2026-06-27 PR #48 review fix: the insecure Traefik dev dashboard published by `docker-compose.dev.yml` binds to `127.0.0.1:8081`, matching the file comment and avoiding exposure on shared hosts. (Superseded 2026-06-28 — `docker-compose.dev.yml` is dropped until Phase 2 reintroduces MailHog.)
 - 2026-06-27 PR #48 review fix: `npm run deploy:compose` now explicitly targets `docker-compose.legacy-supabase.yml`; the production-stack deploy command lands with spec 024 implementation once real Dockerfiles/configs exist.
-- 2026-06-27 PR #48 review fix: the production scaffold uses `pgvector/pgvector:pg16` instead of vanilla `postgres:16-alpine` so `CREATE EXTENSION vector` can succeed when migrations land. (Carries into Phase 2.)
+- 2026-06-27 PR #48 review fix: the production scaffold uses `pgvector/pgvector:pg16` instead of vanilla `postgres:16-alpine` so `CREATE EXTENSION vector` can succeed when migrations land. (**Superseded 2026-06-30** — v0.1 ships plain `postgres:16`; pgvector is deferred to the semantic catalog-search slice per ADR-007, since users/profiles/wardrobe are relational and nothing queries vectors yet.)
 - 2026-06-27 PR #48 review fix: Traefik ACME uses Cloudflare DNS-01 via `CF_DNS_API_TOKEN`. (Superseded 2026-06-28 — see nginx decision below.)
 - 2026-06-27 PR #48 review fix: API and worker fallback DSNs derive both username and database from `POSTGRES_USER` / `POSTGRES_DB`, matching the compose env template instead of hard-coding `capsule_zero`. (Carries into Phase 3.)
 - 2026-06-27 PR #48 review fix: `deploy/compose.env.example` now describes the production-stack env contract instead of the legacy Supabase runtime. Phase 1 slims this further to the `nginx + web` keys plus the legacy `/app` placeholders the bundle still imports at boot.
@@ -78,6 +85,10 @@
 - **2026-06-28 PR #49 review fix: certbot webroot is host-managed, not a Docker named volume.** Host `certbot.timer` writes HTTP-01 challenge files to `/var/www/certbot`; nginx bind-mounts that path read-only via `CERTBOT_WEBROOT_HOST_DIR` and serves it from both the port-80 and port-443 ACME locations so HTTP-01 renewals still work after an HTTP→HTTPS redirect. The nginx container healthcheck uses `/nginx-health`, a real static endpoint, instead of probing a challenge token that certbot creates only during renewals.
 - **2026-06-28 PR #49 review fix: nginx resolves the `web` service dynamically.** Static nginx upstream blocks resolve Docker service names only at config load, so replacing the `web` container can leave nginx proxying to a removed container IP. The Phase 1 config now uses Docker embedded DNS (`127.0.0.11`) plus variable `proxy_pass` to re-resolve `web:3000` with a short TTL.
 - **2026-06-29 PR #50 review fix: spec 024 aligns with ADR-007's slim v0.1 runtime.** Phase 2 uses direct Postgres URLs without PgBouncer, Phase 3 runs the Redis queue consumer inside `api` instead of deploying a standalone `worker`, and Phase 5 verifies syslog/OTLP/backups without requiring Grafana. Promotion triggers for all three deferred services stay in ADR-007.
+- **2026-06-30 (founder direction) Phase 2 is reshaped into one working auth vertical slice, not a data/identity/API split.** An earlier same-day plan split Phase 2 into "2a data tier / 2b identity tier" and ran the smoke against the Kratos API only, deferring the UI. Rejected by the founder as shipping stubs: the `/app` frontend is **already built** on the provider port/adapter abstraction (`app/src/lib/providers/`, ports in `contracts.ts`; modes `mock` + `supabase`). The slice instead delivers Postgres + Kratos + the Go API auth/profile context + a new `api` provider in `/app`, so **registration/login actually work end-to-end on the existing UI**. The UI is reused, not rebuilt — the auth form (email/password/name, `requiresEmailConfirmation`) maps onto Kratos self-service + verification.
+- **2026-06-30 add a third provider mode `api`; retire the Supabase provider domain by domain.** The supabase provider (~2979 lines) is the entire backend integration, not just auth. New mode `api` implements the ports via typed fetch to the Go API + Kratos; each domain slice removes its supabase counterpart. `mock` stays for local dev/tests. `/app` is **not** renamed to `/web` — that was a cosmetic aspiration; the empty `/web` placeholder is dropped when supabase is fully gone.
+- **2026-06-30 Postgres ships plain `postgres:16`; pgvector deferred to the semantic-search slice (ADR-007).** v0.1 entities are relational; nothing queries vectors until catalog semantic search (US-012).
+- **2026-06-30 Phase 2 keeps the app role as the image superuser (`POSTGRES_USER`).** A dedicated least-privilege app role is deferred as a hardening follow-up; v0.1 uses the entrypoint-managed role for the app DB and a separate `kratos` login role for the Kratos DB.
 
 ### Known Issues
 
@@ -89,3 +100,5 @@
 - `npm run check:runtime-env` still validates the legacy Supabase/Lava/Photoroom env contract and fails with local placeholder values on this branch. It is **not** invoked from CI (`ci.yml` runs only `check:repo`, `check:api-contract`, `lint`, `typecheck`, `build`, `docker build`, `npm test`). Phase 6 retires the script alongside the legacy `/app` removal.
 - HTTP/3 / QUIC is unavailable at the origin while nginx-alpine ships without the QUIC build. Cloudflare gives HTTP/3 at the edge once the proxy is on. No action expected until then.
 - During the Phase 1 droplet rollout there is a brief connection-refused window between `systemctl stop caddy` and `docker compose up -d` while certbot issues the cert. This is acceptable today because the droplet has no production traffic.
+- **(Phase 2) `postgres` is added to the root `docker-compose.yml` only, not to `docker-compose.dev-server.yml`.** The remote `dev.capsulezero.app` stack stays web-only until the slice rolls out there; bringing Postgres up on the droplet is an operator rollout step, exactly like the Phase 1 first-rollout row. Local `docker compose up -d postgres` is the evidence.
+- **(Phase 2) The app database uses the Postgres superuser role.** Least-privilege separation (a non-superuser `app` role owning the app schema) is a deferred hardening follow-up; tracked here so it is not silently forgotten.

@@ -27,10 +27,11 @@ This is a v0.1 bootstrap decision, not a long-term stack change. Each deferred s
 | `pgbouncer`       | Not deployed. API pools via `pgx`.                              | Postgres `pg_stat_activity` shows sustained connection pressure, or API horizontal scaling crosses 2+ replicas.    |
 | `grafana`         | Not deployed. Logs go to syslog file + `journalctl`.            | First live incident that requires correlated dashboards, or before commercial launch (Phase 7).                    |
 | Standalone `worker` | Job-queue consumer runs as goroutines in `api`.                | Self-hosted image model lands (separate scaling profile), or job latency starts blocking request handlers.         |
+| `pgvector` extension | Not enabled. Postgres runs as plain `postgres:16`.            | The semantic catalog-search slice (US-012) lands — it is the first feature that actually queries vectors.          |
 
 ### Services that stay in v0.1
 
-`nginx`, `kratos`, `postgres` (with `pgvector`), `redis`, `api`, `web`, `imgproxy` (for derived image sizes). `mailhog` stays as a dev-only override.
+`nginx`, `kratos`, `postgres` (plain `postgres:16` — pgvector deferred, see above), `redis`, `api`, `web`, `imgproxy` (for derived image sizes). `mailhog` stays as a dev-only override.
 
 ## Consequences
 

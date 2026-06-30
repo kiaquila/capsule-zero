@@ -10,7 +10,7 @@ Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a
 | Background worker      | Redis-queue consumer goroutines inside `/api` for v0.1; standalone `/worker` container deferred by ADR-007 |
 | API gateway / TLS      | nginx 1.27 with host-managed Let's Encrypt certbot, rate-limit middleware, `auth_request` into Ory Kratos |
 | Auth                   | Ory Kratos email/password (Stage 1); Google OAuth and Apple Sign-In in Stage 2                        |
-| Database               | PostgreSQL 16 with `pgvector` and Postgres FTS; API connects directly in v0.1, PgBouncer deferred by ADR-007 |
+| Database               | PostgreSQL 16; API connects directly in v0.1. `pgvector` and PgBouncer both deferred by ADR-007 (pgvector enabled with the semantic-search slice; FTS used until then) |
 | Cache / sessions / queue| Redis 7 (cache, idempotency keys, River/asynq job queue)                                             |
 | Object storage         | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                     |
 | Email                  | Resend (SMTP courier for Kratos; transactional sends from `internal/email`)                           |
@@ -152,7 +152,7 @@ The v0.1 runtime is delivered by `.specify/specs/024-production-stack-runtime/`.
 | -------------- | -------------------------------- | ---------------------------------------------------------- | ---- |
 | `nginx`        | `nginx:1.27-alpine`              | API gateway, TLS termination, HTTP redirect, rate-limit, Kratos `auth_request` | yes  |
 | `kratos`       | `oryd/kratos`                    | Identity provider                                          | yes  |
-| `postgres`     | `pgvector/pgvector:pg16`         | Application database + Kratos database                     | yes  |
+| `postgres`     | `postgres:16`                    | Application database + Kratos database (pgvector deferred by ADR-007) | yes  |
 | `pgbouncer`    | `edoburu/pgbouncer`              | Connection pool in front of Postgres                       | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md) |
 | `redis`        | `redis:7-alpine`                 | Cache, sessions, job queue                                 | yes  |
 | `api`          | local build of `/api`            | Go monolith (also runs worker goroutines in v0.1)          | yes  |

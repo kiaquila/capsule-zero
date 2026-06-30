@@ -4,6 +4,8 @@
 
 Rerun complete (2026-06-27). Convergence pass concluded with the **production-stack pivot**: Go modular monolith + Traefik + Ory Kratos + PostgreSQL/pgvector + Redis + DigitalOcean Spaces + Cloudflare + Resend + React Native. The previous Supabase + Vercel + Flutter + Photoroom direction is dropped before any code derived from it lands in production.
 
+> **Dated record — later revisions:** the API gateway was changed Traefik → nginx on 2026-06-28 (ADR-001 § "Why nginx and not Traefik or Caddy"); pgvector is deferred to the semantic-search slice (ADR-007). This document is the 2026-06-27 convergence snapshot and is not edited cell-by-cell — the live decisions are the ADRs and `phase-4-council.md`.
+
 ## Goal
 
 Re-evaluate the Phase 4 architecture against the new founder constraints (single DO droplet, no BaaS lock-in, self-hosted observability under a tight RAM budget, React Native instead of Flutter, self-hosted image model deferred to Stage 2) and record the convergence outcome that produced the new ADRs.

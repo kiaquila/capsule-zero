@@ -6,7 +6,7 @@ Accepted for v0.1 planning. Before Stage 1 feature implementation, Sprint 0 must
 
 ## API Principles
 
-- Ory Kratos owns identity and session state. Traefik runs a forward-auth middleware against Kratos in front of protected routes; the Go API re-validates the Kratos session on every authenticated request.
+- Ory Kratos owns identity and session state. nginx runs an `auth_request` subrequest against Kratos in front of protected routes; the Go API re-validates the Kratos session on every authenticated request.
 - The Go modular monolith exposes the REST API at `/api/*`; the Next.js web app and React Native mobile app both consume the same OpenAPI contract through generated clients.
 - Next.js Server Actions may wrap calls to the Go API for in-app mutations; they never embed admin credentials.
 - The Go monolith owns database-heavy operations: compatibility validation, outfit regeneration, OPR, gap analysis, and hybrid FTS + pgvector search.

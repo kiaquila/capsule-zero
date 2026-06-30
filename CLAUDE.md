@@ -22,6 +22,10 @@ Then start work from `origin/main` (or the named PR head) rather than whatever h
 
 If the working tree has uncommitted changes that block a checkout, stash them (`git stash push -u -m "..."`) — do not lose work, but do not let stale state contaminate analysis either.
 
+## Docs Are the Single Source of Truth
+
+When you change an architecture or implementation decision, actualize **all** affected docs in the **same** change (ADRs, `.specify/specs/**`, `docs_capsule_zero/**`, AGENTS.md, CLAUDE.md, constitution). No doc drift — stale docs silently produce wrong work. Cautionary example: Traefik → nginx.
+
 ## Read Before Coding
 
 1. @.specify/memory/constitution.md — project principles, methodology, design rules

@@ -1,6 +1,6 @@
 # Launch Plan — Capsule Zero v0.1
 
-> Original source: Capsule Zero Launch Plan RU.pdf (February 2026). Updated in June 2026 for the production-stack pivot (Go modular monolith + Traefik + Ory Kratos + PostgreSQL + Redis + DigitalOcean Spaces + Cloudflare + Resend) and React Native mobile apps; current path to first commercial sales is 13-14 weeks.
+> Original source: Capsule Zero Launch Plan RU.pdf (February 2026). Updated in June 2026 for the production-stack pivot (Go modular monolith + nginx + Ory Kratos + PostgreSQL + Redis + DigitalOcean Spaces + Cloudflare + Resend) and React Native mobile apps; current path to first commercial sales is 13-14 weeks.
 
 ## Overview
 

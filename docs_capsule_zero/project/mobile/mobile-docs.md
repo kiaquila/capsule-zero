@@ -26,7 +26,7 @@ Capsule Zero v0.1 ships native mobile apps for iOS and Android built with React 
 | i18n              | `expo-localization` + `react-intl` (or `i18next`) for EN + RU; ES-AR deferred to v0.2                    |
 | Deep links        | `expo-linking` + universal links / app links                                                            |
 
-The React Native app shares the same Go API contract as the web. It never talks to Kratos or Spaces directly through a back channel — auth flows go through the Go API via Kratos forward-auth, and uploads go through signed URLs issued by the API.
+The React Native app shares the same Go API contract as the web. It never talks to Kratos or Spaces directly through a back channel — auth flows go through the Go API via nginx `auth_request` into Kratos, and uploads go through signed URLs issued by the API.
 
 ## Architecture
 

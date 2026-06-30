@@ -12,21 +12,21 @@ Each phase below is its own PR. The phases are intentionally additive — each o
 4. Add `docs_capsule_zero/project/devops/nginx-reverse-proxy.md` — operator runbook covering bootstrap, renewal, migration from Caddy, rollback, local dev posture.
 5. Update ADR-001 § "Why nginx and not Traefik or Caddy" and Phase 4 council DI-017 to record the API-gateway choice.
 
-### Phase 2 — Postgres + Kratos
+### Phase 2 — Auth vertical slice (working registration/login)
 
-6. Add `postgres` (pgvector image) to compose with persistent volume and healthcheck. API connections use direct Postgres URLs in v0.1; PgBouncer is deferred by ADR-007.
-7. Add `kratos` to compose with Resend SMTP courier in prod and MailHog in `docker-compose.dev.yml` (reintroduced this phase).
-8. Wire `infra/postgres/` init scripts to enable `pgvector`, create the Kratos database, and create app + Kratos roles.
-9. Wire `infra/kratos/` identity schema with `traits.email`, `traits.name.first`, `traits.locale`; self-service flows for sign-up, sign-in, recovery, settings.
-10. Add nginx `auth_request` middleware that calls the Kratos session API for protected routes (`/dashboard`, future `/api/*` non-public endpoints).
+The goal is a **working** end-to-end auth flow on the existing `/app` UI, not infrastructure that dangles. `/app` is already built on the provider port/adapter abstraction, so this phase adds a real `api` provider rather than rebuilding any UI.
 
-### Phase 3 — Go API + Redis + in-process worker
+6. Add `postgres` (plain `postgres:16` — pgvector deferred by ADR-007) to compose with persistent volume and healthcheck. Direct Postgres URLs in v0.1; PgBouncer deferred by ADR-007.
+7. `infra/postgres/` init scripts provision the `kratos` role + database (and the app DB) in one first-init pass.
+8. Add `kratos` to compose with Resend SMTP courier in prod and MailHog in `docker-compose.dev.yml` (reintroduced this phase). `infra/kratos/` identity schema (`traits.email`, `traits.name.first`, `traits.locale`) + self-service flows for sign-up, sign-in, recovery, settings.
+9. Scaffold the Go `api` (built from `/api/Dockerfile`) with the **auth/profile bounded context only**: `GET /api/health`, Kratos session validation, `profiles` table + `kratos_identity_id → profiles.id` mapping on first sign-in, and the profile/session endpoints the frontend provider needs. Migrations via `golang-migrate` at boot, idempotent.
+10. nginx routes `/api/*` to `api:8080` and runs `auth_request` against Kratos for protected routes.
+11. Add the `api` provider mode in `/app` (`app/src/lib/providers/api/`) implementing `AuthPort` + `ProfileRepository` against Kratos self-service + the Go API; register it in the provider registry and default `CAPSULE_PROVIDER_MODE=api` for prod. `mock` stays for local/tests; the Supabase provider's auth/profile paths are removed as this lands.
 
-11. Add `redis` to compose with persistent volume.
-12. Add `api` to compose: Go monolith built from `/api/Dockerfile`, exposing `GET /api/health` that probes Postgres / Redis / Kratos.
-13. Start the Redis-queue consumer as goroutines inside `api`; standalone `worker` compose service remains deferred by ADR-007.
-14. Ship `api/migrations/0001_initial_schema.sql` (full schema + methodology seed). Migrations run via `golang-migrate` invoked by the API on boot, idempotent.
-15. Update nginx to route `/api/*` to `api:8080`.
+### Phase 3 — Redis + remaining `/api/*` surface
+
+12. Add `redis` to compose with persistent volume; start the Redis-queue consumer as goroutines inside `api` (standalone `worker` deferred by ADR-007).
+13. Widen the Go API and the `api` provider to the next domain slices (wardrobe, capsule, catalog, billing), retiring the matching Supabase provider paths as each domain moves.
 
 ### Phase 4 — Storage + email + imgproxy
 
@@ -40,10 +40,12 @@ Each phase below is its own PR. The phases are intentionally additive — each o
 20. Wire the OpenTelemetry trace exporter target used by the Go API.
 21. Nightly `pg_dump` cron (`ofelia`-style sidecar or host cron) uploading to `s3://capsulezero/backups/`. Spaces lifecycle rule for 14-day retention.
 
-### Phase 6 — Legacy `/app` removal
+### Phase 6 — Supabase provider retirement
 
-22. Rename `/app` → `/web` (`git mv`), preserving history. Update `docker-compose.yml` build context.
-23. Move `app/src/styles/tokens.css` → `web/src/styles/tokens.css`.
+`/app` **stays** — no rename. Once every domain is served by the `api` provider:
+
+22. Remove the Supabase provider (`app/src/lib/providers/supabase/`) and the `@supabase/*` dependencies; drop `supabase` from `ProviderMode`.
+23. Delete the unused `/web` placeholder directory.
 24. Delete `docker-compose.legacy-supabase.yml`.
 25. Drop the legacy Supabase env keys from `deploy/compose.env.example` and from the droplet `.env`.
 
@@ -61,8 +63,10 @@ Every acceptance criterion below is verifiable by a command, screenshot, or link
 | 6 | 1 | `curl -fsSI http://capsulezero.app/` returns HTTP 301 redirecting to `https://capsulezero.app/` | curl output committed to PR description |
 | 7 | 1 | Negative scenario 2 (`web` exits) → `curl -fsS -o /dev/null -w '%{http_code}\n' https://capsulezero.app/en` returns 502; `docker compose ps` shows `web` unhealthy | shell output collected during droplet smoke |
 | 8 | 1 | TLS certificate renewal dry-run succeeds without restarting nginx: `certbot renew --dry-run` exits 0 and the post-deploy hook reloads nginx | command output collected during droplet smoke |
-| 9 | 2 | `docker compose up -d postgres kratos` reaches healthy within 90 s; pgvector extension present in Postgres; `POSTGRES_URL` points directly at `postgres` | `docker compose ps` + `psql -c '\dx vector'` output + env diff |
-| 10 | 2 | Smoke sign-up via Kratos self-service flow delivers a real verification email via Resend | screenshot of inbox + Kratos identity record (admin API JSON) |
+| 9a | 2 | `docker compose up -d postgres` (plain `postgres:16`, no pgvector) reaches healthy; the `kratos` role + database and the app DB are provisioned in one init pass; restart on a populated volume does not re-run init | ✅ local smoke 2026-06-30: image `postgres:16`; `pg_extension` = `plpgsql` only (no `vector` — correctly deferred); `pg_database` lists `capsule_zero` + `kratos`; `pg_roles` lists `capsule` + `kratos`; restart log shows `Skipping initialization` (init not replayed) |
+| 9b | 2 | `docker compose up -d postgres kratos` reaches healthy; Kratos connects to the prepared `kratos` DB and applies its migrations idempotently; `POSTGRES_URL` points directly at `postgres` | `docker compose ps` + Kratos migrate log + env diff |
+| 9c | 2 | **Registration + login work end-to-end on the existing `/app` UI** with `CAPSULE_PROVIDER_MODE=api`: sign-up creates a Kratos identity and a mapped `profiles` row; login establishes a session; `/dashboard` is reachable | e2e/manual smoke screenshots + Kratos admin identity JSON + `profiles` row `SELECT` |
+| 9d | 2 | Smoke sign-up delivers a verification email (MailHog in dev; real Resend gated to Phase 4) and the `api` provider surfaces a safe inline error on a failed flow | MailHog message screenshot + Kratos identity record |
 | 11 | 3 | `curl -fsS https://capsulezero.app/api/health` returns 200 with `postgres`, `redis`, `kratos` all `"ok"` | curl output committed to PR |
 | 12 | 3 | Negative scenario 3 (`docker compose stop postgres`) → `/api/health` returns 503 with `postgres: "error"` | log committed |
 | 13 | 3 | Negative scenario 6: repeat `docker compose up -d` is a no-op on a healthy stack (no migration replay) | `docker compose ps` and `docker compose logs api --tail=20` |

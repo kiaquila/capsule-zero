@@ -131,12 +131,16 @@ If a product or technical object type already exists in code, reuse its componen
 
 ### 8. No Supabase / Legacy-Backend Recoupling (NON-NEGOTIABLE)
 
-Supabase is **retired** (production-stack pivot, 2026-06-27). The legacy `/app` provider is frozen and slated for deletion — **do not extend it, and do not re-introduce it into anything new.**
+Supabase is **retired** (production-stack pivot, 2026-06-27). The legacy Supabase provider is frozen and being deleted domain by domain — **do not extend it, and do not re-introduce it into anything new.**
 
-- No new spec, `docker-compose*.yml`, GitHub workflow, deploy/provisioning script, infra/nginx config, or doc may add or re-introduce Supabase or provider coupling: no `SUPABASE_*` / `CAPSULE_PROVIDER_MODE` / provider env, no Supabase client imports, and **no health or smoke checks that hit provider-backed routes** (`/api/health`, other `/api/*`).
-- New deploy/infra artifacts must **reuse the established web-only contract** (the `web` service in `docker-compose.yml`) and stay provider-agnostic until the Go / Postgres / Kratos backend lands and wires **its own** env behind production-shape contracts.
-- The dev edge (`dev.capsulezero.app`) deploys `main`, which is still the legacy frontend shell. Until the new backend is wired, deploys preview the **frontend only** and smoke **provider-free routes (`/en`)** — never `/api/*`.
-- **Reviewers must reject** any diff that recouples deployment, CI/CD, or runtime to the retired backend. Regression that motivated this rule: PR #53 (spec 026) grafted a full `SUPABASE_*` env contract + `/api/health` healthcheck into the brand-new `docker-compose.dev-server.yml` instead of mirroring the web-only `docker-compose.yml`, silently breaking dev CD.
+- No new spec, `docker-compose*.yml`, GitHub workflow, deploy/provisioning script, infra/nginx config, or doc may add or re-introduce Supabase coupling: no `SUPABASE_*` env, no Supabase client imports.
+- The **dev edge** (`dev.capsulezero.app` via `docker-compose.dev-server.yml`) stays web-only and provider-free — deploys preview the **frontend only** and smoke **provider-free routes (`/en`)**, never provider-backed `/api/*`, until the Go / Postgres / Kratos backend is wired into the dev edge in its own slice.
+- Exception, by design: the **production stack** (`docker-compose.yml`) is where the Go / Postgres / Kratos backend lands and wires **its own** env behind production-shape contracts (`CAPSULE_PROVIDER_MODE=api`, `/api/*` routing). That is the sanctioned arrival this rule anticipates — it is not a Supabase recoupling.
+- **Reviewers must reject** any diff that recouples deployment, CI/CD, or runtime to the retired **Supabase** backend. Regression that motivated this rule: PR #53 (spec 026) grafted a full `SUPABASE_*` env contract + `/api/health` healthcheck into the brand-new `docker-compose.dev-server.yml` instead of mirroring the web-only `docker-compose.yml`, silently breaking dev CD.
+
+### 9. Docs Are the Single Source of Truth
+
+When you change an architecture or implementation decision, actualize **all** affected docs in the **same** change — ADRs, `.specify/specs/**`, `docs_capsule_zero/**`, AGENTS.md, CLAUDE.md, constitution. No doc drift. (Cautionary example: Traefik → nginx.)
 
 ## Source Documentation
 
