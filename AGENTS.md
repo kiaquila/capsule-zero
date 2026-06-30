@@ -229,7 +229,7 @@ All automated tests live under `tests/` at the repo root:
 - `tests/unit/` — `go test` for the Go API. Stub today; populated once spec-024 lands product code.
 - `tests/mobile/` — Detox e2e for the React Native app. Stub today; populated once `/mobile/` ships its first build.
 
-When adding or changing a test, read [`tests/README.md`](tests/README.md) — it owns the TDD loop, POM/selector rules, and run commands. **TDD is mandatory for every spec ≥ 025**: write the failing test first, commit it, then make it pass.
+When adding or changing a test, read [`tests/README.md`](tests/README.md) — it owns the TDD loop, POM/selector rules, and run commands. **TDD is mandatory for every spec ≥ 025, but only for application code** (web UI, React Native, Go API behaviors): write the failing test first, commit it, then make it pass. Infrastructure and delivery wiring (CI/CD workflows, Dockerfiles, `docker-compose`, nginx config, deploy scripts), docs, and other support changes are out of scope for the failing-test-first loop — verify them with config validation and smoke/health checks recorded in the `## Verification` table instead.
 
 ## SENAR Completion Contract
 

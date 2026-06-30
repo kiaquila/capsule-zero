@@ -191,8 +191,10 @@ Each feature folder must record what was tried and rejected, what decisions were
 
 ### Test-First Verification
 
-Every spec ≥ 025 must follow test-driven development. The acceptance criterion from `spec.md` is expressed as an automated test first (Playwright e2e for web, Detox for mobile, `go test` for the Go API). The failing test is committed before the product code that makes it pass. The required GitHub check `test` enforces that the resulting suite is green on the PR head SHA; the SENAR Done Gate row in the PR template binds the TDD evidence to the merge decision. Selectors and assertions follow the conventions in `tests/README.md`. Specs `001` through `024` are grandfathered.
+Every spec ≥ 025 must follow test-driven development **for application code**. The acceptance criterion from `spec.md` is expressed as an automated test first (Playwright e2e for web, Detox for mobile, `go test` for the Go API). The failing test is committed before the product code that makes it pass. The required GitHub check `test` enforces that the resulting suite is green on the PR head SHA; the SENAR Done Gate row in the PR template binds the TDD evidence to the merge decision. Selectors and assertions follow the conventions in `tests/README.md`. Specs `001` through `024` are grandfathered.
+
+**Scope of the failing-test-first loop.** TDD governs user-visible product behavior — web UI, the React Native app, and Go API behaviors. It does **not** apply to infrastructure and delivery wiring (CI/CD workflows, Dockerfiles, `docker-compose` files, nginx and other service config, deploy and provisioning scripts), to documentation, or to other non-product support changes. Those are still subject to Supervised Verification, but the evidence is appropriate to the layer — config validation (`docker compose config`, `nginx -t`), a smoke or health check against the deployed surface, or a linked successful run — recorded in the `## Verification` table rather than a committed failing test. A spec whose changes are entirely infra/docs/support carries a one-line waiver in `spec.md` and the `test` check does not gate it.
 
 These principles apply to every spec authored after the SENAR layer shipped. Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered and keep their original shape.
 
-**Version**: 1.2 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-06-29
+**Version**: 1.3 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-06-29
