@@ -15,6 +15,8 @@ export class LandingPage extends BasePage {
   readonly cookieRejectAll: Locator;
   readonly authTrigger: Locator;
   readonly authPopover: Locator;
+  readonly footerTermsLink: Locator;
+  readonly footerPrivacyLink: Locator;
   readonly auth: AuthPopup;
 
   constructor(page: Page, locale: Locale = "en") {
@@ -25,6 +27,8 @@ export class LandingPage extends BasePage {
     this.cookieRejectAll = page.getByTestId("cookie-reject-all");
     this.authTrigger = page.getByTestId("auth-trigger");
     this.authPopover = page.getByTestId("auth-popover");
+    this.footerTermsLink = page.getByTestId("footer-terms-link");
+    this.footerPrivacyLink = page.getByTestId("footer-privacy-link");
     this.auth = new AuthPopup(page);
   }
 

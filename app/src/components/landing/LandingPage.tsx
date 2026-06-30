@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
+import { Link } from "@/i18n/navigation";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 import { openCookieSettings } from "@/lib/cookie-consent";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -42,9 +43,13 @@ export function LandingPage() {
       </main>
 
       <footer className="landing-footer">
-        <a href="#terms">{t("terms")}</a>
+        <Link href="/terms-of-use" data-testid="footer-terms-link">
+          {t("terms")}
+        </Link>
         <span aria-hidden="true">·</span>
-        <a href="#privacy">{t("privacy")}</a>
+        <Link href="/privacy-policy" data-testid="footer-privacy-link">
+          {t("privacy")}
+        </Link>
         <span aria-hidden="true">·</span>
         <button
           className="landing-footer-button"
