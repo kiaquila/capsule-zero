@@ -56,6 +56,7 @@ reload nginx` so renewed certs take effect.
 | Workflow YAML is valid and jobs/conditions parse | `actionlint .github/workflows/cd-dev.yml` → exit 0 |
 | Dev compose file is valid and self-contained | `CAPSULE_WEB_IMAGE=… docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml config` exits 0 |
 | Prod compose still valid; nginx gated out of default set | `docker compose -f docker-compose.yml config --services` → `web` only; `--profile docker-edge` → `web` + `nginx` |
+| Local dev compose still starts the laptop nginx by default | `docker compose -f docker-compose.yml -f docker-compose.dev.yml config --services` → `web`, `nginx` |
 | Host nginx config is syntactically valid | `nginx -t` on the droplet → "syntax is ok / test is successful" (done) |
 | Docs/tests-only merge does not deploy | `gate` job logs show `run=false` and `build`/`deploy` skipped on a docs-only commit; workflow run is green |
 | Code merge builds + pushes a SHA-pinned image | Actions run shows `build` pushing `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>`; tag visible in GHCR |

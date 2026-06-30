@@ -22,6 +22,9 @@
 
 services:
   nginx:
+    # Local dev keeps the documented default command working even though the
+    # base file profile-gates the in-container nginx for production rollback.
+    profiles: !override []
     volumes: !override
       - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./infra/nginx/conf.d.dev:/etc/nginx/conf.d:ro

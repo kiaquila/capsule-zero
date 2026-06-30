@@ -44,6 +44,9 @@
   auto-deploy path off the shared edge — deploys only recreate the dev web container.
 - **Prod cutover** kept the in-docker nginx defined but profile-gated (`docker-edge`) for a
   one-command rollback (`docker start capsule-zero-nginx-1`); the swap window was ~1–2s.
+- **Local dev keeps in-docker nginx in the default path.** `docker-compose.dev.yml` removes
+  the base `docker-edge` profile from `nginx` so the documented local command still starts
+  `nginx + web`; production compose remains web-only unless the rollback profile is enabled.
 - **Image registry: GHCR.** Free for the private repo, native `GITHUB_TOKEN` push auth,
   SHA-immutable tags. Droplet pulls with a read-only `read:packages` token.
 - **Dedicated dev checkout `/opt/capsule-zero-dev`** separate from prod's `/opt/capsule-zero`
