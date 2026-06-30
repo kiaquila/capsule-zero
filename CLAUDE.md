@@ -177,6 +177,10 @@ Pixel-perfect Phase 3 prototypes in `html-prototypes/` (pure HTML+CSS). This fol
 - `docs_capsule_zero/adr/` — ADRs for stack, auth, storage, and API contract
 - `docs_capsule_zero/project/mobile/mobile-docs.md` — React Native app architecture and mobile constraints
 
+## Backend Posture — No Supabase / Legacy-Backend Recoupling (NON-NEGOTIABLE)
+
+Supabase is **retired** (production-stack pivot, 2026-06-27); the legacy `/app` provider is frozen and slated for deletion. **Never re-introduce it into anything new.** No new spec, `docker-compose*.yml`, workflow, deploy/provisioning script, infra/nginx config, or doc may add `SUPABASE_*` / `CAPSULE_PROVIDER_MODE` / provider env, Supabase client imports, or health/smoke checks against provider-backed routes (`/api/health`, other `/api/*`). New deploy/infra artifacts reuse the web-only `web` service contract from `docker-compose.yml` and stay provider-agnostic until the Go/Postgres/Kratos backend wires its own env. The dev edge deploys `main`'s frontend only — smoke `/en`, never `/api/*`. Full rule and the PR-#53 regression that prompted it: AGENTS.md → "Key Principles" #8.
+
 ## Repository Delivery Protocol
 
 - Product code lands through pull requests only.

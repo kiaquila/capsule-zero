@@ -56,7 +56,6 @@ require_cmd ln
 require_cmd mkdir
 require_cmd mktemp
 require_cmd nginx
-require_cmd python3
 require_cmd rm
 require_cmd systemctl
 
@@ -106,27 +105,6 @@ if [ "$status" != "healthy" ]; then
   "${compose[@]}" logs --tail=80 web >&2
   exit 1
 fi
-
-assert_health_ok() {
-  local url="$1"
-  shift || true
-  local payload
-  payload="$(curl -fsS "$@" "$url")" || return
-  printf '%s' "$payload" | python3 -c '
-import json
-import sys
-
-try:
-    health = json.load(sys.stdin)
-except json.JSONDecodeError as exc:
-    print(exc, file=sys.stderr)
-    sys.exit(1)
-
-if health.get("ok") is not True:
-    print(f"health ok=false: {json.dumps(health, separators=(',', ':'))}", file=sys.stderr)
-    sys.exit(1)
-'
-}
 
 backup_nginx_config() {
   backup_dir="$(mktemp -d)"
@@ -179,10 +157,12 @@ apply_host_nginx_config() {
 smoke_dev_edge() {
   # Smoke the dev web on its loopback port, then end-to-end through the host nginx.
   # --resolve keeps the request on the droplet while preserving hostname/SNI/cert validation.
+  #
+  # Frontend-only: the dev edge previews the frontend with no provider backend wired, so we
+  # smoke the provider-free /en page only. /api/health calls the provider registry and 500s
+  # without a backend — it is NOT a valid liveness signal for a frontend-only dev deploy.
   curl -fsS -o /dev/null http://127.0.0.1:3001/en || return
-  assert_health_ok http://127.0.0.1:3001/api/health || return
   curl -fsS -o /dev/null --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/en || return
-  assert_health_ok https://dev.capsulezero.app/api/health --resolve dev.capsulezero.app:443:127.0.0.1 || return
 }
 
 if [ "$host_nginx_changed" = "true" ]; then
