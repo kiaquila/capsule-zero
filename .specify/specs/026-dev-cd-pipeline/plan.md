@@ -27,7 +27,8 @@ deploys only recreate the dev web container behind a stable proxy target; when
    CAPSULE_WEB_IMAGE=<ref>`, `docker compose --env-file .env.dev -p capsule-zero-dev -f
    docker-compose.dev-server.yml pull web && up -d`, wait for `web` healthy, install/reload host nginx if
    `infra/nginx-host/**` changed, smoke `http://127.0.0.1:3001/en` and the host-nginx TLS edge
-   via `curl --resolve dev.capsulezero.app:443:127.0.0.1 ...`, including `/api/health`.
+   via `curl --resolve dev.capsulezero.app:443:127.0.0.1 ...`, including `/api/health`; when
+   host nginx reloads, also smoke `https://capsulezero.app/en` through loopback-resolved TLS.
 
 ### Edge topology (same droplet)
 
@@ -60,10 +61,10 @@ reload nginx` so renewed certs take effect.
 | Prod compose still valid; nginx gated out of default set | `docker compose -f docker-compose.yml config --services` → `web` only; `--profile docker-edge` → `web` + `nginx` |
 | Local dev compose still starts the laptop nginx by default | `docker compose -f docker-compose.yml -f docker-compose.dev.yml config --services` → `web`, `nginx` |
 | Host nginx config is syntactically valid | `nginx -t` on the droplet → "syntax is ok / test is successful" (done) |
-| Host nginx config changes are deployed | Workflow deploy step compares previous checkout vs deploy SHA for `infra/nginx-host/**`, installs the versioned files, runs `sudo nginx -t`, and reloads nginx before the edge smoke |
+| Host nginx config changes are deployed | Workflow deploy step compares previous checkout vs deploy SHA for `infra/nginx-host/**`, installs the versioned files, runs `sudo nginx -t`, reloads nginx, and smokes `https://capsulezero.app/en` before the dev edge smoke |
 | Docs/tests-only merge does not deploy | `gate` job logs show `run=false` and `build`/`deploy` skipped on a docs-only commit; workflow run is green |
 | Code merge builds + pushes a SHA-pinned image | Actions run shows `build` pushing `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>`; tag visible in GHCR |
-| Deploy rolls the dev stack and proves health | `deploy` job log: `docker compose ps` healthy + `smoke ok`; workflow smokes `http://127.0.0.1:3001/en` plus `curl --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/en`; verified live: `https://dev.capsulezero.app/en` → **HTTP 200** |
+| Deploy rolls the dev stack and proves health | `deploy` job log: `docker compose ps` healthy + `smoke ok`; workflow smokes `http://127.0.0.1:3001/en`, `http://127.0.0.1:3001/api/health`, `https://dev.capsulezero.app/en`, and `https://dev.capsulezero.app/api/health` via `--resolve`; host-nginx reload path also smokes `https://capsulezero.app/en`; verified live: `https://dev.capsulezero.app/en` → **HTTP 200** |
 | Prod unaffected by the dev edge cutover | verified live: `https://capsulezero.app/en` → **HTTP 200** after the swap; rollback path documented |
 | Rollback works | `workflow_dispatch` with a prior `image_sha` redeploys without rebuilding; deploy checks out the matching SHA and skips host-nginx config sync |
 | Dev has its own TLS cert | verified live: `openssl s_client -connect dev.capsulezero.app:443` → `CN=dev.capsulezero.app`, distinct lineage/expiry from `CN=capsulezero.app` |

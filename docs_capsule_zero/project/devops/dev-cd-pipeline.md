@@ -33,7 +33,8 @@ changes are installed explicitly with `nginx -t` before reload.
    `docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml
    pull web && up -d`,
    wait for `web` healthy, install/reload host nginx only when `infra/nginx-host/**` changed,
-   and smoke `http://127.0.0.1:3001/en`, `/api/health`, plus the host-nginx edge.
+   smoke the prod edge after any shared nginx reload, then smoke `http://127.0.0.1:3001/en`,
+   `/api/health`, plus the dev host-nginx edge.
 
 ## One-time operator setup
 

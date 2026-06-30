@@ -63,6 +63,9 @@ host-nginx config changes are applied explicitly with `nginx -t` before reload.
 - **Unhealthy image is not silently accepted.** If the freshly deployed dev `web` container
   does not reach `healthy`, or the loopback / host-nginx smoke check fails, the deploy job
   exits non-zero and surfaces container logs.
+- **Shared nginx reload must prove prod still routes.** If `infra/nginx-host/**` changed, the
+  deploy job reloads host nginx only after `nginx -t` and immediately smokes
+  `https://capsulezero.app/en` through loopback-resolved TLS before reporting success.
 
 ## TDD waiver
 

@@ -58,7 +58,8 @@
   `curl -k`.
 - **Host-nginx config changes deploy with the app rollout.** The deploy job compares the
   previous dev checkout with the target SHA; when `infra/nginx-host/**` changed, it installs
-  the versioned files, validates with `nginx -t`, and reloads host nginx before the edge smoke.
+  the versioned files, validates with `nginx -t`, reloads host nginx, and smokes the prod edge
+  before the dev edge smoke.
 - **Image rollbacks never roll back host nginx.** `workflow_dispatch image_sha=sha-...` checks
   out the matching app/compose commit for the dev image rollback but sets host-nginx sync off,
   so production vhost config is not reverted by a dev-only rollback.
