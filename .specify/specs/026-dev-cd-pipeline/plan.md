@@ -15,7 +15,8 @@ RAM/CPU on a small VM).
 2. **build** — `docker buildx` (`--target runner`) → push `sha-<gitsha>` + `:dev` to
    `ghcr.io/kiaquila/capsule-zero-web`, with registry-backed build cache. Skipped on a
    `workflow_dispatch` rollback that supplies an existing `image_sha`.
-3. **deploy** — SSH to the droplet as the `deploy` user, `git checkout` the deployed SHA (to
+3. **deploy** — SSH to the droplet as the `deploy` user, `cd /opt/capsule-zero-dev`
+   (dedicated dev checkout, separate from prod), `git checkout` the deployed SHA (to
    sync compose + nginx config), `export CAPSULE_WEB_IMAGE=<ref>`,
    `docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml pull web && up -d`,
    reload dev nginx, wait for `web` healthy, smoke `https://127.0.0.1:8443/en` with the dev

@@ -55,8 +55,10 @@ ssh-keyscan -t ed25519 <droplet-ip-or-host>
 
 ### 3. Repo checkout on the droplet
 
-The deploy step syncs config from a git checkout at `/opt/capsule-zero` (compose file +
-nginx vhosts). Secrets stay out of git.
+The deploy step syncs config from a dedicated dev git checkout at `/opt/capsule-zero-dev`
+(compose file + nginx vhosts). Do not reuse the production checkout at `/opt/capsule-zero`;
+prod bind-mounts config from that tree, so dev deploys must never mutate it. Secrets stay out
+of git.
 
 Before cloning, give the droplet's `deploy` user read-only GitHub access for this repository.
 Recommended: create a dedicated **repo deploy key** on the droplet and add its public key in
@@ -88,10 +90,10 @@ sudo -u deploy git ls-remote git@github.com:kiaquila/capsule-zero.git HEAD
 ```
 
 ```bash
-sudo mkdir -p /opt/capsule-zero && sudo chown deploy:deploy /opt/capsule-zero
-sudo -u deploy git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero
+sudo mkdir -p /opt/capsule-zero-dev && sudo chown deploy:deploy /opt/capsule-zero-dev
+sudo -u deploy git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero-dev
 # optional dev runtime env (gitignored):
-sudo -u deploy tee /opt/capsule-zero/.env.dev >/dev/null <<'EOF'
+sudo -u deploy tee /opt/capsule-zero-dev/.env.dev >/dev/null <<'EOF'
 APP_BASE_URL=https://dev.capsulezero.app
 EOF
 ```
@@ -144,17 +146,8 @@ sudo chmod 600 /var/lib/capsule-zero-dev/tls/privkey.pem
 sudo chmod 644 /var/lib/capsule-zero-dev/tls/fullchain.pem
 ```
 
-Then issue the real Let's Encrypt cert into Certbot's normal lineage (DNS-01 needs no open
-port and works behind the Cloudflare proxy on the 8443 origin):
-
-```bash
-sudo certbot certonly --dns-cloudflare \
-  --dns-cloudflare-credentials /root/.secrets/cloudflare.ini \
-  -d dev.capsulezero.app
-```
-
-Renewal is handled by the host certbot timer. Add a deploy-hook that installs the renewed
-cert into the nginx-facing copy directory, validates nginx, and reloads it:
+Renewal is handled by the host certbot timer. Add a deploy-hook that installs the issued or
+renewed cert into the nginx-facing copy directory, validates nginx, and reloads it:
 
 ```bash
 # /etc/letsencrypt/renewal-hooks/deploy/install-dev-nginx-cert.sh  (chmod +x)
@@ -167,7 +160,7 @@ install -m 644 /etc/letsencrypt/live/dev.capsulezero.app/fullchain.pem \
 install -m 600 /etc/letsencrypt/live/dev.capsulezero.app/privkey.pem \
   /var/lib/capsule-zero-dev/tls/privkey.pem
 
-cd /opt/capsule-zero
+cd /opt/capsule-zero-dev
 COMPOSE="docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml"
 nginx_cid="$($COMPOSE ps -q nginx || true)"
 nginx_running="$(docker inspect -f '{{.State.Running}}' "$nginx_cid" 2>/dev/null || echo false)"
@@ -179,8 +172,22 @@ else
 fi
 ```
 
-Run the hook once manually after the first successful `certbot certonly` if you need to
-replace the bootstrap cert before the next automatic renewal.
+Then issue the real Let's Encrypt cert into Certbot's normal lineage (DNS-01 needs no open
+port and works behind the Cloudflare proxy on the 8443 origin):
+
+```bash
+sudo certbot certonly --dns-cloudflare \
+  --dns-cloudflare-credentials /root/.secrets/cloudflare.ini \
+  -d dev.capsulezero.app
+```
+
+Immediately install that real cert into the nginx-facing copy directory. This step is
+mandatory for Cloudflare **Full (strict)**; otherwise dev nginx keeps serving the self-signed
+bootstrap cert and the public edge check fails:
+
+```bash
+sudo /etc/letsencrypt/renewal-hooks/deploy/install-dev-nginx-cert.sh
+```
 
 ## First deploy
 

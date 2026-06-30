@@ -178,7 +178,7 @@ jobs:
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "$SSH_USER@$SSH_HOST" \
             "IMAGE_REF='$IMAGE_REF' DEPLOY_SHA='$DEPLOY_SHA' bash -s" <<'REMOTE'
           set -euo pipefail
-          cd /opt/capsule-zero
+          cd /opt/capsule-zero-dev
 
           # Sync compose + nginx config to the deployed commit (secrets in .env.dev are untouched).
           git fetch --prune origin

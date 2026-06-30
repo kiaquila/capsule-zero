@@ -37,7 +37,9 @@
 ### Decisions
 
 - **Dev shares the droplet but is a separate compose project** (`capsule-zero-dev`) with its
-  own nginx (`8443`) and own cert. Chosen by the founder for isolation without a second VM.
+  own nginx (`8443`), own cert, and dedicated checkout at `/opt/capsule-zero-dev` so dev
+  deploys never mutate prod's `/opt/capsule-zero` bind-mounted config tree. Chosen by the
+  founder for isolation without a second VM.
 - **Image registry: GHCR.** Free for the private repo, native `GITHUB_TOKEN` auth in CI,
   SHA-immutable tags. Droplet pulls with a read-only `read:packages` token.
 - **Change gate allowlist, not ignore-list.** Deploy only when `app/** web/** api/** worker/**
