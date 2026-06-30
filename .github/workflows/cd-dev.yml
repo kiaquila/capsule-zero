@@ -249,12 +249,31 @@ jobs:
             echo "host nginx config unchanged"
           fi
 
+          assert_health_ok() {
+            node -e '
+              let data = "";
+              process.stdin.on("data", (chunk) => { data += chunk; });
+              process.stdin.on("end", () => {
+                try {
+                  const health = JSON.parse(data);
+                  if (health.ok !== true) {
+                    console.error(`health ok=false: ${data}`);
+                    process.exit(1);
+                  }
+                } catch (error) {
+                  console.error(error);
+                  process.exit(1);
+                }
+              });
+            '
+          }
+
           # Smoke the dev web on its loopback port, then end-to-end through the host nginx.
           # --resolve keeps the request on the droplet while preserving hostname/SNI/cert validation.
           curl -fsS -o /dev/null http://127.0.0.1:3001/en
-          curl -fsS -o /dev/null http://127.0.0.1:3001/api/health
+          curl -fsS http://127.0.0.1:3001/api/health | assert_health_ok
           curl -fsS -o /dev/null --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/en
-          curl -fsS -o /dev/null --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/api/health
+          curl -fsS --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/api/health | assert_health_ok
           echo "smoke ok"
           $COMPOSE ps
           REMOTE

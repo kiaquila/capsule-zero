@@ -34,7 +34,7 @@ changes are installed explicitly with `nginx -t` before reload.
    pull web && up -d`,
    wait for `web` healthy, install/reload host nginx only when `infra/nginx-host/**` changed,
    smoke the prod edge after any shared nginx reload, then smoke `http://127.0.0.1:3001/en`,
-   `/api/health`, plus the dev host-nginx edge.
+   `/api/health` with JSON `ok: true`, plus the dev host-nginx edge.
 
 ## One-time operator setup
 
@@ -161,9 +161,9 @@ After steps 2–4, merge a code change to `main` or run **Actions → CD Dev →
 ```bash
 docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml ps   # web healthy
 curl -fsS http://127.0.0.1:3001/en >/dev/null && echo origin-ok
-curl -fsS http://127.0.0.1:3001/api/health >/dev/null && echo health-ok
+curl -fsS http://127.0.0.1:3001/api/health | node -e 'let d=""; process.stdin.on("data", c => d += c); process.stdin.on("end", () => process.exit(JSON.parse(d).ok === true ? 0 : 1))' && echo health-ok
 curl -fsS https://dev.capsulezero.app/en >/dev/null && echo edge-ok
-curl -fsS https://dev.capsulezero.app/api/health >/dev/null && echo edge-health-ok
+curl -fsS https://dev.capsulezero.app/api/health | node -e 'let d=""; process.stdin.on("data", c => d += c); process.stdin.on("end", () => process.exit(JSON.parse(d).ok === true ? 0 : 1))' && echo edge-health-ok
 ```
 
 Until the pipeline first runs, dev serves a seed image (the local prod image retagged

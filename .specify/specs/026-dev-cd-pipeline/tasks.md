@@ -65,7 +65,8 @@
   so production vhost config is not reverted by a dev-only rollback.
 - **Dev web runs in production provider mode.** `.env.dev` is required and must include
   `CAPSULE_PROVIDER_MODE=supabase`, Supabase URLs/keys, and `SESSION_SIGNING_SECRET`; container
-  health and deploy smoke hit `/api/health`, not just the static landing page.
+  health and deploy smoke parse `/api/health` and require JSON `ok: true`, not just HTTP 200
+  from the static landing page.
 - **Image registry: GHCR.** Free for the private repo, native `GITHUB_TOKEN` push auth,
   SHA-immutable tags. Droplet pulls with a read-only `read:packages` token.
 - **Dedicated dev checkout `/opt/capsule-zero-dev`** separate from prod's `/opt/capsule-zero`
