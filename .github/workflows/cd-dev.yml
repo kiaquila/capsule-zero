@@ -71,8 +71,8 @@ jobs:
           changed="$(git diff --name-only "$BEFORE" "$AFTER")"
           echo "$changed"
 
-          if printf '%s\n' "$changed" | grep -Eq \
-            '^(app/|web/|api/|worker/|infra/|docker-compose\.yml$|docker-compose\.dev-server\.yml$|package-lock\.json$|app/package-lock\.json$|\.github/workflows/cd-dev\.yml$)'; then
+          deploy_path_pattern='^(app/|web/|api/|worker/|infra/|docker-compose\.yml$|docker-compose\.dev-server\.yml$|package-lock\.json$|app/package-lock\.json$|\.github/workflows/cd-dev\.yml$)'
+          if grep -E "$deploy_path_pattern" <<< "$changed" >/dev/null; then
             echo "deploy-relevant paths changed -> deploy"
             echo "run=true" >> "$GITHUB_OUTPUT"
           else

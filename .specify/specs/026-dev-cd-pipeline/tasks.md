@@ -44,7 +44,8 @@
   SHA-immutable tags. Droplet pulls with a read-only `read:packages` token.
 - **Change gate allowlist, not ignore-list.** Deploy only when `app/** web/** api/** worker/**
   infra/** docker-compose.yml docker-compose.dev-server.yml`, lockfiles, or the workflow
-  itself change. Docs/tests/`.specify` never deploy.
+  itself change. Docs/tests/`.specify` never deploy. The grep check consumes its input through
+  a here-string under `pipefail` so early-match SIGPIPE cannot false-skip a deploy.
 - **Immutable `sha-<gitsha>` tags** enable `workflow_dispatch` rollback to any prior build
   without rebuilding.
 - **Secrets stay on the droplet / in Cloudflare.** CI ships only the image ref over SSH; the
