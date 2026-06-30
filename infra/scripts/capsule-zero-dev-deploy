@@ -107,6 +107,27 @@ if [ "$status" != "healthy" ]; then
   exit 1
 fi
 
+assert_health_ok() {
+  local url="$1"
+  shift || true
+  local payload
+  payload="$(curl -fsS "$@" "$url")" || return
+  printf '%s' "$payload" | python3 -c '
+import json
+import sys
+
+try:
+    health = json.load(sys.stdin)
+except json.JSONDecodeError as exc:
+    print(exc, file=sys.stderr)
+    sys.exit(1)
+
+if health.get("ok") is not True:
+    print(f"health ok=false: {json.dumps(health, separators=(',', ':'))}", file=sys.stderr)
+    sys.exit(1)
+'
+}
+
 backup_nginx_config() {
   backup_dir="$(mktemp -d)"
   present_file="$backup_dir/present"
@@ -155,11 +176,20 @@ apply_host_nginx_config() {
   curl -fsS -o /dev/null --resolve capsulezero.app:443:127.0.0.1 https://capsulezero.app/en || return
 }
 
+smoke_dev_edge() {
+  # Smoke the dev web on its loopback port, then end-to-end through the host nginx.
+  # --resolve keeps the request on the droplet while preserving hostname/SNI/cert validation.
+  curl -fsS -o /dev/null http://127.0.0.1:3001/en || return
+  assert_health_ok http://127.0.0.1:3001/api/health || return
+  curl -fsS -o /dev/null --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/en || return
+  assert_health_ok https://dev.capsulezero.app/api/health --resolve dev.capsulezero.app:443:127.0.0.1 || return
+}
+
 if [ "$host_nginx_changed" = "true" ]; then
   echo "host nginx config changed; installing and reloading"
   backup_nginx_config
-  if ! apply_host_nginx_config; then
-    echo "host nginx update failed; restoring previous config" >&2
+  if ! apply_host_nginx_config || ! smoke_dev_edge; then
+    echo "host nginx update or smoke failed; restoring previous config" >&2
     if ! restore_nginx_config; then
       echo "failed to restore previous host nginx config; manual intervention required" >&2
     fi
@@ -169,35 +199,9 @@ if [ "$host_nginx_changed" = "true" ]; then
   rm -rf "$backup_dir"
 else
   echo "host nginx config unchanged"
+  smoke_dev_edge
 fi
 
-assert_health_ok() {
-  local url="$1"
-  shift || true
-  local payload
-  payload="$(curl -fsS "$@" "$url")"
-  printf '%s' "$payload" | python3 -c '
-import json
-import sys
-
-try:
-    health = json.load(sys.stdin)
-except json.JSONDecodeError as exc:
-    print(exc, file=sys.stderr)
-    sys.exit(1)
-
-if health.get("ok") is not True:
-    print(f"health ok=false: {json.dumps(health, separators=(',', ':'))}", file=sys.stderr)
-    sys.exit(1)
-'
-}
-
-# Smoke the dev web on its loopback port, then end-to-end through the host nginx.
-# --resolve keeps the request on the droplet while preserving hostname/SNI/cert validation.
-curl -fsS -o /dev/null http://127.0.0.1:3001/en
-assert_health_ok http://127.0.0.1:3001/api/health
-curl -fsS -o /dev/null --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/en
-assert_health_ok https://dev.capsulezero.app/api/health --resolve dev.capsulezero.app:443:127.0.0.1
 echo "smoke ok"
 "${compose[@]}" ps
 

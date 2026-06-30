@@ -35,10 +35,11 @@ changes are installed explicitly with `nginx -t` before reload.
    `docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml
    pull web && up -d`, waits for `web` healthy, installs/reloads host nginx only when
    `infra/nginx-host/**` changed since the last successful nginx sync marker, rolls nginx
-   back to its previous config if the post-reload prod smoke fails, then smokes
-   `http://127.0.0.1:3001/en`, `/api/health` with JSON `ok: true`, plus the dev host-nginx
-   edge. The marker lives at `/var/lib/capsule-zero-dev/last-host-nginx-sync-sha` and is
-   updated only after the deploy smokes pass.
+   back to its previous config if the post-reload prod smoke or dev edge smoke fails, then
+   reports success only after `http://127.0.0.1:3001/en`, `/api/health` with JSON `ok: true`,
+   and the dev host-nginx edge all pass. The marker lives at
+   `/var/lib/capsule-zero-dev/last-host-nginx-sync-sha` and is updated only after the deploy
+   smokes pass.
 
 ## One-time operator setup
 

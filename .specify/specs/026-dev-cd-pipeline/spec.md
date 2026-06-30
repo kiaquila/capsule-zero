@@ -65,11 +65,12 @@ host-nginx config changes are applied explicitly with `nginx -t` before reload.
 - **Unhealthy image is not silently accepted.** If the freshly deployed dev `web` container
   does not reach `healthy`, or the loopback / host-nginx smoke check fails, the deploy job
   exits non-zero and surfaces container logs.
-- **Shared nginx reload must prove prod still routes.** If `infra/nginx-host/**` changed, the
-  deploy job reloads host nginx only after `nginx -t` and immediately smokes
-  `https://capsulezero.app/en` through loopback-resolved TLS before reporting success. If
-  that smoke fails, the deploy wrapper restores the previously installed host-nginx config and
-  reloads it before exiting non-zero.
+- **Shared nginx reload must prove prod and dev still route.** If `infra/nginx-host/**`
+  changed, the deploy job reloads host nginx only after `nginx -t`, smokes
+  `https://capsulezero.app/en` through loopback-resolved TLS, and keeps the old config backup
+  available through the dev edge smoke. If either the prod or dev smoke fails, the deploy
+  wrapper restores the previously installed host-nginx config and reloads it before exiting
+  non-zero.
 - **Leaked CI SSH key cannot directly control Docker or prod.** The `deploy` user is not in
   the Docker group, does not own `/opt/capsule-zero-dev`, and has passwordless sudo only for
   the root-owned deploy wrapper, which validates the image ref, SHA, and nginx-sync mode

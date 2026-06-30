@@ -30,10 +30,11 @@ deploys only recreate the dev web container behind a stable proxy target; when
    host nginx if `infra/nginx-host/**` changed, smokes `http://127.0.0.1:3001/en` and the
    host-nginx TLS edge via `curl --resolve dev.capsulezero.app:443:127.0.0.1 ...`, including
    `/api/health`; when host nginx reloads, it also smokes `https://capsulezero.app/en`
-   through loopback-resolved TLS. Host-nginx diffs are based on
+   through loopback-resolved TLS, then keeps the same backup available through the dev
+   edge smoke. Host-nginx diffs are based on
    `/var/lib/capsule-zero-dev/last-host-nginx-sync-sha`, which is updated only after a
-   successful deploy smoke; if the post-reload prod smoke fails, the wrapper restores the
-   previous nginx files and reloads them before exiting non-zero.
+   successful deploy smoke; if the post-reload prod or dev edge smoke fails, the wrapper
+   restores the previous nginx files and reloads them before exiting non-zero.
 
 ### Edge topology (same droplet)
 
@@ -66,7 +67,7 @@ reload nginx` so renewed certs take effect.
 | Prod compose still valid; nginx gated out of default set | `docker compose -f docker-compose.yml config --services` → `web` only; `--profile docker-edge` → `web` + `nginx` |
 | Local dev compose still starts the laptop nginx by default | `docker compose -f docker-compose.yml -f docker-compose.dev.yml config --services` → `web`, `nginx` |
 | Host nginx config is syntactically valid | `nginx -t` on the droplet → "syntax is ok / test is successful" (done) |
-| Host nginx config changes are deployed safely | Wrapper compares `/var/lib/capsule-zero-dev/last-host-nginx-sync-sha` vs deploy SHA for `infra/nginx-host/**`, installs versioned files, runs `nginx -t`, reloads nginx, smokes `https://capsulezero.app/en`, restores the previous config on failed prod smoke, and updates the marker only after the full deploy smoke passes |
+| Host nginx config changes are deployed safely | Wrapper compares `/var/lib/capsule-zero-dev/last-host-nginx-sync-sha` vs deploy SHA for `infra/nginx-host/**`, installs versioned files, runs `nginx -t`, reloads nginx, smokes `https://capsulezero.app/en` plus the dev edge, restores the previous config on failed prod/dev smoke, and updates the marker only after the full deploy smoke passes |
 | Dev deploy user is least-privilege | Runbook keeps `deploy` out of the Docker group, keeps `/opt/capsule-zero-dev` root-owned, and grants sudo only for `/usr/local/sbin/capsule-zero-dev-deploy`; workflow calls only that wrapper, whose source is versioned in `infra/scripts/capsule-zero-dev-deploy` |
 | Docs/tests-only merge does not deploy | `gate` job logs show `run=false` and `build`/`deploy` skipped on a docs-only commit; workflow run is green |
 | Code merge builds + pushes a SHA-pinned image | Actions run shows `build` pushing `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>`; tag visible in GHCR |
