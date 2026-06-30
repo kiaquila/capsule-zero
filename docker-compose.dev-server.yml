@@ -16,7 +16,7 @@
 #
 # Run on the droplet:
 #   export CAPSULE_WEB_IMAGE=ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>
-#   docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml up -d
+#   docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml up -d
 
 name: capsule-zero-dev
 
@@ -39,14 +39,20 @@ services:
       PORT: "3000"
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
-      NEXT_PUBLIC_APP_URL: ${APP_BASE_URL:-https://dev.capsulezero.app}
+      NEXT_PUBLIC_APP_URL: ${APP_BASE_URL:?set APP_BASE_URL=https://dev.capsulezero.app in .env.dev}
+      CAPSULE_PROVIDER_MODE: ${CAPSULE_PROVIDER_MODE:?set CAPSULE_PROVIDER_MODE=supabase in .env.dev}
+      SUPABASE_INTERNAL_URL: ${SUPABASE_INTERNAL_URL:?set SUPABASE_INTERNAL_URL in .env.dev}
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?set NEXT_PUBLIC_SUPABASE_URL in .env.dev}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:?set NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.dev}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?set SUPABASE_SERVICE_ROLE_KEY in .env.dev}
+      SESSION_SIGNING_SECRET: ${SESSION_SIGNING_SECRET:?set SESSION_SIGNING_SECRET in .env.dev}
     ports:
       - "${DEV_WEB_HOST_BIND:-127.0.0.1}:3001:3000"
     networks: [dev-internal]
     healthcheck:
       test:
         - CMD-SHELL
-        - "node -e \"fetch('http://127.0.0.1:3000/en').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""
+        - "node -e \"fetch('http://127.0.0.1:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""
       interval: 30s
       timeout: 10s
       retries: 5

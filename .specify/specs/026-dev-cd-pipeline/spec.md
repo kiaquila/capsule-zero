@@ -30,12 +30,14 @@ host-nginx config changes are applied explicitly with `nginx -t` before reload.
   `capsule-zero-dev` stack via `docker compose pull && up -d`.
 - A self-contained dev compose file (`docker-compose.dev-server.yml`) with a single `web`
   service (image pulled from GHCR, no on-droplet build) published on `127.0.0.1:3001`.
+- Required production runtime env for the dev web container (`CAPSULE_PROVIDER_MODE=supabase`,
+  Supabase URLs/keys, and `SESSION_SIGNING_SECRET`) loaded from `/opt/capsule-zero-dev/.env.dev`.
 - Host-nginx vhosts in `infra/nginx-host/` (prod → 3000, dev → 3001) plus the prod compose
   change that publishes web on loopback and gates the retired in-docker nginx behind a
   `docker-edge` profile.
 - A `workflow_dispatch` rollback path: redeploy any prior `sha-<gitsha>` tag without rebuilding.
 - An operator runbook covering the host-nginx install + prod cutover, the deploy SSH user,
-  GHCR pull auth, and the dev TLS certificate (issue + renew).
+  GHCR pull auth, required `.env.dev`, and the dev TLS certificate (issue + renew).
 
 ### Out
 

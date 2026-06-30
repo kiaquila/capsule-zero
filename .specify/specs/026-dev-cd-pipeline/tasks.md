@@ -12,7 +12,7 @@
 - [x] Dev stack up on the droplet (web 127.0.0.1:3001); dev TLS cert issued; live `https://dev.capsulezero.app` → 200.
 - [x] `docs_capsule_zero/project/devops/dev-cd-pipeline.md` — operator runbook (host nginx + cutover + cert).
 - [ ] Operator one-time setup for the pipeline: `deploy` user + CI key, GitHub secrets,
-      GHCR pull login, dev checkout owned by `deploy`. Until then dev serves a seed image.
+      GHCR pull login, required `.env.dev`, dev checkout owned by `deploy`. Until then dev serves a seed image.
 - [ ] First green `main` run (post-merge): build → GHCR → deploy replaces the seed image.
 
 ## Process Memory
@@ -55,6 +55,12 @@
 - **Host-nginx config changes deploy with the app rollout.** The deploy job compares the
   previous dev checkout with the target SHA; when `infra/nginx-host/**` changed, it installs
   the versioned files, validates with `nginx -t`, and reloads host nginx before the edge smoke.
+- **Image rollbacks never roll back host nginx.** `workflow_dispatch image_sha=sha-...` checks
+  out the matching app/compose commit for the dev image rollback but sets host-nginx sync off,
+  so production vhost config is not reverted by a dev-only rollback.
+- **Dev web runs in production provider mode.** `.env.dev` is required and must include
+  `CAPSULE_PROVIDER_MODE=supabase`, Supabase URLs/keys, and `SESSION_SIGNING_SECRET`; container
+  health and deploy smoke hit `/api/health`, not just the static landing page.
 - **Image registry: GHCR.** Free for the private repo, native `GITHUB_TOKEN` push auth,
   SHA-immutable tags. Droplet pulls with a read-only `read:packages` token.
 - **Dedicated dev checkout `/opt/capsule-zero-dev`** separate from prod's `/opt/capsule-zero`
@@ -70,8 +76,9 @@
 ### Known Issues
 
 - The CD pipeline is not yet live: it needs the operator one-time setup (deploy user, limited
-  sudoers entry for host-nginx reloads, GitHub secrets, GHCR pull login). Until the first run,
-  dev serves a seed image (the local prod image retagged `ghcr.io/kiaquila/capsule-zero-web:dev`).
+  sudoers entry for host-nginx reloads, GitHub secrets, GHCR pull login, required `.env.dev`).
+  Until the first run, dev serves a seed image (the local prod image retagged
+  `ghcr.io/kiaquila/capsule-zero-web:dev`).
 - A stale certbot deploy-hook (`reload-nginx.sh`, reloading the retired in-docker nginx) was
   removed during cutover; renewals now use `reload-host-nginx.sh` (`nginx -t && systemctl
   reload nginx`).

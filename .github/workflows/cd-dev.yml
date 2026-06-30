@@ -143,8 +143,11 @@ jobs:
               echo "::error::image_sha must match sha-<40 lowercase hex characters>"
               exit 1
             fi
-            echo "image=${IMAGE}:${ROLLBACK_IMAGE_SHA}" >> "$GITHUB_OUTPUT"
-            echo "deploy_sha=${ROLLBACK_IMAGE_SHA#sha-}" >> "$GITHUB_OUTPUT"
+            {
+              echo "image=${IMAGE}:${ROLLBACK_IMAGE_SHA}"
+              echo "deploy_sha=${ROLLBACK_IMAGE_SHA#sha-}"
+              echo "sync_host_nginx=false"
+            } >> "$GITHUB_OUTPUT"
           else
             if [ -z "${BUILT_IMAGE_REF:-}" ]; then
               echo "::error::build job did not produce an image ref"
@@ -154,8 +157,11 @@ jobs:
               echo "::error::current SHA must be a 40-character lowercase hex commit"
               exit 1
             fi
-            echo "image=${BUILT_IMAGE_REF}" >> "$GITHUB_OUTPUT"
-            echo "deploy_sha=${CURRENT_SHA}" >> "$GITHUB_OUTPUT"
+            {
+              echo "image=${BUILT_IMAGE_REF}"
+              echo "deploy_sha=${CURRENT_SHA}"
+              echo "sync_host_nginx=true"
+            } >> "$GITHUB_OUTPUT"
           fi
 
       - name: Deploy over SSH
@@ -166,6 +172,7 @@ jobs:
           KNOWN_HOSTS: ${{ secrets.DEV_DEPLOY_KNOWN_HOSTS }}
           IMAGE_REF: ${{ steps.ref.outputs.image }}
           DEPLOY_SHA: ${{ steps.ref.outputs.deploy_sha }}
+          SYNC_HOST_NGINX: ${{ steps.ref.outputs.sync_host_nginx }}
         run: |
           set -euo pipefail
           if [[ ! "$IMAGE_REF" =~ ^ghcr\.io/kiaquila/capsule-zero-web:sha-[0-9a-f]{40}$ ]]; then
@@ -176,6 +183,10 @@ jobs:
             echo "::error::deploy SHA must be a 40-character lowercase hex commit"
             exit 1
           fi
+          if [[ ! "$SYNC_HOST_NGINX" =~ ^(true|false)$ ]]; then
+            echo "::error::sync_host_nginx must be true or false"
+            exit 1
+          fi
 
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
@@ -183,7 +194,7 @@ jobs:
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
 
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "$SSH_USER@$SSH_HOST" \
-            "IMAGE_REF='$IMAGE_REF' DEPLOY_SHA='$DEPLOY_SHA' bash -s" <<'REMOTE'
+            "IMAGE_REF='$IMAGE_REF' DEPLOY_SHA='$DEPLOY_SHA' SYNC_HOST_NGINX='$SYNC_HOST_NGINX' bash -s" <<'REMOTE'
           set -euo pipefail
           cd /opt/capsule-zero-dev
 
@@ -193,14 +204,18 @@ jobs:
           git checkout --force "$DEPLOY_SHA"
 
           host_nginx_changed=false
-          if [ -z "$previous_sha" ] || ! git rev-parse --verify --quiet "${previous_sha}^{commit}" >/dev/null; then
-            host_nginx_changed=true
-          elif [ -n "$(git diff --name-only "$previous_sha" "$DEPLOY_SHA" -- infra/nginx-host/)" ]; then
-            host_nginx_changed=true
+          if [ "$SYNC_HOST_NGINX" = "true" ]; then
+            if [ -z "$previous_sha" ] || ! git rev-parse --verify --quiet "${previous_sha}^{commit}" >/dev/null; then
+              host_nginx_changed=true
+            elif [ -n "$(git diff --name-only "$previous_sha" "$DEPLOY_SHA" -- infra/nginx-host/)" ]; then
+              host_nginx_changed=true
+            fi
+          else
+            echo "host nginx config sync skipped for image rollback"
           fi
 
           export CAPSULE_WEB_IMAGE="$IMAGE_REF"
-          COMPOSE="docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml"
+          COMPOSE="docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml"
 
           $COMPOSE pull web
           $COMPOSE up -d --remove-orphans
@@ -236,7 +251,9 @@ jobs:
           # Smoke the dev web on its loopback port, then end-to-end through the host nginx.
           # --resolve keeps the request on the droplet while preserving hostname/SNI/cert validation.
           curl -fsS -o /dev/null http://127.0.0.1:3001/en
+          curl -fsS -o /dev/null http://127.0.0.1:3001/api/health
           curl -fsS -o /dev/null --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/en
+          curl -fsS -o /dev/null --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/api/health
           echo "smoke ok"
           $COMPOSE ps
           REMOTE

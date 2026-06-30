@@ -30,9 +30,10 @@ changes are installed explicitly with `nginx -t` before reload.
    `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>` plus a moving `:dev` tag to GHCR.
 4. **deploy** — SSH to the droplet, `cd /opt/capsule-zero-dev`, `git checkout` the deployed
    SHA (current commit, or the SHA in `image_sha` for rollbacks), then
-   `docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml pull web && up -d`,
+   `docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml
+   pull web && up -d`,
    wait for `web` healthy, install/reload host nginx only when `infra/nginx-host/**` changed,
-   and smoke `http://127.0.0.1:3001/en` plus the host-nginx edge.
+   and smoke `http://127.0.0.1:3001/en`, `/api/health`, plus the host-nginx edge.
 
 ## One-time operator setup
 
@@ -101,9 +102,20 @@ The deploy step uses a dedicated dev checkout at `/opt/capsule-zero-dev` (never 
 Deploy keys**, write access unchecked) and a `read:packages` GHCR login:
 
 ```bash
+# Trust github.com so the deploy user's non-interactive git works (host key verification):
+sudo -u deploy bash -lc 'ssh-keyscan -t ed25519,rsa github.com >> ~/.ssh/known_hosts && sort -u ~/.ssh/known_hosts -o ~/.ssh/known_hosts'
 sudo install -d -o deploy -g deploy -m 755 /opt/capsule-zero-dev
 sudo -u deploy git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero-dev
-printf 'APP_BASE_URL=https://dev.capsulezero.app\n' | sudo -u deploy tee /opt/capsule-zero-dev/.env.dev
+sudo -u deploy tee /opt/capsule-zero-dev/.env.dev >/dev/null <<'EOF'
+APP_BASE_URL=https://dev.capsulezero.app
+CAPSULE_PROVIDER_MODE=supabase
+SUPABASE_INTERNAL_URL=<supabase-internal-or-public-url>
+NEXT_PUBLIC_SUPABASE_URL=<supabase-public-url>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<supabase-anon-key>
+SUPABASE_SERVICE_ROLE_KEY=<supabase-service-role-key>
+SESSION_SIGNING_SECRET=<64-plus-random-characters>
+EOF
+sudo -u deploy chmod 600 /opt/capsule-zero-dev/.env.dev
 sudo -u deploy bash -lc 'echo "<read:packages token>" | docker login ghcr.io -u kiaquila --password-stdin'
 ```
 
@@ -124,7 +136,7 @@ the deploy job.
 
 ```bash
 cd /opt/capsule-zero-dev
-docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml up -d   # web on 127.0.0.1:3001
+docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml up -d   # web on 127.0.0.1:3001
 
 # Issue the dev cert (HTTP-01 webroot; host nginx already serves /.well-known/acme-challenge):
 certbot certonly --webroot -w /var/www/certbot -d dev.capsulezero.app --non-interactive --keep-until-expiring
@@ -146,9 +158,11 @@ After steps 2–4, merge a code change to `main` or run **Actions → CD Dev →
 (leave `image_sha` blank). The job builds, pushes to GHCR, and rolls the dev stack. Verify:
 
 ```bash
-docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml ps   # web healthy
+docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml ps   # web healthy
 curl -fsS http://127.0.0.1:3001/en >/dev/null && echo origin-ok
+curl -fsS http://127.0.0.1:3001/api/health >/dev/null && echo health-ok
 curl -fsS https://dev.capsulezero.app/en >/dev/null && echo edge-ok
+curl -fsS https://dev.capsulezero.app/api/health >/dev/null && echo edge-health-ok
 ```
 
 Until the pipeline first runs, dev serves a seed image (the local prod image retagged
