@@ -28,13 +28,15 @@ changes are installed explicitly with `nginx -t` before reload.
    itself). Docs/tests/`.specify`-only merges are skipped (green, no deploy).
 3. **build** — `docker buildx` builds `app/Dockerfile` (`--target runner`) and pushes
    `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>` plus a moving `:dev` tag to GHCR.
-4. **deploy** — SSH to the droplet, `cd /opt/capsule-zero-dev`, `git checkout` the deployed
-   SHA (current commit, or the SHA in `image_sha` for rollbacks), then
+4. **deploy** — SSH to the droplet as the unprivileged `deploy` user, then run the
+   root-owned wrapper `/usr/local/sbin/capsule-zero-dev-deploy <image> <sha> <sync-nginx>`.
+   The wrapper validates the immutable image ref and SHA, updates the root-owned
+   `/opt/capsule-zero-dev` checkout, runs
    `docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml
-   pull web && up -d`,
-   wait for `web` healthy, install/reload host nginx only when `infra/nginx-host/**` changed,
-   smoke the prod edge after any shared nginx reload, then smoke `http://127.0.0.1:3001/en`,
-   `/api/health` with JSON `ok: true`, plus the dev host-nginx edge.
+   pull web && up -d`, waits for `web` healthy, installs/reloads host nginx only when
+   `infra/nginx-host/**` changed, smokes the prod edge after any shared nginx reload, then
+   smokes `http://127.0.0.1:3001/en`, `/api/health` with JSON `ok: true`, plus the dev
+   host-nginx edge.
 
 ## One-time operator setup
 
@@ -76,38 +78,52 @@ docker start capsule-zero-nginx-1     # or: docker compose -p capsule-zero --pro
 
 ```bash
 sudo adduser --disabled-password --gecos "" deploy
-sudo usermod -aG docker deploy
-sudo tee /etc/sudoers.d/capsule-zero-dev-deploy >/dev/null <<'EOF'
-deploy ALL=(root) NOPASSWD: /usr/bin/install, /usr/bin/ln, /usr/bin/rm, /usr/sbin/nginx, /usr/bin/systemctl reload nginx
-EOF
-sudo chmod 440 /etc/sudoers.d/capsule-zero-dev-deploy
-sudo visudo -cf /etc/sudoers.d/capsule-zero-dev-deploy
-sudo -u deploy install -d -m 700 /home/deploy/.ssh
+sudo install -d -m 700 -o deploy -g deploy /home/deploy/.ssh
 # append the CI deploy public key:
-sudo -u deploy tee -a /home/deploy/.ssh/authorized_keys < ci_deploy_key.pub
-sudo -u deploy chmod 600 /home/deploy/.ssh/authorized_keys
+sudo tee -a /home/deploy/.ssh/authorized_keys < ci_deploy_key.pub >/dev/null
+sudo chown deploy:deploy /home/deploy/.ssh/authorized_keys
+sudo chmod 600 /home/deploy/.ssh/authorized_keys
 ```
 
 Generate the CI keypair (`ssh-keygen -t ed25519 -f ci_deploy_key -N ''`); the **private** key
-becomes the GitHub secret `DEV_DEPLOY_SSH_KEY`, the public key goes into `authorized_keys`.
-Capture the host key for `DEV_DEPLOY_KNOWN_HOSTS`:
+becomes the GitHub secret `DEV_DEPLOY_SSH_KEY`, the public key goes into
+`/home/deploy/.ssh/authorized_keys`. Capture the host key for `DEV_DEPLOY_KNOWN_HOSTS`:
 
 ```bash
 ssh-keyscan -t ed25519 137.184.205.153
 ```
 
-### 3. Dev git checkout + GHCR pull auth
-
-The deploy step uses a dedicated dev checkout at `/opt/capsule-zero-dev` (never the prod
-`/opt/capsule-zero`). Give the `deploy` user read-only repo access (GitHub **Settings →
-Deploy keys**, write access unchecked) and a `read:packages` GHCR login:
+Do **not** add `deploy` to the `docker` group and do **not** grant broad passwordless
+`install`/`rm`/`nginx`/`docker` sudo. CI may run only the root-owned deployment wrapper:
 
 ```bash
-# Trust github.com so the deploy user's non-interactive git works (host key verification):
-sudo -u deploy bash -lc 'ssh-keyscan -t ed25519,rsa github.com >> ~/.ssh/known_hosts && sort -u ~/.ssh/known_hosts -o ~/.ssh/known_hosts'
-sudo install -d -o deploy -g deploy -m 755 /opt/capsule-zero-dev
-sudo -u deploy git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero-dev
-sudo -u deploy tee /opt/capsule-zero-dev/.env.dev >/dev/null <<'EOF'
+sudo install -m 755 -o root -g root infra/scripts/capsule-zero-dev-deploy /usr/local/sbin/capsule-zero-dev-deploy
+sudo tee /etc/sudoers.d/capsule-zero-dev-deploy >/dev/null <<'EOF'
+deploy ALL=(root) NOPASSWD: /usr/local/sbin/capsule-zero-dev-deploy
+EOF
+sudo chmod 440 /etc/sudoers.d/capsule-zero-dev-deploy
+sudo visudo -cf /etc/sudoers.d/capsule-zero-dev-deploy
+```
+
+When `infra/scripts/capsule-zero-dev-deploy` changes in a future PR, update the installed
+`/usr/local/sbin/capsule-zero-dev-deploy` copy as root before relying on that change in CD.
+
+### 3. Root-owned dev checkout + GHCR pull auth
+
+The deploy step uses a dedicated dev checkout at `/opt/capsule-zero-dev` (never the prod
+`/opt/capsule-zero`). Keep this checkout root-owned so a leaked CI SSH key cannot modify the
+files that the sudo wrapper executes from or deploys. Give root read-only repo access
+(GitHub **Settings → Deploy keys**, write access unchecked) and a `read:packages` GHCR login:
+
+```bash
+sudo install -d -m 700 /root/.ssh
+sudo install -m 600 github_deploy_key /root/.ssh/capsule-zero-dev-github
+sudo bash -lc 'ssh-keyscan -t ed25519,rsa github.com >> /root/.ssh/known_hosts && sort -u /root/.ssh/known_hosts -o /root/.ssh/known_hosts'
+sudo install -d -o root -g root -m 755 /opt/capsule-zero-dev
+sudo GIT_SSH_COMMAND='ssh -i /root/.ssh/capsule-zero-dev-github -o IdentitiesOnly=yes' \
+  git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero-dev
+sudo git -C /opt/capsule-zero-dev config core.sshCommand 'ssh -i /root/.ssh/capsule-zero-dev-github -o IdentitiesOnly=yes'
+sudo tee /opt/capsule-zero-dev/.env.dev >/dev/null <<'EOF'
 APP_BASE_URL=https://dev.capsulezero.app
 CAPSULE_PROVIDER_MODE=supabase
 SUPABASE_INTERNAL_URL=<supabase-internal-or-public-url>
@@ -116,8 +132,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<supabase-anon-key>
 SUPABASE_SERVICE_ROLE_KEY=<supabase-service-role-key>
 SESSION_SIGNING_SECRET=<64-plus-random-characters>
 EOF
-sudo -u deploy chmod 600 /opt/capsule-zero-dev/.env.dev
-sudo -u deploy bash -lc 'echo "<read:packages token>" | docker login ghcr.io -u kiaquila --password-stdin'
+sudo chown root:root /opt/capsule-zero-dev/.env.dev
+sudo chmod 600 /opt/capsule-zero-dev/.env.dev
+sudo bash -lc 'echo "<read:packages token>" | docker login ghcr.io -u kiaquila --password-stdin'
 ```
 
 ### 4. GitHub repository secrets
@@ -137,7 +154,7 @@ the deploy job.
 
 ```bash
 cd /opt/capsule-zero-dev
-docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml up -d   # web on 127.0.0.1:3001
+sudo docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml up -d   # web on 127.0.0.1:3001
 
 # Issue the dev cert (HTTP-01 webroot; host nginx already serves /.well-known/acme-challenge):
 certbot certonly --webroot -w /var/www/certbot -d dev.capsulezero.app --non-interactive --keep-until-expiring
@@ -159,7 +176,7 @@ After steps 2–4, merge a code change to `main` or run **Actions → CD Dev →
 (leave `image_sha` blank). The job builds, pushes to GHCR, and rolls the dev stack. Verify:
 
 ```bash
-docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml ps   # web healthy
+sudo docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml ps   # web healthy
 curl -fsS http://127.0.0.1:3001/en >/dev/null && echo origin-ok
 curl -fsS http://127.0.0.1:3001/api/health | node -e 'let d=""; process.stdin.on("data", c => d += c); process.stdin.on("end", () => process.exit(JSON.parse(d).ok === true ? 0 : 1))' && echo health-ok
 curl -fsS https://dev.capsulezero.app/en >/dev/null && echo edge-ok

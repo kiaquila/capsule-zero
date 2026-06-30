@@ -26,8 +26,9 @@ host-nginx config changes are applied explicitly with `nginx -t` before reload.
   lockfiles, the workflow itself).
 - Build + push of the web image to `ghcr.io/kiaquila/capsule-zero-web`, tagged immutably by
   commit SHA (`sha-<gitsha>`) plus a moving `:dev` tag.
-- SSH-based deploy that pulls the SHA-pinned image on the droplet and rolls the
-  `capsule-zero-dev` stack via `docker compose pull && up -d`.
+- SSH-based deploy that lets the unprivileged CI `deploy` user run only the root-owned
+  `/usr/local/sbin/capsule-zero-dev-deploy` wrapper, which pulls the SHA-pinned image on the
+  droplet and rolls the `capsule-zero-dev` stack via `docker compose pull && up -d`.
 - A self-contained dev compose file (`docker-compose.dev-server.yml`) with a single `web`
   service (image pulled from GHCR, no on-droplet build) published on `127.0.0.1:3001`.
 - Required production runtime env for the dev web container (`CAPSULE_PROVIDER_MODE=supabase`,
@@ -37,7 +38,8 @@ host-nginx config changes are applied explicitly with `nginx -t` before reload.
   `docker-edge` profile.
 - A `workflow_dispatch` rollback path: redeploy any prior `sha-<gitsha>` tag without rebuilding.
 - An operator runbook covering the host-nginx install + prod cutover, the deploy SSH user,
-  GHCR pull auth, required `.env.dev`, and the dev TLS certificate (issue + renew).
+  root-owned wrapper/checkout, GHCR pull auth, required `.env.dev`, and the dev TLS
+  certificate (issue + renew).
 
 ### Out
 
@@ -66,6 +68,10 @@ host-nginx config changes are applied explicitly with `nginx -t` before reload.
 - **Shared nginx reload must prove prod still routes.** If `infra/nginx-host/**` changed, the
   deploy job reloads host nginx only after `nginx -t` and immediately smokes
   `https://capsulezero.app/en` through loopback-resolved TLS before reporting success.
+- **Leaked CI SSH key cannot directly control Docker or prod.** The `deploy` user is not in
+  the Docker group, does not own `/opt/capsule-zero-dev`, and has passwordless sudo only for
+  the root-owned deploy wrapper, which validates the image ref, SHA, and nginx-sync mode
+  before running the dev rollout.
 
 ## TDD waiver
 

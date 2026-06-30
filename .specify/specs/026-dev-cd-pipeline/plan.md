@@ -21,14 +21,16 @@ deploys only recreate the dev web container behind a stable proxy target; when
 2. **build** — `docker buildx` (`--target runner`) → push `sha-<gitsha>` + `:dev` to
    `ghcr.io/kiaquila/capsule-zero-web`, with registry-backed build cache. Skipped on a
    `workflow_dispatch` rollback that supplies an existing `image_sha`.
-3. **deploy** — SSH as the `deploy` user, `cd /opt/capsule-zero-dev` (dedicated dev checkout,
-   separate from prod's `/opt/capsule-zero`), `git checkout` the deployed SHA (current commit
-   for normal deploys, the SHA embedded in `image_sha` for rollbacks), `export
-   CAPSULE_WEB_IMAGE=<ref>`, `docker compose --env-file .env.dev -p capsule-zero-dev -f
-   docker-compose.dev-server.yml pull web && up -d`, wait for `web` healthy, install/reload host nginx if
-   `infra/nginx-host/**` changed, smoke `http://127.0.0.1:3001/en` and the host-nginx TLS edge
-   via `curl --resolve dev.capsulezero.app:443:127.0.0.1 ...`, including `/api/health`; when
-   host nginx reloads, also smoke `https://capsulezero.app/en` through loopback-resolved TLS.
+3. **deploy** — SSH as the unprivileged `deploy` user, then sudo only the root-owned
+   `/usr/local/sbin/capsule-zero-dev-deploy <image> <sha> <sync-nginx>` wrapper. The wrapper
+   validates the immutable image ref and commit SHA, updates the root-owned
+   `/opt/capsule-zero-dev` checkout (separate from prod's `/opt/capsule-zero`), exports
+   `CAPSULE_WEB_IMAGE=<ref>`, runs `docker compose --env-file .env.dev -p capsule-zero-dev -f
+   docker-compose.dev-server.yml pull web && up -d`, waits for `web` healthy, installs/reloads
+   host nginx if `infra/nginx-host/**` changed, smokes `http://127.0.0.1:3001/en` and the
+   host-nginx TLS edge via `curl --resolve dev.capsulezero.app:443:127.0.0.1 ...`, including
+   `/api/health`; when host nginx reloads, it also smokes `https://capsulezero.app/en`
+   through loopback-resolved TLS.
 
 ### Edge topology (same droplet)
 
@@ -62,6 +64,7 @@ reload nginx` so renewed certs take effect.
 | Local dev compose still starts the laptop nginx by default | `docker compose -f docker-compose.yml -f docker-compose.dev.yml config --services` → `web`, `nginx` |
 | Host nginx config is syntactically valid | `nginx -t` on the droplet → "syntax is ok / test is successful" (done) |
 | Host nginx config changes are deployed | Workflow deploy step compares previous checkout vs deploy SHA for `infra/nginx-host/**`, installs the versioned files, runs `sudo nginx -t`, reloads nginx, and smokes `https://capsulezero.app/en` before the dev edge smoke |
+| Dev deploy user is least-privilege | Runbook keeps `deploy` out of the Docker group, keeps `/opt/capsule-zero-dev` root-owned, and grants sudo only for `/usr/local/sbin/capsule-zero-dev-deploy`; workflow calls only that wrapper, whose source is versioned in `infra/scripts/capsule-zero-dev-deploy` |
 | Docs/tests-only merge does not deploy | `gate` job logs show `run=false` and `build`/`deploy` skipped on a docs-only commit; workflow run is green |
 | Code merge builds + pushes a SHA-pinned image | Actions run shows `build` pushing `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>`; tag visible in GHCR |
 | Deploy rolls the dev stack and proves health | `deploy` job log: `docker compose ps` healthy + `smoke ok`; workflow smokes `http://127.0.0.1:3001/en`, parses `http://127.0.0.1:3001/api/health` for JSON `ok: true`, smokes `https://dev.capsulezero.app/en`, and parses `https://dev.capsulezero.app/api/health` via `--resolve`; host-nginx reload path also smokes `https://capsulezero.app/en`; verified live: `https://dev.capsulezero.app/en` → **HTTP 200** |

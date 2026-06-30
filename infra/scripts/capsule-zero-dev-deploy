@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+app_dir="/opt/capsule-zero-dev"
+compose_project="capsule-zero-dev"
+compose_file="docker-compose.dev-server.yml"
+env_file=".env.dev"
+
+usage() {
+  echo "usage: capsule-zero-dev-deploy <image-ref> <deploy-sha> <sync-host-nginx:true|false>" >&2
+}
+
+die() {
+  echo "capsule-zero-dev-deploy: $*" >&2
+  exit 1
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "missing required command: $1"
+}
+
+if [ "$#" -ne 3 ]; then
+  usage
+  exit 64
+fi
+
+image_ref="$1"
+deploy_sha="$2"
+sync_host_nginx="$3"
+
+[ "$(id -u)" -eq 0 ] || die "must run as root via sudo"
+[[ "$image_ref" =~ ^ghcr\.io/kiaquila/capsule-zero-web:sha-[0-9a-f]{40}$ ]] \
+  || die "image ref must be ghcr.io/kiaquila/capsule-zero-web:sha-<40 lowercase hex>"
+[[ "$deploy_sha" =~ ^[0-9a-f]{40}$ ]] || die "deploy SHA must be 40 lowercase hex characters"
+[[ "$sync_host_nginx" =~ ^(true|false)$ ]] || die "sync-host-nginx must be true or false"
+
+require_cmd curl
+require_cmd docker
+require_cmd git
+require_cmd install
+require_cmd ln
+require_cmd nginx
+require_cmd python3
+require_cmd rm
+require_cmd systemctl
+
+[ -d "$app_dir/.git" ] || die "$app_dir is not a git checkout"
+cd "$app_dir"
+
+previous_sha="$(git rev-parse HEAD 2>/dev/null || true)"
+git fetch --prune origin
+git cat-file -e "${deploy_sha}^{commit}" || die "deploy SHA is not present in the checkout"
+git merge-base --is-ancestor "$deploy_sha" origin/main \
+  || die "deploy SHA must be reachable from origin/main"
+git checkout --force "$deploy_sha"
+
+host_nginx_changed=false
+if [ "$sync_host_nginx" = "true" ]; then
+  if [ -z "$previous_sha" ] || ! git rev-parse --verify --quiet "${previous_sha}^{commit}" >/dev/null; then
+    host_nginx_changed=true
+  elif [ -n "$(git diff --name-only "$previous_sha" "$deploy_sha" -- infra/nginx-host/)" ]; then
+    host_nginx_changed=true
+  fi
+else
+  echo "host nginx config sync skipped for image rollback"
+fi
+
+export CAPSULE_WEB_IMAGE="$image_ref"
+compose=(docker compose --env-file "$env_file" -p "$compose_project" -f "$compose_file")
+
+"${compose[@]}" pull web
+"${compose[@]}" up -d --remove-orphans
+
+web_cid="$("${compose[@]}" ps -q web)"
+[ -n "$web_cid" ] || die "web container was not created"
+
+status="starting"
+for _ in $(seq 1 30); do
+  status="$(docker inspect -f '{{.State.Health.Status}}' "$web_cid" 2>/dev/null || echo starting)"
+  [ "$status" = "healthy" ] && break
+  sleep 5
+done
+
+if [ "$status" != "healthy" ]; then
+  echo "web did not become healthy (status=$status)" >&2
+  "${compose[@]}" logs --tail=80 web >&2
+  exit 1
+fi
+
+if [ "$host_nginx_changed" = "true" ]; then
+  echo "host nginx config changed; installing and reloading"
+  install -m 644 infra/nginx-host/00-capsule-zero.conf /etc/nginx/conf.d/00-capsule-zero.conf
+  install -m 644 infra/nginx-host/capsulezero.app.conf /etc/nginx/sites-available/capsulezero.app.conf
+  install -m 644 infra/nginx-host/dev.capsulezero.app.conf /etc/nginx/sites-available/dev.capsulezero.app.conf
+  ln -sf /etc/nginx/sites-available/capsulezero.app.conf /etc/nginx/sites-enabled/
+  ln -sf /etc/nginx/sites-available/dev.capsulezero.app.conf /etc/nginx/sites-enabled/
+  rm -f /etc/nginx/sites-enabled/default
+  nginx -t
+  systemctl reload nginx
+  curl -fsS -o /dev/null --resolve capsulezero.app:443:127.0.0.1 https://capsulezero.app/en
+else
+  echo "host nginx config unchanged"
+fi
+
+assert_health_ok() {
+  local url="$1"
+  shift || true
+  local payload
+  payload="$(curl -fsS "$@" "$url")"
+  printf '%s' "$payload" | python3 -c '
+import json
+import sys
+
+try:
+    health = json.load(sys.stdin)
+except json.JSONDecodeError as exc:
+    print(exc, file=sys.stderr)
+    sys.exit(1)
+
+if health.get("ok") is not True:
+    print(f"health ok=false: {json.dumps(health, separators=(',', ':'))}", file=sys.stderr)
+    sys.exit(1)
+'
+}
+
+# Smoke the dev web on its loopback port, then end-to-end through the host nginx.
+# --resolve keeps the request on the droplet while preserving hostname/SNI/cert validation.
+curl -fsS -o /dev/null http://127.0.0.1:3001/en
+assert_health_ok http://127.0.0.1:3001/api/health
+curl -fsS -o /dev/null --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/en
+assert_health_ok https://dev.capsulezero.app/api/health --resolve dev.capsulezero.app:443:127.0.0.1
+echo "smoke ok"
+"${compose[@]}" ps

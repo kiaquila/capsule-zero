@@ -11,12 +11,12 @@
 - [x] Host-nginx edge deployed on the droplet; prod cut over from in-docker nginx (live, 200).
 - [x] Dev stack up on the droplet (web 127.0.0.1:3001); dev TLS cert issued; live `https://dev.capsulezero.app` → 200.
 - [x] `docs_capsule_zero/project/devops/dev-cd-pipeline.md` — operator runbook (host nginx + cutover + cert).
-- [x] Operator setup done by tooling: `deploy` user (+docker, limited sudoers), CI key in
+- [x] Operator setup documented: unprivileged `deploy` user (no Docker group), CI key in
       authorized_keys, GitHub Actions secrets (`DEV_DEPLOY_HOST/USER/SSH_KEY/KNOWN_HOSTS`),
-      read-only GitHub deploy key, github.com in deploy's known_hosts, `.env.dev`, dev checkout
-      owned by `deploy`. Verified: git fetch, `sudo nginx -t`/`reload`, docker access all OK.
+      root-owned deploy wrapper in `/usr/local/sbin`, root-owned read-only GitHub deploy key,
+      root-owned `/opt/capsule-zero-dev` checkout, and root-owned `.env.dev`.
 - [ ] Remaining manual step (needs a user-minted PAT): `read:packages` GHCR `docker login`
-      as `deploy`. Until done, `docker compose pull` is denied and dev serves the seed image.
+      as root. Until done, `docker compose pull` is denied and dev serves the seed image.
 - [ ] First green `main` run (post-merge): build → GHCR → deploy replaces the seed image.
 
 ## Process Memory
@@ -60,6 +60,10 @@
   previous dev checkout with the target SHA; when `infra/nginx-host/**` changed, it installs
   the versioned files, validates with `nginx -t`, reloads host nginx, and smokes the prod edge
   before the dev edge smoke.
+- **Dev deploy is mediated by a root-owned wrapper.** The CI SSH user stays out of the Docker
+  group and has sudo only for `/usr/local/sbin/capsule-zero-dev-deploy`; the wrapper source is
+  versioned in `infra/scripts/capsule-zero-dev-deploy`, validates image/SHA/mode inputs, and
+  performs the exact dev compose rollout plus the guarded host-nginx sync/smokes.
 - **Image rollbacks never roll back host nginx.** `workflow_dispatch image_sha=sha-...` checks
   out the matching app/compose commit for the dev image rollback but sets host-nginx sync off,
   so production vhost config is not reverted by a dev-only rollback.
@@ -69,11 +73,11 @@
   from the static landing page.
 - **Image registry: GHCR.** Free for the private repo, native `GITHUB_TOKEN` push auth,
   SHA-immutable tags. Droplet pulls with a read-only `read:packages` token.
-- **Dedicated dev checkout `/opt/capsule-zero-dev`** separate from prod's `/opt/capsule-zero`
-  (prod bind-mounts nothing from git now, but isolation avoids any cross-impact).
+- **Dedicated root-owned dev checkout `/opt/capsule-zero-dev`** separate from prod's
+  `/opt/capsule-zero` (prod bind-mounts nothing from git now, but isolation avoids any
+  cross-impact and keeps the CI SSH user from changing wrapper-trusted files).
 - **Runbook creates the dev checkout directory as root before cloning.** `/opt` is root-owned
-  on a standard droplet, so setup uses `sudo install -d -o deploy -g deploy` before the
-  `deploy` user clones into `/opt/capsule-zero-dev`.
+  on a standard droplet, and the root-owned deploy wrapper updates this checkout during CD.
 - **Change-gate allowlist, not ignore-list.** Docs/tests/`.specify` never deploy.
 - **Immutable `sha-<gitsha>` tags** enable `workflow_dispatch` rollback; rollback also checks
   out the matching commit so compose config matches the image.
@@ -81,9 +85,9 @@
 
 ### Known Issues
 
-- The CD pipeline is not yet live: it needs the operator one-time setup (deploy user, limited
-  sudoers entry for host-nginx reloads, GitHub secrets, GHCR pull login, required `.env.dev`).
-  Until the first run, dev serves a seed image (the local prod image retagged
+- The CD pipeline is not yet live: it needs the operator one-time setup (deploy user, wrapper
+  sudoers entry, root-owned checkout/deploy key, GitHub secrets, GHCR pull login, required
+  `.env.dev`). Until the first run, dev serves a seed image (the local prod image retagged
   `ghcr.io/kiaquila/capsule-zero-web:dev`).
 - A stale certbot deploy-hook (`reload-nginx.sh`, reloading the retired in-docker nginx) was
   removed during cutover; renewals now use `reload-host-nginx.sh` (`nginx -t && systemctl
