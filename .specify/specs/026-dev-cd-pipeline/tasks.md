@@ -47,7 +47,8 @@
   itself change. Docs/tests/`.specify` never deploy. The grep check consumes its input through
   a here-string under `pipefail` so early-match SIGPIPE cannot false-skip a deploy.
 - **Immutable `sha-<gitsha>` tags** enable `workflow_dispatch` rollback to any prior build
-  without rebuilding.
+  without rebuilding. Rollback also checks out the matching commit SHA so compose/nginx config
+  matches the image.
 - **Secrets stay on the droplet / in Cloudflare.** CI ships only the image ref over SSH; the
   dev `.env.dev`, GHCR pull token, and Cloudflare DNS token live on the host (AGENTS.md).
 

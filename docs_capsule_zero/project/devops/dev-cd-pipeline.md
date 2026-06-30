@@ -11,7 +11,8 @@ Auto-deploy to the **dev** environment (`https://dev.capsulezero.app`) on every 
    itself). Docs/tests/`.specify`-only merges are skipped (green, no deploy).
 3. **build** — `docker buildx` builds `app/Dockerfile` (`--target runner`) and pushes
    `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>` plus a moving `:dev` tag to GHCR.
-4. **deploy** — SSH to the droplet, sync the repo checkout to the deployed SHA, then
+4. **deploy** — SSH to the droplet, sync the repo checkout to the deployed SHA (the current
+   commit for normal deploys, or the SHA embedded in `image_sha` for rollbacks), then
    `docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml pull web && up -d`,
    reload dev nginx, wait for `web` healthy, and smoke-check the dev nginx origin.
 
@@ -206,7 +207,8 @@ curl -fsS https://dev.capsulezero.app/en >/dev/null && echo edge-ok
 
 Every build is tagged immutably by commit SHA. To roll back, run **CD Dev** via
 **workflow_dispatch** with `image_sha = sha-<previous-gitsha>` — it skips the build and
-redeploys that image. List available tags in the repo's **Packages → capsule-zero-web**.
+checks out the matching repo commit before redeploying that image, so compose/nginx config
+matches the image. List available tags in the repo's **Packages → capsule-zero-web**.
 
 ## Notes
 

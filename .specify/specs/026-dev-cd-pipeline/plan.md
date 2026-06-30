@@ -16,8 +16,9 @@ RAM/CPU on a small VM).
    `ghcr.io/kiaquila/capsule-zero-web`, with registry-backed build cache. Skipped on a
    `workflow_dispatch` rollback that supplies an existing `image_sha`.
 3. **deploy** — SSH to the droplet as the `deploy` user, `cd /opt/capsule-zero-dev`
-   (dedicated dev checkout, separate from prod), `git checkout` the deployed SHA (to
-   sync compose + nginx config), `export CAPSULE_WEB_IMAGE=<ref>`,
+   (dedicated dev checkout, separate from prod), `git checkout` the deployed SHA (current
+   commit for normal deploys, SHA embedded in `image_sha` for rollbacks, to sync compose +
+   nginx config), `export CAPSULE_WEB_IMAGE=<ref>`,
    `docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml pull web && up -d`,
    reload dev nginx, wait for `web` healthy, smoke `https://127.0.0.1:8443/en` with the dev
    `Host` header.
@@ -52,5 +53,5 @@ without polluting Certbot's managed lineage (runbook).
 | Code merge builds + pushes a SHA-pinned image | Actions run shows `build` pushing `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>`; tag visible in GHCR package versions |
 | Deploy rolls the dev stack and proves health | `deploy` job log: `docker compose ps` all healthy + `smoke ok`; `https://dev.capsulezero.app/en` returns 200 through Cloudflare |
 | A broken dev deploy does not touch prod | Prod `https://capsulezero.app/en` still 200 during/after a failed dev deploy (separate project, separate nginx on `:443`) |
-| Rollback works | `workflow_dispatch` with a prior `image_sha` redeploys without rebuilding; dev serves the older SHA |
+| Rollback works | `workflow_dispatch` with a prior `image_sha` redeploys without rebuilding; deploy checks out the matching SHA and dev serves the older image/config |
 | Dev has its own TLS cert | `echo \| openssl s_client -connect dev.capsulezero.app:443 -servername dev.capsulezero.app 2>/dev/null \| openssl x509 -noout -subject` shows `CN=dev.capsulezero.app`, distinct from prod |
