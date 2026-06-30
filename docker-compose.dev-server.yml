@@ -1,12 +1,17 @@
 # Capsule Zero — dev SERVER stack (https://dev.capsulezero.app).
 #
 # NOT the laptop override (`docker-compose.dev.yml`, mkcert + capsulezero.local).
-# This is a remote dev environment that runs on the SAME droplet as production but as a
-# fully separate compose project (`capsule-zero-dev`) with its OWN nginx and OWN TLS cert.
-# Prod (project `capsule-zero`, nginx on :443) is never touched by a dev deploy.
+# This is the remote dev environment. It runs on the SAME droplet as production but as a
+# fully separate compose project (`capsule-zero-dev`).
+#
+# Edge: a single HOST nginx (systemd, not in Docker) terminates TLS for both prod and dev
+# and reverse-proxies plain HTTP to the published container ports — prod web on
+# 127.0.0.1:3000, dev web on 127.0.0.1:3001. The dev stack therefore has NO nginx of its
+# own; it only publishes the web container on loopback for the host nginx.
+# Host nginx vhosts live in infra/nginx-host/ and are installed per the runbook.
 #
 # Deployed automatically by `.github/workflows/cd-dev.yml` on merge to main.
-# Operator setup (Cloudflare, deploy user, GHCR pull token, TLS cert):
+# Operator setup (deploy user, GHCR pull token, host nginx, TLS cert):
 #   docs_capsule_zero/project/devops/dev-cd-pipeline.md
 #
 # Run on the droplet:
@@ -20,31 +25,8 @@ networks:
     driver: bridge
 
 services:
-  # Dedicated dev nginx. Binds host 8443 (prod nginx owns 80/443); Cloudflare rewrites the
-  # origin port for dev.capsulezero.app to 8443. http->https is done at the Cloudflare edge,
-  # so no host :80 is published — the internal :80 server exists only for the health probe.
-  nginx:
-    image: nginx:1.27-alpine
-    restart: unless-stopped
-    depends_on:
-      web:
-        condition: service_started
-    ports:
-      - "${DEV_NGINX_HOST_BIND:-0.0.0.0}:8443:443"
-    volumes:
-      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./infra/nginx/conf.d.dev-server:/etc/nginx/conf.d:ro
-      - ${DEV_TLS_HOST_DIR:-/var/lib/capsule-zero-dev/tls}:/etc/nginx/dev-tls:ro
-      - ${CERTBOT_WEBROOT_HOST_DIR:-/var/www/certbot}:/var/www/certbot:ro
-    networks: [dev-internal]
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/nginx-health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
-
-  # Next.js landing — pulled from GHCR, never built on the droplet.
+  # Next.js landing — pulled from GHCR, never built on the droplet. Published on loopback
+  # only; the host nginx is the sole edge and proxies to it over plain HTTP.
   web:
     image: ${CAPSULE_WEB_IMAGE:-ghcr.io/kiaquila/capsule-zero-web:dev}
     init: true
@@ -58,8 +40,8 @@ services:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
       NEXT_PUBLIC_APP_URL: ${APP_BASE_URL:-https://dev.capsulezero.app}
-    expose:
-      - "3000"
+    ports:
+      - "${DEV_WEB_HOST_BIND:-127.0.0.1}:3001:3000"
     networks: [dev-internal]
     healthcheck:
       test:

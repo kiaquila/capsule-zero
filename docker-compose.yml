@@ -16,10 +16,14 @@ networks:
     driver: bridge
 
 services:
-  # nginx 1.27 terminates TLS, redirects http→https, and reverse-proxies to web.
+  # Retired as edge: a host (systemd) nginx now terminates TLS and reverse-proxies to the
+  # web container published on 127.0.0.1:3000. See infra/nginx-host/ and
+  # docs_capsule_zero/project/devops/dev-cd-pipeline.md. Kept (profile-gated) for rollback:
+  #   docker compose --profile docker-edge up -d nginx
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
+    profiles: ["docker-edge"]
     depends_on:
       web:
         condition: service_started
@@ -62,6 +66,9 @@ services:
       NEXT_PUBLIC_APP_URL: ${APP_BASE_URL:-https://capsulezero.app}
     expose:
       - "3000"
+    # Published on loopback for the host (systemd) nginx edge.
+    ports:
+      - "${WEB_HOST_BIND:-127.0.0.1}:3000:3000"
     networks: [internal]
     healthcheck:
       test:

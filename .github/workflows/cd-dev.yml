@@ -197,10 +197,6 @@ jobs:
           $COMPOSE pull web
           $COMPOSE up -d --remove-orphans
 
-          # Pick up any nginx config change from the checkout and fail on invalid config.
-          $COMPOSE exec -T nginx nginx -t
-          $COMPOSE exec -T nginx nginx -s reload
-
           # Wait for the web container to report healthy.
           web_cid="$($COMPOSE ps -q web)"
           status="starting"
@@ -215,8 +211,10 @@ jobs:
             exit 1
           fi
 
-          # Origin smoke check through the dev nginx (independent of Cloudflare/public DNS).
-          curl -fsS -k -H 'Host: dev.capsulezero.app' https://127.0.0.1:8443/en >/dev/null
+          # Smoke the dev web on its loopback port, then end-to-end through the host nginx.
+          # The host nginx (proxying to 127.0.0.1:3001) is stable infra and is not touched here.
+          curl -fsS -o /dev/null http://127.0.0.1:3001/en
+          curl -fsS -o /dev/null -k -H 'Host: dev.capsulezero.app' https://127.0.0.1/en
           echo "smoke ok"
           $COMPOSE ps
           REMOTE
