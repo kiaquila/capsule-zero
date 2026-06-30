@@ -95,6 +95,7 @@ The deploy step uses a dedicated dev checkout at `/opt/capsule-zero-dev` (never 
 Deploy keys**, write access unchecked) and a `read:packages` GHCR login:
 
 ```bash
+sudo install -d -o deploy -g deploy -m 755 /opt/capsule-zero-dev
 sudo -u deploy git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero-dev
 printf 'APP_BASE_URL=https://dev.capsulezero.app\n' | sudo -u deploy tee /opt/capsule-zero-dev/.env.dev
 sudo -u deploy bash -lc 'echo "<read:packages token>" | docker login ghcr.io -u kiaquila --password-stdin'

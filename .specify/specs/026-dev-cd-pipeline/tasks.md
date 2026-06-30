@@ -55,6 +55,9 @@
   SHA-immutable tags. Droplet pulls with a read-only `read:packages` token.
 - **Dedicated dev checkout `/opt/capsule-zero-dev`** separate from prod's `/opt/capsule-zero`
   (prod bind-mounts nothing from git now, but isolation avoids any cross-impact).
+- **Runbook creates the dev checkout directory as root before cloning.** `/opt` is root-owned
+  on a standard droplet, so setup uses `sudo install -d -o deploy -g deploy` before the
+  `deploy` user clones into `/opt/capsule-zero-dev`.
 - **Change-gate allowlist, not ignore-list.** Docs/tests/`.specify` never deploy.
 - **Immutable `sha-<gitsha>` tags** enable `workflow_dispatch` rollback; rollback also checks
   out the matching commit so compose config matches the image.
