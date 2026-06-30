@@ -50,9 +50,11 @@
 
 ### Known Issues
 
-- First deploy is a chicken-and-egg with TLS: nginx will not start without a cert at the dev
-  path. Mitigation in the runbook — bootstrap a self-signed cert, first deploy, then issue
-  the real LE cert (DNS-01) and reload. DNS-01 does not require the stack to be up.
+- First deploy is a chicken-and-egg with TLS: nginx will not start without a cert in its
+  mounted TLS directory. Mitigation in the runbook — bootstrap a self-signed cert in
+  `/var/lib/capsule-zero-dev/tls`, keep Certbot's `/etc/letsencrypt/live/...` lineage
+  clean, then copy the real DNS-01 cert into the nginx-facing directory and reload. DNS-01
+  does not require the stack to be up.
 - The smoke gate validates the **origin** (`127.0.0.1:8443` with the dev `Host`). End-to-end
   through Cloudflare depends on the operator having created the DNS record + Origin Rule;
   until then the public `dev.capsulezero.app` check in `plan.md` is deferred to post-setup.

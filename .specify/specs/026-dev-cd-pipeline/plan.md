@@ -25,7 +25,7 @@ RAM/CPU on a small VM).
 
 - `docker-compose.dev-server.yml` → project `capsule-zero-dev`, isolated network.
 - `nginx` host bind `8443:443`; mounts the shared `nginx.conf` + `conf.d.dev-server/` + the
-  host `/etc/letsencrypt` (read-only). Internal port 80 (unpublished) serves the
+  host nginx-facing TLS copy directory (read-only). Internal port 80 (unpublished) serves the
   `/nginx-health` probe only.
 - `web` runs the GHCR image (no `build:`), internal `:3000`.
 - Cloudflare proxies `dev.capsulezero.app`; an Origin Rule rewrites the origin port to `8443`.
@@ -34,10 +34,11 @@ RAM/CPU on a small VM).
 ### Dev TLS
 
 Let's Encrypt **DNS-01** via the Cloudflare plugin (no open port needed; works behind the
-Cloudflare proxy on a non-standard origin port and matches prod's LE posture). Cert lives at
-`/etc/letsencrypt/live/dev.capsulezero.app/`; renewal via host certbot timer with a
-deploy-hook that reloads the dev nginx. First-deploy bootstrap uses a self-signed cert so
-nginx can start before the real cert is issued (runbook).
+Cloudflare proxy on a non-standard origin port and matches prod's LE posture). Certbot owns
+the real lineage at `/etc/letsencrypt/live/dev.capsulezero.app/`; a deploy-hook copies the
+current cert/key into `/var/lib/capsule-zero-dev/tls/`, which dev nginx mounts read-only.
+First-deploy bootstrap uses a self-signed cert in that copy directory so nginx can start
+without polluting Certbot's managed lineage (runbook).
 
 ## Verification
 
@@ -45,7 +46,7 @@ nginx can start before the real cert is issued (runbook).
 | --- | --- |
 | Workflow YAML is valid and jobs/conditions parse | `actionlint .github/workflows/cd-dev.yml` (or GitHub's own parse on push); job graph renders in the Actions run |
 | Dev compose file is valid and self-contained | `CAPSULE_WEB_IMAGE=ghcr.io/kiaquila/capsule-zero-web:dev docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml config` exits 0 |
-| Dev nginx config is syntactically valid | `docker run --rm -v "$PWD/infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro" -v "$PWD/infra/nginx/conf.d.dev-server:/etc/nginx/conf.d:ro" -v /etc/letsencrypt:/etc/letsencrypt:ro nginx:1.27-alpine nginx -t` on the droplet |
+| Dev nginx config is syntactically valid | `docker run --rm -v "$PWD/infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro" -v "$PWD/infra/nginx/conf.d.dev-server:/etc/nginx/conf.d:ro" -v /var/lib/capsule-zero-dev/tls:/etc/nginx/dev-tls:ro nginx:1.27-alpine nginx -t` on the droplet |
 | Docs/tests-only merge does not deploy | `gate` job logs show `run=false` and `build`/`deploy` skipped on a docs-only commit; workflow run is green |
 | Code merge builds + pushes a SHA-pinned image | Actions run shows `build` pushing `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>`; tag visible in GHCR package versions |
 | Deploy rolls the dev stack and proves health | `deploy` job log: `docker compose ps` all healthy + `smoke ok`; `https://dev.capsulezero.app/en` returns 200 through Cloudflare |

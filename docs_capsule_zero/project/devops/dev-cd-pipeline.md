@@ -22,8 +22,8 @@ cannot touch prod (project `capsule-zero`, nginx `:443`).
 ## One-time operator setup
 
 All steps below run once. **No secret is ever passed to or stored in CI beyond the GitHub
-secrets listed; the droplet's `.env.dev`, GHCR pull token, and Cloudflare DNS token live only
-on the host / in Cloudflare.**
+secrets listed; the droplet's `.env.dev`, GHCR pull token, nginx-facing TLS key copy, and
+Cloudflare DNS token live only on the host / in Cloudflare.**
 
 ### 1. Cloudflare DNS + origin port
 
@@ -126,19 +126,26 @@ Install certbot + Cloudflare DNS plugin on the host and store a scoped Cloudflar
 dns_cloudflare_api_token = <cloudflare-dns-edit-token>
 ```
 
-**Bootstrap (first deploy only).** nginx will not start without a cert at the dev path, so
-seed a self-signed placeholder before the first deploy, then issue the real cert:
+The dev nginx reads cert files from `/var/lib/capsule-zero-dev/tls`, mounted into the
+container as `/etc/nginx/dev-tls`. Certbot owns the real Let's Encrypt lineage under
+`/etc/letsencrypt/live/dev.capsulezero.app`; do not place bootstrap files in that lineage or
+Certbot may create a suffixed replacement lineage.
+
+**Bootstrap (first deploy only).** nginx will not start without cert files, so seed a
+self-signed placeholder in the nginx-facing copy directory before the first deploy:
 
 ```bash
-sudo mkdir -p /etc/letsencrypt/live/dev.capsulezero.app
+sudo install -d -m 755 /var/lib/capsule-zero-dev/tls
 sudo openssl req -x509 -newkey rsa:2048 -nodes -days 2 \
-  -keyout /etc/letsencrypt/live/dev.capsulezero.app/privkey.pem \
-  -out   /etc/letsencrypt/live/dev.capsulezero.app/fullchain.pem \
+  -keyout /var/lib/capsule-zero-dev/tls/privkey.pem \
+  -out   /var/lib/capsule-zero-dev/tls/fullchain.pem \
   -subj "/CN=dev.capsulezero.app"
+sudo chmod 600 /var/lib/capsule-zero-dev/tls/privkey.pem
+sudo chmod 644 /var/lib/capsule-zero-dev/tls/fullchain.pem
 ```
 
-Then issue the real Let's Encrypt cert (DNS-01 needs no open port and works behind the
-Cloudflare proxy on the 8443 origin):
+Then issue the real Let's Encrypt cert into Certbot's normal lineage (DNS-01 needs no open
+port and works behind the Cloudflare proxy on the 8443 origin):
 
 ```bash
 sudo certbot certonly --dns-cloudflare \
@@ -146,14 +153,34 @@ sudo certbot certonly --dns-cloudflare \
   -d dev.capsulezero.app
 ```
 
-Renewal is handled by the host certbot timer. Add a deploy-hook to reload the dev nginx:
+Renewal is handled by the host certbot timer. Add a deploy-hook that installs the renewed
+cert into the nginx-facing copy directory, validates nginx, and reloads it:
 
 ```bash
-# /etc/letsencrypt/renewal-hooks/deploy/reload-dev-nginx.sh  (chmod +x)
+# /etc/letsencrypt/renewal-hooks/deploy/install-dev-nginx-cert.sh  (chmod +x)
 #!/usr/bin/env bash
-cd /opt/capsule-zero && \
-  docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml exec -T nginx nginx -s reload
+set -euo pipefail
+
+install -d -m 755 /var/lib/capsule-zero-dev/tls
+install -m 644 /etc/letsencrypt/live/dev.capsulezero.app/fullchain.pem \
+  /var/lib/capsule-zero-dev/tls/fullchain.pem
+install -m 600 /etc/letsencrypt/live/dev.capsulezero.app/privkey.pem \
+  /var/lib/capsule-zero-dev/tls/privkey.pem
+
+cd /opt/capsule-zero
+COMPOSE="docker compose -p capsule-zero-dev -f docker-compose.dev-server.yml"
+nginx_cid="$($COMPOSE ps -q nginx || true)"
+nginx_running="$(docker inspect -f '{{.State.Running}}' "$nginx_cid" 2>/dev/null || echo false)"
+if [ "$nginx_running" = "true" ]; then
+  $COMPOSE exec -T nginx nginx -t
+  $COMPOSE exec -T nginx nginx -s reload
+else
+  echo "dev nginx is not running; installed cert copy for the next deploy"
+fi
 ```
+
+Run the hook once manually after the first successful `certbot certonly` if you need to
+replace the bootstrap cert before the next automatic renewal.
 
 ## First deploy
 

@@ -34,7 +34,7 @@ services:
     volumes:
       - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./infra/nginx/conf.d.dev-server:/etc/nginx/conf.d:ro
-      - ${LETSENCRYPT_HOST_DIR:-/etc/letsencrypt}:/etc/letsencrypt:ro
+      - ${DEV_TLS_HOST_DIR:-/var/lib/capsule-zero-dev/tls}:/etc/nginx/dev-tls:ro
       - ${CERTBOT_WEBROOT_HOST_DIR:-/var/www/certbot}:/var/www/certbot:ro
     networks: [dev-internal]
     healthcheck:
