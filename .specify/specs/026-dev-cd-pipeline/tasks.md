@@ -47,6 +47,10 @@
 - **Local dev keeps in-docker nginx in the default path.** `docker-compose.dev.yml` removes
   the base `docker-edge` profile from `nginx` so the documented local command still starts
   `nginx + web`; production compose remains web-only unless the rollback profile is enabled.
+- **Deploy smoke validates the dev TLS hostname.** The workflow smokes the host nginx with
+  `curl --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/en` so a bad
+  dev certificate, SNI route, or default vhost fails the deploy instead of being hidden by
+  `curl -k`.
 - **Image registry: GHCR.** Free for the private repo, native `GITHUB_TOKEN` push auth,
   SHA-immutable tags. Droplet pulls with a read-only `read:packages` token.
 - **Dedicated dev checkout `/opt/capsule-zero-dev`** separate from prod's `/opt/capsule-zero`

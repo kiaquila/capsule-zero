@@ -212,9 +212,9 @@ jobs:
           fi
 
           # Smoke the dev web on its loopback port, then end-to-end through the host nginx.
-          # The host nginx (proxying to 127.0.0.1:3001) is stable infra and is not touched here.
+          # --resolve keeps the request on the droplet while preserving hostname/SNI/cert validation.
           curl -fsS -o /dev/null http://127.0.0.1:3001/en
-          curl -fsS -o /dev/null -k -H 'Host: dev.capsulezero.app' https://127.0.0.1/en
+          curl -fsS -o /dev/null --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/en
           echo "smoke ok"
           $COMPOSE ps
           REMOTE
