@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type CSSProperties } from "react";
 import { useForm, type UseFormRegisterReturn } from "react-hook-form";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
   requestPasswordRecoveryAction,
@@ -343,8 +344,9 @@ export function AuthPanel({
       {mode !== "recovery" ? (
         <p className="auth-terms-note">
           {t("termsConsentPrefix")}{" "}
-          <a href="#terms">{landing("terms")}</a> {t("termsConsentMiddle")}{" "}
-          <a href="#privacy">{landing("privacy")}</a>
+          <Link href="/terms-of-use">{landing("terms")}</Link>{" "}
+          {t("termsConsentMiddle")}{" "}
+          <Link href="/privacy-policy">{landing("privacy")}</Link>
         </p>
       ) : null}
     </section>

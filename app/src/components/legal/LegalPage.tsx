@@ -7,7 +7,7 @@ interface LegalPageProps {
 
 export function LegalPage({ document }: LegalPageProps) {
   return (
-    <div className="cz-page legal-page">
+    <div className="cz-page legal-page" data-testid="legal-page">
       <div className="wallpaper-bg" />
       <div className="wallpaper-overlay" />
 
@@ -73,7 +73,9 @@ export function LegalPage({ document }: LegalPageProps) {
             <Link href={document.relatedDocument.href}>
               Read the {document.relatedDocument.label}
             </Link>
-            <Link href="/">Back to Capsule Zero</Link>
+            <Link href="/" data-testid="legal-back-home">
+              Back to Capsule Zero
+            </Link>
           </footer>
         </article>
       </main>
