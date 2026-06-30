@@ -33,7 +33,8 @@ changes are installed explicitly with `nginx -t` before reload.
    The wrapper validates the immutable image ref and SHA, updates the root-owned
    `/opt/capsule-zero-dev` checkout, runs
    `docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml
-   pull web && up -d`, waits for `web` healthy, installs/reloads host nginx only when
+   pull web && up -d` (`.env.dev` is interpolation-only, not a service env file), waits for
+   `web` healthy, installs/reloads host nginx only when
    `infra/nginx-host/**` changed since the last successful nginx sync marker, rolls nginx
    back to its previous config if the post-reload prod smoke or dev edge smoke fails, then
    reports success only after the provider-free `http://127.0.0.1:3001/en` page and the dev
@@ -129,10 +130,11 @@ sudo GIT_SSH_COMMAND='ssh -i /root/.ssh/capsule-zero-dev-github -o IdentitiesOnl
 sudo git -C /opt/capsule-zero-dev config core.sshCommand 'ssh -i /root/.ssh/capsule-zero-dev-github -o IdentitiesOnly=yes'
 # Frontend-only dev edge: the dev environment previews the frontend of `main` with NO
 # provider backend wired (Supabase is being retired; the Postgres/Kratos backend wires its
-# own env when it lands). `docker-compose.dev-server.yml` therefore needs only APP_BASE_URL.
-# Do NOT add CAPSULE_PROVIDER_MODE / SUPABASE_* / SESSION_SIGNING_SECRET here — that recouples
-# the dev edge to the retired backend and breaks the deploy (see the frontend-only note in
-# docker-compose.dev-server.yml).
+# own env when it lands). This file is used only by `docker compose --env-file` for
+# interpolation; `docker-compose.dev-server.yml` deliberately does NOT attach it as a
+# service-level `env_file`, so stale provider secrets cannot leak into the web container.
+# Keep only APP_BASE_URL here. Remove any old CAPSULE_PROVIDER_MODE / SUPABASE_* /
+# SESSION_SIGNING_SECRET entries if this file was created from the previous runbook.
 sudo tee /opt/capsule-zero-dev/.env.dev >/dev/null <<'EOF'
 APP_BASE_URL=https://dev.capsulezero.app
 EOF

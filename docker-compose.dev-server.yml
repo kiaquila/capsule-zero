@@ -31,15 +31,15 @@ services:
     image: ${CAPSULE_WEB_IMAGE:-ghcr.io/kiaquila/capsule-zero-web:dev}
     init: true
     restart: unless-stopped
-    env_file:
-      - path: ./.env.dev
-        required: false
     # Frontend-only contract — mirrors the web service in docker-compose.yml (spec 023).
     # The dev environment deploys main, which is the legacy Supabase /app shell, but the
     # dev edge only previews the frontend: no provider backend is wired here, so NO
     # Supabase/provider/session env is set and the healthcheck targets the provider-free
     # /en page (NOT /api/health, which calls the provider registry and 500s without a
-    # backend). The new Postgres/Kratos backend wires its own env when it lands.
+    # backend). The wrapper still passes .env.dev via docker compose --env-file for
+    # interpolation only; do NOT attach it as a service env_file, because stale provider
+    # vars in older host files must never be injected into the runtime container.
+    # The new Postgres/Kratos backend wires its own env when it lands.
     environment:
       HOSTNAME: 0.0.0.0
       PORT: "3000"
