@@ -59,7 +59,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up   # Dev (MailH
 
 ## Spec-Driven Development & SENAR
 
-This project uses spec-kit (`.specify/`). **Read the relevant `.specify/specs/**`before implementing.** Specs ≥ 025 follow the SENAR contract:`## Goal`/`## Scope`in`spec.md`, a `## Verification`table in`plan.md`, `## Process Memory`in`tasks.md`, and the SENAR Done Gate filled in the PR. **TDD is mandatory for spec ≥ 025 application code** (web / React Native / Go API) — commit the failing test first; infrastructure and docs are exempt (config validation + smoke checks instead). Specs 001–024 are grandfathered. Full contract: AGENTS.md → "SENAR Completion Contract" and `docs_capsule_zero/project/devops/senar-mapping.md`.
+This project uses spec-kit (`.specify/`). Read the relevant spec folder under `.specify/specs/` before implementing. SENAR fields are required for specs authored from `005-…` onward: `## Goal`/`## Scope` in `spec.md`, a `## Verification` table in `plan.md`, `## Process Memory` in `tasks.md`, plus the SENAR Done Gate in the PR. Only `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered. **TDD is mandatory for spec ≥ 025 application code** (web / React Native / Go API) — commit the failing test first; infrastructure and docs are exempt (config validation + smoke checks instead). Full contract: AGENTS.md → "SENAR Completion Contract" and `docs_capsule_zero/project/devops/senar-mapping.md`.
 
 ## Tests
 

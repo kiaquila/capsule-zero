@@ -23,6 +23,7 @@
 - [x] Address the fresh AI Review P2 for stale canonical-frontend deletion guidance in spec-024 process memory.
 - [x] Address the fresh AI Review P2 for stale `web/**` deploy-relevant guidance in the dev CD runbook/spec.
 - [x] Address the fresh AI Review P2 for deferred pgvector/PgBouncer drift in read-first source docs.
+- [x] Address the fresh AI Review P2 for SENAR grandfathering drift in `CLAUDE.md`.
 
 ## Verification
 
@@ -57,9 +58,10 @@
 - Treat old frontend-deletion notes as superseded history: `/app` stays canonical, and only Supabase env/provider code is retired domain by domain.
 - Keep the dev CD deploy-relevant path docs aligned with `.github/workflows/cd-dev.yml`: `app/**` is active, `web/**` is absent.
 - Keep active catalog-search docs FTS-first; hybrid pgvector ranking, embeddings, and vector indexes belong to the later semantic-search slice.
+- Keep `CLAUDE.md` as a thin pointer to `AGENTS.md`: SENAR fields apply from spec `005-…` onward, while TDD starts at spec ≥ 025 application code.
 
 ### Known Issues
 
 - GitHub checks must be re-run on the pushed commit before the PR can be considered merge ready.
-- The prior AI Review P2 about stale `/web` source docs and the fresh P2s on golangci-lint, SENAR tables, pgvector evidence, Phase 2 status, provider-mode guidance, deferred runtime wording, stale canonical-frontend deletion wording, dev CD runbook filtering, and read-first pgvector drift are addressed locally; a fresh AI Review must run on the new pushed SHA.
+- The prior AI Review P2 about stale `/web` source docs and the fresh P2s on golangci-lint, SENAR tables, pgvector evidence, Phase 2 status, provider-mode guidance, deferred runtime wording, stale canonical-frontend deletion wording, dev CD runbook filtering, read-first pgvector drift, and SENAR grandfathering drift are addressed locally; a fresh AI Review must run on the new pushed SHA.
 - Local `npm run lint` passes with 73 module-size/complexity warnings and 0 errors, matching the warning-only scope of this PR.
