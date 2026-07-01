@@ -3,7 +3,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const defaultEnvFiles = [".env.local", "app/.env.local", "mobile/.env.local"];
+const defaultEnvFiles = [".env.local", "app/.env.local"];
 
 const groups = {
   web: [

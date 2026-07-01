@@ -27,12 +27,6 @@ const requiredTools = [
     args: ["--version"],
     purpose: "Supabase local stack containers",
   },
-  {
-    name: "flutter",
-    command: "flutter",
-    args: ["--version"],
-    purpose: "mobile shell boot and simulator validation",
-  },
 ];
 
 function parseArgs(argv = process.argv.slice(2)) {

@@ -455,69 +455,6 @@ export interface ApiErrorResponse {
 `;
 }
 
-function generateDart(operations, errorCodes) {
-  const operationLines = operations
-    .map(
-      (operation) =>
-        `  ApiOperation(method: '${operation.method}', path: '${operation.path}', operationId: '${operation.operationId}', auth: '${operation.auth}', clientAvailability: '${operation.clientAvailability}'),`,
-    )
-    .join("\n");
-  const errorCodeLines = errorCodes.map((code) => `  '${code}',`).join("\n");
-  const operationPayloadDescriptors = Object.fromEntries(
-    operations.map((operation) => [
-      operation.operationId,
-      operationPayloadDescriptor(operation),
-    ]),
-  );
-
-  return `${generatedHeader("dart")}import 'dart:convert';
-
-const apiVersion = '${openApi.info.version}';
-
-class ApiOperation {
-  const ApiOperation({
-    required this.method,
-    required this.path,
-    required this.operationId,
-    required this.auth,
-    required this.clientAvailability,
-  });
-
-  final String method;
-  final String path;
-  final String operationId;
-  final String auth;
-  final String clientAvailability;
-}
-
-const apiOperations = <ApiOperation>[
-${operationLines}
-];
-
-const apiErrorCodes = <String>[
-${errorCodeLines}
-];
-
-const apiSchemasJson = r'''${JSON.stringify(
-    openApi.components?.schemas || {},
-    null,
-    2,
-  )}''';
-
-const apiOperationPayloadsJson = r'''${JSON.stringify(
-    operationPayloadDescriptors,
-    null,
-    2,
-  )}''';
-
-Map<String, Object?> get apiSchemas =>
-    jsonDecode(apiSchemasJson) as Map<String, Object?>;
-
-Map<String, Object?> get apiOperationPayloads =>
-    jsonDecode(apiOperationPayloadsJson) as Map<String, Object?>;
-`;
-}
-
 function writeOrCheck(path, contents) {
   const fullPath = resolve(root, path);
 
@@ -537,12 +474,9 @@ function writeOrCheck(path, contents) {
 const operations = collectOperations();
 const errorCodes = openApi.components?.schemas?.ErrorCode?.enum || [];
 const typeScriptClient = generateTypeScript(operations, errorCodes);
-const dartMetadata = generateDart(operations, errorCodes);
 
 writeOrCheck("web/src/lib/api/generated/openapi.ts", typeScriptClient);
-writeOrCheck("mobile/lib/api/generated/openapi.ts", typeScriptClient);
 writeOrCheck("app/src/lib/api/generated/openapi.ts", typeScriptClient);
-writeOrCheck("mobile/lib/api/generated/openapi.dart", dartMetadata);
 
 if (!process.exitCode) {
   console.log(
