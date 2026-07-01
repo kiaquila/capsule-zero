@@ -55,20 +55,18 @@ selfservice:
       privileged_session_max_age: 15m
       required_aal: highest_available
 
+    # Recovery and verification are DISABLED in the Phase 2 auth slice. The web
+    # auth UI has no flow-aware completion step (it never reads the Kratos
+    # `flow`/`code` params), so a recovery/verification email link would land the
+    # user on /auth with no way to finish the reset/verification. Rather than
+    # advertise a dead-end email flow, we do not enable these flows until the
+    # dedicated recovery/verification slice ships the completion UI plus the Go
+    # API settings/verification endpoints. See tasks.md Process Memory.
     recovery:
-      enabled: true
-      ui_url: http://127.0.0.1:3000/auth/recovery
-      # The current web auth panel starts recovery by email and does not render
-      # a one-time-code/password reset step, so use email links instead of
-      # sending unrecoverable codes.
-      use: link
+      enabled: false
 
     verification:
-      enabled: true
-      ui_url: http://127.0.0.1:3000/auth/verification
-      use: code
-      after:
-        default_browser_return_url: http://127.0.0.1:3000/
+      enabled: false
 
     login:
       ui_url: http://127.0.0.1:3000/auth
@@ -81,7 +79,9 @@ selfservice:
         password:
           hooks:
             # Issue a session immediately on sign-up so the web UI logs the user
-            # in without a second round-trip; verification email is still sent.
+            # in without a second round-trip. Email verification is disabled in
+            # this slice (see the recovery/verification note above), so no
+            # verification email is sent.
             - hook: session
 
 log:

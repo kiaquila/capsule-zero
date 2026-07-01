@@ -8,20 +8,21 @@ import { useForm, type UseFormRegisterReturn } from "react-hook-form";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
-  requestPasswordRecoveryAction,
   signInWithPasswordAction,
   signUpWithPasswordAction,
 } from "@/features/auth/actions";
 import {
-  createRecoverySchema,
   createSignInSchema,
   createSignUpSchema,
-  type RecoveryInput,
   type SignInInput,
   type SignUpInput,
 } from "@/features/auth/schemas";
 
-type AuthMode = "signIn" | "signUp" | "recovery";
+// Password recovery / email verification are deferred to a dedicated slice that
+// ships the flow-aware completion UI; the auth panel intentionally exposes only
+// sign-in and sign-up here. The recovery action/schema/provider plumbing stays
+// in place for that follow-up. See tasks.md Process Memory (spec 024).
+type AuthMode = "signIn" | "signUp";
 
 const elevatedGlassStyle = {
   backdropFilter: "blur(64px) saturate(118%)",
@@ -68,10 +69,6 @@ export function AuthPanel({
     () => createSignUpSchema(validationMessages),
     [validationMessages],
   );
-  const recoverySchema = useMemo(
-    () => createRecoverySchema(validationMessages),
-    [validationMessages],
-  );
 
   const signInForm = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
@@ -93,14 +90,6 @@ export function AuthPanel({
       city: "",
     },
   });
-  const recoveryForm = useForm<RecoveryInput>({
-    resolver: zodResolver(recoverySchema),
-    mode: "onChange",
-    defaultValues: {
-      email: "",
-    },
-  });
-
   const switchMode = (nextMode: AuthMode) => {
     setMode(nextMode);
     setServerMessage(null);
@@ -146,18 +135,6 @@ export function AuthPanel({
     }
 
     redirectToDashboard();
-  });
-
-  const onRecovery = recoveryForm.handleSubmit(async (values) => {
-    setServerMessage(null);
-    const result = await requestPasswordRecoveryAction(values);
-
-    if (!result.ok) {
-      showError(result.message ?? t("invalidEmail"));
-      return;
-    }
-
-    showInfo(t("recoverySent"));
   });
 
   const headerAction =
@@ -213,11 +190,6 @@ export function AuthPanel({
             }}
             type={passwordVisible ? "text" : "password"}
           />
-          <div className="auth-forgot-row">
-            <button type="button" onClick={() => switchMode("recovery")}>
-              {t("forgotPassword")}
-            </button>
-          </div>
           <button
             className="auth-primary"
             disabled={signInForm.formState.isSubmitting}
@@ -314,34 +286,6 @@ export function AuthPanel({
         </form>
       ) : null}
 
-      {mode === "recovery" ? (
-        <form noValidate onSubmit={onRecovery}>
-          <h2 className="auth-recovery-title">{t("recoveryTitle")}</h2>
-          <p className="auth-recovery-hint">{t("recoveryHint")}</p>
-          <AuthField
-            autoComplete="email"
-            error={recoveryForm.formState.errors.email?.message}
-            inputMode="email"
-            name="email"
-            placeholder={t("email")}
-            register={recoveryForm.register("email")}
-            type="email"
-          />
-          <button
-            className="auth-primary"
-            disabled={recoveryForm.formState.isSubmitting}
-            type="submit"
-          >
-            {recoveryForm.formState.isSubmitting ? t("sending") : t("recoveryCta")}
-          </button>
-          <p className="auth-switch-link">
-            <button type="button" onClick={() => switchMode("signIn")}>
-              {t("backToLogin")}
-            </button>
-          </p>
-        </form>
-      ) : null}
-
       {serverMessage ? (
         <p
           className={cn(
@@ -355,14 +299,12 @@ export function AuthPanel({
         </p>
       ) : null}
 
-      {mode !== "recovery" ? (
-        <p className="auth-terms-note">
-          {t("termsConsentPrefix")}{" "}
-          <Link href="/terms-of-use">{landing("terms")}</Link>{" "}
-          {t("termsConsentMiddle")}{" "}
-          <Link href="/privacy-policy">{landing("privacy")}</Link>
-        </p>
-      ) : null}
+      <p className="auth-terms-note">
+        {t("termsConsentPrefix")}{" "}
+        <Link href="/terms-of-use">{landing("terms")}</Link>{" "}
+        {t("termsConsentMiddle")}{" "}
+        <Link href="/privacy-policy">{landing("privacy")}</Link>
+      </p>
     </section>
   );
 }

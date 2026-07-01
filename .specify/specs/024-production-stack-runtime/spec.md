@@ -48,7 +48,8 @@ Each phase ships as its own PR with feature-memory updates against this folder. 
 
 ### Out of scope
 
-- Product features beyond `/api/health` and a smoke sign-up that exercises Kratos email verification through Resend (e.g. the wardrobe domain, capsule engine, catalog search — those are later stateful slices)
+- Product features beyond `/api/health` and an end-to-end sign-up/sign-in on the existing `/app` UI (e.g. the wardrobe domain, capsule engine, catalog search — those are later stateful slices)
+- **Password recovery and email-verification completion.** The Kratos recovery/verification flows are disabled and the auth UI exposes no recovery affordance in this slice, because there is no flow-aware completion UI (the auth page does not read the Kratos `flow`/`code` params) and no Go settings/verification endpoints yet. Shipping a recovery/verification email that dead-ends on a UI that cannot complete it is worse than deferring; the completion UI + endpoints land in a dedicated follow-up slice. Recovery action/schema/provider/Go-endpoint plumbing is kept dormant for it.
 - Lava.top live integration (v0.2 — Lava.top remains stubbed)
 - Self-hosted Capsule Zero image-processing model (Stage 2)
 - Google OAuth and Apple Sign-In (Stage 2)

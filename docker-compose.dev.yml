@@ -46,14 +46,15 @@ services:
       SELFSERVICE_ALLOWED_RETURN_URLS_1: http://127.0.0.1:3000
       SELFSERVICE_FLOWS_ERROR_UI_URL: https://capsulezero.local/en/auth
       SELFSERVICE_FLOWS_SETTINGS_UI_URL: https://capsulezero.local/en/profile
-      SELFSERVICE_FLOWS_RECOVERY_UI_URL: https://capsulezero.local/en/auth
-      SELFSERVICE_FLOWS_VERIFICATION_UI_URL: https://capsulezero.local/en/auth
-      SELFSERVICE_FLOWS_VERIFICATION_AFTER_DEFAULT_BROWSER_RETURN_URL: https://capsulezero.local/en
+      # Recovery/verification flows are disabled in this slice (see kratos.yml);
+      # no dead-end UI URLs are advertised until the completion-UI slice ships.
       SELFSERVICE_FLOWS_LOGIN_UI_URL: https://capsulezero.local/en/auth
       SELFSERVICE_FLOWS_REGISTRATION_UI_URL: https://capsulezero.local/en/auth
 
-  # MailHog — dev-only courier sink. Kratos sends verification/recovery email
-  # here instead of Resend; inspect at http://127.0.0.1:8025. Bound to loopback.
+  # MailHog — dev-only courier sink for Kratos email (instead of Resend); inspect
+  # at http://127.0.0.1:8025. Bound to loopback. Recovery/verification flows are
+  # disabled this slice, so it stays idle until the completion-UI slice re-enables
+  # them, but the courier sink is kept wired for that follow-up.
   mailhog:
     image: mailhog/mailhog:v1.0.1
     restart: unless-stopped
