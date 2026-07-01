@@ -13,7 +13,7 @@ The spec ships in incremental PRs against the same feature folder. Each phase ke
 | Phase                                        | Scope                                                                                                                                                                 | Status          |
 | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
 | Phase 1 — nginx + web                        | Replace the host Caddy + legacy Supabase compose with `nginx + web` in `docker-compose.yml`. `https://capsulezero.app/en` keeps serving the existing Next.js landing. | **In progress** |
-| Phase 2 — Postgres + Kratos                  | Add `postgres` (pgvector image) and `kratos` to compose. nginx `auth_request` middleware against Kratos. Wire Kratos self-service flows for sign-up/sign-in.          | Pending         |
+| Phase 2 — Postgres + Kratos                  | Add plain `postgres:16` and `kratos` to compose. nginx `auth_request` middleware against Kratos. Wire Kratos self-service flows for sign-up/sign-in.                  | Pending         |
 | Phase 3 — Go API + Redis + in-process worker | Add `redis` and `api` (Go modular monolith with `GET /api/health` plus Redis queue consumer goroutines). nginx routes `/api/*` to the Go API.                         | Pending         |
 | Phase 4 — Storage + email + imgproxy         | DigitalOcean Spaces bucket with CORS for `https://capsulezero.app`. Resend domain verified with SPF + DKIM. `imgproxy` deployed for on-the-fly derivatives.           | Pending         |
 | Phase 5 — Observability + backups            | syslog rotation, OTLP trace exporter, and nightly `pg_dump` cron with 14-day Spaces lifecycle. Grafana remains deferred by ADR-007.                                   | Pending         |
@@ -36,7 +36,7 @@ Each phase ships as its own PR with feature-memory updates against this folder. 
 - Infrastructure configs under `/infra/`:
   - `infra/nginx/` — nginx 1.27 config (Phase 1)
   - `infra/kratos/` — identity schema, courier (Resend SMTP) configuration, self-service flow config (Phase 2)
-  - `infra/postgres/` — init scripts: enable `pgvector`, create the Kratos database, create app and Kratos roles (Phase 2)
+  - `infra/postgres/` — init scripts: create the Kratos database and create app and Kratos roles; pgvector remains deferred by ADR-007 (Phase 2)
 - `api/migrations/0001_initial_schema.sql` shipping the full schema from `docs_capsule_zero/project/backend/backend-docs.md` plus methodology seed (`color_catalog`, `category_catalog`, `compatibility_rules`) (Phase 3)
 - Cloudflare configuration walkthrough in the runtime spec (DNS, proxy on, SSL/TLS Full strict, Bot Fight Mode) — applied when DNS migration happens (Phase 4 or earlier as separate config work)
 - DigitalOcean Spaces bucket `capsulezero` with CORS for `https://capsulezero.app` and the dev origin (Phase 4)

@@ -20,7 +20,7 @@
 
 ### Phase 2 — Postgres + Kratos
 
-- [ ] Add `postgres` (pgvector image) service with healthcheck and persistent volume; keep PgBouncer deferred by ADR-007
+- [ ] Add plain `postgres:16` service with healthcheck and persistent volume; keep PgBouncer and pgvector deferred by ADR-007
 - [ ] Add `kratos` service + `infra/kratos/` identity schema, Resend SMTP courier, self-service flow config
 - [ ] Reintroduce `docker-compose.dev.yml` with MailHog override for Kratos courier
 - [ ] Wire nginx `auth_request` against Kratos for protected routes
@@ -67,7 +67,7 @@
 - 2026-06-27 PR #48 review fix: service-level `./.env` references in `docker-compose.yml` use `env_file` object form with `required: false` so `docker compose ... config` works on a fresh checkout before secrets are present.
 - 2026-06-27 PR #48 review fix: the insecure Traefik dev dashboard published by `docker-compose.dev.yml` binds to `127.0.0.1:8081`, matching the file comment and avoiding exposure on shared hosts. (Superseded 2026-06-28 — `docker-compose.dev.yml` is dropped until Phase 2 reintroduces MailHog.)
 - 2026-06-27 PR #48 review fix: `npm run deploy:compose` now explicitly targets `docker-compose.legacy-supabase.yml`; the production-stack deploy command lands with spec 024 implementation once real Dockerfiles/configs exist.
-- 2026-06-27 PR #48 review fix: the production scaffold uses `pgvector/pgvector:pg16` instead of vanilla `postgres:16-alpine` so `CREATE EXTENSION vector` can succeed when migrations land. (Carries into Phase 2.)
+- 2026-06-27 PR #48 review fix originally moved the production scaffold to `pgvector/pgvector:pg16` so `CREATE EXTENSION vector` could succeed when migrations land. Superseded by ADR-007 / PR #57: Phase 2 uses plain `postgres:16`; pgvector ships later with the semantic-search slice.
 - 2026-06-27 PR #48 review fix: Traefik ACME uses Cloudflare DNS-01 via `CF_DNS_API_TOKEN`. (Superseded 2026-06-28 — see nginx decision below.)
 - 2026-06-27 PR #48 review fix: API and worker fallback DSNs derive both username and database from `POSTGRES_USER` / `POSTGRES_DB`, matching the compose env template instead of hard-coding `capsule_zero`. (Carries into Phase 3.)
 - 2026-06-27 PR #48 review fix: `deploy/compose.env.example` now describes the production-stack env contract instead of the legacy Supabase runtime. Phase 1 slims this further to the `nginx + web` keys plus the legacy `/app` placeholders the bundle still imports at boot.

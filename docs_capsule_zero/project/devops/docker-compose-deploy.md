@@ -1,6 +1,6 @@
 # Docker Compose Deployment
 
-Capsule Zero ships a production-shaped Docker Compose runtime that runs the **Go modular monolith API**, the **Next.js web frontend**, and the supporting infrastructure (Ory Kratos, PostgreSQL with pgvector, Redis, nginx, imgproxy, Grafana) as separate services on a single DigitalOcean droplet. Compose is the only process supervisor; VM-level firewalling, backups, and secret delivery remain outside git.
+Capsule Zero ships a production-shaped Docker Compose runtime that runs the **Go modular monolith API**, the **Next.js web frontend**, and the active v0.1 supporting infrastructure (Ory Kratos, plain PostgreSQL 16, Redis, nginx, imgproxy) as separate services on a single DigitalOcean droplet. Compose is the only process supervisor; VM-level firewalling, backups, and secret delivery remain outside git. PgBouncer, pgvector, a standalone worker container, and Grafana dashboards remain deferred by ADR-007.
 
 The full runtime is delivered by `.specify/specs/024-production-stack-runtime/` across six phases. Phase 1 ships nginx + web (operational runbook: `docs_capsule_zero/project/devops/nginx-reverse-proxy.md`); this document describes the steady-state operational contract once every phase has shipped.
 
@@ -15,7 +15,7 @@ Each service is declared as a separate `services:` entry in one root `docker-com
 | `api`       | local build of `/api`    | Go modular monolith                                                                | internal only (behind nginx)                |
 | `worker`    | local build of `/worker` | Redis-queue consumer (image jobs, embeddings, webhook fanout)                      | internal only                               |
 | `kratos`    | `oryd/kratos`            | Identity provider (email/password Stage 1)                                         | internal only (behind nginx)                |
-| `postgres`  | `pgvector/pgvector:pg16` | App database + Kratos database (separate logical DBs)                              | internal only                               |
+| `postgres`  | `postgres:16`            | App database + Kratos database (separate logical DBs)                              | internal only                               |
 | `pgbouncer` | `edoburu/pgbouncer`      | Connection pool in front of Postgres                                               | internal only                               |
 | `redis`     | `redis:7-alpine`         | Cache, sessions, job queue                                                         | internal only                               |
 | `imgproxy`  | `darthsim/imgproxy`      | On-the-fly image resize/WebP for derived sizes                                     | internal only (behind nginx)                |
@@ -47,7 +47,7 @@ Object storage and email leave the droplet:
 | `docker-compose.dev.yml`     | Local dev overrides (MailHog, hot-reload, debug logs)                       |
 | `infra/nginx/`               | nginx main config + `conf.d/` server blocks (TLS, redirects, reverse_proxy) |
 | `infra/kratos/`              | Kratos identity schema, courier (Resend SMTP), self-service flow config     |
-| `infra/postgres/`            | Postgres init scripts (pgvector extension, role grants, Kratos DB creation) |
+| `infra/postgres/`            | Postgres init scripts (role grants, Kratos DB creation)                     |
 | `api/Dockerfile`             | Go API multi-stage build (distroless runtime image)                         |
 | `worker/Dockerfile`          | Go worker multi-stage build                                                 |
 | `app/Dockerfile`             | Next.js standalone production image                                         |

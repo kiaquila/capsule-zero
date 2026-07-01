@@ -28,18 +28,55 @@ Update the repository onboarding and support-tooling contract to match the curre
 
 ## Verification
 
-| Acceptance criterion | Evidence                                                                                                                                                                        |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------ | ---------- | ---------- | ---------------------- | ------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| AC-001               | `rg -n "/web                                                                                                                                                                    | canonical.\*app                                                                                              | Frontend / provider decision" AGENTS.md`shows`/app`as canonical and no`/app`to`/web` migration instruction.                                     |
-| AC-002               | `rg -n "html-prototypes                                                                                                                                                         | implemented screen                                                                                           | /app frontend" AGENTS.md`shows implementation routing starts from`/app`screens and no active`html-prototypes/` source-of-truth section remains. |
-| AC-003               | `rg -n "Mandatory reuse-check                                                                                                                                                   | Before creating a new module" AGENTS.md CLAUDE.md` shows the reuse-check contract.                           |
-| AC-004               | `rg -n "Module-size discipline                                                                                                                                                  | soft gate                                                                                                    | warnings" AGENTS.md CLAUDE.md` shows thresholds are advisory review signals.                                                                    |
-| AC-005               | `wc -l CLAUDE.md` shows the file is slimmed versus the previous duplicated onboarding document, and `rg -n "AGENTS.md" CLAUDE.md` shows canonical links.                        |
-| AC-006               | `cd app && npm run lint` exits 0 with module-size warnings only; `ruby -e 'require "yaml"; YAML.load_file("api/.golangci.yml")'` verifies the optional Go linter config parses. |
-| AC-007               | `test ! -e web && ! rg -n "web/src/lib/api/generated                                                                                                                            | target: \"web\"" scripts/generate-api-clients.mjs`verifies obsolete`/web` files and codegen target are gone. |
-| AC-008               | `rg -n "deploy_path_pattern" .github/workflows/cd-dev.yml` verifies the dev CD regex keeps `app/` and no longer includes `web/`.                                                |
-| AC-009               | `node scripts/check-feature-memory.mjs origin/main HEAD` passes and reports feature-memory coverage via `.specify/specs/030-agent-instructions-cleanup/{spec,plan,tasks}.md`.   |
-| AC-010               | `rg -n 'golang-migrate                                                                                                                                                          | Traefik forward                                                                                              | through Traefik                                                                                                                                 | behind Traefik | with Traefik | \+ Traefik | Traefik \+ | future home is .\*/web | web/src/lib/api/generated | local build of .\*/web | new home for the web frontend is .\*/web' docs_capsule_zero AGENTS.md CLAUDE.md .specify tests --glob '!.specify/specs/024-production-stack-runtime/tasks.md' --glob '!.specify/specs/030-agent-instructions-cleanup/\*\*'`returns no current guidance hits; remaining`/web` mentions are explicit no-`/web` policy, superseded history, or API route names. |
+| Acceptance criterion | Evidence                                                                                                                                 |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-001               | V-001 shows `/app` as canonical and no `/app` to `/web` migration instruction.                                                           |
+| AC-002               | V-002 shows implementation routing starts from `/app` screens and no active `html-prototypes/` source-of-truth section remains.          |
+| AC-003               | V-003 shows the reuse-check contract.                                                                                                    |
+| AC-004               | V-004 shows thresholds are advisory review signals.                                                                                      |
+| AC-005               | V-005 shows `CLAUDE.md` is slimmed and links back to canonical `AGENTS.md` rules.                                                        |
+| AC-006               | V-006 exits 0 with module-size warnings only; V-007 verifies the optional Go linter config against golangci-lint v2.                     |
+| AC-007               | V-008 verifies obsolete `/web` files and codegen target are gone.                                                                        |
+| AC-008               | V-009 verifies the dev CD regex keeps `app/` and no longer includes `web/`.                                                              |
+| AC-009               | V-010 passes and reports feature-memory coverage via `.specify/specs/030-agent-instructions-cleanup/{spec,plan,tasks}.md`.               |
+| AC-010               | V-011 returns no current guidance hits; remaining `/web` mentions are explicit no-`/web` policy, superseded history, or API route names. |
+
+Verification commands:
+
+```bash
+# V-001
+rg -n "/web|canonical.*app|Frontend / provider decision" AGENTS.md
+
+# V-002
+rg -n "html-prototypes|implemented screen|/app frontend" AGENTS.md
+
+# V-003
+rg -n "Mandatory reuse-check|Before creating a new module" AGENTS.md CLAUDE.md
+
+# V-004
+rg -n "Module-size discipline|soft gate|warnings" AGENTS.md CLAUDE.md
+
+# V-005
+wc -l CLAUDE.md && rg -n "AGENTS.md" CLAUDE.md
+
+# V-006
+cd app && npm run lint
+
+# V-007
+docker run --rm -v "$PWD:/repo" -w /repo/api golangci/golangci-lint:v2.1.6 golangci-lint config verify
+
+# V-008
+test ! -e web && ! rg -n 'web/src/lib/api/generated|target: "web"' scripts/generate-api-clients.mjs
+
+# V-009
+rg -n "deploy_path_pattern" .github/workflows/cd-dev.yml
+
+# V-010
+node scripts/check-feature-memory.mjs origin/main HEAD
+
+# V-011
+rg -n 'golang-migrate|Traefik forward|through Traefik|behind Traefik|with Traefik|\+ Traefik|Traefik \+|future home is .*/web|web/src/lib/api/generated|local build of .*/web|new home for the web frontend is .*/web' docs_capsule_zero AGENTS.md CLAUDE.md .specify tests --glob '!.specify/specs/024-production-stack-runtime/tasks.md' --glob '!.specify/specs/030-agent-instructions-cleanup/**'
+```
 
 Negative scenario evidence:
 

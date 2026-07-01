@@ -1,30 +1,31 @@
 # Module-size & complexity discipline for the Go API — soft gate.
 # Opt-in: not wired into the required CI checks (those run `go vet` + `gofmt`).
-# Run locally with `golangci-lint run` from ./api.
+# Validate with `golangci-lint config verify`; run lint once ./api has a Go module.
 # Canonical rule: AGENTS.md §7 "Engineering Reuse Rule (DRY/SOLID)".
+version: "2"
+
 run:
   timeout: 3m
 
 linters:
+  default: none
   enable:
     - funlen
     - gocyclo
-
-linters-settings:
-  funlen:
-    lines: 60
-    statements: 40
-  gocyclo:
-    min-complexity: 15
-
-issues:
-  # Tests and generated code may legitimately be long / branchy.
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - funlen
-        - gocyclo
-    - path: generated
-      linters:
-        - funlen
-        - gocyclo
+  settings:
+    funlen:
+      lines: 60
+      statements: 40
+    gocyclo:
+      min-complexity: 15
+  exclusions:
+    # Tests and generated code may legitimately be long / branchy.
+    rules:
+      - path: _test\.go
+        linters:
+          - funlen
+          - gocyclo
+      - path: generated
+        linters:
+          - funlen
+          - gocyclo

@@ -32,14 +32,14 @@ A multi-lens review (software architect, platform architect, mobile architect, A
 
 ## Repository Readiness Snapshot
 
-| Area          | Current state                                                                                                          | Evidence                                                           |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Web baseline  | Next.js App Router app exists under `app/`; `/app` is the canonical provider-abstracted frontend                       | `app/package.json`                                                 |
-| API contract  | OpenAPI is the implementation source for generated web and mobile clients                                              | `docs_capsule_zero/adr/openapi.yaml`                               |
-| Schema        | Postgres schema (pgvector, FTS, two-table item ownership) ships via `api/migrations/` in the production runtime spec   | `.specify/specs/024-production-stack-runtime/`                     |
-| Mobile shell  | React Native scaffold scheduled in the production runtime spec; previous Flutter scaffold dropped before merge         | `docs_capsule_zero/project/mobile/mobile-docs.md`                  |
-| Runtime       | docker-compose runtime with nginx, Kratos, Postgres, Redis, Go API, in-process queue worker, Next.js web, and imgproxy | `docs_capsule_zero/project/devops/docker-compose-deploy.md`        |
-| Observability | Grafana + syslog file logs + OTLP trace export (Sentry and Prometheus → Stage 2)                                       | `docs_capsule_zero/project/architecture/phase-4-council.md` DI-021 |
+| Area          | Current state                                                                                                                   | Evidence                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Web baseline  | Next.js App Router app exists under `app/`; `/app` is the canonical provider-abstracted frontend                                | `app/package.json`                                                 |
+| API contract  | OpenAPI is the implementation source for generated web and mobile clients                                                       | `docs_capsule_zero/adr/openapi.yaml`                               |
+| Schema        | Plain Postgres schema (FTS-ready tables, two-table item ownership) ships via `api/migrations/`; pgvector is deferred by ADR-007 | `.specify/specs/024-production-stack-runtime/`                     |
+| Mobile shell  | React Native scaffold scheduled in the production runtime spec; previous Flutter scaffold dropped before merge                  | `docs_capsule_zero/project/mobile/mobile-docs.md`                  |
+| Runtime       | docker-compose runtime with nginx, Kratos, Postgres, Redis, Go API, in-process queue worker, Next.js web, and imgproxy          | `docs_capsule_zero/project/devops/docker-compose-deploy.md`        |
+| Observability | Grafana + syslog file logs + OTLP trace export (Sentry and Prometheus → Stage 2)                                                | `docs_capsule_zero/project/architecture/phase-4-council.md` DI-021 |
 
 ## Convergence Summary
 

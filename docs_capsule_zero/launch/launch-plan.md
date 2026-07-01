@@ -71,13 +71,13 @@
 **Timeline:** Weeks 4-5, parallel with Phase 3 (5 days)
 **AI roles:** Tech Architect AI (lead), Programmer AI (setup), DevOps Consultant, Mobile Architect AI
 
-| Task              | Days | Description                                                                                                                                                   | Result         |
-| ----------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| Stack selection   | D1-2 | Web (Next.js/React), mobile (React Native), Go backend, Postgres + pgvector, DigitalOcean Spaces, Cloudflare front-door, Lava.top payments (stubbed in v0.1). | ADR            |
-| Repository        | D2-3 | Mono/multi-repo. Linting, formatting, commit hooks, folder structure.                                                                                         | Clean repo     |
-| CI/CD             | D3-4 | Auto-tests, build, deploy. Staging. Preview deployments.                                                                                                      | CI/CD pipeline |
-| API design        | D4-5 | Shared web/mobile backend contract, REST/RPC endpoints, schemas, authentication, Lava.top webhook contract.                                                   | API spec       |
-| Dev documentation | D5   | Env variables, local DB, seed data, tests.                                                                                                                    | Setup guide    |
+| Task              | Days | Description                                                                                                                                                                          | Result         |
+| ----------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------- |
+| Stack selection   | D1-2 | Web (Next.js/React), mobile (React Native), Go backend, plain Postgres in v0.1 (pgvector deferred), DigitalOcean Spaces, Cloudflare front-door, Lava.top payments (stubbed in v0.1). | ADR            |
+| Repository        | D2-3 | Mono/multi-repo. Linting, formatting, commit hooks, folder structure.                                                                                                                | Clean repo     |
+| CI/CD             | D3-4 | Auto-tests, build, deploy. Staging. Preview deployments.                                                                                                                             | CI/CD pipeline |
+| API design        | D4-5 | Shared web/mobile backend contract, REST/RPC endpoints, schemas, authentication, Lava.top webhook contract.                                                                          | API spec       |
+| Dev documentation | D5   | Env variables, local DB, seed data, tests.                                                                                                                                           | Setup guide    |
 
 ## Phase 5 — Development Sprint
 
