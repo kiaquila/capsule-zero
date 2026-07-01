@@ -143,6 +143,66 @@ func TestRecoveryReportsUnexpectedKratosFailure(t *testing.T) {
 	}
 }
 
+func TestWhoAmIClassifiesKratosErrors(t *testing.T) {
+	tests := []struct {
+		name        string
+		err         error
+		wantStatus  int
+		wantCode    string
+		wantNoError bool
+	}{
+		{
+			name:        "invalid session resolves empty",
+			err:         kratos.ErrInvalidCredentials,
+			wantStatus:  http.StatusOK,
+			wantNoError: true,
+		},
+		{
+			name:       "upstream failure is temporary server error",
+			err:        errors.New("kratos unavailable"),
+			wantStatus: http.StatusBadGateway,
+			wantCode:   "INTERNAL_ERROR",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			handler := Handler{
+				Kratos: fakeIdentityClient{
+					whoamiErr: tt.err,
+				},
+			}
+			request := httptest.NewRequest(http.MethodGet, "/api/auth/whoami", nil)
+			request.Header.Set("Authorization", "Bearer session-token")
+			recorder := httptest.NewRecorder()
+
+			handler.WhoAmI(recorder, request)
+
+			if recorder.Code != tt.wantStatus {
+				t.Fatalf("status = %d, want %d", recorder.Code, tt.wantStatus)
+			}
+			if tt.wantNoError {
+				var body authResponse
+				if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
+					t.Fatalf("decode auth body: %v", err)
+				}
+				if body.Session != nil || body.User != nil {
+					t.Fatalf("body = %+v, want empty auth response", body)
+				}
+				return
+			}
+
+			var body httpx.ErrorBody
+			if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
+				t.Fatalf("decode error body: %v", err)
+			}
+			if body.Error.Code != tt.wantCode {
+				t.Fatalf("code = %q, want %q", body.Error.Code, tt.wantCode)
+			}
+		})
+	}
+}
+
 func TestLogoutReportsUnexpectedKratosFailure(t *testing.T) {
 	handler := Handler{
 		Kratos: fakeIdentityClient{
@@ -170,6 +230,7 @@ func TestLogoutReportsUnexpectedKratosFailure(t *testing.T) {
 
 type fakeIdentityClient struct {
 	registerErr error
+	whoamiErr   error
 	recoveryErr error
 	logoutErr   error
 }
@@ -183,7 +244,7 @@ func (f fakeIdentityClient) Login(context.Context, string, string) (*kratos.Sess
 }
 
 func (f fakeIdentityClient) WhoAmI(context.Context, string) (*kratos.Session, error) {
-	panic("not used")
+	return nil, f.whoamiErr
 }
 
 func (f fakeIdentityClient) Recovery(context.Context, string) error {

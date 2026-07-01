@@ -94,10 +94,18 @@ function buildAuthPort(): AuthPort {
       if (!token) {
         return null;
       }
-      const { data } = await apiFetch<AuthResponse>("/api/auth/whoami", {
+      const { status, data } = await apiFetch<AuthResponse>("/api/auth/whoami", {
         method: "GET",
         token,
       });
+      if (status >= 400) {
+        throw new Error(
+          `SESSION_CHECK_FAILED: ${errorMessage(
+            data,
+            "Session check is temporarily unavailable.",
+          )}`,
+        );
+      }
       return data.session && data.user ? mapSession(data) : null;
     },
 
@@ -164,7 +172,18 @@ function buildAuthPort(): AuthPort {
       if (!token) {
         return;
       }
-      await apiFetch("/api/auth/logout", { method: "POST", token });
+      const { status, data } = await apiFetch<Record<string, unknown>>(
+        "/api/auth/logout",
+        { method: "POST", token },
+      );
+      if (status >= 400) {
+        throw new Error(
+          `SIGN_OUT_FAILED: ${errorMessage(
+            data,
+            "Sign out is temporarily unavailable.",
+          )}`,
+        );
+      }
     },
   };
 }

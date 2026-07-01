@@ -132,8 +132,12 @@ func (h *Handler) WhoAmI(w http.ResponseWriter, r *http.Request) {
 
 	session, err := h.Kratos.WhoAmI(r.Context(), token)
 	if err != nil {
-		// Expired / invalid token resolves to "no session", not an error.
-		httpx.WriteJSON(w, http.StatusOK, authResponse{})
+		if errors.Is(err, kratos.ErrInvalidCredentials) {
+			// Expired / invalid token resolves to "no session", not an error.
+			httpx.WriteJSON(w, http.StatusOK, authResponse{})
+			return
+		}
+		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Session check is temporarily unavailable.")
 		return
 	}
 
