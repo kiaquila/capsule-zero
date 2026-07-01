@@ -98,17 +98,20 @@ func (l *Limiter) Middleware(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// clientIP resolves the caller's address. The Go API is only reachable through
-// the trusted nginx edge or the internal web container, both of which set
-// X-Forwarded-For, so the left-most entry is the originating client. RemoteAddr
-// is the fallback when the header is absent (e.g. direct in-cluster calls). A
-// spoof-resistant, Cloudflare-aware key (CF-Connecting-IP / trusted-proxy CIDR
-// parsing) and a shared cross-replica store are tracked as follow-ups.
+// TrustedClientIPHeader carries the originating client's address, resolved from a
+// trusted proxy source (Cloudflare `CF-Connecting-IP` / nginx `$remote_addr`) by
+// the web boundary and the nginx edge. It is deliberately NOT the raw, client-
+// appendable `X-Forwarded-For`: keying the limiter on a caller-controlled value
+// would let an attacker rotate the header and mint a fresh bucket per attempt,
+// defeating the throttle. The web sets this header explicitly, and nginx strips
+// any client-supplied value on `/api/*`, so a caller cannot forge it.
+const TrustedClientIPHeader = "X-Capsule-Client-IP"
+
+// clientIP resolves the caller's throttle key. RemoteAddr is the fallback for
+// in-cluster or test calls where no trusted proxy header is present.
 func clientIP(r *http.Request) string {
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		if first := strings.TrimSpace(strings.Split(xff, ",")[0]); first != "" {
-			return first
-		}
+	if ip := strings.TrimSpace(r.Header.Get(TrustedClientIPHeader)); ip != "" {
+		return ip
 	}
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {

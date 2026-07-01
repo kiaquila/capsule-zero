@@ -96,7 +96,7 @@ func TestMiddlewareReturns429WhenExhausted(t *testing.T) {
 
 	do := func() *httptest.ResponseRecorder {
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/login", nil)
-		req.Header.Set("X-Forwarded-For", "9.9.9.9")
+		req.Header.Set(TrustedClientIPHeader, "9.9.9.9")
 		rec := httptest.NewRecorder()
 		handler(rec, req)
 		return rec
@@ -128,37 +128,75 @@ func TestMiddlewareReturns429WhenExhausted(t *testing.T) {
 	}
 }
 
-func TestMiddlewareKeysDistinctForwardedClients(t *testing.T) {
+func TestMiddlewareKeysDistinctTrustedClients(t *testing.T) {
 	now := time.Unix(0, 0)
 	l := newTestLimiter(10, 1, &now)
 	handler := l.Middleware(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	do := func(xff string) int {
+	do := func(ip string) int {
 		req := httptest.NewRequest(http.MethodPost, "/api/auth/login", nil)
-		req.Header.Set("X-Forwarded-For", xff)
+		req.Header.Set(TrustedClientIPHeader, ip)
 		rec := httptest.NewRecorder()
 		handler(rec, req)
 		return rec.Code
 	}
 
-	// Two different originating clients (left-most XFF entry) get independent
-	// buckets even though the proxy hop appended the same downstream address.
-	if code := do("203.0.113.1, 10.0.0.2"); code != http.StatusOK {
+	// Two distinct trusted client IPs get independent buckets.
+	if code := do("203.0.113.1"); code != http.StatusOK {
 		t.Fatalf("client A first request: want 200, got %d", code)
 	}
-	if code := do("203.0.113.9, 10.0.0.2"); code != http.StatusOK {
+	if code := do("203.0.113.9"); code != http.StatusOK {
 		t.Fatalf("client B first request: want 200, got %d", code)
 	}
-	if code := do("203.0.113.1, 10.0.0.2"); code != http.StatusTooManyRequests {
+	if code := do("203.0.113.1"); code != http.StatusTooManyRequests {
 		t.Fatalf("client A second request: want 429, got %d", code)
+	}
+}
+
+// A caller-supplied X-Forwarded-For must NOT influence the key: otherwise an
+// attacker could rotate it to mint a fresh bucket per attempt. With no trusted
+// header present, every spoofed value collapses onto the same RemoteAddr bucket.
+func TestMiddlewareIgnoresRawForwardedFor(t *testing.T) {
+	now := time.Unix(0, 0)
+	l := newTestLimiter(10, 1, &now)
+	handler := l.Middleware(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	do := func(spoofed string) int {
+		req := httptest.NewRequest(http.MethodPost, "/api/auth/login", nil)
+		req.RemoteAddr = "10.0.0.2:5000"
+		req.Header.Set("X-Forwarded-For", spoofed)
+		rec := httptest.NewRecorder()
+		handler(rec, req)
+		return rec.Code
+	}
+
+	if code := do("1.1.1.1"); code != http.StatusOK {
+		t.Fatalf("first request: want 200, got %d", code)
+	}
+	// Rotating the spoofed XFF does not escape the RemoteAddr-keyed bucket.
+	if code := do("2.2.2.2"); code != http.StatusTooManyRequests {
+		t.Fatalf("rotated-XFF request: want 429, got %d", code)
+	}
+}
+
+func TestClientIPPrefersTrustedHeader(t *testing.T) {
+	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", nil)
+	req.RemoteAddr = "10.0.0.2:5000"
+	req.Header.Set("X-Forwarded-For", "1.1.1.1") // untrusted, must be ignored
+	req.Header.Set(TrustedClientIPHeader, "203.0.113.5")
+	if got := clientIP(req); got != "203.0.113.5" {
+		t.Fatalf("want trusted 203.0.113.5, got %q", got)
 	}
 }
 
 func TestClientIPFallsBackToRemoteAddr(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/api/auth/login", nil)
 	req.RemoteAddr = "198.51.100.7:54321"
+	req.Header.Set("X-Forwarded-For", "1.1.1.1") // untrusted, must be ignored
 	if got := clientIP(req); got != "198.51.100.7" {
 		t.Fatalf("want 198.51.100.7, got %q", got)
 	}
