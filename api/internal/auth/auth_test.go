@@ -361,6 +361,32 @@ func TestLogoutTreatsInvalidKratosTokenAsSignedOut(t *testing.T) {
 	}
 }
 
+func TestRegistrationRejectsOverLongName(t *testing.T) {
+	// Kratos would return a session if reached; a 400 proves validation
+	// short-circuits before the identity is created.
+	handler := Handler{Kratos: fakeIdentityClient{}}
+	longName := strings.Repeat("a", 81)
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/api/auth/registration",
+		strings.NewReader(`{"email":"person@example.com","password":"secret123","name":"`+longName+`","locale":"en"}`),
+	)
+	recorder := httptest.NewRecorder()
+
+	handler.Registration(recorder, request)
+
+	if recorder.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusBadRequest)
+	}
+	var body httpx.ErrorBody
+	if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
+		t.Fatalf("decode error body: %v", err)
+	}
+	if body.Error.Code != "VALIDATION_ERROR" {
+		t.Fatalf("code = %q, want VALIDATION_ERROR", body.Error.Code)
+	}
+}
+
 func TestPatchProfileRejectsInvalidFields(t *testing.T) {
 	// Profiles is nil on purpose: validation must reject before Apply is reached,
 	// so an invalid patch never touches the repository.

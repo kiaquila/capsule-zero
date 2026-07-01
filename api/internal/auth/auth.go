@@ -84,6 +84,14 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Unsupported locale.")
 		return
 	}
+	// Name is optional (AuthRegistrationRequest), but when provided it must fit the
+	// same 80-char bound as the profile display name — the Kratos identity schema
+	// permits up to 256, and EnsureForIdentity persists the trait as display_name,
+	// so an unbounded name would otherwise back-door an over-long profile field.
+	if utf8.RuneCountInString(in.Name) > maxProfileFieldRunes {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Name must be 80 characters or fewer.")
+		return
+	}
 
 	session, err := h.Kratos.Register(r.Context(), in.Email, in.Password, in.Name, locale)
 	if err != nil {
