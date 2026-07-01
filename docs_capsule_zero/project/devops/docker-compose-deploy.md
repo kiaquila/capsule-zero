@@ -1,23 +1,23 @@
 # Docker Compose Deployment
 
-Capsule Zero ships a production-shaped Docker Compose runtime that runs the **Go modular monolith API**, the **Next.js web frontend**, and the active v0.1 supporting infrastructure (Ory Kratos, plain PostgreSQL 16, Redis, nginx, imgproxy) as separate services on a single DigitalOcean droplet. Compose is the only process supervisor; VM-level firewalling, backups, and secret delivery remain outside git. PgBouncer, pgvector, a standalone worker container, and Grafana dashboards remain deferred by ADR-007.
+Capsule Zero ships a production-shaped Docker Compose runtime that runs the **Go modular monolith API**, the **Next.js web frontend**, and the active v0.1 supporting infrastructure (Ory Kratos, plain PostgreSQL 16, Redis, imgproxy) as separate services on a single DigitalOcean droplet. The public edge is host-managed nginx in the current Phase 1 runtime; the compose-managed nginx service is retained only as a `docker-edge` rollback profile. Compose is the only process supervisor for application containers; VM-level firewalling, host nginx, backups, and secret delivery remain outside git. PgBouncer, pgvector, a standalone worker container, and Grafana dashboards remain deferred by ADR-007.
 
-The full runtime is delivered by `.specify/specs/024-production-stack-runtime/` across six phases. Phase 1 ships nginx + web (operational runbook: `docs_capsule_zero/project/devops/nginx-reverse-proxy.md`); this document describes the steady-state operational contract once every phase has shipped.
+The full runtime is delivered by `.specify/specs/024-production-stack-runtime/` across six phases. Phase 1 ships host nginx + web (operational runbook: `docs_capsule_zero/project/devops/nginx-reverse-proxy.md`); this document describes the steady-state operational contract once every phase has shipped.
 
 ## Topology
 
-Each active v0.1 service is declared as a separate `services:` entry in one root `docker-compose.yml`. Environment overrides for local dev (MailHog instead of Resend, API hot-reload) live in `docker-compose.dev.yml`.
+Each active v0.1 service is declared as a separate `services:` entry in one root `docker-compose.yml`. Environment overrides for local dev (MailHog instead of Resend, API hot-reload) live in `docker-compose.dev.yml`. By default, `docker compose up -d` starts the application services only; the compose edge starts only when `--profile docker-edge` is explicitly enabled.
 
-| Service    | Image                 | Purpose                                                                            | Default host exposure        |
-| ---------- | --------------------- | ---------------------------------------------------------------------------------- | ---------------------------- |
-| `nginx`    | `nginx:1.27-alpine`   | Edge: TLS (Let's Encrypt via host certbot), rate-limit, `auth_request` into Kratos | `80`, `443`                  |
-| `web`      | local build of `/app` | Next.js App Router web frontend                                                    | internal only (behind nginx) |
-| `api`      | local build of `/api` | Go modular monolith; also runs Redis queue consumer goroutines in v0.1             | internal only (behind nginx) |
-| `kratos`   | `oryd/kratos`         | Identity provider (email/password Stage 1)                                         | internal only (behind nginx) |
-| `postgres` | `postgres:16`         | App database + Kratos database (separate logical DBs)                              | internal only                |
-| `redis`    | `redis:7-alpine`      | Cache, sessions, job queue                                                         | internal only                |
-| `imgproxy` | `darthsim/imgproxy`   | On-the-fly image resize/WebP for derived sizes                                     | internal only (behind nginx) |
-| `mailhog`  | `mailhog/mailhog`     | Dev-only courier sink; replaced by Resend in prod                                  | `127.0.0.1:8025` (dev only)  |
+| Service    | Image                 | Purpose                                                                | Default host exposure                                 |
+| ---------- | --------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------- |
+| `nginx`    | `nginx:1.27-alpine`   | Rollback compose edge: TLS, rate-limit, `auth_request` into Kratos     | profile-gated `80`, `443` via `--profile docker-edge` |
+| `web`      | local build of `/app` | Next.js App Router web frontend                                        | `127.0.0.1:3000` for host nginx                       |
+| `api`      | local build of `/api` | Go modular monolith; also runs Redis queue consumer goroutines in v0.1 | internal only (behind nginx)                          |
+| `kratos`   | `oryd/kratos`         | Identity provider (email/password Stage 1)                             | internal only (behind nginx)                          |
+| `postgres` | `postgres:16`         | App database + Kratos database (separate logical DBs)                  | internal only                                         |
+| `redis`    | `redis:7-alpine`      | Cache, sessions, job queue                                             | internal only                                         |
+| `imgproxy` | `darthsim/imgproxy`   | On-the-fly image resize/WebP for derived sizes                         | internal only (behind nginx)                          |
+| `mailhog`  | `mailhog/mailhog`     | Dev-only courier sink; replaced by Resend in prod                      | `127.0.0.1:8025` (dev only)                           |
 
 Deferred runtime elements stay out of the active compose topology until ADR-007 promotion triggers fire:
 
@@ -36,8 +36,9 @@ Persistent data lives in named Docker volumes:
 - `capsule-zero_syslog`
 
 TLS certificate material and the ACME webroot are host-managed paths, not
-Docker volumes: `/etc/letsencrypt` and `/var/www/certbot` are bind-mounted into
-nginx while certbot runs on the host.
+Docker volumes. The host nginx edge reads them directly; the rollback compose
+edge bind-mounts `/etc/letsencrypt` and `/var/www/certbot` when the
+`docker-edge` profile is active.
 
 Object storage and email leave the droplet:
 
@@ -46,18 +47,19 @@ Object storage and email leave the droplet:
 
 ## Files
 
-| Path                         | Purpose                                                                     |
-| ---------------------------- | --------------------------------------------------------------------------- |
-| `docker-compose.yml`         | Production-shape topology, declared per service                             |
-| `docker-compose.dev.yml`     | Local dev overrides (MailHog, hot-reload, debug logs)                       |
-| `infra/nginx/`               | nginx main config + `conf.d/` server blocks (TLS, redirects, reverse_proxy) |
-| `infra/kratos/`              | Kratos identity schema, courier (Resend SMTP), self-service flow config     |
-| `infra/postgres/`            | Postgres init scripts (role grants, Kratos DB creation)                     |
-| `api/Dockerfile`             | Go API multi-stage build (distroless runtime image)                         |
-| `worker/Dockerfile`          | Go worker multi-stage build, introduced when ADR-007 promotes the worker    |
-| `app/Dockerfile`             | Next.js standalone production image                                         |
-| `api/migrations/`            | Versioned SQL files; applied by the API runtime                             |
-| `deploy/compose.env.example` | Env template for compose interpolation; copy to `.env` and fill secrets     |
+| Path                         | Purpose                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| `docker-compose.yml`         | Production-shape topology, declared per service                          |
+| `docker-compose.dev.yml`     | Local dev overrides (MailHog, hot-reload, debug logs)                    |
+| `infra/nginx-host/`          | host nginx server blocks for the default droplet edge                    |
+| `infra/nginx/`               | rollback compose nginx config used only with `--profile docker-edge`     |
+| `infra/kratos/`              | Kratos identity schema, courier (Resend SMTP), self-service flow config  |
+| `infra/postgres/`            | Postgres init scripts (role grants, Kratos DB creation)                  |
+| `api/Dockerfile`             | Go API multi-stage build (distroless runtime image)                      |
+| `worker/Dockerfile`          | Go worker multi-stage build, introduced when ADR-007 promotes the worker |
+| `app/Dockerfile`             | Next.js standalone production image                                      |
+| `api/migrations/`            | Versioned SQL files; applied by the API runtime                          |
+| `deploy/compose.env.example` | Env template for compose interpolation; copy to `.env` and fill secrets  |
 
 ## First Start
 
@@ -81,6 +83,12 @@ Start the stack:
 
 ```bash
 docker compose up -d
+```
+
+To exercise the rollback compose edge instead of the host-managed nginx edge:
+
+```bash
+docker compose --profile docker-edge up -d nginx
 ```
 
 For local development against the dev override:
@@ -111,8 +119,8 @@ The Go API `/api/health` reports:
 Per-service probes:
 
 ```bash
-docker compose ps                    # all services healthy
-docker compose logs nginx --tail=50
+docker compose ps                    # active/default services healthy
+docker compose --profile docker-edge logs nginx --tail=50
 docker compose logs kratos --tail=50
 docker compose logs api --tail=100
 ```
@@ -161,9 +169,9 @@ Object storage durability is provided by DigitalOcean Spaces; no extra backup of
 
 ## Ingress
 
-Public traffic enters through Cloudflare → nginx on the droplet (ports 80/443). nginx:
+Public traffic enters through Cloudflare -> host nginx on the droplet (ports 80/443). The rollback compose nginx profile preserves the same routing contract when `docker-edge` is enabled:
 
-- terminates Let's Encrypt TLS for `capsulezero.app` (certs issued by host certbot, mounted from `/etc/letsencrypt`),
+- terminates Let's Encrypt TLS for `capsulezero.app` (certs issued by host certbot under `/etc/letsencrypt`),
 - runs a per-IP `limit_req_zone` rate-limit,
 - runs an `auth_request` against Kratos for protected routes,
 - routes `/` to `web`,

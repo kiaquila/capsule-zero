@@ -27,6 +27,7 @@
 - [x] Resolve the `origin/main` merge conflict after the Flutter/Dart mobile shell removal landed.
 - [x] Address the fresh AI Review P2s for spec-024 Phase 1 status and stale `api/`/`infra/` scaffold guidance.
 - [x] Address the fresh AI Review P2/P3 for profiled nginx bootstrap commands and stale `/app` removal wording in e2e process memory.
+- [x] Address the fresh AI Review P2 for profile-gated compose nginx in the steady-state Docker Compose runbook.
 
 ## Verification
 
@@ -65,6 +66,7 @@
 - Preserve `origin/main`'s deferred React Native client-generation posture while keeping PR #60's canonical `/app` web client and no `/web` generator target.
 - Include `api/` and `infra/` scaffold docs in stale-reference scans so future placeholder README drift is caught with source docs.
 - Keep production compose commands that expect nginx on `--profile docker-edge`, because the edge service is intentionally profiled in `docker-compose.yml`.
+- Keep `docker-compose-deploy.md` explicit about host nginx as the default edge and compose nginx as rollback-only under the `docker-edge` profile.
 
 ### Known Issues
 
@@ -73,4 +75,5 @@
 - The `origin/main` merge conflict is resolved locally; PR checks must be re-run on the merge commit.
 - The post-merge AI Review P2s about spec-024 Phase 1 status and stale scaffold docs are addressed locally; PR checks must be re-run on the new pushed SHA.
 - The post-review P2/P3 about profiled nginx bootstrap commands and stale `/app` deletion wording is addressed locally; PR checks must be re-run on the new pushed SHA.
+- The follow-up AI Review P2 about compose nginx being documented as default-active in `docker-compose-deploy.md` is addressed locally; PR checks must be re-run on the new pushed SHA.
 - Local `npm run lint` passes with 73 module-size/complexity warnings and 0 errors, matching the warning-only scope of this PR.
