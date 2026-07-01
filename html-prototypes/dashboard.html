@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capsule Zero — Dashboard</title>
+  <style>
+    :root {
+      --glass-bg:     rgba(255,255,255,0.22);
+      --glass-blur:   40px;
+      --glass-border: rgba(255,255,255,.58);
+      --glass-hi:     inset 0 1px 0 rgba(255,255,255,.72);
+      --gt-p:  rgba(255,255,255,.95);
+      --gt-s:  rgba(255,255,255,.70);
+      --gt-ph: rgba(255,255,255,.38);
+      --sidebar-w: 248px;
+      --radius-s: 8px;
+      --radius-m: 14px;
+      --radius-l: 20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── Background ── */
+    .hero-bg {
+      position: fixed; inset: 0;
+      background: url('wall.png') center / cover no-repeat;
+      filter: grayscale(100%);
+      z-index: -2;
+    }
+    .hero-overlay {
+      position: fixed; inset: 0;
+      background: linear-gradient(
+        160deg,
+        rgba(0,0,0,.58) 0%,
+        rgba(0,0,0,.40) 50%,
+        rgba(0,0,0,.68) 100%
+      );
+      z-index: -1;
+    }
+
+    /* ── App shell ── */
+    .app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ══════════════════════════════
+       SIDEBAR
+    ══════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: rgba(255,255,255,0.13);
+      backdrop-filter: blur(44px);
+      -webkit-backdrop-filter: blur(44px);
+      border-right: 1px solid rgba(255,255,255,.20);
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .sidebar::-webkit-scrollbar { display: none; }
+
+    /* Logo + User */
+    .sidebar-head {
+      padding: 32px 24px 22px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .logo {
+      font-size: 11.5px; font-weight: 700;
+      letter-spacing: .26em; text-transform: uppercase;
+      color: var(--gt-p); text-decoration: none;
+      display: block; margin-bottom: 26px;
+    }
+    .user-row {
+      display: flex; align-items: center; gap: 11px;
+    }
+    .avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,.18);
+      border: 1.5px solid rgba(255,255,255,.40);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--gt-p);
+      letter-spacing: .04em; flex-shrink: 0;
+    }
+    .user-name {
+      font-size: 13px; font-weight: 600;
+      color: var(--gt-p); letter-spacing: .01em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    /* Nav */
+    .nav {
+      flex: 1;
+      padding: 12px 0 8px;
+    }
+    .nav-section-label {
+      font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--gt-ph);
+      padding: 16px 24px 6px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 24px 10px 22px;
+      cursor: pointer;
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: background .14s;
+      user-select: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.06); }
+    .nav-item.active {
+      background: rgba(255,255,255,.10);
+      border-left-color: rgba(255,255,255,.65);
+    }
+    .nav-ico {
+      width: 17px; height: 17px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      opacity: .65;
+    }
+    .nav-item.active .nav-ico { opacity: 1; }
+    .nav-lbl {
+      flex: 1;
+      font-size: 13px; font-weight: 500; letter-spacing: .01em;
+      color: var(--gt-s);
+    }
+    .nav-item.active .nav-lbl { color: var(--gt-p); font-weight: 600; }
+    .nav-badge {
+      font-size: 10.5px; font-weight: 600;
+      color: var(--gt-ph);
+      background: rgba(255,255,255,.08);
+      border-radius: 20px; padding: 2px 7px;
+      min-width: 22px; text-align: center;
+    }
+    .nav-item.active .nav-badge { color: var(--gt-s); }
+
+    /* Bottom */
+    .sidebar-foot {
+      padding: 12px 0 28px;
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+
+    /* ══════════════════════════════
+       LANG DROPDOWN (topbar)
+    ══════════════════════════════ */
+    .lang-dropdown { position: relative; }
+    .lang-trigger {
+      display: flex; align-items: center; gap: 6px;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: rgba(255,255,255,.88); padding: 8px 4px; transition: color .15s;
+    }
+    .lang-trigger:hover { color: #fff; }
+    .lang-chevron { font-size: 8px; opacity: .8; transition: transform .2s; }
+    .lang-dropdown.open .lang-chevron { transform: rotate(180deg); }
+    .lang-menu {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: rgba(255,255,255,0.28);
+      backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+      border-radius: var(--radius-m);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,.20), var(--glass-hi);
+      padding: 8px; min-width: 164px;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-6px);
+      transition: opacity .2s ease, transform .2s ease; z-index: 100;
+    }
+    .lang-dropdown.open .lang-menu { opacity: 1; pointer-events: all; transform: translateY(0); }
+    .lang-option {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 10px 12px;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; letter-spacing: .06em;
+      color: var(--gt-s); border-radius: var(--radius-s); transition: all .15s;
+    }
+    .lang-option:hover { background: rgba(255,255,255,.12); color: var(--gt-p); }
+    .lang-option.active { color: #fff; font-weight: 600; }
+    .lang-code { font-size: 11px; font-weight: 600; letter-spacing: .1em; color: inherit; opacity: .7; }
+
+    /* ══════════════════════════════
+       MAIN
+    ══════════════════════════════ */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.16) transparent;
+      display: flex;
+      flex-direction: column;
+    }
+    .main::-webkit-scrollbar { width: 4px; }
+    .main::-webkit-scrollbar-track { background: transparent; }
+    .main::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,.16);
+      border-radius: 10px;
+    }
+
+    /* Topbar */
+    .topbar {
+      padding: 30px 40px 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .greeting {
+      font-size: 25px; font-weight: 300; letter-spacing: -.01em;
+      color: var(--gt-p); line-height: 1.2;
+    }
+    .greeting strong { font-weight: 600; }
+    .greeting-date {
+      font-size: 11.5px; letter-spacing: .10em; text-transform: uppercase;
+      color: var(--gt-s); margin-top: 5px;
+    }
+    .topbar-right {
+      display: flex; align-items: center; gap: 16px;
+      padding-top: 4px;
+    }
+    .btn-primary {
+      display: flex; align-items: center; gap: 7px;
+      padding: 11px 22px;
+      background: rgba(255,255,255,.26);
+      border: 1px solid rgba(255,255,255,.52);
+      border-radius: 50px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      cursor: pointer;
+      font-family: inherit; font-size: 12px; font-weight: 700;
+      letter-spacing: .09em; text-transform: uppercase;
+      color: var(--gt-p);
+      transition: background .14s, transform .10s;
+    }
+    .btn-primary:hover {
+      background: rgba(255,255,255,.36);
+      transform: translateY(-1px);
+    }
+    .btn-primary:active { transform: translateY(0); }
+
+    /* Content */
+    .content {
+      padding: 24px 40px 52px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Glass card */
+    .gc {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-l);
+      box-shadow: var(--glass-hi), 0 8px 36px rgba(0,0,0,.16);
+    }
+
+    /* ── Capsule hero card ── */
+    .capsule-card {
+      padding: 30px 34px;
+      display: flex;
+      gap: 36px;
+      align-items: flex-start;
+    }
+    .capsule-body { flex: 1; min-width: 0; }
+    .cap-eyebrow {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 10px; letter-spacing: .17em; text-transform: uppercase;
+      color: var(--gt-s); margin-bottom: 8px;
+    }
+    .cap-eyebrow-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(255,255,255,.50);
+    }
+    .cap-name {
+      font-size: 32px; font-weight: 300; letter-spacing: -.025em;
+      color: var(--gt-p); line-height: 1.05;
+      margin-bottom: 18px;
+    }
+
+    /* Color palette */
+    .palette-row {
+      display: flex; align-items: center; gap: 7px;
+      margin-bottom: 22px;
+    }
+    .pdot {
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.28);
+      flex-shrink: 0;
+      transition: transform .14s;
+      cursor: default;
+    }
+    .pdot:hover { transform: scale(1.18); }
+    .pdot-lg { width: 26px; height: 26px; }
+    .pdot-sm { width: 18px; height: 18px; }
+    .palette-label {
+      font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--gt-ph); margin-left: 4px;
+    }
+
+    /* Mini stats */
+    .cap-stats {
+      display: flex; gap: 28px;
+      margin-bottom: 22px;
+    }
+    .ms-val {
+      font-size: 24px; font-weight: 300; letter-spacing: -.03em;
+      color: var(--gt-p);
+    }
+    .ms-lbl {
+      font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase;
+      color: var(--gt-s);
+    }
+
+    /* Card actions */
+    .cap-actions { display: flex; gap: 9px; }
+    .btn-ghost {
+      padding: 9px 18px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: 50px;
+      font-family: inherit; font-size: 11.5px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-p); cursor: pointer;
+      transition: background .14s;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.20); }
+
+    /* OPR widget */
+    .opr-widget {
+      flex-shrink: 0;
+      width: 134px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 22px 18px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.20);
+      border-radius: var(--radius-m);
+      text-align: center;
+      gap: 0;
+    }
+    .opr-val {
+      font-size: 52px; font-weight: 200; letter-spacing: -.05em;
+      color: var(--gt-p); line-height: 1;
+    }
+    .opr-lbl {
+      font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--gt-s); margin-top: 5px;
+    }
+    .opr-hint {
+      font-size: 9.5px; color: var(--gt-ph);
+      line-height: 1.45; margin-top: 9px;
+    }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .stat-card {
+      padding: 22px 26px;
+    }
+    .stat-num {
+      font-size: 42px; font-weight: 200; letter-spacing: -.04em;
+      color: var(--gt-p); line-height: 1;
+    }
+    .stat-lbl {
+      font-size: 10.5px; letter-spacing: .11em; text-transform: uppercase;
+      color: var(--gt-s); margin-top: 5px;
+    }
+    .stat-sub {
+      font-size: 10.5px; color: var(--gt-ph); margin-top: 3px;
+    }
+
+    /* ── Two-col grid ── */
+    .duo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .panel { padding: 22px 26px; }
+
+    .panel-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .panel-title {
+      font-size: 10px; letter-spacing: .17em; text-transform: uppercase;
+      color: var(--gt-s);
+    }
+    .panel-link {
+      font-size: 10.5px; color: var(--gt-ph); text-decoration: none;
+      letter-spacing: .04em; cursor: pointer; transition: color .14s;
+    }
+    .panel-link:hover { color: var(--gt-s); }
+
+    /* Shopping items */
+    .shop-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .shop-item:first-of-type { padding-top: 0; }
+    .shop-item:last-of-type { border-bottom: none; padding-bottom: 0; }
+    .shop-bar {
+      width: 3px; height: 30px; border-radius: 2px; flex-shrink: 0;
+    }
+    .bar-hi  { background: rgba(255,255,255,.62); }
+    .bar-mid { background: rgba(255,255,255,.35); }
+    .bar-lo  { background: rgba(255,255,255,.16); }
+    .shop-name {
+      flex: 1;
+      font-size: 13.5px; font-weight: 400; color: var(--gt-p);
+    }
+    .shop-meta {
+      font-size: 11px; color: var(--gt-ph);
+    }
+
+    /* Recent items */
+    .recent-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .recent-item:first-of-type { padding-top: 0; }
+    .recent-item:last-of-type { border-bottom: none; padding-bottom: 0; }
+    .recent-thumb {
+      width: 38px; height: 38px; border-radius: var(--radius-s);
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.18);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .recent-meta { flex: 1; min-width: 0; }
+    .recent-name {
+      font-size: 13px; font-weight: 500; color: var(--gt-p);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .recent-cat {
+      font-size: 10.5px; color: var(--gt-ph); margin-top: 2px;
+    }
+    .recent-color {
+      width: 15px; height: 15px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.22);
+      flex-shrink: 0;
+    }
+
+    /* ── Section cards ── */
+    .sections-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .sec-card {
+      padding: 20px 22px;
+      cursor: pointer;
+      transition: background .14s;
+    }
+    .sec-card:hover { background: rgba(255,255,255,.30); }
+    .sec-icon {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.20);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 12px;
+    }
+    .sec-count {
+      font-size: 30px; font-weight: 200; letter-spacing: -.035em;
+      color: var(--gt-p);
+    }
+    .sec-lbl {
+      font-size: 10px; letter-spacing: .11em; text-transform: uppercase;
+      color: var(--gt-s); margin-top: 3px;
+    }
+
+    /* ── Bottom Navigation (mobile) ── */
+    .bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 50;
+      background: rgba(255,255,255,0.13);
+      backdrop-filter: blur(44px);
+      -webkit-backdrop-filter: blur(44px);
+      border-top: 1px solid rgba(255,255,255,.20);
+      padding: 0;
+      padding-bottom: max(6px, env(safe-area-inset-bottom));
+    }
+    .bnav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 8px 12px 6px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: opacity .14s, border-color .2s;
+      opacity: .5;
+      border-top: 2px solid transparent;
+    }
+    .bnav-item.active { opacity: 1; border-top-color: rgba(255,255,255,.65); }
+    .bnav-item:hover { opacity: .8; }
+    .bnav-ico {
+      width: 22px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .bnav-lbl {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--gt-p);
+    }
+    .bnav-dot { display: none; }
+
+    /* ── More sheet ── */
+    .more-overlay {
+      display: none; position: fixed; inset: 0; z-index: 60;
+      background: rgba(0,0,0,.40);
+      opacity: 0; transition: opacity .25s;
+    }
+    .more-overlay.open { display: block; opacity: 1; }
+    .more-sheet {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 70;
+      background: rgba(255,255,255,0.22);
+      backdrop-filter: blur(44px); -webkit-backdrop-filter: blur(44px);
+      border-top: 1px solid rgba(255,255,255,.58);
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -8px 32px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.72);
+      padding: 12px 20px;
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.32,.72,.24,1);
+    }
+    .more-sheet.open { transform: translateY(0); }
+    .more-handle {
+      width: 36px; height: 4px; border-radius: 2px;
+      background: rgba(255,255,255,.30);
+      margin: 0 auto 16px;
+    }
+    .more-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+    }
+    .more-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; padding: 14px 8px;
+      text-decoration: none; border-radius: 12px;
+      transition: background .14s;
+    }
+    .more-item:hover { background: rgba(255,255,255,.10); }
+    .more-item-ico {
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .more-item-lbl {
+      font-size: 9.5px; font-weight: 600;
+      letter-spacing: .04em; color: var(--gt-p);
+      text-align: center;
+    }
+    .more-item-badge {
+      font-size: 9px; font-weight: 600;
+      color: var(--gt-ph); background: rgba(255,255,255,.10);
+      border-radius: 20px; padding: 1px 6px; margin-top: -3px;
+    }
+    @media (min-width: 1025px) {
+      .more-overlay, .more-sheet { display: none !important; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .bottom-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+      }
+      .content { padding: 24px 28px 88px; }
+    }
+    @media (max-width: 768px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .duo-grid { grid-template-columns: 1fr; }
+      .sections-row { grid-template-columns: repeat(2, 1fr); }
+      .capsule-card { flex-direction: column; gap: 20px; padding: 24px; }
+      .topbar { padding: 24px 24px 0; }
+      .content { padding: 20px 24px 48px; }
+    }
+    @media (max-width: 480px) {
+      .topbar { flex-direction: column; gap: 12px; }
+      .stats-row { grid-template-columns: 1fr; }
+      .sections-row { grid-template-columns: 1fr 1fr; }
+      .cap-name { font-size: 24px; }
+      .stat-num { font-size: 32px; }
+      .opr-num { font-size: 40px; }
+      .content { padding: 16px 16px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero-bg"></div>
+<div class="hero-overlay"></div>
+
+<div class="app">
+
+  <!-- ══════════════════════════════
+       SIDEBAR
+  ══════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <a class="logo" href="index.html">Capsule Zero</a>
+      <div class="user-row">
+        <a href="profile.html" style="text-decoration:none;flex-shrink:0;border-radius:50%;transition:transform .14s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform=''">
+          <div class="avatar">AK</div>
+        </a>
+        <div>
+          <div class="user-name">Anna Kozlova</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section-label">Overview</div>
+
+      <a class="nav-item active" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+            <rect x="10" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+            <rect x="1.5" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+            <rect x="10" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+          </svg>
+        </span>
+        <span class="nav-lbl">Dashboard</span>
+      </a>
+
+      <div class="nav-section-label">Wardrobe</div>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <rect x="2.5" y="6" width="12" height="9" rx="1" stroke="white" stroke-width="1.3"/>
+            <path d="M2.5 6L5 2.5H8.5M14.5 6L12 2.5H8.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.5 2.5V6" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl">My Items</span>
+        <span class="nav-badge">24</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24">
+            <path d="M6.5 3.5H9.5C9.5 4.88 10.62 6 12 6C13.38 6 14.5 4.88 14.5 3.5H17.5L22 8L19 11L17 9V21H7V9L5 11L2 8L6.5 3.5Z" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl">Outfits</span>
+        <span class="nav-badge">96</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M2.5 3.5H7C7 2 6 0.5 8 0.5C10 0.5 9 2 9 3.5H13V7C14.5 7 16 6 16 8C16 10 14.5 9 13 9V14H9C9 12.5 10 11 8 11C6 11 7 12.5 7 14H2.5V9C4 9 5 10 5 8C5 6 4 7 2.5 7Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl">Capsules</span>
+        <span class="nav-badge">3</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <circle cx="8.5" cy="8.5" r="6" stroke="white" stroke-width="1.3"/>
+            <path d="M4.26 4.26L12.74 12.74" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl">Uncapsulated</span>
+        <span class="nav-badge">6</span>
+      </a>
+
+      <div class="nav-section-label">Lists</div>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M8.5 2.5L10.2 7.2H15.2L11.2 10L12.8 14.8L8.5 11.8L4.2 14.8L5.8 10L1.8 7.2H6.8Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl">Favorites</span>
+        <span class="nav-badge">3</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M2.5 5H14.5M2.5 8.5H11.5M2.5 12H9.5" stroke="white" stroke-width="1.35" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl">Shopping List</span>
+        <span class="nav-badge">4</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M8.5 1.5V13.5" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M11.5 4.5C11.5 3.5 10.1 3 8.5 3C6.9 3 5.5 3.8 5.5 5.2C5.5 6.6 8.5 7.2 8.5 7.2C8.5 7.2 11.5 7.8 11.5 9.5C11.5 11.2 10.1 11.8 8.5 11.8C6.9 11.8 5.5 11.3 5.5 10.3" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl">For Sale</span>
+        <span class="nav-badge">2</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl">For Repair</span>
+        <span class="nav-badge">1</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <a class="nav-item" href="profile.html">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl">Settings</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════
+       MAIN
+  ══════════════════════════════ -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div>
+        <div class="greeting">Welcome!</div>
+        <div class="greeting-date">Tuesday, February 25, 2026</div>
+      </div>
+      <div class="topbar-right">
+
+        <!-- Language dropdown -->
+        <div class="lang-dropdown" id="langDropdown">
+          <button class="lang-trigger" onclick="toggleLang(event)" aria-label="Select language">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span id="currentLang">EN</span>
+            <span class="lang-chevron">▾</span>
+          </button>
+          <div class="lang-menu">
+            <button class="lang-option active" data-code="EN" onclick="setLang(this)">
+              <span>English</span><span class="lang-code">EN</span>
+            </button>
+            <button class="lang-option" data-code="RU" onclick="setLang(this)">
+              <span>Русский</span><span class="lang-code">RU</span>
+            </button>
+            <button class="lang-option" data-code="ES" onclick="setLang(this)">
+              <span>Español</span><span class="lang-code">ES</span>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-primary">
+          <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
+            <path d="M7 1V13M1 7H13" stroke="white" stroke-width="1.9" stroke-linecap="round"/>
+          </svg>
+          Add Item
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- ── Active capsule ── -->
+      <div class="gc capsule-card">
+        <div class="capsule-body">
+          <!-- TODO: Capsules can be pinned to the dashboard (multiple at once).
+               Pinned capsules appear here as hero cards, one after another.
+               Unpinning removes the card from dashboard but keeps the capsule in the library. -->
+          <div class="cap-eyebrow">
+            <svg width="27" height="27" viewBox="0 -1 14 15" style="flex-shrink:0;">
+              <g transform="rotate(45 7 7)">
+                <rect x="5.2" y="-0.3" width="3.6" height="4.8" rx="1.5" fill="rgba(255,255,255,.70)"/>
+                <ellipse cx="7" cy="4.5" rx="4" ry="1.8" fill="rgba(255,255,255,.70)"/>
+                <polygon points="6.5,5.5 7.5,5.5 7,13" fill="rgba(255,255,255,.70)"/>
+              </g>
+            </svg>
+          </div>
+          <div class="cap-name">Spring 2026</div>
+
+          <!-- Palette -->
+          <!-- TODO: dot size = proportional to number of items of that color in the capsule
+               pdot-lg = colors with more items (dominant), pdot-sm = colors with fewer items.
+               Currently placeholder sizes — replace with data-driven sizing when API is ready. -->
+          <div class="palette-row">
+            <div class="pdot pdot-lg" style="background:#1C1C1C;" title="Black"></div>
+            <div class="pdot pdot-lg" style="background:#FFFFFF;" title="White"></div>
+            <div class="pdot pdot-lg" style="background:#8C8C8C;" title="Gray"></div>
+            <div class="pdot pdot-lg" style="background:#182878;" title="Navy"></div>
+            <div class="pdot pdot-sm" style="background:#E8D5B5;" title="Beige"></div>
+            <div class="pdot pdot-sm" style="background:#C0A268;" title="Sand"></div>
+            <span class="palette-label">Color Palette</span>
+          </div>
+
+          <!-- Mini stats -->
+          <div class="cap-stats">
+            <div>
+              <div class="ms-val">18</div>
+              <div class="ms-lbl">Items</div>
+            </div>
+            <div>
+              <div class="ms-val">74</div>
+              <div class="ms-lbl">Outfits</div>
+            </div>
+            <div>
+              <div class="ms-val">12</div>
+              <div class="ms-lbl">Categories</div>
+            </div>
+          </div>
+
+          <div class="cap-actions">
+            <button class="btn-ghost">Open Capsule</button>
+            <button class="btn-ghost">Outfits</button>
+            <button class="btn-ghost">Shopping List</button>
+          </div>
+        </div>
+
+        <!-- OPR -->
+        <div class="opr-widget">
+          <div class="opr-val">4.2</div>
+          <div class="opr-lbl">OPR</div>
+          <div class="opr-hint">Outfit Productivity Ratio — outfits per item</div>
+        </div>
+      </div>
+
+      <!-- ── Stats row ── -->
+      <div class="stats-row">
+        <div class="gc stat-card">
+          <div class="stat-num">24</div>
+          <div class="stat-lbl">Total Items</div>
+          <div class="stat-sub">in wardrobe</div>
+        </div>
+        <div class="gc stat-card">
+          <div class="stat-num">96</div>
+          <div class="stat-lbl">Total Outfits</div>
+          <div class="stat-sub">across all capsules</div>
+        </div>
+        <div class="gc stat-card">
+          <div class="stat-num">6</div>
+          <div class="stat-lbl">Uncapsulated</div>
+          <div class="stat-sub">collect into a capsule</div>
+        </div>
+      </div>
+
+      <!-- ── Two columns ── -->
+      <div class="duo-grid">
+
+        <!-- Shopping List -->
+        <div class="gc panel">
+          <div class="panel-head">
+            <span class="panel-title">Shopping List</span>
+            <a class="panel-link" href="#">All →</a>
+          </div>
+          <div class="shop-item">
+            <div class="shop-bar bar-hi"></div>
+            <div class="shop-name">Straight-leg trousers</div>
+            <div class="shop-meta">+12 outfits</div>
+          </div>
+          <div class="shop-item">
+            <div class="shop-bar bar-hi"></div>
+            <div class="shop-name">Ankle boots</div>
+            <div class="shop-meta">+8 outfits</div>
+          </div>
+          <div class="shop-item">
+            <div class="shop-bar bar-mid"></div>
+            <div class="shop-name">Cardigan</div>
+            <div class="shop-meta">+6 outfits</div>
+          </div>
+          <div class="shop-item">
+            <div class="shop-bar bar-lo"></div>
+            <div class="shop-name">Scarf</div>
+            <div class="shop-meta">+3 outfits</div>
+          </div>
+        </div>
+
+        <!-- Recently Added -->
+        <div class="gc panel">
+          <div class="panel-head">
+            <span class="panel-title">Recently Added</span>
+            <a class="panel-link" href="#">All Items →</a>
+          </div>
+
+          <div class="recent-item">
+            <div class="recent-thumb">
+              <svg width="18" height="18" fill="none" viewBox="0 0 18 18">
+                <path d="M9 3.5C9 3.5 6.2 5 6.2 7.4L2.5 9.4V15H15.5V9.4L11.8 7.4C11.8 5 9 3.5 9 3.5Z" stroke="rgba(255,255,255,.48)" stroke-width="1.2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="recent-meta">
+              <div class="recent-name">White oversized shirt</div>
+              <div class="recent-cat">Top · 2 days ago</div>
+            </div>
+            <div class="recent-color" style="background:#FFFFFF;"></div>
+          </div>
+
+          <div class="recent-item">
+            <div class="recent-thumb">
+              <svg width="18" height="18" fill="none" viewBox="0 0 18 18">
+                <path d="M5.5 4H12.5V11H5.5Z" stroke="rgba(255,255,255,.48)" stroke-width="1.2" stroke-linejoin="round"/>
+                <path d="M4 11H14V15H4Z" stroke="rgba(255,255,255,.48)" stroke-width="1.2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="recent-meta">
+              <div class="recent-name">Straight jeans</div>
+              <div class="recent-cat">Bottom · 4 days ago</div>
+            </div>
+            <div class="recent-color" style="background:#182878;"></div>
+          </div>
+
+          <div class="recent-item">
+            <div class="recent-thumb">
+              <svg width="18" height="18" fill="none" viewBox="0 0 18 18">
+                <path d="M9 3.5C9 3.5 6.2 5 6.2 7.4L2.5 9.4V15H15.5V9.4L11.8 7.4C11.8 5 9 3.5 9 3.5Z" stroke="rgba(255,255,255,.48)" stroke-width="1.2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="recent-meta">
+              <div class="recent-name">Camel coat</div>
+              <div class="recent-cat">Outerwear · 5 days ago</div>
+            </div>
+            <div class="recent-color" style="background:#C0A268;"></div>
+          </div>
+
+          <div class="recent-item">
+            <div class="recent-thumb">
+              <svg width="18" height="18" fill="none" viewBox="0 0 18 18">
+                <ellipse cx="9" cy="6" rx="4.5" ry="3" stroke="rgba(255,255,255,.48)" stroke-width="1.2"/>
+                <path d="M4.5 6V13C4.5 14.1 6.6 15 9 15C11.4 15 13.5 14.1 13.5 13V6" stroke="rgba(255,255,255,.48)" stroke-width="1.2"/>
+              </svg>
+            </div>
+            <div class="recent-meta">
+              <div class="recent-name">Black ankle boots</div>
+              <div class="recent-cat">Shoes · 1 week ago</div>
+            </div>
+            <div class="recent-color" style="background:#1C1C1C; border-color:rgba(255,255,255,.35);"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Section cards ── -->
+      <div class="sections-row">
+
+        <div class="gc sec-card">
+          <div class="sec-icon">
+            <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+              <path d="M8.5 2.5L10.2 7H15L11.2 9.8L12.7 14.5L8.5 11.8L4.3 14.5L5.8 9.8L2 7H6.8Z" stroke="rgba(255,255,255,.65)" stroke-width="1.25" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="sec-count">3</div>
+          <div class="sec-lbl">Favorites</div>
+        </div>
+
+        <div class="gc sec-card">
+          <div class="sec-icon">
+            <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+              <path d="M8.5 1.5V13.5" stroke="rgba(255,255,255,.65)" stroke-width="1.25" stroke-linecap="round"/>
+              <path d="M11.5 4.5C11.5 3.5 10.1 3 8.5 3C6.9 3 5.5 3.8 5.5 5.2C5.5 6.6 8.5 7.2 8.5 7.2C8.5 7.2 11.5 7.8 11.5 9.5C11.5 11.2 10.1 11.8 8.5 11.8C6.9 11.8 5.5 11.3 5.5 10.3" stroke="rgba(255,255,255,.65)" stroke-width="1.25" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="sec-count">2</div>
+          <div class="sec-lbl">For Sale</div>
+        </div>
+
+        <div class="gc sec-card">
+          <div class="sec-icon">
+            <svg width="17" height="17" fill="none" viewBox="0 0 24 24">
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="rgba(255,255,255,.65)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="sec-count">1</div>
+          <div class="sec-lbl">For Repair</div>
+        </div>
+
+        <div class="gc sec-card">
+          <div class="sec-icon">
+            <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+              <circle cx="8.5" cy="8.5" r="6" stroke="rgba(255,255,255,.65)" stroke-width="1.25"/>
+              <path d="M4.26 4.26L12.74 12.74" stroke="rgba(255,255,255,.65)" stroke-width="1.25" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="sec-count">6</div>
+          <div class="sec-lbl">Uncapsulated</div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ── Bottom Navigation (mobile) ── -->
+  <nav class="bottom-nav">
+    <a class="bnav-item active" href="dashboard.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="1.5" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/></svg></span>
+      <span class="bnav-lbl">Dashboard</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="my-items.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><rect x="2.5" y="6" width="12" height="9" rx="1" stroke="white" stroke-width="1.3"/><path d="M2.5 6L5 2.5H8.5M14.5 6L12 2.5H8.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+      <span class="bnav-lbl">My Items</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="capsule-result.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><path d="M2.5 3.5H7C7 2 6 0.5 8 0.5C10 0.5 9 2 9 3.5H13V7C14.5 7 16 6 16 8C16 10 14.5 9 13 9V14H9C9 12.5 10 11 8 11C6 11 7 12.5 7 14H2.5V9C4 9 5 10 5 8C5 6 4 7 2.5 7Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+      <span class="bnav-lbl">Capsules</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="favorites.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><path d="M8.5 2.5L10.2 7.2H15.2L11.2 10L12.8 14.8L8.5 11.8L4.2 14.8L5.8 10L1.8 7.2H6.8Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+      <span class="bnav-lbl">Favorites</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" onclick="toggleMore(event)">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8" fill="white"/><circle cx="12" cy="12" r="1.8" fill="white"/><circle cx="19" cy="12" r="1.8" fill="white"/></svg></span>
+      <span class="bnav-lbl">More</span>
+      <span class="bnav-dot"></span>
+    </a>
+  </nav>
+
+  <!-- ── More sheet ── -->
+  <div class="more-overlay" id="moreOverlay" onclick="closeMore()"></div>
+  <div class="more-sheet" id="moreSheet">
+    <div class="more-handle"></div>
+    <div class="more-grid">
+      <a class="more-item" href="capsule-result.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M6.5 3.5H9.5C9.5 4.88 10.62 6 12 6C13.38 6 14.5 4.88 14.5 3.5H17.5L22 8L19 11L17 9V21H7V9L5 11L2 8L6.5 3.5Z" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Outfits</span>
+        <span class="more-item-badge">96</span>
+      </a>
+      <a class="more-item" href="uncapsulated.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><circle cx="8.5" cy="8.5" r="6" stroke="white" stroke-width="1.3"/><path d="M4.26 4.26L12.74 12.74" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">Uncapsulated</span>
+        <span class="more-item-badge">6</span>
+      </a>
+      <a class="more-item" href="#">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><path d="M2.5 5H14.5M2.5 8.5H11.5M2.5 12H9.5" stroke="white" stroke-width="1.35" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">Shopping List</span>
+        <span class="more-item-badge">4</span>
+      </a>
+      <a class="more-item" href="for-sale.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><path d="M8.5 1.5V13.5" stroke="white" stroke-width="1.3" stroke-linecap="round"/><path d="M11.5 4.5C11.5 3.5 10.1 3 8.5 3C6.9 3 5.5 3.8 5.5 5.2C5.5 6.6 8.5 7.2 8.5 7.2C8.5 7.2 11.5 7.8 11.5 9.5C11.5 11.2 10.1 11.8 8.5 11.8C6.9 11.8 5.5 11.3 5.5 10.3" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">For Sale</span>
+        <span class="more-item-badge">2</span>
+      </a>
+      <a class="more-item" href="for-repair.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">For Repair</span>
+        <span class="more-item-badge">1</span>
+      </a>
+      <a class="more-item" href="profile.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Profile</span>
+      </a>
+      <a class="more-item" href="profile.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Settings</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggleLang(e) {
+    e.stopPropagation();
+    document.getElementById('langDropdown').classList.toggle('open');
+  }
+  function setLang(btn) {
+    document.getElementById('currentLang').textContent = btn.dataset.code;
+    document.querySelectorAll('.lang-option').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('langDropdown').classList.remove('open');
+  }
+  document.addEventListener('click', () => {
+    document.getElementById('langDropdown').classList.remove('open');
+  });
+  function toggleMore(e) {
+    if (e) e.preventDefault();
+    document.getElementById('moreOverlay').classList.toggle('open');
+    document.getElementById('moreSheet').classList.toggle('open');
+  }
+  function closeMore() {
+    document.getElementById('moreOverlay').classList.remove('open');
+    document.getElementById('moreSheet').classList.remove('open');
+  }
+</script>
+
+</body>
+</html>

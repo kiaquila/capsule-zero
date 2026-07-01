@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capsule Zero — Profile</title>
+  <style>
+    :root {
+      --glass-bg:     rgba(255,255,255,0.22);
+      --glass-blur:   40px;
+      --glass-border: rgba(255,255,255,.58);
+      --glass-hi:     inset 0 1px 0 rgba(255,255,255,.72);
+      --gt-p:  rgba(255,255,255,.95);
+      --gt-s:  rgba(255,255,255,.70);
+      --gt-ph: rgba(255,255,255,.38);
+      --sidebar-w: 248px;
+      --radius-s: 8px;
+      --radius-m: 14px;
+      --radius-l: 20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── Background ── */
+    .hero-bg {
+      position: fixed; inset: 0;
+      background: url('wall.png') center / cover no-repeat;
+      filter: grayscale(100%);
+      z-index: -2;
+    }
+    .hero-overlay {
+      position: fixed; inset: 0;
+      background: linear-gradient(
+        160deg,
+        rgba(0,0,0,.58) 0%,
+        rgba(0,0,0,.40) 50%,
+        rgba(0,0,0,.68) 100%
+      );
+      z-index: -1;
+    }
+
+    /* ── App shell ── */
+    .app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ══════════════════════════════
+       SIDEBAR
+    ══════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: rgba(255,255,255,0.13);
+      backdrop-filter: blur(44px);
+      -webkit-backdrop-filter: blur(44px);
+      border-right: 1px solid rgba(255,255,255,.20);
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .sidebar::-webkit-scrollbar { display: none; }
+
+    .sidebar-head {
+      padding: 32px 24px 22px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .logo {
+      font-size: 11.5px; font-weight: 700;
+      letter-spacing: .26em; text-transform: uppercase;
+      color: var(--gt-p); text-decoration: none;
+      display: block; margin-bottom: 26px;
+    }
+    .user-row {
+      display: flex; align-items: center; gap: 11px;
+    }
+    .avatar-link {
+      text-decoration: none; flex-shrink: 0;
+      border-radius: 50%;
+      transition: transform .14s;
+    }
+    .avatar-link:hover { transform: scale(1.06); }
+    .avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,.18);
+      border: 1.5px solid rgba(255,255,255,.40);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--gt-p);
+      letter-spacing: .04em; flex-shrink: 0;
+    }
+    .user-name {
+      font-size: 13px; font-weight: 600;
+      color: var(--gt-p); letter-spacing: .01em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .nav {
+      flex: 1;
+      padding: 12px 0 8px;
+    }
+    .nav-section-label {
+      font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--gt-ph);
+      padding: 16px 24px 6px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 24px 10px 22px;
+      cursor: pointer;
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: background .14s;
+      user-select: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.06); }
+    .nav-item.active {
+      background: rgba(255,255,255,.10);
+      border-left-color: rgba(255,255,255,.65);
+    }
+    .nav-ico {
+      width: 17px; height: 17px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      opacity: .65;
+    }
+    .nav-item.active .nav-ico { opacity: 1; }
+    .nav-lbl {
+      flex: 1;
+      font-size: 13px; font-weight: 500; letter-spacing: .01em;
+      color: var(--gt-s);
+    }
+    .nav-item.active .nav-lbl { color: var(--gt-p); font-weight: 600; }
+    .nav-badge {
+      font-size: 10.5px; font-weight: 600;
+      color: var(--gt-ph);
+      background: rgba(255,255,255,.08);
+      border-radius: 20px; padding: 2px 7px;
+      min-width: 22px; text-align: center;
+    }
+    .nav-item.active .nav-badge { color: var(--gt-s); }
+
+    .sidebar-foot {
+      padding: 12px 0 28px;
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+
+    /* ══════════════════════════════
+       LANG DROPDOWN
+    ══════════════════════════════ */
+    .lang-dropdown { position: relative; }
+    .lang-trigger {
+      display: flex; align-items: center; gap: 6px;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: rgba(255,255,255,.88); padding: 8px 4px; transition: color .15s;
+    }
+    .lang-trigger:hover { color: #fff; }
+    .lang-chevron { font-size: 8px; opacity: .8; transition: transform .2s; }
+    .lang-dropdown.open .lang-chevron { transform: rotate(180deg); }
+    .lang-menu {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: rgba(255,255,255,0.28);
+      backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+      border-radius: var(--radius-m);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,.20), var(--glass-hi);
+      padding: 8px; min-width: 164px;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-6px);
+      transition: opacity .2s ease, transform .2s ease; z-index: 100;
+    }
+    .lang-dropdown.open .lang-menu { opacity: 1; pointer-events: all; transform: translateY(0); }
+    .lang-option {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 10px 12px;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; letter-spacing: .06em;
+      color: var(--gt-s); border-radius: var(--radius-s); transition: all .15s;
+    }
+    .lang-option:hover { background: rgba(255,255,255,.12); color: var(--gt-p); }
+    .lang-option.active { color: #fff; font-weight: 600; }
+    .lang-code { font-size: 11px; font-weight: 600; letter-spacing: .1em; color: inherit; opacity: .7; }
+
+    /* ══════════════════════════════
+       MAIN
+    ══════════════════════════════ */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.16) transparent;
+      display: flex;
+      flex-direction: column;
+    }
+    .main::-webkit-scrollbar { width: 4px; }
+    .main::-webkit-scrollbar-track { background: transparent; }
+    .main::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,.16);
+      border-radius: 10px;
+    }
+
+    /* Topbar */
+    .topbar {
+      padding: 30px 40px 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .topbar-title {
+      font-size: 25px; font-weight: 300; letter-spacing: -.01em;
+      color: var(--gt-p); line-height: 1.2;
+    }
+    .topbar-title strong { font-weight: 600; }
+    .topbar-sub {
+      font-size: 11.5px; letter-spacing: .10em; text-transform: uppercase;
+      color: var(--gt-s); margin-top: 5px;
+    }
+    .topbar-right {
+      display: flex; align-items: center; gap: 16px;
+      padding-top: 4px;
+    }
+
+    /* Content — full width */
+    .content {
+      padding: 24px 40px 52px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Glass card */
+    .gc {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-l);
+      box-shadow: var(--glass-hi), 0 8px 36px rgba(0,0,0,.16);
+      padding: 28px 30px;
+    }
+
+    /* ══════════════════════════════
+       BUTTONS
+    ══════════════════════════════ */
+    .btn-ghost {
+      padding: 9px 18px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: 50px;
+      font-family: inherit; font-size: 11.5px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-p); cursor: pointer;
+      transition: background .14s;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.20); }
+
+    .btn-save {
+      padding: 11px 28px;
+      background: rgba(255,255,255,.26);
+      border: 1px solid rgba(255,255,255,.52);
+      border-radius: 50px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      cursor: pointer;
+      font-family: inherit; font-size: 12px; font-weight: 700;
+      letter-spacing: .09em; text-transform: uppercase;
+      color: var(--gt-p);
+      transition: background .14s, transform .10s;
+    }
+    .btn-save:hover {
+      background: rgba(255,255,255,.36);
+      transform: translateY(-1px);
+    }
+    .btn-save:active { transform: translateY(0); }
+
+    .btn-danger {
+      padding: 9px 18px;
+      background: rgba(255,60,40,.12);
+      border: 1px solid rgba(255,80,60,.30);
+      border-radius: 50px;
+      font-family: inherit; font-size: 11.5px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: rgba(255,120,100,.90); cursor: pointer;
+      transition: background .14s;
+    }
+    .btn-danger:hover { background: rgba(255,60,40,.22); }
+
+    .btn-danger-link {
+      background: none; border: none;
+      font-family: inherit; font-size: 11px; font-weight: 500;
+      letter-spacing: .04em;
+      color: rgba(255,100,80,.60); cursor: pointer;
+      padding: 4px 0;
+      transition: color .14s;
+    }
+    .btn-danger-link:hover { color: rgba(255,100,80,.90); }
+
+    /* ══════════════════════════════
+       PROFILE HEADER
+    ══════════════════════════════ */
+    .profile-header {
+      display: flex; align-items: center; gap: 22px;
+    }
+    .profile-avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .profile-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(255,255,255,.18);
+      border: 2px solid rgba(255,255,255,.40);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; font-weight: 700; color: var(--gt-p);
+      letter-spacing: .04em;
+    }
+    .profile-avatar-edit {
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: rgba(90,90,90,.92);
+      border: 1.5px solid rgba(255,255,255,.40);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background .14s, transform .14s;
+    }
+    .profile-avatar-edit:hover {
+      background: rgba(60,60,60,.95);
+      transform: scale(1.08);
+    }
+    .profile-info { flex: 1; min-width: 0; }
+    .profile-name {
+      font-size: 22px; font-weight: 400; letter-spacing: -.01em;
+      color: var(--gt-p); line-height: 1.2;
+    }
+    .profile-email {
+      font-size: 13px; color: var(--gt-s);
+      letter-spacing: .01em; margin-top: 3px;
+    }
+
+    /* ══════════════════════════════
+       FORM FIELDS
+    ══════════════════════════════ */
+    .gc-title {
+      font-size: 10px; font-weight: 600; letter-spacing: .17em;
+      text-transform: uppercase; color: var(--gt-s);
+      margin-bottom: 18px;
+    }
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .field-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .field {
+      margin-bottom: 16px;
+    }
+    .field:last-child { margin-bottom: 0; }
+    .field-row .field,
+    .field-row-3 .field { margin-bottom: 0; }
+    .field-label {
+      font-size: 10px; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--gt-ph);
+      margin-bottom: 7px; display: block;
+    }
+    .field-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: var(--radius-s);
+      font-family: inherit; font-size: 14px; font-weight: 400;
+      color: var(--gt-p); outline: none;
+      transition: border-color .15s, background .15s;
+    }
+    .field-input:focus {
+      background: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.36);
+    }
+    .field-input::placeholder { color: var(--gt-ph); }
+    .field-select {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: var(--radius-s);
+      font-family: inherit; font-size: 14px; font-weight: 400;
+      color: var(--gt-p); outline: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='rgba(255,255,255,0.5)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+    .field-select:focus {
+      background-color: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.36);
+    }
+    .field-select option {
+      background: #2a2a2a; color: #fff;
+    }
+    .field-actions {
+      margin-top: 20px;
+      display: flex; gap: 10px;
+    }
+
+    /* ══════════════════════════════
+       SUBSCRIPTION
+    ══════════════════════════════ */
+    .plan-row {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 16px;
+    }
+    .plan-name {
+      font-size: 20px; font-weight: 300; letter-spacing: -.01em;
+      color: var(--gt-p);
+    }
+    .plan-badge {
+      padding: 3px 12px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: 20px;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--gt-p);
+    }
+    .plan-features {
+      list-style: none; padding: 0; margin: 0 0 18px;
+    }
+    .plan-features li {
+      padding: 5px 0;
+      font-size: 13px; color: var(--gt-s);
+      letter-spacing: .01em;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .plan-features li::before {
+      content: '';
+      width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(255,255,255,.40);
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════
+       TOGGLE SWITCH
+    ══════════════════════════════ */
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-label {
+      font-size: 13px; color: var(--gt-p);
+      letter-spacing: .01em;
+    }
+    .toggle {
+      position: relative;
+      width: 40px; height: 22px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 11px;
+      cursor: pointer;
+      transition: background .2s, border-color .2s;
+      flex-shrink: 0;
+    }
+    .toggle.on {
+      background: rgba(255,255,255,.32);
+      border-color: rgba(255,255,255,.48);
+    }
+    .toggle-knob {
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.60);
+      transition: transform .2s, background .2s;
+    }
+    .toggle.on .toggle-knob {
+      transform: translateX(18px);
+      background: rgba(255,255,255,.95);
+    }
+
+    /* ══════════════════════════════
+       RADIO OPTIONS
+    ══════════════════════════════ */
+    .radio-group {
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .radio-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      cursor: pointer;
+    }
+    .radio-row:last-child { border-bottom: none; }
+    .radio-left {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .radio-circle {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.35);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: border-color .15s;
+    }
+    .radio-row.selected .radio-circle {
+      border-color: rgba(255,255,255,.80);
+    }
+    .radio-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: transparent;
+      transition: background .15s;
+    }
+    .radio-row.selected .radio-dot {
+      background: rgba(255,255,255,.90);
+    }
+    .radio-text {
+      font-size: 13px; color: var(--gt-p);
+      letter-spacing: .01em;
+    }
+    .radio-desc {
+      font-size: 11px; color: var(--gt-ph);
+      letter-spacing: .01em; margin-top: 2px;
+    }
+
+    /* Warning message */
+    .field-warning {
+      display: none;
+      align-items: center; gap: 6px;
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: rgba(255,80,0,.08);
+      border: 1px solid rgba(255,80,0,.20);
+      border-radius: var(--radius-s);
+      font-size: 11.5px; color: #FF4D00;
+      letter-spacing: .01em;
+    }
+    .field-warning.show {
+      display: flex;
+    }
+
+    /* ══════════════════════════════
+       ACCOUNT MANAGEMENT
+    ══════════════════════════════ */
+    .account-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .account-row:last-of-type { border-bottom: none; }
+    .account-row-label {
+      font-size: 10px; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--gt-ph);
+    }
+    .account-row-value {
+      font-size: 13px; color: var(--gt-p);
+      letter-spacing: .01em;
+      font-family: 'SF Mono', 'Menlo', monospace;
+    }
+    .account-sessions {
+      margin-top: 4px;
+    }
+    .session-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .session-item:last-child { border-bottom: none; }
+    .session-info {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .session-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .session-name {
+      font-size: 13px; color: var(--gt-p);
+      letter-spacing: .01em;
+    }
+    .session-detail {
+      font-size: 11px; color: var(--gt-ph);
+      margin-top: 1px;
+    }
+    .session-current {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: rgba(255,255,255,.50);
+      padding: 3px 10px;
+      background: rgba(255,255,255,.08);
+      border-radius: 20px;
+    }
+    .account-separator {
+      width: 100%; height: 1px;
+      background: rgba(255,255,255,.07);
+      margin: 8px 0;
+    }
+    .account-footer {
+      margin-top: 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .delete-zone {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,.07);
+      text-align: center;
+    }
+
+    /* ══════════════════════════════
+       SECURITY SECTION
+    ══════════════════════════════ */
+    .security-block {
+      margin-bottom: 24px;
+    }
+    .security-block:last-child { margin-bottom: 0; }
+    .security-block-title {
+      font-size: 10px; font-weight: 600; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--gt-ph);
+      margin-bottom: 10px;
+    }
+    .security-divider {
+      width: 100%; height: 1px;
+      background: rgba(255,255,255,.10);
+      margin: 20px 0;
+    }
+
+    /* ── Bottom Navigation (mobile) ── */
+    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: rgba(255,255,255,0.13); backdrop-filter: blur(44px); -webkit-backdrop-filter: blur(44px); border-top: 1px solid rgba(255,255,255,.20); padding: 0; padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+    .bnav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 12px 6px; text-decoration: none; cursor: pointer; transition: opacity .14s, border-color .2s; opacity: .5; border-top: 2px solid transparent; }
+    .bnav-item.active { opacity: 1; border-top-color: rgba(255,255,255,.65); }
+    .bnav-item:hover { opacity: .8; }
+    .bnav-ico { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+    .bnav-lbl { font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--gt-p); }
+    .bnav-dot { display: none; }
+
+    /* ── More sheet ── */
+    .more-overlay {
+      display: none; position: fixed; inset: 0; z-index: 60;
+      background: rgba(0,0,0,.40);
+      opacity: 0; transition: opacity .25s;
+    }
+    .more-overlay.open { display: block; opacity: 1; }
+    .more-sheet {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 70;
+      background: rgba(255,255,255,0.22);
+      backdrop-filter: blur(44px); -webkit-backdrop-filter: blur(44px);
+      border-top: 1px solid rgba(255,255,255,.58);
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -8px 32px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.72);
+      padding: 12px 20px;
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.32,.72,.24,1);
+    }
+    .more-sheet.open { transform: translateY(0); }
+    .more-handle {
+      width: 36px; height: 4px; border-radius: 2px;
+      background: rgba(255,255,255,.30);
+      margin: 0 auto 16px;
+    }
+    .more-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+    }
+    .more-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; padding: 14px 8px;
+      text-decoration: none; border-radius: 12px;
+      transition: background .14s;
+    }
+    .more-item:hover { background: rgba(255,255,255,.10); }
+    .more-item-ico {
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .more-item-lbl {
+      font-size: 9.5px; font-weight: 600;
+      letter-spacing: .04em; color: var(--gt-p);
+      text-align: center;
+    }
+    .more-item-badge {
+      font-size: 9px; font-weight: 600;
+      color: var(--gt-ph); background: rgba(255,255,255,.10);
+      border-radius: 20px; padding: 1px 6px; margin-top: -3px;
+    }
+    @media (min-width: 1025px) {
+      .more-overlay, .more-sheet { display: none !important; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .bottom-nav { display: flex; justify-content: space-around; align-items: center; }
+      .content { padding: 24px 28px 88px; }
+    }
+    @media (max-width: 768px) {
+      .field-row { grid-template-columns: 1fr; }
+      .field-row-3 { grid-template-columns: 1fr; }
+      .profile-header { flex-direction: column; text-align: center; }
+      .topbar { padding: 24px 24px 0; }
+      .content { padding: 20px 24px 48px; }
+    }
+    @media (max-width: 480px) {
+      .topbar { flex-direction: column; gap: 12px; }
+      .content { padding: 16px 16px 40px; }
+      .profile-name { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero-bg"></div>
+<div class="hero-overlay"></div>
+
+<div class="app">
+
+  <!-- ══════════════════════════════
+       SIDEBAR
+  ══════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <a class="logo" href="index.html">Capsule Zero</a>
+      <div class="user-row">
+        <a class="avatar-link" href="profile.html">
+          <div class="avatar">AK</div>
+        </a>
+        <div>
+          <div class="user-name">Anna Kozlova</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section-label" data-i18n="nav_overview">Overview</div>
+
+      <a class="nav-item" href="dashboard.html">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+            <rect x="10" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+            <rect x="1.5" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+            <rect x="10" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_dashboard">Dashboard</span>
+      </a>
+
+      <div class="nav-section-label" data-i18n="nav_wardrobe">Wardrobe</div>
+
+      <a class="nav-item" href="my-items.html">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <rect x="2.5" y="6" width="12" height="9" rx="1" stroke="white" stroke-width="1.3"/>
+            <path d="M2.5 6L5 2.5H8.5M14.5 6L12 2.5H8.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.5 2.5V6" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_items">My Items</span>
+        <span class="nav-badge">24</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24">
+            <path d="M6.5 3.5H9.5C9.5 4.88 10.62 6 12 6C13.38 6 14.5 4.88 14.5 3.5H17.5L22 8L19 11L17 9V21H7V9L5 11L2 8L6.5 3.5Z" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_outfits">Outfits</span>
+        <span class="nav-badge">96</span>
+      </a>
+
+      <a class="nav-item" href="capsule-result.html">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M2.5 3.5H7C7 2 6 0.5 8 0.5C10 0.5 9 2 9 3.5H13V7C14.5 7 16 6 16 8C16 10 14.5 9 13 9V14H9C9 12.5 10 11 8 11C6 11 7 12.5 7 14H2.5V9C4 9 5 10 5 8C5 6 4 7 2.5 7Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_capsules">Capsules</span>
+        <span class="nav-badge">3</span>
+      </a>
+
+      <a class="nav-item" href="uncapsulated.html">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <circle cx="8.5" cy="8.5" r="6" stroke="white" stroke-width="1.3"/>
+            <path d="M4.26 4.26L12.74 12.74" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_uncapsulated">Uncapsulated</span>
+        <span class="nav-badge">6</span>
+      </a>
+
+      <div class="nav-section-label" data-i18n="nav_lists">Lists</div>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M8.5 2.5L10.2 7.2H15.2L11.2 10L12.8 14.8L8.5 11.8L4.2 14.8L5.8 10L1.8 7.2H6.8Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_favorites">Favorites</span>
+        <span class="nav-badge">3</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M2.5 5H14.5M2.5 8.5H11.5M2.5 12H9.5" stroke="white" stroke-width="1.35" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_shopping">Shopping List</span>
+        <span class="nav-badge">4</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M8.5 1.5V13.5" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M11.5 4.5C11.5 3.5 10.1 3 8.5 3C6.9 3 5.5 3.8 5.5 5.2C5.5 6.6 8.5 7.2 8.5 7.2C8.5 7.2 11.5 7.8 11.5 9.5C11.5 11.2 10.1 11.8 8.5 11.8C6.9 11.8 5.5 11.3 5.5 10.3" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_sale">For Sale</span>
+        <span class="nav-badge">2</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_repair">For Repair</span>
+        <span class="nav-badge">1</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <a class="nav-item active" href="profile.html">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_settings">Settings</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════
+       MAIN
+  ══════════════════════════════ -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" data-i18n="topbar_title">Profile &amp; <strong>Settings</strong></div>
+        <div class="topbar-sub" data-i18n="topbar_sub">Manage your account</div>
+      </div>
+      <div class="topbar-right">
+
+        <!-- Language dropdown -->
+        <div class="lang-dropdown" id="langDropdown">
+          <button class="lang-trigger" onclick="toggleLang(event)" aria-label="Select language">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span id="currentLang">EN</span>
+            <span class="lang-chevron">&#9662;</span>
+          </button>
+          <div class="lang-menu">
+            <button class="lang-option active" data-code="EN" onclick="setLang(this)">
+              <span>English</span><span class="lang-code">EN</span>
+            </button>
+            <button class="lang-option" data-code="RU" onclick="setLang(this)">
+              <span>&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</span><span class="lang-code">RU</span>
+            </button>
+            <button class="lang-option" data-code="ES" onclick="setLang(this)">
+              <span>Espa&ntilde;ol</span><span class="lang-code">ES</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- 1. Profile Header -->
+      <div class="gc">
+        <div class="profile-header">
+          <div class="profile-avatar-wrap" onclick="document.getElementById('avatarInput').click()">
+            <div class="profile-avatar">AK</div>
+            <div class="profile-avatar-edit" title="Change photo">
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24">
+                <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke="rgba(255,255,255,.90)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <input type="file" id="avatarInput" accept="image/*" style="display:none" />
+          </div>
+          <div class="profile-info">
+            <div class="profile-name">Anna Kozlova</div>
+            <div class="profile-email">anna.kozlova@email.com</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Personal Information -->
+      <div class="gc">
+        <div class="gc-title" data-i18n="section_personal">Personal Information</div>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label" data-i18n="label_first_name">First Name</label>
+            <input class="field-input" type="text" value="Anna" placeholder="First name" />
+          </div>
+          <div class="field">
+            <label class="field-label" data-i18n="label_last_name">Last Name</label>
+            <input class="field-input" type="text" value="Kozlova" placeholder="Last name" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label" data-i18n="label_email">Email</label>
+            <input class="field-input" id="emailField" type="email" value="anna.kozlova@email.com" placeholder="your@email.com" />
+          </div>
+          <div class="field">
+            <label class="field-label" data-i18n="label_phone">Phone</label>
+            <input class="field-input" id="phoneField" type="tel" value="" placeholder="+1 (000) 000-0000" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label" data-i18n="label_birthday">Date of Birth</label>
+            <input class="field-input" type="date" value="1992-06-15" />
+          </div>
+          <div class="field">
+            <label class="field-label" data-i18n="label_country">Country</label>
+            <select class="field-select">
+              <option value="">Select country</option>
+              <option value="AR" selected>Argentina</option>
+              <option value="BR">Brazil</option>
+              <option value="CL">Chile</option>
+              <option value="CO">Colombia</option>
+              <option value="DE">Germany</option>
+              <option value="ES">Spain</option>
+              <option value="FR">France</option>
+              <option value="IT">Italy</option>
+              <option value="MX">Mexico</option>
+              <option value="RU">Russia</option>
+              <option value="US">United States</option>
+              <option value="UY">Uruguay</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" style="margin-bottom:16px;">
+          <label class="field-label" data-i18n="label_city">City</label>
+          <input class="field-input" type="text" value="Buenos Aires" placeholder="Your city" style="max-width:calc(50% - 8px);" />
+        </div>
+
+        <div class="field-row-3">
+          <div class="field">
+            <label class="field-label" data-i18n="label_shoe_size">Shoe Size</label>
+            <select class="field-select">
+              <option value="">—</option>
+              <option value="35">35</option>
+              <option value="36">36</option>
+              <option value="37" selected>37</option>
+              <option value="38">38</option>
+              <option value="39">39</option>
+              <option value="40">40</option>
+              <option value="41">41</option>
+              <option value="42">42</option>
+              <option value="43">43</option>
+              <option value="44">44</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label" data-i18n="label_size_top">Clothing Size (Top)</label>
+            <select class="field-select">
+              <option value="">—</option>
+              <option value="XS">XS</option>
+              <option value="S" selected>S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label" data-i18n="label_size_bottom">Clothing Size (Bottom)</label>
+            <select class="field-select">
+              <option value="">—</option>
+              <option value="XS">XS</option>
+              <option value="S" selected>S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-actions">
+          <button class="btn-save" data-i18n="btn_save">Save</button>
+        </div>
+      </div>
+
+      <!-- 3. Notifications -->
+      <div class="gc">
+        <div class="gc-title" data-i18n="section_notifications">Notifications</div>
+        <div class="toggle-row">
+          <span class="toggle-label" data-i18n="toggle_email">Email notifications</span>
+          <div class="toggle on" onclick="toggleSwitch(this)"><div class="toggle-knob"></div></div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label" data-i18n="toggle_push">Push notifications</span>
+          <div class="toggle" onclick="toggleSwitch(this)"><div class="toggle-knob"></div></div>
+        </div>
+      </div>
+
+      <!-- 5. Login & Security -->
+      <div class="gc">
+        <div class="gc-title" data-i18n="section_security">Login &amp; Security</div>
+
+        <!-- Two-factor authentication -->
+        <div class="security-block">
+          <div class="security-block-title" data-i18n="label_2fa">Two-Factor Authentication</div>
+          <div class="toggle-row">
+            <div>
+              <span class="toggle-label" data-i18n="toggle_2fa_google">Google Authenticator</span>
+              <div class="radio-desc" data-i18n="toggle_2fa_google_desc" style="margin-top:2px;">TOTP code as second factor</div>
+            </div>
+            <div class="toggle" onclick="toggleSwitch(this)"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <span class="toggle-label" data-i18n="toggle_2fa_push">Push Notification</span>
+              <div class="radio-desc" data-i18n="toggle_2fa_push_desc" style="margin-top:2px;">Approve login from linked app</div>
+            </div>
+            <div class="toggle" onclick="toggleSwitch(this)"><div class="toggle-knob"></div></div>
+          </div>
+        </div>
+
+        <div class="security-divider"></div>
+
+        <!-- Change password -->
+        <div class="security-block">
+          <div class="security-block-title" data-i18n="label_change_pw">Password</div>
+          <button class="btn-ghost" data-i18n="btn_change_pw">Change Password</button>
+        </div>
+      </div>
+
+      <!-- 6. Account Management -->
+      <div class="gc">
+        <div class="gc-title" data-i18n="section_account">Account Management</div>
+
+        <div class="account-row">
+          <span class="account-row-label" data-i18n="label_user_id">User ID</span>
+          <span class="account-row-value">usr_a7k3m9x2p1</span>
+        </div>
+
+        <div class="security-divider"></div>
+
+        <div class="security-block-title" data-i18n="label_sessions" style="margin-bottom:4px;">Active Sessions</div>
+        <div class="account-sessions">
+          <div class="session-item">
+            <div class="session-info">
+              <div class="session-icon">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
+                  <rect x="2" y="3" width="20" height="14" rx="2" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/>
+                  <path d="M8 21h8M12 17v4" stroke="rgba(255,255,255,.55)" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <div class="session-name">MacBook Pro — Chrome</div>
+                <div class="session-detail">Buenos Aires, AR &middot; 2 min ago</div>
+              </div>
+            </div>
+            <span class="session-current" data-i18n="label_current">Current</span>
+          </div>
+          <div class="session-item">
+            <div class="session-info">
+              <div class="session-icon">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
+                  <rect x="5" y="2" width="14" height="20" rx="2" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/>
+                  <path d="M12 18h.01" stroke="rgba(255,255,255,.55)" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <div class="session-name">iPhone 15 Pro — Capsule Zero App</div>
+                <div class="session-detail">Buenos Aires, AR &middot; 3 hours ago</div>
+              </div>
+            </div>
+          </div>
+          <div class="session-item">
+            <div class="session-info">
+              <div class="session-icon">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
+                  <rect x="2" y="3" width="20" height="14" rx="2" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/>
+                  <path d="M8 21h8M12 17v4" stroke="rgba(255,255,255,.55)" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <div class="session-name">iPad Air — Safari</div>
+                <div class="session-detail">Buenos Aires, AR &middot; 2 days ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="account-separator" style="margin:16px 0;"></div>
+
+        <button class="btn-danger" data-i18n="btn_logout" onclick="alert('Logged out')">Log Out</button>
+
+        <div class="delete-zone">
+          <button class="btn-danger-link" data-i18n="btn_delete_account">Delete Account</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="bnav-item" href="dashboard.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="1.5" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/></svg></span>
+      <span class="bnav-lbl">Dashboard</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="my-items.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><rect x="2.5" y="6" width="12" height="9" rx="1" stroke="white" stroke-width="1.3"/><path d="M2.5 6L5 2.5H8.5M14.5 6L12 2.5H8.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+      <span class="bnav-lbl">My Items</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="capsule-result.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><path d="M2.5 3.5H7C7 2 6 0.5 8 0.5C10 0.5 9 2 9 3.5H13V7C14.5 7 16 6 16 8C16 10 14.5 9 13 9V14H9C9 12.5 10 11 8 11C6 11 7 12.5 7 14H2.5V9C4 9 5 10 5 8C5 6 4 7 2.5 7Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+      <span class="bnav-lbl">Capsules</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="favorites.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><path d="M8.5 2.5L10.2 7.2H15.2L11.2 10L12.8 14.8L8.5 11.8L4.2 14.8L5.8 10L1.8 7.2H6.8Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+      <span class="bnav-lbl">Favorites</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item active" onclick="toggleMore(event)">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8" fill="white"/><circle cx="12" cy="12" r="1.8" fill="white"/><circle cx="19" cy="12" r="1.8" fill="white"/></svg></span>
+      <span class="bnav-lbl">More</span>
+      <span class="bnav-dot"></span>
+    </a>
+  </nav>
+
+  <!-- ── More sheet ── -->
+  <div class="more-overlay" id="moreOverlay" onclick="closeMore()"></div>
+  <div class="more-sheet" id="moreSheet">
+    <div class="more-handle"></div>
+    <div class="more-grid">
+      <a class="more-item" href="capsule-result.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M6.5 3.5H9.5C9.5 4.88 10.62 6 12 6C13.38 6 14.5 4.88 14.5 3.5H17.5L22 8L19 11L17 9V21H7V9L5 11L2 8L6.5 3.5Z" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Outfits</span>
+        <span class="more-item-badge">96</span>
+      </a>
+      <a class="more-item" href="uncapsulated.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><circle cx="8.5" cy="8.5" r="6" stroke="white" stroke-width="1.3"/><path d="M4.26 4.26L12.74 12.74" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">Uncapsulated</span>
+        <span class="more-item-badge">6</span>
+      </a>
+      <a class="more-item" href="#">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><path d="M2.5 5H14.5M2.5 8.5H11.5M2.5 12H9.5" stroke="white" stroke-width="1.35" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">Shopping List</span>
+        <span class="more-item-badge">4</span>
+      </a>
+      <a class="more-item" href="for-sale.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><path d="M8.5 1.5V13.5" stroke="white" stroke-width="1.3" stroke-linecap="round"/><path d="M11.5 4.5C11.5 3.5 10.1 3 8.5 3C6.9 3 5.5 3.8 5.5 5.2C5.5 6.6 8.5 7.2 8.5 7.2C8.5 7.2 11.5 7.8 11.5 9.5C11.5 11.2 10.1 11.8 8.5 11.8C6.9 11.8 5.5 11.3 5.5 10.3" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">For Sale</span>
+        <span class="more-item-badge">2</span>
+      </a>
+      <a class="more-item" href="for-repair.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">For Repair</span>
+        <span class="more-item-badge">1</span>
+      </a>
+      <a class="more-item" href="profile.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Profile</span>
+      </a>
+      <a class="more-item" href="profile.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Settings</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ══════════════════════════════
+   I18N
+══════════════════════════════ */
+const I18N = {
+  EN: {
+    topbar_title:        'Profile &amp; <strong>Settings</strong>',
+    topbar_sub:          'Manage your account',
+    section_personal:    'Personal Information',
+    section_subscription:'Subscription',
+    section_notifications:'Notifications',
+    section_security:    'Login &amp; Security',
+    section_account:     'Account Management',
+    label_first_name:    'First Name',
+    label_last_name:     'Last Name',
+    label_email:         'Email',
+    label_phone:         'Phone',
+    label_birthday:      'Date of Birth',
+    label_country:       'Country',
+    label_city:          'City',
+    label_shoe_size:     'Shoe Size',
+    label_size_top:      'Clothing Size (Top)',
+    label_size_bottom:   'Clothing Size (Bottom)',
+    label_2fa:           'Two-Factor Authentication',
+    label_change_pw:     'Password',
+    label_user_id:       'User ID',
+    label_sessions:      'Active Sessions',
+    label_current:       'Current',
+
+    toggle_email:        'Email notifications',
+    toggle_push:         'Push notifications',
+    toggle_2fa_google:   'Google Authenticator',
+    toggle_2fa_google_desc: 'TOTP code as second factor',
+    toggle_2fa_push:     'Push Notification',
+    toggle_2fa_push_desc:'Approve login from linked app',
+
+    plan_current:        'Current Plan',
+    plan_f1:             'Unlimited capsules',
+    plan_f2:             'AI outfit generation',
+    plan_f3:             'Gap analysis &amp; shopping list',
+    plan_f4:             'Priority support',
+    btn_save:            'Save',
+    btn_manage_sub:      'Manage Subscription',
+    btn_change_pw:       'Change Password',
+    btn_logout:          'Log Out',
+    btn_delete_account:  'Delete Account',
+    nav_overview:        'Overview',
+    nav_dashboard:       'Dashboard',
+    nav_wardrobe:        'Wardrobe',
+    nav_items:           'My Items',
+    nav_outfits:         'Outfits',
+    nav_capsules:        'Capsules',
+    nav_uncapsulated:    'Uncapsulated',
+    nav_lists:           'Lists',
+    nav_favorites:       'Favorites',
+    nav_shopping:        'Shopping List',
+    nav_sale:            'For Sale',
+    nav_repair:          'For Repair',
+    nav_settings:        'Settings',
+  },
+  RU: {
+    topbar_title:        'Профиль и <strong>настройки</strong>',
+    topbar_sub:          'Управление аккаунтом',
+    section_personal:    'Личные данные',
+    section_subscription:'Подписка',
+    section_notifications:'Уведомления',
+    section_security:    'Вход и безопасность',
+    section_account:     'Управление аккаунтом',
+    label_first_name:    'Имя',
+    label_last_name:     'Фамилия',
+    label_email:         'Email',
+    label_phone:         'Телефон',
+    label_birthday:      'Дата рождения',
+    label_country:       'Страна',
+    label_city:          'Город',
+    label_shoe_size:     'Размер обуви',
+    label_size_top:      'Размер одежды (верх)',
+    label_size_bottom:   'Размер одежды (низ)',
+    label_2fa:           'Двухфакторная аутентификация',
+    label_change_pw:     'Пароль',
+    label_user_id:       'ID пользователя',
+    label_sessions:      'Активные сессии',
+    label_current:       'Текущая',
+
+    toggle_email:        'Email-уведомления',
+    toggle_push:         'Push-уведомления',
+    toggle_2fa_google:   'Google Authenticator',
+    toggle_2fa_google_desc: 'TOTP-код как второй фактор',
+    toggle_2fa_push:     'Push-уведомление',
+    toggle_2fa_push_desc:'Подтверждение из привязанного приложения',
+
+    plan_current:        'Текущий план',
+    plan_f1:             'Безлимитные капсулы',
+    plan_f2:             'AI-генерация комплектов',
+    plan_f3:             'Анализ гардероба и шоппинг-лист',
+    plan_f4:             'Приоритетная поддержка',
+    btn_save:            'Сохранить',
+    btn_manage_sub:      'Управление подпиской',
+    btn_change_pw:       'Изменить пароль',
+    btn_logout:          'Выйти',
+    btn_delete_account:  'Удалить аккаунт',
+    nav_overview:        'Обзор',
+    nav_dashboard:       'Дашборд',
+    nav_wardrobe:        'Гардероб',
+    nav_items:           'Мои вещи',
+    nav_outfits:         'Комплекты',
+    nav_capsules:        'Капсулы',
+    nav_uncapsulated:    'Вне капсул',
+    nav_lists:           'Списки',
+    nav_favorites:       'Избранное',
+    nav_shopping:        'Шоппинг-лист',
+    nav_sale:            'На продажу',
+    nav_repair:          'На ремонт',
+    nav_settings:        'Настройки',
+  },
+  ES: {
+    topbar_title:        'Perfil y <strong>ajustes</strong>',
+    topbar_sub:          'Gestiona tu cuenta',
+    section_personal:    'Informaci&oacute;n personal',
+    section_subscription:'Suscripci&oacute;n',
+    section_notifications:'Notificaciones',
+    section_security:    'Inicio de sesi&oacute;n y seguridad',
+    section_account:     'Gesti&oacute;n de cuenta',
+    label_first_name:    'Nombre',
+    label_last_name:     'Apellido',
+    label_email:         'Email',
+    label_phone:         'Tel&eacute;fono',
+    label_birthday:      'Fecha de nacimiento',
+    label_country:       'Pa&iacute;s',
+    label_city:          'Ciudad',
+    label_shoe_size:     'Talla de calzado',
+    label_size_top:      'Talla de ropa (arriba)',
+    label_size_bottom:   'Talla de ropa (abajo)',
+    label_2fa:           'Autenticaci&oacute;n de dos factores',
+    label_change_pw:     'Contrase&ntilde;a',
+    label_user_id:       'ID de usuario',
+    label_sessions:      'Sesiones activas',
+    label_current:       'Actual',
+
+    toggle_email:        'Notificaciones por email',
+    toggle_push:         'Notificaciones push',
+    toggle_2fa_google:   'Google Authenticator',
+    toggle_2fa_google_desc: 'C&oacute;digo TOTP como segundo factor',
+    toggle_2fa_push:     'Notificaci&oacute;n push',
+    toggle_2fa_push_desc:'Aprobar desde la app vinculada',
+
+    plan_current:        'Plan actual',
+    plan_f1:             'C&aacute;psulas ilimitadas',
+    plan_f2:             'Generaci&oacute;n de outfits con IA',
+    plan_f3:             'An&aacute;lisis y lista de compras',
+    plan_f4:             'Soporte prioritario',
+    btn_save:            'Guardar',
+    btn_manage_sub:      'Gestionar suscripci&oacute;n',
+    btn_change_pw:       'Cambiar contrase&ntilde;a',
+    btn_logout:          'Cerrar sesi&oacute;n',
+    btn_delete_account:  'Eliminar cuenta',
+    nav_overview:        'General',
+    nav_dashboard:       'Panel',
+    nav_wardrobe:        'Guardarropa',
+    nav_items:           'Mis prendas',
+    nav_outfits:         'Outfits',
+    nav_capsules:        'C&aacute;psulas',
+    nav_uncapsulated:    'Sin c&aacute;psula',
+    nav_lists:           'Listas',
+    nav_favorites:       'Favoritos',
+    nav_shopping:        'Lista de compras',
+    nav_sale:            'En venta',
+    nav_repair:          'Para reparar',
+    nav_settings:        'Ajustes',
+  }
+};
+
+let currentLangCode = 'EN';
+
+/* ── Lang ── */
+function toggleLang(e) {
+  e.stopPropagation();
+  document.getElementById('langDropdown').classList.toggle('open');
+}
+function setLang(btn) {
+  const code = btn.dataset.code;
+  currentLangCode = code;
+  document.getElementById('currentLang').textContent = code;
+  document.querySelectorAll('.lang-option').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('langDropdown').classList.remove('open');
+  applyI18n(code);
+}
+document.addEventListener('click', () => {
+  document.getElementById('langDropdown').classList.remove('open');
+});
+
+function applyI18n(code) {
+  const dict = I18N[code] || I18N.EN;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (!dict[key]) return;
+    el.innerHTML = dict[key];
+  });
+}
+
+/* ── Toggle switch ── */
+function toggleSwitch(el) {
+  el.classList.toggle('on');
+}
+
+  function toggleMore(e) {
+    if (e) e.preventDefault();
+    document.getElementById('moreOverlay').classList.toggle('open');
+    document.getElementById('moreSheet').classList.toggle('open');
+  }
+  function closeMore() {
+    document.getElementById('moreOverlay').classList.remove('open');
+    document.getElementById('moreSheet').classList.remove('open');
+  }
+</script>
+
+</body>
+</html>

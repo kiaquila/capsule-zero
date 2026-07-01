@@ -6,7 +6,8 @@ Legacy migration artifacts were removed after all scenarios below passed.
 
 ## Preconditions
 
-- `baseline-checks`, `guard`, and `AI Review` are green on the current migration branch.
+- `baseline-checks`, `guard`, `test`, and `AI Review` are green on the current migration branch.
+- `osv-scan` has run on the current migration branch or has been consciously reviewed as a non-required dependency-security signal.
 - Claude GitHub Actions workflows are enabled and can access `ANTHROPIC_API_KEY`.
 - Codex GitHub integration is enabled for `kiaquila/capsule-zero`.
 - A Codex cloud environment exists for `kiaquila/capsule-zero`.
@@ -66,6 +67,8 @@ Each matrix row passes only when all of the following are true:
 - `AI Review` remains the only required review check
 - `AI Review` fails closed when the selected reviewer does not produce a valid result
 - the selected reviewer result is matched to the current PR head SHA
+- app product changes are blocked unless the PR includes complete feature memory
+- repository baseline validation includes app typecheck and app build through `baseline-checks`
 - the PR remains within the existing Capsule Zero PR-first workflow contract
 
 ## Completed Evidence
@@ -81,3 +84,13 @@ Each matrix row passes only when all of the following are true:
 2. Local worktree orchestration scripts removed.
 3. Outdated self-hosted runner workflow removed.
 4. Repository docs updated to the final cloud-native operating model.
+
+## Pipeline Hardening Addendum
+
+The Unicorn Hub comparison hardening adds:
+
+- root `npm run preflight`
+- trusted default-branch gate scripts for `guard` and `AI Review`
+- complete feature-memory enforcement for product-root changes (`app/`, `api/`, `worker/`, `web/`, `mobile/`)
+- app typecheck and build inside the required `baseline-checks` job
+- `osv-scan` dependency vulnerability scanning as a visible, non-required security signal

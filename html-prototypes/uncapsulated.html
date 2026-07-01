@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capsule Zero — Uncapsulated</title>
+  <style>
+    :root {
+      --glass-bg:     rgba(255,255,255,0.22);
+      --glass-blur:   40px;
+      --glass-border: rgba(255,255,255,.58);
+      --glass-hi:     inset 0 1px 0 rgba(255,255,255,.72);
+      --gt-p:  rgba(255,255,255,.95);
+      --gt-s:  rgba(255,255,255,.70);
+      --gt-ph: rgba(255,255,255,.38);
+      --sidebar-w: 248px;
+      --radius-s: 8px;
+      --radius-m: 14px;
+      --radius-l: 20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── Background ── */
+    .hero-bg {
+      position: fixed; inset: 0;
+      background: url('wall.png') center / cover no-repeat;
+      filter: grayscale(100%);
+      z-index: -2;
+    }
+    .hero-overlay {
+      position: fixed; inset: 0;
+      background: linear-gradient(
+        160deg,
+        rgba(0,0,0,.58) 0%,
+        rgba(0,0,0,.40) 50%,
+        rgba(0,0,0,.68) 100%
+      );
+      z-index: -1;
+    }
+
+    /* ── App shell ── */
+    .app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ══════════════════════════════
+       SIDEBAR
+    ══════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: rgba(255,255,255,0.13);
+      backdrop-filter: blur(44px);
+      -webkit-backdrop-filter: blur(44px);
+      border-right: 1px solid rgba(255,255,255,.20);
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .sidebar::-webkit-scrollbar { display: none; }
+
+    .sidebar-head {
+      padding: 32px 24px 22px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .logo {
+      font-size: 11.5px; font-weight: 700;
+      letter-spacing: .26em; text-transform: uppercase;
+      color: var(--gt-p); text-decoration: none;
+      display: block; margin-bottom: 26px;
+    }
+    .user-row {
+      display: flex; align-items: center; gap: 11px;
+    }
+    .avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,.18);
+      border: 1.5px solid rgba(255,255,255,.40);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--gt-p);
+      letter-spacing: .04em; flex-shrink: 0;
+    }
+    .user-name {
+      font-size: 13px; font-weight: 600;
+      color: var(--gt-p); letter-spacing: .01em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .nav {
+      flex: 1;
+      padding: 12px 0 8px;
+    }
+    .nav-section-label {
+      font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--gt-ph);
+      padding: 16px 24px 6px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 24px 10px 22px;
+      cursor: pointer;
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: background .14s;
+      user-select: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.06); }
+    .nav-item.active {
+      background: rgba(255,255,255,.10);
+      border-left-color: rgba(255,255,255,.65);
+    }
+    .nav-ico {
+      width: 17px; height: 17px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      opacity: .65;
+    }
+    .nav-item.active .nav-ico { opacity: 1; }
+    .nav-lbl {
+      flex: 1;
+      font-size: 13px; font-weight: 500; letter-spacing: .01em;
+      color: var(--gt-s);
+    }
+    .nav-item.active .nav-lbl { color: var(--gt-p); font-weight: 600; }
+    .nav-badge {
+      font-size: 10.5px; font-weight: 600;
+      color: var(--gt-ph);
+      background: rgba(255,255,255,.08);
+      border-radius: 20px; padding: 2px 7px;
+      min-width: 22px; text-align: center;
+    }
+    .nav-item.active .nav-badge { color: var(--gt-s); }
+
+    .sidebar-foot {
+      padding: 12px 0 28px;
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+
+    /* ══════════════════════════════
+       LANG DROPDOWN
+    ══════════════════════════════ */
+    .lang-dropdown { position: relative; }
+    .lang-trigger {
+      display: flex; align-items: center; gap: 6px;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: rgba(255,255,255,.88); padding: 8px 4px; transition: color .15s;
+    }
+    .lang-trigger:hover { color: #fff; }
+    .lang-chevron { font-size: 8px; opacity: .8; transition: transform .2s; }
+    .lang-dropdown.open .lang-chevron { transform: rotate(180deg); }
+    .lang-menu {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: rgba(255,255,255,0.28);
+      backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+      border-radius: var(--radius-m);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,.20), var(--glass-hi);
+      padding: 8px; min-width: 164px;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-6px);
+      transition: opacity .2s ease, transform .2s ease; z-index: 100;
+    }
+    .lang-dropdown.open .lang-menu { opacity: 1; pointer-events: all; transform: translateY(0); }
+    .lang-option {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 10px 12px;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; letter-spacing: .06em;
+      color: var(--gt-s); border-radius: var(--radius-s); transition: all .15s;
+    }
+    .lang-option:hover { background: rgba(255,255,255,.12); color: var(--gt-p); }
+    .lang-option.active { color: #fff; font-weight: 600; }
+    .lang-code { font-size: 11px; font-weight: 600; letter-spacing: .1em; color: inherit; opacity: .7; }
+
+    /* ══════════════════════════════
+       MAIN
+    ══════════════════════════════ */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.16) transparent;
+      display: flex;
+      flex-direction: column;
+    }
+    .main::-webkit-scrollbar { width: 4px; }
+    .main::-webkit-scrollbar-track { background: transparent; }
+    .main::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,.16);
+      border-radius: 10px;
+    }
+
+    /* Topbar */
+    .topbar {
+      padding: 30px 40px 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .topbar-title {
+      font-size: 25px; font-weight: 300; letter-spacing: -.01em;
+      color: var(--gt-p); line-height: 1.2;
+    }
+    .topbar-title strong { font-weight: 600; }
+    .topbar-sub {
+      font-size: 11.5px; letter-spacing: .10em; text-transform: uppercase;
+      color: var(--gt-s); margin-top: 5px;
+    }
+    .topbar-right {
+      display: flex; align-items: center; gap: 16px;
+      padding-top: 4px;
+    }
+
+    /* Content */
+    .content {
+      padding: 24px 40px 52px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* ══════════════════════════════
+       FILTER BAR
+    ══════════════════════════════ */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .filter-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .filter-chip {
+      padding: 7px 16px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 50px;
+      font-family: inherit; font-size: 11.5px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-ph); cursor: pointer;
+      transition: all .14s;
+    }
+    .filter-chip:hover {
+      background: rgba(255,255,255,.14);
+      color: var(--gt-s);
+    }
+    .filter-chip.active {
+      background: rgba(255,255,255,.22);
+      border-color: rgba(255,255,255,.42);
+      color: var(--gt-p);
+    }
+
+    .filter-right {
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    /* Sort dropdown */
+    .sort-dropdown { position: relative; }
+    .sort-trigger {
+      display: flex; align-items: center; gap: 5px;
+      padding: 7px 14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 50px;
+      font-family: inherit; font-size: 11px; font-weight: 600;
+      letter-spacing: .06em;
+      color: var(--gt-s); cursor: pointer;
+      transition: all .14s;
+    }
+    .sort-trigger:hover {
+      background: rgba(255,255,255,.14);
+      color: var(--gt-p);
+    }
+    .sort-menu {
+      position: absolute; top: calc(100% + 6px); right: 0;
+      background: rgba(255,255,255,0.28);
+      backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+      border-radius: var(--radius-s);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,.20), var(--glass-hi);
+      padding: 6px; min-width: 150px;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-4px);
+      transition: opacity .15s ease, transform .15s ease;
+      z-index: 80;
+    }
+    .sort-dropdown.open .sort-menu {
+      opacity: 1; pointer-events: all; transform: translateY(0);
+    }
+    .sort-option {
+      display: block; width: 100%;
+      padding: 8px 12px;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 12px; letter-spacing: .04em;
+      color: var(--gt-s); border-radius: 6px;
+      text-align: left;
+      transition: all .12s;
+    }
+    .sort-option:hover { background: rgba(255,255,255,.12); color: var(--gt-p); }
+    .sort-option.active { color: #fff; font-weight: 600; }
+
+    /* ══════════════════════════════
+       ITEM GRID
+    ══════════════════════════════ */
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    .item-card {
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: var(--radius-m);
+      padding: 16px;
+      cursor: pointer;
+      position: relative;
+      transition: background .14s, border-color .14s;
+    }
+    .item-card:hover {
+      background: rgba(255,255,255,.18);
+      border-color: rgba(255,255,255,.38);
+    }
+    .item-thumb {
+      width: 100%; aspect-ratio: 1;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius-s);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 12px;
+    }
+    .item-thumb svg { opacity: .35; }
+    .item-name {
+      font-size: 13px; font-weight: 500; color: var(--gt-p);
+      letter-spacing: .01em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .item-cat-row {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 4px;
+    }
+    .item-cat {
+      font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-ph);
+    }
+    .item-colors {
+      display: flex; gap: 3px; align-items: center;
+    }
+    .item-color {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.22);
+      flex-shrink: 0;
+    }
+    .item-brand {
+      font-size: 10px; letter-spacing: .04em;
+      color: var(--gt-ph); margin-top: 3px;
+    }
+
+    /* Favorite heart */
+    .item-fav {
+      position: absolute; top: 8px; right: 8px;
+      width: 28px; height: 28px;
+      background: rgba(0,0,0,.40);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.20);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transition: opacity .14s, background .12s;
+      z-index: 3;
+    }
+    .item-card:hover .item-fav { opacity: 1; }
+    .item-fav.active { opacity: 1; background: rgba(220,30,50,.90); border-color: rgba(255,60,80,.70); }
+    .item-fav:hover { background: rgba(0,0,0,.60); }
+    .item-fav.active:hover { background: rgba(220,40,60,.65); }
+
+    /* Hover actions */
+    .item-actions {
+      position: absolute; top: 8px; right: 40px;
+      display: flex; gap: 4px;
+      opacity: 0;
+      transition: opacity .14s;
+    }
+    .item-card:hover .item-actions { opacity: 1; }
+    .item-action-btn {
+      width: 28px; height: 28px;
+      background: rgba(0,0,0,.40);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.20);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .12s;
+    }
+    .item-action-btn:hover { background: rgba(0,0,0,.60); }
+    .item-action-btn.delete:hover { background: rgba(180,40,20,.60); }
+
+    /* ══════════════════════════════
+       ITEM DETAIL OVERLAY (read-only)
+    ══════════════════════════════ */
+    .item-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+    .item-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .item-detail-panel {
+      position: fixed;
+      top: 0; bottom: 0; right: 0;
+      width: 440px;
+      background: rgba(30,30,30,0.82);
+      backdrop-filter: blur(48px);
+      -webkit-backdrop-filter: blur(48px);
+      border-left: 1px solid rgba(255,255,255,.12);
+      z-index: 510;
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform .3s cubic-bezier(.4,0,.2,1);
+      overflow: hidden;
+    }
+    .item-overlay.open .item-detail-panel {
+      transform: translateX(0);
+    }
+    .id-header {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .id-title {
+      font-size: 16px; font-weight: 500; letter-spacing: -.01em;
+      color: var(--gt-p);
+    }
+    .id-close {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background .15s;
+    }
+    .id-close:hover { background: rgba(255,255,255,.16); }
+    .id-body {
+      flex: 1; overflow-y: auto;
+      padding: 20px 24px 28px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.12) transparent;
+    }
+
+    /* Photo preview */
+    .id-photo {
+      width: 100%; aspect-ratio: 1;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius-m);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .id-photo svg { opacity: .30; }
+    .id-photo-btn {
+      padding: 7px 16px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 50px;
+      font-family: inherit; font-size: 10.5px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-s); cursor: pointer;
+      transition: all .14s;
+    }
+    .id-photo-btn:hover {
+      background: rgba(255,255,255,.20);
+      color: var(--gt-p);
+    }
+
+    /* Form fields */
+    .id-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: var(--radius-s);
+      font-family: inherit; font-size: 14px; font-weight: 400;
+      color: var(--gt-p); outline: none;
+      transition: border-color .15s, background .15s;
+    }
+    .id-input:focus {
+      background: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.36);
+    }
+    .id-input::placeholder { color: var(--gt-ph); }
+    .id-select {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: var(--radius-s);
+      font-family: inherit; font-size: 14px; font-weight: 400;
+      color: var(--gt-p); outline: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='rgba(255,255,255,0.5)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+    .id-select:focus {
+      background-color: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.36);
+    }
+    .id-select option {
+      background: #2a2a2a; color: #fff;
+    }
+
+    /* Editable color dots */
+    .id-color-dot {
+      cursor: pointer;
+      transition: transform .14s, border-color .14s;
+      position: relative;
+    }
+    .id-color-dot:hover {
+      transform: scale(1.15);
+      border-color: rgba(255,255,255,.50);
+    }
+    .id-color-remove {
+      position: absolute; top: -6px; right: -6px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: rgba(0,0,0,.60);
+      border: 1px solid rgba(255,255,255,.25);
+      cursor: pointer;
+      display: none; align-items: center; justify-content: center;
+      z-index: 2;
+      transition: background .12s;
+    }
+    .id-color-dot:hover .id-color-remove { display: flex; }
+    .id-color-remove:hover { background: rgba(180,40,20,.70); }
+    .id-color-add {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1.5px dashed rgba(255,255,255,.22);
+      background: rgba(255,255,255,.04);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .14s;
+    }
+    .id-color-add:hover {
+      border-color: rgba(255,255,255,.40);
+      background: rgba(255,255,255,.10);
+    }
+    .id-color-input {
+      position: absolute; opacity: 0;
+      width: 28px; height: 28px;
+      cursor: pointer;
+    }
+
+    /* Editable material tags */
+    .id-tag-remove {
+      width: 14px; height: 14px;
+      background: none; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      opacity: .50; transition: opacity .12s;
+      padding: 0; flex-shrink: 0;
+    }
+    .id-tag-remove:hover { opacity: 1; }
+    .id-tag-add-wrap {
+      display: flex; align-items: center; gap: 4px;
+    }
+    .id-tag-input {
+      width: 90px; padding: 5px 10px;
+      background: rgba(255,255,255,.06);
+      border: 1px dashed rgba(255,255,255,.20);
+      border-radius: 20px;
+      font-family: inherit; font-size: 12px;
+      color: var(--gt-p); outline: none;
+      transition: border-color .15s, background .15s;
+    }
+    .id-tag-input:focus {
+      background: rgba(255,255,255,.10);
+      border-color: rgba(255,255,255,.36);
+      border-style: solid;
+    }
+    .id-tag-input::placeholder { color: var(--gt-ph); }
+    .id-tag-pct {
+      width: 38px; padding: 2px 4px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 8px;
+      font-family: inherit; font-size: 11px;
+      color: var(--gt-p); text-align: center;
+      outline: none;
+    }
+    .id-tag-pct:focus {
+      background: rgba(255,255,255,.14);
+      border-color: rgba(255,255,255,.30);
+    }
+    .id-tag-pct::placeholder { color: var(--gt-ph); font-size: 10px; }
+
+    /* Read-only fields */
+    .id-field {
+      margin-bottom: 16px;
+    }
+    .id-label {
+      font-size: 10px; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--gt-ph);
+      margin-bottom: 7px; display: block;
+    }
+    .id-value {
+      font-size: 14px; font-weight: 400; color: var(--gt-p);
+      letter-spacing: .01em;
+      padding: 10px 0 2px;
+    }
+    .id-value.empty {
+      color: var(--gt-ph); font-style: italic;
+    }
+
+    /* Color dots in detail */
+    .id-colors-row {
+      display: flex; align-items: center; gap: 8px;
+      flex-wrap: wrap;
+      padding: 6px 0;
+    }
+    .id-color-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.28);
+    }
+
+    /* Material tags (read-only) */
+    .id-tags-row {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      align-items: center;
+      padding: 4px 0;
+    }
+    .id-tag {
+      display: flex; align-items: center; gap: 5px;
+      padding: 5px 10px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 20px;
+      font-size: 12px; color: var(--gt-p);
+      letter-spacing: .02em;
+    }
+
+    /* Detail action buttons */
+    .id-actions {
+      display: flex; gap: 10px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .id-save-btn {
+      flex: 1;
+      padding: 12px 20px;
+      background: rgba(255,255,255,.22);
+      border: 1px solid rgba(255,255,255,.42);
+      border-radius: 50px;
+      font-family: inherit; font-size: 12px; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--gt-p); cursor: pointer;
+      transition: background .14s, transform .10s;
+    }
+    .id-save-btn:hover {
+      background: rgba(255,255,255,.32);
+      transform: translateY(-1px);
+    }
+    .id-delete-btn {
+      padding: 12px 20px;
+      background: rgba(255,80,60,.10);
+      border: 1px solid rgba(255,80,60,.25);
+      border-radius: 50px;
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: rgba(255,120,100,.85); cursor: pointer;
+      transition: all .14s;
+    }
+    .id-delete-btn:hover {
+      background: rgba(255,80,60,.20);
+      border-color: rgba(255,80,60,.40);
+      color: rgba(255,120,100,1);
+    }
+    .id-move-row {
+      display: flex; gap: 8px;
+      margin-top: 8px;
+    }
+    .id-move-btn {
+      flex: 1;
+      padding: 10px 16px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.20);
+      border-radius: 50px;
+      font-family: inherit; font-size: 11px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-s); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: all .14s;
+    }
+    .id-move-btn:hover {
+      background: rgba(255,255,255,.14);
+      color: var(--gt-p);
+      transform: translateY(-1px);
+    }
+
+    /* ══════════════════════════════
+       CAPSULE PICKER MODAL
+    ══════════════════════════════ */
+    .capsule-picker-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.55);
+      z-index: 600;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+    }
+    .capsule-picker-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .capsule-picker {
+      width: 380px; max-height: 480px;
+      background: rgba(40,40,40,0.88);
+      backdrop-filter: blur(48px);
+      -webkit-backdrop-filter: blur(48px);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: var(--radius-l);
+      box-shadow: 0 16px 48px rgba(0,0,0,.40);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      transform: scale(.95) translateY(8px);
+      transition: transform .2s cubic-bezier(.4,0,.2,1);
+    }
+    .capsule-picker-overlay.open .capsule-picker {
+      transform: scale(1) translateY(0);
+    }
+    .cp-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .cp-title {
+      font-size: 15px; font-weight: 600; color: var(--gt-p);
+      letter-spacing: .01em;
+    }
+    .cp-close {
+      width: 28px; height: 28px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+      flex-shrink: 0;
+    }
+    .cp-close:hover { background: rgba(255,255,255,.16); }
+    .cp-list {
+      flex: 1; overflow-y: auto;
+      padding: 12px 16px 16px;
+      display: flex; flex-direction: column; gap: 8px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.12) transparent;
+    }
+    .cp-capsule {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius-m);
+      transition: background .14s, border-color .14s;
+    }
+    .cp-capsule:hover {
+      background: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.28);
+    }
+    .cp-dots {
+      display: flex; gap: 3px; flex-shrink: 0;
+    }
+    .cp-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.22);
+    }
+    .cp-info {
+      flex: 1; min-width: 0;
+    }
+    .cp-name {
+      font-size: 13px; font-weight: 600; color: var(--gt-p);
+      letter-spacing: .01em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cp-count {
+      font-size: 10.5px; color: var(--gt-s);
+      letter-spacing: .04em; margin-top: 2px;
+    }
+    .cp-select-btn {
+      padding: 7px 16px;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: 50px;
+      font-family: inherit; font-size: 11px; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-p); cursor: pointer;
+      transition: all .14s;
+      flex-shrink: 0;
+    }
+    .cp-select-btn:hover {
+      background: rgba(255,255,255,.26);
+      border-color: rgba(255,255,255,.44);
+    }
+
+    /* ══════════════════════════════
+       TOAST
+    ══════════════════════════════ */
+    .toast-container {
+      position: fixed;
+      bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 700;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      padding: 12px 24px;
+      background: rgba(255,255,255,.18);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      border: 1px solid rgba(255,255,255,.32);
+      border-radius: 50px;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      letter-spacing: .02em;
+      color: var(--gt-p);
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .25s ease, transform .25s ease;
+      pointer-events: auto;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ══════════════════════════════
+       EMPTY STATE
+    ══════════════════════════════ */
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px;
+      padding: 80px 40px;
+      text-align: center;
+    }
+    .empty-state-icon {
+      width: 64px; height: 64px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .empty-state-title {
+      font-size: 18px; font-weight: 500;
+      color: var(--gt-p); letter-spacing: .01em;
+    }
+    .empty-state-sub {
+      font-size: 13px; color: var(--gt-s);
+      letter-spacing: .02em;
+      max-width: 300px;
+    }
+
+    /* ── Bottom Navigation (mobile) ── */
+    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: rgba(255,255,255,0.13); backdrop-filter: blur(44px); -webkit-backdrop-filter: blur(44px); border-top: 1px solid rgba(255,255,255,.20); padding: 0; padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+    .bnav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 12px 6px; text-decoration: none; cursor: pointer; transition: opacity .14s, border-color .2s; opacity: .5; border-top: 2px solid transparent; }
+    .bnav-item.active { opacity: 1; border-top-color: rgba(255,255,255,.65); }
+    .bnav-item:hover { opacity: .8; }
+    .bnav-ico { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+    .bnav-lbl { font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--gt-p); }
+    .bnav-dot { display: none; }
+
+    /* ── More sheet ── */
+    .more-overlay {
+      display: none; position: fixed; inset: 0; z-index: 60;
+      background: rgba(0,0,0,.40);
+      opacity: 0; transition: opacity .25s;
+    }
+    .more-overlay.open { display: block; opacity: 1; }
+    .more-sheet {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 70;
+      background: rgba(255,255,255,0.22);
+      backdrop-filter: blur(44px); -webkit-backdrop-filter: blur(44px);
+      border-top: 1px solid rgba(255,255,255,.58);
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -8px 32px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.72);
+      padding: 12px 20px;
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.32,.72,.24,1);
+    }
+    .more-sheet.open { transform: translateY(0); }
+    .more-handle {
+      width: 36px; height: 4px; border-radius: 2px;
+      background: rgba(255,255,255,.30);
+      margin: 0 auto 16px;
+    }
+    .more-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+    }
+    .more-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; padding: 14px 8px;
+      text-decoration: none; border-radius: 12px;
+      transition: background .14s;
+    }
+    .more-item:hover { background: rgba(255,255,255,.10); }
+    .more-item-ico {
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .more-item-lbl {
+      font-size: 9.5px; font-weight: 600;
+      letter-spacing: .04em; color: var(--gt-p);
+      text-align: center;
+    }
+    .more-item-badge {
+      font-size: 9px; font-weight: 600;
+      color: var(--gt-ph); background: rgba(255,255,255,.10);
+      border-radius: 20px; padding: 1px 6px; margin-top: -3px;
+    }
+    @media (min-width: 1025px) {
+      .more-overlay, .more-sheet { display: none !important; }
+    }
+
+    /* ══════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════ */
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .bottom-nav { display: flex; justify-content: space-around; align-items: center; }
+      .topbar { padding: 24px 24px 0; }
+      .content { padding: 20px 24px 88px; }
+      .item-grid { grid-template-columns: repeat(3, 1fr); }
+      .item-detail-panel { width: 380px; }
+    }
+    @media (max-width: 768px) {
+      .item-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .item-detail-panel { width: 100%; }
+      .filter-bar { flex-direction: column; gap: 12px; align-items: flex-start; }
+      .capsule-picker { width: calc(100% - 32px); }
+    }
+    @media (max-width: 480px) {
+      .topbar { flex-direction: column; gap: 12px; }
+      .topbar-right { width: 100%; justify-content: flex-end; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero-bg"></div>
+<div class="hero-overlay"></div>
+
+<div class="app">
+
+  <!-- ══════════════════════════════
+       SIDEBAR
+  ══════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <a class="logo" href="index.html">Capsule Zero</a>
+      <div class="user-row">
+        <a href="profile.html" style="text-decoration:none;flex-shrink:0;border-radius:50%;transition:transform .14s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform=''">
+          <div class="avatar">AK</div>
+        </a>
+        <div>
+          <div class="user-name">Anna Kozlova</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section-label" data-i18n="nav_overview">Overview</div>
+
+      <a class="nav-item" href="dashboard.html">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+            <rect x="10" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+            <rect x="1.5" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+            <rect x="10" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_dashboard">Dashboard</span>
+      </a>
+
+      <div class="nav-section-label" data-i18n="nav_wardrobe">Wardrobe</div>
+
+      <a class="nav-item" href="my-items.html">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <rect x="2.5" y="6" width="12" height="9" rx="1" stroke="white" stroke-width="1.3"/>
+            <path d="M2.5 6L5 2.5H8.5M14.5 6L12 2.5H8.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.5 2.5V6" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_items">My Items</span>
+        <span class="nav-badge">24</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24">
+            <path d="M6.5 3.5H9.5C9.5 4.88 10.62 6 12 6C13.38 6 14.5 4.88 14.5 3.5H17.5L22 8L19 11L17 9V21H7V9L5 11L2 8L6.5 3.5Z" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_outfits">Outfits</span>
+        <span class="nav-badge">96</span>
+      </a>
+
+      <a class="nav-item" href="capsule-result.html">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M2.5 3.5H7C7 2 6 0.5 8 0.5C10 0.5 9 2 9 3.5H13V7C14.5 7 16 6 16 8C16 10 14.5 9 13 9V14H9C9 12.5 10 11 8 11C6 11 7 12.5 7 14H2.5V9C4 9 5 10 5 8C5 6 4 7 2.5 7Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_capsules">Capsules</span>
+        <span class="nav-badge">3</span>
+      </a>
+
+      <a class="nav-item active" href="uncapsulated.html">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <circle cx="8.5" cy="8.5" r="6" stroke="white" stroke-width="1.3"/>
+            <path d="M4.26 4.26L12.74 12.74" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_uncapsulated">Uncapsulated</span>
+        <span class="nav-badge" id="navUncapBadge">6</span>
+      </a>
+
+      <div class="nav-section-label" data-i18n="nav_lists">Lists</div>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M8.5 2.5L10.2 7.2H15.2L11.2 10L12.8 14.8L8.5 11.8L4.2 14.8L5.8 10L1.8 7.2H6.8Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_favorites">Favorites</span>
+        <span class="nav-badge">3</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M2.5 5H14.5M2.5 8.5H11.5M2.5 12H9.5" stroke="white" stroke-width="1.35" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_shopping">Shopping List</span>
+        <span class="nav-badge">4</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M8.5 1.5V13.5" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M11.5 4.5C11.5 3.5 10.1 3 8.5 3C6.9 3 5.5 3.8 5.5 5.2C5.5 6.6 8.5 7.2 8.5 7.2C8.5 7.2 11.5 7.8 11.5 9.5C11.5 11.2 10.1 11.8 8.5 11.8C6.9 11.8 5.5 11.3 5.5 10.3" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_sale">For Sale</span>
+        <span class="nav-badge">2</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_repair">For Repair</span>
+        <span class="nav-badge">1</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <a class="nav-item" href="profile.html">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_settings">Settings</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════
+       MAIN
+  ══════════════════════════════ -->
+  <main class="main">
+
+    <!-- Topbar (no Add Item button) -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" data-i18n="page_title"><strong>Uncapsulated</strong></div>
+        <div class="topbar-sub" id="topbarSub" data-i18n="page_subtitle">6 items without capsule</div>
+      </div>
+      <div class="topbar-right">
+        <div class="lang-dropdown" id="langDropdown">
+          <button class="lang-trigger" onclick="toggleLang(event)" aria-label="Select language">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span id="currentLang">EN</span>
+            <span class="lang-chevron">&#9662;</span>
+          </button>
+          <div class="lang-menu">
+            <button class="lang-option active" data-code="EN" onclick="setLang(this)">
+              <span>English</span><span class="lang-code">EN</span>
+            </button>
+            <button class="lang-option" data-code="RU" onclick="setLang(this)">
+              <span>&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</span><span class="lang-code">RU</span>
+            </button>
+            <button class="lang-option" data-code="ES" onclick="setLang(this)">
+              <span>Espa&#241;ol</span><span class="lang-code">ES</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Filter bar -->
+      <div class="filter-bar" id="filterBarWrap">
+        <div class="filter-chips" id="filterChips"></div>
+        <div class="filter-right">
+          <div class="sort-dropdown" id="sortDropdown">
+            <button class="sort-trigger" id="sortTrigger" onclick="toggleSort(event)">Sort: Name &#9662;</button>
+            <div class="sort-menu" id="sortMenu"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item grid -->
+      <div class="item-grid" id="itemGrid"></div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="bnav-item" href="dashboard.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="1.5" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/></svg></span>
+      <span class="bnav-lbl">Dashboard</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="my-items.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><rect x="2.5" y="6" width="12" height="9" rx="1" stroke="white" stroke-width="1.3"/><path d="M2.5 6L5 2.5H8.5M14.5 6L12 2.5H8.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+      <span class="bnav-lbl">My Items</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="capsule-result.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><path d="M2.5 3.5H7C7 2 6 0.5 8 0.5C10 0.5 9 2 9 3.5H13V7C14.5 7 16 6 16 8C16 10 14.5 9 13 9V14H9C9 12.5 10 11 8 11C6 11 7 12.5 7 14H2.5V9C4 9 5 10 5 8C5 6 4 7 2.5 7Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+      <span class="bnav-lbl">Capsules</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="favorites.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><path d="M8.5 2.5L10.2 7.2H15.2L11.2 10L12.8 14.8L8.5 11.8L4.2 14.8L5.8 10L1.8 7.2H6.8Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+      <span class="bnav-lbl">Favorites</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item active" onclick="toggleMore(event)">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8" fill="white"/><circle cx="12" cy="12" r="1.8" fill="white"/><circle cx="19" cy="12" r="1.8" fill="white"/></svg></span>
+      <span class="bnav-lbl">More</span>
+      <span class="bnav-dot"></span>
+    </a>
+  </nav>
+
+  <!-- ── More sheet ── -->
+  <div class="more-overlay" id="moreOverlay" onclick="closeMore()"></div>
+  <div class="more-sheet" id="moreSheet">
+    <div class="more-handle"></div>
+    <div class="more-grid">
+      <a class="more-item" href="capsule-result.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M6.5 3.5H9.5C9.5 4.88 10.62 6 12 6C13.38 6 14.5 4.88 14.5 3.5H17.5L22 8L19 11L17 9V21H7V9L5 11L2 8L6.5 3.5Z" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Outfits</span>
+        <span class="more-item-badge">96</span>
+      </a>
+      <a class="more-item" href="uncapsulated.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><circle cx="8.5" cy="8.5" r="6" stroke="white" stroke-width="1.3"/><path d="M4.26 4.26L12.74 12.74" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">Uncapsulated</span>
+        <span class="more-item-badge">6</span>
+      </a>
+      <a class="more-item" href="#">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><path d="M2.5 5H14.5M2.5 8.5H11.5M2.5 12H9.5" stroke="white" stroke-width="1.35" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">Shopping List</span>
+        <span class="more-item-badge">4</span>
+      </a>
+      <a class="more-item" href="for-sale.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><path d="M8.5 1.5V13.5" stroke="white" stroke-width="1.3" stroke-linecap="round"/><path d="M11.5 4.5C11.5 3.5 10.1 3 8.5 3C6.9 3 5.5 3.8 5.5 5.2C5.5 6.6 8.5 7.2 8.5 7.2C8.5 7.2 11.5 7.8 11.5 9.5C11.5 11.2 10.1 11.8 8.5 11.8C6.9 11.8 5.5 11.3 5.5 10.3" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">For Sale</span>
+        <span class="more-item-badge">2</span>
+      </a>
+      <a class="more-item" href="for-repair.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">For Repair</span>
+        <span class="more-item-badge">1</span>
+      </a>
+      <a class="more-item" href="profile.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Profile</span>
+      </a>
+      <a class="more-item" href="profile.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Settings</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════
+     ITEM DETAIL OVERLAY (read-only)
+══════════════════════════════ -->
+<div class="item-overlay" id="itemOverlay" onclick="closeItemDetail()">
+  <div class="item-detail-panel" onclick="event.stopPropagation()">
+    <div class="id-header">
+      <span class="id-title" id="idTitle">Item Details</span>
+      <button class="id-close" onclick="closeItemDetail()" aria-label="Close">
+        <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+          <path d="M2 2L10 10M10 2L2 10" stroke="rgba(255,255,255,.70)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="id-body" id="idBody"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     CAPSULE PICKER MODAL
+══════════════════════════════ -->
+<div class="capsule-picker-overlay" id="capsulePickerOverlay" onclick="closeCapsulePicker()">
+  <div class="capsule-picker" onclick="event.stopPropagation()">
+    <div class="cp-header">
+      <span class="cp-title" id="cpTitle">Add to Capsule</span>
+      <button class="cp-close" onclick="closeCapsulePicker()" aria-label="Close">
+        <svg width="10" height="10" fill="none" viewBox="0 0 12 12">
+          <path d="M2 2L10 10M10 2L2 10" stroke="rgba(255,255,255,.70)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="cp-list" id="cpList"></div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ══════════════════════════════
+   MOCK DATA (same 24 items as my-items)
+══════════════════════════════ */
+const MY_ITEMS = [
+  { name: 'White T-shirt',         category: 'Top',        colors: ['#FFFFFF'],            layer: 'top',       brand: 'COS',           materials: ['Cotton'],              cost: 45 },
+  { name: 'Black T-shirt',         category: 'Top',        colors: ['#1C1C1C'],            layer: 'top',       brand: 'Uniqlo',        materials: ['Cotton'],              cost: 25 },
+  { name: 'Ivory silk blouse',     category: 'Top',        colors: ['#FFFFFF','#F5EADC'],  layer: 'top',       brand: 'Massimo Dutti', materials: ['Silk'],                cost: 120 },
+  { name: 'Grey cashmere sweater', category: 'Top',        colors: ['#8C8C8C'],            layer: 'top',       brand: 'COS',           materials: ['Cashmere','Wool'],     cost: 180 },
+  { name: 'Navy striped shirt',    category: 'Top',        colors: ['#182878','#FFFFFF'],  layer: 'top',       brand: 'Ralph Lauren',  materials: ['Cotton'],              cost: 95 },
+  { name: 'Cream knit polo',       category: 'Top',        colors: ['#F0EBE0'],            layer: 'top',       brand: 'COS',           materials: ['Cotton'],              cost: 65 },
+  { name: 'Black blazer',          category: 'Outerwear',  colors: ['#1C1C1C'],            layer: 'outer',     brand: 'Zara',          materials: ['Wool','Polyester'],    cost: 150 },
+  { name: 'Camel coat',            category: 'Outerwear',  colors: ['#C0A268'],            layer: 'outer',     brand: 'Max Mara',      materials: ['Wool','Cashmere'],     cost: 680 },
+  { name: 'Navy trench coat',      category: 'Outerwear',  colors: ['#182878'],            layer: 'outer',     brand: 'Burberry',      materials: ['Cotton','Polyester'],  cost: 520 },
+  { name: 'Grey wool vest',        category: 'Outerwear',  colors: ['#8C8C8C'],            layer: 'outer',     brand: 'Arket',         materials: ['Wool'],               cost: 110 },
+  { name: 'Straight jeans',        category: 'Bottom',     colors: ['#182878'],            layer: 'bottom',    brand: 'Agolde',        materials: ['Denim','Elastane'],    cost: 180 },
+  { name: 'Black trousers',        category: 'Bottom',     colors: ['#1C1C1C'],            layer: 'bottom',    brand: 'Theory',        materials: ['Wool','Lycra'],        cost: 240 },
+  { name: 'Beige chinos',          category: 'Bottom',     colors: ['#E8D5B5'],            layer: 'bottom',    brand: 'COS',           materials: ['Cotton'],              cost: 89 },
+  { name: 'Grey wool skirt',       category: 'Bottom',     colors: ['#8C8C8C'],            layer: 'bottom',    brand: 'Massimo Dutti', materials: ['Wool'],               cost: 130 },
+  { name: 'Ivory wide trousers',   category: 'Bottom',     colors: ['#FFFFFF'],            layer: 'bottom',    brand: 'COS',           materials: ['Linen','Cotton'],      cost: null },
+  { name: 'Black ankle boots',     category: 'Shoes',      colors: ['#1C1C1C'],            layer: 'shoes',     brand: 'Aeyde',         materials: ['Leather'],             cost: 350 },
+  { name: 'White sneakers',        category: 'Shoes',      colors: ['#FFFFFF'],            layer: 'shoes',     brand: 'Veja',          materials: ['Leather','Rubber'],    cost: 140 },
+  { name: 'Beige loafers',         category: 'Shoes',      colors: ['#E8D5B5'],            layer: 'shoes',     brand: 'Massimo Dutti', materials: ['Suede'],               cost: 160 },
+  { name: 'Black leather bag',     category: 'Bag',        colors: ['#1C1C1C'],            layer: 'bag',       brand: 'Polene',        materials: ['Leather'],             cost: 380 },
+  { name: 'Canvas tote',           category: 'Bag',        colors: ['#FFFFFF','#1C1C1C'],  layer: 'bag',       brand: 'Aesther Ekme',  materials: ['Canvas','Leather'],    cost: 210 },
+  { name: 'Camel crossbody',       category: 'Bag',        colors: ['#C0A268'],            layer: 'bag',       brand: 'A.P.C.',        materials: ['Leather'],             cost: 290 },
+  { name: 'Camel belt',            category: 'Accessory',  colors: ['#C0A268'],            layer: 'accessory', brand: 'Anderson\'s',   materials: ['Leather'],             cost: 85 },
+  { name: 'Black sunglasses',      category: 'Accessory',  colors: ['#1C1C1C'],            layer: 'accessory', brand: 'Celine',        materials: ['Acetate'],             cost: null },
+  { name: 'Grey cashmere scarf',   category: 'Accessory',  colors: ['#8C8C8C','#E8D5B5'],  layer: 'accessory', brand: 'Johnstons',     materials: ['Cashmere'],            cost: 195 },
+];
+
+/* Capsules — adjusted so indices 5, 9, 14, 20, 22, 23 are uncapsulated */
+const CAPSULES = [
+  {
+    id: 'spring-2026', name: { EN: 'Spring 2026', RU: '\u0412\u0435\u0441\u043d\u0430 2026', ES: 'Primavera 2026' },
+    palette: ['#1C1C1C','#FFFFFF','#8C8C8C','#182878','#E8D5B5','#C0A268'],
+    itemIndices: [0,1,2,3,4,6,7,8,10,11,12,13,15,16,17,18,19,21], active: true
+  },
+  {
+    id: 'travel-light', name: { EN: 'Travel Light', RU: '\u0412 \u0434\u043e\u0440\u043e\u0433\u0443', ES: 'Viaje Ligero' },
+    palette: ['#1C1C1C','#FFFFFF','#E8D5B5','#60A878'],
+    itemIndices: [0,1,10,12,15,16,18], active: false
+  },
+  {
+    id: 'work-basics', name: { EN: 'Work Basics', RU: '\u0411\u0430\u0437\u043e\u0432\u044b\u0439 \u0440\u0430\u0431\u043e\u0447\u0438\u0439', ES: 'Trabajo B\u00e1sico' },
+    palette: ['#1C1C1C','#FFFFFF','#182878','#8C8C8C','#C0A268'],
+    itemIndices: [0,2,3,4,6,8,11,13,15,17,18,21], active: false
+  },
+];
+
+/* ══════════════════════════════
+   STATE
+══════════════════════════════ */
+let currentFilter = 'all';
+let currentSort   = 'name';
+let currentLangCode = 'EN';
+let editingIdx = -1;
+let pickerItemIdx = -1; // which item we're picking a capsule for
+const favorites = new Set();
+const CATEGORIES = [...new Set(MY_ITEMS.map(i => i.category))];
+
+const SORT_OPTIONS = [
+  { key: 'name',     i18nKey: 'sort_name' },
+  { key: 'category', i18nKey: 'sort_category' },
+  { key: 'cost',     i18nKey: 'sort_cost' },
+];
+
+/* ══════════════════════════════
+   UNCAPSULATED LOGIC
+══════════════════════════════ */
+function getUncapsulatedIndices() {
+  const allCapsulated = new Set();
+  CAPSULES.forEach(c => c.itemIndices.forEach(i => allCapsulated.add(i)));
+  const uncap = [];
+  MY_ITEMS.forEach((_, i) => {
+    if (!allCapsulated.has(i)) uncap.push(i);
+  });
+  return uncap;
+}
+
+function getUncapsulatedItems() {
+  return getUncapsulatedIndices().map(i => ({ ...MY_ITEMS[i], _idx: i }));
+}
+
+/* ══════════════════════════════
+   i18n
+══════════════════════════════ */
+const I18N = {
+  EN: {
+    page_title:       '<strong>Uncapsulated</strong>',
+    page_subtitle:    '{n} items without capsule',
+    filter_all:       'All',
+    sort_name:        'Name',
+    sort_category:    'Category',
+    sort_cost:        'Cost',
+    sort_label:       'Sort',
+    item_details:     'Item Details',
+    id_name:          'Name',
+    id_category:      'Category',
+    id_brand:         'Brand',
+    id_materials:     'Materials',
+    id_cost:          'Cost',
+    id_colors:        'Colors',
+    add_to_capsule:   'Add to Capsule',
+    move_to_sale:     'Move to Sale',
+    move_to_repair:   'Move to Repair',
+    id_save:          'Save',
+    id_delete:        'Delete',
+    id_material_add:  'Add...',
+    id_photo_change:  'Change Photo',
+    select_capsule:   'Select Capsule',
+    cp_select:        'Select',
+    cp_items:         'items',
+    added_to:         'Added to {name}',
+    moved_to_sale:    'Moved to Sale',
+    moved_to_repair:  'Moved to Repair',
+    no_uncapsulated:  'All items are in capsules!',
+    no_uncap_sub:     'Every item belongs to at least one capsule',
+    no_cost:          'Not set',
+    nav_overview:     'Overview',
+    nav_dashboard:    'Dashboard',
+    nav_wardrobe:     'Wardrobe',
+    nav_items:        'My Items',
+    nav_outfits:      'Outfits',
+    nav_capsules:     'Capsules',
+    nav_uncapsulated: 'Uncapsulated',
+    nav_lists:        'Lists',
+    nav_favorites:    'Favorites',
+    nav_shopping:     'Shopping List',
+    nav_sale:         'For Sale',
+    nav_repair:       'For Repair',
+    nav_settings:     'Settings',
+  },
+  RU: {
+    page_title:       '<strong>Не в капсуле</strong>',
+    page_subtitle:    '{n} вещей без капсулы',
+    filter_all:       'Все',
+    sort_name:        'Название',
+    sort_category:    'Категория',
+    sort_cost:        'Стоимость',
+    sort_label:       'Сортировка',
+    item_details:     'О вещи',
+    id_name:          'Название',
+    id_category:      'Категория',
+    id_brand:         'Бренд',
+    id_materials:     'Материалы',
+    id_cost:          'Стоимость',
+    id_colors:        'Цвета',
+    add_to_capsule:   'Добавить в капсулу',
+    move_to_sale:     'На продажу',
+    move_to_repair:   'На ремонт',
+    id_save:          'Сохранить',
+    id_delete:        'Удалить',
+    id_material_add:  'Добавить...',
+    id_photo_change:  'Изменить фото',
+    select_capsule:   'Выбрать капсулу',
+    cp_select:        'Выбрать',
+    cp_items:         'вещей',
+    added_to:         'Добавлено в {name}',
+    moved_to_sale:    'Отправлено на продажу',
+    moved_to_repair:  'Отправлено на ремонт',
+    no_uncapsulated:  'Все вещи в капсулах!',
+    no_uncap_sub:     'Каждая вещь входит хотя бы в одну капсулу',
+    no_cost:          'Не указана',
+    nav_overview:     'Обзор',
+    nav_dashboard:    'Дашборд',
+    nav_wardrobe:     'Гардероб',
+    nav_items:        'Мои вещи',
+    nav_outfits:      'Комплекты',
+    nav_capsules:     'Капсулы',
+    nav_uncapsulated: 'Вне капсул',
+    nav_lists:        'Списки',
+    nav_favorites:    'Избранное',
+    nav_shopping:     'Шоппинг-лист',
+    nav_sale:         'На продажу',
+    nav_repair:       'На ремонт',
+    nav_settings:     'Настройки',
+  },
+  ES: {
+    page_title:       '<strong>Sin c&aacute;psula</strong>',
+    page_subtitle:    '{n} prendas sin c&aacute;psula',
+    filter_all:       'Todas',
+    sort_name:        'Nombre',
+    sort_category:    'Categor&iacute;a',
+    sort_cost:        'Costo',
+    sort_label:       'Ordenar',
+    item_details:     'Detalles',
+    id_name:          'Nombre',
+    id_category:      'Categor&iacute;a',
+    id_brand:         'Marca',
+    id_materials:     'Materiales',
+    id_cost:          'Costo',
+    id_colors:        'Colores',
+    add_to_capsule:   'A&ntilde;adir a c&aacute;psula',
+    move_to_sale:     'Mover a venta',
+    move_to_repair:   'Mover a reparaci&oacute;n',
+    id_save:          'Guardar',
+    id_delete:        'Eliminar',
+    id_material_add:  'Agregar...',
+    id_photo_change:  'Cambiar foto',
+    select_capsule:   'Seleccionar c&aacute;psula',
+    cp_select:        'Seleccionar',
+    cp_items:         'prendas',
+    added_to:         'A&ntilde;adido a {name}',
+    moved_to_sale:    'Movido a venta',
+    moved_to_repair:  'Movido a reparaci&oacute;n',
+    no_uncapsulated:  '&iexcl;Todas las prendas est&aacute;n en c&aacute;psulas!',
+    no_uncap_sub:     'Cada prenda pertenece al menos a una c&aacute;psula',
+    no_cost:          'No definido',
+    nav_overview:     'General',
+    nav_dashboard:    'Panel',
+    nav_wardrobe:     'Guardarropa',
+    nav_items:        'Mis prendas',
+    nav_outfits:      'Outfits',
+    nav_capsules:     'C&aacute;psulas',
+    nav_uncapsulated: 'Sin c&aacute;psula',
+    nav_lists:        'Listas',
+    nav_favorites:    'Favoritos',
+    nav_shopping:     'Lista de compras',
+    nav_sale:         'En venta',
+    nav_repair:       'Reparar',
+    nav_settings:     'Ajustes',
+  },
+};
+
+function t(key) {
+  return (I18N[currentLangCode] || I18N.EN)[key] || (I18N.EN[key] || key);
+}
+
+function applyI18n(code) {
+  currentLangCode = code;
+  const dict = I18N[code] || I18N.EN;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (!dict[key]) return;
+    el.innerHTML = dict[key];
+  });
+  updateSubtitle();
+  renderFilterChips();
+  renderSortMenu();
+  renderItems();
+}
+
+/* ══════════════════════════════
+   LANG DROPDOWN
+══════════════════════════════ */
+function toggleLang(e) {
+  e.stopPropagation();
+  document.getElementById('langDropdown').classList.toggle('open');
+}
+function setLang(btn) {
+  const code = btn.dataset.code;
+  document.getElementById('currentLang').textContent = code;
+  document.querySelectorAll('.lang-option').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('langDropdown').classList.remove('open');
+  applyI18n(code);
+}
+document.addEventListener('click', () => {
+  document.getElementById('langDropdown').classList.remove('open');
+  document.getElementById('sortDropdown').classList.remove('open');
+});
+
+/* ══════════════════════════════
+   HELPERS
+══════════════════════════════ */
+function isColorDark(hex) {
+  const c = hex.replace('#','');
+  const r = parseInt(c.substring(0,2),16);
+  const g = parseInt(c.substring(2,4),16);
+  const b = parseInt(c.substring(4,6),16);
+  return (r*0.299 + g*0.587 + b*0.114) < 140;
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function updateSubtitle() {
+  const el = document.getElementById('topbarSub');
+  const uncap = getUncapsulatedIndices();
+  const tmpl = t('page_subtitle');
+  el.innerHTML = tmpl.replace('{n}', uncap.length);
+}
+
+function updateBadge() {
+  const badge = document.getElementById('navUncapBadge');
+  if (badge) badge.textContent = getUncapsulatedIndices().length;
+}
+
+/* ══════════════════════════════
+   FILTER CHIPS
+══════════════════════════════ */
+function renderFilterChips() {
+  const container = document.getElementById('filterChips');
+  const uncapItems = getUncapsulatedItems();
+  const cats = [...new Set(uncapItems.map(i => i.category))];
+
+  let html = `<button class="filter-chip${currentFilter === 'all' ? ' active' : ''}" data-filter="all">${t('filter_all')}</button>`;
+  cats.forEach(cat => {
+    html += `<button class="filter-chip${currentFilter === cat ? ' active' : ''}" data-filter="${cat}">${cat}</button>`;
+  });
+  container.innerHTML = html;
+  container.querySelectorAll('.filter-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentFilter = btn.dataset.filter;
+      renderFilterChips();
+      renderItems();
+    });
+  });
+}
+
+/* ══════════════════════════════
+   SORT
+══════════════════════════════ */
+function toggleSort(e) {
+  e.stopPropagation();
+  document.getElementById('sortDropdown').classList.toggle('open');
+}
+
+function renderSortMenu() {
+  const menu = document.getElementById('sortMenu');
+  let html = '';
+  SORT_OPTIONS.forEach(opt => {
+    html += `<button class="sort-option${currentSort === opt.key ? ' active' : ''}" data-sort="${opt.key}">${t(opt.i18nKey)}</button>`;
+  });
+  menu.innerHTML = html;
+  menu.querySelectorAll('.sort-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentSort = btn.dataset.sort;
+      document.getElementById('sortDropdown').classList.remove('open');
+      updateSortTrigger();
+      renderSortMenu();
+      renderItems();
+    });
+  });
+  updateSortTrigger();
+}
+
+function updateSortTrigger() {
+  const opt = SORT_OPTIONS.find(o => o.key === currentSort);
+  const label = opt ? t(opt.i18nKey) : currentSort;
+  document.getElementById('sortTrigger').innerHTML = `${t('sort_label')}: ${label} &#9662;`;
+}
+
+/* ══════════════════════════════
+   RENDER ITEMS
+══════════════════════════════ */
+function renderItems() {
+  const grid = document.getElementById('itemGrid');
+  const filterBar = document.getElementById('filterBarWrap');
+  let items = getUncapsulatedItems();
+
+  // Empty state
+  if (items.length === 0) {
+    filterBar.style.display = 'none';
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column: 1 / -1;">
+        <div class="empty-state-icon">
+          <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
+            <path d="M20 6L9 17L4 12" stroke="rgba(255,255,255,.50)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="empty-state-title">${t('no_uncapsulated')}</div>
+        <div class="empty-state-sub">${t('no_uncap_sub')}</div>
+      </div>`;
+    return;
+  }
+  filterBar.style.display = '';
+
+  // Filter
+  if (currentFilter !== 'all') {
+    items = items.filter(item => item.category === currentFilter);
+  }
+
+  // Sort
+  if (currentSort === 'name') {
+    items.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (currentSort === 'category') {
+    items.sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
+  } else if (currentSort === 'cost') {
+    items.sort((a, b) => (b.cost || 0) - (a.cost || 0));
+  }
+
+  let html = '';
+  items.forEach(item => {
+    const mainColor = item.colors[0] || '#888';
+    const isDark = isColorDark(mainColor);
+
+    let dotsHtml = '';
+    item.colors.forEach(c => {
+      const dk = isColorDark(c);
+      dotsHtml += `<div class="item-color" style="background:${c};${dk ? 'border-color:rgba(255,255,255,.35);' : ''}"></div>`;
+    });
+
+    const isFav = favorites.has(item._idx);
+    html += `
+      <div class="item-card" onclick="openItemDetail(${item._idx})">
+        <button class="item-fav${isFav ? ' active' : ''}" onclick="event.stopPropagation(); toggleFavorite(${item._idx})" title="Favorite">
+          <svg width="14" height="14" fill="${isFav ? 'white' : 'none'}" viewBox="0 0 24 24">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="item-actions">
+          <button class="item-action-btn" title="Edit" onclick="event.stopPropagation(); openItemDetail(${item._idx})">
+            <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+              <path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button class="item-action-btn delete" title="Delete" onclick="event.stopPropagation(); deleteItem(${item._idx})">
+            <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+              <path d="M2 3H10M4.5 3V1.5H7.5V3M4.5 5V9M7.5 5V9M3 3V10.5H9V3" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="item-thumb" style="background:${mainColor}10;">
+          <svg width="28" height="28" fill="none" viewBox="0 0 28 28">
+            <path d="M14 5C14 5 9.5 8 9.5 12L4 15V24H24V15L18.5 12C18.5 8 14 5 14 5Z" stroke="${isDark ? 'rgba(255,255,255,.35)' : 'rgba(0,0,0,.20)'}" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="item-name">${escapeHtml(item.name)}</div>
+        <div class="item-cat-row">
+          <span class="item-cat">${item.category}</span>
+          <div class="item-colors">${dotsHtml}</div>
+        </div>
+        <div class="item-brand">${escapeHtml(item.brand || '')}</div>
+      </div>`;
+  });
+
+  grid.innerHTML = html;
+}
+
+/* ══════════════════════════════
+   ITEM DETAIL PANEL (read-only)
+══════════════════════════════ */
+function openItemDetail(idx) {
+  editingIdx = idx;
+  const overlay = document.getElementById('itemOverlay');
+  const title = document.getElementById('idTitle');
+  const body = document.getElementById('idBody');
+
+  const item = MY_ITEMS[idx];
+  if (!item) return;
+
+  title.textContent = t('item_details');
+
+  // Color dots (editable with picker + remove)
+  let colorsHtml = '';
+  item.colors.forEach((c, ci) => {
+    const canRemove = item.colors.length > 1;
+    colorsHtml += `
+      <div class="id-color-dot" style="background:${c};">
+        <input type="color" class="id-color-input" value="${c}" onchange="updateColorDot(this, ${ci})" />
+        ${canRemove ? `<span class="id-color-remove" onclick="event.stopPropagation(); removeColorDot(${ci})"><svg width="8" height="8" fill="none" viewBox="0 0 8 8"><path d="M1.5 1.5L6.5 6.5M6.5 1.5L1.5 6.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/></svg></span>` : ''}
+      </div>`;
+  });
+  if (item.colors.length < 3) {
+    colorsHtml += `
+      <div class="id-color-add" onclick="addColorDot()">
+        <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+          <path d="M6 2V10M2 6H10" stroke="rgba(255,255,255,.40)" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>`;
+  }
+
+  // Category options
+  let catOptions = '';
+  CATEGORIES.forEach(cat => {
+    catOptions += `<option value="${cat}"${item.category === cat ? ' selected' : ''}>${cat}</option>`;
+  });
+
+  // Material tags (with optional %)
+  const mats = item.materials || [];
+  let matsHtml = '';
+  mats.forEach((m, mi) => {
+    const mat = typeof m === 'object' ? m : { name: m, pct: null };
+    const pctVal = mat.pct != null ? mat.pct : '';
+    matsHtml += `<div class="id-tag"><span>${escapeHtml(mat.name)}</span><input class="id-tag-pct" type="text" inputmode="numeric" placeholder="%" value="${pctVal}" data-mat-idx="${mi}" /><button class="id-tag-remove" onclick="removeMaterial(${mi})"><svg width="8" height="8" fill="none" viewBox="0 0 8 8"><path d="M1.5 1.5L6.5 6.5M6.5 1.5L1.5 6.5" stroke="rgba(255,255,255,.65)" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>`;
+  });
+  matsHtml += `<div class="id-tag-add-wrap"><input class="id-tag-input" id="idMaterialInput" type="text" placeholder="${t('id_material_add')}" onkeydown="handleMaterialKey(event)" /></div>`;
+
+  // Cost value
+  const costVal = (item.cost != null) ? item.cost : '';
+
+  const mainColor = item.colors[0] || '#888';
+  const isDark = isColorDark(mainColor);
+
+  body.innerHTML = `
+    <div class="id-photo">
+      <svg width="40" height="40" fill="none" viewBox="0 0 28 28">
+        <path d="M14 5C14 5 9.5 8 9.5 12L4 15V24H24V15L18.5 12C18.5 8 14 5 14 5Z" stroke="rgba(255,255,255,.30)" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+      <button class="id-photo-btn">${t('id_photo_change')}</button>
+    </div>
+
+    <div class="id-field">
+      <label class="id-label">${t('id_name')}</label>
+      <input class="id-input" id="idName" type="text" value="${escapeHtml(item.name)}" placeholder="${t('id_name')}..." />
+    </div>
+
+    <div class="id-field">
+      <label class="id-label">${t('id_category')}</label>
+      <select class="id-select" id="idCategory">${catOptions}</select>
+    </div>
+
+    <div class="id-field">
+      <label class="id-label">${t('id_colors')}</label>
+      <div class="id-colors-row" id="idColorsRow">${colorsHtml}</div>
+    </div>
+
+    <div class="id-field">
+      <label class="id-label">${t('id_brand')}</label>
+      <input class="id-input" id="idBrand" type="text" value="${escapeHtml(item.brand || '')}" placeholder="${t('id_brand')}..." />
+    </div>
+
+    <div class="id-field">
+      <label class="id-label">${t('id_materials')}</label>
+      <div class="id-tags-row" id="idMaterialsRow">${matsHtml}</div>
+    </div>
+
+    <div class="id-field">
+      <label class="id-label">${t('id_cost')}</label>
+      <input class="id-input" id="idCost" type="text" inputmode="decimal" value="${costVal}" placeholder="\u2014" />
+    </div>
+
+    <div class="id-actions">
+      <button class="id-save-btn" onclick="saveItem()">${t('id_save')}</button>
+      <button class="id-delete-btn" onclick="deleteItem(${idx}); closeItemDetail();">${t('id_delete')}</button>
+    </div>
+    <div class="id-move-row">
+      <button class="id-move-btn" onclick="mockMoveToSale(${idx})">
+        <svg width="13" height="13" fill="none" viewBox="0 0 17 17">
+          <path d="M8.5 1.5V13.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <path d="M11.5 4.5C11.5 3.5 10.1 3 8.5 3C6.9 3 5.5 3.8 5.5 5.2C5.5 6.6 8.5 7.2 8.5 7.2C8.5 7.2 11.5 7.8 11.5 9.5C11.5 11.2 10.1 11.8 8.5 11.8C6.9 11.8 5.5 11.3 5.5 10.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        ${t('move_to_sale')}
+      </button>
+      <button class="id-move-btn" onclick="mockMoveToRepair(${idx})">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        ${t('move_to_repair')}
+      </button>
+    </div>
+    <div style="margin-top:12px;">
+      <button class="id-move-btn" style="width:100%" onclick="closeItemDetail(); openCapsulePicker(${idx})">
+        <svg width="13" height="13" fill="none" viewBox="0 0 14 14">
+          <path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        ${t('add_to_capsule')}
+      </button>
+    </div>
+  `;
+
+  requestAnimationFrame(() => overlay.classList.add('open'));
+}
+
+function closeItemDetail() {
+  document.getElementById('itemOverlay').classList.remove('open');
+  editingIdx = -1;
+}
+
+/* ══════════════════════════════
+   CAPSULE PICKER
+══════════════════════════════ */
+function openCapsulePicker(itemIdx) {
+  pickerItemIdx = itemIdx;
+  const overlay = document.getElementById('capsulePickerOverlay');
+  const title = document.getElementById('cpTitle');
+  const list = document.getElementById('cpList');
+
+  title.textContent = t('select_capsule');
+
+  let html = '';
+  CAPSULES.forEach((cap, ci) => {
+    const cName = cap.name[currentLangCode] || cap.name.EN;
+    let dotsH = '';
+    cap.palette.slice(0,5).forEach(pc => {
+      dotsH += `<div class="cp-dot" style="background:${pc};"></div>`;
+    });
+    const count = cap.itemIndices.length;
+
+    html += `
+      <div class="cp-capsule">
+        <div class="cp-dots">${dotsH}</div>
+        <div class="cp-info">
+          <div class="cp-name">${escapeHtml(cName)}</div>
+          <div class="cp-count">${count} ${t('cp_items')}</div>
+        </div>
+        <button class="cp-select-btn" onclick="addToCapsule(${ci})">${t('cp_select')}</button>
+      </div>`;
+  });
+
+  list.innerHTML = html;
+  requestAnimationFrame(() => overlay.classList.add('open'));
+}
+
+function closeCapsulePicker() {
+  document.getElementById('capsulePickerOverlay').classList.remove('open');
+  pickerItemIdx = -1;
+}
+
+function addToCapsule(capsuleIdx) {
+  if (pickerItemIdx < 0) return;
+  const cap = CAPSULES[capsuleIdx];
+  if (!cap.itemIndices.includes(pickerItemIdx)) {
+    cap.itemIndices.push(pickerItemIdx);
+  }
+  const cName = cap.name[currentLangCode] || cap.name.EN;
+  closeCapsulePicker();
+  closeItemDetail();
+  showToast(t('added_to').replace('{name}', cName));
+  updateSubtitle();
+  updateBadge();
+  renderFilterChips();
+  renderItems();
+}
+
+/* ══════════════════════════════
+   COLOR DOT HELPERS
+══════════════════════════════ */
+function updateColorDot(input, colorIdx) {
+  input.parentElement.style.background = input.value;
+}
+
+function removeColorDot(colorIdx) {
+  const colorInputs = document.querySelectorAll('#idColorsRow .id-color-input');
+  const colors = [];
+  colorInputs.forEach(inp => colors.push(inp.value));
+  if (colors.length <= 1) return;
+  colors.splice(colorIdx, 1);
+  if (editingIdx >= 0) {
+    MY_ITEMS[editingIdx].colors = colors;
+  }
+  openItemDetail(editingIdx);
+}
+
+function addColorDot() {
+  const colorInputs = document.querySelectorAll('#idColorsRow .id-color-input');
+  const colors = [];
+  colorInputs.forEach(inp => colors.push(inp.value));
+  if (colors.length >= 3) return;
+  colors.push('#AAAAAA');
+  if (editingIdx >= 0) {
+    MY_ITEMS[editingIdx].colors = colors;
+  }
+  openItemDetail(editingIdx);
+}
+
+/* ══════════════════════════════
+   MATERIAL TAG HELPERS
+══════════════════════════════ */
+function removeMaterial(matIdx) {
+  if (editingIdx >= 0) {
+    MY_ITEMS[editingIdx].materials.splice(matIdx, 1);
+  }
+  openItemDetail(editingIdx);
+}
+
+function handleMaterialKey(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const val = e.target.value.trim();
+    if (!val) return;
+    if (editingIdx >= 0) {
+      if (!MY_ITEMS[editingIdx].materials) MY_ITEMS[editingIdx].materials = [];
+      MY_ITEMS[editingIdx].materials.push({ name: val, pct: null });
+    }
+    openItemDetail(editingIdx);
+  }
+}
+
+/* ══════════════════════════════
+   SAVE ITEM
+══════════════════════════════ */
+function saveItem() {
+  const name     = document.getElementById('idName').value.trim();
+  const category = document.getElementById('idCategory').value;
+  const brand    = document.getElementById('idBrand').value.trim();
+  const costStr  = document.getElementById('idCost').value.trim();
+  const cost     = costStr !== '' ? parseFloat(costStr) : null;
+
+  if (!name) {
+    document.getElementById('idName').style.borderColor = '#FF4D00';
+    document.getElementById('idName').focus();
+    return;
+  }
+
+  // Collect colors
+  const colorInputs = document.querySelectorAll('#idColorsRow .id-color-input');
+  const colors = [];
+  colorInputs.forEach(inp => colors.push(inp.value));
+
+  // Collect materials (with optional %)
+  const matTags = document.querySelectorAll('#idMaterialsRow .id-tag');
+  const materials = [];
+  matTags.forEach(tag => {
+    const nameSpan = tag.querySelector('span');
+    const pctInput = tag.querySelector('.id-tag-pct');
+    if (nameSpan) {
+      const mName = nameSpan.textContent;
+      const pctStr = pctInput ? pctInput.value.trim() : '';
+      const pct = pctStr !== '' ? parseInt(pctStr) : null;
+      materials.push(pct != null ? { name: mName, pct } : mName);
+    }
+  });
+  const matInput = document.getElementById('idMaterialInput');
+  if (matInput && matInput.value.trim()) {
+    materials.push(matInput.value.trim());
+  }
+
+  if (editingIdx >= 0) {
+    MY_ITEMS[editingIdx].name = name;
+    MY_ITEMS[editingIdx].category = category;
+    MY_ITEMS[editingIdx].colors = colors.length ? colors : ['#8C8C8C'];
+    MY_ITEMS[editingIdx].brand = brand;
+    MY_ITEMS[editingIdx].materials = materials;
+    MY_ITEMS[editingIdx].cost = cost;
+  }
+
+  closeItemDetail();
+  showToast(t('id_save') + '!');
+  updateSubtitle();
+  updateBadge();
+  renderFilterChips();
+  renderItems();
+}
+
+/* ══════════════════════════════
+   DELETE ITEM
+══════════════════════════════ */
+function deleteItem(idx) {
+  if (idx >= 0 && idx < MY_ITEMS.length) {
+    MY_ITEMS.splice(idx, 1);
+    // Update capsule indices
+    CAPSULES.forEach(c => {
+      c.itemIndices = c.itemIndices.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
+    });
+    updateSubtitle();
+    updateBadge();
+    renderFilterChips();
+    renderItems();
+  }
+}
+
+/* ══════════════════════════════
+   FAVORITE TOGGLE
+══════════════════════════════ */
+function toggleFavorite(idx) {
+  if (favorites.has(idx)) favorites.delete(idx);
+  else favorites.add(idx);
+  renderItems();
+}
+
+/* ══════════════════════════════
+   MOCK ACTIONS
+══════════════════════════════ */
+function mockMoveToSale(idx) {
+  closeItemDetail();
+  showToast(t('moved_to_sale'));
+}
+
+function mockMoveToRepair(idx) {
+  closeItemDetail();
+  showToast(t('moved_to_repair'));
+}
+
+/* ══════════════════════════════
+   TOAST
+══════════════════════════════ */
+function showToast(message) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+/* ══════════════════════════════
+   INIT
+══════════════════════════════ */
+renderFilterChips();
+renderSortMenu();
+renderItems();
+updateSubtitle();
+
+  function toggleMore(e) {
+    if (e) e.preventDefault();
+    document.getElementById('moreOverlay').classList.toggle('open');
+    document.getElementById('moreSheet').classList.toggle('open');
+  }
+  function closeMore() {
+    document.getElementById('moreOverlay').classList.remove('open');
+    document.getElementById('moreSheet').classList.remove('open');
+  }
+</script>
+</body>
+</html>

@@ -4,18 +4,17 @@ on:
   pull_request:
   workflow_dispatch:
     inputs:
-      ref:
-        description: Git ref to validate
-        required: true
+      base_ref:
+        description: Base git ref
+        required: false
         type: string
       head_ref:
-        description: PR head branch name
-        required: true
+        description: Head git ref
+        required: false
         type: string
-      base_ref:
-        description: PR base branch name
-        required: true
-        type: string
+
+permissions:
+  contents: read
 
 jobs:
   guard:
@@ -23,65 +22,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout PR content
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
-          ref: ${{ inputs.ref || github.ref }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Check context coverage for code changes
+      - name: Checkout trusted gate scripts
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: .gate-trusted
+          fetch-depth: 1
+
+      - name: Resolve diff refs
         shell: bash
         run: |
           set -euo pipefail
-
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             base_ref="${{ github.event.pull_request.base.sha }}"
-            head_ref="${{ github.sha }}"
+            head_ref="${{ github.event.pull_request.head.sha }}"
           else
-            git fetch --no-tags origin "${{ inputs.base_ref }}"
-            git fetch --no-tags origin "${{ inputs.head_ref }}"
-            base_ref="origin/${{ inputs.base_ref }}"
-            head_ref="origin/${{ inputs.head_ref }}"
+            base_ref="${{ inputs.base_ref || 'HEAD~1' }}"
+            head_ref="${{ inputs.head_ref || 'HEAD' }}"
           fi
+          echo "BASE_REF=$base_ref" >> "$GITHUB_ENV"
+          echo "HEAD_REF=$head_ref" >> "$GITHUB_ENV"
 
-          changed_files="$(git diff --name-only "$base_ref" "$head_ref")"
-          echo "$changed_files"
-
-          code_changed=0
-          context_changed=0
-
-          while IFS= read -r file; do
-            [ -z "$file" ] && continue
-            case "$file" in
-              app/*|scripts/*)
-                code_changed=1
-                ;;
-              docs_capsule_zero/*|.specify/*|html-prototypes/*|AGENTS.md|CLAUDE.md|.github/*)
-                context_changed=1
-                ;;
-            esac
-          done <<< "$changed_files"
-
-          if [ "$code_changed" -eq 1 ] && [ "$context_changed" -ne 1 ]; then
-            echo "Code changed without any durable docs, agent-context, or workflow update."
-            echo "Update docs_capsule_zero/, AGENTS.md, CLAUDE.md, or .github/ when scope, behavior, architecture, or delivery process changes."
-            exit 1
-          fi
-
-      - name: Require baseline documentation
-        shell: bash
+      - name: Require complete feature memory
         run: |
-          set -euo pipefail
-          test -f AGENTS.md
-          test -f CLAUDE.md
-          test -f docs_capsule_zero/project/frontend/frontend-docs.md
-          test -f docs_capsule_zero/project/backend/backend-docs.md
-          test -f docs_capsule_zero/project/devops/ai-pr-workflow.md
-          test -f docs_capsule_zero/project/devops/ai-orchestration-protocol.md
-          test -f docs_capsule_zero/project/devops/ai-runner.md
-          test -f docs_capsule_zero/project/devops/review-contract.md
-          test -f docs_capsule_zero/project/devops/codex-github-setup.md
-          test -f docs_capsule_zero/project/devops/validation-matrix.md
-          test -f docs_capsule_zero/adr/adr-004-ai-development-workflow.md
-          test -f docs_capsule_zero/adr/adr-005-local-worker-orchestration.md
-          test -d app
+          if [ -f .gate-trusted/scripts/check-feature-memory.mjs ]; then
+            node .gate-trusted/scripts/check-feature-memory.mjs --target "$GITHUB_WORKSPACE" "$BASE_REF" "$HEAD_REF"
+          else
+            echo "::warning::Trusted feature-memory script missing on default branch; using PR script for first-install bootstrap only."
+            node scripts/check-feature-memory.mjs --target "$GITHUB_WORKSPACE" "$BASE_REF" "$HEAD_REF"
+          fi
+
+      - name: Validate baseline files
+        run: |
+          if [ -f .gate-trusted/scripts/check-repo-baseline.mjs ]; then
+            node .gate-trusted/scripts/check-repo-baseline.mjs --target "$GITHUB_WORKSPACE"
+          else
+            echo "::warning::Trusted baseline script missing on default branch; using PR script for first-install bootstrap only."
+            node scripts/check-repo-baseline.mjs --target "$GITHUB_WORKSPACE"
+          fi

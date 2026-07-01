@@ -1,0 +1,59 @@
+# Capsule Zero — dev SERVER stack (https://dev.capsulezero.app).
+#
+# NOT the laptop override (`docker-compose.dev.yml`, mkcert + capsulezero.local).
+# This is the remote dev environment. It runs on the SAME droplet as production but as a
+# fully separate compose project (`capsule-zero-dev`).
+#
+# Edge: a single HOST nginx (systemd, not in Docker) terminates TLS for both prod and dev
+# and reverse-proxies plain HTTP to the published container ports — prod web on
+# 127.0.0.1:3000, dev web on 127.0.0.1:3001. The dev stack therefore has NO nginx of its
+# own; it only publishes the web container on loopback for the host nginx.
+# Host nginx vhosts live in infra/nginx-host/ and are installed per the runbook.
+#
+# Deployed automatically by `.github/workflows/cd-dev.yml` on merge to main.
+# Operator setup (deploy user, GHCR pull token, host nginx, TLS cert):
+#   docs_capsule_zero/project/devops/dev-cd-pipeline.md
+#
+# Run on the droplet:
+#   export CAPSULE_WEB_IMAGE=ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>
+#   docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml up -d
+
+name: capsule-zero-dev
+
+networks:
+  dev-internal:
+    driver: bridge
+
+services:
+  # Next.js landing — pulled from GHCR, never built on the droplet. Published on loopback
+  # only; the host nginx is the sole edge and proxies to it over plain HTTP.
+  web:
+    image: ${CAPSULE_WEB_IMAGE:-ghcr.io/kiaquila/capsule-zero-web:dev}
+    init: true
+    restart: unless-stopped
+    # Frontend-only contract — mirrors the web service in docker-compose.yml (spec 023).
+    # The dev environment deploys main, which is the legacy Supabase /app shell, but the
+    # dev edge only previews the frontend: no provider backend is wired here, so NO
+    # Supabase/provider/session env is set and the healthcheck targets the provider-free
+    # /en page (NOT /api/health, which calls the provider registry and 500s without a
+    # backend). The wrapper still passes .env.dev via docker compose --env-file for
+    # interpolation only; do NOT attach it as a service env_file, because stale provider
+    # vars in older host files must never be injected into the runtime container.
+    # The new Postgres/Kratos backend wires its own env when it lands.
+    environment:
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_APP_URL: ${APP_BASE_URL:-https://dev.capsulezero.app}
+    ports:
+      - "${DEV_WEB_HOST_BIND:-127.0.0.1}:3001:3000"
+    networks: [dev-internal]
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "node -e \"fetch('http://127.0.0.1:3000/en').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s

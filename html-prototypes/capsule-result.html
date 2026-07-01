@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capsule Zero — Capsule Result</title>
+  <style>
+    :root {
+      --glass-bg:     rgba(255,255,255,0.22);
+      --glass-blur:   40px;
+      --glass-border: rgba(255,255,255,.58);
+      --glass-hi:     inset 0 1px 0 rgba(255,255,255,.72);
+      --gt-p:  rgba(255,255,255,.95);
+      --gt-s:  rgba(255,255,255,.70);
+      --gt-ph: rgba(255,255,255,.38);
+      --sidebar-w: 248px;
+      --radius-s: 8px;
+      --radius-m: 14px;
+      --radius-l: 20px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    /* ── Background ── */
+    .hero-bg {
+      position: fixed; inset: 0;
+      background: url('wall.png') center / cover no-repeat;
+      filter: grayscale(100%);
+      z-index: -2;
+    }
+    .hero-overlay {
+      position: fixed; inset: 0;
+      background: linear-gradient(
+        160deg,
+        rgba(0,0,0,.58) 0%,
+        rgba(0,0,0,.40) 50%,
+        rgba(0,0,0,.68) 100%
+      );
+      z-index: -1;
+    }
+
+    /* ── App shell ── */
+    .app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ══════════════════════════════
+       SIDEBAR
+    ══════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: rgba(255,255,255,0.13);
+      backdrop-filter: blur(44px);
+      -webkit-backdrop-filter: blur(44px);
+      border-right: 1px solid rgba(255,255,255,.20);
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .sidebar::-webkit-scrollbar { display: none; }
+
+    .sidebar-head {
+      padding: 32px 24px 22px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .logo {
+      font-size: 11.5px; font-weight: 700;
+      letter-spacing: .26em; text-transform: uppercase;
+      color: var(--gt-p); text-decoration: none;
+      display: block; margin-bottom: 26px;
+    }
+    .user-row {
+      display: flex; align-items: center; gap: 11px;
+    }
+    .avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,.18);
+      border: 1.5px solid rgba(255,255,255,.40);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--gt-p);
+      letter-spacing: .04em; flex-shrink: 0;
+    }
+    .user-name {
+      font-size: 13px; font-weight: 600;
+      color: var(--gt-p); letter-spacing: .01em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .nav {
+      flex: 1;
+      padding: 12px 0 8px;
+    }
+    .nav-section-label {
+      font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--gt-ph);
+      padding: 16px 24px 6px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 24px 10px 22px;
+      cursor: pointer;
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: background .14s;
+      user-select: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.06); }
+    .nav-item.active {
+      background: rgba(255,255,255,.10);
+      border-left-color: rgba(255,255,255,.65);
+    }
+    .nav-ico {
+      width: 17px; height: 17px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      opacity: .65;
+    }
+    .nav-item.active .nav-ico { opacity: 1; }
+    .nav-lbl {
+      flex: 1;
+      font-size: 13px; font-weight: 500; letter-spacing: .01em;
+      color: var(--gt-s);
+    }
+    .nav-item.active .nav-lbl { color: var(--gt-p); font-weight: 600; }
+    .nav-badge {
+      font-size: 10.5px; font-weight: 600;
+      color: var(--gt-ph);
+      background: rgba(255,255,255,.08);
+      border-radius: 20px; padding: 2px 7px;
+      min-width: 22px; text-align: center;
+    }
+    .nav-item.active .nav-badge { color: var(--gt-s); }
+
+    .sidebar-foot {
+      padding: 12px 0 28px;
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+
+    /* ══════════════════════════════
+       LANG DROPDOWN
+    ══════════════════════════════ */
+    .lang-dropdown { position: relative; }
+    .lang-trigger {
+      display: flex; align-items: center; gap: 6px;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 600;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: rgba(255,255,255,.88); padding: 8px 4px; transition: color .15s;
+    }
+    .lang-trigger:hover { color: #fff; }
+    .lang-chevron { font-size: 8px; opacity: .8; transition: transform .2s; }
+    .lang-dropdown.open .lang-chevron { transform: rotate(180deg); }
+    .lang-menu {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: rgba(255,255,255,0.28);
+      backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+      border-radius: var(--radius-m);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0,0,0,.20), var(--glass-hi);
+      padding: 8px; min-width: 164px;
+      opacity: 0; pointer-events: none;
+      transform: translateY(-6px);
+      transition: opacity .2s ease, transform .2s ease; z-index: 100;
+    }
+    .lang-dropdown.open .lang-menu { opacity: 1; pointer-events: all; transform: translateY(0); }
+    .lang-option {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 10px 12px;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; letter-spacing: .06em;
+      color: var(--gt-s); border-radius: var(--radius-s); transition: all .15s;
+    }
+    .lang-option:hover { background: rgba(255,255,255,.12); color: var(--gt-p); }
+    .lang-option.active { color: #fff; font-weight: 600; }
+    .lang-code { font-size: 11px; font-weight: 600; letter-spacing: .1em; color: inherit; opacity: .7; }
+
+    /* ══════════════════════════════
+       MAIN
+    ══════════════════════════════ */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.16) transparent;
+      display: flex;
+      flex-direction: column;
+    }
+    .main::-webkit-scrollbar { width: 4px; }
+    .main::-webkit-scrollbar-track { background: transparent; }
+    .main::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,.16);
+      border-radius: 10px;
+    }
+
+    /* Topbar */
+    .topbar {
+      padding: 30px 40px 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .topbar-title {
+      font-size: 25px; font-weight: 300; letter-spacing: -.01em;
+      color: var(--gt-p); line-height: 1.2;
+    }
+    .topbar-title strong { font-weight: 600; }
+    .topbar-sub {
+      font-size: 11.5px; letter-spacing: .10em; text-transform: uppercase;
+      color: var(--gt-s); margin-top: 5px;
+    }
+    .topbar-right {
+      display: flex; align-items: center; gap: 16px;
+      padding-top: 4px;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      display: flex; align-items: center; gap: 7px;
+      padding: 11px 22px;
+      background: rgba(255,255,255,.26);
+      border: 1px solid rgba(255,255,255,.52);
+      border-radius: 50px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      cursor: pointer;
+      font-family: inherit; font-size: 12px; font-weight: 700;
+      letter-spacing: .09em; text-transform: uppercase;
+      color: var(--gt-p);
+      transition: background .14s, transform .10s;
+    }
+    .btn-primary:hover {
+      background: rgba(255,255,255,.36);
+      transform: translateY(-1px);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-ghost {
+      padding: 9px 18px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: 50px;
+      font-family: inherit; font-size: 11.5px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-p); cursor: pointer;
+      transition: background .14s;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.20); }
+
+    /* Content */
+    .content {
+      padding: 24px 40px 52px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Glass card */
+    .gc {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-l);
+      box-shadow: var(--glass-hi), 0 8px 36px rgba(0,0,0,.16);
+    }
+
+    /* ══════════════════════════════
+       HERO CARD
+    ══════════════════════════════ */
+    .capsule-card {
+      padding: 30px 34px;
+      display: flex;
+      gap: 36px;
+      align-items: flex-start;
+    }
+    .capsule-body { flex: 1; min-width: 0; }
+    .cap-eyebrow {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 10px; letter-spacing: .17em; text-transform: uppercase;
+      color: var(--gt-s); margin-bottom: 8px;
+    }
+    .cap-name {
+      font-size: 32px; font-weight: 300; letter-spacing: -.025em;
+      color: var(--gt-p); line-height: 1.05;
+      margin-bottom: 18px;
+    }
+
+    /* Palette */
+    .palette-row {
+      display: flex; align-items: center; gap: 7px;
+      margin-bottom: 22px;
+    }
+    .pdot {
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.28);
+      flex-shrink: 0;
+      transition: transform .14s;
+      cursor: default;
+    }
+    .pdot:hover { transform: scale(1.18); }
+    .pdot-lg { width: 26px; height: 26px; }
+    .pdot-sm { width: 18px; height: 18px; }
+    .palette-label {
+      font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--gt-ph); margin-left: 4px;
+    }
+
+    /* Mini stats */
+    .cap-stats {
+      display: flex; gap: 28px;
+      margin-bottom: 22px;
+    }
+    .ms-val {
+      font-size: 24px; font-weight: 300; letter-spacing: -.03em;
+      color: var(--gt-p);
+    }
+    .ms-lbl {
+      font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase;
+      color: var(--gt-s);
+    }
+
+    /* Card actions */
+    .cap-actions { display: flex; gap: 9px; }
+
+    /* OPR widget */
+    .opr-widget {
+      flex-shrink: 0;
+      width: 134px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 22px 18px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.20);
+      border-radius: var(--radius-m);
+      text-align: center;
+    }
+    .opr-val {
+      font-size: 52px; font-weight: 200; letter-spacing: -.05em;
+      color: var(--gt-p); line-height: 1;
+    }
+    .opr-lbl {
+      font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--gt-s); margin-top: 5px;
+    }
+    .opr-delta {
+      font-size: 11px; font-weight: 600; letter-spacing: .04em;
+      color: rgba(255,255,255,.65); margin-top: 6px;
+    }
+    .opr-hint {
+      font-size: 9.5px; color: var(--gt-ph);
+      line-height: 1.45; margin-top: 9px;
+    }
+
+    /* ══════════════════════════════
+       TAB BAR
+    ══════════════════════════════ */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      padding: 0;
+    }
+    .tab-btn {
+      padding: 14px 24px 12px;
+      background: none; border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--gt-ph);
+      transition: color .14s, border-color .14s;
+    }
+    .tab-btn:hover { color: var(--gt-s); }
+    .tab-btn.active {
+      color: var(--gt-p);
+      border-bottom-color: rgba(255,255,255,.65);
+    }
+    .tab-btn .tab-count {
+      font-size: 10px; font-weight: 600;
+      color: var(--gt-ph);
+      background: rgba(255,255,255,.08);
+      border-radius: 20px; padding: 1px 6px;
+      margin-left: 6px;
+    }
+    .tab-btn.active .tab-count { color: var(--gt-s); }
+
+    .tab-panel {
+      display: none;
+      padding: 24px 0 0;
+    }
+    .tab-panel.active { display: block; }
+
+    /* ══════════════════════════════
+       ITEMS TAB
+    ══════════════════════════════ */
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    .item-card {
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: var(--radius-m);
+      padding: 16px;
+      cursor: default;
+      position: relative;
+      transition: background .14s, border-color .14s;
+    }
+    .item-card:hover {
+      background: rgba(255,255,255,.18);
+      border-color: rgba(255,255,255,.38);
+    }
+    .item-thumb {
+      width: 100%; aspect-ratio: 1;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius-s);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 12px;
+    }
+    .item-thumb svg { opacity: .35; }
+    .item-name {
+      font-size: 13px; font-weight: 500; color: var(--gt-p);
+      letter-spacing: .01em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .item-cat-row {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 4px;
+    }
+    .item-cat {
+      font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-ph);
+    }
+    .item-color {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.22);
+      flex-shrink: 0;
+    }
+
+    /* Hover actions */
+    .item-actions {
+      position: absolute; top: 8px; right: 8px;
+      display: flex; gap: 4px;
+      opacity: 0;
+      transition: opacity .14s;
+    }
+    .item-card:hover .item-actions { opacity: 1; }
+    .item-action-btn {
+      width: 28px; height: 28px;
+      background: rgba(0,0,0,.40);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,.20);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .12s;
+    }
+    .item-action-btn:hover { background: rgba(0,0,0,.60); }
+
+    /* Add item card */
+    .item-card-add {
+      background: rgba(255,255,255,.06);
+      border: 1.5px dashed rgba(255,255,255,.22);
+      border-radius: var(--radius-m);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      min-height: 180px;
+      transition: background .14s, border-color .14s;
+    }
+    .item-card-add:hover {
+      background: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.38);
+    }
+    .item-card-add-label {
+      font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--gt-ph);
+    }
+
+    /* ══════════════════════════════
+       OUTFITS TAB
+    ══════════════════════════════ */
+    .outfit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .outfit-card {
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: var(--radius-m);
+      padding: 18px 20px;
+      transition: background .14s;
+    }
+    .outfit-card:hover { background: rgba(255,255,255,.16); }
+    .outfit-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .outfit-num {
+      font-size: 11px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--gt-s);
+    }
+    .outfit-layers {
+      display: flex; gap: 8px;
+    }
+    .outfit-layer {
+      flex: 1; min-width: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .outfit-layer-thumb {
+      width: 100%; aspect-ratio: .8;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .outfit-layer-thumb .layer-color {
+      width: 8px; height: 8px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.22);
+      position: absolute; bottom: 4px; right: 4px;
+    }
+    .outfit-layer-label {
+      font-size: 8.5px; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--gt-ph); text-align: center;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    /* ── Outfit Toolbar ── */
+    .outfit-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .outfit-toolbar-count {
+      font-size: 12px; font-weight: 500; letter-spacing: .06em;
+      color: var(--gt-s);
+    }
+    .outfit-view-toggle {
+      display: flex; gap: 4px;
+    }
+    .view-btn {
+      width: 30px; height: 30px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s;
+      color: var(--gt-ph);
+    }
+    .view-btn:hover { background: rgba(255,255,255,.14); }
+    .view-btn.active {
+      background: rgba(255,255,255,.20);
+      border-color: rgba(255,255,255,.32);
+      color: var(--gt-p);
+    }
+    .view-btn svg { pointer-events: none; }
+
+    /* ── Moodboard view ── */
+    .outfit-grid.moodboard {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .outfit-card { cursor: pointer; }
+    .moodboard-card {
+      aspect-ratio: 1;
+      display: flex; flex-direction: column;
+      padding: 14px;
+    }
+    .moodboard-card .outfit-head { margin-bottom: 10px; }
+    .moodboard-collage {
+      flex: 1; min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 6px;
+    }
+    .moodboard-thumb {
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .moodboard-thumb .layer-color {
+      width: 100%; height: 100%;
+      position: absolute; inset: 0;
+      opacity: .18;
+    }
+    .moodboard-thumb svg { position: relative; z-index: 1; }
+    .moodboard-more {
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      font-size: 11px; font-weight: 600; color: var(--gt-ph);
+    }
+
+    /* ══════════════════════════════
+       OUTFIT DETAIL OVERLAY
+    ══════════════════════════════ */
+    .outfit-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+    .outfit-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .outfit-detail-panel {
+      position: fixed;
+      top: 0; bottom: 0; right: 0;
+      width: 440px;
+      background: rgba(30,30,30,0.82);
+      backdrop-filter: blur(48px);
+      -webkit-backdrop-filter: blur(48px);
+      border-left: 1px solid rgba(255,255,255,.12);
+      z-index: 510;
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform .3s cubic-bezier(.4,0,.2,1);
+      overflow: hidden;
+    }
+    .outfit-overlay.open .outfit-detail-panel {
+      transform: translateX(0);
+    }
+    .od-header {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .od-name-input {
+      flex: 1;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: var(--radius-s);
+      padding: 10px 14px;
+      font-family: inherit; font-size: 16px; font-weight: 500;
+      letter-spacing: -.01em;
+      color: var(--gt-p);
+      outline: none;
+      transition: border-color .15s, background .15s;
+    }
+    .od-name-input:focus {
+      background: rgba(255,255,255,.12);
+      border-color: rgba(255,255,255,.36);
+    }
+    .od-name-input::placeholder { color: var(--gt-ph); }
+    .od-close {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background .15s;
+    }
+    .od-close:hover { background: rgba(255,255,255,.16); }
+    .od-body {
+      flex: 1; overflow-y: auto;
+      padding: 20px 24px 28px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.12) transparent;
+    }
+    .od-section-label {
+      font-size: 10px; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--gt-ph);
+      margin-bottom: 12px;
+    }
+    .od-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius-s);
+      margin-bottom: 8px;
+      transition: background .14s;
+    }
+    .od-item:hover { background: rgba(255,255,255,.10); }
+    .od-item-color {
+      width: 32px; height: 32px; border-radius: 6px;
+      border: 1px solid rgba(255,255,255,.18);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .od-item-info { flex: 1; min-width: 0; }
+    .od-item-name {
+      font-size: 13px; font-weight: 500; color: var(--gt-p);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .od-item-cat {
+      font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-s); margin-top: 2px;
+    }
+    .od-item-remove {
+      width: 24px; height: 24px;
+      background: none; border: 1px solid rgba(255,255,255,.12);
+      border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; opacity: 0;
+      transition: opacity .14s, background .14s;
+    }
+    .od-item:hover .od-item-remove { opacity: 1; }
+    .od-item-remove:hover { background: rgba(255,80,60,.18); border-color: rgba(255,80,60,.30); }
+    .od-add-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px;
+      background: none;
+      border: 1.5px dashed rgba(255,255,255,.16);
+      border-radius: var(--radius-s);
+      cursor: pointer;
+      font-family: inherit; font-size: 12px; font-weight: 500;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-s);
+      margin-top: 4px;
+      transition: all .15s;
+    }
+    .od-add-btn:hover {
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.28);
+      color: var(--gt-p);
+    }
+
+    /* ── Outfit Item Picker ── */
+    .od-picker {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .od-picker-title {
+      font-size: 10px; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--gt-ph);
+      margin-bottom: 10px;
+    }
+    .od-picker-list {
+      display: flex; flex-direction: column; gap: 4px;
+      max-height: 260px; overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.10) transparent;
+    }
+    .od-picker-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all .14s;
+    }
+    .od-picker-item:hover {
+      background: rgba(255,255,255,.10);
+      border-color: rgba(255,255,255,.20);
+    }
+    .od-picker-item.already-in {
+      opacity: .35; pointer-events: none;
+    }
+    .od-picker-color {
+      width: 24px; height: 24px; border-radius: 5px;
+      border: 1px solid rgba(255,255,255,.18);
+      flex-shrink: 0;
+    }
+    .od-picker-name {
+      font-size: 12px; color: var(--gt-p);
+      flex: 1;
+    }
+    .od-picker-cat {
+      font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-ph);
+    }
+
+    /* ══════════════════════════════
+       GAP ANALYSIS TAB
+    ══════════════════════════════ */
+    .gap-list { display: flex; flex-direction: column; gap: 0; }
+    .gap-row {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      transition: background .12s;
+    }
+    .gap-row:last-child { border-bottom: none; }
+    .gap-row:hover { background: rgba(255,255,255,.04); }
+    .gap-icon {
+      width: 34px; height: 34px; flex-shrink: 0;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .gap-icon.structural { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); }
+    .gap-icon.color { background: rgba(255,200,100,.12); border: 1px solid rgba(255,200,100,.22); }
+    .gap-icon.combinability { background: rgba(100,200,255,.12); border: 1px solid rgba(100,200,255,.22); }
+    .gap-body { flex: 1; min-width: 0; }
+    .gap-title-row {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 4px;
+    }
+    .gap-title {
+      font-size: 14px; font-weight: 500; color: var(--gt-p);
+      letter-spacing: .01em;
+    }
+    .gap-color {
+      width: 12px; height: 12px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.22);
+      flex-shrink: 0;
+    }
+    .gap-type {
+      font-size: 9.5px; letter-spacing: .10em; text-transform: uppercase;
+      color: var(--gt-ph);
+      background: rgba(255,255,255,.06);
+      border-radius: 10px; padding: 2px 8px;
+    }
+    .gap-desc {
+      font-size: 12px; color: var(--gt-s); line-height: 1.55;
+      letter-spacing: .01em;
+    }
+
+    /* Empty state */
+    .gap-empty {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 48px 20px; text-align: center;
+    }
+    .gap-empty-icon {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.22);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .gap-empty-title {
+      font-size: 16px; font-weight: 500; color: var(--gt-p);
+      margin-bottom: 6px;
+    }
+    .gap-empty-sub {
+      font-size: 12px; color: var(--gt-s);
+    }
+
+    /* ══════════════════════════════
+       SHOPPING LIST TAB
+    ══════════════════════════════ */
+    .shop-list { display: flex; flex-direction: column; gap: 0; }
+    .shop-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      transition: background .12s;
+    }
+    .shop-row:last-child { border-bottom: none; }
+    .shop-row:hover { background: rgba(255,255,255,.04); }
+    .shop-bar {
+      width: 3px; height: 36px; border-radius: 2px; flex-shrink: 0;
+    }
+    .bar-hi  { background: rgba(255,255,255,.62); }
+    .bar-mid { background: rgba(255,255,255,.35); }
+    .bar-lo  { background: rgba(255,255,255,.16); }
+    .shop-color {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.22);
+      flex-shrink: 0;
+    }
+    .shop-body { flex: 1; min-width: 0; }
+    .shop-name {
+      font-size: 14px; font-weight: 500; color: var(--gt-p);
+      letter-spacing: .01em;
+    }
+    .shop-impact {
+      font-size: 11px; color: var(--gt-s); margin-top: 2px;
+    }
+    .shop-priority {
+      font-size: 9.5px; font-weight: 700; letter-spacing: .10em;
+      text-transform: uppercase; padding: 3px 10px;
+      border-radius: 20px; flex-shrink: 0;
+    }
+    .priority-high {
+      color: rgba(255,255,255,.90);
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.28);
+    }
+    .priority-medium {
+      color: var(--gt-s);
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+    }
+    .priority-low {
+      color: var(--gt-ph);
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .shop-find-btn {
+      padding: 6px 14px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 20px;
+      font-family: inherit; font-size: 10px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-s); cursor: pointer;
+      transition: all .14s; flex-shrink: 0;
+    }
+    .shop-find-btn:hover {
+      background: rgba(255,255,255,.18);
+      color: var(--gt-p);
+    }
+
+    /* ── Bottom Navigation (mobile) ── */
+    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; background: rgba(255,255,255,0.13); backdrop-filter: blur(44px); -webkit-backdrop-filter: blur(44px); border-top: 1px solid rgba(255,255,255,.20); padding: 0; padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+    .bnav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 12px 6px; text-decoration: none; cursor: pointer; transition: opacity .14s, border-color .2s; opacity: .5; border-top: 2px solid transparent; }
+    .bnav-item.active { opacity: 1; border-top-color: rgba(255,255,255,.65); }
+    .bnav-item:hover { opacity: .8; }
+    .bnav-ico { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+    .bnav-lbl { font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--gt-p); }
+    .bnav-dot { display: none; }
+
+    /* ── More sheet ── */
+    .more-overlay {
+      display: none; position: fixed; inset: 0; z-index: 60;
+      background: rgba(0,0,0,.40);
+      opacity: 0; transition: opacity .25s;
+    }
+    .more-overlay.open { display: block; opacity: 1; }
+    .more-sheet {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 70;
+      background: rgba(255,255,255,0.22);
+      backdrop-filter: blur(44px); -webkit-backdrop-filter: blur(44px);
+      border-top: 1px solid rgba(255,255,255,.58);
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -8px 32px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.72);
+      padding: 12px 20px;
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      transform: translateY(100%);
+      transition: transform .3s cubic-bezier(.32,.72,.24,1);
+    }
+    .more-sheet.open { transform: translateY(0); }
+    .more-handle {
+      width: 36px; height: 4px; border-radius: 2px;
+      background: rgba(255,255,255,.30);
+      margin: 0 auto 16px;
+    }
+    .more-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+    }
+    .more-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; padding: 14px 8px;
+      text-decoration: none; border-radius: 12px;
+      transition: background .14s;
+    }
+    .more-item:hover { background: rgba(255,255,255,.10); }
+    .more-item-ico {
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .more-item-lbl {
+      font-size: 9.5px; font-weight: 600;
+      letter-spacing: .04em; color: var(--gt-p);
+      text-align: center;
+    }
+    .more-item-badge {
+      font-size: 9px; font-weight: 600;
+      color: var(--gt-ph); background: rgba(255,255,255,.10);
+      border-radius: 20px; padding: 1px 6px; margin-top: -3px;
+    }
+    @media (min-width: 1025px) {
+      .more-overlay, .more-sheet { display: none !important; }
+    }
+
+    /* ══════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════ */
+    @media (max-width: 1024px) {
+      .sidebar { display: none; }
+      .bottom-nav { display: flex; justify-content: space-around; align-items: center; }
+      .topbar { padding: 24px 24px 0; }
+      .content { padding: 20px 24px 88px; }
+      .item-grid { grid-template-columns: repeat(3, 1fr); }
+      .outfit-grid { grid-template-columns: 1fr 1fr; }
+      .outfit-grid.moodboard { grid-template-columns: repeat(3, 1fr); }
+      .outfit-detail-panel { width: 380px; }
+    }
+    @media (max-width: 768px) {
+      .capsule-card { flex-direction: column; gap: 20px; }
+      .opr-widget {
+        width: 100%; flex-direction: row; gap: 16px;
+        padding: 16px 20px;
+      }
+      .item-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .outfit-grid { grid-template-columns: 1fr; }
+      .outfit-grid.moodboard { grid-template-columns: repeat(2, 1fr); }
+      .outfit-detail-panel { width: 100%; }
+      .tab-btn { padding: 12px 14px 10px; font-size: 11px; letter-spacing: .06em; }
+    }
+    @media (max-width: 480px) {
+      .topbar { flex-direction: column; gap: 12px; }
+      .topbar-right { width: 100%; justify-content: flex-end; }
+      .cap-stats { gap: 18px; flex-wrap: wrap; }
+      .cap-actions { flex-wrap: wrap; }
+    }
+
+    /* ══════════════════════════════
+       CAPSULES PANEL (full list overlay)
+    ══════════════════════════════ */
+    .capsules-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+    .capsules-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .capsules-panel {
+      position: fixed;
+      top: 0; bottom: 0;
+      left: var(--sidebar-w);
+      width: 480px;
+      background: rgba(30,30,30,0.82);
+      backdrop-filter: blur(48px);
+      -webkit-backdrop-filter: blur(48px);
+      border-right: 1px solid rgba(255,255,255,.12);
+      z-index: 510;
+      display: flex; flex-direction: column;
+      transform: translateX(-100%);
+      transition: transform .3s cubic-bezier(.4,0,.2,1);
+      overflow: hidden;
+    }
+    .capsules-overlay.open .capsules-panel {
+      transform: translateX(0);
+    }
+    .cp-header {
+      padding: 32px 28px 24px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .cp-title {
+      font-size: 20px; font-weight: 300; letter-spacing: -.01em;
+      color: var(--gt-p);
+    }
+    .cp-title strong { font-weight: 600; }
+    .cp-close {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .14s;
+    }
+    .cp-close:hover { background: rgba(255,255,255,.18); }
+    .cp-body {
+      flex: 1; overflow-y: auto; padding: 20px 28px 32px;
+      display: flex; flex-direction: column; gap: 12px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.12) transparent;
+    }
+    .cp-card {
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: var(--radius-m);
+      padding: 20px 22px;
+      cursor: pointer;
+      transition: background .14s, border-color .14s, transform .14s;
+    }
+    .cp-card:hover {
+      background: rgba(255,255,255,.18);
+      border-color: rgba(255,255,255,.38);
+      transform: translateY(-1px);
+    }
+    .cp-card.active {
+      border-color: rgba(255,255,255,.50);
+      background: rgba(255,255,255,.14);
+    }
+    .cp-card-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .cp-card-name {
+      font-size: 18px; font-weight: 400; letter-spacing: -.01em;
+      color: var(--gt-p);
+    }
+    .cp-card-badge {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--gt-s);
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 20px;
+      padding: 3px 10px;
+    }
+    .cp-card-palette {
+      display: flex; gap: 4px; margin-bottom: 14px;
+    }
+    .cp-card-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.22);
+    }
+    .cp-card-stats {
+      display: flex; gap: 22px;
+    }
+    .cp-stat-val {
+      font-size: 16px; font-weight: 300; color: var(--gt-p);
+    }
+    .cp-stat-lbl {
+      font-size: 9px; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--gt-s);
+    }
+    .cp-card-opr {
+      margin-left: auto;
+      text-align: center;
+    }
+    .cp-opr-val {
+      font-size: 20px; font-weight: 200; color: var(--gt-p);
+    }
+    .cp-opr-lbl {
+      font-size: 8px; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--gt-ph);
+    }
+    .cp-card-actions {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .cp-set-active-btn {
+      padding: 7px 16px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: 50px;
+      font-family: inherit; font-size: 10.5px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-s); cursor: pointer;
+      transition: background .14s, color .14s;
+    }
+    .cp-set-active-btn:hover {
+      background: rgba(255,255,255,.22);
+      color: var(--gt-p);
+    }
+    .cp-view-btn {
+      padding: 7px 16px;
+      background: none;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 50px;
+      font-family: inherit; font-size: 10.5px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-ph); cursor: pointer;
+      transition: background .14s, color .14s;
+    }
+    .cp-view-btn:hover {
+      background: rgba(255,255,255,.08);
+      color: var(--gt-s);
+    }
+
+    .cp-new-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 18px;
+      background: rgba(255,255,255,.05);
+      border: 1.5px dashed rgba(255,255,255,.20);
+      border-radius: var(--radius-m);
+      cursor: pointer;
+      font-family: inherit; font-size: 11px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--gt-ph);
+      transition: background .14s, border-color .14s, color .14s;
+    }
+    .cp-new-btn:hover {
+      background: rgba(255,255,255,.10);
+      border-color: rgba(255,255,255,.35);
+      color: var(--gt-s);
+    }
+
+    @media (max-width: 1024px) {
+      .capsules-panel { left: 0; width: 100%; max-width: 420px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero-bg"></div>
+<div class="hero-overlay"></div>
+
+<div class="app">
+
+  <!-- ══════════════════════════════
+       SIDEBAR
+  ══════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <a class="logo" href="index.html">Capsule Zero</a>
+      <div class="user-row">
+        <a href="profile.html" style="text-decoration:none;flex-shrink:0;border-radius:50%;transition:transform .14s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform=''">
+          <div class="avatar">AK</div>
+        </a>
+        <div>
+          <div class="user-name">Anna Kozlova</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section-label" data-i18n="nav_overview">Overview</div>
+
+      <a class="nav-item" href="dashboard.html">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+            <rect x="10" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+            <rect x="1.5" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+            <rect x="10" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_dashboard">Dashboard</span>
+      </a>
+
+      <div class="nav-section-label" data-i18n="nav_wardrobe">Wardrobe</div>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <rect x="2.5" y="6" width="12" height="9" rx="1" stroke="white" stroke-width="1.3"/>
+            <path d="M2.5 6L5 2.5H8.5M14.5 6L12 2.5H8.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.5 2.5V6" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_items">My Items</span>
+        <span class="nav-badge">24</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24">
+            <path d="M6.5 3.5H9.5C9.5 4.88 10.62 6 12 6C13.38 6 14.5 4.88 14.5 3.5H17.5L22 8L19 11L17 9V21H7V9L5 11L2 8L6.5 3.5Z" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_outfits">Outfits</span>
+        <span class="nav-badge">96</span>
+      </a>
+
+      <a class="nav-item active" href="#" onclick="toggleCapsulesPanel(event)">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M2.5 3.5H7C7 2 6 0.5 8 0.5C10 0.5 9 2 9 3.5H13V7C14.5 7 16 6 16 8C16 10 14.5 9 13 9V14H9C9 12.5 10 11 8 11C6 11 7 12.5 7 14H2.5V9C4 9 5 10 5 8C5 6 4 7 2.5 7Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_capsules">Capsules</span>
+        <span class="nav-badge">3</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <circle cx="8.5" cy="8.5" r="6" stroke="white" stroke-width="1.3"/>
+            <path d="M4.26 4.26L12.74 12.74" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_uncapsulated">Uncapsulated</span>
+        <span class="nav-badge">6</span>
+      </a>
+
+      <div class="nav-section-label" data-i18n="nav_lists">Lists</div>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M8.5 2.5L10.2 7.2H15.2L11.2 10L12.8 14.8L8.5 11.8L4.2 14.8L5.8 10L1.8 7.2H6.8Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_favorites">Favorites</span>
+        <span class="nav-badge">3</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M2.5 5H14.5M2.5 8.5H11.5M2.5 12H9.5" stroke="white" stroke-width="1.35" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_shopping">Shopping List</span>
+        <span class="nav-badge">4</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 17 17">
+            <path d="M8.5 1.5V13.5" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M11.5 4.5C11.5 3.5 10.1 3 8.5 3C6.9 3 5.5 3.8 5.5 5.2C5.5 6.6 8.5 7.2 8.5 7.2C8.5 7.2 11.5 7.8 11.5 9.5C11.5 11.2 10.1 11.8 8.5 11.8C6.9 11.8 5.5 11.3 5.5 10.3" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_sale">For Sale</span>
+        <span class="nav-badge">2</span>
+      </a>
+
+      <a class="nav-item" href="#">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_repair">For Repair</span>
+        <span class="nav-badge">1</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <a class="nav-item" href="profile.html">
+        <span class="nav-ico">
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-lbl" data-i18n="nav_settings">Settings</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════
+       MAIN
+  ══════════════════════════════ -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" data-i18n="topbar_title">Your capsule is <strong>ready</strong></div>
+        <div class="topbar-sub" data-i18n="topbar_sub">Spring 2026 capsule</div>
+      </div>
+      <div class="topbar-right">
+        <div class="lang-dropdown" id="langDropdown">
+          <button class="lang-trigger" onclick="toggleLang(event)" aria-label="Select language">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span id="currentLang">EN</span>
+            <span class="lang-chevron">&#9662;</span>
+          </button>
+          <div class="lang-menu">
+            <button class="lang-option active" data-code="EN" onclick="setLang(this)">
+              <span>English</span><span class="lang-code">EN</span>
+            </button>
+            <button class="lang-option" data-code="RU" onclick="setLang(this)">
+              <span>&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</span><span class="lang-code">RU</span>
+            </button>
+            <button class="lang-option" data-code="ES" onclick="setLang(this)">
+              <span>Espa&#241;ol</span><span class="lang-code">ES</span>
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-primary" data-i18n="btn_add_item">
+          <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
+            <path d="M7 1V13M1 7H13" stroke="white" stroke-width="1.9" stroke-linecap="round"/>
+          </svg>
+          Add Item
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- ── Hero Card ── -->
+      <div class="gc capsule-card">
+        <div class="capsule-body">
+          <div class="cap-eyebrow">
+            <svg width="27" height="27" viewBox="0 -1 14 15" style="flex-shrink:0;">
+              <g transform="rotate(45 7 7)">
+                <rect x="5.2" y="-0.3" width="3.6" height="4.8" rx="1.5" fill="rgba(255,255,255,.70)"/>
+                <ellipse cx="7" cy="4.5" rx="4" ry="1.8" fill="rgba(255,255,255,.70)"/>
+                <polygon points="6.5,5.5 7.5,5.5 7,13" fill="rgba(255,255,255,.70)"/>
+              </g>
+            </svg>
+            <span data-i18n="cap_label">Active Capsule</span>
+          </div>
+          <div class="cap-name" data-i18n="cap_name">Spring 2026</div>
+
+          <!-- Palette -->
+          <div class="palette-row">
+            <div class="pdot pdot-lg" style="background:#1C1C1C;" title="Black"></div>
+            <div class="pdot pdot-lg" style="background:#FFFFFF;" title="White"></div>
+            <div class="pdot pdot-lg" style="background:#8C8C8C;" title="Gray"></div>
+            <div class="pdot pdot-lg" style="background:#182878;" title="Navy"></div>
+            <div class="pdot pdot-sm" style="background:#E8D5B5;" title="Beige"></div>
+            <div class="pdot pdot-sm" style="background:#C0A268;" title="Sand"></div>
+            <span class="palette-label" data-i18n="palette_label">Color Palette</span>
+          </div>
+
+          <!-- Mini stats -->
+          <div class="cap-stats">
+            <div>
+              <div class="ms-val">18</div>
+              <div class="ms-lbl" data-i18n="stat_items">Items</div>
+            </div>
+            <div>
+              <div class="ms-val">74</div>
+              <div class="ms-lbl" data-i18n="stat_outfits">Outfits</div>
+            </div>
+            <div>
+              <div class="ms-val">12</div>
+              <div class="ms-lbl" data-i18n="stat_categories">Categories</div>
+            </div>
+          </div>
+
+          <div class="cap-actions">
+            <button class="btn-primary" data-i18n="btn_add_item2">
+              <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
+                <path d="M7 1V13M1 7H13" stroke="white" stroke-width="1.9" stroke-linecap="round"/>
+              </svg>
+              Add Item
+            </button>
+            <button class="btn-ghost" data-i18n="btn_edit_capsule">Edit Capsule</button>
+          </div>
+        </div>
+
+        <!-- OPR -->
+        <div class="opr-widget">
+          <div class="opr-val">4.1</div>
+          <div class="opr-lbl">OPR</div>
+          <div class="opr-delta">+0.3</div>
+          <div class="opr-hint">Outfit Productivity Ratio</div>
+        </div>
+      </div>
+
+      <!-- ── Tab Bar + Content ── -->
+      <div class="gc" style="padding: 0; overflow: hidden;">
+
+        <div class="tab-bar">
+          <button class="tab-btn active" data-tab="items" data-i18n="tab_items">
+            Items <span class="tab-count">18</span>
+          </button>
+          <button class="tab-btn" data-tab="outfits" data-i18n="tab_outfits">
+            Outfits <span class="tab-count">12</span>
+          </button>
+          <button class="tab-btn" data-tab="gaps" data-i18n="tab_gaps">
+            What's Missing <span class="tab-count">4</span>
+          </button>
+          <button class="tab-btn" data-tab="shopping" data-i18n="tab_shopping">
+            Shopping List <span class="tab-count">4</span>
+          </button>
+        </div>
+
+        <!-- ── Items Tab ── -->
+        <div class="tab-panel active" id="tab-items" style="padding: 24px 24px 28px;">
+          <div class="item-grid" id="itemGrid"></div>
+        </div>
+
+        <!-- ── Outfits Tab ── -->
+        <div class="tab-panel" id="tab-outfits" style="padding: 24px 24px 28px;">
+          <div class="outfit-toolbar">
+            <span class="outfit-toolbar-count" id="outfitCount"></span>
+            <div class="outfit-view-toggle">
+              <button class="view-btn active" data-view="linear" title="List view">
+                <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
+                  <rect x="1" y="2" width="14" height="2.5" rx="1" fill="currentColor"/>
+                  <rect x="1" y="6.75" width="14" height="2.5" rx="1" fill="currentColor"/>
+                  <rect x="1" y="11.5" width="14" height="2.5" rx="1" fill="currentColor"/>
+                </svg>
+              </button>
+              <button class="view-btn" data-view="moodboard" title="Moodboard">
+                <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
+                  <rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/>
+                  <rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor"/>
+                  <rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor"/>
+                  <rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="outfit-grid" id="outfitGrid"></div>
+        </div>
+
+        <!-- ── What's Missing Tab ── -->
+        <div class="tab-panel" id="tab-gaps" style="padding: 0;">
+          <div class="gap-list" id="gapList"></div>
+        </div>
+
+        <!-- ── Shopping List Tab ── -->
+        <div class="tab-panel" id="tab-shopping" style="padding: 0;">
+          <div class="shop-list" id="shopList"></div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <a class="bnav-item" href="dashboard.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="1.5" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="1.5" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/><rect x="10" y="10" width="5.5" height="5.5" rx="1.5" stroke="white" stroke-width="1.35"/></svg></span>
+      <span class="bnav-lbl">Dashboard</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="my-items.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><rect x="2.5" y="6" width="12" height="9" rx="1" stroke="white" stroke-width="1.3"/><path d="M2.5 6L5 2.5H8.5M14.5 6L12 2.5H8.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 2.5V6" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+      <span class="bnav-lbl">My Items</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item active" href="capsule-result.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><path d="M2.5 3.5H7C7 2 6 0.5 8 0.5C10 0.5 9 2 9 3.5H13V7C14.5 7 16 6 16 8C16 10 14.5 9 13 9V14H9C9 12.5 10 11 8 11C6 11 7 12.5 7 14H2.5V9C4 9 5 10 5 8C5 6 4 7 2.5 7Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+      <span class="bnav-lbl">Capsules</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" href="favorites.html">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 17 17"><path d="M8.5 2.5L10.2 7.2H15.2L11.2 10L12.8 14.8L8.5 11.8L4.2 14.8L5.8 10L1.8 7.2H6.8Z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+      <span class="bnav-lbl">Favorites</span>
+      <span class="bnav-dot"></span>
+    </a>
+    <a class="bnav-item" onclick="toggleMore(event)">
+      <span class="bnav-ico"><svg width="22" height="22" fill="none" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8" fill="white"/><circle cx="12" cy="12" r="1.8" fill="white"/><circle cx="19" cy="12" r="1.8" fill="white"/></svg></span>
+      <span class="bnav-lbl">More</span>
+      <span class="bnav-dot"></span>
+    </a>
+  </nav>
+
+  <!-- ── More sheet ── -->
+  <div class="more-overlay" id="moreOverlay" onclick="closeMore()"></div>
+  <div class="more-sheet" id="moreSheet">
+    <div class="more-handle"></div>
+    <div class="more-grid">
+      <a class="more-item" href="capsule-result.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M6.5 3.5H9.5C9.5 4.88 10.62 6 12 6C13.38 6 14.5 4.88 14.5 3.5H17.5L22 8L19 11L17 9V21H7V9L5 11L2 8L6.5 3.5Z" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Outfits</span>
+        <span class="more-item-badge">96</span>
+      </a>
+      <a class="more-item" href="uncapsulated.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><circle cx="8.5" cy="8.5" r="6" stroke="white" stroke-width="1.3"/><path d="M4.26 4.26L12.74 12.74" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">Uncapsulated</span>
+        <span class="more-item-badge">6</span>
+      </a>
+      <a class="more-item" href="#">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><path d="M2.5 5H14.5M2.5 8.5H11.5M2.5 12H9.5" stroke="white" stroke-width="1.35" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">Shopping List</span>
+        <span class="more-item-badge">4</span>
+      </a>
+      <a class="more-item" href="for-sale.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 17 17"><path d="M8.5 1.5V13.5" stroke="white" stroke-width="1.3" stroke-linecap="round"/><path d="M11.5 4.5C11.5 3.5 10.1 3 8.5 3C6.9 3 5.5 3.8 5.5 5.2C5.5 6.6 8.5 7.2 8.5 7.2C8.5 7.2 11.5 7.8 11.5 9.5C11.5 11.2 10.1 11.8 8.5 11.8C6.9 11.8 5.5 11.3 5.5 10.3" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+        <span class="more-item-lbl">For Sale</span>
+        <span class="more-item-badge">2</span>
+      </a>
+      <a class="more-item" href="for-repair.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">For Repair</span>
+        <span class="more-item-badge">1</span>
+      </a>
+      <a class="more-item" href="profile.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Profile</span>
+      </a>
+      <a class="more-item" href="profile.html">
+        <span class="more-item-ico"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke="white" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="more-item-lbl">Settings</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════
+     CAPSULES PANEL OVERLAY
+══════════════════════════════ -->
+<div class="capsules-overlay" id="capsulesOverlay" onclick="closeCapsulesPanel()">
+  <div class="capsules-panel" onclick="event.stopPropagation()">
+    <div class="cp-header">
+      <div class="cp-title" data-i18n="cp_title">My <strong>Capsules</strong></div>
+      <button class="cp-close" onclick="closeCapsulesPanel()" aria-label="Close">
+        <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+          <path d="M2 2L10 10M10 2L2 10" stroke="rgba(255,255,255,.70)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="cp-body" id="capsulesPanelBody"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     OUTFIT DETAIL OVERLAY
+══════════════════════════════ -->
+<div class="outfit-overlay" id="outfitOverlay" onclick="closeOutfitDetail()">
+  <div class="outfit-detail-panel" onclick="event.stopPropagation()">
+    <div class="od-header">
+      <input class="od-name-input" id="odNameInput" type="text" spellcheck="false" />
+      <button class="od-close" onclick="closeOutfitDetail()" aria-label="Close">
+        <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+          <path d="M2 2L10 10M10 2L2 10" stroke="rgba(255,255,255,.70)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="od-body" id="odBody"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════
+   MOCK DATA
+══════════════════════════════ */
+const CAPSULE_ITEMS = [
+  { name: 'White T-shirt',         category: 'Top',       color: '#FFFFFF', layer: 'top' },
+  { name: 'Black T-shirt',         category: 'Top',       color: '#1C1C1C', layer: 'top' },
+  { name: 'Ivory silk blouse',     category: 'Top',       color: '#FFFFFF', layer: 'top' },
+  { name: 'Grey cashmere sweater', category: 'Knitwear',  color: '#8C8C8C', layer: 'top' },
+  { name: 'Navy striped shirt',    category: 'Top',       color: '#182878', layer: 'top' },
+  { name: 'Black blazer',          category: 'Outerwear', color: '#1C1C1C', layer: 'outer' },
+  { name: 'Camel coat',            category: 'Outerwear', color: '#C0A268', layer: 'outer' },
+  { name: 'Navy trench coat',      category: 'Outerwear', color: '#182878', layer: 'outer' },
+  { name: 'Straight jeans',        category: 'Bottom',    color: '#182878', layer: 'bottom' },
+  { name: 'Black trousers',        category: 'Bottom',    color: '#1C1C1C', layer: 'bottom' },
+  { name: 'Beige chinos',          category: 'Bottom',    color: '#E8D5B5', layer: 'bottom' },
+  { name: 'Grey wool skirt',       category: 'Bottom',    color: '#8C8C8C', layer: 'bottom' },
+  { name: 'Black ankle boots',     category: 'Shoes',     color: '#1C1C1C', layer: 'shoes' },
+  { name: 'White sneakers',        category: 'Shoes',     color: '#FFFFFF', layer: 'shoes' },
+  { name: 'Beige loafers',         category: 'Shoes',     color: '#E8D5B5', layer: 'shoes' },
+  { name: 'Black leather bag',     category: 'Bag',       color: '#1C1C1C', layer: 'bag' },
+  { name: 'Canvas tote',           category: 'Bag',       color: '#FFFFFF', layer: 'bag' },
+  { name: 'Camel belt',            category: 'Accessory', color: '#C0A268', layer: 'accessory' },
+];
+
+const CAPSULE_OUTFITS = [
+  { label: 'Outfit 1',  items: [0, 9, 5, 12, 15] },
+  { label: 'Outfit 2',  items: [2, 8, 7, 14, 16] },
+  { label: 'Outfit 3',  items: [3, 10, 6, 14, 15] },
+  { label: 'Outfit 4',  items: [4, 9, 5, 12, 15, 17] },
+  { label: 'Outfit 5',  items: [1, 11, 6, 12, 16] },
+  { label: 'Outfit 6',  items: [0, 10, 7, 13, 15] },
+  { label: 'Outfit 7',  items: [2, 9, 5, 14, 16, 17] },
+  { label: 'Outfit 8',  items: [3, 8, 6, 12, 15] },
+  { label: 'Outfit 9',  items: [4, 11, 5, 13, 16] },
+  { label: 'Outfit 10', items: [1, 10, 7, 14, 15] },
+  { label: 'Outfit 11', items: [0, 9, 6, 12, 16, 17] },
+  { label: 'Outfit 12', items: [2, 11, 5, 13, 15] },
+];
+
+const GAP_ANALYSIS = [
+  {
+    type: 'structural', category: 'Dress',
+    color: '#1C1C1C', desc: 'A versatile dress would unlock one-piece outfit options and expand evening looks.'
+  },
+  {
+    type: 'color', category: 'Top',
+    color: '#E8D5B5', desc: 'Your beige palette color is only used in bottoms and shoes. A beige top would improve balance.'
+  },
+  {
+    type: 'combinability', category: 'Cardigan',
+    color: '#8C8C8C', desc: 'Adding a grey cardigan as a layering mid-piece creates +18 new outfit combinations.'
+  },
+  {
+    type: 'structural', category: 'Scarf',
+    color: '#182878', desc: 'A lightweight scarf adds a finishing layer and seasonal versatility to 8+ existing outfits.'
+  },
+];
+
+const SHOPPING_LIST = [
+  { category: 'Straight-leg trousers', color: '#8C8C8C', priority: 'high',   impact: '+12 outfits' },
+  { category: 'Grey cardigan',         color: '#8C8C8C', priority: 'high',   impact: '+18 outfits' },
+  { category: 'Beige silk top',        color: '#E8D5B5', priority: 'medium', impact: '+8 outfits'  },
+  { category: 'Navy scarf',            color: '#182878', priority: 'low',    impact: '+5 outfits'  },
+];
+
+/* ══════════════════════════════
+   CAPSULES DATA (multi-capsule)
+══════════════════════════════ */
+const CAPSULES = [
+  {
+    id: 'spring-2026',
+    name: { EN: 'Spring 2026', RU: 'Весна 2026', ES: 'Primavera 2026' },
+    palette: ['#1C1C1C','#FFFFFF','#8C8C8C','#182878','#E8D5B5','#C0A268'],
+    items: 18, outfits: 74, categories: 12, opr: 4.1, oprDelta: '+0.3',
+    active: true
+  },
+  {
+    id: 'travel-light',
+    name: { EN: 'Travel Light', RU: 'В дорогу', ES: 'Viaje Ligero' },
+    palette: ['#1C1C1C','#FFFFFF','#E8D5B5','#60A878'],
+    items: 12, outfits: 28, categories: 8, opr: 3.6, oprDelta: '+0.1',
+    active: false
+  },
+  {
+    id: 'work-basics',
+    name: { EN: 'Work Basics', RU: 'Базовый рабочий', ES: 'Trabajo B\u00e1sico' },
+    palette: ['#1C1C1C','#FFFFFF','#182878','#8C8C8C','#C0A268'],
+    items: 15, outfits: 42, categories: 10, opr: 3.9, oprDelta: '+0.5',
+    active: false
+  },
+];
+
+let activeCapsuleId = 'spring-2026';
+
+/* ══════════════════════════════
+   i18n
+══════════════════════════════ */
+const I18N = {
+  EN: {
+    topbar_title:    'Your capsule is <strong>ready</strong>',
+    topbar_sub:      'Spring 2026 capsule',
+    cap_label:       'Active Capsule',
+    cap_name:        'Spring 2026',
+    palette_label:   'Color Palette',
+    stat_items:      'Items',
+    stat_outfits:    'Outfits',
+    stat_categories: 'Categories',
+    btn_add_item:    'Add Item',
+    btn_add_item2:   'Add Item',
+    btn_edit_capsule:'Edit Capsule',
+    tab_items:       'Items',
+    tab_outfits:     'Outfits',
+    tab_gaps:        "What's Missing",
+    tab_shopping:    'Shopping List',
+    gap_structural:  'Structural',
+    gap_color:       'Color gap',
+    gap_combinability:'Combinability',
+    gap_empty_title: 'Your capsule is complete!',
+    gap_empty_sub:   'No missing items detected',
+    shop_find:       'Find',
+    priority_high:   'High',
+    priority_medium: 'Medium',
+    priority_low:    'Low',
+    nav_overview:    'Overview',
+    nav_dashboard:   'Dashboard',
+    nav_wardrobe:    'Wardrobe',
+    nav_items:       'My Items',
+    nav_outfits:     'Outfits',
+    nav_capsules:    'Capsules',
+    nav_uncapsulated:'Uncapsulated',
+    nav_lists:       'Lists',
+    nav_favorites:   'Favorites',
+    nav_shopping:    'Shopping List',
+    nav_sale:        'For Sale',
+    nav_repair:      'For Repair',
+    nav_settings:    'Settings',
+    cp_title:        'My <strong>Capsules</strong>',
+    cp_active:       'Active',
+    cp_new:          'New Capsule',
+    cp_set_active:   'Set as Active',
+    cp_view:         'View',
+    cs_items:        'items',
+    cs_outfits:      'outfits',
+    outfit_count:    '{n} outfits',
+    outfit_items_label: 'Items in this outfit',
+    outfit_add_item: 'Add Item',
+    outfit_picker_title:'Choose item to add',
+  },
+  RU: {
+    topbar_title:    'Твоя капсула <strong>готова</strong>',
+    topbar_sub:      'Капсула Весна 2026',
+    cap_label:       'Активная капсула',
+    cap_name:        'Весна 2026',
+    palette_label:   'Цветовая палитра',
+    stat_items:      'Вещей',
+    stat_outfits:    'Комплектов',
+    stat_categories: 'Категорий',
+    btn_add_item:    'Добавить',
+    btn_add_item2:   'Добавить',
+    btn_edit_capsule:'Изменить',
+    tab_items:       'Вещи',
+    tab_outfits:     'Комплекты',
+    tab_gaps:        'Чего не хватает',
+    tab_shopping:    'Шоппинг-лист',
+    gap_structural:  'Структура',
+    gap_color:       'Цвет',
+    gap_combinability:'Комбинаторика',
+    gap_empty_title: 'Капсула полная!',
+    gap_empty_sub:   'Нет недостающих вещей',
+    shop_find:       'Найти',
+    priority_high:   'Высокий',
+    priority_medium: 'Средний',
+    priority_low:    'Низкий',
+    nav_overview:    'Обзор',
+    nav_dashboard:   'Дашборд',
+    nav_wardrobe:    'Гардероб',
+    nav_items:       'Мои вещи',
+    nav_outfits:     'Комплекты',
+    nav_capsules:    'Капсулы',
+    nav_uncapsulated:'Вне капсул',
+    nav_lists:       'Списки',
+    nav_favorites:   'Избранное',
+    nav_shopping:    'Шоппинг-лист',
+    nav_sale:        'На продажу',
+    nav_repair:      'На ремонт',
+    nav_settings:    'Настройки',
+    cp_title:        'Мои <strong>капсулы</strong>',
+    cp_active:       'Активная',
+    cp_new:          'Новая капсула',
+    cp_set_active:   'Сделать активной',
+    cp_view:         'Открыть',
+    cs_items:        'вещей',
+    cs_outfits:      'комплектов',
+    outfit_count:    '{n} комплектов',
+    outfit_items_label: 'Вещи в комплекте',
+    outfit_add_item: 'Добавить вещь',
+    outfit_picker_title:'Выберите вещь',
+  },
+  ES: {
+    topbar_title:    'Tu c&aacute;psula est&aacute; <strong>lista</strong>',
+    topbar_sub:      'C&aacute;psula Primavera 2026',
+    cap_label:       'C&aacute;psula activa',
+    cap_name:        'Primavera 2026',
+    palette_label:   'Paleta de colores',
+    stat_items:      'Prendas',
+    stat_outfits:    'Outfits',
+    stat_categories: 'Categor&iacute;as',
+    btn_add_item:    'Agregar',
+    btn_add_item2:   'Agregar',
+    btn_edit_capsule:'Editar',
+    tab_items:       'Prendas',
+    tab_outfits:     'Outfits',
+    tab_gaps:        'Qu&eacute; te falta',
+    tab_shopping:    'Lista de compras',
+    gap_structural:  'Estructura',
+    gap_color:       'Color',
+    gap_combinability:'Combinabilidad',
+    gap_empty_title: '&iexcl;Tu c&aacute;psula est&aacute; completa!',
+    gap_empty_sub:   'No se detectaron prendas faltantes',
+    shop_find:       'Buscar',
+    priority_high:   'Alta',
+    priority_medium: 'Media',
+    priority_low:    'Baja',
+    nav_overview:    'General',
+    nav_dashboard:   'Panel',
+    nav_wardrobe:    'Guardarropa',
+    nav_items:       'Mis prendas',
+    nav_outfits:     'Outfits',
+    nav_capsules:    'C&aacute;psulas',
+    nav_uncapsulated:'Sin c&aacute;psula',
+    nav_lists:       'Listas',
+    nav_favorites:   'Favoritos',
+    nav_shopping:    'Lista de compras',
+    nav_sale:        'En venta',
+    nav_repair:      'Reparar',
+    nav_settings:    'Ajustes',
+    cp_title:        'Mis <strong>C&aacute;psulas</strong>',
+    cp_active:       'Activa',
+    cp_new:          'Nueva c&aacute;psula',
+    cp_set_active:   'Activar',
+    cp_view:         'Ver',
+    cs_items:        'prendas',
+    cs_outfits:      'outfits',
+    outfit_count:    '{n} outfits',
+    outfit_items_label: 'Prendas en este outfit',
+    outfit_add_item: 'Agregar prenda',
+    outfit_picker_title:'Elegir prenda',
+  },
+};
+
+let currentLangCode = 'EN';
+
+function applyI18n(code) {
+  currentLangCode = code;
+  const dict = I18N[code] || I18N.EN;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (!dict[key]) return;
+    // For tab buttons, preserve the count span
+    if (el.classList.contains('tab-btn')) {
+      const countSpan = el.querySelector('.tab-count');
+      const countHTML = countSpan ? countSpan.outerHTML : '';
+      el.innerHTML = dict[key] + ' ' + countHTML;
+    } else if (el.classList.contains('btn-primary')) {
+      const svg = el.querySelector('svg');
+      const svgHTML = svg ? svg.outerHTML + ' ' : '';
+      el.innerHTML = svgHTML + dict[key];
+    } else {
+      el.innerHTML = dict[key];
+    }
+  });
+  // Re-render data-driven panels with new language
+  renderOutfits();
+  renderGaps();
+  renderShopping();
+}
+
+/* ══════════════════════════════
+   LANG DROPDOWN
+══════════════════════════════ */
+function toggleLang(e) {
+  e.stopPropagation();
+  document.getElementById('langDropdown').classList.toggle('open');
+}
+function setLang(btn) {
+  const code = btn.dataset.code;
+  document.getElementById('currentLang').textContent = code;
+  document.querySelectorAll('.lang-option').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('langDropdown').classList.remove('open');
+  applyI18n(code);
+}
+document.addEventListener('click', () => {
+  document.getElementById('langDropdown').classList.remove('open');
+});
+
+/* ══════════════════════════════
+   TABS
+══════════════════════════════ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ══════════════════════════════
+   RENDER: Items
+══════════════════════════════ */
+function renderItems() {
+  const grid = document.getElementById('itemGrid');
+  let html = '';
+  CAPSULE_ITEMS.forEach((item, i) => {
+    const isDark = isColorDark(item.color);
+    html += `
+      <div class="item-card">
+        <div class="item-actions">
+          <button class="item-action-btn" title="Remove">
+            <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+              <path d="M2 2L10 10M10 2L2 10" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="item-action-btn" title="Replace">
+            <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+              <path d="M1 6C1 3.24 3.24 1 6 1C8.07 1 9.83 2.25 10.6 4M11 6C11 8.76 8.76 11 6 11C3.93 11 2.17 9.75 1.4 8" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+              <path d="M8.5 1.5L10.6 4L8 4.5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="item-thumb" style="background:${item.color}10;">
+          <svg width="28" height="28" fill="none" viewBox="0 0 28 28">
+            <path d="M14 5C14 5 9.5 8 9.5 12L4 15V24H24V15L18.5 12C18.5 8 14 5 14 5Z" stroke="${isDark ? 'rgba(255,255,255,.35)' : 'rgba(0,0,0,.20)'}" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="item-name">${item.name}</div>
+        <div class="item-cat-row">
+          <span class="item-cat">${item.category}</span>
+          <div class="item-color" style="background:${item.color};${isDark ? 'border-color:rgba(255,255,255,.35);' : ''}"></div>
+        </div>
+      </div>`;
+  });
+  // Add item card
+  html += `
+    <div class="item-card-add">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+        <path d="M12 4V20M4 12H20" stroke="rgba(255,255,255,.35)" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span class="item-card-add-label">Add Item</span>
+    </div>`;
+  grid.innerHTML = html;
+}
+
+/* ══════════════════════════════
+   RENDER: Outfits
+══════════════════════════════ */
+let currentOutfitView = 'linear';
+
+function renderOutfits() {
+  const dict = I18N[currentLangCode] || I18N.EN;
+  const grid = document.getElementById('outfitGrid');
+  const countEl = document.getElementById('outfitCount');
+
+  // Update count
+  if (countEl) countEl.textContent = (dict.outfit_count || '{n} outfits').replace('{n}', CAPSULE_OUTFITS.length);
+
+  // Toggle grid class
+  grid.classList.toggle('moodboard', currentOutfitView === 'moodboard');
+
+  let html = '';
+  CAPSULE_OUTFITS.forEach((outfit, oi) => {
+    if (currentOutfitView === 'moodboard') {
+      html += renderMoodboardCard(outfit, oi);
+    } else {
+      html += renderLinearCard(outfit, oi);
+    }
+  });
+  grid.innerHTML = html;
+}
+
+function renderLinearCard(outfit, oi) {
+  let layersHtml = '';
+  outfit.items.forEach(idx => {
+    const item = CAPSULE_ITEMS[idx];
+    if (!item) return;
+    const isDark = isColorDark(item.color);
+    layersHtml += `
+      <div class="outfit-layer">
+        <div class="outfit-layer-thumb" style="background:${item.color}0D;">
+          <svg width="18" height="18" fill="none" viewBox="0 0 18 18">
+            <path d="M9 3C9 3 6.2 5 6.2 7.4L2.5 9.4V15H15.5V9.4L11.8 7.4C11.8 5 9 3 9 3Z" stroke="${isDark ? 'rgba(255,255,255,.35)' : 'rgba(0,0,0,.18)'}" stroke-width="1" stroke-linejoin="round"/>
+          </svg>
+          <div class="layer-color" style="background:${item.color};${isDark ? 'border-color:rgba(255,255,255,.35);' : ''}"></div>
+        </div>
+        <div class="outfit-layer-label">${item.category}</div>
+      </div>`;
+  });
+  return `
+    <div class="outfit-card" onclick="openOutfitDetail(${oi})">
+      <div class="outfit-head">
+        <span class="outfit-num">${outfit.label}</span>
+      </div>
+      <div class="outfit-layers">${layersHtml}</div>
+    </div>`;
+}
+
+function renderMoodboardCard(outfit, oi) {
+  const showItems = outfit.items.slice(0, 4);
+  const extra = outfit.items.length - 4;
+  let collageHtml = '';
+  showItems.forEach(idx => {
+    const item = CAPSULE_ITEMS[idx];
+    if (!item) return;
+    const isDark = isColorDark(item.color);
+    collageHtml += `
+      <div class="moodboard-thumb">
+        <div class="layer-color" style="background:${item.color};"></div>
+        <svg width="20" height="20" fill="none" viewBox="0 0 18 18">
+          <path d="M9 3C9 3 6.2 5 6.2 7.4L2.5 9.4V15H15.5V9.4L11.8 7.4C11.8 5 9 3 9 3Z" stroke="${isDark ? 'rgba(255,255,255,.50)' : 'rgba(0,0,0,.22)'}" stroke-width="1" stroke-linejoin="round"/>
+        </svg>
+      </div>`;
+  });
+  if (extra > 0) {
+    // Replace last cell with "+N" indicator
+    collageHtml = collageHtml.replace(/<div class="moodboard-thumb">[^]*?<\/div>\s*$/, '');
+    collageHtml += `<div class="moodboard-more">+${extra + 1}</div>`;
+  }
+  return `
+    <div class="outfit-card moodboard-card" onclick="openOutfitDetail(${oi})">
+      <div class="outfit-head">
+        <span class="outfit-num">${outfit.label}</span>
+      </div>
+      <div class="moodboard-collage">${collageHtml}</div>
+    </div>`;
+}
+
+/* ── View toggle listeners ── */
+document.querySelectorAll('.view-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const view = btn.dataset.view;
+    if (view === currentOutfitView) return;
+    currentOutfitView = view;
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderOutfits();
+  });
+});
+
+/* ══════════════════════════════
+   RENDER: Gap Analysis
+══════════════════════════════ */
+function renderGaps() {
+  const dict = I18N[currentLangCode] || I18N.EN;
+  const list = document.getElementById('gapList');
+  if (GAP_ANALYSIS.length === 0) {
+    list.innerHTML = `
+      <div class="gap-empty">
+        <div class="gap-empty-icon">
+          <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path d="M20 6L9 17L4 12" stroke="rgba(255,255,255,.65)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="gap-empty-title">${dict.gap_empty_title}</div>
+        <div class="gap-empty-sub">${dict.gap_empty_sub}</div>
+      </div>`;
+    return;
+  }
+  let html = '';
+  GAP_ANALYSIS.forEach(gap => {
+    const isDark = isColorDark(gap.color);
+    const typeLabel = dict['gap_' + gap.type] || gap.type;
+    let iconSvg = '';
+    if (gap.type === 'structural') {
+      iconSvg = '<svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M2 14V6L8 2L14 6V14H10V10H6V14H2Z" stroke="rgba(255,255,255,.55)" stroke-width="1.3" stroke-linejoin="round"/></svg>';
+    } else if (gap.type === 'color') {
+      iconSvg = '<svg width="16" height="16" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5" stroke="rgba(255,200,100,.55)" stroke-width="1.3"/><circle cx="8" cy="8" r="2" fill="rgba(255,200,100,.40)"/></svg>';
+    } else {
+      iconSvg = '<svg width="16" height="16" fill="none" viewBox="0 0 16 16"><path d="M8 2V14M2 8H14" stroke="rgba(100,200,255,.55)" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="8" r="5.5" stroke="rgba(100,200,255,.55)" stroke-width="1.3"/></svg>';
+    }
+    html += `
+      <div class="gap-row">
+        <div class="gap-icon ${gap.type}">${iconSvg}</div>
+        <div class="gap-body">
+          <div class="gap-title-row">
+            <span class="gap-title">${gap.category}</span>
+            <div class="gap-color" style="background:${gap.color};${isDark ? 'border-color:rgba(255,255,255,.35);' : ''}"></div>
+            <span class="gap-type">${typeLabel}</span>
+          </div>
+          <div class="gap-desc">${gap.desc}</div>
+        </div>
+      </div>`;
+  });
+  list.innerHTML = html;
+}
+
+/* ══════════════════════════════
+   RENDER: Shopping List
+══════════════════════════════ */
+function renderShopping() {
+  const dict = I18N[currentLangCode] || I18N.EN;
+  const list = document.getElementById('shopList');
+  let html = '';
+  SHOPPING_LIST.forEach(item => {
+    const isDark = isColorDark(item.color);
+    const barClass = item.priority === 'high' ? 'bar-hi' : item.priority === 'medium' ? 'bar-mid' : 'bar-lo';
+    const prioClass = item.priority === 'high' ? 'priority-high' : item.priority === 'medium' ? 'priority-medium' : 'priority-low';
+    const prioLabel = dict['priority_' + item.priority] || item.priority;
+    html += `
+      <div class="shop-row">
+        <div class="shop-bar ${barClass}"></div>
+        <div class="shop-color" style="background:${item.color};${isDark ? 'border-color:rgba(255,255,255,.35);' : ''}"></div>
+        <div class="shop-body">
+          <div class="shop-name">${item.category}</div>
+          <div class="shop-impact">${item.impact}</div>
+        </div>
+        <span class="shop-priority ${prioClass}">${prioLabel}</span>
+        <button class="shop-find-btn">${dict.shop_find}</button>
+      </div>`;
+  });
+  list.innerHTML = html;
+}
+
+/* ══════════════════════════════
+   HELPERS
+══════════════════════════════ */
+function isColorDark(hex) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return (r * 0.299 + g * 0.587 + b * 0.114) < 128;
+}
+
+/* ══════════════════════════════
+   CAPSULES PANEL (sidebar list)
+══════════════════════════════ */
+function renderCapsulesPanel() {
+  const dict = I18N[currentLangCode] || I18N.EN;
+  const body = document.getElementById('capsulesPanelBody');
+  let html = '';
+  CAPSULES.forEach(cap => {
+    const isActive = cap.id === activeCapsuleId;
+    const name = cap.name[currentLangCode] || cap.name.EN;
+    const dots = cap.palette.map(c =>
+      `<div class="cp-card-dot" style="background:${c};${isColorDark(c) ? 'border-color:rgba(255,255,255,.35);' : ''}"></div>`
+    ).join('');
+    html += `
+      <div class="cp-card${isActive ? ' active' : ''}">
+        <div class="cp-card-top">
+          <div class="cp-card-name">${name}</div>
+          ${isActive ? `<span class="cp-card-badge">${dict.cp_active}</span>` : ''}
+        </div>
+        <div class="cp-card-palette">${dots}</div>
+        <div class="cp-card-stats">
+          <div><div class="cp-stat-val">${cap.items}</div><div class="cp-stat-lbl">${dict.cs_items}</div></div>
+          <div><div class="cp-stat-val">${cap.outfits}</div><div class="cp-stat-lbl">${dict.cs_outfits}</div></div>
+          <div class="cp-card-opr">
+            <div class="cp-opr-val">${cap.opr}</div>
+            <div class="cp-opr-lbl">OPR</div>
+          </div>
+        </div>
+        <div class="cp-card-actions">
+          ${isActive
+            ? `<button class="cp-view-btn" onclick="switchCapsule('${cap.id}'); closeCapsulesPanel();">${dict.cp_view || 'View'}</button>`
+            : `<button class="cp-set-active-btn" onclick="setActiveCapsule('${cap.id}')">${dict.cp_set_active || 'Set as Active'}</button>
+               <button class="cp-view-btn" onclick="switchCapsule('${cap.id}'); closeCapsulesPanel();">${dict.cp_view || 'View'}</button>`
+          }
+        </div>
+      </div>`;
+  });
+  html += `
+    <button class="cp-new-btn">
+      <svg width="16" height="16" fill="none" viewBox="0 0 16 16">
+        <path d="M8 2V14M2 8H14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      ${dict.cp_new}
+    </button>`;
+  body.innerHTML = html;
+}
+
+function toggleCapsulesPanel(e) {
+  if (e) e.preventDefault();
+  const overlay = document.getElementById('capsulesOverlay');
+  if (overlay.classList.contains('open')) {
+    closeCapsulesPanel();
+  } else {
+    renderCapsulesPanel();
+    overlay.classList.add('open');
+  }
+}
+
+function closeCapsulesPanel() {
+  document.getElementById('capsulesOverlay').classList.remove('open');
+}
+
+/* ══════════════════════════════
+   SWITCH CAPSULE
+══════════════════════════════ */
+function switchCapsule(id) {
+  activeCapsuleId = id;
+  const cap = CAPSULES.find(c => c.id === id);
+  if (!cap) return;
+  const dict = I18N[currentLangCode] || I18N.EN;
+  const name = cap.name[currentLangCode] || cap.name.EN;
+
+  // Update hero card
+  document.querySelector('.cap-name').textContent = name;
+  document.querySelector('.topbar-sub').innerHTML = name + ' capsule';
+
+  // Update palette
+  const paletteRow = document.querySelector('.palette-row');
+  let paletteHtml = '';
+  cap.palette.forEach((c, i) => {
+    const size = i < 3 ? 'pdot-lg' : 'pdot-sm';
+    paletteHtml += `<div class="pdot ${size}" style="background:${c};" title="${c}"></div>`;
+  });
+  paletteHtml += `<span class="palette-label" data-i18n="palette_label">${dict.palette_label}</span>`;
+  paletteRow.innerHTML = paletteHtml;
+
+  // Update stats
+  const stats = document.querySelectorAll('.ms-val');
+  stats[0].textContent = cap.items;
+  stats[1].textContent = cap.outfits;
+  stats[2].textContent = cap.categories;
+
+  // Update OPR
+  document.querySelector('.opr-val').textContent = cap.opr;
+  document.querySelector('.opr-delta').textContent = cap.oprDelta;
+
+  // Update tab counts
+  const tabCounts = document.querySelectorAll('.tab-count');
+  tabCounts[0].textContent = cap.items;
+
+  // Re-render panel to update active states
+  renderCapsulesPanel();
+}
+
+/* ══════════════════════════════
+   SET ACTIVE CAPSULE
+══════════════════════════════ */
+function setActiveCapsule(id) {
+  activeCapsuleId = id;
+  // Also switch the view to show this capsule
+  switchCapsule(id);
+  // Re-render panel to update badges and buttons
+  renderCapsulesPanel();
+}
+
+/* ══════════════════════════════
+   OUTFIT DETAIL PANEL
+══════════════════════════════ */
+let currentOutfitIdx = null;
+let outfitPickerOpen = false;
+
+function openOutfitDetail(idx) {
+  currentOutfitIdx = idx;
+  outfitPickerOpen = false;
+  const overlay = document.getElementById('outfitOverlay');
+  overlay.classList.add('open');
+  renderOutfitDetail();
+}
+
+function closeOutfitDetail() {
+  currentOutfitIdx = null;
+  outfitPickerOpen = false;
+  document.getElementById('outfitOverlay').classList.remove('open');
+}
+
+function renderOutfitDetail() {
+  if (currentOutfitIdx === null) return;
+  const dict = I18N[currentLangCode] || I18N.EN;
+  const outfit = CAPSULE_OUTFITS[currentOutfitIdx];
+  if (!outfit) return;
+
+  // Name input
+  const nameInput = document.getElementById('odNameInput');
+  nameInput.value = outfit.label;
+  nameInput.placeholder = dict.outfit_name_placeholder || 'Outfit name...';
+  nameInput.onchange = function() { updateOutfitName(currentOutfitIdx, this.value); };
+
+  // Body
+  const body = document.getElementById('odBody');
+  let html = `<div class="od-section-label">${dict.outfit_items_label || 'Items in this outfit'}</div>`;
+
+  outfit.items.forEach((itemIdx, i) => {
+    const item = CAPSULE_ITEMS[itemIdx];
+    if (!item) return;
+    const isDark = isColorDark(item.color);
+    html += `
+      <div class="od-item">
+        <div class="od-item-color" style="background:${item.color}18;${isDark ? 'border-color:rgba(255,255,255,.28);' : ''}">
+          <svg width="16" height="16" fill="none" viewBox="0 0 18 18">
+            <path d="M9 3C9 3 6.2 5 6.2 7.4L2.5 9.4V15H15.5V9.4L11.8 7.4C11.8 5 9 3 9 3Z" stroke="${isDark ? 'rgba(255,255,255,.45)' : 'rgba(0,0,0,.20)'}" stroke-width="1" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="od-item-info">
+          <div class="od-item-name">${item.name}</div>
+          <div class="od-item-cat">${item.category}</div>
+        </div>
+        <button class="od-item-remove" onclick="removeItemFromOutfit(${currentOutfitIdx}, ${i})" title="Remove">
+          <svg width="10" height="10" fill="none" viewBox="0 0 10 10">
+            <path d="M2 2L8 8M8 2L2 8" stroke="rgba(255,255,255,.55)" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>`;
+  });
+
+  // Add item button
+  html += `
+    <button class="od-add-btn" onclick="toggleOutfitPicker()">
+      <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
+        <path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      ${dict.outfit_add_item || 'Add Item'}
+    </button>`;
+
+  // Picker
+  if (outfitPickerOpen) {
+    html += `
+      <div class="od-picker">
+        <div class="od-picker-title">${dict.outfit_picker_title || 'Choose item to add'}</div>
+        <div class="od-picker-list">`;
+    CAPSULE_ITEMS.forEach((item, ci) => {
+      const alreadyIn = outfit.items.includes(ci);
+      const isDark = isColorDark(item.color);
+      html += `
+          <div class="od-picker-item${alreadyIn ? ' already-in' : ''}" onclick="${alreadyIn ? '' : `addItemToOutfit(${currentOutfitIdx}, ${ci})`}">
+            <div class="od-picker-color" style="background:${item.color};${isDark ? 'border-color:rgba(255,255,255,.30);' : ''}"></div>
+            <span class="od-picker-name">${item.name}</span>
+            <span class="od-picker-cat">${item.category}</span>
+          </div>`;
+    });
+    html += `
+        </div>
+      </div>`;
+  }
+
+  body.innerHTML = html;
+}
+
+function updateOutfitName(idx, newName) {
+  if (!newName.trim()) return;
+  CAPSULE_OUTFITS[idx].label = newName.trim();
+  renderOutfits();
+}
+
+function removeItemFromOutfit(outfitIdx, positionIdx) {
+  CAPSULE_OUTFITS[outfitIdx].items.splice(positionIdx, 1);
+  renderOutfitDetail();
+  renderOutfits();
+}
+
+function addItemToOutfit(outfitIdx, itemIdx) {
+  if (!CAPSULE_OUTFITS[outfitIdx].items.includes(itemIdx)) {
+    CAPSULE_OUTFITS[outfitIdx].items.push(itemIdx);
+  }
+  renderOutfitDetail();
+  renderOutfits();
+}
+
+function toggleOutfitPicker() {
+  outfitPickerOpen = !outfitPickerOpen;
+  renderOutfitDetail();
+}
+
+/* ── INIT ── */
+renderItems();
+renderOutfits();
+renderGaps();
+renderShopping();
+renderCapsulesPanel();
+
+  function toggleMore(e) {
+    if (e) e.preventDefault();
+    document.getElementById('moreOverlay').classList.toggle('open');
+    document.getElementById('moreSheet').classList.toggle('open');
+  }
+  function closeMore() {
+    document.getElementById('moreOverlay').classList.remove('open');
+    document.getElementById('moreSheet').classList.remove('open');
+  }
+</script>
+
+</body>
+</html>

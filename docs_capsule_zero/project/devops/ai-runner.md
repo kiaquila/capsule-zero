@@ -12,6 +12,7 @@ This document defines Capsule Zero's cloud AI integration and `AI Review` gate c
 
 See `docs_capsule_zero/project/devops/ai-orchestration-protocol.md` for the routing contract.
 See `docs_capsule_zero/project/devops/codex-github-setup.md` for Codex integration setup.
+See `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md` for CI, guard, OSV, and branch-protection policy.
 See `docs_capsule_zero/project/devops/validation-matrix.md` for the completed validation record.
 
 ## Required Repository Variables
@@ -32,8 +33,10 @@ See `docs_capsule_zero/project/devops/validation-matrix.md` for the completed va
 
 - `contents: read`
   - required for checkout and repository context
+- `pull-requests: read`
+  - required for repository-owned review gates that inspect native pull-request reviews
 - `pull-requests: write`
-  - required for comment-driven automation and PR interaction
+  - required for native Claude workflows and other comment-driven automation that writes PR state
 - `issues: write`
   - required for issue and PR comment routing
 - `id-token: write`
@@ -73,11 +76,20 @@ Repository default workflow permissions may remain `read` so long as individual 
 - Only trusted repository actors may trigger repository AI workflows.
 - The repository may use policy workflows to reject mismatched agent triggers.
 
+## Gate Trust Boundary
+
+- Gate workflows that publish required checks (`AI Review`, `guard`) load gate helper scripts from the repository default branch when those scripts are available there.
+- `guard` checks out pull-request content for diff context, then separately checks out trusted default-branch scripts under `.gate-trusted` and runs those scripts against the pull-request workspace.
+- `AI Review` checks out the default branch directly, resolves the target PR through GitHub metadata, and validates native reviewer output against the current PR head SHA.
+- A contributor cannot bypass a required check by editing `scripts/ai-review-gate.mjs`, `scripts/resolve-pr-context.mjs`, or any other gate helper inside their pull request, because those files are loaded from the default branch at gate run time.
+- Native vendor agent jobs (`claude-agent.yml`, `claude-review.yml`) run on the `issue_comment` event whose `github.ref` is already the default branch, so the bootstrap checkout there is trusted by event semantics.
+
 ## Required GitHub Settings
 
 - protect `main`
 - require pull requests before merge
-- require status checks `baseline-checks`, `guard`, and `AI Review`
+- require status checks `baseline-checks`, `guard`, `test`, and `AI Review`
+- run `osv-scan` on pull requests and review dependency vulnerability findings before merge
 - require conversation resolution
 - enforce admins
 - restrict direct pushes to `main`

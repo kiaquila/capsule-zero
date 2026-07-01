@@ -1,0 +1,35 @@
+# Capsule Zero local dev override.
+#
+# Runs the production-shape compose stack on the laptop with an mkcert-issued
+# TLS certificate for `capsulezero.local` in place of the host-mounted Let's
+# Encrypt cert for `capsulezero.app`. The `nginx` and `web` images are
+# byte-for-byte identical to prod — only the bind-mounted vhost, the cert
+# directory, and the web app's public URL differ.
+#
+# First-time setup:
+#   1. Install mkcert (`brew install mkcert nss` on macOS).
+#   2. `node scripts/local-certs.mjs` — installs the mkcert root CA into the
+#      system trust store and writes `infra/dev-certs/{cert,key}.pem`.
+#   3. Add `127.0.0.1 capsulezero.local` to `/etc/hosts`.
+#
+# Daily use:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#   open https://capsulezero.local
+#
+# The `!override` tag replaces the nginx `volumes` list rather than appending
+# to it (compose's default for list fields). Without it we would end up with
+# two bind mounts on `/etc/nginx/conf.d`, which Docker rejects.
+
+services:
+  nginx:
+    # Local dev keeps the documented default command working even though the
+    # base file profile-gates the in-container nginx for production rollback.
+    profiles: !override []
+    volumes: !override
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/conf.d.dev:/etc/nginx/conf.d:ro
+      - ./infra/dev-certs:/etc/nginx/certs:ro
+
+  web:
+    environment:
+      NEXT_PUBLIC_APP_URL: https://capsulezero.local

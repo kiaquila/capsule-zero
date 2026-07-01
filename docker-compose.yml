@@ -1,0 +1,80 @@
+# Capsule Zero production-shape stack — Phase 1.
+#
+# Phase 1 scope: just enough to serve the existing Next.js landing on
+# https://capsulezero.app behind nginx + Let's Encrypt. Postgres, Kratos, the
+# Go API, the worker, Spaces/imgproxy, and Grafana arrive in later PRs of
+# `.specify/specs/024-production-stack-runtime/`.
+#
+# Operator runbook: docs_capsule_zero/project/devops/nginx-reverse-proxy.md
+# The previous Supabase-based stack is preserved at
+# `docker-compose.legacy-supabase.yml` only for rollback while domains migrate.
+
+name: capsule-zero
+
+networks:
+  internal:
+    driver: bridge
+
+services:
+  # Retired as edge: a host (systemd) nginx now terminates TLS and reverse-proxies to the
+  # web container published on 127.0.0.1:3000. See infra/nginx-host/ and
+  # docs_capsule_zero/project/devops/dev-cd-pipeline.md. Kept (profile-gated) for rollback:
+  #   docker compose --profile docker-edge up -d nginx
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    profiles: ["docker-edge"]
+    depends_on:
+      web:
+        condition: service_started
+    ports:
+      - "${NGINX_HOST_BIND:-0.0.0.0}:80:80"
+      - "${NGINX_HOST_BIND:-0.0.0.0}:443:443"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ${LETSENCRYPT_HOST_DIR:-/etc/letsencrypt}:/etc/letsencrypt:ro
+      - ${CERTBOT_WEBROOT_HOST_DIR:-/var/www/certbot}:/var/www/certbot:ro
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1/nginx-health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  # Next.js App Router landing (`/app` is the canonical web frontend).
+  # Built from app/Dockerfile (multi-stage Node, standalone output, `node server.js`).
+  web:
+    image: ${CAPSULE_WEB_IMAGE:-capsule-zero-web:local}
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      target: runner
+      args:
+        NODE_VERSION: ${NODE_VERSION:-22-bookworm-slim}
+    init: true
+    restart: unless-stopped
+    env_file:
+      - path: ./.env
+        required: false
+    environment:
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_APP_URL: ${APP_BASE_URL:-https://capsulezero.app}
+    expose:
+      - "3000"
+    # Published on loopback for the host (systemd) nginx edge.
+    ports:
+      - "${WEB_HOST_BIND:-127.0.0.1}:3000:3000"
+    networks: [internal]
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'node -e "fetch(''http://127.0.0.1:3000/en'').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"'
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s

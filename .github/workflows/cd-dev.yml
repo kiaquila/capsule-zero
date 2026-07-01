@@ -1,0 +1,197 @@
+name: CD Dev
+
+# Auto-deploy to the dev environment (https://dev.capsulezero.app) on merge to main.
+#
+# Build-in-CI, pull-on-droplet: GitHub Actions builds and pushes the web image to GHCR;
+# the droplet only pulls the SHA-pinned image and rolls the isolated `capsule-zero-dev`
+# compose project. Merges that touch only docs/tests/specs do NOT deploy.
+#
+# Spec: .specify/specs/026-dev-cd-pipeline/
+# Runbook (operator setup): docs_capsule_zero/project/devops/dev-cd-pipeline.md
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      image_sha:
+        description: "Existing image tag to redeploy without rebuilding (e.g. sha-<40hex>). Leave blank to build HEAD."
+        required: false
+        default: ""
+
+concurrency:
+  group: cd-dev
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/kiaquila/capsule-zero-web
+
+jobs:
+  gate:
+    name: detect-deploy-relevant-changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Decide whether to deploy
+        id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            echo "manual dispatch -> deploy"
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          zero="0000000000000000000000000000000000000000"
+          if [ -z "${BEFORE:-}" ] || [ "$BEFORE" = "$zero" ] \
+             || ! git rev-parse --verify --quiet "${BEFORE}^{commit}" >/dev/null; then
+            echo "no usable 'before' SHA -> deploy to be safe"
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Changed files in ${BEFORE}..${AFTER}:"
+          changed="$(git diff --name-only "$BEFORE" "$AFTER")"
+          echo "$changed"
+
+          deploy_path_pattern='^(app/|api/|worker/|infra/|docker-compose\.yml$|docker-compose\.dev-server\.yml$|package-lock\.json$|app/package-lock\.json$|\.github/workflows/cd-dev\.yml$)'
+          if grep -E "$deploy_path_pattern" <<< "$changed" >/dev/null; then
+            echo "deploy-relevant paths changed -> deploy"
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "only non-deploy paths changed -> skip deploy"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: build-and-push
+    needs: gate
+    if: >-
+      needs.gate.outputs.run == 'true' &&
+      !(github.event_name == 'workflow_dispatch' && github.event.inputs.image_sha != '')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Compute image ref
+        id: meta
+        run: echo "image=${IMAGE}:sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Set up Buildx (container driver for registry cache)
+        run: docker buildx create --use --name czbuilder --driver docker-container
+
+      - name: Build and push web image
+        run: |
+          set -euo pipefail
+          docker buildx build \
+            --target runner \
+            --tag "${IMAGE}:sha-${GITHUB_SHA}" \
+            --tag "${IMAGE}:dev" \
+            --cache-from "type=registry,ref=${IMAGE}:buildcache" \
+            --cache-to   "type=registry,ref=${IMAGE}:buildcache,mode=max" \
+            --push \
+            ./app
+
+  deploy:
+    name: deploy-to-dev-droplet
+    needs: [gate, build]
+    # Run when gated true and build either succeeded (push / build-HEAD dispatch)
+    # or was skipped (workflow_dispatch redeploy of an existing image_sha).
+    if: >-
+      always() &&
+      needs.gate.outputs.run == 'true' &&
+      needs.build.result != 'failure' &&
+      needs.build.result != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Resolve image ref
+        id: ref
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ROLLBACK_IMAGE_SHA: ${{ github.event.inputs.image_sha }}
+          BUILT_IMAGE_REF: ${{ needs.build.outputs.image }}
+          CURRENT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "${ROLLBACK_IMAGE_SHA:-}" ]; then
+            if [[ ! "$ROLLBACK_IMAGE_SHA" =~ ^sha-[0-9a-f]{40}$ ]]; then
+              echo "::error::image_sha must match sha-<40 lowercase hex characters>"
+              exit 1
+            fi
+            {
+              echo "image=${IMAGE}:${ROLLBACK_IMAGE_SHA}"
+              echo "deploy_sha=${ROLLBACK_IMAGE_SHA#sha-}"
+              echo "sync_host_nginx=false"
+            } >> "$GITHUB_OUTPUT"
+          else
+            if [ -z "${BUILT_IMAGE_REF:-}" ]; then
+              echo "::error::build job did not produce an image ref"
+              exit 1
+            fi
+            if [[ ! "$CURRENT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "::error::current SHA must be a 40-character lowercase hex commit"
+              exit 1
+            fi
+            {
+              echo "image=${BUILT_IMAGE_REF}"
+              echo "deploy_sha=${CURRENT_SHA}"
+              echo "sync_host_nginx=true"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy over SSH
+        env:
+          SSH_KEY: ${{ secrets.DEV_DEPLOY_SSH_KEY }}
+          SSH_HOST: ${{ secrets.DEV_DEPLOY_HOST }}
+          SSH_USER: ${{ secrets.DEV_DEPLOY_USER }}
+          KNOWN_HOSTS: ${{ secrets.DEV_DEPLOY_KNOWN_HOSTS }}
+          IMAGE_REF: ${{ steps.ref.outputs.image }}
+          DEPLOY_SHA: ${{ steps.ref.outputs.deploy_sha }}
+          SYNC_HOST_NGINX: ${{ steps.ref.outputs.sync_host_nginx }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$IMAGE_REF" =~ ^ghcr\.io/kiaquila/capsule-zero-web:sha-[0-9a-f]{40}$ ]]; then
+            echo "::error::resolved image ref is not an expected immutable web image tag"
+            exit 1
+          fi
+          if [[ ! "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::deploy SHA must be a 40-character lowercase hex commit"
+            exit 1
+          fi
+          if [[ ! "$SYNC_HOST_NGINX" =~ ^(true|false)$ ]]; then
+            echo "::error::sync_host_nginx must be true or false"
+            exit 1
+          fi
+
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "$SSH_USER@$SSH_HOST" \
+            sudo /usr/local/sbin/capsule-zero-dev-deploy "$IMAGE_REF" "$DEPLOY_SHA" "$SYNC_HOST_NGINX"

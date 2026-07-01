@@ -1,0 +1,39 @@
+{
+  "name": "capsule-zero",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@10.9.2",
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "check:feature-memory": "node scripts/check-feature-memory.mjs",
+    "check:api-contract": "node scripts/check-api-contract.mjs && node scripts/generate-api-clients.mjs --check",
+    "check:repo": "node scripts/check-repo-baseline.mjs",
+    "check:runtime-env": "node scripts/check-runtime-env.mjs",
+    "check:runtime-tooling": "node scripts/check-runtime-tooling.mjs",
+    "check:supabase-local": "supabase db reset && supabase test db",
+    "generate:api": "node scripts/generate-api-clients.mjs",
+    "spike:photoroom": "node scripts/photoroom-spike.mjs",
+    "lint": "npm --prefix app run lint",
+    "lint:css": "npm --prefix app run lint:css",
+    "format": "prettier --write .",
+    "typecheck": "npm --prefix app run typecheck",
+    "build": "npm --prefix app run build",
+    "test": "npm --prefix app run test --if-present",
+    "lint:e2e": "npm --prefix tests/e2e run lint",
+    "typecheck:e2e": "npm --prefix tests/e2e run typecheck",
+    "test:e2e": "npm --prefix tests/e2e test",
+    "test:e2e:install": "npm --prefix tests/e2e ci && npx --prefix tests/e2e playwright install --with-deps chromium webkit",
+    "prepare": "husky",
+    "precommit": "npm run check:feature-memory -- --worktree && lint-staged",
+    "preflight": "npm run check:feature-memory -- --worktree && npm run check:repo && npm run check:api-contract && npm run lint && npm run lint:css && npm run typecheck && npm run lint:e2e && npm run typecheck:e2e && npm run build && npm run test && npm run test:e2e"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3",
+    "yaml": "^2.8.3"
+  }
+}

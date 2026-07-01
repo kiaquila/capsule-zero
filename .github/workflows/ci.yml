@@ -6,12 +6,9 @@ on:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      ref:
-        description: Git ref to validate
-        required: false
-        default: ""
-        type: string
+
+permissions:
+  contents: read
 
 jobs:
   baseline-checks:
@@ -20,65 +17,46 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref || github.ref }}
-
-      - name: Verify repository structure
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f AGENTS.md
-          test -f CLAUDE.md
-          test -d docs_capsule_zero
-          test -d docs_capsule_zero/adr
-          test -d docs_capsule_zero/project
-          test -f docs_capsule_zero/project/frontend/frontend-docs.md
-          test -f docs_capsule_zero/project/backend/backend-docs.md
-          test -f docs_capsule_zero/project/devops/ai-pr-workflow.md
-          test -f docs_capsule_zero/project/devops/ai-orchestration-protocol.md
-          test -f docs_capsule_zero/project/devops/ai-runner.md
-          test -f docs_capsule_zero/project/devops/review-contract.md
-          test -f docs_capsule_zero/project/devops/codex-github-setup.md
-          test -f docs_capsule_zero/project/devops/validation-matrix.md
-          test -d .github/workflows
-          test -d app
-          test -f app/package.json
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "20"
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            app/package-lock.json
+
+      - name: Install repository tooling
+        run: npm ci --ignore-scripts
 
       - name: Run gate script tests
         run: node --test scripts/lib/*.test.mjs
 
-  app-checks:
-    name: app-checks
-    runs-on: ubuntu-latest
+      - name: Install app dependencies
+        run: npm ci --prefix app
 
-    defaults:
-      run:
-        working-directory: app
+      - name: Run repository baseline
+        run: npm run check:repo
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref || github.ref }}
+      - name: Run API contract checks
+        run: npm run check:api-contract
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: app/package-lock.json
+      - name: Run lint
+        run: npm run lint
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Run CSS lint
+        run: npm run lint:css
 
       - name: Run typecheck
         run: npm run typecheck
 
       - name: Run build
         run: npm run build
+
+      - name: Build Docker image
+        run: docker build --target runner -t capsule-zero-web:ci ./app
+
+      - name: Run tests if present
+        run: npm test

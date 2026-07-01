@@ -3,20 +3,26 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node node_modules/next/dist/bin/next dev",
+    "lint": "node node_modules/eslint/bin/eslint.js .",
+    "lint:css": "node node_modules/stylelint/bin/stylelint.mjs \"src/**/*.css\" --max-warnings 102",
     "typecheck": "tsc --noEmit",
-    "build": "next build --webpack",
-    "start": "next start",
-    "ci:check": "npm run typecheck && npm run build"
+    "build": "node node_modules/next/dist/bin/next build --webpack",
+    "start": "node node_modules/next/dist/bin/next start",
+    "ci:check": "npm run lint && npm run lint:css && npm run typecheck && npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.2",
+    "@swc/helpers": "^0.5.23",
     "clsx": "^2.1.1",
-    "framer-motion": "^12.34.3",
-    "next": "16.1.6",
+    "next": "16.2.6",
+    "next-intl": "^4.13.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.2",
+    "server-only": "^0.0.1",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.3.6",
     "zustand": "^5.0.11"
@@ -26,7 +32,16 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.6",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "stylelint": "^17.14.0",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@babel/core": "7.29.6",
+    "js-yaml": "4.2.0",
+    "postcss": "8.5.10"
   }
 }

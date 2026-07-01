@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+app_dir="/opt/capsule-zero-dev"
+compose_project="capsule-zero-dev"
+compose_file="docker-compose.dev-server.yml"
+env_file=".env.dev"
+state_dir="/var/lib/capsule-zero-dev"
+nginx_sync_marker="$state_dir/last-host-nginx-sync-sha"
+nginx_paths=(
+  /etc/nginx/conf.d/00-capsule-zero.conf
+  /etc/nginx/sites-available/capsulezero.app.conf
+  /etc/nginx/sites-available/dev.capsulezero.app.conf
+  /etc/nginx/sites-enabled/capsulezero.app.conf
+  /etc/nginx/sites-enabled/dev.capsulezero.app.conf
+  /etc/nginx/sites-enabled/default
+)
+
+usage() {
+  echo "usage: capsule-zero-dev-deploy <image-ref> <deploy-sha> <sync-host-nginx:true|false>" >&2
+}
+
+die() {
+  echo "capsule-zero-dev-deploy: $*" >&2
+  exit 1
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "missing required command: $1"
+}
+
+if [ "$#" -ne 3 ]; then
+  usage
+  exit 64
+fi
+
+image_ref="$1"
+deploy_sha="$2"
+sync_host_nginx="$3"
+
+[ "$(id -u)" -eq 0 ] || die "must run as root via sudo"
+[[ "$image_ref" =~ ^ghcr\.io/kiaquila/capsule-zero-web:sha-[0-9a-f]{40}$ ]] \
+  || die "image ref must be ghcr.io/kiaquila/capsule-zero-web:sha-<40 lowercase hex>"
+[[ "$deploy_sha" =~ ^[0-9a-f]{40}$ ]] || die "deploy SHA must be 40 lowercase hex characters"
+[[ "$sync_host_nginx" =~ ^(true|false)$ ]] || die "sync-host-nginx must be true or false"
+
+require_cmd curl
+require_cmd docker
+require_cmd git
+require_cmd cat
+require_cmd cp
+require_cmd dirname
+require_cmd grep
+require_cmd install
+require_cmd ln
+require_cmd mkdir
+require_cmd mktemp
+require_cmd nginx
+require_cmd rm
+require_cmd systemctl
+
+[ -d "$app_dir/.git" ] || die "$app_dir is not a git checkout"
+cd "$app_dir"
+
+git fetch --prune origin
+git cat-file -e "${deploy_sha}^{commit}" || die "deploy SHA is not present in the checkout"
+git merge-base --is-ancestor "$deploy_sha" origin/main \
+  || die "deploy SHA must be reachable from origin/main"
+
+install -d -m 755 "$state_dir"
+host_nginx_changed=false
+if [ "$sync_host_nginx" = "true" ]; then
+  last_nginx_sync_sha="$(cat "$nginx_sync_marker" 2>/dev/null || true)"
+  if [ -z "$last_nginx_sync_sha" ] \
+    || [[ ! "$last_nginx_sync_sha" =~ ^[0-9a-f]{40}$ ]] \
+    || ! git cat-file -e "${last_nginx_sync_sha}^{commit}" 2>/dev/null; then
+    host_nginx_changed=true
+  elif [ -n "$(git diff --name-only "$last_nginx_sync_sha" "$deploy_sha" -- infra/nginx-host/)" ]; then
+    host_nginx_changed=true
+  fi
+else
+  echo "host nginx config sync skipped for image rollback"
+fi
+
+git checkout --force "$deploy_sha"
+
+export CAPSULE_WEB_IMAGE="$image_ref"
+compose=(docker compose --env-file "$env_file" -p "$compose_project" -f "$compose_file")
+
+"${compose[@]}" pull web
+"${compose[@]}" up -d --remove-orphans
+
+web_cid="$("${compose[@]}" ps -q web)"
+[ -n "$web_cid" ] || die "web container was not created"
+
+status="starting"
+for _ in $(seq 1 30); do
+  status="$(docker inspect -f '{{.State.Health.Status}}' "$web_cid" 2>/dev/null || echo starting)"
+  [ "$status" = "healthy" ] && break
+  sleep 5
+done
+
+if [ "$status" != "healthy" ]; then
+  echo "web did not become healthy (status=$status)" >&2
+  "${compose[@]}" logs --tail=80 web >&2
+  exit 1
+fi
+
+backup_nginx_config() {
+  backup_dir="$(mktemp -d)"
+  present_file="$backup_dir/present"
+  absent_file="$backup_dir/absent"
+  : > "$present_file"
+  : > "$absent_file"
+
+  local path safe_path dest
+  for path in "${nginx_paths[@]}"; do
+    safe_path="${path#/}"
+    dest="$backup_dir/$safe_path"
+    if [ -e "$path" ] || [ -L "$path" ]; then
+      mkdir -p "$(dirname "$dest")"
+      cp -a "$path" "$dest"
+      printf '%s\n' "$path" >> "$present_file"
+    else
+      printf '%s\n' "$path" >> "$absent_file"
+    fi
+  done
+}
+
+restore_nginx_config() {
+  local path safe_path source_path
+  for path in "${nginx_paths[@]}"; do
+    safe_path="${path#/}"
+    source_path="$backup_dir/$safe_path"
+    rm -rf "$path"
+    if grep -Fxq "$path" "$present_file"; then
+      mkdir -p "$(dirname "$path")"
+      cp -a "$source_path" "$path"
+    fi
+  done
+  nginx -t
+  systemctl reload nginx
+}
+
+apply_host_nginx_config() {
+  install -m 644 infra/nginx-host/00-capsule-zero.conf /etc/nginx/conf.d/00-capsule-zero.conf || return
+  install -m 644 infra/nginx-host/capsulezero.app.conf /etc/nginx/sites-available/capsulezero.app.conf || return
+  install -m 644 infra/nginx-host/dev.capsulezero.app.conf /etc/nginx/sites-available/dev.capsulezero.app.conf || return
+  ln -sf /etc/nginx/sites-available/capsulezero.app.conf /etc/nginx/sites-enabled/ || return
+  ln -sf /etc/nginx/sites-available/dev.capsulezero.app.conf /etc/nginx/sites-enabled/ || return
+  rm -f /etc/nginx/sites-enabled/default || return
+  nginx -t || return
+  systemctl reload nginx || return
+  curl -fsS -o /dev/null --resolve capsulezero.app:443:127.0.0.1 https://capsulezero.app/en || return
+}
+
+smoke_dev_edge() {
+  # Smoke the dev web on its loopback port, then end-to-end through the host nginx.
+  # --resolve keeps the request on the droplet while preserving hostname/SNI/cert validation.
+  #
+  # Frontend-only: the dev edge previews the frontend with no provider backend wired, so we
+  # smoke the provider-free /en page only. /api/health calls the provider registry and 500s
+  # without a backend — it is NOT a valid liveness signal for a frontend-only dev deploy.
+  curl -fsS -o /dev/null http://127.0.0.1:3001/en || return
+  curl -fsS -o /dev/null --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/en || return
+}
+
+if [ "$host_nginx_changed" = "true" ]; then
+  echo "host nginx config changed; installing and reloading"
+  backup_nginx_config
+  if ! apply_host_nginx_config || ! smoke_dev_edge; then
+    echo "host nginx update or smoke failed; restoring previous config" >&2
+    if ! restore_nginx_config; then
+      echo "failed to restore previous host nginx config; manual intervention required" >&2
+    fi
+    rm -rf "$backup_dir"
+    exit 1
+  fi
+  rm -rf "$backup_dir"
+else
+  echo "host nginx config unchanged"
+  smoke_dev_edge
+fi
+
+echo "smoke ok"
+"${compose[@]}" ps
+
+if [ "$sync_host_nginx" = "true" ]; then
+  printf '%s\n' "$deploy_sha" > "$nginx_sync_marker"
+fi

@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capsule Zero — Color System</title>
+  <style>
+    :root {
+      --glass-bg:     rgba(255,255,255,0.14);
+      --glass-blur:   40px;
+      --glass-border: rgba(255,255,255,.40);
+      --glass-hi:     inset 0 1px 0 rgba(255,255,255,.55);
+      --glass-shadow: 0 8px 32px rgba(0,0,0,.28);
+      --gt-p:  rgba(255,255,255,.95);
+      --gt-s:  rgba(255,255,255,.65);
+      --gt-ph: rgba(255,255,255,.38);
+      --radius-s: 8px;
+      --radius-m: 16px;
+      --radius-l: 24px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      min-height: 100%;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: #0a0a0a;
+    }
+
+    .hero-bg {
+      position: fixed; inset: 0;
+      background: url('wall.png') center/cover no-repeat;
+      filter: grayscale(100%);
+      z-index: -2;
+    }
+    .hero-overlay {
+      position: fixed; inset: 0;
+      background: linear-gradient(160deg, rgba(0,0,0,.72) 0%, rgba(0,0,0,.55) 50%, rgba(0,0,0,.78) 100%);
+      z-index: -1;
+    }
+
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 56px 40px 80px;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      margin-bottom: 48px;
+    }
+    .page-label {
+      font-size: 11px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase;
+      color: var(--gt-ph); margin-bottom: 10px;
+    }
+    .page-title {
+      font-size: 32px; font-weight: 200; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--gt-p); line-height: 1.1;
+    }
+    .page-subtitle {
+      margin-top: 12px;
+      font-size: 14px; font-weight: 300; letter-spacing: .04em; line-height: 1.6;
+      color: var(--gt-s);
+    }
+
+    /* ── Glass panel ── */
+    .panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow), var(--glass-hi);
+      border-radius: var(--radius-l);
+      padding: 32px 36px;
+      margin-bottom: 24px;
+    }
+
+    .group-header {
+      display: flex; align-items: baseline; gap: 14px;
+      margin-bottom: 28px;
+    }
+    .group-name {
+      font-size: 13px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--gt-p);
+    }
+    .group-rule {
+      font-size: 12px; font-weight: 300; letter-spacing: .04em;
+      color: var(--gt-s);
+    }
+    .group-count {
+      margin-left: auto;
+      font-size: 11px; letter-spacing: .10em;
+      color: var(--gt-ph);
+    }
+
+    /* ── Color grid ── */
+    .color-grid {
+      display: flex; flex-wrap: wrap; gap: 20px 16px;
+    }
+    .color-item {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      width: 72px;
+    }
+    .swatch {
+      width: 56px; height: 56px; border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.22);
+      box-shadow: 0 4px 16px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.25);
+      flex-shrink: 0;
+      transition: transform .15s, box-shadow .15s;
+      cursor: default;
+    }
+    .swatch:hover {
+      transform: scale(1.12);
+      box-shadow: 0 8px 24px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.30);
+    }
+    .color-name {
+      font-size: 10.5px; font-weight: 400; letter-spacing: .03em;
+      color: var(--gt-s); text-align: center; line-height: 1.3;
+    }
+    .color-hex {
+      font-size: 9.5px; font-weight: 500; letter-spacing: .06em;
+      color: var(--gt-ph); text-align: center; font-variant-numeric: tabular-nums;
+    }
+
+    /* Special: achromatics row */
+    .achro-grid {
+      display: flex; gap: 24px;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px; background: rgba(255,255,255,.10); margin: 8px 0 32px;
+    }
+
+    /* ── Compatibility matrix ── */
+    .compat-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .compat-table th, .compat-table td {
+      padding: 12px 16px;
+      font-size: 12px; letter-spacing: .04em;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      color: var(--gt-s);
+      text-align: left;
+    }
+    .compat-table th {
+      font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+      font-size: 10.5px; color: var(--gt-ph);
+    }
+    .compat-table tr:last-child td { border-bottom: none; }
+    .tag {
+      display: inline-block;
+      padding: 3px 8px; border-radius: 4px; margin: 2px 3px 2px 0;
+      font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+      background: rgba(255,255,255,.12); color: var(--gt-p);
+    }
+    .tag.self { background: rgba(255,255,255,.22); }
+    .tag.achro { background: rgba(255,255,255,.08); color: var(--gt-ph); }
+
+    /* ── Mini legend ── */
+    .legend {
+      display: flex; gap: 16px; flex-wrap: wrap; margin-top: 24px;
+      padding-top: 20px; border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; letter-spacing: .04em; color: var(--gt-s);
+    }
+    .legend-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero-bg"></div>
+<div class="hero-overlay"></div>
+
+<div class="page">
+
+  <div class="page-header">
+    <p class="page-label">Capsule Zero — Methodology</p>
+    <h1 class="page-title">Color System</h1>
+    <p class="page-subtitle">
+      51 colors across 5 groups. Achromatics pair with everything. Within-group combinations are always valid.<br>
+      Desaturated and Dark cross-pair freely. Brights, Pastels, Desaturated and Darks do not mix across groups.
+    </p>
+  </div>
+
+  <!-- ── ACHROMATICS ── -->
+  <div class="panel">
+    <div class="group-header">
+      <span class="group-name">Achromatics</span>
+      <span class="group-rule">Compatible with all 51 colors</span>
+      <span class="group-count">3</span>
+    </div>
+    <div class="achro-grid">
+      <div class="color-item">
+        <div class="swatch" style="background:#1C1C1C;"></div>
+        <div class="color-name">Black</div>
+        <div class="color-hex">#1C1C1C</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#8C8C8C;"></div>
+        <div class="color-name">Gray</div>
+        <div class="color-hex">#8C8C8C</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#FFFFFF; border-color:rgba(255,255,255,.55);"></div>
+        <div class="color-name">White</div>
+        <div class="color-hex">#FFFFFF</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BRIGHTS ── -->
+  <div class="panel">
+    <div class="group-header">
+      <span class="group-name">Brights</span>
+      <span class="group-rule">All 12 combine with each other + Achromatics</span>
+      <span class="group-count">12</span>
+    </div>
+    <div class="color-grid">
+      <div class="color-item">
+        <div class="swatch" style="background:#E82535;"></div>
+        <div class="color-name">Scarlet</div>
+        <div class="color-hex">#E82535</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#E84B20;"></div>
+        <div class="color-name">Vermillion</div>
+        <div class="color-hex">#E84B20</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#E87820;"></div>
+        <div class="color-name">Tangerine</div>
+        <div class="color-hex">#E87820</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#E8AA20;"></div>
+        <div class="color-name">Amber</div>
+        <div class="color-hex">#E8AA20</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#E8D520;"></div>
+        <div class="color-name">Canary</div>
+        <div class="color-hex">#E8D520</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#7EC820;"></div>
+        <div class="color-name">Chartreuse</div>
+        <div class="color-hex">#7EC820</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#20A84E;"></div>
+        <div class="color-name">Emerald</div>
+        <div class="color-hex">#20A84E</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#10A896;"></div>
+        <div class="color-name">Teal</div>
+        <div class="color-hex">#10A896</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#186AE8;"></div>
+        <div class="color-name">Cobalt</div>
+        <div class="color-hex">#186AE8</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#3828E8;"></div>
+        <div class="color-name">Indigo</div>
+        <div class="color-hex">#3828E8</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#8820E8;"></div>
+        <div class="color-name">Violet</div>
+        <div class="color-hex">#8820E8</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#D020AA;"></div>
+        <div class="color-name">Fuchsia</div>
+        <div class="color-hex">#D020AA</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PASTELS ── -->
+  <div class="panel">
+    <div class="group-header">
+      <span class="group-name">Pastels</span>
+      <span class="group-rule">All 12 combine with each other + Achromatics</span>
+      <span class="group-count">12</span>
+    </div>
+    <div class="color-grid">
+      <div class="color-item">
+        <div class="swatch" style="background:#F5B5BB;"></div>
+        <div class="color-name">Blush</div>
+        <div class="color-hex">#F5B5BB</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#F5CDB0;"></div>
+        <div class="color-name">Nectarine</div>
+        <div class="color-hex">#F5CDB0</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#E8D5B5; border-color:rgba(255,255,255,.40);"></div>
+        <div class="color-name">Beige</div>
+        <div class="color-hex">#E8D5B5</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#F5EADC; border-color:rgba(255,255,255,.55);"></div>
+        <div class="color-name">Off-White</div>
+        <div class="color-hex">#F5EADC</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#F7EDA5;"></div>
+        <div class="color-name">Primrose</div>
+        <div class="color-hex">#F7EDA5</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#D8EEB0;"></div>
+        <div class="color-name">Pistachio</div>
+        <div class="color-hex">#D8EEB0</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#B0EEC5;"></div>
+        <div class="color-name">Mint</div>
+        <div class="color-hex">#B0EEC5</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#B0EEDE;"></div>
+        <div class="color-name">Aqua</div>
+        <div class="color-hex">#B0EEDE</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#B0CDEE;"></div>
+        <div class="color-name">Sky</div>
+        <div class="color-hex">#B0CDEE</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#C0B8EE;"></div>
+        <div class="color-name">Periwinkle</div>
+        <div class="color-hex">#C0B8EE</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#DCB8EE;"></div>
+        <div class="color-name">Lavender</div>
+        <div class="color-hex">#DCB8EE</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#EEB8E5;"></div>
+        <div class="color-name">Orchid</div>
+        <div class="color-hex">#EEB8E5</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DESATURATED ── -->
+  <div class="panel">
+    <div class="group-header">
+      <span class="group-name">Desaturated</span>
+      <span class="group-rule">All 12 combine with each other + Darks + Achromatics</span>
+      <span class="group-count">12</span>
+    </div>
+    <div class="color-grid">
+      <div class="color-item">
+        <div class="swatch" style="background:#B86068;"></div>
+        <div class="color-name">Brick</div>
+        <div class="color-hex">#B86068</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#C07860;"></div>
+        <div class="color-name">Coral</div>
+        <div class="color-hex">#C07860</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#C08A65;"></div>
+        <div class="color-name">Terracotta</div>
+        <div class="color-hex">#C08A65</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#C0A268;"></div>
+        <div class="color-name">Sand</div>
+        <div class="color-hex">#C0A268</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#B8B268;"></div>
+        <div class="color-name">Straw</div>
+        <div class="color-hex">#B8B268</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#88A865;"></div>
+        <div class="color-name">Sage</div>
+        <div class="color-hex">#88A865</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#60A878;"></div>
+        <div class="color-name">Fern</div>
+        <div class="color-hex">#60A878</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#50A095;"></div>
+        <div class="color-name">Dusty Teal</div>
+        <div class="color-hex">#50A095</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#5082B8;"></div>
+        <div class="color-name">Slate</div>
+        <div class="color-hex">#5082B8</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#6860B8;"></div>
+        <div class="color-name">Dusty Indigo</div>
+        <div class="color-hex">#6860B8</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#9860B8;"></div>
+        <div class="color-name">Mauve</div>
+        <div class="color-hex">#9860B8</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#B860A2;"></div>
+        <div class="color-name">Antique Rose</div>
+        <div class="color-hex">#B860A2</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DARKS ── -->
+  <div class="panel">
+    <div class="group-header">
+      <span class="group-name">Darks</span>
+      <span class="group-rule">All 12 combine with each other + Desaturated + Achromatics</span>
+      <span class="group-count">12</span>
+    </div>
+    <div class="color-grid">
+      <div class="color-item">
+        <div class="swatch" style="background:#8C1820;"></div>
+        <div class="color-name">Burgundy</div>
+        <div class="color-hex">#8C1820</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#8C3015;"></div>
+        <div class="color-name">Rust</div>
+        <div class="color-hex">#8C3015</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#8C5018;"></div>
+        <div class="color-name">Burnt Orange</div>
+        <div class="color-hex">#8C5018</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#8C6C15;"></div>
+        <div class="color-name">Ochre</div>
+        <div class="color-hex">#8C6C15</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#787815;"></div>
+        <div class="color-name">Olive Gold</div>
+        <div class="color-hex">#787815</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#4A7A18;"></div>
+        <div class="color-name">Olive</div>
+        <div class="color-hex">#4A7A18</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#187838;"></div>
+        <div class="color-name">Forest</div>
+        <div class="color-hex">#187838</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#187870;"></div>
+        <div class="color-name">Pine</div>
+        <div class="color-hex">#187870</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#182878;"></div>
+        <div class="color-name">Navy</div>
+        <div class="color-hex">#182878</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#201878;"></div>
+        <div class="color-name">Midnight</div>
+        <div class="color-hex">#201878</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#5A1878;"></div>
+        <div class="color-name">Plum</div>
+        <div class="color-hex">#5A1878</div>
+      </div>
+      <div class="color-item">
+        <div class="swatch" style="background:#781860;"></div>
+        <div class="color-name">Mulberry</div>
+        <div class="color-hex">#781860</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── COMPATIBILITY MATRIX ── -->
+  <div class="panel">
+    <div class="group-header">
+      <span class="group-name">Compatibility Rules</span>
+    </div>
+    <table class="compat-table">
+      <thead>
+        <tr>
+          <th>Group</th>
+          <th>Compatible with</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag self">Achromatics</span></td>
+          <td>
+            <span class="tag">Achromatics</span>
+            <span class="tag">Brights</span>
+            <span class="tag">Pastels</span>
+            <span class="tag">Desaturated</span>
+            <span class="tag">Darks</span>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="tag self">Brights</span></td>
+          <td>
+            <span class="tag">Brights</span>
+            <span class="tag achro">Achromatics</span>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="tag self">Pastels</span></td>
+          <td>
+            <span class="tag">Pastels</span>
+            <span class="tag achro">Achromatics</span>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="tag self">Desaturated</span></td>
+          <td>
+            <span class="tag">Desaturated</span>
+            <span class="tag">Darks</span>
+            <span class="tag achro">Achromatics</span>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="tag self">Darks</span></td>
+          <td>
+            <span class="tag">Darks</span>
+            <span class="tag">Desaturated</span>
+            <span class="tag achro">Achromatics</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:rgba(255,255,255,.22);"></div>
+        <span>Achro tag = always included, never blocked</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:rgba(255,255,255,.50);"></div>
+        <span>Cross-group mixing (e.g. Brights + Pastels) = not compatible</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
