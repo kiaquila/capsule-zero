@@ -4,7 +4,7 @@
 # environment-specific values are overridden by env vars in docker-compose:
 #   DSN                          postgres://kratos:...@postgres:5432/kratos
 #   COURIER_SMTP_CONNECTION_URI  smtp://mailhog:1025/?disable_starttls=true (dev)
-#   SECRETS_COOKIE / SECRETS_CIPHER   32-char secrets (prod)
+#   SECRETS_COOKIE_0 / SECRETS_CIPHER_0   32-char secrets (prod)
 #   SERVE_PUBLIC_BASE_URL        externally reachable Kratos public URL
 #
 # The Go API drives Kratos self-service via the API flow (server-side); the web

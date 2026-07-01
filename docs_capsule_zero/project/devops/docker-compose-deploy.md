@@ -64,7 +64,7 @@ cp deploy/compose.env.example .env
 
 Fill the real values for the droplet's encrypted `.env`. Required keys at minimum:
 
-- `POSTGRES_PASSWORD`, `KRATOS_DSN`, `KRATOS_SECRETS_COOKIE`, `KRATOS_SECRETS_CIPHER`
+- `POSTGRES_PASSWORD`, `KRATOS_DSN`, `SECRETS_COOKIE_0`, `SECRETS_CIPHER_0`
 - `CF_DNS_API_TOKEN` for certbot DNS-01 ACME against Cloudflare (only once the Cloudflare proxy is enabled; until then certbot uses HTTP-01 directly)
 - `SPACES_ACCESS_KEY`, `SPACES_SECRET_KEY`, `SPACES_BUCKET`, `SPACES_REGION`, `SPACES_CDN_BASE`
 - `RESEND_API_KEY`, `RESEND_FROM`

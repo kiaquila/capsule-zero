@@ -102,6 +102,8 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - **2026-07-01 PR #57 review fix: profile display-name edits win over stale Kratos traits.** `EnsureForIdentity` still refreshes email and seeds a display name for empty profiles, but it no longer rewrites a user-edited `profiles.display_name` from the original Kratos registration trait on every session/profile resolution.
 - **2026-07-01 PR #57 review fix: recovery keeps account enumeration private without hiding infrastructure failures.** Kratos recovery `200` and validation-style `400` remain safe success for the user-facing flow, while unexpected Kratos/courier statuses now return an error; the auth handler surfaces those as `502 recovery_unavailable`.
 - **2026-07-01 PR #57 review fix: the web `api` provider surfaces recovery failures instead of reporting false success.** `requestPasswordRecovery` now mirrors sign-in/sign-up status handling and throws `RECOVERY_FAILED` when the Go API returns a 4xx/5xx recovery error.
+- **2026-07-01 PR #57 review fix: Kratos compose healthcheck uses Kratos's own CLI instead of shell/wget.** `oryd/kratos:v1.1.0` exposes `kratos remote status`, so the service healthcheck now uses exec form against the admin endpoint (`127.0.0.1:4434`) and no longer depends on `/bin/sh` or `wget` existing in the distroless image.
+- **2026-07-01 PR #57 review fix: Kratos secrets use indexed env keys.** Compose and the sample env now set `SECRETS_COOKIE_0` and `SECRETS_CIPHER_0`, matching Kratos's list-valued env override semantics and avoiding accidental fallback to the committed dev defaults.
 
 ### Known Issues
 
