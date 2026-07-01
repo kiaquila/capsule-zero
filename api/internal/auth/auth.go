@@ -18,9 +18,17 @@ type ctxKey int
 
 const sessionTokenKey ctxKey = iota
 
+type identityClient interface {
+	Register(context.Context, string, string, string, string) (*kratos.Session, error)
+	Login(context.Context, string, string) (*kratos.Session, error)
+	WhoAmI(context.Context, string) (*kratos.Session, error)
+	Recovery(context.Context, string) error
+	Logout(context.Context, string) error
+}
+
 // Handler holds the dependencies for the auth/profile endpoints.
 type Handler struct {
-	Kratos   *kratos.Client
+	Kratos   identityClient
 	Profiles *profiles.Repo
 }
 
@@ -138,7 +146,10 @@ func (h *Handler) Recovery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Never reveal whether the address exists.
-	_ = h.Kratos.Recovery(r.Context(), in.Email)
+	if err := h.Kratos.Recovery(r.Context(), in.Email); err != nil {
+		httpx.WriteError(w, http.StatusBadGateway, "recovery_unavailable", "Password recovery is temporarily unavailable.")
+		return
+	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"delivery": "email", "email": in.Email})
 }
 

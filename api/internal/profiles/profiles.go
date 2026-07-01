@@ -56,8 +56,9 @@ const columns = `id, email, COALESCE(display_name, ''), locale,
 	coin_balance, created_at, updated_at`
 
 // EnsureForIdentity returns the profile for a Kratos identity, creating it on
-// first sign-in. Email/display-name/locale are refreshed from the identity so
-// the profile tracks identity changes. Concurrency-safe via ON CONFLICT.
+// first sign-in. Email is refreshed from the identity; display name is seeded
+// only while empty so user profile edits are not overwritten by stale traits.
+// Concurrency-safe via ON CONFLICT.
 func (r *Repo) EnsureForIdentity(ctx context.Context, identityID, email, displayName, locale string) (Profile, error) {
 	locale = NormalizeLocaleOrDefault(locale)
 	row := r.pool.QueryRow(ctx, `
@@ -65,7 +66,7 @@ func (r *Repo) EnsureForIdentity(ctx context.Context, identityID, email, display
 		VALUES ($1, $2, NULLIF($3, ''), $4)
 		ON CONFLICT (kratos_identity_id) DO UPDATE
 			SET email = EXCLUDED.email,
-			    display_name = COALESCE(NULLIF(EXCLUDED.display_name, ''), profiles.display_name),
+			    display_name = COALESCE(profiles.display_name, NULLIF(EXCLUDED.display_name, '')),
 			    updated_at = now()
 		RETURNING `+columns,
 		identityID, email, displayName, locale)

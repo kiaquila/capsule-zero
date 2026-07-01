@@ -1,13 +1,16 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/kiaquila/capsule-zero/api/internal/httpx"
+	"github.com/kiaquila/capsule-zero/api/internal/kratos"
 	"github.com/kiaquila/capsule-zero/api/internal/profiles"
 )
 
@@ -57,4 +60,56 @@ func TestWriteProfileError(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRecoveryReportsUnexpectedKratosFailure(t *testing.T) {
+	handler := Handler{
+		Kratos: fakeIdentityClient{
+			recoveryErr: errors.New("courier unavailable"),
+		},
+	}
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/api/auth/recovery",
+		strings.NewReader(`{"email":"person@example.com"}`),
+	)
+	recorder := httptest.NewRecorder()
+
+	handler.Recovery(recorder, request)
+
+	if recorder.Code != http.StatusBadGateway {
+		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusBadGateway)
+	}
+
+	var body httpx.ErrorBody
+	if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
+		t.Fatalf("decode error body: %v", err)
+	}
+	if body.Code != "recovery_unavailable" {
+		t.Fatalf("code = %q, want recovery_unavailable", body.Code)
+	}
+}
+
+type fakeIdentityClient struct {
+	recoveryErr error
+}
+
+func (f fakeIdentityClient) Register(context.Context, string, string, string, string) (*kratos.Session, error) {
+	panic("not used")
+}
+
+func (f fakeIdentityClient) Login(context.Context, string, string) (*kratos.Session, error) {
+	panic("not used")
+}
+
+func (f fakeIdentityClient) WhoAmI(context.Context, string) (*kratos.Session, error) {
+	panic("not used")
+}
+
+func (f fakeIdentityClient) Recovery(context.Context, string) error {
+	return f.recoveryErr
+}
+
+func (f fakeIdentityClient) Logout(context.Context, string) error {
+	panic("not used")
 }

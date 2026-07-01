@@ -165,7 +165,8 @@ func (c *Client) WhoAmI(ctx context.Context, token string) (*Session, error) {
 }
 
 // Recovery starts an API recovery flow for the given email. It never reveals
-// whether the address exists — callers should always report success.
+// whether the address exists; validation-style rejections are flattened, while
+// unexpected Kratos/courier failures are returned.
 func (c *Client) Recovery(ctx context.Context, email string) error {
 	action, err := c.initFlow(ctx, "/self-service/recovery/api", "/self-service/recovery")
 	if err != nil {
@@ -179,7 +180,10 @@ func (c *Client) Recovery(ctx context.Context, email string) error {
 	defer resp.Body.Close()
 	_, _ = io.Copy(io.Discard, resp.Body)
 	// 200 (email sent) and 400 (validation/expired) are both non-fatal here.
-	return nil
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusBadRequest {
+		return nil
+	}
+	return fmt.Errorf("kratos recovery: status %d", resp.StatusCode)
 }
 
 // Logout revokes the session bound to the given token.
