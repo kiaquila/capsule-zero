@@ -8,11 +8,16 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/kiaquila/capsule-zero/api/internal/httpx"
 	"github.com/kiaquila/capsule-zero/api/internal/kratos"
 	"github.com/kiaquila/capsule-zero/api/internal/profiles"
 )
+
+// maxProfileFieldRunes mirrors the ProfileUpdateRequest maxLength (see
+// docs_capsule_zero/adr/openapi.yaml) for the free-text profile fields.
+const maxProfileFieldRunes = 80
 
 type ctxKey int
 
@@ -212,6 +217,14 @@ func (h *Handler) PatchProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Enforce the ProfileUpdateRequest contract before persisting: the repository
+	// only normalizes locale, so a non-web API client could otherwise store an
+	// empty display name or an over-long country/city as a "successful" update.
+	if msg, ok := validateProfileUpdate(in.DisplayName, in.Country, in.City); !ok {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", msg)
+		return
+	}
+
 	profile, err := h.Profiles.Apply(r.Context(), userID, profiles.Update{
 		DisplayName: in.DisplayName,
 		Locale:      in.Locale,
@@ -311,6 +324,28 @@ func kratosMessage(err error) string {
 		return strings.TrimSpace(msg[idx+2:])
 	}
 	return msg
+}
+
+// validateProfileUpdate enforces the ProfileUpdateRequest contract constraints on
+// the mutable text fields. Only provided (non-nil) fields are checked; an omitted
+// field is left unchanged by the repository. Returns a user-facing message and
+// false when a field is invalid.
+func validateProfileUpdate(displayName, country, city *string) (string, bool) {
+	if displayName != nil {
+		if strings.TrimSpace(*displayName) == "" {
+			return "Display name cannot be empty.", false
+		}
+		if utf8.RuneCountInString(*displayName) > maxProfileFieldRunes {
+			return "Display name must be 80 characters or fewer.", false
+		}
+	}
+	if country != nil && utf8.RuneCountInString(*country) > maxProfileFieldRunes {
+		return "Country must be 80 characters or fewer.", false
+	}
+	if city != nil && utf8.RuneCountInString(*city) > maxProfileFieldRunes {
+		return "City must be 80 characters or fewer.", false
+	}
+	return "", true
 }
 
 func writeProfileError(w http.ResponseWriter, err error) {

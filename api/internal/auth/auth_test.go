@@ -361,6 +361,57 @@ func TestLogoutTreatsInvalidKratosTokenAsSignedOut(t *testing.T) {
 	}
 }
 
+func TestPatchProfileRejectsInvalidFields(t *testing.T) {
+	// Profiles is nil on purpose: validation must reject before Apply is reached,
+	// so an invalid patch never touches the repository.
+	handler := Handler{}
+
+	cases := []struct{ name, body string }{
+		{"empty display name", `{"displayName":""}`},
+		{"whitespace display name", `{"displayName":"   "}`},
+		{"over-long display name", `{"displayName":"` + strings.Repeat("a", 81) + `"}`},
+		{"over-long country", `{"country":"` + strings.Repeat("a", 81) + `"}`},
+		{"over-long city", `{"city":"` + strings.Repeat("a", 81) + `"}`},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodPatch, "/api/profile", strings.NewReader(tc.body))
+			request = request.WithContext(context.WithValue(request.Context(), sessionTokenKey, "user-1"))
+			recorder := httptest.NewRecorder()
+
+			handler.PatchProfile(recorder, request)
+
+			if recorder.Code != http.StatusBadRequest {
+				t.Fatalf("status = %d, want %d", recorder.Code, http.StatusBadRequest)
+			}
+			var body httpx.ErrorBody
+			if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
+				t.Fatalf("decode error body: %v", err)
+			}
+			if body.Error.Code != "VALIDATION_ERROR" {
+				t.Fatalf("code = %q, want VALIDATION_ERROR", body.Error.Code)
+			}
+		})
+	}
+}
+
+func TestValidateProfileUpdateAcceptsValidAndOmitted(t *testing.T) {
+	valid := "Buenos Aires"
+	if msg, ok := validateProfileUpdate(&valid, &valid, &valid); !ok {
+		t.Fatalf("valid update rejected: %q", msg)
+	}
+	// All-nil (every field omitted) is a valid no-op patch.
+	if msg, ok := validateProfileUpdate(nil, nil, nil); !ok {
+		t.Fatalf("omitted-only update rejected: %q", msg)
+	}
+	// An empty country/city is allowed (only maxLength is constrained).
+	empty := ""
+	if msg, ok := validateProfileUpdate(nil, &empty, &empty); !ok {
+		t.Fatalf("empty country/city rejected: %q", msg)
+	}
+}
+
 type fakeIdentityClient struct {
 	registerErr error
 	whoamiErr   error
