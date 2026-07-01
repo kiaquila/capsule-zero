@@ -45,19 +45,19 @@ async function sessionToken(): Promise<string | null> {
 // buckets per real user, not per web container (server actions call the API over
 // the private network, where the API would otherwise see only the web address).
 //
-// The address is taken ONLY from headers our own trusted proxies set — Cloudflare
-// `CF-Connecting-IP`, then host-nginx `X-Real-IP` (`$remote_addr`) — never the
-// raw, client-appendable `X-Forwarded-For`. Trusting a caller-controlled value
-// would let an attacker rotate it to mint a fresh rate-limit bucket per attempt.
-// It is passed under the dedicated `X-Capsule-Client-IP` header the API trusts.
+// The address is taken ONLY from `X-Real-IP`, which our own edge nginx sets to
+// `$remote_addr` and overwrites on every request. With the nginx realip module
+// (see infra/nginx*) `$remote_addr` is the true client even behind Cloudflare —
+// nginx trusts `CF-Connecting-IP` only for connections from a Cloudflare range,
+// so a direct-to-origin forgery is ignored. We deliberately do NOT read
+// `CF-Connecting-IP` (or the raw, client-appendable `X-Forwarded-For`) here:
+// the web `location /` does not sanitize those, so trusting them would let a
+// caller rotate the header to mint a fresh rate-limit bucket per attempt. The
+// value is passed under the dedicated `X-Capsule-Client-IP` header the API trusts.
 async function trustedClientIp(): Promise<string | undefined> {
   try {
     const incoming = await requestHeaders();
-    return (
-      incoming.get("cf-connecting-ip") ??
-      incoming.get("x-real-ip") ??
-      undefined
-    );
+    return incoming.get("x-real-ip") ?? undefined;
   } catch {
     // Called outside a request scope (no inbound headers to forward).
     return undefined;

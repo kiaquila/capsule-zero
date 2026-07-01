@@ -158,7 +158,8 @@ Object storage durability is provided by DigitalOcean Spaces; no extra backup of
 Public traffic enters through Cloudflare → nginx on the droplet (ports 80/443). nginx:
 
 - terminates Let's Encrypt TLS for `capsulezero.app` and `grafana.capsulezero.app` (certs issued by host certbot, mounted from `/etc/letsencrypt`),
-- runs a per-IP `limit_req_zone` rate-limit,
+- restores the real client IP from Cloudflare via the `realip` module (`set_real_ip_from` Cloudflare ranges + `real_ip_header CF-Connecting-IP`), so `$remote_addr` is the true client behind the Cloudflare POP,
+- runs a per-IP `limit_req_zone` rate-limit (keyed on the realip-corrected client),
 - runs an `auth_request` against Kratos for protected routes,
 - routes `/` to `web`,
 - routes `/api/*` to `api`,
