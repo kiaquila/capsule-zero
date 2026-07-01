@@ -1,0 +1,12 @@
+# >>> capsule-zero language stats hygiene >>>
+# Keep repository governance, approved HTML prototypes, and generated API clients
+# out of GitHub Linguist language statistics. Product code and tests stay counted.
+scripts/*.mjs                      linguist-vendored
+.specify/scripts/bash/**           linguist-vendored
+
+html-prototypes/**                 linguist-documentation
+
+app/src/lib/api/generated/**       linguist-generated
+web/src/lib/api/generated/**       linguist-generated
+mobile/lib/api/generated/**        linguist-generated
+# <<< capsule-zero language stats hygiene <<<
