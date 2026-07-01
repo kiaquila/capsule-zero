@@ -36,6 +36,7 @@ services:
 
   kratos:
     environment:
+      COURIER_SMTP_CONNECTION_URI: smtp://mailhog:1025/?disable_starttls=true
       SERVE_PUBLIC_BASE_URL: http://127.0.0.1:4433/
       SECRETS_COOKIE_0: ${SECRETS_COOKIE_0:-dev-only-kratos-cookie-secret-change-me-32}
       SECRETS_CIPHER_0: ${SECRETS_CIPHER_0:-dev0only0kratos0cipher0secret032}

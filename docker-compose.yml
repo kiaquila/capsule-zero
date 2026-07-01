@@ -81,7 +81,7 @@ services:
         condition: service_completed_successfully
     environment:
       DSN: ${KRATOS_DSN:?set KRATOS_DSN in the env file}
-      COURIER_SMTP_CONNECTION_URI: ${KRATOS_SMTP_CONNECTION_URI:-smtp://mailhog:1025/?disable_starttls=true}
+      COURIER_SMTP_CONNECTION_URI: ${KRATOS_SMTP_CONNECTION_URI:?set KRATOS_SMTP_CONNECTION_URI in the env file}
       SERVE_PUBLIC_BASE_URL: ${KRATOS_PUBLIC_BASE_URL:?set KRATOS_PUBLIC_BASE_URL in the env file}
       SECRETS_COOKIE_0: ${SECRETS_COOKIE_0:?set SECRETS_COOKIE_0 in the env file}
       SECRETS_CIPHER_0: ${SECRETS_CIPHER_0:?set SECRETS_CIPHER_0 in the env file}

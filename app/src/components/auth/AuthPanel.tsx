@@ -123,7 +123,7 @@ export function AuthPanel({
 
   const onSignUp = signUpForm.handleSubmit(async (values) => {
     setServerMessage(null);
-    const result = await signUpWithPasswordAction(values);
+    const result = await signUpWithPasswordAction({ ...values, locale });
 
     if (!result.ok) {
       setServerMessage(result.message ?? t("weakPassword"));

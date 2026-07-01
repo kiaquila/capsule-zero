@@ -43,6 +43,7 @@ export interface PasswordCredentials {
   email: string;
   password: string;
   name?: string;
+  locale?: Locale;
 }
 
 export interface PasswordRecoveryRequest {

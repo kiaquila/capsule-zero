@@ -118,6 +118,7 @@ function buildAuthPort(): AuthPort {
             email: credentials.email,
             password: credentials.password,
             name: credentials.name,
+            locale: credentials.locale,
           }),
         },
       );

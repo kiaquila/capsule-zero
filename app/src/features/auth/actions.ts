@@ -1,6 +1,7 @@
 "use server";
 
 import { createProviderRegistry } from "@/lib/providers";
+import { routing, type AppLocale } from "@/i18n/routing";
 import {
   createRecoverySchema,
   createSignInSchema,
@@ -45,7 +46,7 @@ export async function signInWithPasswordAction(
 }
 
 export async function signUpWithPasswordAction(
-  input: SignUpInput,
+  input: SignUpInput & { locale?: string },
 ): Promise<AuthActionResult> {
   const parsed = createSignUpSchema(serverValidationMessages).safeParse(input);
 
@@ -59,6 +60,7 @@ export async function signUpWithPasswordAction(
       email: parsed.data.email,
       password: parsed.data.password,
       name: parsed.data.name,
+      locale: normalizeActionLocale(input.locale),
     });
     if (!session) {
       return { ok: true, requiresEmailConfirmation: true };
@@ -96,6 +98,13 @@ export async function signOutAction(): Promise<AuthActionResult> {
   await clearMockSession();
 
   return { ok: true };
+}
+
+function normalizeActionLocale(locale: string | undefined): AppLocale {
+  if (routing.locales.includes(locale as AppLocale)) {
+    return locale as AppLocale;
+  }
+  return routing.defaultLocale;
 }
 
 function authActionErrorMessage(error: unknown): string {
