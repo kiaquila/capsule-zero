@@ -62,18 +62,18 @@ Until these gates open, the corresponding API surface exists as stubs (Lava.top)
 git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero
 cd /opt/capsule-zero
 install -m 600 /path/to/encrypted/.env ./.env
-docker compose --env-file ./.env up -d
-docker compose logs nginx --tail=50 # confirm nginx is up and serving 443
+docker compose --env-file ./.env --profile docker-edge up -d
+docker compose --env-file ./.env --profile docker-edge logs nginx --tail=50 # confirm nginx is up and serving 443
 ```
 
-This brings up nginx, Kratos, Postgres, Redis, the Go API, the in-process queue worker, the Next.js web container, and imgproxy once every v0.1 phase of spec 024 has shipped. PgBouncer, Grafana, and the standalone worker container are promoted only when ADR-007 triggers open. In earlier phases only the services delivered so far come up. API migrations run at API boot from Phase 3 onward. Kratos runs its own migrations through its init container from Phase 2 onward.
+The root compose file keeps the edge `nginx` service behind the `docker-edge` profile, so production commands that expect nginx must enable that profile. This brings up nginx, Kratos, Postgres, Redis, the Go API, the in-process queue worker, the Next.js web container, and imgproxy once every v0.1 phase of spec 024 has shipped. PgBouncer, Grafana, and the standalone worker container are promoted only when ADR-007 triggers open. In earlier phases only the services delivered so far come up. API migrations run at API boot from Phase 3 onward. Kratos runs its own migrations through its init container from Phase 2 onward.
 
 ### 4. Verify health end-to-end
 
 ```bash
 curl -fsS https://capsulezero.app/api/health
-docker compose ps
-docker compose logs nginx --tail=50
+docker compose --env-file ./.env --profile docker-edge ps
+docker compose --env-file ./.env --profile docker-edge logs nginx --tail=50
 ```
 
 Expected `/api/health` response includes:

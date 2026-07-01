@@ -83,6 +83,6 @@
 
 - The `test` check is created by this PR but is NOT yet listed in `main`'s required status checks. Until the merge owner adds it under GitHub Settings → Branches → main → Required checks, the gate exists but does not block merges. Acknowledged in the PR description.
 - The Playwright suite runs against `/app`, which remains the canonical web frontend. POM classes carry over through component rewrites as long as `data-testid` contracts are preserved.
-- `/app` build in CI relies on stub values for Supabase / Photoroom / Lava env vars (copied from `.env.local.example`). The Playwright server intentionally runs in dev mode so the legacy mock provider remains available for future tests until `/app` is removed.
+- `/app` build in CI relies on stub values for Supabase / Photoroom / Lava env vars (copied from `.env.local.example`). The Playwright server intentionally runs in dev mode so the legacy mock provider remains available while Supabase-backed provider paths are retired domain by domain.
 - Only chromium + webkit projects run in CI. Firefox is not covered; if a Firefox-only regression ships, this gate misses it. Accepted trade-off until job-runtime budget changes.
 - Detox setup for `tests/mobile/` and `go test` setup for `tests/unit/` are stubs only; first real tests in those folders will arrive with the spec that introduces real RN or Go product code.
