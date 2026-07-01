@@ -10,9 +10,7 @@ const appFiles = (files) =>
 
 const formattableFiles = (files) =>
   files.filter(
-    (file) =>
-      !repoPath(file).startsWith("app/src/lib/api/generated/") &&
-      !repoPath(file).startsWith("mobile/lib/api/generated/"),
+    (file) => !repoPath(file).startsWith("app/src/lib/api/generated/"),
   );
 
 const shellQuote = (file) => `'${file.replaceAll("'", "'\\''")}'`;

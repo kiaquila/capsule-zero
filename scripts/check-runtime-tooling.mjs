@@ -27,12 +27,6 @@ const requiredTools = [
     args: ["--version"],
     purpose: "Supabase local stack containers",
   },
-  {
-    name: "flutter",
-    command: "flutter",
-    args: ["--version"],
-    purpose: "mobile shell boot and simulator validation",
-  },
 ];
 
 function parseArgs(argv = process.argv.slice(2)) {
@@ -90,7 +84,7 @@ function main() {
 
   if (failures.length > 0 && !args.allowMissing) {
     console.error(
-      `Missing required runtime tooling: ${failures.join(", ")}. Install these before running Supabase/mobile validation.`,
+      `Missing required runtime tooling: ${failures.join(", ")}. Install these before running runtime validation.`,
     );
     process.exit(1);
   }

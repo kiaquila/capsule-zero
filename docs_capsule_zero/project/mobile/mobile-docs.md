@@ -6,7 +6,7 @@ Accepted for v0.1 planning (rewritten 2026-06-27 — replaces the previous Flutt
 
 ## Product Requirement
 
-Capsule Zero v0.1 ships native mobile apps for iOS and Android built with React Native. The product remains mobile-first across web and native clients. The previous Flutter decision is dropped before any Flutter scaffold ships.
+Capsule Zero v0.1 ships native mobile apps for iOS and Android built with React Native. The product remains mobile-first across web and native clients. A throwaway Flutter shell was scaffolded during Sprint 0 (before the 2026-06-27 React Native pivot) and has since been removed as stale; the React Native scaffold is delivered in a later spec.
 
 ## Stack
 
