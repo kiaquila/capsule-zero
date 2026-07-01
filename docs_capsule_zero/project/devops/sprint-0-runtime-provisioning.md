@@ -4,7 +4,7 @@
 
 This runbook describes how to bring up the production-shape Capsule Zero stack on the DigitalOcean droplet across the phased rollout in `.specify/specs/024-production-stack-runtime/`. It is the operational companion to that spec and does not store secrets in git.
 
-Phase 1 delivers the `nginx + web` runtime that replaces the host Caddy + legacy Supabase compose currently on the droplet. The dedicated runbook for Phase 1 lives at `docs_capsule_zero/project/devops/nginx-reverse-proxy.md`; this document keeps the steady-state operational contract for the whole stack once every phase has shipped.
+Phase 1 delivers the host `nginx + web` runtime that replaces the host Caddy + legacy Supabase compose currently on the droplet. The dedicated runbook for Phase 1 lives at `docs_capsule_zero/project/devops/nginx-reverse-proxy.md`; this document keeps the steady-state operational contract for the whole stack once every phase has shipped.
 
 ## Preconditions
 
@@ -62,18 +62,28 @@ Until these gates open, the corresponding API surface exists as stubs (Lava.top)
 git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero
 cd /opt/capsule-zero
 install -m 600 /path/to/encrypted/.env ./.env
-docker compose --env-file ./.env --profile docker-edge up -d
-docker compose --env-file ./.env --profile docker-edge logs nginx --tail=50 # confirm nginx is up and serving 443
+docker compose --env-file ./.env up -d
+docker compose --env-file ./.env logs web --tail=50
+sudo nginx -t
+sudo systemctl reload nginx
 ```
 
-The root compose file keeps the edge `nginx` service behind the `docker-edge` profile, so production commands that expect nginx must enable that profile. This brings up nginx, Kratos, Postgres, Redis, the Go API, the in-process queue worker, the Next.js web container, and imgproxy once every v0.1 phase of spec 024 has shipped. PgBouncer, Grafana, and the standalone worker container are promoted only when ADR-007 triggers open. In earlier phases only the services delivered so far come up. API migrations run at API boot from Phase 3 onward. Kratos runs its own migrations through its init container from Phase 2 onward.
+The root compose file keeps the rollback `nginx` service behind the `docker-edge` profile. Do not enable that profile during the normal production bootstrap while host nginx owns ports 80/443. The default compose command brings up Kratos, Postgres, Redis, the Go API, the in-process queue worker, the Next.js web container, and imgproxy once every v0.1 phase of spec 024 has shipped. PgBouncer, Grafana, and the standalone worker container are promoted only when ADR-007 triggers open. In earlier phases only the services delivered so far come up. API migrations run at API boot from Phase 3 onward. Kratos runs its own migrations through its init container from Phase 2 onward.
+
+Use the compose edge only as an explicit rollback path after stopping host nginx:
+
+```bash
+sudo systemctl stop nginx
+docker compose --env-file ./.env --profile docker-edge up -d nginx
+```
 
 ### 4. Verify health end-to-end
 
 ```bash
 curl -fsS https://capsulezero.app/api/health
-docker compose --env-file ./.env --profile docker-edge ps
-docker compose --env-file ./.env --profile docker-edge logs nginx --tail=50
+docker compose --env-file ./.env ps
+sudo systemctl status nginx --no-pager
+sudo journalctl -u nginx -n 50 --no-pager
 ```
 
 Expected `/api/health` response includes:
