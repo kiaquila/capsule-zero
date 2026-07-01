@@ -79,7 +79,7 @@ The runtime must survive the following without silently degrading. Each is cover
 - Every deployed v0.1 container in `docker-compose.yml` is its own `services:` block. The one explicit exception is the Redis queue consumer, which runs as goroutines inside `api` until ADR-007 promotes the standalone worker.
 - syslog files rotate daily with 7 day retention (Phase 5).
 - Backups are not optional: the nightly `pg_dump` cron lands in Phase 5, not in a follow-up.
-- Compose scaffolds must validate on a clean checkout before secrets are present: service-level `./.env` references use optional `env_file` entries, while real production secrets still come from the droplet `.env` during deploy.
+- Compose scaffolds must validate on a clean checkout before secrets are present: the droplet `.env` / `--env-file` is used for Compose interpolation, while each service receives only an explicit runtime `environment:` allowlist. Backend secrets must not be imported wholesale into the web container.
 - Dev-only dashboards and inspection UIs bind to `127.0.0.1` unless explicitly placed behind nginx auth.
 - TLS material is managed by the host `certbot` apt package; nginx mounts `/etc/letsencrypt` read-only and reloads via the certbot deploy hook.
 

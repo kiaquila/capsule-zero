@@ -182,9 +182,6 @@ services:
         NODE_VERSION: ${NODE_VERSION:-22-bookworm-slim}
     init: true
     restart: unless-stopped
-    env_file:
-      - path: ./.env
-        required: false
     environment:
       HOSTNAME: 0.0.0.0
       PORT: "3000"
