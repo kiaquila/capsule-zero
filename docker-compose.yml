@@ -82,9 +82,18 @@ services:
     environment:
       DSN: ${KRATOS_DSN:?set KRATOS_DSN in the env file}
       COURIER_SMTP_CONNECTION_URI: ${KRATOS_SMTP_CONNECTION_URI:-smtp://mailhog:1025/?disable_starttls=true}
-      SERVE_PUBLIC_BASE_URL: ${KRATOS_PUBLIC_BASE_URL:-http://127.0.0.1:4433/}
-      SECRETS_COOKIE_0: ${SECRETS_COOKIE_0:-dev-only-kratos-cookie-secret-change-me-32}
-      SECRETS_CIPHER_0: ${SECRETS_CIPHER_0:-dev0only0kratos0cipher0secret032}
+      SERVE_PUBLIC_BASE_URL: ${KRATOS_PUBLIC_BASE_URL:?set KRATOS_PUBLIC_BASE_URL in the env file}
+      SECRETS_COOKIE_0: ${SECRETS_COOKIE_0:?set SECRETS_COOKIE_0 in the env file}
+      SECRETS_CIPHER_0: ${SECRETS_CIPHER_0:?set SECRETS_CIPHER_0 in the env file}
+      SELFSERVICE_DEFAULT_BROWSER_RETURN_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en
+      SELFSERVICE_ALLOWED_RETURN_URLS_0: ${APP_BASE_URL:?set APP_BASE_URL in the env file}
+      SELFSERVICE_FLOWS_ERROR_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
+      SELFSERVICE_FLOWS_SETTINGS_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/profile
+      SELFSERVICE_FLOWS_RECOVERY_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
+      SELFSERVICE_FLOWS_VERIFICATION_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
+      SELFSERVICE_FLOWS_VERIFICATION_AFTER_DEFAULT_BROWSER_RETURN_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en
+      SELFSERVICE_FLOWS_LOGIN_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
+      SELFSERVICE_FLOWS_REGISTRATION_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
     volumes:
       - ./infra/kratos:/etc/config/kratos:ro
     command: serve --config /etc/config/kratos/kratos.yml --dev --watch-courier

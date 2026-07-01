@@ -34,6 +34,22 @@ services:
     environment:
       NEXT_PUBLIC_APP_URL: https://capsulezero.local
 
+  kratos:
+    environment:
+      SERVE_PUBLIC_BASE_URL: http://127.0.0.1:4433/
+      SECRETS_COOKIE_0: ${SECRETS_COOKIE_0:-dev-only-kratos-cookie-secret-change-me-32}
+      SECRETS_CIPHER_0: ${SECRETS_CIPHER_0:-dev0only0kratos0cipher0secret032}
+      SELFSERVICE_DEFAULT_BROWSER_RETURN_URL: https://capsulezero.local/en
+      SELFSERVICE_ALLOWED_RETURN_URLS_0: https://capsulezero.local
+      SELFSERVICE_ALLOWED_RETURN_URLS_1: http://127.0.0.1:3000
+      SELFSERVICE_FLOWS_ERROR_UI_URL: https://capsulezero.local/en/auth
+      SELFSERVICE_FLOWS_SETTINGS_UI_URL: https://capsulezero.local/en/profile
+      SELFSERVICE_FLOWS_RECOVERY_UI_URL: https://capsulezero.local/en/auth
+      SELFSERVICE_FLOWS_VERIFICATION_UI_URL: https://capsulezero.local/en/auth
+      SELFSERVICE_FLOWS_VERIFICATION_AFTER_DEFAULT_BROWSER_RETURN_URL: https://capsulezero.local/en
+      SELFSERVICE_FLOWS_LOGIN_UI_URL: https://capsulezero.local/en/auth
+      SELFSERVICE_FLOWS_REGISTRATION_UI_URL: https://capsulezero.local/en/auth
+
   # MailHog — dev-only courier sink. Kratos sends verification/recovery email
   # here instead of Resend; inspect at http://127.0.0.1:8025. Bound to loopback.
   mailhog:

@@ -12,7 +12,8 @@ servers:
       host:
         default: app.capsule-zero.local
 security:
-  - kratosSession: []
+  - bearerSession: []
+  - sessionToken: []
 tags:
   - name: Auth
   - name: Profile
@@ -27,13 +28,19 @@ tags:
   - name: Health
 components:
   securitySchemes:
-    kratosSession:
-      type: apiKey
-      in: cookie
-      name: ory_kratos_session
+    bearerSession:
+      type: http
+      scheme: bearer
+      bearerFormat: Kratos session token
       description: >
-        Ory Kratos browser session cookie forwarded through nginx and
-        revalidated by the Go API on authenticated requests.
+        Session token returned by `/api/auth/login` or `/api/auth/registration`
+        and forwarded as `Authorization: Bearer <token>`.
+    sessionToken:
+      type: apiKey
+      in: header
+      name: X-Session-Token
+      description: >
+        Alternate server-to-server session token header consumed by the Go API.
     lavaWebhookKey:
       type: apiKey
       in: header

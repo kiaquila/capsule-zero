@@ -6,6 +6,7 @@
 #   COURIER_SMTP_CONNECTION_URI  smtp://mailhog:1025/?disable_starttls=true (dev)
 #   SECRETS_COOKIE_0 / SECRETS_CIPHER_0   32-char secrets (prod)
 #   SERVE_PUBLIC_BASE_URL        externally reachable Kratos public URL
+#   SELFSERVICE_*                public app flow URLs (prod/dev compose)
 #
 # The Go API drives Kratos self-service via the API flow (server-side); the web
 # UI is the existing /app forms, not Kratos's own UI.
