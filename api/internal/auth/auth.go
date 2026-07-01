@@ -121,7 +121,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	session, err := h.Kratos.Login(r.Context(), in.Email, in.Password)
 	if err != nil {
 		if errors.Is(err, kratos.ErrInvalidCredentials) {
-			httpx.WriteError(w, http.StatusUnauthorized, "UNAUTHENTICATED", "Invalid email or password.")
+			httpx.WriteError(w, http.StatusUnauthorized, "UNAUTHENTICATED", "Invalid email or password")
 			return
 		}
 		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Authentication is temporarily unavailable.")

@@ -143,7 +143,7 @@ function buildAuthPort(): AuthPort {
       });
       if (status >= 400) {
         throw new Error(
-          `SIGN_IN_FAILED: ${errorMessage(data, "Invalid email or password.")}`,
+          `SIGN_IN_FAILED: ${errorMessage(data, "Invalid email or password")}`,
         );
       }
       return mapSession(data);
