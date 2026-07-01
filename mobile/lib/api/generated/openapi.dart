@@ -477,24 +477,15 @@ const apiSchemasJson = r'''{
         "$ref": "#/components/schemas/Locale"
       },
       "country": {
-        "type": [
-          "string",
-          "null"
-        ],
+        "type": "string",
         "maxLength": 80
       },
       "city": {
-        "type": [
-          "string",
-          "null"
-        ],
+        "type": "string",
         "maxLength": 80
       },
       "avatarUrl": {
-        "type": [
-          "string",
-          "null"
-        ]
+        "type": "string"
       }
     }
   },

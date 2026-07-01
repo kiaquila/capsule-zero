@@ -358,14 +358,19 @@ components:
           maxLength: 80
         locale:
           $ref: "#/components/schemas/Locale"
+        # Set-or-leave semantics: an omitted field keeps the stored value. `null`
+        # is intentionally not accepted — the Go handler treats a missing pointer
+        # as "leave unchanged" (COALESCE), so advertising a nullable "clear" that
+        # the API silently ignores would mislead clients. Clearing a saved field
+        # is a deferred feature (see spec 024 Known Issues).
         country:
-          type: [string, "null"]
+          type: string
           maxLength: 80
         city:
-          type: [string, "null"]
+          type: string
           maxLength: 80
         avatarUrl:
-          type: [string, "null"]
+          type: string
     AvatarRequest:
       type: object
       required: [assetId]

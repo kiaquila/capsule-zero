@@ -467,9 +467,9 @@ export type Profile = {
 export type ProfileUpdateRequest = {
   displayName?: string;
   locale?: Locale;
-  country?: string | null;
-  city?: string | null;
-  avatarUrl?: string | null;
+  country?: string;
+  city?: string;
+  avatarUrl?: string;
 };
 
 export type AvatarRequest = {
@@ -1905,24 +1905,15 @@ export const API_SCHEMAS = {
         "$ref": "#/components/schemas/Locale"
       },
       "country": {
-        "type": [
-          "string",
-          "null"
-        ],
+        "type": "string",
         "maxLength": 80
       },
       "city": {
-        "type": [
-          "string",
-          "null"
-        ],
+        "type": "string",
         "maxLength": 80
       },
       "avatarUrl": {
-        "type": [
-          "string",
-          "null"
-        ]
+        "type": "string"
       }
     }
   },
