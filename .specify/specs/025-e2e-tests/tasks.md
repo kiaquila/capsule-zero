@@ -53,11 +53,11 @@
 
 ### Dead Ends
 
-- Considered targeting the static HTML prototypes (`html-prototypes/index.html`) as the e2e baseURL. Rejected on user direction (2026-06-29): tests should run against the actual Next.js app under `/app` so TDD muscles form on real React components, even though `/app` is slated for removal after spec-024 ships. POM isolates selectors so retargeting to `/web` will be mechanical.
+- Considered targeting the static HTML prototypes (`html-prototypes/index.html`) as the e2e baseURL. Rejected on user direction (2026-06-29): tests should run against the actual Next.js app under `/app` so TDD muscles form on real React components. POM isolates selectors so future component rewrites stay mechanical.
 - Considered relying purely on existing CSS class names (`.cookie-banner`, `.landing-auth-button`) for selectors. Rejected because (a) class names are also style hooks and may churn, and (b) the user asked for OOP/POM best practice — `data-testid` is the canonical Playwright recommendation. Trade-off documented as a Decision below.
 - Considered enforcing TDD purely as a doctrine in `AGENTS.md` without a CI check. Rejected because the user explicitly asked for a mandatory `test` gate; a doctrine without enforcement decays.
 - Considered making the TDD doctrine block in `AGENTS.md` and `CLAUDE.md` long and self-contained. Rejected on user direction: the two files only host short pointers to `tests/README.md`; full TDD doctrine and POM rules live in `tests/README.md` to avoid duplication.
-- Considered installing Playwright into `/app/package.json` so it lives next to the app it tests. Rejected because `/app` is scheduled for removal after spec-024 — coupling test tooling to a directory that disappears would leave the gate orphaned. Standalone `tests/e2e/` survives the pivot.
+- Considered installing Playwright into `/app/package.json` so it lives next to the app it tests. Rejected because a standalone `tests/e2e/` workspace keeps the test gate independent of app package churn and lets the same pattern serve future mobile/unit surfaces.
 - Considered leaving e2e ESLint as a documented local command only. Rejected after Codex review on PR #52: the POM rule must run inside the required `test` gate before Playwright, otherwise raw `page.locator()` calls in specs could merge.
 - Considered keeping Playwright on `next start` with `.env.local.example`. Rejected after Codex review on PR #52: that env sets `CAPSULE_PROVIDER_MODE=mock`, and provider-backed code forbids mock mode in production. The workflow keeps `npm run build` as the production build smoke and runs e2e against `next dev` so the mock provider can support future tests.
 - Considered adding a product-side hydration marker for Playwright. Rejected because it would add app behavior only for tests; the POM instead owns a one-retry cookie accept action that handles the Next dev-server hydration window while still failing if the button remains broken.
@@ -68,7 +68,7 @@
 
 - **Job name = `test`** (not `senar-e2e`, not `e2e-gate`). Reason: user direction (2026-06-29) — the GitHub check is the short, conventional name any contributor recognizes. The "this is the SENAR automated verification" semantics live in `senar-mapping.md` instead of the check name.
 - **TDD shown in git history**: tests committed first against not-yet-existing `data-testid`s (Phase 3), `/app` updated second (Phase 4). Reason: dogfood the TDD loop the PR is establishing.
-- **Two `data-testid` additions to `/app`, no logic change**. Reason: keeps the `/app` diff trivially reviewable and survives the eventual `/app` → `/web` retarget — when the test attrs are added to the new React components, the same POM works without spec edits.
+- **Two `data-testid` additions to `/app`, no logic change**. Reason: keeps the `/app` diff trivially reviewable and preserves stable selector contracts as components are rewritten.
 - **POM enforced by ESLint, not just docs**. Reason: rules people can violate without immediate feedback decay; `no-restricted-syntax` makes the violation a visible lint failure in CI.
 - **`test` gate runs e2e lint and typecheck before Playwright**. Reason: the gate owns merge readiness for tests; syntax, POM, and type errors should fail before browser work starts.
 - **Playwright e2e runs `/app` in dev mode after a production build smoke**. Reason: current legacy `/app` provider-backed flows rely on mock fixtures until the post-spec-024 runtime replaces them; `next dev` keeps those fixtures legal while `npm run build` still catches production build regressions.
@@ -82,7 +82,7 @@
 ### Known Issues
 
 - The `test` check is created by this PR but is NOT yet listed in `main`'s required status checks. Until the merge owner adds it under GitHub Settings → Branches → main → Required checks, the gate exists but does not block merges. Acknowledged in the PR description.
-- The Playwright suite runs against `/app`, which is scheduled for removal after `.specify/specs/024-production-stack-runtime/`. When `/web` replaces `/app`, the POM classes carry over but `playwright.config.ts` `webServer.command` and `LandingPage.path` will need to retarget. Documented in `tests/README.md` and in spec-024's follow-up list.
+- The Playwright suite runs against `/app`, which remains the canonical web frontend. POM classes carry over through component rewrites as long as `data-testid` contracts are preserved.
 - `/app` build in CI relies on stub values for Supabase / Photoroom / Lava env vars (copied from `.env.local.example`). The Playwright server intentionally runs in dev mode so the legacy mock provider remains available for future tests until `/app` is removed.
 - Only chromium + webkit projects run in CI. Firefox is not covered; if a Firefox-only regression ships, this gate misses it. Accepted trade-off until job-runtime budget changes.
 - Detox setup for `tests/mobile/` and `go test` setup for `tests/unit/` are stubs only; first real tests in those folders will arrive with the spec that introduces real RN or Go product code.

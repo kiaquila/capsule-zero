@@ -8,19 +8,19 @@ The full runtime is delivered by `.specify/specs/024-production-stack-runtime/` 
 
 Each service is declared as a separate `services:` entry in one root `docker-compose.yml`. Environment overrides for local dev (MailHog instead of Resend, hot-reload for `api` and `worker`) live in `docker-compose.dev.yml`.
 
-| Service     | Image                            | Purpose                                                        | Default host exposure         |
-| ----------- | -------------------------------- | -------------------------------------------------------------- | ----------------------------- |
-| `nginx`     | `nginx:1.27-alpine`              | Edge: TLS (Let's Encrypt via host certbot), rate-limit, `auth_request` into Kratos | `80`, `443`        |
-| `web`       | local build of `/app` (Phase 1) → `/web` (Phase 6) | Next.js App Router web frontend                  | internal only (behind nginx)  |
-| `api`       | local build of `/api`            | Go modular monolith                                            | internal only (behind nginx)  |
-| `worker`    | local build of `/worker`         | Redis-queue consumer (image jobs, embeddings, webhook fanout)  | internal only                 |
-| `kratos`    | `oryd/kratos`                    | Identity provider (email/password Stage 1)                     | internal only (behind nginx)  |
-| `postgres`  | `pgvector/pgvector:pg16`         | App database + Kratos database (separate logical DBs)          | internal only                 |
-| `pgbouncer` | `edoburu/pgbouncer`              | Connection pool in front of Postgres                           | internal only                 |
-| `redis`     | `redis:7-alpine`                 | Cache, sessions, job queue                                     | internal only                 |
-| `imgproxy`  | `darthsim/imgproxy`              | On-the-fly image resize/WebP for derived sizes                 | internal only (behind nginx)  |
-| `grafana`   | `grafana/grafana`                | Dashboards over syslog files and OTLP traces                   | `https://grafana.capsulezero.app` via nginx   |
-| `mailhog`   | `mailhog/mailhog`                | Dev-only courier sink; replaced by Resend in prod              | `127.0.0.1:8025` (dev only)   |
+| Service     | Image                    | Purpose                                                                            | Default host exposure                       |
+| ----------- | ------------------------ | ---------------------------------------------------------------------------------- | ------------------------------------------- |
+| `nginx`     | `nginx:1.27-alpine`      | Edge: TLS (Let's Encrypt via host certbot), rate-limit, `auth_request` into Kratos | `80`, `443`                                 |
+| `web`       | local build of `/app`    | Next.js App Router web frontend                                                    | internal only (behind nginx)                |
+| `api`       | local build of `/api`    | Go modular monolith                                                                | internal only (behind nginx)                |
+| `worker`    | local build of `/worker` | Redis-queue consumer (image jobs, embeddings, webhook fanout)                      | internal only                               |
+| `kratos`    | `oryd/kratos`            | Identity provider (email/password Stage 1)                                         | internal only (behind nginx)                |
+| `postgres`  | `pgvector/pgvector:pg16` | App database + Kratos database (separate logical DBs)                              | internal only                               |
+| `pgbouncer` | `edoburu/pgbouncer`      | Connection pool in front of Postgres                                               | internal only                               |
+| `redis`     | `redis:7-alpine`         | Cache, sessions, job queue                                                         | internal only                               |
+| `imgproxy`  | `darthsim/imgproxy`      | On-the-fly image resize/WebP for derived sizes                                     | internal only (behind nginx)                |
+| `grafana`   | `grafana/grafana`        | Dashboards over syslog files and OTLP traces                                       | `https://grafana.capsulezero.app` via nginx |
+| `mailhog`   | `mailhog/mailhog`        | Dev-only courier sink; replaced by Resend in prod                                  | `127.0.0.1:8025` (dev only)                 |
 
 Persistent data lives in named Docker volumes:
 
@@ -41,18 +41,18 @@ Object storage and email leave the droplet:
 
 ## Files
 
-| Path                                | Purpose                                                                       |
-| ----------------------------------- | ----------------------------------------------------------------------------- |
-| `docker-compose.yml`                | Production-shape topology, declared per service                               |
-| `docker-compose.dev.yml`            | Local dev overrides (MailHog, hot-reload, debug logs)                          |
-| `infra/nginx/`                      | nginx main config + `conf.d/` server blocks (TLS, redirects, reverse_proxy)   |
-| `infra/kratos/`                     | Kratos identity schema, courier (Resend SMTP), self-service flow config       |
-| `infra/postgres/`                   | Postgres init scripts (pgvector extension, role grants, Kratos DB creation)   |
-| `api/Dockerfile`                    | Go API multi-stage build (distroless runtime image)                           |
-| `worker/Dockerfile`                 | Go worker multi-stage build                                                   |
-| `web/Dockerfile`                    | Next.js standalone production image                                            |
-| `api/migrations/`                   | golang-migrate SQL files; applied at API boot                                  |
-| `deploy/compose.env.example`        | Env template for compose interpolation; copy to `.env` and fill secrets        |
+| Path                         | Purpose                                                                     |
+| ---------------------------- | --------------------------------------------------------------------------- |
+| `docker-compose.yml`         | Production-shape topology, declared per service                             |
+| `docker-compose.dev.yml`     | Local dev overrides (MailHog, hot-reload, debug logs)                       |
+| `infra/nginx/`               | nginx main config + `conf.d/` server blocks (TLS, redirects, reverse_proxy) |
+| `infra/kratos/`              | Kratos identity schema, courier (Resend SMTP), self-service flow config     |
+| `infra/postgres/`            | Postgres init scripts (pgvector extension, role grants, Kratos DB creation) |
+| `api/Dockerfile`             | Go API multi-stage build (distroless runtime image)                         |
+| `worker/Dockerfile`          | Go worker multi-stage build                                                 |
+| `app/Dockerfile`             | Next.js standalone production image                                         |
+| `api/migrations/`            | Versioned SQL files; applied by the API runtime                             |
+| `deploy/compose.env.example` | Env template for compose interpolation; copy to `.env` and fill secrets     |
 
 ## First Start
 
@@ -83,7 +83,7 @@ For local development against the dev override:
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
-Schema migrations apply during API startup (golang-migrate runs against `postgres` before the API serves traffic). Kratos manages its own migrations against its own database via its built-in `kratos migrate sql` step run from an init container.
+Schema migrations apply during API startup against `postgres` before the API serves traffic. Kratos manages its own migrations against its own database via its built-in `kratos migrate sql` step run from an init container.
 
 ## Health Checks
 
@@ -113,7 +113,7 @@ docker compose logs api --tail=100
 
 ## Migrations
 
-API migrations live in `api/migrations/` and apply via golang-migrate at API boot. The runner records applied versions in a dedicated `schema_migrations` table inside the app schema.
+API migrations live in `api/migrations/` and apply at API boot. The runner records applied versions in a dedicated `schema_migrations` table inside the app schema.
 
 Rules:
 

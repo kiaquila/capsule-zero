@@ -4,9 +4,9 @@ import { AuthPopup } from "./AuthPopup";
 import type { Locale } from "../fixtures/locales";
 
 /**
- * Page Object for the landing page (/{locale}) of the legacy Next.js /app.
- * When /app is replaced by /web, only the data-testid attributes need to
- * be re-added on the new components — this POM does not change.
+ * Page Object for the landing page (/{locale}) of the canonical Next.js /app.
+ * Keep data-testid attributes stable as components are rewritten; specs should
+ * not know about component markup or copy.
  */
 export class LandingPage extends BasePage {
   readonly path: string;

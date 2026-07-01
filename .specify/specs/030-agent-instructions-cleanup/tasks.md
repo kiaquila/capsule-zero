@@ -16,6 +16,7 @@
 - [x] Remove the obsolete `/web` directory and generated-client target.
 - [x] Remove `web/**` from the dev CD deploy-relevant path filter.
 - [x] Add complete feature memory for this support-tooling PR.
+- [x] Address the AI Review P2 by actualizing stale `/web`, Traefik, and migration-tool references across source docs/specs/tests.
 
 ## Verification
 
@@ -24,6 +25,7 @@
 - [x] Validate `api/.golangci.yml` parses as YAML.
 - [x] Verify obsolete `/web` paths and codegen target are absent.
 - [x] Verify the dev CD path filter no longer includes `web/`.
+- [x] Run focused stale-reference scans for `/web`, Traefik-as-current-gateway, and obsolete migration-tool guidance.
 - [ ] Re-check PR #60 GitHub checks after pushing the fix.
 
 ## Process Memory
@@ -32,6 +34,7 @@
 
 - Treating the PR as docs-only was insufficient because the diff also touches product-root support files under `app/`, `api/`, and `web/`; the guard correctly required complete feature memory.
 - Relaxing or bypassing the guard was rejected. The safer fix is to add the missing spec/plan/tasks evidence for the support-tooling scope.
+- Updating only `AGENTS.md` was insufficient after AI Review found older source docs still pointing agents toward `/web`; the fix expanded to the affected docs/spec/test guidance instead of narrowing the review comment away.
 
 ### Decisions
 
@@ -39,9 +42,10 @@
 - Keep module-size enforcement advisory: ESLint rules are warnings, and golangci-lint remains opt-in rather than part of required CI.
 - Keep the `/web` removal in scope because `/app` is the accepted canonical frontend and the deleted `/web` files were obsolete scaffolding/generated client leftovers.
 - Use config validation and existing checks instead of failing-test-first TDD because this spec does not change application behavior.
+- Treat `/web` mentions as acceptable only when they are explicit "do not use `/web`" policy, superseded history, or unrelated API route names such as `/api/webhooks/lava`.
 
 ### Known Issues
 
 - GitHub checks must be re-run on the pushed commit before the PR can be considered merge ready.
-- AI Review was still in progress during the first inspection and may produce additional actionable feedback after this guard fix.
+- The prior AI Review P2 about stale `/web` source docs is addressed locally; a fresh AI Review must run on the new pushed SHA.
 - Local `npm run lint` passes with 73 module-size/complexity warnings and 0 errors, matching the warning-only scope of this PR.

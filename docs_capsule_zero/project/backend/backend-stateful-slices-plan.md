@@ -8,7 +8,7 @@ Map every user-visible mutation in the approved HTML prototypes to a backend sli
 
 ## Prerequisite
 
-Slices below depend on `.specify/specs/024-production-stack-runtime/` shipping first. That spec brings up the Go monolith, Kratos, Postgres, Redis, Traefik, Spaces, Cloudflare, and Resend in docker-compose on the droplet and removes the legacy `/app` Supabase code.
+Slices below depend on `.specify/specs/024-production-stack-runtime/` shipping first. That spec brings up the Go monolith, Kratos, Postgres, Redis, nginx, Spaces, Cloudflare, and Resend in docker-compose on the droplet. `/app` remains the canonical frontend while its retired Supabase provider is removed domain by domain.
 
 ## Bounded Contexts In The Monolith
 
@@ -49,7 +49,7 @@ Implementation:
 - `internal/auth`: Kratos session middleware; `RequireSession(handler)` helper.
 - `internal/profile`: repository + service + handlers for `GET /api/profile`, `PATCH /api/profile`.
 - Kratos courier configured against Resend SMTP; verification + recovery templates ship with the slice.
-- Web frontend renders Kratos self-service flows in `web/src/app/(auth)/...`.
+- Web frontend renders Kratos self-service flows in `app/src/app/[locale]/auth/...`.
 
 ## Slice 02 — Profile Avatar Upload
 

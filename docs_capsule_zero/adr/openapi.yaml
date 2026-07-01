@@ -32,7 +32,7 @@ components:
       in: cookie
       name: ory_kratos_session
       description: >
-        Ory Kratos browser session cookie forwarded through Traefik and
+        Ory Kratos browser session cookie forwarded through nginx and
         revalidated by the Go API on authenticated requests.
     lavaWebhookKey:
       type: apiKey

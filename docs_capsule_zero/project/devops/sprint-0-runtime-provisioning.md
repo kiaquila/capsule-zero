@@ -24,7 +24,7 @@ Copy the env template and fill it with real values:
 cp deploy/compose.env.example .env
 ```
 
-Required keys at minimum: see `docs_capsule_zero/project/devops/docker-compose-deploy.md` → *First Start*.
+Required keys at minimum: see `docs_capsule_zero/project/devops/docker-compose-deploy.md` → _First Start_.
 
 ## Production-First Posture
 
@@ -66,7 +66,7 @@ docker compose --env-file ./.env up -d
 docker compose logs nginx --tail=50 # confirm nginx is up and serving 443
 ```
 
-This brings up nginx, Kratos, Postgres, PgBouncer, Redis, the Go API, the Go worker, the Next.js web container, imgproxy, and Grafana once every phase of spec 024 has shipped. In earlier phases only the services delivered so far come up. golang-migrate runs at API boot from Phase 3 onward. Kratos runs its own migrations through its init container from Phase 2 onward.
+This brings up nginx, Kratos, Postgres, Redis, the Go API, the in-process queue worker, the Next.js web container, and imgproxy once every v0.1 phase of spec 024 has shipped. PgBouncer, Grafana, and the standalone worker container are promoted only when ADR-007 triggers open. In earlier phases only the services delivered so far come up. API migrations run at API boot from Phase 3 onward. Kratos runs its own migrations through its init container from Phase 2 onward.
 
 ### 4. Verify health end-to-end
 
@@ -145,12 +145,14 @@ Operator:
 Branch/commit:
 
 Droplet
+
 - Plan: 4 GB / 2 vCPU / 80 GB (or larger)
 - IP:
 - Hostname: capsulezero-prod
 - ufw status: pass/fail
 
 DNS / Cloudflare
+
 - Spaceship → Cloudflare NS: pass/fail
 - Cloudflare A records (apex + grafana): pass/fail
 - Proxy enabled: pass/fail
@@ -158,21 +160,25 @@ DNS / Cloudflare
 - Bot Fight Mode: enabled
 
 docker-compose
+
 - All services healthy: pass/fail
 - nginx TLS serving on 443: pass/fail
 - API /api/health: pass/fail
 
 Kratos / Resend
+
 - Identity schema applied: pass/fail
 - Verification email received: pass/fail
 - Password recovery email received: pass/fail
 
 Spaces
+
 - Bucket reachable: pass/fail
 - Signed PUT round-trip: pass/fail
 - CORS verified: pass/fail
 
 Backups
+
 - Nightly pg_dump landed in s3://capsulezero/backups/: pass/fail
 - Lifecycle rule active (14 day): pass/fail
 

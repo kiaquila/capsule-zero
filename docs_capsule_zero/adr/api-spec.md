@@ -6,7 +6,7 @@ Accepted for v0.1 planning. Before Stage 1 feature implementation, Sprint 0 must
 
 ## API Principles
 
-- Ory Kratos owns identity and session state. Traefik runs a forward-auth middleware against Kratos in front of protected routes; the Go API re-validates the Kratos session on every authenticated request.
+- Ory Kratos owns identity and session state. nginx runs `auth_request` against Kratos in front of protected routes; the Go API re-validates the Kratos session on every authenticated request.
 - The Go modular monolith exposes the REST API at `/api/*`; the Next.js web app and React Native mobile app both consume the same OpenAPI contract through generated clients.
 - Next.js Server Actions may wrap calls to the Go API for in-app mutations; they never embed admin credentials.
 - The Go monolith owns database-heavy operations: compatibility validation, outfit regeneration, OPR, gap analysis, and hybrid FTS + pgvector search.
@@ -21,14 +21,14 @@ Sprint 0 must create and verify these artifacts before Stage 1 product feature w
 | Artifact                | Location                                      | Purpose                                                                |
 | ----------------------- | --------------------------------------------- | ---------------------------------------------------------------------- |
 | OpenAPI contract        | `docs_capsule_zero/adr/openapi.yaml`          | Authoritative REST path, auth, request, response, and error schemas    |
-| TypeScript client/types | `web/src/lib/api/generated/`                  | Web client/server API types generated from OpenAPI                     |
+| TypeScript client/types | `app/src/lib/api/generated/`                  | Web client/server API types generated from OpenAPI                     |
 | React Native client     | `mobile/lib/api/generated/`                   | TypeScript client for the React Native app generated from OpenAPI      |
-| Go schema/handlers      | `api/internal/httpapi/` + `api/migrations/`   | Typed Go handlers from OpenAPI and golang-migrate SQL files            |
+| Go schema/handlers      | `api/internal/httpapi/` + `api/migrations/`   | Typed Go handlers from OpenAPI and versioned SQL migrations            |
 | Contract tests          | `api/tests/contract/` or equivalent CI target | Auth/error conventions and representative endpoint schema verification |
 
 Endpoint names may change only with the OpenAPI contract, generated clients, and contract tests updated in the same PR.
 
-Until the legacy `/app` shell and Flutter scaffold are removed, the generator also mirrors compatibility artifacts into `app/src/lib/api/generated/openapi.ts` and `mobile/lib/api/generated/openapi.dart`. The canonical production-stack clients are the TypeScript outputs under `/web` and `/mobile`.
+The generator writes the canonical web client to `app/src/lib/api/generated/openapi.ts` and mobile client artifacts to `mobile/lib/api/generated/`. Do not regenerate a `/web` client target.
 
 OpenAPI operations marked `x-client-availability: web` must not be wired into mobile purchase UI. Mobile generation may include low-level types for status reads, but mobile v0.1 must not expose invoice creation as a user action.
 

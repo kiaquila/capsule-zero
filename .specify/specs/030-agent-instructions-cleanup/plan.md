@@ -10,11 +10,11 @@ Update the repository onboarding and support-tooling contract to match the curre
 - application behavior changes: none
 - dependencies: none
 - product paths: `app/eslint.config.mjs`, `api/.golangci.yml`, deleted `web/**`
-- support paths: `AGENTS.md`, `CLAUDE.md`, `.github/workflows/cd-dev.yml`, `scripts/generate-api-clients.mjs`, `.specify/specs/030-agent-instructions-cleanup/`
+- support paths: `AGENTS.md`, `CLAUDE.md`, `.github/workflows/cd-dev.yml`, `scripts/generate-api-clients.mjs`, `docs_capsule_zero/**`, `.specify/specs/**`, `tests/**`, `.specify/specs/030-agent-instructions-cleanup/`
 
 ## Scope Boundaries
 
-- in scope: onboarding docs, advisory lint configuration, obsolete `/web` cleanup, feature-memory evidence
+- in scope: onboarding docs, advisory lint configuration, obsolete `/web` cleanup, source-doc actualization, feature-memory evidence
 - out of scope: UI/API/runtime behavior, Supabase recoupling, generated-client regeneration for active consumers, required CI hard-gating of module-size warnings
 
 ## Constitution Check
@@ -28,17 +28,18 @@ Update the repository onboarding and support-tooling contract to match the curre
 
 ## Verification
 
-| Acceptance criterion | Evidence |
-| --- | --- |
-| AC-001 | `rg -n "/web|canonical.*app|Frontend / provider decision" AGENTS.md` shows `/app` as canonical and no `/app` to `/web` migration instruction. |
-| AC-002 | `rg -n "html-prototypes|implemented screen|/app frontend" AGENTS.md` shows implementation routing starts from `/app` screens and no active `html-prototypes/` source-of-truth section remains. |
-| AC-003 | `rg -n "Mandatory reuse-check|Before creating a new module" AGENTS.md CLAUDE.md` shows the reuse-check contract. |
-| AC-004 | `rg -n "Module-size discipline|soft gate|warnings" AGENTS.md CLAUDE.md` shows thresholds are advisory review signals. |
-| AC-005 | `wc -l CLAUDE.md` shows the file is slimmed versus the previous duplicated onboarding document, and `rg -n "AGENTS.md" CLAUDE.md` shows canonical links. |
-| AC-006 | `cd app && npm run lint` exits 0 with module-size warnings only; `ruby -e 'require "yaml"; YAML.load_file("api/.golangci.yml")'` verifies the optional Go linter config parses. |
-| AC-007 | `test ! -e web && ! rg -n "web/src/lib/api/generated|target: \"web\"" scripts/generate-api-clients.mjs` verifies obsolete `/web` files and codegen target are gone. |
-| AC-008 | `rg -n "deploy_path_pattern" .github/workflows/cd-dev.yml` verifies the dev CD regex keeps `app/` and no longer includes `web/`. |
-| AC-009 | `node scripts/check-feature-memory.mjs origin/main HEAD` passes and reports feature-memory coverage via `.specify/specs/030-agent-instructions-cleanup/{spec,plan,tasks}.md`. |
+| Acceptance criterion | Evidence                                                                                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------ | ---------- | ---------- | ---------------------- | ------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| AC-001               | `rg -n "/web                                                                                                                                                                    | canonical.\*app                                                                                              | Frontend / provider decision" AGENTS.md`shows`/app`as canonical and no`/app`to`/web` migration instruction.                                     |
+| AC-002               | `rg -n "html-prototypes                                                                                                                                                         | implemented screen                                                                                           | /app frontend" AGENTS.md`shows implementation routing starts from`/app`screens and no active`html-prototypes/` source-of-truth section remains. |
+| AC-003               | `rg -n "Mandatory reuse-check                                                                                                                                                   | Before creating a new module" AGENTS.md CLAUDE.md` shows the reuse-check contract.                           |
+| AC-004               | `rg -n "Module-size discipline                                                                                                                                                  | soft gate                                                                                                    | warnings" AGENTS.md CLAUDE.md` shows thresholds are advisory review signals.                                                                    |
+| AC-005               | `wc -l CLAUDE.md` shows the file is slimmed versus the previous duplicated onboarding document, and `rg -n "AGENTS.md" CLAUDE.md` shows canonical links.                        |
+| AC-006               | `cd app && npm run lint` exits 0 with module-size warnings only; `ruby -e 'require "yaml"; YAML.load_file("api/.golangci.yml")'` verifies the optional Go linter config parses. |
+| AC-007               | `test ! -e web && ! rg -n "web/src/lib/api/generated                                                                                                                            | target: \"web\"" scripts/generate-api-clients.mjs`verifies obsolete`/web` files and codegen target are gone. |
+| AC-008               | `rg -n "deploy_path_pattern" .github/workflows/cd-dev.yml` verifies the dev CD regex keeps `app/` and no longer includes `web/`.                                                |
+| AC-009               | `node scripts/check-feature-memory.mjs origin/main HEAD` passes and reports feature-memory coverage via `.specify/specs/030-agent-instructions-cleanup/{spec,plan,tasks}.md`.   |
+| AC-010               | `rg -n 'golang-migrate                                                                                                                                                          | Traefik forward                                                                                              | through Traefik                                                                                                                                 | behind Traefik | with Traefik | \+ Traefik | Traefik \+ | future home is .\*/web | web/src/lib/api/generated | local build of .\*/web | new home for the web frontend is .\*/web' docs_capsule_zero AGENTS.md CLAUDE.md .specify tests --glob '!.specify/specs/024-production-stack-runtime/tasks.md' --glob '!.specify/specs/030-agent-instructions-cleanup/\*\*'`returns no current guidance hits; remaining`/web` mentions are explicit no-`/web` policy, superseded history, or API route names. |
 
 Negative scenario evidence:
 
@@ -46,6 +47,7 @@ Negative scenario evidence:
 - NS-002: ESLint rules are configured as `warn`, and `api/.golangci.yml` is not invoked by required CI.
 - NS-003: `git diff --name-only origin/main...HEAD` shows only obsolete `web/**` deletions and support/onboarding files; active `/app`, `/api`, `/mobile`, `/infra`, `docs_capsule_zero`, and existing `.specify` roots remain.
 - NS-004: No UI, API handler, schema migration, provider, or runtime business-logic file is changed.
+- AI Review P2: The stale `/web` source-of-truth documentation thread is addressed by updating `docs_capsule_zero`, `.specify`, and test docs to the `/app` canonical path.
 
 ## Risks
 

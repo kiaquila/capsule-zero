@@ -17,6 +17,7 @@ In scope:
 - remove the leftover `/web` directory and its generated API-client codegen target
 - keep dev CD path filtering aligned with the canonical `/app` frontend and the absence of `/web`
 - add feature-memory evidence for the product-root support changes in this PR
+- align affected source-of-truth docs, specs, tests, and generated-client references so they no longer instruct agents or tooling to use `/web`
 
 Out of scope:
 
@@ -51,6 +52,7 @@ As a developer, I want leftover `/web` scaffolding and codegen references remove
 - AC-007: The obsolete `/web` directory and `/web` API-client generation target are removed.
 - AC-008: The dev CD workflow path filter no longer treats `web/**` as deploy-relevant.
 - AC-009: This PR includes complete feature memory (`spec.md`, `plan.md`, `tasks.md`) for the product-root support changes.
+- AC-010: Affected source docs and specs describe `/app` as the canonical web frontend and do not instruct agents to build, generate, or retarget current web work under `/web`.
 
 ## Negative Scenarios
 
@@ -71,6 +73,7 @@ This spec is documentation and support-tooling cleanup, plus deletion of an obso
 - FR-004: Remove obsolete `/web` codegen and deploy references so the repository presents a single `/app` web frontend.
 - FR-005: Preserve the No Supabase / legacy-backend recoupling rule.
 - FR-006: Satisfy the feature-memory guard for product-root support changes by adding this complete spec folder.
+- FR-007: Resolve AI-review feedback by actualizing stale source docs that still referenced `/web`, Traefik, or obsolete migration tooling as current guidance.
 
 ## Success Criteria
 

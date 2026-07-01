@@ -1,20 +1,21 @@
 # Launch Plan — Capsule Zero v0.1
 
-> Original source: Capsule Zero Launch Plan RU.pdf (February 2026). Updated in June 2026 for the production-stack pivot (Go modular monolith + Traefik + Ory Kratos + PostgreSQL + Redis + DigitalOcean Spaces + Cloudflare + Resend) and React Native mobile apps; current path to first commercial sales is 13-14 weeks.
+> Original source: Capsule Zero Launch Plan RU.pdf (February 2026). Updated in June 2026 for the production-stack pivot (Go modular monolith + nginx + Ory Kratos + PostgreSQL + Redis + DigitalOcean Spaces + Cloudflare + Resend) and React Native mobile apps; current path to first commercial sales is 13-14 weeks.
 
 ## Overview
 
-| Parameter | Value |
-|-----------|-------|
-| **Timeline** | 13-14 weeks (about 3 months) |
-| **Priority** | Premium quality > speed |
-| **Release philosophy** | Minimum features, maximum quality — production-grade from Day 1 |
-| **Team** | AI-native + founder as creative director |
-| **Tagline** | "A capsule wardrobe that feels like a personal stylist — not a spreadsheet" |
+| Parameter              | Value                                                                       |
+| ---------------------- | --------------------------------------------------------------------------- |
+| **Timeline**           | 13-14 weeks (about 3 months)                                                |
+| **Priority**           | Premium quality > speed                                                     |
+| **Release philosophy** | Minimum features, maximum quality — production-grade from Day 1             |
+| **Team**               | AI-native + founder as creative director                                    |
+| **Tagline**            | "A capsule wardrobe that feels like a personal stylist — not a spreadsheet" |
 
 ## v0.1 Scope
 
 ### What's IN v0.1
+
 - Landing page with premium brand identity (hero, value proposition, CTA)
 - Multilingual support (EN and RU active; ES-AR retained as reference and deferred to v0.2)
 - Mobile-first web design
@@ -26,6 +27,7 @@
 - Capsule result with outfits, gap analysis, and shopping list
 
 ### What's NOT in v0.1
+
 - AI/ML outfit recommendations (not planned — outfit generation is algorithmic, rule-based)
 - Coin purchases and image enhancement (v0.2 backlog — Lava.top is stubbed in v0.1)
 - Self-hosted image processing (Stage 2)
@@ -41,27 +43,27 @@
 
 ## Master Plan — Phase Overview
 
-| Phase | Name | Timeline | Goal | Key Artifact |
-|-------|------|----------|------|-------------|
-| 0 | Founder Vision Extraction | W1 (3 days) | Extract and structure vision: user flow, aesthetics, values | Founder Vision Document (FVD) |
-| 1 | Market Research & Positioning | W1 (4 days) | Niche, competitive positioning, TAM/SAM/SOM in USD | Market Research Brief (PDF A4) |
-| 2 | Product Definition & UX Research | W2 (5 days) | v0.1 scope, personas, user stories, UX validation, styling expertise | PRD + Styling Guide |
-| 3 | UX/UI Design | W3-4 (10 days) | UI kit, hi-fi prototypes, micro-interactions, brand system | Design Package + UI Kit |
-| 4 | Technical Architecture | W4-5 (5 days) | Tech stack, architecture, repository, CI/CD | ADR + Boilerplate |
-| 5 | Development Sprint | W5-11 (30 days) | Sprint 0 readiness, then v0.1 web, Go backend, and React Native core flows | Product on staging/TestFlight/internal testing |
-| 6 | QA & Soft Launch | W11-13 (10 days) | Bug fix, polishing, beta test, premium audit across web and mobile | Release candidate + QA report |
-| 7 | Commercial Launch | W13-14 (5 days) | Go-live, marketing, first paying users | Live product + assets |
+| Phase | Name                             | Timeline         | Goal                                                                       | Key Artifact                                   |
+| ----- | -------------------------------- | ---------------- | -------------------------------------------------------------------------- | ---------------------------------------------- |
+| 0     | Founder Vision Extraction        | W1 (3 days)      | Extract and structure vision: user flow, aesthetics, values                | Founder Vision Document (FVD)                  |
+| 1     | Market Research & Positioning    | W1 (4 days)      | Niche, competitive positioning, TAM/SAM/SOM in USD                         | Market Research Brief (PDF A4)                 |
+| 2     | Product Definition & UX Research | W2 (5 days)      | v0.1 scope, personas, user stories, UX validation, styling expertise       | PRD + Styling Guide                            |
+| 3     | UX/UI Design                     | W3-4 (10 days)   | UI kit, hi-fi prototypes, micro-interactions, brand system                 | Design Package + UI Kit                        |
+| 4     | Technical Architecture           | W4-5 (5 days)    | Tech stack, architecture, repository, CI/CD                                | ADR + Boilerplate                              |
+| 5     | Development Sprint               | W5-11 (30 days)  | Sprint 0 readiness, then v0.1 web, Go backend, and React Native core flows | Product on staging/TestFlight/internal testing |
+| 6     | QA & Soft Launch                 | W11-13 (10 days) | Bug fix, polishing, beta test, premium audit across web and mobile         | Release candidate + QA report                  |
+| 7     | Commercial Launch                | W13-14 (5 days)  | Go-live, marketing, first paying users                                     | Live product + assets                          |
 
 > Total timeline: 13-14 weeks after the React Native mobile scope addition and Sprint 0 readiness gate. Phases 0-1 overlap in Week 1. Phase 4 starts in parallel with Phase 3. Buffer +1 week for UX/UI polishing and mobile release readiness.
 
 ## Phases 0–3 — COMPLETE ✅
 
-| Phase | Artifact | Where |
-|-------|----------|-------|
-| 0: Founder Vision | Vision, principles, red lines, references | `.specify/memory/constitution.md` |
-| 1: Market Research | ICP, competitors, TAM/SAM/SOM, pricing | `docs_capsule_zero/marketing/go-to-market.md` |
-| 2: Product Definition | 25 user stories, UX validation, emotion map | `docs_capsule_zero/ux/`, `.specify/specs/001-capsule-zero-mvp/spec.md` |
-| 3: UX/UI Design | Hi-fi prototypes, design system, color palette, tokens | `html-prototypes/` (screens + `design-system.html` + `color-system.html`), `app/src/styles/tokens.css` |
+| Phase                 | Artifact                                               | Where                                                                                                  |
+| --------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| 0: Founder Vision     | Vision, principles, red lines, references              | `.specify/memory/constitution.md`                                                                      |
+| 1: Market Research    | ICP, competitors, TAM/SAM/SOM, pricing                 | `docs_capsule_zero/marketing/go-to-market.md`                                                          |
+| 2: Product Definition | 25 user stories, UX validation, emotion map            | `docs_capsule_zero/ux/`, `.specify/specs/001-capsule-zero-mvp/spec.md`                                 |
+| 3: UX/UI Design       | Hi-fi prototypes, design system, color palette, tokens | `html-prototypes/` (screens + `design-system.html` + `color-system.html`), `app/src/styles/tokens.css` |
 
 ## Phase 4 — Technical Architecture
 
@@ -69,13 +71,13 @@
 **Timeline:** Weeks 4-5, parallel with Phase 3 (5 days)
 **AI roles:** Tech Architect AI (lead), Programmer AI (setup), DevOps Consultant, Mobile Architect AI
 
-| Task | Days | Description | Result |
-|------|------|-------------|--------|
-| Stack selection | D1-2 | Web (Next.js/React), mobile (React Native), Go backend, Postgres + pgvector, DigitalOcean Spaces, Cloudflare front-door, Lava.top payments (stubbed in v0.1). | ADR |
-| Repository | D2-3 | Mono/multi-repo. Linting, formatting, commit hooks, folder structure. | Clean repo |
-| CI/CD | D3-4 | Auto-tests, build, deploy. Staging. Preview deployments. | CI/CD pipeline |
-| API design | D4-5 | Shared web/mobile backend contract, REST/RPC endpoints, schemas, authentication, Lava.top webhook contract. | API spec |
-| Dev documentation | D5 | Env variables, local DB, seed data, tests. | Setup guide |
+| Task              | Days | Description                                                                                                                                                   | Result         |
+| ----------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| Stack selection   | D1-2 | Web (Next.js/React), mobile (React Native), Go backend, Postgres + pgvector, DigitalOcean Spaces, Cloudflare front-door, Lava.top payments (stubbed in v0.1). | ADR            |
+| Repository        | D2-3 | Mono/multi-repo. Linting, formatting, commit hooks, folder structure.                                                                                         | Clean repo     |
+| CI/CD             | D3-4 | Auto-tests, build, deploy. Staging. Preview deployments.                                                                                                      | CI/CD pipeline |
+| API design        | D4-5 | Shared web/mobile backend contract, REST/RPC endpoints, schemas, authentication, Lava.top webhook contract.                                                   | API spec       |
+| Dev documentation | D5   | Env variables, local DB, seed data, tests.                                                                                                                    | Setup guide    |
 
 ## Phase 5 — Development Sprint
 
@@ -83,16 +85,17 @@
 **Timeline:** Weeks 5-11 (30 working days)
 **AI roles:** Programmer AI (lead), Mobile Engineer AI, Tech Architect (review), QA AI, UX/UI Designer, AI Stylist-Consultant
 
-| Sprint | Days | Focus | Result |
-|--------|------|-------|--------|
-| 0: Readiness Gate | D1-5 (W5) | OpenAPI contract, Go monolith migrations + tests, React Native scaffold, docker-compose runtime on the droplet, Cloudflare anti-DDoS, Resend setup, lint/hooks, founder approval. | Phase 5 entrance checklist complete (`.specify/specs/024-production-stack-runtime/`) |
-| 1: Foundation | D6-10 (W6) | Landing pixel-perfect, navigation, mobile-first layout system, shared tokens, Go API auth + profile slice. | Landing + backend foundation on staging |
-| 2: Shared Contract + Mobile Shell | D11-15 (W7) | Auth, profile, generated clients from OpenAPI, React Native routing, deep links, shared domain models. | Web auth + React Native shell |
-| 3: Onboarding | D16-20 (W8) | Guided journey (wardrobe type, categories, colors + items), profile, transitions across web and mobile. | Onboarding on staging/internal mobile build |
-| 4: Core Wardrobe | D21-25 (W9-10) | Photo upload, background removal, auto-categorization, grid, filtering, mobile camera/gallery flow. | Upload + grid across clients |
-| 5: Capsule + Web Payments | D26-30 (W10-11) | Capsule result, dashboard, shopping list, favorites, wardrobe states, Lava.top stub (live in v0.2), mobile balance display, all animations. | Full v0.1 on staging/TestFlight/internal testing |
+| Sprint                            | Days            | Focus                                                                                                                                                                             | Result                                                                               |
+| --------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| 0: Readiness Gate                 | D1-5 (W5)       | OpenAPI contract, Go monolith migrations + tests, React Native scaffold, docker-compose runtime on the droplet, Cloudflare anti-DDoS, Resend setup, lint/hooks, founder approval. | Phase 5 entrance checklist complete (`.specify/specs/024-production-stack-runtime/`) |
+| 1: Foundation                     | D6-10 (W6)      | Landing pixel-perfect, navigation, mobile-first layout system, shared tokens, Go API auth + profile slice.                                                                        | Landing + backend foundation on staging                                              |
+| 2: Shared Contract + Mobile Shell | D11-15 (W7)     | Auth, profile, generated clients from OpenAPI, React Native routing, deep links, shared domain models.                                                                            | Web auth + React Native shell                                                        |
+| 3: Onboarding                     | D16-20 (W8)     | Guided journey (wardrobe type, categories, colors + items), profile, transitions across web and mobile.                                                                           | Onboarding on staging/internal mobile build                                          |
+| 4: Core Wardrobe                  | D21-25 (W9-10)  | Photo upload, background removal, auto-categorization, grid, filtering, mobile camera/gallery flow.                                                                               | Upload + grid across clients                                                         |
+| 5: Capsule + Web Payments         | D26-30 (W10-11) | Capsule result, dashboard, shopping list, favorites, wardrobe states, Lava.top stub (live in v0.2), mobile balance display, all animations.                                       | Full v0.1 on staging/TestFlight/internal testing                                     |
 
 ### Quality Gate: Implementation Completeness
+
 - Screens = designs to 2px precision
 - Animations per spec (timing, easing)
 - Empty/loading/error states implemented
@@ -112,16 +115,17 @@
 **Timeline:** Weeks 11-13 (10 days)
 **AI roles:** QA AI (lead), Programmer AI, UX/UI Designer (audit), Marketing Promotion AI
 
-| Task | Days | Description | Result |
-|------|------|-------------|--------|
-| QA testing | D1-3 | Functional, cross-browser, web/mobile cross-device, edge cases. | Bug report |
-| Visual audit | D3-4 | Pixel check: alignment, spacing, colors, animations. | Audit report |
-| Performance | D4-5 | Lighthouse 90+ perf, 95+ a11y, mobile app startup smoke. Lazy loading, code splitting. | Perf report |
-| Bug fix & polish | D5-7 | Critical/major bugs, visual fixes, animation polishing. | Release candidate |
-| Beta (soft launch) | D7-9 | 10-20 target audience users. First impression, WTP, 3-5 interviews. | Beta feedback |
-| Final preparation | D9-10 | Critical feedback, final QA, DNS, SSL, analytics. | Production-ready |
+| Task               | Days  | Description                                                                            | Result            |
+| ------------------ | ----- | -------------------------------------------------------------------------------------- | ----------------- |
+| QA testing         | D1-3  | Functional, cross-browser, web/mobile cross-device, edge cases.                        | Bug report        |
+| Visual audit       | D3-4  | Pixel check: alignment, spacing, colors, animations.                                   | Audit report      |
+| Performance        | D4-5  | Lighthouse 90+ perf, 95+ a11y, mobile app startup smoke. Lazy loading, code splitting. | Perf report       |
+| Bug fix & polish   | D5-7  | Critical/major bugs, visual fixes, animation polishing.                                | Release candidate |
+| Beta (soft launch) | D7-9  | 10-20 target audience users. First impression, WTP, 3-5 interviews.                    | Beta feedback     |
+| Final preparation  | D9-10 | Critical feedback, final QA, DNS, SSL, analytics.                                      | Production-ready  |
 
 ### Quality Gate: Release Readiness
+
 - Zero critical/major bugs
 - Lighthouse: Performance 90+, Accessibility 95+
 - Beta users: first impression 4.5+/5
@@ -138,15 +142,16 @@
 **Timeline:** Weeks 13-14 (5 days)
 **AI roles:** Marketing Promotion AI (lead), Product AI, UX/UI Designer
 
-| Task | Days | Description | Result |
-|------|------|-------------|--------|
-| Marketing assets | D1-2 | Product Hunt, social media, email waitlist, press kit. | Marketing package |
-| Production deploy | D1 | Deploy web/backend, Lava.top web payment verification, mobile release channel readiness, monitoring 2 hours. | Live product |
-| Launch day | D2-3 | Product Hunt, social media, email, outreach to 50+ early adopters. | Launch campaign |
-| First 48 hours | D3-4 | Monitoring: registrations, conversion, errors. Response within 2 hours. | Metrics dashboard |
-| Retrospective | D4-5 | Analyze 1 week of data: activation, retention, revenue, NPS. Priorities for v0.2. | Report + roadmap v0.2 |
+| Task              | Days | Description                                                                                                  | Result                |
+| ----------------- | ---- | ------------------------------------------------------------------------------------------------------------ | --------------------- |
+| Marketing assets  | D1-2 | Product Hunt, social media, email waitlist, press kit.                                                       | Marketing package     |
+| Production deploy | D1   | Deploy web/backend, Lava.top web payment verification, mobile release channel readiness, monitoring 2 hours. | Live product          |
+| Launch day        | D2-3 | Product Hunt, social media, email, outreach to 50+ early adopters.                                           | Launch campaign       |
+| First 48 hours    | D3-4 | Monitoring: registrations, conversion, errors. Response within 2 hours.                                      | Metrics dashboard     |
+| Retrospective     | D4-5 | Analyze 1 week of data: activation, retention, revenue, NPS. Priorities for v0.2.                            | Report + roadmap v0.2 |
 
 ### First Sales Targets (1-2 weeks)
+
 - 100+ registered users
 - 20+ completed full wardrobe upload
 - 5-10 paying users via coin purchases
@@ -157,27 +162,27 @@
 
 ### Roles & Responsibilities
 
-| Role | Responsibility | Phases | Key Outputs |
-|------|---------------|--------|-------------|
-| Marketing Researcher AI | Market analysis, competitors, segments, TAM/SAM/SOM, positioning | Phase 1 | Brief, positioning |
-| Product AI | Strategy, requirements, user stories, prioritization, PRD. Vision extraction. | Phases 0, 2, 7 | FVD, PRD, messaging |
-| AI Stylist-Consultant | Styling expertise: capsule logic, palettes, categorization, fashion-decision validation. Personal shopper level luxury segment. | Phases 0, 1, 2, 3, 5 | Styling guide, palette validation |
-| UX/UI Researcher | UX validation, competitor benchmarks, emotion map, first-impression audits, beta testing. | Phases 0-3, 6 | UX insights, emotion map |
-| UX/UI Designer | Design system, hi-fi screens, components, micro-interactions, visual QA. | Phases 3, 5-6 | Design package, audit |
-| Tech Architect AI | Stack, architecture, API, code review. | Phases 4-5 | ADR, API spec |
-| Programmer AI | Web frontend + backend, components, API, optimization. | Phases 5-6 | Codebase, staging |
-| Mobile Engineer AI | React Native app, iOS/Android builds, mobile auth/deep links, app-store readiness. | Phases 4-6 | Mobile app builds |
-| QA AI | Tests, cross-browser, regression, bug reports. | Phases 5-6 | Reports, release sign-off |
-| DevOps Consultant | CI/CD, hosting, production, monitoring. | Phases 4, 6-7 | Pipeline, production |
-| Marketing Promotion AI | Launch, copywriting, social media, Product Hunt, press kit. | Phases 6-7 | Launch assets |
+| Role                    | Responsibility                                                                                                                  | Phases               | Key Outputs                       |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------- | --------------------------------- |
+| Marketing Researcher AI | Market analysis, competitors, segments, TAM/SAM/SOM, positioning                                                                | Phase 1              | Brief, positioning                |
+| Product AI              | Strategy, requirements, user stories, prioritization, PRD. Vision extraction.                                                   | Phases 0, 2, 7       | FVD, PRD, messaging               |
+| AI Stylist-Consultant   | Styling expertise: capsule logic, palettes, categorization, fashion-decision validation. Personal shopper level luxury segment. | Phases 0, 1, 2, 3, 5 | Styling guide, palette validation |
+| UX/UI Researcher        | UX validation, competitor benchmarks, emotion map, first-impression audits, beta testing.                                       | Phases 0-3, 6        | UX insights, emotion map          |
+| UX/UI Designer          | Design system, hi-fi screens, components, micro-interactions, visual QA.                                                        | Phases 3, 5-6        | Design package, audit             |
+| Tech Architect AI       | Stack, architecture, API, code review.                                                                                          | Phases 4-5           | ADR, API spec                     |
+| Programmer AI           | Web frontend + backend, components, API, optimization.                                                                          | Phases 5-6           | Codebase, staging                 |
+| Mobile Engineer AI      | React Native app, iOS/Android builds, mobile auth/deep links, app-store readiness.                                              | Phases 4-6           | Mobile app builds                 |
+| QA AI                   | Tests, cross-browser, regression, bug reports.                                                                                  | Phases 5-6           | Reports, release sign-off         |
+| DevOps Consultant       | CI/CD, hosting, production, monitoring.                                                                                         | Phases 4, 6-7        | Pipeline, production              |
+| Marketing Promotion AI  | Launch, copywriting, social media, Product Hunt, press kit.                                                                     | Phases 6-7           | Launch assets                     |
 
 ### Tool Mapping
 
-| Tool | Roles | Best For |
-|------|-------|----------|
+| Tool                    | Roles                                                                                                  | Best For                                              |
+| ----------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
 | Claude.ai (Opus/Sonnet) | Product AI, Marketing, UX/UI Researcher, UX/UI Designer (specs), Tech Architect, AI Stylist-Consultant | Strategy, research, specifications, styling expertise |
-| Claude Code | Programmer AI, QA AI, DevOps | Code, testing, CI/CD, deploy, optimization |
-| External APIs | DigitalOcean Spaces, Resend, Cloudflare, Lava.top (stubbed in v0.1) | Specialized services |
+| Claude Code             | Programmer AI, QA AI, DevOps                                                                           | Code, testing, CI/CD, deploy, optimization            |
+| External APIs           | DigitalOcean Spaces, Resend, Cloudflare, Lava.top (stubbed in v0.1)                                    | Specialized services                                  |
 
 ### Artifact Handoff Protocol
 
@@ -205,12 +210,12 @@ The founder operates as creative director and final decision-maker. Taste, intui
 
 ## Quality Gates — Summary
 
-| Phase | Gate | Criteria | Approvers |
-|-------|------|----------|-----------|
-| 3 (Design) | Premium design | 3+ states per screen. Consistent typography. Palette confirmed by AI stylist. "Aesop/Notion" test. Founder approved. | Designer + Stylist + Founder |
-| 5 (Development) | Implementation completeness | Screens = design to 2px. Animations per spec. < 2 sec load. Mobile-first web + React Native phone smoke tests. Guided journey content correct. 0 errors. | QA + Designer |
-| 6 (QA) | Release candidate | 0 critical/major. Lighthouse 90+/95+. Beta 4.5+/5. 60%+ completion. Founder approved. Legal. | QA + Founder |
-| 7 (Launch) | Go-Live | Lava.top web purchases tested. Mobile purchase CTAs absent unless later policy approval exists. Analytics working. Monitoring 2 hours. Legal pages. | DevOps + Founder |
+| Phase           | Gate                        | Criteria                                                                                                                                                 | Approvers                    |
+| --------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| 3 (Design)      | Premium design              | 3+ states per screen. Consistent typography. Palette confirmed by AI stylist. "Aesop/Notion" test. Founder approved.                                     | Designer + Stylist + Founder |
+| 5 (Development) | Implementation completeness | Screens = design to 2px. Animations per spec. < 2 sec load. Mobile-first web + React Native phone smoke tests. Guided journey content correct. 0 errors. | QA + Designer                |
+| 6 (QA)          | Release candidate           | 0 critical/major. Lighthouse 90+/95+. Beta 4.5+/5. 60%+ completion. Founder approved. Legal.                                                             | QA + Founder                 |
+| 7 (Launch)      | Go-Live                     | Lava.top web purchases tested. Mobile purchase CTAs absent unless later policy approval exists. Analytics working. Monitoring 2 hours. Legal pages.      | DevOps + Founder             |
 
 > **The premium test across all phases:** "Will the target user screenshot this screen and send it to a friend?" If the answer is not a confident "yes" — back to revision.
 
@@ -219,17 +224,20 @@ The founder operates as creative director and final decision-maker. Taste, intui
 AI context windows are finite. The plan is designed to work within them through compact, self-contained artifacts.
 
 ### Persistent Documents (all phases)
+
 - Founder Vision Document (FVD) — max 3 pp., always in context
 - PRD (compact) — max 5 pp., during product/design/dev work
 - Styling Guide — 2-3 pp., during design and development
 - Design tokens — 1 pp., during development
 
 ### Phase-to-Phase Documents
+
 - Market Brief — consumed by Phase 2, then only positioning summary retained
 - Full design screens — reference during development, archive after Phase 6
 - API spec — used in Phase 5, archived after
 
 ### Documents to Delete
+
 - Raw session transcripts (replaced by FVD)
 - Competitor screenshots (replaced by brief)
 - Wireframes (replaced by hi-fi)

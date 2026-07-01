@@ -4,19 +4,19 @@
 
 Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a single DigitalOcean droplet. Every deployed v0.1 container is declared as a separate `services:` entry in one root `docker-compose.yml`; the Redis queue consumer runs inside the `api` process until the standalone worker promotion trigger in ADR-007 fires.
 
-| Layer                  | Choice                                                                                                |
-| ---------------------- | ----------------------------------------------------------------------------------------------------- |
-| API process            | Go monolith (`/api`) — single binary with bounded contexts                                            |
-| Background worker      | Redis-queue consumer goroutines inside `/api` for v0.1; standalone `/worker` container deferred by ADR-007 |
-| API gateway / TLS      | nginx 1.27 with host-managed Let's Encrypt certbot, rate-limit middleware, `auth_request` into Ory Kratos |
-| Auth                   | Ory Kratos email/password (Stage 1); Google OAuth and Apple Sign-In in Stage 2                        |
-| Database               | PostgreSQL 16 with `pgvector` and Postgres FTS; API connects directly in v0.1, PgBouncer deferred by ADR-007 |
-| Cache / sessions / queue| Redis 7 (cache, idempotency keys, River/asynq job queue)                                             |
-| Object storage         | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                     |
-| Email                  | Resend (SMTP courier for Kratos; transactional sends from `internal/email`)                           |
-| Front-door             | Cloudflare proxy on `capsulezero.app` for DDoS, bot fight, CDN                                        |
-| Observability          | syslog file logs + OpenTelemetry trace export; Grafana dashboards deferred by ADR-007 (Sentry/Prometheus → Stage 2) |
-| Migrations             | `golang-migrate` SQL files applied at API boot                                                        |
+| Layer                    | Choice                                                                                                              |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| API process              | Go monolith (`/api`) — single binary with bounded contexts                                                          |
+| Background worker        | Redis-queue consumer goroutines inside `/api` for v0.1; standalone `/worker` container deferred by ADR-007          |
+| API gateway / TLS        | nginx 1.27 with host-managed Let's Encrypt certbot, rate-limit middleware, `auth_request` into Ory Kratos           |
+| Auth                     | Ory Kratos email/password (Stage 1); Google OAuth and Apple Sign-In in Stage 2                                      |
+| Database                 | PostgreSQL 16 with Postgres FTS; API connects directly in v0.1, PgBouncer and pgvector are deferred by ADR-007      |
+| Cache / sessions / queue | Redis 7 (cache, idempotency keys, River/asynq job queue)                                                            |
+| Object storage           | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                   |
+| Email                    | Resend (SMTP courier for Kratos; transactional sends from `internal/email`)                                         |
+| Front-door               | Cloudflare proxy on `capsulezero.app` for DDoS, bot fight, CDN                                                      |
+| Observability            | syslog file logs + OpenTelemetry trace export; Grafana dashboards deferred by ADR-007 (Sentry/Prometheus → Stage 2) |
+| Migrations               | Versioned SQL files applied by the API runtime                                                                      |
 
 The Go monolith owns all business logic; the database has no RLS. Authorization is enforced in every Go handler against the Kratos session before any data access. Internal interfaces (`internal/auth`, `internal/storage`, `internal/email`, `internal/billing`, …) let tests substitute fakes per call site, but there is **no global mock mode** — production code wires the real client (see ADR-006).
 
@@ -41,7 +41,7 @@ The Go monolith owns all business logic; the database has no RLS. Authorization 
     eventbus/                     ← Redis-backed job enqueue / consume
     httpapi/                      ← chi router, OpenAPI-typed handlers, middleware
     obs/                          ← logger, tracer, syslog sink
-  migrations/                     ← golang-migrate SQL files
+  migrations/                     ← versioned SQL files
 /worker                            ← deferred until ADR-007 promotes the standalone worker container
   cmd/worker/                     ← main.go: queue consumer
   internal/
@@ -72,11 +72,11 @@ Auth: every authenticated route runs through nginx `auth_request` into Kratos an
 
 ### Identity And Billing
 
-| Table         | Purpose                                                                                                  |
-| ------------- | -------------------------------------------------------------------------------------------------------- |
+| Table         | Purpose                                                                                                                                            |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `profiles`    | App profile keyed by internal UUID, with `kratos_identity_id` unique reference, display name, avatar, language, country, city, cached coin balance |
-| `coin_ledger` | Append-only coin purchase/spend/refund log (table ships in v0.1; coin features in v0.2 backlog)          |
-| `lava_events` | Processed Lava.top webhook event IDs for idempotency (table ships in v0.1; integration in v0.2)          |
+| `coin_ledger` | Append-only coin purchase/spend/refund log (table ships in v0.1; coin features in v0.2 backlog)                                                    |
+| `lava_events` | Processed Lava.top webhook event IDs for idempotency (table ships in v0.1; integration in v0.2)                                                    |
 
 Canonical ownership column name is `user_id` (referencing `profiles.id`). Shared items use a two-table ownership pattern: `items.visibility` controls catalog exposure, while `wardrobe_entries.user_id` controls each user's relationship to an item.
 
@@ -148,45 +148,45 @@ Jobs are produced by API handlers and consumed by queue-worker goroutines in the
 
 The v0.1 runtime is delivered by `.specify/specs/024-production-stack-runtime/`. Active v0.1 services are declared as separate `services:` blocks in `docker-compose.yml`; deferred rows remain in the catalog only to document their promotion path:
 
-| Service        | Image                            | Role                                                       | v0.1 |
-| -------------- | -------------------------------- | ---------------------------------------------------------- | ---- |
-| `nginx`        | `nginx:1.27-alpine`              | API gateway, TLS termination, HTTP redirect, rate-limit, Kratos `auth_request` | yes  |
-| `kratos`       | `oryd/kratos`                    | Identity provider                                          | yes  |
-| `postgres`     | `pgvector/pgvector:pg16`         | Application database + Kratos database                     | yes  |
-| `pgbouncer`    | `edoburu/pgbouncer`              | Connection pool in front of Postgres                       | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md) |
-| `redis`        | `redis:7-alpine`                 | Cache, sessions, job queue                                 | yes  |
-| `api`          | local build of `/api`            | Go monolith (also runs worker goroutines in v0.1)          | yes  |
-| `worker`       | local build of `/worker`         | Background job consumer                                    | folded into `api` — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md) |
-| `web`          | local build of `/web`            | Next.js App Router web frontend                            | yes  |
-| `imgproxy`     | `darthsim/imgproxy`              | On-the-fly image resize/WebP conversion for derived sizes  | yes  |
-| `grafana`      | `grafana/grafana`                | Dashboards over syslog and traces                          | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md) |
-| `mailhog`      | `mailhog/mailhog`                | Dev-only; replaced by Resend in prod                       | dev only |
+| Service     | Image                    | Role                                                                           | v0.1                                                                     |
+| ----------- | ------------------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `nginx`     | `nginx:1.27-alpine`      | API gateway, TLS termination, HTTP redirect, rate-limit, Kratos `auth_request` | yes                                                                      |
+| `kratos`    | `oryd/kratos`            | Identity provider                                                              | yes                                                                      |
+| `postgres`  | `postgres:16`            | Application database + Kratos database                                         | yes                                                                      |
+| `pgbouncer` | `edoburu/pgbouncer`      | Connection pool in front of Postgres                                           | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md)          |
+| `redis`     | `redis:7-alpine`         | Cache, sessions, job queue                                                     | yes                                                                      |
+| `api`       | local build of `/api`    | Go monolith (also runs worker goroutines in v0.1)                              | yes                                                                      |
+| `worker`    | local build of `/worker` | Background job consumer                                                        | folded into `api` — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md) |
+| `web`       | local build of `/app`    | Next.js App Router web frontend                                                | yes                                                                      |
+| `imgproxy`  | `darthsim/imgproxy`      | On-the-fly image resize/WebP conversion for derived sizes                      | yes                                                                      |
+| `grafana`   | `grafana/grafana`        | Dashboards over syslog and traces                                              | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md)          |
+| `mailhog`   | `mailhog/mailhog`        | Dev-only; replaced by Resend in prod                                           | dev only                                                                 |
 
 For v0.1 the runtime ships with **`pgbouncer`, `grafana`, and the standalone `worker` container deferred**. Each has an explicit promotion trigger in [ADR-007](../../adr/adr-007-v01-slim-runtime.md). The Redis-queue contract for background jobs is unchanged — only the deployment topology changes.
 
 ## Environment Variables
 
-| Variable                  | Scope        | Purpose                                                                |
-| ------------------------- | ------------ | ---------------------------------------------------------------------- |
-| `POSTGRES_URL`            | server       | Direct Postgres connection string for v0.1 (PgBouncer DSN is introduced only after ADR-007 promotion) |
-| `CF_DNS_API_TOKEN`        | server       | Cloudflare DNS API token only if a future DNS-01 automation path replaces v0.1 HTTP-01 certbot |
-| `REDIS_URL`               | server       | Redis connection string                                                 |
-| `KRATOS_PUBLIC_URL`       | server       | Kratos public API base URL                                              |
-| `KRATOS_ADMIN_URL`        | server       | Kratos admin API base URL                                               |
-| `SPACES_ACCESS_KEY`       | server       | DigitalOcean Spaces access key                                          |
-| `SPACES_SECRET_KEY`       | server       | DigitalOcean Spaces secret key                                          |
-| `SPACES_BUCKET`           | server       | Bucket name (single bucket, prefixes inside)                            |
-| `SPACES_REGION`           | server       | Spaces region (e.g. `fra1`)                                             |
-| `SPACES_CDN_BASE`         | server       | Public CDN base URL for `catalog-public` reads                          |
-| `RESEND_API_KEY`          | server       | Resend API key for transactional email                                  |
-| `RESEND_FROM`             | server       | Verified sender (e.g. `no-reply@capsulezero.app`)                       |
-| `LAVA_API_KEY`            | server       | Lava.top API key (v0.2 — stubbed in v0.1)                              |
-| `LAVA_WEBHOOK_API_KEY`    | server       | Lava.top webhook auth header (v0.2 — stubbed in v0.1)                  |
-| `LAVA_API_URL`            | server       | Lava.top base URL (v0.2)                                                |
-| `APP_BASE_URL`            | server/web   | Public app URL (e.g. `https://capsulezero.app`)                         |
-| `MOBILE_DEEP_LINK_SCHEME` | server/mobile| Mobile return URL scheme for auth callbacks (Stage 2)                   |
-| `EMBEDDING_PROVIDER`      | server       | Catalog embedding provider switch                                       |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | server   | Trace exporter target                                                   |
+| Variable                      | Scope         | Purpose                                                                                               |
+| ----------------------------- | ------------- | ----------------------------------------------------------------------------------------------------- |
+| `POSTGRES_URL`                | server        | Direct Postgres connection string for v0.1 (PgBouncer DSN is introduced only after ADR-007 promotion) |
+| `CF_DNS_API_TOKEN`            | server        | Cloudflare DNS API token only if a future DNS-01 automation path replaces v0.1 HTTP-01 certbot        |
+| `REDIS_URL`                   | server        | Redis connection string                                                                               |
+| `KRATOS_PUBLIC_URL`           | server        | Kratos public API base URL                                                                            |
+| `KRATOS_ADMIN_URL`            | server        | Kratos admin API base URL                                                                             |
+| `SPACES_ACCESS_KEY`           | server        | DigitalOcean Spaces access key                                                                        |
+| `SPACES_SECRET_KEY`           | server        | DigitalOcean Spaces secret key                                                                        |
+| `SPACES_BUCKET`               | server        | Bucket name (single bucket, prefixes inside)                                                          |
+| `SPACES_REGION`               | server        | Spaces region (e.g. `fra1`)                                                                           |
+| `SPACES_CDN_BASE`             | server        | Public CDN base URL for `catalog-public` reads                                                        |
+| `RESEND_API_KEY`              | server        | Resend API key for transactional email                                                                |
+| `RESEND_FROM`                 | server        | Verified sender (e.g. `no-reply@capsulezero.app`)                                                     |
+| `LAVA_API_KEY`                | server        | Lava.top API key (v0.2 — stubbed in v0.1)                                                             |
+| `LAVA_WEBHOOK_API_KEY`        | server        | Lava.top webhook auth header (v0.2 — stubbed in v0.1)                                                 |
+| `LAVA_API_URL`                | server        | Lava.top base URL (v0.2)                                                                              |
+| `APP_BASE_URL`                | server/web    | Public app URL (e.g. `https://capsulezero.app`)                                                       |
+| `MOBILE_DEEP_LINK_SCHEME`     | server/mobile | Mobile return URL scheme for auth callbacks (Stage 2)                                                 |
+| `EMBEDDING_PROVIDER`          | server        | Catalog embedding provider switch                                                                     |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | server        | Trace exporter target                                                                                 |
 
 ## Local Development
 

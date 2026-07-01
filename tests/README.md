@@ -34,7 +34,7 @@ PR reviewers (human and AI) reject PRs for specs `025` and onward that introduce
 ### `tests/e2e/` — Playwright web tests
 
 - **Language**: TypeScript, strict mode.
-- **Target today**: `http://localhost:3000` (Next.js `/app`). After `/app` is removed, target retargets to `/web` by editing `playwright.config.ts` `webServer.command` and `pages/LandingPage.path`. No spec or POM body changes are required.
+- **Target today**: `http://localhost:3000` (Next.js `/app`). `/app` remains the canonical web frontend; POM classes should survive component rewrites as long as `data-testid` contracts are preserved.
 - **Run locally**:
   ```bash
   npm run test:e2e:install   # one-time: install Playwright deps and browsers
@@ -97,12 +97,12 @@ PR reviewers (human and AI) reject PRs for specs `025` and onward that introduce
 8. Commit with message like `feat(NNN): satisfy <AC-id>`.
 9. Open PR and link both commits in the SENAR Done Gate row about TDD.
 
-## Migration map (when `/app` is deleted)
+## Stable Selector Map
 
-| Today                                                                 | After `/web` ships                                       |
-| --------------------------------------------------------------------- | -------------------------------------------------------- |
-| `playwright.config.ts` webServer = `npm --prefix ../../app run dev` | `npm --prefix ../../web run dev`                         |
-| `pages/LandingPage.path` = `/en`                                      | `/en` (same — next-intl routes match)                    |
-| `data-testid` attrs on `/app/src/components/landing/*`                | re-add the same attrs on `/web/src/components/landing/*` |
+| Contract                                  | Current value                                            |
+| ----------------------------------------- | -------------------------------------------------------- |
+| `playwright.config.ts` webServer          | `npm --prefix ../../app run dev`                         |
+| `pages/LandingPage.path`                  | `/en`                                                    |
+| `data-testid` attrs on landing components | keep stable when `/app/src/components/landing/*` changes |
 
-The POM classes themselves do not change.
+The POM classes should not change for markup-only rewrites.
