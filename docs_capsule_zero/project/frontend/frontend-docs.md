@@ -11,15 +11,15 @@
 - TanStack Query for interactive server-state
 - React Hook Form + Zod for forms
 
-The web frontend talks to the Go API monolith through Traefik; there is no Supabase client and no Vercel runtime. Auth flows are rendered by the web app against Ory Kratos self-service endpoints, with the Kratos session validated by the Go API on every request.
+The web frontend talks to the Go API monolith through nginx; there is no Vercel runtime. Auth flows are rendered by the web app against Ory Kratos self-service endpoints, with the Kratos session validated by the Go API on every request.
 
-The current `/app` directory hosts the legacy Supabase shell and is scheduled for removal after the production runtime spec ships (`.specify/specs/024-production-stack-runtime/`). The new home for the web frontend is `/web` — same Next.js stack, no Supabase clients, generated API client from `docs_capsule_zero/adr/openapi.yaml`.
+`/app` is the canonical, provider-abstracted Next.js frontend. There is no `/app` to `/web` rename planned. Current provider modes are `mock` and `supabase`; the `api` provider mode must not be documented as available until it actually lands in `/app`. The retired Supabase provider is frozen and removed domain by domain as the Go API absorbs each bounded context.
 
 ## Delivery Rules
 
-- Frontend code lives under `web/src/` (target). Legacy code at `app/src/` is read-only — do not extend it.
-- Approved behavior and layout come from `html-prototypes/`.
-- Visual tokens come from `web/src/styles/tokens.css` (carried over from `app/src/styles/tokens.css`) and `docs_capsule_zero/project/frontend/styling.md`.
+- Frontend code lives under `app/src/`.
+- Approved behavior and layout come from the implemented `/app` screens, with the product docs and historical prototypes as supporting references.
+- Visual tokens come from `app/src/styles/tokens.css` and `docs_capsule_zero/project/frontend/styling.md`.
 - CI frontend baseline is `npm run typecheck` plus `npm run build`.
 - Web implementation remains mobile-first: 375px is the primary layout target, then tablet and desktop.
 - Keep Server Components as the default. Add `use client` only for interactivity, forms, uploads, local state, and browser APIs.
@@ -65,20 +65,20 @@ Decision: active v0.1 web locales are `en` and `ru`. `es-AR` remains a future lo
 
 ## State Management
 
-| State type | Owner | Examples |
-|---|---|---|
-| Route/data state | Next.js Server Components | Initial dashboard, capsule result, profile read |
-| Interactive server-state | TanStack Query | Wardrobe grid, imports, uploads, catalog search, favorites |
-| Local workflow state | Zustand | Guided Journey steps and in-progress selections |
-| Form state | React Hook Form + Zod | Auth, profile, item edit, upload confirmation |
-| Persistent source of truth | PostgreSQL via the Go API | Profiles, items, capsules, outfits, coins |
+| State type                 | Owner                     | Examples                                                   |
+| -------------------------- | ------------------------- | ---------------------------------------------------------- |
+| Route/data state           | Next.js Server Components | Initial dashboard, capsule result, profile read            |
+| Interactive server-state   | TanStack Query            | Wardrobe grid, imports, uploads, catalog search, favorites |
+| Local workflow state       | Zustand                   | Guided Journey steps and in-progress selections            |
+| Form state                 | React Hook Form + Zod     | Auth, profile, item edit, upload confirmation              |
+| Persistent source of truth | PostgreSQL via the Go API | Profiles, items, capsules, outfits, coins                  |
 
 ## API Client Rules
 
 - Use Server Actions for simple authenticated app mutations; they call the Go API over HTTP with the Kratos session cookie forwarded.
-- Use Route Handlers only when an external caller needs a Next.js endpoint (rare — most surfaces talk directly to the Go API via Traefik).
+- Use Route Handlers only when an external caller needs a Next.js endpoint (rare — most surfaces talk directly to the Go API via nginx).
 - Keep Zod request/response schemas near the feature module and reuse them across Server Actions and components.
-- Keep generated OpenAPI client/types in `web/src/lib/api/generated/`; update them whenever `docs_capsule_zero/adr/openapi.yaml` changes.
+- Keep generated OpenAPI client/types in `app/src/lib/api/generated/`; update them whenever `docs_capsule_zero/adr/openapi.yaml` changes.
 - Never embed admin/service credentials in Client Components — there are none on the web side; admin actions go through admin routes on the Go API.
 - Client Components should use TanStack Query for fetch/mutate flows that need loading, retry, optimistic updates, or cache invalidation.
 - Auth flows render the Kratos self-service UI inside the web app; the Go API validates the Kratos session on every protected request.

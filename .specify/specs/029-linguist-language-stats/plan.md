@@ -26,13 +26,13 @@ Add a root `.gitattributes` file that excludes only Capsule Zero scaffolding/too
 
 ## Verification
 
-| Acceptance criterion | Evidence |
-| --- | --- |
-| AC-001 | `git check-attr linguist-vendored -- scripts/ai-review-gate.mjs .specify/scripts/bash/common.sh` reports `set`. |
-| AC-002 | `git check-attr linguist-documentation -- html-prototypes/index.html` reports `set`. |
-| AC-003 | `git check-attr linguist-generated -- app/src/lib/api/generated/openapi.ts web/src/lib/api/generated/openapi.ts mobile/lib/api/generated/openapi.dart` reports `set`. |
-| AC-004 | `git check-attr linguist-vendored linguist-generated linguist-documentation -- tests/e2e/pages/LandingPage.ts tests/e2e/specs/landing/auth-popup.spec.ts tests/e2e/eslint.config.mjs` reports `unspecified` for every queried attribute. |
-| AC-005 | `git check-attr linguist-vendored linguist-generated linguist-documentation -- app/src/lib/providers/api/index.ts api/internal/auth/auth.go mobile/lib/main.dart` reports `unspecified` for every queried attribute. |
+| Acceptance criterion | Evidence                                                                                                                                                                                                                                 |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-001               | `git check-attr linguist-vendored -- scripts/ai-review-gate.mjs .specify/scripts/bash/common.sh` reports `set`.                                                                                                                          |
+| AC-002               | `git check-attr linguist-documentation -- html-prototypes/index.html` reports `set`.                                                                                                                                                     |
+| AC-003               | `git check-attr linguist-generated -- app/src/lib/api/generated/openapi.ts mobile/lib/api/generated/openapi.dart` reports `set`.                                                                                                         |
+| AC-004               | `git check-attr linguist-vendored linguist-generated linguist-documentation -- tests/e2e/pages/LandingPage.ts tests/e2e/specs/landing/auth-popup.spec.ts tests/e2e/eslint.config.mjs` reports `unspecified` for every queried attribute. |
+| AC-005               | `git check-attr linguist-vendored linguist-generated linguist-documentation -- app/src/lib/providers/api/index.ts api/internal/auth/auth.go mobile/lib/main.dart` reports `unspecified` for every queried attribute.                     |
 
 Negative scenario evidence:
 

@@ -23,9 +23,10 @@ changes are installed explicitly with `nginx -t` before reload.
 ## How the pipeline works
 
 1. Merge to `main` triggers `.github/workflows/cd-dev.yml`.
-2. **gate** — deploys only if a deploy-relevant path changed (`app/** web/** api/** worker/**
-   infra/** docker-compose.yml docker-compose.dev-server.yml`, lockfiles, the workflow
-   itself). Docs/tests/`.specify`-only merges are skipped (green, no deploy).
+2. **gate** — deploys only if a deploy-relevant path changed (`app/** api/** worker/**
+infra/** docker-compose.yml docker-compose.dev-server.yml`, lockfiles, the workflow
+   itself). `web/**` is intentionally absent because `/app` is the canonical web frontend.
+   Docs/tests/`.specify`-only merges are skipped (green, no deploy).
 3. **build** — `docker buildx` builds `app/Dockerfile` (`--target runner`) and pushes
    `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>` plus a moving `:dev` tag to GHCR.
 4. **deploy** — SSH to the droplet as the unprivileged `deploy` user, then run the
@@ -33,7 +34,7 @@ changes are installed explicitly with `nginx -t` before reload.
    The wrapper validates the immutable image ref and SHA, updates the root-owned
    `/opt/capsule-zero-dev` checkout, runs
    `docker compose --env-file .env.dev -p capsule-zero-dev -f docker-compose.dev-server.yml
-   pull web && up -d` (`.env.dev` is interpolation-only, not a service env file), waits for
+pull web && up -d` (`.env.dev` is interpolation-only, not a service env file), waits for
    `web` healthy, installs/reloads host nginx only when
    `infra/nginx-host/**` changed since the last successful nginx sync marker, rolls nginx
    back to its previous config if the post-reload prod smoke or dev edge smoke fails, then
@@ -145,12 +146,12 @@ sudo bash -lc 'echo "<read:packages token>" | docker login ghcr.io -u kiaquila -
 
 ### 4. GitHub repository secrets
 
-| Secret | Value |
-| --- | --- |
-| `DEV_DEPLOY_HOST` | `137.184.205.153` |
-| `DEV_DEPLOY_USER` | `deploy` |
-| `DEV_DEPLOY_SSH_KEY` | private CI SSH key (matches `authorized_keys`) |
-| `DEV_DEPLOY_KNOWN_HOSTS` | `ssh-keyscan` output for the droplet |
+| Secret                   | Value                                          |
+| ------------------------ | ---------------------------------------------- |
+| `DEV_DEPLOY_HOST`        | `137.184.205.153`                              |
+| `DEV_DEPLOY_USER`        | `deploy`                                       |
+| `DEV_DEPLOY_SSH_KEY`     | private CI SSH key (matches `authorized_keys`) |
+| `DEV_DEPLOY_KNOWN_HOSTS` | `ssh-keyscan` output for the droplet           |
 
 `GITHUB_TOKEN` (built-in) authenticates the GHCR **push** from CI — no extra secret needed.
 Optional hardening: scope these to a GitHub Environment `dev` and add `environment: dev` to

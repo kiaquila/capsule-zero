@@ -1,38 +1,44 @@
 # Docker Compose Deployment
 
-Capsule Zero ships a production-shaped Docker Compose runtime that runs the **Go modular monolith API**, the **Next.js web frontend**, and the supporting infrastructure (Ory Kratos, PostgreSQL with pgvector, Redis, nginx, imgproxy, Grafana) as separate services on a single DigitalOcean droplet. Compose is the only process supervisor; VM-level firewalling, backups, and secret delivery remain outside git.
+Capsule Zero ships a production-shaped Docker Compose runtime that runs the **Go modular monolith API**, the **Next.js web frontend**, and the active v0.1 supporting infrastructure (Ory Kratos, plain PostgreSQL 16, Redis, imgproxy) as separate services on a single DigitalOcean droplet. The public edge is host-managed nginx in the current Phase 1 runtime; the compose-managed nginx service is retained only as a `docker-edge` rollback profile. Compose is the only process supervisor for application containers; VM-level firewalling, host nginx, backups, and secret delivery remain outside git. PgBouncer, pgvector, a standalone worker container, and Grafana dashboards remain deferred by ADR-007.
 
-The full runtime is delivered by `.specify/specs/024-production-stack-runtime/` across six phases. Phase 1 ships nginx + web (operational runbook: `docs_capsule_zero/project/devops/nginx-reverse-proxy.md`); this document describes the steady-state operational contract once every phase has shipped.
+The full runtime is delivered by `.specify/specs/024-production-stack-runtime/` across six phases. Phase 1 ships host nginx + web (operational runbook: `docs_capsule_zero/project/devops/nginx-reverse-proxy.md`); this document describes the steady-state operational contract once every phase has shipped.
 
 ## Topology
 
-Each service is declared as a separate `services:` entry in one root `docker-compose.yml`. Environment overrides for local dev (MailHog instead of Resend, hot-reload for `api` and `worker`) live in `docker-compose.dev.yml`.
+Each active v0.1 service is declared as a separate `services:` entry in one root `docker-compose.yml`. Environment overrides for local dev (MailHog instead of Resend, API hot-reload) live in `docker-compose.dev.yml`. By default, `docker compose up -d` starts the application services only; the compose edge starts only when `--profile docker-edge` is explicitly enabled.
 
-| Service     | Image                            | Purpose                                                        | Default host exposure         |
-| ----------- | -------------------------------- | -------------------------------------------------------------- | ----------------------------- |
-| `nginx`     | `nginx:1.27-alpine`              | Edge: TLS (Let's Encrypt via host certbot), rate-limit, `auth_request` into Kratos | `80`, `443`        |
-| `web`       | local build of `/app` (Phase 1) → `/web` (Phase 6) | Next.js App Router web frontend                  | internal only (behind nginx)  |
-| `api`       | local build of `/api`            | Go modular monolith                                            | internal only (behind nginx)  |
-| `worker`    | local build of `/worker`         | Redis-queue consumer (image jobs, embeddings, webhook fanout)  | internal only                 |
-| `kratos`    | `oryd/kratos`                    | Identity provider (email/password Stage 1)                     | internal only (behind nginx)  |
-| `postgres`  | `pgvector/pgvector:pg16`         | App database + Kratos database (separate logical DBs)          | internal only                 |
-| `pgbouncer` | `edoburu/pgbouncer`              | Connection pool in front of Postgres                           | internal only                 |
-| `redis`     | `redis:7-alpine`                 | Cache, sessions, job queue                                     | internal only                 |
-| `imgproxy`  | `darthsim/imgproxy`              | On-the-fly image resize/WebP for derived sizes                 | internal only (behind nginx)  |
-| `grafana`   | `grafana/grafana`                | Dashboards over syslog files and OTLP traces                   | `https://grafana.capsulezero.app` via nginx   |
-| `mailhog`   | `mailhog/mailhog`                | Dev-only courier sink; replaced by Resend in prod              | `127.0.0.1:8025` (dev only)   |
+| Service    | Image                 | Purpose                                                                | Default host exposure                                 |
+| ---------- | --------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------- |
+| `nginx`    | `nginx:1.27-alpine`   | Rollback compose edge: TLS, rate-limit, `auth_request` into Kratos     | profile-gated `80`, `443` via `--profile docker-edge` |
+| `web`      | local build of `/app` | Next.js App Router web frontend                                        | `127.0.0.1:3000` for host nginx                       |
+| `api`      | local build of `/api` | Go modular monolith; also runs Redis queue consumer goroutines in v0.1 | internal only (behind nginx)                          |
+| `kratos`   | `oryd/kratos`         | Identity provider (email/password Stage 1)                             | internal only (behind nginx)                          |
+| `postgres` | `postgres:16`         | App database + Kratos database (separate logical DBs)                  | internal only                                         |
+| `redis`    | `redis:7-alpine`      | Cache, sessions, job queue                                             | internal only                                         |
+| `imgproxy` | `darthsim/imgproxy`   | On-the-fly image resize/WebP for derived sizes                         | internal only (behind nginx)                          |
+| `mailhog`  | `mailhog/mailhog`     | Dev-only courier sink; replaced by Resend in prod                      | `127.0.0.1:8025` (dev only)                           |
+
+Deferred runtime elements stay out of the active compose topology until ADR-007 promotion triggers fire:
+
+| Runtime element     | Deferred stance                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| `pgbouncer`         | API connects directly to Postgres through `pgx` pooling in v0.1.                      |
+| `pgvector`          | Plain `postgres:16` ships first; semantic-search migrations add vectors later.        |
+| Standalone `worker` | Redis queue consumer runs as goroutines inside `api` in v0.1.                         |
+| `grafana`           | syslog files + traces are the v0.1 observability surface; dashboards come back later. |
 
 Persistent data lives in named Docker volumes:
 
 - `capsule-zero_postgres-data`
 - `capsule-zero_redis-data`
 - `capsule-zero_kratos-data`
-- `capsule-zero_grafana-data`
 - `capsule-zero_syslog`
 
 TLS certificate material and the ACME webroot are host-managed paths, not
-Docker volumes: `/etc/letsencrypt` and `/var/www/certbot` are bind-mounted into
-nginx while certbot runs on the host.
+Docker volumes. The host nginx edge reads them directly; the rollback compose
+edge bind-mounts `/etc/letsencrypt` and `/var/www/certbot` when the
+`docker-edge` profile is active.
 
 Object storage and email leave the droplet:
 
@@ -41,18 +47,19 @@ Object storage and email leave the droplet:
 
 ## Files
 
-| Path                                | Purpose                                                                       |
-| ----------------------------------- | ----------------------------------------------------------------------------- |
-| `docker-compose.yml`                | Production-shape topology, declared per service                               |
-| `docker-compose.dev.yml`            | Local dev overrides (MailHog, hot-reload, debug logs)                          |
-| `infra/nginx/`                      | nginx main config + `conf.d/` server blocks (TLS, redirects, reverse_proxy)   |
-| `infra/kratos/`                     | Kratos identity schema, courier (Resend SMTP), self-service flow config       |
-| `infra/postgres/`                   | Postgres init scripts (pgvector extension, role grants, Kratos DB creation)   |
-| `api/Dockerfile`                    | Go API multi-stage build (distroless runtime image)                           |
-| `worker/Dockerfile`                 | Go worker multi-stage build                                                   |
-| `web/Dockerfile`                    | Next.js standalone production image                                            |
-| `api/migrations/`                   | golang-migrate SQL files; applied at API boot                                  |
-| `deploy/compose.env.example`        | Env template for compose interpolation; copy to `.env` and fill secrets        |
+| Path                         | Purpose                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| `docker-compose.yml`         | Production-shape topology, declared per service                          |
+| `docker-compose.dev.yml`     | Local dev overrides (MailHog, hot-reload, debug logs)                    |
+| `infra/nginx-host/`          | host nginx server blocks for the default droplet edge                    |
+| `infra/nginx/`               | rollback compose nginx config used only with `--profile docker-edge`     |
+| `infra/kratos/`              | Kratos identity schema, courier (Resend SMTP), self-service flow config  |
+| `infra/postgres/`            | Postgres init scripts (role grants, Kratos DB creation)                  |
+| `api/Dockerfile`             | Go API multi-stage build (distroless runtime image)                      |
+| `worker/Dockerfile`          | Go worker multi-stage build, introduced when ADR-007 promotes the worker |
+| `app/Dockerfile`             | Next.js standalone production image                                      |
+| `api/migrations/`            | Versioned SQL files; applied by the API runtime                          |
+| `deploy/compose.env.example` | Env template for compose interpolation; copy to `.env` and fill secrets  |
 
 ## First Start
 
@@ -69,12 +76,20 @@ Fill the real values for the droplet's encrypted `.env`. Required keys at minimu
 - `SPACES_ACCESS_KEY`, `SPACES_SECRET_KEY`, `SPACES_BUCKET`, `SPACES_REGION`, `SPACES_CDN_BASE`
 - `RESEND_API_KEY`, `RESEND_FROM`
 - `APP_BASE_URL`, `MOBILE_DEEP_LINK_SCHEME`
-- `GRAFANA_ADMIN_PASSWORD`
+
+Grafana-specific secrets are introduced only after ADR-007 promotes the dashboard service back into the active runtime.
 
 Start the stack:
 
 ```bash
 docker compose up -d
+```
+
+To exercise the rollback compose edge instead of the host-managed nginx edge, stop host nginx first — the compose edge publishes the same host ports 80/443 and cannot bind while systemd nginx is active:
+
+```bash
+sudo systemctl stop nginx
+docker compose --profile docker-edge up -d nginx
 ```
 
 For local development against the dev override:
@@ -83,7 +98,7 @@ For local development against the dev override:
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
-Schema migrations apply during API startup (golang-migrate runs against `postgres` before the API serves traffic). Kratos manages its own migrations against its own database via its built-in `kratos migrate sql` step run from an init container.
+Schema migrations apply during API startup against `postgres` before the API serves traffic. Kratos manages its own migrations against its own database via its built-in `kratos migrate sql` step run from an init container.
 
 ## Health Checks
 
@@ -96,7 +111,7 @@ curl -fsS https://capsulezero.app/api/health
 The Go API `/api/health` reports:
 
 - API process status
-- Postgres reachability (through PgBouncer)
+- Postgres reachability (direct `postgres:16` connection)
 - Redis reachability
 - Kratos public API reachability
 - Spaces bucket reachability (HEAD probe)
@@ -105,15 +120,15 @@ The Go API `/api/health` reports:
 Per-service probes:
 
 ```bash
-docker compose ps                    # all services healthy
-docker compose logs nginx --tail=50
+docker compose ps                    # active/default services healthy
+docker compose --profile docker-edge logs nginx --tail=50
 docker compose logs kratos --tail=50
 docker compose logs api --tail=100
 ```
 
 ## Migrations
 
-API migrations live in `api/migrations/` and apply via golang-migrate at API boot. The runner records applied versions in a dedicated `schema_migrations` table inside the app schema.
+API migrations live in `api/migrations/` and apply at API boot. The runner records applied versions in a dedicated `schema_migrations` table inside the app schema.
 
 Rules:
 
@@ -144,7 +159,7 @@ Object storage durability is provided by DigitalOcean Spaces; no extra backup of
 
 ## Upgrades
 
-1. Read upstream release notes for any image tag changes (Postgres, Kratos, nginx, Redis, Grafana).
+1. Read upstream release notes for any image tag changes (Postgres, Kratos, nginx, Redis).
 2. Update image tags in `docker-compose.yml` together with any required config changes under `infra/`.
 3. Validate config:
    ```bash
@@ -155,15 +170,15 @@ Object storage durability is provided by DigitalOcean Spaces; no extra backup of
 
 ## Ingress
 
-Public traffic enters through Cloudflare → nginx on the droplet (ports 80/443). nginx:
+Public traffic enters through Cloudflare -> host nginx on the droplet (ports 80/443). The rollback compose nginx profile preserves the same routing contract when `docker-edge` is enabled:
 
-- terminates Let's Encrypt TLS for `capsulezero.app` and `grafana.capsulezero.app` (certs issued by host certbot, mounted from `/etc/letsencrypt`),
+- terminates Let's Encrypt TLS for `capsulezero.app` (certs issued by host certbot under `/etc/letsencrypt`),
 - runs a per-IP `limit_req_zone` rate-limit,
 - runs an `auth_request` against Kratos for protected routes,
 - routes `/` to `web`,
 - routes `/api/*` to `api`,
 - routes `/self-service/*` and `/sessions/*` to `kratos` (public API),
-- routes `grafana.capsulezero.app` to `grafana`.
+- adds a `grafana.capsulezero.app` route only after ADR-007 promotes Grafana.
 
 Cloudflare proxy provides edge TLS, DDoS protection, Bot Fight Mode, and CDN. Postgres, Redis, and Kratos admin APIs stay internal to the compose network; no host port is exposed.
 
@@ -171,5 +186,5 @@ Cloudflare proxy provides edge TLS, DDoS protection, Bot Fight Mode, and CDN. Po
 
 - Single droplet, single Docker daemon; no Kubernetes, no Docker Swarm in v0.1.
 - All secrets live in the droplet's encrypted `.env` and provider dashboards; never in repo or chat.
-- syslog files are rotated by the host (`/etc/logrotate.d/capsule-zero-syslog`) with 7 day retention; Grafana reads them through Loki only after Stage 2 (until then, the syslog file is the primary log surface).
+- syslog files are rotated by the host (`/etc/logrotate.d/capsule-zero-syslog`) with 7 day retention; Grafana/Loki are added only after ADR-007 promotion, so the syslog file is the primary v0.1 log surface.
 - Sentry and Prometheus are deferred to Stage 2.

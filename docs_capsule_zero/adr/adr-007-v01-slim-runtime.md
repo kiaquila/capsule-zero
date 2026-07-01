@@ -6,31 +6,33 @@ Accepted (2026-06-29).
 
 ## Context
 
-[ADR-001](adr-001-stack.md) accepted the full production stack as the long-term target: nginx, Kratos, Postgres + pgvector, PgBouncer, Redis, Go API, Go worker, Next.js web, imgproxy, Grafana, MailHog (dev-only). That set is the right shape for steady-state operation, but the v0.1 launch sits on a single DigitalOcean droplet (4 GB RAM / 2 vCPU / 80 GB disk) and ships before there is any real load to defend against.
+[ADR-001](adr-001-stack.md) accepted the full production stack as the long-term target: nginx, Kratos, Postgres + pgvector, PgBouncer, Redis, Go API, Go worker, Next.js web, imgproxy, Grafana, MailHog (dev-only). That set is the right long-term shape, but the v0.1 launch sits on a single DigitalOcean droplet (4 GB RAM / 2 vCPU / 80 GB disk) and ships before there is any real load or semantic-search traffic to defend against.
 
-Three services in the full stack are not load-bearing for v0.1 traffic and add operational surface, RAM, and image-pull weight without paying for themselves yet:
+Three services and one database extension in the full stack are not load-bearing for v0.1 traffic and add operational surface, RAM, image-pull weight, or migration risk without paying for themselves yet:
 
 - **PgBouncer** — Go's `pgx` driver pools connections natively. At the expected v0.1 RPS the API's in-process pool comfortably handles concurrency. PgBouncer adds a network hop and another container to operate.
 - **Grafana** — there are no dashboards configured against real production traffic yet. `journalctl` and syslog files cover the early observability needs. Grafana idles around 100 MB RAM and 300 MB image — not free on a 4 GB droplet.
 - **Standalone `worker` container** — the only Stage 1 background work is webhook fanout and (eventually) embedding refresh. The self-hosted Capsule Zero image model that justifies an independently-scaled worker is deferred per [ADR-003](adr-003-storage.md). Running the worker loop as goroutines inside the `api` process removes one container without changing the job-queue contract.
+- **pgvector extension** — Phase 2 starts from plain `postgres:16` and FTS-ready schema. Semantic ranking stays in the later semantic-search slice, where the extension, embedding dimension, and vector indexes can ship with the first code that needs them.
 
 ## Decision
 
-For v0.1, the docker-compose runtime ships **without** PgBouncer, Grafana, and a standalone worker container. The job-queue consumer runs as goroutines inside the `api` process, behind the same Redis-queue contract described in [backend-docs](../project/backend/backend-docs.md).
+For v0.1, the docker-compose runtime ships **without** PgBouncer, pgvector, Grafana, and a standalone worker container. The job-queue consumer runs as goroutines inside the `api` process, behind the same Redis-queue contract described in [backend-docs](../project/backend/backend-docs.md).
 
-This is a v0.1 bootstrap decision, not a long-term stack change. Each deferred service has an explicit "promote when" trigger.
+This is a v0.1 bootstrap decision, not a long-term stack change. Each deferred runtime element has an explicit "promote when" trigger.
 
-### Deferred services and promotion triggers
+### Deferred Runtime Elements And Promotion Triggers
 
-| Service           | v0.1 stance                                                     | Promote back when                                                                                                  |
-| ----------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `pgbouncer`       | Not deployed. API pools via `pgx`.                              | Postgres `pg_stat_activity` shows sustained connection pressure, or API horizontal scaling crosses 2+ replicas.    |
-| `grafana`         | Not deployed. Logs go to syslog file + `journalctl`.            | First live incident that requires correlated dashboards, or before commercial launch (Phase 7).                    |
-| Standalone `worker` | Job-queue consumer runs as goroutines in `api`.                | Self-hosted image model lands (separate scaling profile), or job latency starts blocking request handlers.         |
+| Runtime element     | v0.1 stance                                              | Promote back when                                                                                               |
+| ------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `pgbouncer`         | Not deployed. API pools via `pgx`.                       | Postgres `pg_stat_activity` shows sustained connection pressure, or API horizontal scaling crosses 2+ replicas. |
+| `pgvector`          | Not installed. Schema stays FTS-ready on plain Postgres. | The semantic-search slice writes embeddings and locks vector dimensions/indexing strategy.                      |
+| `grafana`           | Not deployed. Logs go to syslog file + `journalctl`.     | First live incident that requires correlated dashboards, or before commercial launch (Phase 7).                 |
+| Standalone `worker` | Job-queue consumer runs as goroutines in `api`.          | Self-hosted image model lands (separate scaling profile), or job latency starts blocking request handlers.      |
 
 ### Services that stay in v0.1
 
-`nginx`, `kratos`, `postgres` (with `pgvector`), `redis`, `api`, `web`, `imgproxy` (for derived image sizes). `mailhog` stays as a dev-only override.
+`nginx`, `kratos`, plain `postgres:16`, `redis`, `api`, `web`, `imgproxy` (for derived image sizes). `mailhog` stays as a dev-only override.
 
 ## Consequences
 
@@ -47,13 +49,13 @@ Negative:
 - No dashboards. Operational visibility is `journalctl` and log files until Grafana comes back. The team must read logs for incident triage.
 - Worker workload competes for the same Go runtime as request handlers. Long-running jobs (e.g. image processing) must not be added to the in-process worker — the standalone `worker` must come back first.
 
-Reverse path is mechanical for all three: add the `services:` block back, re-point env vars, redeploy. No data migration, no contract change.
+Reverse path for PgBouncer, Grafana, and the standalone worker is mechanical: add the `services:` block back, re-point env vars, redeploy. The pgvector reverse path ships as a semantic-search migration/config change when embeddings are introduced. No product contract changes are required.
 
 ## Scope
 
-This ADR amends [ADR-001](adr-001-stack.md)'s service list for v0.1 only. The full production stack remains the long-term target.
+This ADR amends [ADR-001](adr-001-stack.md)'s service list and database-extension timing for v0.1 only. The full production stack remains the long-term target.
 
-The matching changes to `docker-compose.yml`, the services table in [backend-docs](../project/backend/backend-docs.md), and the `.specify/specs/024-production-stack-runtime/` deliverables are part of this decision PR. Later spec-024 phase PRs must keep `pgbouncer`, a standalone `worker` container, and `grafana` out of v0.1 acceptance gates until the promotion triggers above fire.
+The matching changes to `docker-compose.yml`, the services table in [backend-docs](../project/backend/backend-docs.md), and the `.specify/specs/024-production-stack-runtime/` deliverables are part of this decision PR. Later spec-024 phase PRs must keep `pgbouncer`, `pgvector`, a standalone `worker` container, and `grafana` out of v0.1 acceptance gates until the promotion triggers above fire.
 
 ## Out of scope
 

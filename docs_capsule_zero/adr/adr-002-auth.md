@@ -23,14 +23,14 @@ The previous Phase 4 choice (Supabase Auth) is dropped together with Supabase. T
 
 ## Decision
 
-Use **Ory Kratos** as the identity provider, fronted by Traefik forward-auth, with the Go monolith owning the application-level session cookie/JWT.
+Use **Ory Kratos** as the identity provider, fronted by nginx `auth_request`, with the Go monolith owning the application-level session cookie/JWT.
 
 Implementation rules:
 
 - Run Ory Kratos as a docker-compose service, configured headless: the Capsule Zero UI (Next.js for web, React Native for mobile) renders all auth screens, while Kratos handles the identity/session machinery over its self-service API.
 - Use Kratos identity schema fields: `traits.email`, `traits.name.first` (optional), `traits.locale`.
 - Email flows (verification, recovery, password change confirmation) are delivered by Kratos through the SMTP courier connected to Resend.
-- Traefik runs a `forward-auth` middleware against Kratos session check on protected routes; the Go API also validates the Kratos session cookie on every request.
+- nginx runs `auth_request` against Kratos session check on protected routes; the Go API also validates the Kratos session cookie on every request.
 - The Go monolith maps `kratos_identity_id` → `profiles.id` on first sign-in and stores `display_name`, `language`, `country`, `city`, and `coin_balance` in its own Postgres tables.
 - Email/password registration and recovery are active in v0.1. Google OAuth and Apple Sign-In are configured in Kratos only when the Stage 2 social-auth integration gate opens.
 - Configure mobile deep links for OAuth callbacks in Stage 2 (React Native handles the redirect; Kratos validates the flow). Payment-return deep links are deferred — v0.1 mobile has no purchase CTA.
@@ -43,18 +43,18 @@ Implementation rules:
 
 `profiles`
 
-| Field             | Type          | Notes                                                                  |
-| ----------------- | ------------- | ---------------------------------------------------------------------- |
-| `id`              | uuid PK       | Internal app primary key                                               |
-| `kratos_identity_id` | uuid unique | References Kratos identity                                            |
-| `display_name`    | text          | User-editable                                                          |
-| `avatar_asset_id` | uuid nullable | References selected avatar asset                                      |
-| `language`        | text          | `en`, `ru`; default `en`. `es-AR` is deferred to v0.2                  |
-| `country`         | text nullable | Optional                                                              |
-| `city`            | text nullable | Optional                                                              |
-| `coin_balance`    | integer       | Cached from coin ledger; ledger is canonical                          |
-| `created_at`      | timestamptz   | Server-generated                                                      |
-| `updated_at`      | timestamptz   | Server-generated                                                      |
+| Field                | Type          | Notes                                                 |
+| -------------------- | ------------- | ----------------------------------------------------- |
+| `id`                 | uuid PK       | Internal app primary key                              |
+| `kratos_identity_id` | uuid unique   | References Kratos identity                            |
+| `display_name`       | text          | User-editable                                         |
+| `avatar_asset_id`    | uuid nullable | References selected avatar asset                      |
+| `language`           | text          | `en`, `ru`; default `en`. `es-AR` is deferred to v0.2 |
+| `country`            | text nullable | Optional                                              |
+| `city`               | text nullable | Optional                                              |
+| `coin_balance`       | integer       | Cached from coin ledger; ledger is canonical          |
+| `created_at`         | timestamptz   | Server-generated                                      |
+| `updated_at`         | timestamptz   | Server-generated                                      |
 
 `coin_ledger`
 
@@ -119,7 +119,7 @@ Tradeoffs:
 - Kratos self-service flows: https://www.ory.sh/docs/kratos/self-service
 - Kratos identity schema: https://www.ory.sh/docs/kratos/manage-identities/identity-schema
 - Resend SMTP: https://resend.com/docs/send-with-smtp
-- Traefik forward-auth: https://doc.traefik.io/traefik/middlewares/http/forwardauth/
+- nginx `auth_request`: https://nginx.org/en/docs/http/ngx_http_auth_request_module.html
 - React Native deep links: https://reactnative.dev/docs/linking
 - Apple Sign-In: https://developer.apple.com/sign-in-with-apple/
 - Google OAuth: https://developers.google.com/identity/protocols/oauth2
