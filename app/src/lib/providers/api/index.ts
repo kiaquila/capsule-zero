@@ -135,10 +135,21 @@ function buildAuthPort(): AuthPort {
     },
 
     async requestPasswordRecovery(email: string) {
-      await apiFetch("/api/auth/recovery", {
-        method: "POST",
-        body: JSON.stringify({ email }),
-      });
+      const { status, data } = await apiFetch<Record<string, unknown>>(
+        "/api/auth/recovery",
+        {
+          method: "POST",
+          body: JSON.stringify({ email }),
+        },
+      );
+      if (status >= 400) {
+        throw new Error(
+          `RECOVERY_FAILED: ${errorMessage(
+            data,
+            "Password recovery is temporarily unavailable.",
+          )}`,
+        );
+      }
       return { delivery: "email", email };
     },
 

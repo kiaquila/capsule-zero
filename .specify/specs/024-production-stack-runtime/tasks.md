@@ -101,6 +101,7 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - **2026-07-01 PR #57 review fix: profile locales are constrained to EN/RU and profile storage errors stay visible as 5xx.** The auth schema now checks `locale IN ('en', 'ru')`; profile writes normalize/validate the same active locale set; only `profiles.ErrNotFound` returns 404, unsupported locale returns 400, and all other profile repository failures return 500.
 - **2026-07-01 PR #57 review fix: profile display-name edits win over stale Kratos traits.** `EnsureForIdentity` still refreshes email and seeds a display name for empty profiles, but it no longer rewrites a user-edited `profiles.display_name` from the original Kratos registration trait on every session/profile resolution.
 - **2026-07-01 PR #57 review fix: recovery keeps account enumeration private without hiding infrastructure failures.** Kratos recovery `200` and validation-style `400` remain safe success for the user-facing flow, while unexpected Kratos/courier statuses now return an error; the auth handler surfaces those as `502 recovery_unavailable`.
+- **2026-07-01 PR #57 review fix: the web `api` provider surfaces recovery failures instead of reporting false success.** `requestPasswordRecovery` now mirrors sign-in/sign-up status handling and throws `RECOVERY_FAILED` when the Go API returns a 4xx/5xx recovery error.
 
 ### Known Issues
 
