@@ -39,7 +39,7 @@ As a reviewer, I want generated OpenAPI clients to be clearly marked as generate
 
 - AC-001: `.gitattributes` marks `scripts/*.mjs` and `.specify/scripts/bash/**` as `linguist-vendored`.
 - AC-002: `.gitattributes` marks `html-prototypes/**` as `linguist-documentation`.
-- AC-003: `.gitattributes` marks `app/src/lib/api/generated/**`, `web/src/lib/api/generated/**`, and `mobile/lib/api/generated/**` as `linguist-generated`.
+- AC-003: `.gitattributes` marks `app/src/lib/api/generated/**` and `mobile/lib/api/generated/**` as `linguist-generated`.
 - AC-004: Representative files under `tests/**` report `linguist-vendored`, `linguist-generated`, and `linguist-documentation` as `unspecified`.
 - AC-005: Representative hand-written product files report the same Linguist attributes as `unspecified`.
 

@@ -35,14 +35,14 @@ Capsule Zero proprietary color circle methodology.
 
 ### Compatibility Rules
 
-| Combination                                          | Verdict                                |
-| ---------------------------------------------------- | -------------------------------------- |
-| Achromat + Achromat                                  | ALWAYS compatible                      |
-| Achromat + Any color                                 | ALWAYS compatible                      |
-| Same chromatic group                                 | Compatible                             |
-| Desaturated + Dark                                   | Compatible                             |
+| Combination                                           | Verdict                                |
+| ----------------------------------------------------- | -------------------------------------- |
+| Achromat + Achromat                                   | ALWAYS compatible                      |
+| Achromat + Any color                                  | ALWAYS compatible                      |
+| Same chromatic group                                  | Compatible                             |
+| Desaturated + Dark                                    | Compatible                             |
 | Brights + Pastels / Brights + Darks / Pastels + Darks | BLOCKED — separate capsule recommended |
-| Temperature difference                               | Metadata only — not a hard filter      |
+| Temperature difference                                | Metadata only — not a hard filter      |
 
 ### Outfit Productivity Ratio (OPR)
 
@@ -136,13 +136,13 @@ The platform guides the user through methodology without imposing. It suggests, 
 - **Backend:** Go modular monolith (single binary, bounded contexts inside the same process) served behind nginx
 - **API gateway:** nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos
 - **Auth:** Ory Kratos (email/password in v0.1; Google OAuth and Apple Sign-In in Stage 2)
-- **Database:** PostgreSQL 16 with pgvector (semantic) and Postgres FTS (full-text), PgBouncer for connection pooling
+- **Database:** PostgreSQL 16 with Postgres FTS in v0.1; pgvector and PgBouncer are deferred by ADR-007 until the semantic-search and connection-pressure triggers fire
 - **Cache / queue:** Redis 7 (cache, sessions, Redis-based job queue)
 - **File storage:** DigitalOcean Spaces (S3-compatible with built-in CDN)
 - **Email:** Resend for transactional email (verification, password reset, security alerts)
 - **Image processing:** Self-hosted Capsule Zero model behind a worker (deferred to Stage 2)
 - **DNS / front-door:** Spaceship registrar with Cloudflare proxy for DDoS protection and CDN
-- **Observability:** Grafana + syslog file logs + tracing (Sentry and Prometheus deferred to Stage 2)
+- **Observability:** syslog file logs + tracing in v0.1; Grafana, Sentry, and Prometheus are deferred
 - **Hosting:** Single DigitalOcean droplet running docker-compose; every service declared as a separate `services:` entry
 - **Languages:** EN (primary) and RU in v0.1 — i18n from Day 1, switching without reload. ES-AR is retained as reference copy and deferred globally to v0.2.
 - **Responsive:** iPhone 14+ (375px), iPad (768px), Desktop 1280px+

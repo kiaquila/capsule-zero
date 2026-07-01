@@ -22,8 +22,9 @@ host-nginx config changes are applied explicitly with `nginx -t` before reload.
 - A GitHub Actions workflow (`.github/workflows/cd-dev.yml`) triggered on `push` to `main`
   and `workflow_dispatch`.
 - A change-gate that deploys only when deploy-relevant paths changed
-  (`app/** web/** api/** worker/** infra/** docker-compose.yml docker-compose.dev-server.yml`,
-  lockfiles, the workflow itself).
+  (`app/** api/** worker/** infra/** docker-compose.yml docker-compose.dev-server.yml`,
+  lockfiles, the workflow itself). `web/**` is intentionally absent because `/app` is the
+  canonical web frontend.
 - Build + push of the web image to `ghcr.io/kiaquila/capsule-zero-web`, tagged immutably by
   commit SHA (`sha-<gitsha>`) plus a moving `:dev` tag.
 - SSH-based deploy that lets the unprivileged CI `deploy` user run only the root-owned

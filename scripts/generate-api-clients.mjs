@@ -103,9 +103,8 @@ function collectParameters(pathItem, operation) {
 
 function operationPayload(operation, pathItem) {
   const parameters = collectParameters(pathItem, operation);
-  const { schemas: responseSchemas, statusCodes } = collectSuccessResponseSchemas(
-    operation.responses,
-  );
+  const { schemas: responseSchemas, statusCodes } =
+    collectSuccessResponseSchemas(operation.responses);
 
   return {
     pathParameters: parameters.filter((parameter) => parameter.in === "path"),
@@ -475,7 +474,6 @@ const operations = collectOperations();
 const errorCodes = openApi.components?.schemas?.ErrorCode?.enum || [];
 const typeScriptClient = generateTypeScript(operations, errorCodes);
 
-writeOrCheck("web/src/lib/api/generated/openapi.ts", typeScriptClient);
 writeOrCheck("app/src/lib/api/generated/openapi.ts", typeScriptClient);
 
 if (!process.exitCode) {
