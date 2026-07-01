@@ -80,3 +80,4 @@
 - The follow-up AI Review P2 about compose nginx being documented as default-active in `docker-compose-deploy.md` is addressed locally; PR checks must be re-run on the new pushed SHA.
 - The follow-up AI Review P2 about enabling rollback compose nginx in the normal production bootstrap is addressed locally; PR checks must be re-run on the new pushed SHA.
 - Local `npm run lint` passes with 73 module-size/complexity warnings and 0 errors, matching the warning-only scope of this PR.
+- The 2026-07-01 review-iteration fixes (Phase 1 smoke row rewritten to host-nginx evidence in `024/plan.md`, Go file-size row documented as review-only in AGENTS.md/CLAUDE.md, host-edge update note in `024/tasks.md`, list-indentation repair in `dev-cd-pipeline.md`, rollback-profile clarification in `024/plan.md` Phase 1) are addressed locally; a fresh AI Review must run on the new pushed SHA.

@@ -116,7 +116,7 @@ If a product or technical object type already exists in code, reuse its componen
 | Go (`/api`, `/worker`)         | ≤ ~60 lines          | ≤ ~500 lines  | ≤ 15                  |
 | TS / React (`/app`, `/mobile`) | ≤ ~60 lines          | ≤ ~300 lines  | ≤ 15                  |
 
-Thresholds are wired as **warnings** (never CI failures): ESLint `max-lines` / `max-lines-per-function` / `complexity` in `app/eslint.config.mjs`, and opt-in `funlen` / `gocyclo` in `api/.golangci.yml` (schema-validated with `golangci-lint config verify`; full run waits until `/api` has a Go module). Generated clients (`**/generated/**`) and tests are exempt.
+Thresholds are wired as **warnings** (never CI failures): ESLint `max-lines` / `max-lines-per-function` / `complexity` in `app/eslint.config.mjs`, and opt-in `funlen` / `gocyclo` in `api/.golangci.yml` (schema-validated with `golangci-lint config verify`; full run waits until `/api` has a Go module). The Go file-size row (≤ ~500 lines) has no linter wired — `funlen` is function-level — so it stays review-only until a file-length linter is added. Generated clients (`**/generated/**`) and tests are exempt.
 
 ### 8. No Supabase / Legacy-Backend Recoupling (NON-NEGOTIABLE)
 
