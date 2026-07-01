@@ -48,3 +48,41 @@ func TestRecoveryStatusMapping(t *testing.T) {
 		})
 	}
 }
+
+func TestLogoutStatusMapping(t *testing.T) {
+	tests := []struct {
+		name       string
+		statusCode int
+		wantErr    bool
+	}{
+		{name: "ok", statusCode: http.StatusOK},
+		{name: "no content", statusCode: http.StatusNoContent},
+		{name: "forbidden returns error", statusCode: http.StatusForbidden, wantErr: true},
+		{name: "upstream outage returns error", statusCode: http.StatusInternalServerError, wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != http.MethodDelete || r.URL.Path != "/self-service/logout/api" {
+					t.Fatalf("unexpected request %s %s", r.Method, r.URL.String())
+				}
+				w.WriteHeader(tt.statusCode)
+			}))
+			defer server.Close()
+
+			client := New(server.URL, server.URL)
+			err := client.Logout(context.Background(), "session-token")
+
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("Logout() error = nil, want error")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("Logout() unexpected error: %v", err)
+			}
+		})
+	}
+}

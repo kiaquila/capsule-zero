@@ -82,7 +82,11 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 
 	session, err := h.Kratos.Register(r.Context(), in.Email, in.Password, in.Name, locale)
 	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err))
+		if errors.Is(err, kratos.ErrFlowRejected) {
+			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err))
+			return
+		}
+		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Registration is temporarily unavailable.")
 		return
 	}
 	if session == nil {
@@ -156,7 +160,10 @@ func (h *Handler) Recovery(w http.ResponseWriter, r *http.Request) {
 // Logout: POST /api/auth/logout
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	if token := bearerToken(r); token != "" {
-		_ = h.Kratos.Logout(r.Context(), token)
+		if err := h.Kratos.Logout(r.Context(), token); err != nil {
+			httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Logout is temporarily unavailable.")
+			return
+		}
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }

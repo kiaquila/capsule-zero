@@ -108,6 +108,7 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - **2026-07-01 PR #57 review fix: OpenAPI auth schemes match the implemented token flow.** The canonical contract now advertises `Authorization: Bearer <session token>` and the alternate `X-Session-Token` header consumed by the Go API. Public auth endpoints opt out with `security: []`.
 - **2026-07-01 PR #57 review fix: embedded auth migrations use pgx simple protocol.** The boot-time migrator still wraps each SQL file and its `schema_migrations` insert in one transaction, but the file body now runs with `pgx.QueryExecModeSimpleProtocol` so multi-statement migration files such as `0001_initial_auth.sql` are not rejected by pgx's default prepared-statement path.
 - **2026-07-01 PR #57 review fix: the implemented auth/profile surface is now in the canonical API contract.** `api-spec.md`, `openapi.yaml`, and generated clients now include `/api/auth/registration`, `/api/auth/login`, `/api/auth/whoami`, `/api/auth/recovery`, and `/api/auth/logout`; the shared `Profile` schema matches the Go/web `api` provider shape, and Go error responses use the documented nested `ErrorResponse` envelope.
+- **2026-07-01 PR #57 review fix: auth flow errors no longer collapse into false client success/failure.** Registration returns 400 only for Kratos self-service flow rejections and 502 for unexpected upstream/transport failures; logout now treats non-2xx Kratos responses as errors and surfaces a 502 instead of reporting success while a token may still be active.
 
 ### Known Issues
 

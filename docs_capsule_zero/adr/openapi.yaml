@@ -931,6 +931,8 @@ paths:
                 $ref: "#/components/schemas/AuthResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "502":
+          $ref: "#/components/responses/BadGateway"
         "500":
           $ref: "#/components/responses/InternalServerError"
         default:

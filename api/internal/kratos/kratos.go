@@ -17,6 +17,11 @@ import (
 // ErrInvalidCredentials is returned when Kratos rejects a sign-in.
 var ErrInvalidCredentials = errors.New("invalid email or password")
 
+// ErrFlowRejected is returned when Kratos rejects a submitted self-service flow
+// for validation or policy reasons. Transport/upstream failures use plain
+// errors so handlers can classify them as temporary infrastructure failures.
+var ErrFlowRejected = errors.New("kratos flow rejected")
+
 // Client talks to the Kratos public and admin APIs.
 type Client struct {
 	publicURL string
@@ -126,7 +131,7 @@ func (c *Client) Login(ctx context.Context, email, password string) (*Session, e
 		"password":   password,
 	}
 	session, err := c.submitForSession(ctx, action, body)
-	if errors.Is(err, errFlowRejected) {
+	if errors.Is(err, ErrFlowRejected) {
 		return nil, ErrInvalidCredentials
 	}
 	return session, err
@@ -201,6 +206,9 @@ func (c *Client) Logout(ctx context.Context, token string) error {
 	}
 	defer resp.Body.Close()
 	_, _ = io.Copy(io.Discard, resp.Body)
+	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		return fmt.Errorf("kratos logout: status %d", resp.StatusCode)
+	}
 	return nil
 }
 
@@ -221,8 +229,6 @@ func (c *Client) Ready(ctx context.Context) error {
 	}
 	return nil
 }
-
-var errFlowRejected = errors.New("kratos flow rejected")
 
 // initFlow creates a self-service flow and returns the submit URL built from
 // the client's own internal Kratos base URL plus the flow id. We deliberately
@@ -285,9 +291,9 @@ func (c *Client) submitForSession(ctx context.Context, action string, body map[s
 
 	if resp.StatusCode == http.StatusBadRequest {
 		if msg := firstError(raw); msg != "" {
-			return nil, fmt.Errorf("%w: %s", errFlowRejected, msg)
+			return nil, fmt.Errorf("%w: %s", ErrFlowRejected, msg)
 		}
-		return nil, errFlowRejected
+		return nil, ErrFlowRejected
 	}
 
 	return nil, fmt.Errorf("kratos submit: status %d", resp.StatusCode)
