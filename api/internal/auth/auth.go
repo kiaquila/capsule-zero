@@ -82,6 +82,15 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 
 	session, err := h.Kratos.Register(r.Context(), in.Email, in.Password, in.Name, locale)
 	if err != nil {
+		if errors.Is(err, kratos.ErrIdentifierExists) {
+			// Do not echo Kratos's "an account already exists" text: that would
+			// give unauthenticated callers an account-enumeration oracle (A07).
+			// Return the same generic validation shape as any other rejected
+			// field so an existing address is indistinguishable from a typo.
+			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR",
+				"We couldn't complete your registration. Please check your details and try again.")
+			return
+		}
 		if errors.Is(err, kratos.ErrFlowRejected) {
 			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err))
 			return

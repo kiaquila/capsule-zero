@@ -115,6 +115,63 @@ func TestRegistrationClassifiesKratosErrors(t *testing.T) {
 	}
 }
 
+func TestRegistrationDoesNotLeakAccountExistence(t *testing.T) {
+	handler := Handler{
+		Kratos: fakeIdentityClient{registerErr: kratos.ErrIdentifierExists},
+	}
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/api/auth/registration",
+		strings.NewReader(`{"email":"taken@example.com","password":"secret123","name":"Person","locale":"en"}`),
+	)
+	recorder := httptest.NewRecorder()
+
+	handler.Registration(recorder, request)
+
+	// Same generic shape as any rejected field: no distinguishing status/code.
+	if recorder.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusBadRequest)
+	}
+	var body httpx.ErrorBody
+	if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
+		t.Fatalf("decode error body: %v", err)
+	}
+	if body.Error.Code != "VALIDATION_ERROR" {
+		t.Fatalf("code = %q, want VALIDATION_ERROR", body.Error.Code)
+	}
+	if strings.Contains(strings.ToLower(body.Error.Message), "exist") ||
+		strings.Contains(strings.ToLower(body.Error.Message), "identifier") {
+		t.Fatalf("message leaks account existence: %q", body.Error.Message)
+	}
+}
+
+func TestRegistrationPreservesValidationFeedback(t *testing.T) {
+	handler := Handler{
+		Kratos: fakeIdentityClient{
+			registerErr: fmt.Errorf("%w: password is too short", kratos.ErrFlowRejected),
+		},
+	}
+	request := httptest.NewRequest(
+		http.MethodPost,
+		"/api/auth/registration",
+		strings.NewReader(`{"email":"person@example.com","password":"x","name":"Person","locale":"en"}`),
+	)
+	recorder := httptest.NewRecorder()
+
+	handler.Registration(recorder, request)
+
+	if recorder.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusBadRequest)
+	}
+	var body httpx.ErrorBody
+	if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
+		t.Fatalf("decode error body: %v", err)
+	}
+	if body.Error.Message != "password is too short" {
+		t.Fatalf("message = %q, want genuine validation feedback preserved", body.Error.Message)
+	}
+}
+
 func TestRecoveryReportsUnexpectedKratosFailure(t *testing.T) {
 	handler := Handler{
 		Kratos: fakeIdentityClient{

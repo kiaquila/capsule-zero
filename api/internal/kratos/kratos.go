@@ -22,6 +22,19 @@ var ErrInvalidCredentials = errors.New("invalid email or password")
 // errors so handlers can classify them as temporary infrastructure failures.
 var ErrFlowRejected = errors.New("kratos flow rejected")
 
+// ErrIdentifierExists is returned when a registration is rejected because an
+// account with the submitted identifier already exists. It wraps
+// ErrFlowRejected so login-style callers still collapse it into a generic
+// rejection, while registration can special-case it to avoid disclosing
+// account existence to unauthenticated callers (A07 account enumeration).
+var ErrIdentifierExists = fmt.Errorf("%w: identifier already exists", ErrFlowRejected)
+
+// kratosMsgIdentifierExists is the stable Kratos UI message id emitted when a
+// self-service flow is rejected because the identifier is already taken
+// ("An account with the same identifier(s) exists already."). Matching on the
+// id keeps the classification locale-independent.
+const kratosMsgIdentifierExists = 4000007
+
 // Client talks to the Kratos public and admin APIs.
 type Client struct {
 	publicURL string
@@ -66,6 +79,7 @@ type flowResponse struct {
 }
 
 type uiMessage struct {
+	ID   int    `json:"id"`
 	Type string `json:"type"`
 	Text string `json:"text"`
 }
@@ -296,7 +310,11 @@ func (c *Client) submitForSession(ctx context.Context, action string, body map[s
 	}
 
 	if resp.StatusCode == http.StatusBadRequest {
-		if msg := firstError(raw); msg != "" {
+		id, msg := firstError(raw)
+		if id == kratosMsgIdentifierExists {
+			return nil, ErrIdentifierExists
+		}
+		if msg != "" {
 			return nil, fmt.Errorf("%w: %s", ErrFlowRejected, msg)
 		}
 		return nil, ErrFlowRejected
@@ -319,22 +337,26 @@ func (c *Client) postJSON(ctx context.Context, url string, body map[string]any) 
 	return c.http.Do(req)
 }
 
-func firstError(raw []byte) string {
+// firstError returns the id and text of the first error-level message in a
+// rejected flow response, scanning top-level messages before per-field node
+// messages. The id lets callers classify well-known rejections (e.g. duplicate
+// identifier) without matching on localized text.
+func firstError(raw []byte) (int, string) {
 	var flow flowResponse
 	if err := json.Unmarshal(raw, &flow); err != nil {
-		return ""
+		return 0, ""
 	}
 	for _, m := range flow.UI.Messages {
 		if m.Type == "error" && m.Text != "" {
-			return m.Text
+			return m.ID, m.Text
 		}
 	}
 	for _, node := range flow.UI.Nodes {
 		for _, m := range node.Messages {
 			if m.Type == "error" && m.Text != "" {
-				return m.Text
+				return m.ID, m.Text
 			}
 		}
 	}
-	return ""
+	return 0, ""
 }
