@@ -165,6 +165,10 @@ func (h *Handler) Recovery(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	if token := bearerToken(r); token != "" {
 		if err := h.Kratos.Logout(r.Context(), token); err != nil {
+			if errors.Is(err, kratos.ErrInvalidCredentials) {
+				httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
+				return
+			}
 			httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Logout is temporarily unavailable.")
 			return
 		}

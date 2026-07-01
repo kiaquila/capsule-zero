@@ -43,7 +43,11 @@ type Update struct {
 
 // Repo is the profile data access layer.
 type Repo struct {
-	pool *pgxpool.Pool
+	pool rowQuerier
+}
+
+type rowQuerier interface {
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 }
 
 // New builds a profile repository.
@@ -51,8 +55,8 @@ func New(pool *pgxpool.Pool) *Repo {
 	return &Repo{pool: pool}
 }
 
-const columns = `id, email, COALESCE(display_name, ''), locale,
-	COALESCE(country, ''), COALESCE(city, ''), COALESCE(avatar_url, ''),
+const columns = `id, email, COALESCE(display_name, '') AS display_name, locale,
+	COALESCE(country, '') AS country, COALESCE(city, '') AS city, COALESCE(avatar_url, '') AS avatar_url,
 	coin_balance, created_at, updated_at`
 
 // EnsureForIdentity returns the profile for a Kratos identity, creating it on
@@ -62,13 +66,23 @@ const columns = `id, email, COALESCE(display_name, ''), locale,
 func (r *Repo) EnsureForIdentity(ctx context.Context, identityID, email, displayName, locale string) (Profile, error) {
 	locale = NormalizeLocaleOrDefault(locale)
 	row := r.pool.QueryRow(ctx, `
-		INSERT INTO profiles (kratos_identity_id, email, display_name, locale)
-		VALUES ($1, $2, NULLIF($3, ''), $4)
-		ON CONFLICT (kratos_identity_id) DO UPDATE
-			SET email = EXCLUDED.email,
-			    display_name = COALESCE(profiles.display_name, NULLIF(EXCLUDED.display_name, '')),
-			    updated_at = now()
-		RETURNING `+columns,
+		WITH upsert AS (
+			INSERT INTO profiles (kratos_identity_id, email, display_name, locale)
+			VALUES ($1, $2, NULLIF($3, ''), $4)
+			ON CONFLICT (kratos_identity_id) DO UPDATE
+				SET email = EXCLUDED.email,
+				    display_name = COALESCE(profiles.display_name, NULLIF(EXCLUDED.display_name, '')),
+				    updated_at = now()
+				WHERE profiles.email IS DISTINCT FROM EXCLUDED.email
+				   OR profiles.display_name IS DISTINCT FROM COALESCE(profiles.display_name, NULLIF(EXCLUDED.display_name, ''))
+			RETURNING `+columns+`
+		)
+		SELECT `+columns+` FROM upsert
+		UNION ALL
+		SELECT `+columns+` FROM profiles
+		WHERE kratos_identity_id = $1
+		  AND NOT EXISTS (SELECT 1 FROM upsert)
+		LIMIT 1`,
 		identityID, email, displayName, locale)
 	return scan(row)
 }

@@ -116,6 +116,8 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - **2026-07-01 PR #57 review fix: production Kratos no longer runs in dev mode.** `oryd/kratos:v1.1.0 serve --help` documents `--dev` as disabling critical security features, so base compose now runs `serve --config /etc/config/kratos/kratos.yml --watch-courier`; `docker-compose.dev.yml` keeps `--dev` for local-only development.
 - **2026-07-01 PR #57 review fix: protected-route session middleware preserves Kratos outage signals.** `RequireSession` now returns 401 only for missing/invalid credentials and 502 for unexpected `WhoAmI` upstream failures, matching `/api/auth/whoami`.
 - **2026-07-01 PR #57 review fix: web runtime env is explicitly allowlisted.** The `web` service no longer imports `./.env` as a service-level `env_file`; Compose still uses the droplet env for interpolation, but the container only receives the explicit keys under `services.web.environment`, keeping Postgres/Kratos/SMTP secrets out of the frontend runtime.
+- **2026-07-01 PR #57 review fix: stale logout tokens are treated as already signed out.** Kratos logout client responses `400/401/403/404` now map to `ErrInvalidCredentials`; the auth handler returns `200 {"ok":true}` for that class so the web action can clear the local app session, while unexpected Kratos/logout outages still return 502.
+- **2026-07-01 PR #57 review fix: identity session reads no longer refresh profile edit timestamps.** `EnsureForIdentity` uses a guarded upsert CTE: inserts and real Kratos-synced field changes update `updated_at`, but no-op session reads fall through to the existing row without mutating `updated_at`. Verified with Go tests and a live `postgres:16` smoke.
 
 ### Known Issues
 

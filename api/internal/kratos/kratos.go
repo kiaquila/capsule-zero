@@ -207,6 +207,12 @@ func (c *Client) Logout(ctx context.Context, token string) error {
 	defer resp.Body.Close()
 	_, _ = io.Copy(io.Discard, resp.Body)
 	if resp.StatusCode < http.StatusOK || resp.StatusCode >= http.StatusMultipleChoices {
+		if resp.StatusCode == http.StatusBadRequest ||
+			resp.StatusCode == http.StatusUnauthorized ||
+			resp.StatusCode == http.StatusForbidden ||
+			resp.StatusCode == http.StatusNotFound {
+			return ErrInvalidCredentials
+		}
 		return fmt.Errorf("kratos logout: status %d", resp.StatusCode)
 	}
 	return nil

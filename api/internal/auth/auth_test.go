@@ -279,6 +279,31 @@ func TestLogoutReportsUnexpectedKratosFailure(t *testing.T) {
 	}
 }
 
+func TestLogoutTreatsInvalidKratosTokenAsSignedOut(t *testing.T) {
+	handler := Handler{
+		Kratos: fakeIdentityClient{
+			logoutErr: kratos.ErrInvalidCredentials,
+		},
+	}
+	request := httptest.NewRequest(http.MethodPost, "/api/auth/logout", nil)
+	request.Header.Set("Authorization", "Bearer stale-token")
+	recorder := httptest.NewRecorder()
+
+	handler.Logout(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusOK)
+	}
+
+	var body map[string]bool
+	if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
+		t.Fatalf("decode response body: %v", err)
+	}
+	if !body["ok"] {
+		t.Fatalf("body = %+v, want ok true", body)
+	}
+}
+
 type fakeIdentityClient struct {
 	registerErr error
 	whoamiErr   error

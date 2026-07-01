@@ -2,6 +2,7 @@ package kratos
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -57,7 +58,10 @@ func TestLogoutStatusMapping(t *testing.T) {
 	}{
 		{name: "ok", statusCode: http.StatusOK},
 		{name: "no content", statusCode: http.StatusNoContent},
-		{name: "forbidden returns error", statusCode: http.StatusForbidden, wantErr: true},
+		{name: "bad token maps to invalid credentials", statusCode: http.StatusBadRequest, wantErr: true},
+		{name: "unauthorized maps to invalid credentials", statusCode: http.StatusUnauthorized, wantErr: true},
+		{name: "forbidden maps to invalid credentials", statusCode: http.StatusForbidden, wantErr: true},
+		{name: "not found maps to invalid credentials", statusCode: http.StatusNotFound, wantErr: true},
 		{name: "upstream outage returns error", statusCode: http.StatusInternalServerError, wantErr: true},
 	}
 
@@ -77,6 +81,9 @@ func TestLogoutStatusMapping(t *testing.T) {
 			if tt.wantErr {
 				if err == nil {
 					t.Fatal("Logout() error = nil, want error")
+				}
+				if tt.statusCode >= http.StatusBadRequest && tt.statusCode < http.StatusInternalServerError && !errors.Is(err, ErrInvalidCredentials) {
+					t.Fatalf("Logout() error = %v, want ErrInvalidCredentials", err)
 				}
 				return
 			}
