@@ -13,6 +13,9 @@ const formattableFiles = (files) =>
     (file) => !repoPath(file).startsWith("app/src/lib/api/generated/"),
   );
 
+const appCssChanged = (files) =>
+  files.map(repoPath).some((file) => file.startsWith("app/") && file.endsWith(".css"));
+
 const shellQuote = (file) => `'${file.replaceAll("'", "'\\''")}'`;
 
 export default {
@@ -31,6 +34,13 @@ export default {
       commands.push(
         `npm --prefix app run lint -- --fix ${relativeFiles.map(shellQuote).join(" ")}`,
       );
+    }
+
+    // Surface CSS problems (duplicate selectors, hardcoded error colour) when a
+    // stylesheet changes. Warnings-first, so it reports without blocking the
+    // commit; see the frontend audit report for the ratchet-to-error plan.
+    if (appCssChanged(files)) {
+      commands.push("npm --prefix app run lint:css");
     }
 
     return commands;
