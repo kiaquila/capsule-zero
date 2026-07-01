@@ -539,7 +539,6 @@ const errorCodes = openApi.components?.schemas?.ErrorCode?.enum || [];
 const typeScriptClient = generateTypeScript(operations, errorCodes);
 const dartMetadata = generateDart(operations, errorCodes);
 
-writeOrCheck("web/src/lib/api/generated/openapi.ts", typeScriptClient);
 writeOrCheck("mobile/lib/api/generated/openapi.ts", typeScriptClient);
 writeOrCheck("app/src/lib/api/generated/openapi.ts", typeScriptClient);
 writeOrCheck("mobile/lib/api/generated/openapi.dart", dartMetadata);
