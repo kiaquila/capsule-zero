@@ -66,9 +66,35 @@ test("matchesCodexSummaryComment requires trusted login and Codex Review prefix"
   );
 });
 
-test("rerun regression (PR #62): pre-trigger verdict anchored to head SHA is accepted", () => {
+test("rerun regression (PR #62): pre-trigger short anchor is accepted after validation", async () => {
   const verdict = makeComment(); // created_at 21:58:41 < triggerTime 21:59:38
-  const picked = pickLatestCodexSummaryComment({
+  const picked = await pickLatestCodexSummaryComment({
+    comments: [verdict],
+    codexReviewerLogins,
+    triggerTime,
+    headSha,
+    validateReviewedCommitAnchor: async (reviewedCommit, currentHeadSha) =>
+      reviewedCommit === "72386ce1d1" && currentHeadSha === headSha,
+  });
+
+  assert.equal(picked, verdict);
+});
+
+test("pre-trigger short anchor is rejected when uniqueness validation fails", async () => {
+  const picked = await pickLatestCodexSummaryComment({
+    comments: [makeComment()],
+    codexReviewerLogins,
+    triggerTime,
+    headSha,
+    validateReviewedCommitAnchor: async () => false,
+  });
+
+  assert.equal(picked, null);
+});
+
+test("pre-trigger full-SHA verdict anchored to head SHA is accepted", async () => {
+  const verdict = makeComment({ body: summaryBody(headSha) });
+  const picked = await pickLatestCodexSummaryComment({
     comments: [verdict],
     codexReviewerLogins,
     triggerTime,
@@ -78,8 +104,20 @@ test("rerun regression (PR #62): pre-trigger verdict anchored to head SHA is acc
   assert.equal(picked, verdict);
 });
 
-test("verdict anchored to a different commit is rejected even when fresh", () => {
-  const picked = pickLatestCodexSummaryComment({
+test("fresh short anchor keeps active-cycle recency behavior", async () => {
+  const verdict = makeComment({ created_at: "2026-07-01T22:10:00Z" });
+  const picked = await pickLatestCodexSummaryComment({
+    comments: [verdict],
+    codexReviewerLogins,
+    triggerTime,
+    headSha,
+  });
+
+  assert.equal(picked, verdict);
+});
+
+test("verdict anchored to a different commit is rejected even when fresh", async () => {
+  const picked = await pickLatestCodexSummaryComment({
     comments: [
       makeComment({
         body: summaryBody("badc0ffee1"),
@@ -94,12 +132,12 @@ test("verdict anchored to a different commit is rejected even when fresh", () =>
   assert.equal(picked, null);
 });
 
-test("anchorless verdict keeps the recency rule", () => {
+test("anchorless verdict keeps the recency rule", async () => {
   const stale = makeComment({ body: summaryBody(null), created_at: "2026-07-01T21:58:41Z" });
   const fresh = makeComment({ body: summaryBody(null), created_at: "2026-07-01T22:10:00Z" });
 
   assert.equal(
-    pickLatestCodexSummaryComment({
+    await pickLatestCodexSummaryComment({
       comments: [stale],
       codexReviewerLogins,
       triggerTime,
@@ -108,7 +146,7 @@ test("anchorless verdict keeps the recency rule", () => {
     null,
   );
   assert.equal(
-    pickLatestCodexSummaryComment({
+    await pickLatestCodexSummaryComment({
       comments: [fresh],
       codexReviewerLogins,
       triggerTime,
@@ -118,8 +156,8 @@ test("anchorless verdict keeps the recency rule", () => {
   );
 });
 
-test("untrusted author is rejected even with a matching anchor", () => {
-  const picked = pickLatestCodexSummaryComment({
+test("untrusted author is rejected even with a matching anchor", async () => {
+  const picked = await pickLatestCodexSummaryComment({
     comments: [makeComment({ user: { login: "mallory" } })],
     codexReviewerLogins,
     triggerTime,
@@ -129,10 +167,10 @@ test("untrusted author is rejected even with a matching anchor", () => {
   assert.equal(picked, null);
 });
 
-test("latest matching summary comment wins", () => {
-  const earlier = makeComment({ created_at: "2026-07-01T21:58:41Z" });
+test("latest matching summary comment wins", async () => {
+  const earlier = makeComment({ body: summaryBody(headSha), created_at: "2026-07-01T21:58:41Z" });
   const later = makeComment({ created_at: "2026-07-01T22:15:37Z" });
-  const picked = pickLatestCodexSummaryComment({
+  const picked = await pickLatestCodexSummaryComment({
     comments: [earlier, later],
     codexReviewerLogins,
     triggerTime,

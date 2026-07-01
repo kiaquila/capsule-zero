@@ -15,33 +15,57 @@ export const extractCodexReviewedCommit = (body) => {
   return match[1].toLowerCase();
 };
 
-export const pickLatestCodexSummaryComment = ({
+const isFreshComment = (comment, triggerTime) =>
+  new Date(comment.created_at || 0).getTime() >= triggerTime;
+
+const defaultValidateReviewedCommitAnchor = async () => false;
+
+export const pickLatestCodexSummaryComment = async ({
   comments,
   codexReviewerLogins,
   triggerTime,
   headSha,
-}) =>
-  comments
-    .filter((comment) => {
-      if (!matchesCodexSummaryComment(comment, codexReviewerLogins)) {
-        return false;
+  validateReviewedCommitAnchor = defaultValidateReviewedCommitAnchor,
+}) => {
+  const normalizedHeadSha = (headSha || "").toLowerCase();
+  const matchingComments = [];
+
+  for (const comment of comments) {
+    if (!matchesCodexSummaryComment(comment, codexReviewerLogins)) {
+      continue;
+    }
+
+    const reviewedCommit = extractCodexReviewedCommit(comment.body || "");
+    if (reviewedCommit !== null) {
+      if (reviewedCommit.length === 40) {
+        if (reviewedCommit === normalizedHeadSha) {
+          matchingComments.push(comment);
+        }
+        continue;
       }
 
-      // A summary that names the commit it reviewed is judged on that anchor
-      // alone: the anchor may be abbreviated, and when it is a prefix of the
-      // current head SHA the reviewed diff is byte-identical, so the verdict
-      // cannot be stale even when it predates the current gate run (e.g. a
-      // rerun after a timeout). A mismatched anchor is never accepted, no
-      // matter how fresh. Only anchorless summaries fall back to the
-      // created-after-trigger recency rule.
-      const reviewedCommit = extractCodexReviewedCommit(comment.body || "");
-      if (reviewedCommit !== null) {
-        return (headSha || "").toLowerCase().startsWith(reviewedCommit);
+      if (!normalizedHeadSha.startsWith(reviewedCommit)) {
+        continue;
       }
 
-      return new Date(comment.created_at || 0).getTime() >= triggerTime;
-    })
-    .sort(
+      if (
+        isFreshComment(comment, triggerTime) ||
+        (await validateReviewedCommitAnchor(reviewedCommit, normalizedHeadSha))
+      ) {
+        matchingComments.push(comment);
+      }
+      continue;
+    }
+
+    if (isFreshComment(comment, triggerTime)) {
+      matchingComments.push(comment);
+    }
+  }
+
+  return (
+    matchingComments.sort(
       (left, right) =>
         new Date(right.created_at).getTime() - new Date(left.created_at).getTime(),
-    )[0] || null;
+    )[0] || null
+  );
+};

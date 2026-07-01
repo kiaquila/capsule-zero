@@ -199,6 +199,22 @@ const matchesCodexReview = (review) =>
   codexReviewerLogins.has(review.user?.login || "") &&
   (review.body || "").includes("Codex Review");
 
+const validateCodexReviewedCommitAnchor = async (reviewedCommit, currentHeadSha) => {
+  if (!currentHeadSha.startsWith(reviewedCommit)) {
+    return false;
+  }
+
+  try {
+    const commit = await request(`/repos/${owner}/${repo}/commits/${reviewedCommit}`);
+    return (commit.sha || "").toLowerCase() === currentHeadSha;
+  } catch (error) {
+    console.warn(
+      `Could not validate Codex reviewed-commit anchor "${reviewedCommit}": ${error.message}`,
+    );
+    return false;
+  }
+};
+
 const extractClaudeOutcome = (body) => {
   const match = body.match(/^AI_REVIEW_OUTCOME:\s*(pass|advisory|block)\s*$/im);
   if (!match) {
@@ -529,11 +545,12 @@ while (Date.now() < deadline) {
     const issueComments = await listPaginated(
       `/repos/${owner}/${repo}/issues/${prNumber}/comments?per_page=100`,
     );
-    const summaryComment = pickLatestCodexSummaryComment({
+    const summaryComment = await pickLatestCodexSummaryComment({
       comments: issueComments,
       codexReviewerLogins,
       triggerTime,
       headSha,
+      validateReviewedCommitAnchor: validateCodexReviewedCommitAnchor,
     });
 
     if (summaryComment) {

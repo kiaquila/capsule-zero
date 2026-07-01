@@ -57,9 +57,9 @@ Repository default workflow permissions may remain `read` so long as individual 
 - Workflow-authored comments from `github-actions[bot]` do not start a real Codex review task and are not used for the canonical path.
 - Comment-driven Codex review also requires a Codex cloud environment for the repository. Without it, the connector replies with a setup error and `AI Review` fails closed.
 - Codex validation uses native PR review output from `chatgpt-codex-connector[bot]` plus Codex severity badges in inline review comments.
-- When Codex has no inline findings, the connector may instead publish a top-level `Codex Review:` comment; the gate accepts that native no-findings reply when its `Reviewed commit` anchor matches the current head SHA, or, for anchorless replies, when it is fresh within the active review cycle.
+- When Codex has no inline findings, the connector may instead publish a top-level `Codex Review:` comment; the gate accepts that native no-findings reply when its full `Reviewed commit` anchor matches the current head SHA, when its abbreviated anchor uniquely resolves to the current head, or, for anchorless replies, when it is fresh within the active review cycle.
 - Any Codex inline finding without a recognized `P0-P3` badge fails the gate closed.
-- On reruns for the same head SHA, `AI Review` may reuse the latest valid native review or head-SHA-anchored no-findings summary already published for that head instead of requiring a brand-new review.
+- On reruns for the same head SHA, `AI Review` may reuse the latest valid native review or validated head-SHA-anchored no-findings summary already published for that head instead of requiring a brand-new review.
 - `AI Review` fails closed when the selected reviewer does not run or its result cannot be validated.
 - Codex Automatic reviews should remain disabled so repository policy keeps owning reviewer selection.
 - Validation details are defined in `docs_capsule_zero/project/devops/review-contract.md`.

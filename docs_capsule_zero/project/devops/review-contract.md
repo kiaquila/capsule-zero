@@ -43,7 +43,7 @@ Codex currently publishes:
 - a top-level GitHub pull-request review
 - inline review comments tied to that review
 - severity badges in inline comments such as `P1` or `P2`
-- or, when there are no concrete inline findings, a top-level PR comment from `chatgpt-codex-connector[bot]` beginning with `Codex Review:` and carrying a `**Reviewed commit:**` line that names the reviewed commit SHA (possibly abbreviated)
+- or, when there are no concrete inline findings, a top-level PR comment from `chatgpt-codex-connector[bot]` beginning with `Codex Review:` and carrying a `**Reviewed commit:**` line that names the reviewed commit SHA, either as the full 40-character SHA or as an abbreviation that GitHub can resolve uniquely to the current head
 
 Codex may publish a `COMMENTED` top-level review even when some inline findings should block merge. Capsule Zero therefore evaluates the associated severity badges instead of relying on the top-level review state alone for Codex.
 
@@ -86,7 +86,7 @@ Any other state is treated as unverifiable and fails closed.
 - `AI Review` reads `AI_REVIEW_AGENT`.
 - It validates the selected reviewer output against the current PR head SHA.
 - On reruns of the same head, validation may reuse the latest valid native reviewer output already attached to that head SHA.
-- For Codex no-findings summary comments, the `**Reviewed commit:**` value is the SHA anchor: when it is a prefix of the current PR head SHA the verdict is accepted regardless of when it was posted, and when it names any other commit the comment is rejected even if fresh.
+- For Codex no-findings summary comments, the `**Reviewed commit:**` value is the SHA anchor: a full 40-character SHA must exactly match the current PR head SHA, while an abbreviated SHA can only be reused across review-gate reruns when GitHub resolves that abbreviation uniquely to the current head. A summary that names any other commit is rejected even if fresh.
 - A Codex summary comment without a `**Reviewed commit:**` anchor is only accepted when it is created after the active cycle's routing trigger.
 - It validates the reviewer-specific contract and normalized result.
 - If no valid selected-reviewer output is found before timeout, the check fails closed.
