@@ -26,14 +26,39 @@ Finish the mobile-stack cleanup by pairing the existing Flutter/Dart deletion wi
 
 ## Verification
 
-| Acceptance criterion | Evidence                                                                                                                                         |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| AC-001               | `git ls-files mobile/` returns only `mobile/README.md`.                                                                                          |
-| AC-002               | `grep -n "React Native\\                                                                                                                         | Flutter\\                                                                                                                             | supabase_flutter" mobile/README.md` shows the placeholder target, cleanup note, and no-reintroduction warning. |
-| AC-003               | `grep -n "generateDart\\                                                                                                                         | mobile/lib/api/generated" scripts/generate-api-clients.mjs`returns no matches;`node scripts/generate-api-clients.mjs --check` passes. |
-| AC-004               | `grep -n "flutter\\                                                                                                                              | mobile/.env.local\\                                                                                                                   | MOBILE_DEEP_LINK_SCHEME\\                                                                                      | name: \"SUPABASE_URL\"\\                                 | name: \"SUPABASE_ANON_KEY\"" scripts/check-runtime-tooling.mjs scripts/check-runtime-env.mjs`returns no retired mobile matches;`node --check scripts/check-runtime-tooling.mjs scripts/check-runtime-env.mjs`passes;`node scripts/check-runtime-env.mjs --surface mobile`exits with`Unknown runtime surface(s): mobile`. |
-| AC-005               | `grep -n "React Native\\                                                                                                                         | Flutter shell\\                                                                                                                       | later spec\\                                                                                                   | mobile TypeScript generation is intentionally deferred\\ | mobile path deferred" docs_capsule_zero/project/mobile/mobile-docs.md docs_capsule_zero/adr/api-spec.md docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md mobile/README.md` shows the pivot, future-scaffold language, and deferred mobile generated-client contract.                                 |
-| AC-006               | `node scripts/check-feature-memory.mjs origin/main HEAD` passes via `.specify/specs/030-remove-stale-flutter-mobile-shell/{spec,plan,tasks}.md`. |
+| Acceptance criterion | Evidence                                                                                                                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| AC-001               | V-001 returns only `mobile/README.md`.                                                                                                     |
+| AC-002               | V-002 shows the placeholder target, cleanup note, and no-reintroduction warning.                                                           |
+| AC-003               | V-003 returns no stale generator targets and verifies the remaining generated clients.                                                     |
+| AC-004               | V-004 returns no retired mobile runtime/env checks, validates scripts, and confirms `mobile` is no longer a supported runtime-env surface. |
+| AC-005               | V-005 shows the pivot, future-scaffold language, and deferred mobile generated-client contract.                                            |
+| AC-006               | V-006 passes via `.specify/specs/030-remove-stale-flutter-mobile-shell/{spec,plan,tasks}.md`.                                              |
+
+Verification commands:
+
+```bash
+# V-001
+git ls-files mobile/
+
+# V-002
+grep -nE 'React Native|Flutter|supabase_flutter' mobile/README.md
+
+# V-003
+! grep -nE 'generateDart|mobile/lib/api/generated' scripts/generate-api-clients.mjs
+node scripts/generate-api-clients.mjs --check
+
+# V-004
+! grep -nE 'flutter|mobile/.env.local|MOBILE_DEEP_LINK_SCHEME|name: "SUPABASE_URL"|name: "SUPABASE_ANON_KEY"' scripts/check-runtime-tooling.mjs scripts/check-runtime-env.mjs
+node --check scripts/check-runtime-tooling.mjs scripts/check-runtime-env.mjs
+node scripts/check-runtime-env.mjs --surface mobile 2>&1 | grep -q 'Unknown runtime surface(s): mobile'
+
+# V-005
+grep -nE 'React Native|Flutter shell|later spec|mobile TypeScript generation is intentionally deferred|mobile path deferred' docs_capsule_zero/project/mobile/mobile-docs.md docs_capsule_zero/adr/api-spec.md docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md mobile/README.md
+
+# V-006
+node scripts/check-feature-memory.mjs origin/main HEAD
+```
 
 Supporting verification:
 

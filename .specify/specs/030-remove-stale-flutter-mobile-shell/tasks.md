@@ -15,6 +15,7 @@
 - [x] Correct `docs_capsule_zero/project/mobile/mobile-docs.md` to acknowledge the removed Sprint 0 shell.
 - [x] Defer the documented mobile generated-client artifact in `docs_capsule_zero/adr/api-spec.md` and the Phase 5 entrance checklist until the React Native scaffold defines its path.
 - [x] Add this feature memory package after `guard` and Codex Review identified the missing SENAR artifacts.
+- [x] Restore the `plan.md` verification table after PR #60 merge/review exposed unescaped grep alternation pipes.
 
 ## Verification
 
@@ -39,6 +40,7 @@
 - Remove the `mobile` runtime-env surface with the deleted mobile env file so default env validation no longer requires retired mobile Supabase variables.
 - Defer the physical mobile generated-client artifact in API/architecture docs instead of keeping a dead `mobile/lib/api/generated/` target without a scaffold.
 - Use command-backed verification instead of TDD because the change removes a retired scaffold and leaves no executable mobile app behavior to test.
+- Keep grep alternation commands in fenced blocks, not table cells, so SENAR verification tables remain two-column Markdown.
 
 ### Known Issues
 
