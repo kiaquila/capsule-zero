@@ -20,18 +20,18 @@
 
 ### Phase 2 — Auth vertical slice (working registration/login)
 
-One slice to a **working** end-to-end auth flow on the existing `/app` UI (which is already provider-abstracted). Postgres groundwork is done; the rest of the slice is next.
+One slice to a **working** end-to-end auth flow on the existing `/app` UI (which is already provider-abstracted). Delivered and verified end-to-end (acceptance 9a–9d, 11–13).
 
 - [x] Add `postgres` (plain `postgres:16`, pgvector deferred by ADR-007) with healthcheck + persistent `pgdata` volume, loopback-bound; PgBouncer deferred by ADR-007
 - [x] Add `infra/postgres/00-kratos-db.sh` (provision `kratos` role + database + app DB in one first-init pass)
 - [x] Add Postgres/Kratos-DB env keys to `deploy/compose.env.example`; refresh `infra/README.md` to the real nginx + postgres layout
-- [ ] Add `kratos` service (`oryd/kratos`) attaching to the prepared `kratos` DB; migrations on boot
-- [ ] Add `infra/kratos/` identity schema (`traits.email`, `traits.name.first`, `traits.locale`) + self-service flows; Resend SMTP courier (prod placeholder), MailHog in dev
-- [ ] Reintroduce `docker-compose.dev.yml` with the MailHog override for the Kratos courier
-- [ ] Scaffold the Go `api` auth/profile context: `GET /api/health`, Kratos session validation, `profiles` table + `kratos_identity_id → profiles.id` mapping, profile/session endpoints; golang-migrate at boot
-- [ ] nginx routes `/api/*` to `api:8080` + `auth_request` against Kratos for protected routes
-- [ ] Add the `api` provider mode in `app/src/lib/providers/api/` (AuthPort + ProfileRepository) against Kratos self-service + the Go API; register it, default `CAPSULE_PROVIDER_MODE=api` for prod; remove the Supabase provider's auth/profile paths
-- [ ] Verify acceptance 9a–9d: registration + login work end-to-end on `/app`
+- [x] Add `kratos` service (`oryd/kratos`) + one-shot `kratos-migrate`, attaching to the prepared `kratos` DB
+- [x] Add `infra/kratos/` identity schema (`traits.email`, `traits.name.first`, `traits.locale`) + self-service flows; Resend SMTP courier (prod placeholder), MailHog in dev
+- [x] Reintroduce `docker-compose.dev.yml` with the MailHog override for the Kratos courier
+- [x] Scaffold the Go `api` auth/profile context: `GET /api/health`, Kratos session validation, `profiles` table + `kratos_identity_id → profiles.id` mapping, profile/session endpoints; embedded SQL migrations at boot
+- [x] nginx routes `/api/*` to `api:8080` (`auth_request` snippet lands with the first protected server-rendered route in a later slice — the `api` provider talks to the Go API server-side)
+- [x] Add the `api` provider mode in `app/src/lib/providers/api/` (AuthPort + ProfileRepository) against the Go API; register it, default `CAPSULE_PROVIDER_MODE=api`; unmigrated domains inherit mock fixtures
+- [x] Verify acceptance 9a–9d + 11–13: registration + login work end-to-end on `/app` (Playwright e2e green)
 
 ### Phase 3 — Redis + remaining `/api/*` surface
 - [ ] Add `redis` service with persistent volume; Redis queue consumer goroutines inside `/api` (standalone `/worker` deferred by ADR-007)
@@ -63,6 +63,9 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - 2026-06-28 considered exporting the existing Caddy ACME state to nginx-readable PEM files. Rejected: Caddy stores certs in a JSON envelope that has to be parsed and rewritten; cleaner to run a fresh `certbot certonly --standalone` during the migration window.
 - 2026-06-30 considered creating the Kratos database/role later, alongside the Kratos container. Rejected: Postgres `/docker-entrypoint-initdb.d` scripts run **only** on first init of an empty volume. Provisioning `kratos` in a later commit would skip a populated droplet volume, leaving Kratos pointed at a non-existent database. We provision both databases up front in one pass.
 - 2026-06-30 considered a `.sql` init file for the Kratos role. Rejected: plain SQL files in initdb cannot read env vars, so the role password could not come from the droplet `.env`. Used a `.sh` script (`00-kratos-db.sh`) that reads `KRATOS_DB_*` and guards `CREATE DATABASE` via `\gexec`.
+- 2026-06-30 (Go API) first submitted Kratos self-service flows to the `ui.action` URL from the flow response. Rejected: that URL is rendered against Kratos's `SERVE_PUBLIC_BASE_URL` (browser-facing, `127.0.0.1:4433`), so from inside the `api` container it resolves to the container's own loopback → `connection refused`. Fixed by building the submit URL from the API's own internal Kratos base (`http://kratos:4433`) + the flow `id`.
+- 2026-06-30 (Go API) planned to use `golang-migrate` (per the original backend-docs). Used a minimal embedded idempotent migrator instead (schema_migrations tracking table, per-file transaction): fewer dependencies, and there is no local Go toolchain to run `go mod tidy` against a heavier dep tree — builds happen in a `golang` container. backend-docs "Migrations" line updated to match.
+- 2026-06-30 (e2e) the registration spec flaked once: two tests ran on parallel workers and `Date.now()` collided → duplicate email; argon2 `iterations: 2` also pushed sign-up near the 15 s `waitForURL`. Fixed with unique emails (`Date.now()`+random), `argon2 iterations: 1` (Kratos default), and 25 s waits. Green at 3.7 s afterward.
 
 ### Decisions
 
@@ -89,6 +92,9 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - **2026-06-30 add a third provider mode `api`; retire the Supabase provider domain by domain.** The supabase provider (~2979 lines) is the entire backend integration, not just auth. New mode `api` implements the ports via typed fetch to the Go API + Kratos; each domain slice removes its supabase counterpart. `mock` stays for local dev/tests. `/app` is **not** renamed to `/web` — that was a cosmetic aspiration; the empty `/web` placeholder is dropped when supabase is fully gone.
 - **2026-06-30 Postgres ships plain `postgres:16`; pgvector deferred to the semantic-search slice (ADR-007).** v0.1 entities are relational; nothing queries vectors until catalog semantic search (US-012).
 - **2026-06-30 Phase 2 keeps the app role as the image superuser (`POSTGRES_USER`).** A dedicated least-privilege app role is deferred as a hardening follow-up; v0.1 uses the entrypoint-managed role for the app DB and a separate `kratos` login role for the Kratos DB.
+- **2026-06-30 the `api` provider composes real auth/profiles + mock fixtures for unmigrated domains.** `createApiProviderRegistry()` spreads a mock registry and overrides `auth`, `profiles`, and `health` with real Go-API-backed ports. Keeps the app fully navigable (dashboard/wardrobe render fixtures) while auth is real; each later slice replaces one mock port with its real `api` port. `mock` mode stays for local/tests.
+- **2026-06-30 the Go API drives Kratos "API"-type self-service flows server-side.** The `api` provider (Next.js `server-only`) calls the Go API, which calls Kratos — one backend for the frontend. Registration uses a `session` hook so sign-up auto-logs-in (matches the existing UI, which redirects to the dashboard on success). The browser never talks to Kratos directly.
+- **2026-06-30 Kratos runs with `--dev` in v0.1.** It is internal-only (Go API is the only caller over the private network), so relaxing its HTTPS assumptions is acceptable for now; hardening to non-dev mode is a Known Issue below.
 
 ### Known Issues
 
@@ -102,3 +108,7 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - During the Phase 1 droplet rollout there is a brief connection-refused window between `systemctl stop caddy` and `docker compose up -d` while certbot issues the cert. This is acceptable today because the droplet has no production traffic.
 - **(Phase 2) `postgres` is added to the root `docker-compose.yml` only, not to `docker-compose.dev-server.yml`.** The remote `dev.capsulezero.app` stack stays web-only until the slice rolls out there; bringing Postgres up on the droplet is an operator rollout step, exactly like the Phase 1 first-rollout row. Local `docker compose up -d postgres` is the evidence.
 - **(Phase 2) The app database uses the Postgres superuser role.** Least-privilege separation (a non-superuser `app` role owning the app schema) is a deferred hardening follow-up; tracked here so it is not silently forgotten.
+- **(Phase 2) Kratos runs with `--dev`.** Fine while Kratos is internal-only behind the Go API, but it must move to non-dev mode (real HTTPS assumptions, production secrets already via env) before Kratos is ever exposed or before commercial launch. Follow-up.
+- **(Phase 2) nginx `/api/*` shadows the Next.js `/api/health` route for browser traffic.** Benign: nothing in the browser calls `/api/*` (the `api` provider talks to the Go API server-side), so only the app's status route is shadowed, and it is reachable directly on the web container. If a future client-side call needs a Next route under `/api`, namespace the Go API (e.g. `/api/v1`) or the Next route.
+- **(Phase 2) In `api` mode, unmigrated domains (wardrobe/capsule/catalog/billing) serve mock fixtures even in production builds.** Intentional for the incremental migration — the app is navigable with real auth while those domains move slice by slice. Not a launch state; tracked so it is retired before commercial launch.
+- **(Phase 2) nginx `auth_request` is wired for routing but not yet enforcing.** There is no server-rendered protected route to guard yet (the dashboard resolves the session in-app via the Go API). The `auth_request` guard lands with the first route that needs edge-level protection.

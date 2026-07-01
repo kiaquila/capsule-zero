@@ -51,7 +51,7 @@ Object storage and email leave the droplet:
 | `api/Dockerfile`                    | Go API multi-stage build (distroless runtime image)                           |
 | `worker/Dockerfile`                 | Go worker multi-stage build                                                   |
 | `web/Dockerfile`                    | Next.js standalone production image                                            |
-| `api/migrations/`                   | golang-migrate SQL files; applied at API boot                                  |
+| `api/migrations/`                   | embedded SQL migration files; applied at API boot                                  |
 | `deploy/compose.env.example`        | Env template for compose interpolation; copy to `.env` and fill secrets        |
 
 ## First Start
@@ -83,7 +83,7 @@ For local development against the dev override:
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
-Schema migrations apply during API startup (golang-migrate runs against `postgres` before the API serves traffic). Kratos manages its own migrations against its own database via its built-in `kratos migrate sql` step run from an init container.
+Schema migrations apply during API startup (the embedded SQL migrator runs against `postgres` before the API serves traffic). Kratos manages its own migrations against its own database via its built-in `kratos migrate sql` step run from an init container.
 
 ## Health Checks
 
@@ -113,7 +113,7 @@ docker compose logs api --tail=100
 
 ## Migrations
 
-API migrations live in `api/migrations/` and apply via golang-migrate at API boot. The runner records applied versions in a dedicated `schema_migrations` table inside the app schema.
+API migrations live in `api/migrations/` and apply via the embedded SQL migrator at API boot. The runner records applied versions in a dedicated `schema_migrations` table inside the app schema.
 
 Rules:
 

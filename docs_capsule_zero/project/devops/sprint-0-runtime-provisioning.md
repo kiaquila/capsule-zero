@@ -66,7 +66,7 @@ docker compose --env-file ./.env up -d
 docker compose logs nginx --tail=50 # confirm nginx is up and serving 443
 ```
 
-This brings up nginx, Kratos, Postgres, PgBouncer, Redis, the Go API, the Go worker, the Next.js web container, imgproxy, and Grafana once every phase of spec 024 has shipped. In earlier phases only the services delivered so far come up. golang-migrate runs at API boot from Phase 3 onward. Kratos runs its own migrations through its init container from Phase 2 onward.
+This brings up nginx, Kratos, Postgres, PgBouncer, Redis, the Go API, the Go worker, the Next.js web container, imgproxy, and Grafana once every phase of spec 024 has shipped. In earlier phases only the services delivered so far come up. the embedded SQL migrator runs at API boot from Phase 3 onward. Kratos runs its own migrations through its init container from Phase 2 onward.
 
 ### 4. Verify health end-to-end
 

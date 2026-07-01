@@ -12,8 +12,8 @@ The spec ships in incremental PRs against the same feature folder. Each phase ke
 
 | Phase | Scope | Status |
 | ----- | ----- | ------ |
-| Phase 1 — nginx + web | Replace the host Caddy + legacy Supabase compose with `nginx + web` in `docker-compose.yml`. `https://capsulezero.app/en` keeps serving the existing Next.js landing. | **In progress** |
-| Phase 2 — Auth vertical slice (Postgres + Kratos + Go API auth + `api` provider) | Add `postgres` (plain `postgres:16`) and `kratos` to compose; scaffold the Go `api` with the auth/profile bounded context (`GET /api/health`, Kratos session validation, `profiles` mapping); nginx `auth_request`; add the `api` provider mode in `/app` implementing `AuthPort` + `ProfileRepository` against Kratos self-service + the Go API. Registration/login work end-to-end on the existing `/app` UI. | Pending |
+| Phase 1 — nginx + web | Replace the host Caddy + legacy Supabase compose with `nginx + web` in `docker-compose.yml`. `https://capsulezero.app/en` keeps serving the existing Next.js landing. | **Shipped** |
+| Phase 2 — Auth vertical slice (Postgres + Kratos + Go API auth + `api` provider) | Add `postgres` (plain `postgres:16`) and `kratos` to compose; scaffold the Go `api` with the auth/profile bounded context (`GET /api/health`, Kratos session validation, `profiles` mapping); nginx routes `/api/*`; add the `api` provider mode in `/app` implementing `AuthPort` + `ProfileRepository` against the Go API. Registration/login work end-to-end on the existing `/app` UI. | **This PR** (verified local; droplet rollout pending) |
 | Phase 3 — Redis + remaining `/api/*` surface | Add `redis` and the Redis queue consumer goroutines inside `api`; widen `/api/*` coverage as the next domain slices land. | Pending |
 | Phase 4 — Storage + email + imgproxy | DigitalOcean Spaces bucket with CORS for `https://capsulezero.app`. Resend domain verified with SPF + DKIM. `imgproxy` deployed for on-the-fly derivatives. | Pending |
 | Phase 5 — Observability + backups | syslog rotation, OTLP trace exporter, and nightly `pg_dump` cron with 14-day Spaces lifecycle. Grafana remains deferred by ADR-007. | Pending |
@@ -36,8 +36,8 @@ Each phase ships as its own PR with feature-memory updates against this folder. 
 - Infrastructure configs under `/infra/`:
   - `infra/nginx/` — nginx 1.27 config (Phase 1)
   - `infra/kratos/` — identity schema, courier (Resend SMTP) configuration, self-service flow config (Phase 2)
-  - `infra/postgres/` — init scripts: enable `pgvector`, create the Kratos database, create app and Kratos roles (Phase 2)
-- `api/migrations/0001_initial_schema.sql` shipping the full schema from `docs_capsule_zero/project/backend/backend-docs.md` plus methodology seed (`color_catalog`, `category_catalog`, `compatibility_rules`) (Phase 3)
+  - `infra/postgres/` — init scripts: provision the Kratos database + role and the app database (Phase 2). pgvector is deferred by ADR-007 to the semantic catalog-search slice.
+- `api/migrations/` — SQL migrations applied at boot by the embedded migrator. The auth slice ships `0001_initial_auth.sql` (`profiles`); the wardrobe/capsule/catalog schema plus methodology seed (`color_catalog`, `category_catalog`, `compatibility_rules`) arrive with their domain slices.
 - Cloudflare configuration walkthrough in the runtime spec (DNS, proxy on, SSL/TLS Full strict, Bot Fight Mode) — applied when DNS migration happens (Phase 4 or earlier as separate config work)
 - DigitalOcean Spaces bucket `capsulezero` with CORS for `https://capsulezero.app` and the dev origin (Phase 4)
 - Resend account verified for `no-reply@capsulezero.app` with SPF/DKIM published (Phase 4)
@@ -66,10 +66,10 @@ The runtime must survive the following without silently degrading. Each is cover
 | - | -------- | ----------------- |
 | 1 | **nginx starts before the Let's Encrypt cert exists.** First boot must not crash silently; the runbook's bootstrap step requires `certbot certonly --standalone` to land the cert before `docker compose up`. | Phase 1 |
 | 2 | **Web container is unhealthy (Next.js exits or fails its `/en` probe).** nginx must surface a `502 Bad Gateway` page rather than serving a stale 200; `docker compose ps` must show `web` as `(unhealthy)` inside its `start_period`. | Phase 1 |
-| 3 | **Postgres unreachable from the Go API.** `GET /api/health` must return HTTP 503 with `postgres: "error"`, not HTTP 200 with stale cached data. | Phase 3 |
+| 3 | **Postgres unreachable from the Go API.** `GET /api/health` must return HTTP 503 with `postgres: "error"`, not HTTP 200 with stale cached data. | Phase 2 |
 | 4 | **Resend rejects an email send.** Kratos verification flow must surface a safe inline error on the web UI; the API must log the failure to syslog with a correlation id; no half-created identity is left orphaned. | Phase 4 |
 | 5 | **Spaces credentials invalid or bucket misconfigured CORS.** Signed PUT round-trip must fail closed; the API health probe must report `storage: "error"`; the web upload UI must show a safe inline error. | Phase 4 |
-| 6 | **`docker compose up` on a droplet that already has data volumes.** Migrations must be idempotent — golang-migrate must not double-apply, Kratos migrations must respect their tracking table. A repeated `docker compose up -d` on a healthy stack must be a no-op. | Phase 3 |
+| 6 | **`docker compose up` on a droplet that already has data volumes.** Migrations must be idempotent — the embedded SQL migrator must not double-apply, Kratos migrations must respect their tracking table. A repeated `docker compose up -d` on a healthy stack must be a no-op. | Phase 2 |
 
 ## Constraints
 

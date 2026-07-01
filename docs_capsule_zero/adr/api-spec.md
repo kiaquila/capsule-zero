@@ -23,7 +23,7 @@ Sprint 0 must create and verify these artifacts before Stage 1 product feature w
 | OpenAPI contract        | `docs_capsule_zero/adr/openapi.yaml`          | Authoritative REST path, auth, request, response, and error schemas    |
 | TypeScript client/types | `web/src/lib/api/generated/`                  | Web client/server API types generated from OpenAPI                     |
 | React Native client     | `mobile/lib/api/generated/`                   | TypeScript client for the React Native app generated from OpenAPI      |
-| Go schema/handlers      | `api/internal/httpapi/` + `api/migrations/`   | Typed Go handlers from OpenAPI and golang-migrate SQL files            |
+| Go schema/handlers      | `api/internal/httpapi/` + `api/migrations/`   | Typed Go handlers from OpenAPI and embedded SQL migration files            |
 | Contract tests          | `api/tests/contract/` or equivalent CI target | Auth/error conventions and representative endpoint schema verification |
 
 Endpoint names may change only with the OpenAPI contract, generated clients, and contract tests updated in the same PR.
