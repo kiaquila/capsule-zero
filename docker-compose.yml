@@ -110,7 +110,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
       args:
-        GO_VERSION: ${GO_VERSION_API:-1.23}
+        GO_VERSION: ${GO_VERSION_API:-1.25.11}
     restart: unless-stopped
     depends_on:
       postgres:
