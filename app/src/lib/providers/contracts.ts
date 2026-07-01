@@ -9,7 +9,7 @@ import type {
   User,
 } from "@/types";
 
-export type ProviderMode = "mock" | "supabase";
+export type ProviderMode = "mock" | "supabase" | "api";
 
 export type ItemSourceType = "photo_upload" | "marketplace" | "catalog";
 export type ItemStatus = "active" | "uncapsulated" | "for_sale" | "for_repair";

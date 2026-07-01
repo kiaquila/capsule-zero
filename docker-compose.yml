@@ -182,6 +182,13 @@ services:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
       NEXT_PUBLIC_APP_URL: ${APP_BASE_URL:-https://capsulezero.app}
+      # Talk to the Go API (server-side) over the private network.
+      CAPSULE_PROVIDER_MODE: ${CAPSULE_PROVIDER_MODE:-api}
+      CAPSULE_API_BASE_URL: ${CAPSULE_API_BASE_URL:-http://api:8080}
+      SESSION_SIGNING_SECRET: ${SESSION_SIGNING_SECRET:?set SESSION_SIGNING_SECRET in the env file}
+    depends_on:
+      api:
+        condition: service_healthy
     expose:
       - "3000"
     # Published on loopback for the host (systemd) nginx edge.

@@ -99,7 +99,7 @@ hashers:
   argon2:
     parallelism: 1
     memory: 128MB
-    iterations: 2
+    iterations: 1
     salt_length: 16
     key_length: 32
 
