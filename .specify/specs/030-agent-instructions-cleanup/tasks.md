@@ -20,6 +20,7 @@
 - [x] Address the fresh AI Review P2s for golangci-lint v2 schema, malformed SENAR verification tables, and deferred pgvector Phase 2 evidence.
 - [x] Address the fresh AI Review P2s for premature Phase 2 landed status and unsupported `api` provider-mode guidance.
 - [x] Address the fresh AI Review P2s for stale PgBouncer/pgvector/Grafana active-runtime language in ADR/runbook docs.
+- [x] Address the fresh AI Review P2 for stale canonical-frontend deletion guidance in spec-024 process memory.
 
 ## Verification
 
@@ -51,9 +52,10 @@
 - Keep spec-024 Phase 2 on plain `postgres:16`; pgvector remains documented only as deferred ADR-007 work.
 - Keep current onboarding aligned to the repository tree: Phase 1 has landed, Phase 2 is pending, and `/app` currently supports only `mock`/`supabase` provider modes until the API provider is implemented.
 - Keep active v0.1 runtime docs limited to plain Postgres, direct `pgx` pooling, in-process queue workers, and syslog/traces; pgvector, PgBouncer, standalone `worker`, and Grafana stay deferred until ADR-007 promotion triggers fire.
+- Treat old frontend-deletion notes as superseded history: `/app` stays canonical, and only Supabase env/provider code is retired domain by domain.
 
 ### Known Issues
 
 - GitHub checks must be re-run on the pushed commit before the PR can be considered merge ready.
-- The prior AI Review P2 about stale `/web` source docs and the fresh P2s on golangci-lint, SENAR tables, pgvector evidence, Phase 2 status, provider-mode guidance, and deferred runtime wording are addressed locally; a fresh AI Review must run on the new pushed SHA.
+- The prior AI Review P2 about stale `/web` source docs and the fresh P2s on golangci-lint, SENAR tables, pgvector evidence, Phase 2 status, provider-mode guidance, deferred runtime wording, and stale canonical-frontend deletion wording are addressed locally; a fresh AI Review must run on the new pushed SHA.
 - Local `npm run lint` passes with 73 module-size/complexity warnings and 0 errors, matching the warning-only scope of this PR.
