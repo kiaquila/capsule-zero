@@ -294,7 +294,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 | **API gateway**         | nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos                        |
 | **Hosting**             | Single DigitalOcean droplet running docker-compose; Cloudflare in front of nginx for DDoS protection and CDN                        |
 | **Email**               | Resend for transactional email (verification, password reset, security notifications)                                               |
-| **Observability**       | Grafana dashboards + syslog file logs + tracing; Sentry and Prometheus deferred to Stage 2                                          |
+| **Observability**       | syslog file logs + tracing in v0.1; Grafana dashboards, Sentry, and Prometheus deferred                                             |
 | **State Management**    | Zustand for local Journey/UI state; TanStack Query for interactive server-state                                                     |
 | **API Client**          | Next.js Server Components/Actions and Route Handlers call the Go API through nginx (typed fetch + TanStack Query)                   |
 | **Forms**               | React Hook Form + Zod                                                                                                               |

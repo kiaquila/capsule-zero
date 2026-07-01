@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (rewritten 2026-06-27 for the production-stack pivot; API-gateway row updated 2026-06-28 from Traefik to nginx).
+Accepted (rewritten 2026-06-27 for the production-stack pivot; API-gateway row updated 2026-06-28 from Traefik to nginx; v0.1 slim-runtime rows aligned with ADR-007 on 2026-07-01).
 
 ## Context
 
@@ -34,14 +34,14 @@ Adopt the following production stack:
 | Styling                  | Tailwind CSS v4 with Capsule Zero glass tokens                                                                                                                    |
 | Backend                  | Go modular monolith (single binary, bounded contexts: auth, wardrobe, capsule, search, billing, moderation)                                                       |
 | API gateway              | nginx 1.27 with Let's Encrypt TLS (certbot on host), rate-limit (`limit_req_zone`), `auth_request` into Ory Kratos                                                |
-| Database                 | PostgreSQL 16 with pgvector (semantic) and Postgres FTS (full-text), PgBouncer for connection pooling                                                             |
+| Database                 | PostgreSQL 16 with Postgres FTS in v0.1; pgvector and PgBouncer are deferred by ADR-007 until semantic-search and connection-pressure triggers fire               |
 | Cache / sessions / queue | Redis 7 with a Redis-based job queue (River or asynq) — Kafka is deferred until services split                                                                    |
 | Auth                     | Ory Kratos email/password in v0.1; Google OAuth and Apple Sign-In in Stage 2                                                                                      |
 | File storage             | DigitalOcean Spaces (S3-compatible) with the built-in Spaces CDN                                                                                                  |
 | Image processing         | Self-hosted Capsule Zero model behind a Go worker, deferred to Stage 2                                                                                            |
 | Email                    | Resend for transactional email (verification, password reset, security notifications), MailHog for local dev                                                      |
 | DNS / anti-DDoS          | Spaceship registrar pointed at Cloudflare nameservers; Cloudflare proxy enabled on `capsulezero.app` for DDoS and CDN                                             |
-| Observability            | Grafana dashboards + syslog (file) logs + a tracing exporter; Sentry and Prometheus deferred to Stage 2                                                           |
+| Observability            | syslog file logs + OpenTelemetry trace export in v0.1; Grafana dashboards, Sentry, and Prometheus are deferred                                                    |
 | Hosting                  | Single DigitalOcean droplet running docker-compose; minimum 4 GB RAM / 2 vCPU / 80 GB disk                                                                        |
 | Payments                 | Lava.top one-time product payments on web; stubbed in v0.1, integrated after core wardrobe and capsule flows ship                                                 |
 | i18n                     | next-intl                                                                                                                                                         |

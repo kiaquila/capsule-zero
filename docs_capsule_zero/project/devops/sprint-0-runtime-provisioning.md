@@ -28,7 +28,7 @@ Required keys at minimum: see `docs_capsule_zero/project/devops/docker-compose-d
 
 ## Production-First Posture
 
-There is no Stage 1 mock-first layer (see ADR-006). Every service in the runtime comes up against real Postgres / real Kratos / real Spaces / real Resend / real Cloudflare from the first deploy. Local development uses the same stack with a `docker-compose.dev.yml` override that swaps Resend for MailHog and enables hot-reload for `api` and `worker` (the override is reintroduced in Phase 2 alongside Kratos).
+There is no Stage 1 mock-first layer (see ADR-006). Every active service in the runtime comes up against real Postgres / real Kratos / real Spaces / real Resend / real Cloudflare from the first deploy. Local development uses the same stack with a `docker-compose.dev.yml` override that swaps Resend for MailHog and enables API hot-reload (the override is reintroduced in Phase 2 alongside Kratos).
 
 Real provider integration gates that remain:
 
@@ -43,7 +43,7 @@ Until these gates open, the corresponding API surface exists as stubs (Lava.top)
 ### 1. DNS and Cloudflare
 
 - Confirm Spaceship nameservers point to Cloudflare.
-- In Cloudflare, add an `A` record for `capsulezero.app` and `grafana.capsulezero.app` pointing to the droplet IP, with proxy (orange cloud) enabled.
+- In Cloudflare, add an `A` record for `capsulezero.app` pointing to the droplet IP, with proxy (orange cloud) enabled. Add `grafana.capsulezero.app` only after ADR-007 promotes Grafana.
 - SSL/TLS mode: `Full (strict)`.
 - Enable `Bot Fight Mode` and `Always Use HTTPS`.
 - Add a Page Rule (or Rules Engine entry) for `capsulezero.app/api/*` with cache level `Bypass`.
@@ -93,7 +93,7 @@ If any reports `pending` or `error`, fix the env file or the service config and 
 - Confirm the verification email arrives via Resend.
 - Sign in, update profile, sign out.
 - Upload a wardrobe photo via the Journey flow; confirm the file lands in Spaces under the correct prefix.
-- Open `https://grafana.capsulezero.app`, log in with `GRAFANA_ADMIN_PASSWORD`, confirm the syslog data source resolves.
+- Confirm syslog files are present and rotated on the host; Grafana smoke checks start only after ADR-007 promotes the dashboard service.
 
 ### 6. Backups
 
@@ -154,7 +154,8 @@ Droplet
 DNS / Cloudflare
 
 - Spaceship → Cloudflare NS: pass/fail
-- Cloudflare A records (apex + grafana): pass/fail
+- Cloudflare A record (apex): pass/fail
+- Grafana A record omitted until ADR-007 promotion: pass/fail
 - Proxy enabled: pass/fail
 - SSL/TLS Full (strict): pass/fail
 - Bot Fight Mode: enabled
