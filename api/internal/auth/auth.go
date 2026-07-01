@@ -84,16 +84,22 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Unsupported locale.")
 		return
 	}
-	// Name is optional (AuthRegistrationRequest), but when provided it must fit the
-	// same 80-char bound as the profile display name — the Kratos identity schema
-	// permits up to 256, and EnsureForIdentity persists the trait as display_name,
-	// so an unbounded name would otherwise back-door an over-long profile field.
-	if utf8.RuneCountInString(in.Name) > maxProfileFieldRunes {
+	// Name is optional (AuthRegistrationRequest), but when provided it is trimmed
+	// and must be a non-blank string of at most 80 runes — matching the profile
+	// display-name rules. The Kratos identity schema permits up to 256 and
+	// EnsureForIdentity persists the trait as display_name, so an unbounded or
+	// whitespace-only name would otherwise back-door an invalid profile field.
+	name := strings.TrimSpace(in.Name)
+	if in.Name != "" && name == "" {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Name cannot be only whitespace.")
+		return
+	}
+	if utf8.RuneCountInString(name) > maxProfileFieldRunes {
 		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Name must be 80 characters or fewer.")
 		return
 	}
 
-	session, err := h.Kratos.Register(r.Context(), in.Email, in.Password, in.Name, locale)
+	session, err := h.Kratos.Register(r.Context(), in.Email, in.Password, name, locale)
 	if err != nil {
 		if errors.Is(err, kratos.ErrIdentifierExists) {
 			// Do not echo Kratos's "an account already exists" text: that would
@@ -225,19 +231,24 @@ func (h *Handler) PatchProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Enforce the ProfileUpdateRequest contract before persisting: the repository
-	// only normalizes locale, so a non-web API client could otherwise store an
-	// empty display name or an over-long country/city as a "successful" update.
-	if msg, ok := validateProfileUpdate(in.DisplayName, in.Country, in.City); !ok {
+	// Trim the free-text fields so a surrounding-whitespace value is neither
+	// stored verbatim nor able to slip past the blank/length checks, then enforce
+	// the ProfileUpdateRequest contract before persisting: the repository only
+	// normalizes locale, so a non-web API client could otherwise store an empty
+	// display name or an over-long country/city as a "successful" update.
+	displayName := trimOptional(in.DisplayName)
+	country := trimOptional(in.Country)
+	city := trimOptional(in.City)
+	if msg, ok := validateProfileUpdate(displayName, country, city); !ok {
 		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", msg)
 		return
 	}
 
 	profile, err := h.Profiles.Apply(r.Context(), userID, profiles.Update{
-		DisplayName: in.DisplayName,
+		DisplayName: displayName,
 		Locale:      in.Locale,
-		Country:     in.Country,
-		City:        in.City,
+		Country:     country,
+		City:        city,
 		AvatarURL:   in.AvatarURL,
 	})
 	if err != nil {
@@ -332,6 +343,16 @@ func kratosMessage(err error) string {
 		return strings.TrimSpace(msg[idx+2:])
 	}
 	return msg
+}
+
+// trimOptional trims surrounding whitespace from a provided (non-nil) string,
+// leaving an omitted field untouched.
+func trimOptional(s *string) *string {
+	if s == nil {
+		return nil
+	}
+	trimmed := strings.TrimSpace(*s)
+	return &trimmed
 }
 
 // validateProfileUpdate enforces the ProfileUpdateRequest contract constraints on
