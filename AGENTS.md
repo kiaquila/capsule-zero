@@ -27,9 +27,9 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
 | 0. Founder Vision             | COMPLETE — `.specify/memory/constitution.md`                                                                                                                                       |
 | 1. Market Research            | COMPLETE — `docs_capsule_zero/marketing/go-to-market.md`                                                                                                                           |
 | 2. Product Definition         | COMPLETE — `.specify/specs/001-capsule-zero-mvp/spec.md`, `docs_capsule_zero/project/methodology/`, `docs_capsule_zero/ux/emotion-map.md`, `docs_capsule_zero/ux/ux-validation.md` |
-| 3. UX/UI Design               | COMPLETE — all 16 v0.1 logical screens designed and implemented in the `/app` frontend                                                                                            |
-| **4. Technical Architecture** | **PIVOTED TO PRODUCTION STACK** — Go modular monolith + nginx + Ory Kratos + Postgres + Redis + DO Spaces + Cloudflare + Resend; React Native replaces Flutter                 |
-| 5. Development Sprint         | IN PROGRESS — `.specify/specs/024-production-stack-runtime/`: Phase 1 (nginx + web compose) and Phase 2 (Postgres + Kratos + Go API + `api` provider, auth vertical slice) landed |
+| 3. UX/UI Design               | COMPLETE — all 16 v0.1 logical screens designed and implemented in the `/app` frontend                                                                                             |
+| **4. Technical Architecture** | **PIVOTED TO PRODUCTION STACK** — Go modular monolith + nginx + Ory Kratos + Postgres + Redis + DO Spaces + Cloudflare + Resend; React Native replaces Flutter                     |
+| 5. Development Sprint         | IN PROGRESS — `.specify/specs/024-production-stack-runtime/`: Phase 1 (nginx + web compose) landed; Phase 2 (Postgres + Kratos) remains pending                                    |
 | 6. QA & Soft Launch           | Upcoming                                                                                                                                                                           |
 | 7. Commercial Launch          | Upcoming                                                                                                                                                                           |
 
@@ -37,7 +37,7 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
 
 **Production-stack pivot decision, 2026-06-27:** Phase 4 architecture was rewritten from a Supabase BaaS posture to a production-grade self-hosted stack. The mock-first Stage 1 posture (previously ADR-006) is dropped entirely — implementation goes straight to real services behind production-shape contracts.
 
-**Frontend / provider decision, 2026-06-30 (spec 024, Phase 2 — PR #57):** `/app` **stays** as the canonical, provider-abstracted Next.js frontend — there is no `/app` → `/web` rename, and `/app` is **not** slated for deletion. The retired Supabase provider is removed **domain by domain** as the Go API absorbs each bounded context: a new `api` provider mode (`CAPSULE_PROVIDER_MODE=api`) is the default, `mock` stays for local/tests, and unmigrated domains temporarily inherit mock fixtures so the app stays navigable. Postgres ships as plain `postgres:16`; pgvector is deferred (ADR-007).
+**Frontend / provider decision, 2026-06-30 (spec 024 follow-up — PR #57):** `/app` **stays** as the canonical, provider-abstracted Next.js frontend — there is no `/app` → `/web` rename, and `/app` is **not** slated for deletion. Current `/app` provider modes are `mock` and `supabase`; the Supabase provider is frozen and removed **domain by domain** as the future Go API absorbs each bounded context. Do not document an `api` provider mode as available until the `/app` API provider actually lands. Postgres ships as plain `postgres:16`; pgvector is deferred (ADR-007).
 
 ## Where to Find Specifications
 
@@ -111,12 +111,12 @@ If a product or technical object type already exists in code, reuse its componen
 
 **Module-size discipline (soft gate — a signal to split, not a hard CI failure).** The real criterion is single responsibility; the line counts below are the review trigger. Exceeding them is allowed only with a one-line justification in the PR.
 
-| Layer | Function / component | File / module | Cyclomatic complexity |
-| --- | --- | --- | --- |
-| Go (`/api`, `/worker`) | ≤ ~60 lines | ≤ ~500 lines | ≤ 15 |
-| TS / React (`/app`, `/mobile`) | ≤ ~60 lines | ≤ ~300 lines | ≤ 15 |
+| Layer                          | Function / component | File / module | Cyclomatic complexity |
+| ------------------------------ | -------------------- | ------------- | --------------------- |
+| Go (`/api`, `/worker`)         | ≤ ~60 lines          | ≤ ~500 lines  | ≤ 15                  |
+| TS / React (`/app`, `/mobile`) | ≤ ~60 lines          | ≤ ~300 lines  | ≤ 15                  |
 
-Thresholds are wired as **warnings** (never CI failures): ESLint `max-lines` / `max-lines-per-function` / `complexity` in `app/eslint.config.mjs`, and opt-in `funlen` / `gocyclo` in `api/.golangci.yml` (`golangci-lint run`, not in the required checks). Generated clients (`**/generated/**`) and tests are exempt.
+Thresholds are wired as **warnings** (never CI failures): ESLint `max-lines` / `max-lines-per-function` / `complexity` in `app/eslint.config.mjs`, and opt-in `funlen` / `gocyclo` in `api/.golangci.yml` (schema-validated with `golangci-lint config verify`; full run waits until `/api` has a Go module). Generated clients (`**/generated/**`) and tests are exempt.
 
 ### 8. No Supabase / Legacy-Backend Recoupling (NON-NEGOTIABLE)
 
@@ -124,7 +124,7 @@ Supabase is **retired** (production-stack pivot, 2026-06-27). The legacy Supabas
 
 - No new spec, `docker-compose*.yml`, GitHub workflow, deploy/provisioning script, infra/nginx config, or doc may add or re-introduce Supabase coupling: no `SUPABASE_*` env, no Supabase client imports.
 - The **dev edge** (`dev.capsulezero.app` via `docker-compose.dev-server.yml`) stays web-only and provider-free — deploys preview the **frontend only** and smoke **provider-free routes (`/en`)**, never provider-backed `/api/*`, until the Go / Postgres / Kratos backend is wired into the dev edge in its own slice.
-- Exception, by design: the **production stack** (`docker-compose.yml`) is where the Go / Postgres / Kratos backend lands and wires **its own** env behind production-shape contracts (`CAPSULE_PROVIDER_MODE=api`, `/api/*` routing). That is the sanctioned arrival this rule anticipates — it is not a Supabase recoupling.
+- Exception, by design: the **production stack** (`docker-compose.yml`) is where the Go / Postgres / Kratos backend lands and wires **its future API-provider env** behind production-shape contracts (`/api/*` routing). That is the sanctioned arrival this rule anticipates — it is not a Supabase recoupling.
 - **Reviewers must reject** any diff that recouples deployment, CI/CD, or runtime to the retired **Supabase** backend. Regression that motivated this rule: PR #53 (spec 026) grafted a full `SUPABASE_*` env contract + `/api/health` healthcheck into the brand-new `docker-compose.dev-server.yml` instead of mirroring the web-only `docker-compose.yml`, silently breaking dev CD.
 
 ### 9. Docs Are the Single Source of Truth
@@ -191,7 +191,7 @@ When assigned to implement a specific feature, read in this order:
 ## Repository Layout
 
 ```
-/app/             ← Next.js App Router web frontend — canonical, provider-abstracted (api / mock / supabase ports)
+/app/             ← Next.js App Router web frontend — canonical, provider-abstracted (mock / supabase today; api provider lands later)
 /api/             ← Go modular monolith (bounded contexts: auth, wardrobe, capsule, search, billing)
 /worker/          ← Go background worker (Redis-queue consumer for image jobs, embeddings, webhooks)
 /mobile/          ← React Native iOS + Android app
@@ -202,7 +202,7 @@ When assigned to implement a specific feature, read in this order:
 /.specify/        ← spec-kit feature memory
 ```
 
-`/app` is the single web frontend — there is no separate `/web`, and no `/app` → `/web` rename is planned. The Supabase provider under `app/src/lib/providers/supabase/` is being retired **domain by domain** as the Go API absorbs each bounded context (see the Frontend / provider decision above). Root `docker-compose.yml` + overrides wire the stack.
+`/app` is the single web frontend — there is no separate `/web`, and no `/app` → `/web` rename is planned. The Supabase provider under `app/src/lib/providers/supabase/` is frozen and will be retired **domain by domain** as the Go API absorbs each bounded context (see the Frontend / provider decision above). Root `docker-compose.yml` currently wires the Phase 1 nginx/web stack.
 
 ## Delivery Workflow
 
@@ -267,41 +267,41 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 
 ### What's already done
 
-| Item                                | Status                                            | Location                                                               |
-| ----------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------- |
-| Frontend framework                  | ✅ Next.js 14+ App Router, React, TypeScript      | `/app` (canonical, provider-abstracted frontend)                       |
-| Styling                             | ✅ Tailwind CSS v4 with custom @theme tokens      | `app/src/styles/tokens.css`                                            |
-| Design tokens                       | ✅ Glass tokens, colors, typography               | `docs_capsule_zero/project/frontend/styling.md`                        |
-| Production-stack ADR refresh        | ✅ Rewritten in-place                              | `docs_capsule_zero/adr/adr-001-stack.md` through `adr-006-…`            |
-| Architecture council                | ✅ Decisions + validation (updated for the pivot) | `docs_capsule_zero/project/architecture/phase-4-council.md`            |
-| Phase 5 entrance checklist          | ✅ Updated for production runtime gate            | `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` |
-| API spec                            | ✅ Product contract                                | `docs_capsule_zero/adr/api-spec.md`                                    |
-| Backend docs                        | ✅ Go modular monolith                            | `docs_capsule_zero/project/backend/backend-docs.md`                    |
-| Frontend docs                       | ✅ Next.js against Go API                          | `docs_capsule_zero/project/frontend/frontend-docs.md`                  |
-| Components guide                    | ✅ Component conventions, glass patterns          | `docs_capsule_zero/project/frontend/components.md`                     |
-| Mobile docs                         | ✅ React Native stack                              | `docs_capsule_zero/project/mobile/mobile-docs.md`                      |
+| Item                         | Status                                            | Location                                                               |
+| ---------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------- |
+| Frontend framework           | ✅ Next.js 14+ App Router, React, TypeScript      | `/app` (canonical, provider-abstracted frontend)                       |
+| Styling                      | ✅ Tailwind CSS v4 with custom @theme tokens      | `app/src/styles/tokens.css`                                            |
+| Design tokens                | ✅ Glass tokens, colors, typography               | `docs_capsule_zero/project/frontend/styling.md`                        |
+| Production-stack ADR refresh | ✅ Rewritten in-place                             | `docs_capsule_zero/adr/adr-001-stack.md` through `adr-006-…`           |
+| Architecture council         | ✅ Decisions + validation (updated for the pivot) | `docs_capsule_zero/project/architecture/phase-4-council.md`            |
+| Phase 5 entrance checklist   | ✅ Updated for production runtime gate            | `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` |
+| API spec                     | ✅ Product contract                               | `docs_capsule_zero/adr/api-spec.md`                                    |
+| Backend docs                 | ✅ Go modular monolith                            | `docs_capsule_zero/project/backend/backend-docs.md`                    |
+| Frontend docs                | ✅ Next.js against Go API                         | `docs_capsule_zero/project/frontend/frontend-docs.md`                  |
+| Components guide             | ✅ Component conventions, glass patterns          | `docs_capsule_zero/project/frontend/components.md`                     |
+| Mobile docs                  | ✅ React Native stack                             | `docs_capsule_zero/project/mobile/mobile-docs.md`                      |
 
 ### Accepted Phase 4 decisions
 
-| Decision               | Accepted option                                                                                                              |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| **Backend**            | Go modular monolith (single binary, bounded contexts inside the same process)                                                |
-| **Database**           | PostgreSQL 16 — plain `postgres:16` in v0.1; pgvector (semantic), Postgres FTS (full-text) and PgBouncer pooling deferred (ADR-007) |
-| **Cache / queue**      | Redis 7 (cache, sessions, Redis-based job queue — Kafka deferred until multi-service split)                                  |
-| **Auth**               | Ory Kratos with email/password Stage 1; Google OAuth and Apple Sign-In deferred to Stage 2                                   |
-| **File Storage**       | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                            |
-| **Image processing**   | Self-hosted Capsule Zero model behind a worker (deferred — first ship core wardrobe flows with manual/placeholder behavior)  |
-| **API gateway**        | nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos                  |
-| **Hosting**            | Single DigitalOcean droplet running docker-compose; Cloudflare in front of nginx for DDoS protection and CDN                  |
-| **Email**              | Resend for transactional email (verification, password reset, security notifications)                                        |
-| **Observability**      | Grafana dashboards + syslog file logs + tracing; Sentry and Prometheus deferred to Stage 2                                   |
-| **State Management**   | Zustand for local Journey/UI state; TanStack Query for interactive server-state                                              |
-| **API Client**         | Next.js Server Components/Actions and Route Handlers call the Go API through nginx (typed fetch + TanStack Query)            |
-| **Forms**              | React Hook Form + Zod                                                                                                        |
-| **i18n**               | next-intl                                                                                                                    |
-| **Payments**           | Lava.top web purchases — stubbed in v0.1, integrated after the core wardrobe and capsule flows ship                          |
-| **Mobile App**         | React Native (iOS + Android) sharing the Go API contract                                                                     |
-| **Coins/image enhance**| Backlog — deferred until after v0.1 launch                                                                                   |
+| Decision                | Accepted option                                                                                                                     |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Backend**             | Go modular monolith (single binary, bounded contexts inside the same process)                                                       |
+| **Database**            | PostgreSQL 16 — plain `postgres:16` in v0.1; pgvector (semantic), Postgres FTS (full-text) and PgBouncer pooling deferred (ADR-007) |
+| **Cache / queue**       | Redis 7 (cache, sessions, Redis-based job queue — Kafka deferred until multi-service split)                                         |
+| **Auth**                | Ory Kratos with email/password Stage 1; Google OAuth and Apple Sign-In deferred to Stage 2                                          |
+| **File Storage**        | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                                   |
+| **Image processing**    | Self-hosted Capsule Zero model behind a worker (deferred — first ship core wardrobe flows with manual/placeholder behavior)         |
+| **API gateway**         | nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos                        |
+| **Hosting**             | Single DigitalOcean droplet running docker-compose; Cloudflare in front of nginx for DDoS protection and CDN                        |
+| **Email**               | Resend for transactional email (verification, password reset, security notifications)                                               |
+| **Observability**       | Grafana dashboards + syslog file logs + tracing; Sentry and Prometheus deferred to Stage 2                                          |
+| **State Management**    | Zustand for local Journey/UI state; TanStack Query for interactive server-state                                                     |
+| **API Client**          | Next.js Server Components/Actions and Route Handlers call the Go API through nginx (typed fetch + TanStack Query)                   |
+| **Forms**               | React Hook Form + Zod                                                                                                               |
+| **i18n**                | next-intl                                                                                                                           |
+| **Payments**            | Lava.top web purchases — stubbed in v0.1, integrated after the core wardrobe and capsule flows ship                                 |
+| **Mobile App**          | React Native (iOS + Android) sharing the Go API contract                                                                            |
+| **Coins/image enhance** | Backlog — deferred until after v0.1 launch                                                                                          |
 
 ### Required Sprint 0 follow-ups before Phase 5 production-stack runtime work
 
@@ -310,7 +310,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 - Spaceship DNS pointed at Cloudflare; Cloudflare proxy enabled for `capsulezero.app`.
 - Resend account created and SPF/DKIM published on `capsulezero.app`.
 - DigitalOcean Spaces bucket created with CORS configured for `capsulezero.app`.
-- Ship `.specify/specs/024-production-stack-runtime/` to bring the stack up in docker-compose on the droplet, with every service health-checked end-to-end. (Phase 1 nginx+web and Phase 2 Postgres+Kratos+Go-API auth slice have landed; remaining domains follow.)
+- Ship `.specify/specs/024-production-stack-runtime/` to bring the stack up in docker-compose on the droplet, with every service health-checked end-to-end. (Phase 1 nginx+web has landed; Phase 2 Postgres+Kratos remains pending.)
 - Retire the Supabase provider domain by domain as the Go API absorbs each bounded context — no wholesale `/app` deletion.
 
 ### Provider integration gates before real-provider QA/staging/launch

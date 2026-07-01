@@ -9,7 +9,7 @@ Keep the repository onboarding contract current after the spec-024 production-st
 In scope:
 
 - update `AGENTS.md` to reflect `/app` as the canonical provider-abstracted Next.js frontend
-- update `AGENTS.md` phase/status language for the landed spec-024 Phase 1/2 runtime work
+- update `AGENTS.md` phase/status language for the landed spec-024 Phase 1 runtime work
 - remove obsolete HTML-prototype-as-current-source guidance from agent onboarding
 - add the engineering reuse check and module-size discipline to `AGENTS.md`
 - slim `CLAUDE.md` so Claude-specific context points back to canonical `AGENTS.md` rules instead of duplicating stale tables
@@ -83,7 +83,7 @@ This spec is documentation and support-tooling cleanup, plus deletion of an obso
 
 ## Assumptions
 
-- `/app` remains the canonical Next.js frontend after spec-024 Phase 2 and PR #57.
+- `/app` remains the canonical Next.js frontend after PR #57; spec-024 Phase 2 remains pending in the current tree.
 - `/web` contained only obsolete scaffolding plus a generated client and is not used by current runtime, tests, or deploy paths.
 - `eslint .` does not fail on warnings unless invoked with `--max-warnings`.
 - `api/.golangci.yml` is optional configuration; required Go checks use `go vet` and `gofmt`.

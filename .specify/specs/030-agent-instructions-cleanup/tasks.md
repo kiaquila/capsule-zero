@@ -18,6 +18,7 @@
 - [x] Add complete feature memory for this support-tooling PR.
 - [x] Address the AI Review P2 by actualizing stale `/web`, Traefik, and migration-tool references across source docs/specs/tests.
 - [x] Address the fresh AI Review P2s for golangci-lint v2 schema, malformed SENAR verification tables, and deferred pgvector Phase 2 evidence.
+- [x] Address the fresh AI Review P2s for premature Phase 2 landed status and unsupported `api` provider-mode guidance.
 
 ## Verification
 
@@ -47,9 +48,10 @@
 - Use config validation and existing checks instead of failing-test-first TDD because this spec does not change application behavior.
 - Treat `/web` mentions as acceptable only when they are explicit "do not use `/web`" policy, superseded history, or unrelated API route names such as `/api/webhooks/lava`.
 - Keep spec-024 Phase 2 on plain `postgres:16`; pgvector remains documented only as deferred ADR-007 work.
+- Keep current onboarding aligned to the repository tree: Phase 1 has landed, Phase 2 is pending, and `/app` currently supports only `mock`/`supabase` provider modes until the API provider is implemented.
 
 ### Known Issues
 
 - GitHub checks must be re-run on the pushed commit before the PR can be considered merge ready.
-- The prior AI Review P2 about stale `/web` source docs and the fresh P2s on golangci-lint, SENAR tables, and pgvector evidence are addressed locally; a fresh AI Review must run on the new pushed SHA.
+- The prior AI Review P2 about stale `/web` source docs and the fresh P2s on golangci-lint, SENAR tables, pgvector evidence, Phase 2 status, and provider-mode guidance are addressed locally; a fresh AI Review must run on the new pushed SHA.
 - Local `npm run lint` passes with 73 module-size/complexity warnings and 0 errors, matching the warning-only scope of this PR.

@@ -25,7 +25,7 @@ When you change an architecture or implementation decision, actualize **all** af
 
 - **Reuse before you add — check before you write.** Before creating any new module / function / component / service / adapter / schema / helper, search for an existing one that already owns the responsibility and extend it. If you still add a new unit, state in the PR — in one line — which existing unit you checked and why it didn't fit. Full contract: **AGENTS.md §7 (Engineering Reuse Rule & Module-Size Discipline)**.
 - **Module-size soft gate** (a signal to split, not a hard CI failure): functions ≤ ~60 lines; files ≤ ~300 (TS/React) / ~500 (Go); cyclomatic complexity ≤ 15. Wired as **warnings** in `app/eslint.config.mjs` and opt-in `api/.golangci.yml` — they never fail CI. Exceeding a threshold needs a one-line justification in the PR. Details: AGENTS.md §7.
-- **No Supabase / legacy-backend recoupling** (NON-NEGOTIABLE): `/app` is the canonical provider-abstracted frontend; the Supabase provider is retired **domain by domain** as the Go API (`CAPSULE_PROVIDER_MODE=api`) absorbs each bounded context. Never re-introduce `SUPABASE_*` env or Supabase clients into any new spec, `docker-compose*.yml`, workflow, infra config, or doc. Full rule + the PR-#53 regression: AGENTS.md §8.
+- **No Supabase / legacy-backend recoupling** (NON-NEGOTIABLE): `/app` is the canonical provider-abstracted frontend; current provider modes are `mock` and `supabase`, and the frozen Supabase provider is retired **domain by domain** only as real Go API contexts land. Never re-introduce `SUPABASE_*` env or Supabase clients into any new spec, `docker-compose*.yml`, workflow, infra config, or doc. Full rule + the PR-#53 regression: AGENTS.md §8.
 
 ## Design Principles (NON-NEGOTIABLE)
 
@@ -36,7 +36,7 @@ When you change an architecture or implementation decision, actualize **all** af
 
 ## Current Phase
 
-**Phase 5 — Development Sprint, in progress** against `.specify/specs/024-production-stack-runtime/`. Phase 1 (nginx + web compose) and Phase 2 (Postgres + Kratos + Go API + `api` provider, auth vertical slice) have landed; the remaining wardrobe/capsule/catalog/billing domains migrate off the Supabase provider one slice at a time. Postgres is plain `postgres:16` (pgvector deferred, ADR-007). Full status and decisions: AGENTS.md → "Current Phase & Status" and "Phase 4 — Technical Architecture".
+**Phase 5 — Development Sprint, in progress** against `.specify/specs/024-production-stack-runtime/`. Phase 1 (nginx + web compose) has landed; Phase 2 (Postgres + Kratos) remains pending, and the Go API / `api` provider arrives in later spec-024 phases. Postgres is plain `postgres:16` (pgvector deferred, ADR-007). Full status and decisions: AGENTS.md → "Current Phase & Status" and "Phase 4 — Technical Architecture".
 
 ## Build & Dev Commands
 
@@ -59,7 +59,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up   # Dev (MailH
 
 ## Spec-Driven Development & SENAR
 
-This project uses spec-kit (`.specify/`). **Read the relevant `.specify/specs/**` before implementing.** Specs ≥ 025 follow the SENAR contract: `## Goal` / `## Scope` in `spec.md`, a `## Verification` table in `plan.md`, `## Process Memory` in `tasks.md`, and the SENAR Done Gate filled in the PR. **TDD is mandatory for spec ≥ 025 application code** (web / React Native / Go API) — commit the failing test first; infrastructure and docs are exempt (config validation + smoke checks instead). Specs 001–024 are grandfathered. Full contract: AGENTS.md → "SENAR Completion Contract" and `docs_capsule_zero/project/devops/senar-mapping.md`.
+This project uses spec-kit (`.specify/`). **Read the relevant `.specify/specs/**`before implementing.** Specs ≥ 025 follow the SENAR contract:`## Goal`/`## Scope`in`spec.md`, a `## Verification`table in`plan.md`, `## Process Memory`in`tasks.md`, and the SENAR Done Gate filled in the PR. **TDD is mandatory for spec ≥ 025 application code** (web / React Native / Go API) — commit the failing test first; infrastructure and docs are exempt (config validation + smoke checks instead). Specs 001–024 are grandfathered. Full contract: AGENTS.md → "SENAR Completion Contract" and `docs_capsule_zero/project/devops/senar-mapping.md`.
 
 ## Tests
 

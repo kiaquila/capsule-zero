@@ -7,7 +7,7 @@
 #
 # Operator runbook: docs_capsule_zero/project/devops/nginx-reverse-proxy.md
 # The previous Supabase-based stack is preserved at
-# `docker-compose.legacy-supabase.yml` until the legacy `/app` removal PR.
+# `docker-compose.legacy-supabase.yml` only for rollback while domains migrate.
 
 name: capsule-zero
 
@@ -43,7 +43,7 @@ services:
       retries: 3
       start_period: 5s
 
-  # Next.js App Router landing (legacy `/app` until it moves to `/web`).
+  # Next.js App Router landing (`/app` is the canonical web frontend).
   # Built from app/Dockerfile (multi-stage Node, standalone output, `node server.js`).
   web:
     image: ${CAPSULE_WEB_IMAGE:-capsule-zero-web:local}
@@ -73,7 +73,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - "node -e \"fetch('http://127.0.0.1:3000/en').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""
+        - 'node -e "fetch(''http://127.0.0.1:3000/en'').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"'
       interval: 30s
       timeout: 10s
       retries: 5

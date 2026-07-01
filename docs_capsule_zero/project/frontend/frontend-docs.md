@@ -13,7 +13,7 @@
 
 The web frontend talks to the Go API monolith through nginx; there is no Vercel runtime. Auth flows are rendered by the web app against Ory Kratos self-service endpoints, with the Kratos session validated by the Go API on every request.
 
-`/app` is the canonical, provider-abstracted Next.js frontend. There is no `/app` to `/web` rename planned. The default runtime provider is `api`; `mock` remains for local/test fixture flows, and the retired Supabase provider is removed domain by domain as the Go API absorbs each bounded context.
+`/app` is the canonical, provider-abstracted Next.js frontend. There is no `/app` to `/web` rename planned. Current provider modes are `mock` and `supabase`; the `api` provider mode must not be documented as available until it actually lands in `/app`. The retired Supabase provider is frozen and removed domain by domain as the Go API absorbs each bounded context.
 
 ## Delivery Rules
 
