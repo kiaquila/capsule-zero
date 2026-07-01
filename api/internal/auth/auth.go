@@ -46,10 +46,10 @@ type sessionDTO struct {
 }
 
 type authResponse struct {
-	Session                   *sessionDTO        `json:"session,omitempty"`
-	User                      *userDTO           `json:"user,omitempty"`
-	Profile                   *profiles.Profile  `json:"profile,omitempty"`
-	RequiresEmailConfirmation bool               `json:"requiresEmailConfirmation"`
+	Session                   *sessionDTO       `json:"session,omitempty"`
+	User                      *userDTO          `json:"user,omitempty"`
+	Profile                   *profiles.Profile `json:"profile,omitempty"`
+	RequiresEmailConfirmation bool              `json:"requiresEmailConfirmation"`
 }
 
 // --- Handlers ---
@@ -66,8 +66,13 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "invalid_request", "Malformed request body.")
 		return
 	}
+	locale, err := profiles.NormalizeLocale(in.Locale)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "invalid_locale", "Unsupported locale.")
+		return
+	}
 
-	session, err := h.Kratos.Register(r.Context(), in.Email, in.Password, in.Name, in.Locale)
+	session, err := h.Kratos.Register(r.Context(), in.Email, in.Password, in.Name, locale)
 	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "registration_failed", kratosMessage(err))
 		return
@@ -150,7 +155,7 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	userID, _ := r.Context().Value(sessionTokenKey).(string)
 	profile, err := h.Profiles.GetByUserID(r.Context(), userID)
 	if err != nil {
-		httpx.WriteError(w, http.StatusNotFound, "profile_not_found", "Profile not found.")
+		writeProfileError(w, err)
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, profile)
@@ -180,7 +185,7 @@ func (h *Handler) PatchProfile(w http.ResponseWriter, r *http.Request) {
 		AvatarURL:   in.AvatarURL,
 	})
 	if err != nil {
-		httpx.WriteError(w, http.StatusNotFound, "profile_not_found", "Profile not found.")
+		writeProfileError(w, err)
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, profile)
@@ -266,4 +271,15 @@ func kratosMessage(err error) string {
 		return strings.TrimSpace(msg[idx+2:])
 	}
 	return msg
+}
+
+func writeProfileError(w http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, profiles.ErrNotFound):
+		httpx.WriteError(w, http.StatusNotFound, "profile_not_found", "Profile not found.")
+	case errors.Is(err, profiles.ErrUnsupportedLocale):
+		httpx.WriteError(w, http.StatusBadRequest, "invalid_locale", "Unsupported locale.")
+	default:
+		httpx.WriteError(w, http.StatusInternalServerError, "profile_error", "Profile storage is temporarily unavailable.")
+	}
 }

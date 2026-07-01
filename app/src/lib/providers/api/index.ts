@@ -1,10 +1,12 @@
 import "server-only";
 
-import type { User } from "@/types";
+import type { Capsule, User } from "@/types";
 import { readSignedAppSession } from "@/features/auth/session";
 import { createMockProviderRegistry } from "../mock";
+import { MOCK_USER } from "../mock/fixtures";
 import type {
   AuthPort,
+  CapsuleRepository,
   PasswordCredentials,
   Profile,
   ProfileRepository,
@@ -12,6 +14,8 @@ import type {
   ProviderHealth,
   ProviderRegistry,
   Session,
+  WardrobeEntry,
+  WardrobeRepository,
 } from "../contracts";
 
 // The `api` provider talks to the Go modular monolith (auth/profile bounded
@@ -181,6 +185,96 @@ function buildProfileRepository(): ProfileRepository {
   };
 }
 
+function rebindWardrobeItem(
+  item: WardrobeEntry,
+  userId: string,
+): WardrobeEntry {
+  return { ...item, userId };
+}
+
+function rebindCapsule(capsule: Capsule, userId: string): Capsule {
+  return { ...capsule, userId };
+}
+
+function buildFixtureBackedWardrobe(
+  base: WardrobeRepository,
+): WardrobeRepository {
+  return {
+    async listItems(userId, filters) {
+      const ownedItems = await base.listItems(userId, filters);
+      if (ownedItems.length > 0) {
+        return ownedItems;
+      }
+      const fixtureItems = await base.listItems(MOCK_USER.id, filters);
+      return fixtureItems.map((item) => rebindWardrobeItem(item, userId));
+    },
+
+    async getItem(userId, itemId) {
+      const ownedItem = await base.getItem(userId, itemId);
+      if (ownedItem) {
+        return ownedItem;
+      }
+      const fixtureItem = await base.getItem(MOCK_USER.id, itemId);
+      return fixtureItem ? rebindWardrobeItem(fixtureItem, userId) : null;
+    },
+
+    async createItem(userId, draft) {
+      return base.createItem(userId, draft);
+    },
+
+    async updateItemStatus(userId, itemId, status) {
+      try {
+        return await base.updateItemStatus(userId, itemId, status);
+      } catch (error) {
+        const fixtureItem = await base.getItem(MOCK_USER.id, itemId);
+        if (!fixtureItem) {
+          throw error;
+        }
+        const updated = await base.updateItemStatus(
+          MOCK_USER.id,
+          itemId,
+          status,
+        );
+        return rebindWardrobeItem(updated, userId);
+      }
+    },
+
+    async setFavorite(userId, itemId, favorite) {
+      try {
+        return await base.setFavorite(userId, itemId, favorite);
+      } catch (error) {
+        const fixtureItem = await base.getItem(MOCK_USER.id, itemId);
+        if (!fixtureItem) {
+          throw error;
+        }
+        const updated = await base.setFavorite(
+          MOCK_USER.id,
+          itemId,
+          favorite,
+        );
+        return rebindWardrobeItem(updated, userId);
+      }
+    },
+  };
+}
+
+function buildFixtureBackedCapsules(base: CapsuleRepository): CapsuleRepository {
+  return {
+    async getCurrentCapsule(userId) {
+      const ownedCapsule = await base.getCurrentCapsule(userId);
+      if (ownedCapsule) {
+        return ownedCapsule;
+      }
+      const fixtureCapsule = await base.getCurrentCapsule(MOCK_USER.id);
+      return fixtureCapsule ? rebindCapsule(fixtureCapsule, userId) : null;
+    },
+
+    async createCapsule(userId, draft) {
+      return base.createCapsule(userId, draft);
+    },
+  };
+}
+
 async function apiHealth(): Promise<ProviderHealth> {
   try {
     const { data } = await apiFetch<Record<string, unknown>>("/api/health", {
@@ -216,6 +310,8 @@ export function createApiProviderRegistry(): ProviderRegistry {
     mode: "api",
     auth: buildAuthPort(),
     profiles: buildProfileRepository(),
+    wardrobe: buildFixtureBackedWardrobe(base.wardrobe),
+    capsules: buildFixtureBackedCapsules(base.capsules),
     health: apiHealth,
   };
 }

@@ -30,7 +30,7 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - [x] Reintroduce `docker-compose.dev.yml` with the MailHog override for the Kratos courier
 - [x] Scaffold the Go `api` auth/profile context: `GET /api/health`, Kratos session validation, `profiles` table + `kratos_identity_id → profiles.id` mapping, profile/session endpoints; embedded SQL migrations at boot
 - [x] nginx routes `/api/*` to the Go API in both edge paths: Docker nginx → `api:8080`; active host nginx → `127.0.0.1:8080` (`auth_request` snippet lands with the first protected server-rendered route in a later slice — the `api` provider talks to the Go API server-side)
-- [x] Add the `api` provider mode in `app/src/lib/providers/api/` (AuthPort + ProfileRepository) against the Go API; register it, default `CAPSULE_PROVIDER_MODE=api`; unmigrated domains inherit mock fixtures
+- [x] Add the `api` provider mode in `app/src/lib/providers/api/` (AuthPort + ProfileRepository) against the Go API; register it, default `CAPSULE_PROVIDER_MODE=api`; unmigrated domains inherit mock fixtures rebound to the real session user
 - [x] Verify acceptance 9a–9d + 11–13: registration + login work end-to-end on `/app` (Playwright e2e green)
 
 ### Phase 3 — Redis + remaining `/api/*` surface
@@ -97,6 +97,8 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - **2026-06-30 Kratos runs with `--dev` in v0.1.** It is internal-only (Go API is the only caller over the private network), so relaxing its HTTPS assumptions is acceptable for now; hardening to non-dev mode is a Known Issue below.
 - **2026-07-01 PR #57 review fix: public `/api/*` is routed at both nginx edges.** The Docker nginx config already routes `/api/` to `api:8080`, but the active production path is host/systemd nginx with compose publishing the Go API on `127.0.0.1:8080`. Added the matching host route and verified the host config pair with `nginx:1.27 nginx -t` using a temporary test cert.
 - **2026-07-01 PR #57 review fix: Postgres init quotes env-sourced role, database, and password values before SQL execution.** `00-kratos-db.sh` now passes values as psql variables and uses identifier/literal quoting plus `format('%I'/'%L')` before `\gexec`. Verified with a fresh `postgres:16` container using `KRATOS_DB_USER=kratos.user`, `KRATOS_DB_NAME=kratos-db`, and a password containing a single quote and spaces.
+- **2026-07-01 PR #57 review fix: `api` mode rebinds inherited mock wardrobe/capsule fixtures to the real profile UUID.** Real auth/profile now return the Go API profile id, so fallback mock fixtures owned by `MOCK_USER` would otherwise make authenticated dashboards look empty until the wardrobe slice lands. The `api` provider keeps create operations on the real user id and only rebinds inherited fixture reads/updates for not-yet-migrated domains.
+- **2026-07-01 PR #57 review fix: profile locales are constrained to EN/RU and profile storage errors stay visible as 5xx.** The auth schema now checks `locale IN ('en', 'ru')`; profile writes normalize/validate the same active locale set; only `profiles.ErrNotFound` returns 404, unsupported locale returns 400, and all other profile repository failures return 500.
 
 ### Known Issues
 

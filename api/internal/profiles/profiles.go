@@ -14,6 +14,10 @@ import (
 // ErrNotFound is returned when no profile matches.
 var ErrNotFound = errors.New("profile not found")
 
+// ErrUnsupportedLocale is returned when a profile write requests a locale
+// outside the active v0.1 locale scope.
+var ErrUnsupportedLocale = errors.New("unsupported profile locale")
+
 // Profile mirrors the web ProfileRepository contract.
 type Profile struct {
 	UserID      string    `json:"userId"`
@@ -55,9 +59,7 @@ const columns = `id, email, COALESCE(display_name, ''), locale,
 // first sign-in. Email/display-name/locale are refreshed from the identity so
 // the profile tracks identity changes. Concurrency-safe via ON CONFLICT.
 func (r *Repo) EnsureForIdentity(ctx context.Context, identityID, email, displayName, locale string) (Profile, error) {
-	if locale == "" {
-		locale = "en"
-	}
+	locale = NormalizeLocaleOrDefault(locale)
 	row := r.pool.QueryRow(ctx, `
 		INSERT INTO profiles (kratos_identity_id, email, display_name, locale)
 		VALUES ($1, $2, NULLIF($3, ''), $4)
@@ -78,6 +80,14 @@ func (r *Repo) GetByUserID(ctx context.Context, userID string) (Profile, error) 
 
 // Apply updates the mutable fields and returns the refreshed profile.
 func (r *Repo) Apply(ctx context.Context, userID string, update Update) (Profile, error) {
+	locale := update.Locale
+	if update.Locale != nil {
+		normalized, err := NormalizeLocale(*update.Locale)
+		if err != nil {
+			return Profile{}, err
+		}
+		locale = &normalized
+	}
 	row := r.pool.QueryRow(ctx, `
 		UPDATE profiles SET
 			display_name = COALESCE($2, display_name),
@@ -88,8 +98,30 @@ func (r *Repo) Apply(ctx context.Context, userID string, update Update) (Profile
 			updated_at   = now()
 		WHERE id = $1
 		RETURNING `+columns,
-		userID, update.DisplayName, update.Locale, update.Country, update.City, update.AvatarURL)
+		userID, update.DisplayName, locale, update.Country, update.City, update.AvatarURL)
 	return scan(row)
+}
+
+// NormalizeLocale constrains profile locale persistence to active v0.1 locales.
+func NormalizeLocale(locale string) (string, error) {
+	switch locale {
+	case "", "en":
+		return "en", nil
+	case "ru":
+		return "ru", nil
+	default:
+		return "", ErrUnsupportedLocale
+	}
+}
+
+// NormalizeLocaleOrDefault keeps identity sync resilient if an upstream trait is
+// absent or stale.
+func NormalizeLocaleOrDefault(locale string) string {
+	normalized, err := NormalizeLocale(locale)
+	if err != nil {
+		return "en"
+	}
+	return normalized
 }
 
 func scan(row pgx.Row) (Profile, error) {

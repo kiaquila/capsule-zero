@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     kratos_identity_id UUID NOT NULL UNIQUE,
     email              TEXT NOT NULL,
     display_name       TEXT,
-    locale             TEXT NOT NULL DEFAULT 'en',
+    locale             TEXT NOT NULL DEFAULT 'en' CHECK (locale IN ('en', 'ru')),
     country            TEXT,
     city               TEXT,
     avatar_url         TEXT,
