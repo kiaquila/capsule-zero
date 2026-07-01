@@ -1,4 +1,4 @@
-# Spec 030: Agent Instructions Cleanup
+# Spec 031: Agent Instructions Cleanup
 
 ## Goal
 

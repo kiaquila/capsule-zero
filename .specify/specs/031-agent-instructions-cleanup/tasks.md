@@ -1,4 +1,4 @@
-# Tasks 030: Agent Instructions Cleanup
+# Tasks 031: Agent Instructions Cleanup
 
 ## Setup
 
@@ -24,6 +24,7 @@
 - [x] Address the fresh AI Review P2 for stale `web/**` deploy-relevant guidance in the dev CD runbook/spec.
 - [x] Address the fresh AI Review P2 for deferred pgvector/PgBouncer drift in read-first source docs.
 - [x] Address the fresh AI Review P2 for SENAR grandfathering drift in `CLAUDE.md`.
+- [x] Resolve the `origin/main` merge conflict after the Flutter/Dart mobile shell removal landed.
 
 ## Verification
 
@@ -47,7 +48,7 @@
 
 ### Decisions
 
-- Use a new spec folder, `030-agent-instructions-cleanup`, because the existing specs stop at 029 on the PR branch and this PR has its own support-tooling scope.
+- Rename this support spec to `031-agent-instructions-cleanup` after merging `origin/main`, because `030-remove-stale-flutter-mobile-shell` landed first and now owns the `030` number.
 - Keep module-size enforcement advisory: ESLint rules are warnings, and golangci-lint remains opt-in rather than part of required CI.
 - Keep the `/web` removal in scope because `/app` is the accepted canonical frontend and the deleted `/web` files were obsolete scaffolding/generated client leftovers.
 - Use config validation and existing checks instead of failing-test-first TDD because this spec does not change application behavior.
@@ -59,9 +60,11 @@
 - Keep the dev CD deploy-relevant path docs aligned with `.github/workflows/cd-dev.yml`: `app/**` is active, `web/**` is absent.
 - Keep active catalog-search docs FTS-first; hybrid pgvector ranking, embeddings, and vector indexes belong to the later semantic-search slice.
 - Keep `CLAUDE.md` as a thin pointer to `AGENTS.md`: SENAR fields apply from spec `005-…` onward, while TDD starts at spec ≥ 025 application code.
+- Preserve `origin/main`'s deferred React Native client-generation posture while keeping PR #60's canonical `/app` web client and no `/web` generator target.
 
 ### Known Issues
 
 - GitHub checks must be re-run on the pushed commit before the PR can be considered merge ready.
 - The prior AI Review P2 about stale `/web` source docs and the fresh P2s on golangci-lint, SENAR tables, pgvector evidence, Phase 2 status, provider-mode guidance, deferred runtime wording, stale canonical-frontend deletion wording, dev CD runbook filtering, read-first pgvector drift, and SENAR grandfathering drift are addressed locally; a fresh AI Review must run on the new pushed SHA.
+- The `origin/main` merge conflict is resolved locally; PR checks must be re-run on the merge commit.
 - Local `npm run lint` passes with 73 module-size/complexity warnings and 0 errors, matching the warning-only scope of this PR.

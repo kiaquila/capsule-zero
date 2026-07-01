@@ -6,25 +6,25 @@ Accepted for v0.1 planning (rewritten 2026-06-27 — replaces the previous Flutt
 
 ## Product Requirement
 
-Capsule Zero v0.1 ships native mobile apps for iOS and Android built with React Native. The product remains mobile-first across web and native clients. The previous Flutter decision is dropped before any Flutter scaffold ships.
+Capsule Zero v0.1 ships native mobile apps for iOS and Android built with React Native. The product remains mobile-first across web and native clients. A throwaway Flutter shell was scaffolded during Sprint 0 (before the 2026-06-27 React Native pivot) and has since been removed as stale; the React Native scaffold is delivered in a later spec.
 
 ## Stack
 
-| Layer             | Decision                                                                                                |
-| ----------------- | ------------------------------------------------------------------------------------------------------- |
-| Framework         | React Native (with the New Architecture: Fabric + TurboModules)                                          |
-| Language          | TypeScript                                                                                              |
-| Toolchain         | Expo (managed config + EAS Build for iOS/Android signing) unless a feature requires the bare workflow   |
-| Routing           | Expo Router (file-based)                                                                                |
-| State management  | Zustand for local UI state, TanStack Query for server-state                                             |
-| Forms             | React Hook Form + Zod (same as web)                                                                     |
-| Backend client    | Generated TypeScript client from `docs_capsule_zero/adr/openapi.yaml` over HTTPS to the Go API           |
-| Auth              | Ory Kratos self-service flows rendered in the app; session cookie/JWT exchanged with the Go API         |
-| Secure storage    | `expo-secure-store` for session material                                                                |
-| Image input       | `expo-image-picker` for camera/gallery; uploads through signed PUT URLs to DigitalOcean Spaces           |
-| Payments          | Read-only coin balance in v0.1; purchases happen on web through Lava.top (v0.2 integration)             |
-| i18n              | `expo-localization` + `react-intl` (or `i18next`) for EN + RU; ES-AR deferred to v0.2                    |
-| Deep links        | `expo-linking` + universal links / app links                                                            |
+| Layer            | Decision                                                                                              |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| Framework        | React Native (with the New Architecture: Fabric + TurboModules)                                       |
+| Language         | TypeScript                                                                                            |
+| Toolchain        | Expo (managed config + EAS Build for iOS/Android signing) unless a feature requires the bare workflow |
+| Routing          | Expo Router (file-based)                                                                              |
+| State management | Zustand for local UI state, TanStack Query for server-state                                           |
+| Forms            | React Hook Form + Zod (same as web)                                                                   |
+| Backend client   | Generated TypeScript client from `docs_capsule_zero/adr/openapi.yaml` over HTTPS to the Go API        |
+| Auth             | Ory Kratos self-service flows rendered in the app; session cookie/JWT exchanged with the Go API       |
+| Secure storage   | `expo-secure-store` for session material                                                              |
+| Image input      | `expo-image-picker` for camera/gallery; uploads through signed PUT URLs to DigitalOcean Spaces        |
+| Payments         | Read-only coin balance in v0.1; purchases happen on web through Lava.top (v0.2 integration)           |
+| i18n             | `expo-localization` + `react-intl` (or `i18next`) for EN + RU; ES-AR deferred to v0.2                 |
+| Deep links       | `expo-linking` + universal links / app links                                                          |
 
 The React Native app shares the same Go API contract as the web. It never talks to Kratos or Spaces directly through a back channel — auth flows go through the Go API via Kratos forward-auth, and uploads go through signed URLs issued by the API.
 
