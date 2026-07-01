@@ -123,6 +123,18 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
+    InternalServerError:
+      description: Temporary server-side failure.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    BadGateway:
+      description: Upstream identity service is temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
   schemas:
     ErrorCode:
       type: string
@@ -205,9 +217,16 @@ components:
           type: string
           enum:
             [tops, dresses_skirts, bottoms, outerwear, shoes, bags, accessories]
-    Profile:
+    AuthLocation:
       type: object
-      required: [id, email, language, coinBalance]
+      properties:
+        country:
+          type: string
+        city:
+          type: string
+    AuthUser:
+      type: object
+      required: [id, email, createdAt]
       properties:
         id:
           type: string
@@ -215,19 +234,114 @@ components:
         email:
           type: string
           format: email
-        displayName:
-          type: [string, "null"]
+        name:
+          type: string
         avatarUrl:
-          type: [string, "null"]
-        language:
+          type: string
+        location:
+          $ref: "#/components/schemas/AuthLocation"
+        createdAt:
+          type: string
+          format: date-time
+    AuthSession:
+      type: object
+      required: [token, expiresAt]
+      properties:
+        token:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+    AuthResponse:
+      type: object
+      required: [requiresEmailConfirmation]
+      properties:
+        session:
+          $ref: "#/components/schemas/AuthSession"
+        user:
+          $ref: "#/components/schemas/AuthUser"
+        profile:
+          $ref: "#/components/schemas/Profile"
+        requiresEmailConfirmation:
+          type: boolean
+    AuthRegistrationRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        locale:
+          $ref: "#/components/schemas/Locale"
+    AuthLoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    AuthRecoveryRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+    AuthRecoveryResponse:
+      type: object
+      required: [delivery, email]
+      properties:
+        delivery:
+          type: string
+          enum: [email]
+        email:
+          type: string
+          format: email
+    AuthLogoutResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+    Profile:
+      type: object
+      required:
+        [userId, email, displayName, locale, coinBalance, createdAt, updatedAt]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+        locale:
           $ref: "#/components/schemas/Locale"
         country:
-          type: [string, "null"]
+          type: string
         city:
-          type: [string, "null"]
+          type: string
         coinBalance:
           type: integer
           minimum: 0
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     ProfileUpdateRequest:
       type: object
       properties:
@@ -235,7 +349,7 @@ components:
           type: string
           minLength: 1
           maxLength: 80
-        language:
+        locale:
           $ref: "#/components/schemas/Locale"
         country:
           type: [string, "null"]
@@ -243,6 +357,8 @@ components:
         city:
           type: [string, "null"]
           maxLength: 80
+        avatarUrl:
+          type: [string, "null"]
     AvatarRequest:
       type: object
       required: [assetId]
@@ -786,6 +902,125 @@ components:
           type: string
           format: uuid
 paths:
+  /api/auth/registration:
+    post:
+      tags: [Auth]
+      operationId: registerWithPassword
+      x-auth: public
+      security: []
+      summary: Create a password account and return a session or email-confirmation state.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRegistrationRequest"
+      responses:
+        "200":
+          description: Registration completed, or email confirmation is required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        default:
+          $ref: "#/components/responses/InternalServerError"
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      operationId: loginWithPassword
+      x-auth: public
+      security: []
+      summary: Establish a password session.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthLoginRequest"
+      responses:
+        "200":
+          description: Authenticated session and mapped profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+  /api/auth/whoami:
+    get:
+      tags: [Auth]
+      operationId: getCurrentSession
+      x-auth: public
+      security: []
+      summary: Resolve the presented session token, or return an empty auth response.
+      responses:
+        "200":
+          description: Current session response; empty when no valid session is presented.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        default:
+          $ref: "#/components/responses/InternalServerError"
+  /api/auth/recovery:
+    post:
+      tags: [Auth]
+      operationId: requestPasswordRecovery
+      x-auth: public
+      security: []
+      summary: Start password recovery without revealing whether the account exists.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRecoveryRequest"
+      responses:
+        "200":
+          description: Recovery request accepted for email delivery.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthRecoveryResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logout
+      x-auth: public
+      security: []
+      summary: Revoke the presented session token; idempotent when absent.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+      responses:
+        "200":
+          description: Logout request completed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthLogoutResponse"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        default:
+          $ref: "#/components/responses/BadGateway"
   /auth/callback:
     get:
       tags: [Auth]

@@ -24,6 +24,11 @@ class ApiOperation {
 const apiOperations = <ApiOperation>[
   ApiOperation(method: 'GET', path: '/api/admin/moderation/items', operationId: 'listModerationItems', auth: 'admin', clientAvailability: 'server'),
   ApiOperation(method: 'PATCH', path: '/api/admin/moderation/items/{itemId}', operationId: 'updateModerationItem', auth: 'admin', clientAvailability: 'server'),
+  ApiOperation(method: 'POST', path: '/api/auth/login', operationId: 'loginWithPassword', auth: 'public', clientAvailability: 'web-mobile'),
+  ApiOperation(method: 'POST', path: '/api/auth/logout', operationId: 'logout', auth: 'public', clientAvailability: 'web-mobile'),
+  ApiOperation(method: 'POST', path: '/api/auth/recovery', operationId: 'requestPasswordRecovery', auth: 'public', clientAvailability: 'web-mobile'),
+  ApiOperation(method: 'POST', path: '/api/auth/registration', operationId: 'registerWithPassword', auth: 'public', clientAvailability: 'web-mobile'),
+  ApiOperation(method: 'GET', path: '/api/auth/whoami', operationId: 'getCurrentSession', auth: 'public', clientAvailability: 'web-mobile'),
   ApiOperation(method: 'POST', path: '/api/billing/coins/spend', operationId: 'spendCoins', auth: 'user', clientAvailability: 'web-mobile'),
   ApiOperation(method: 'POST', path: '/api/billing/lava/invoice', operationId: 'createLavaInvoice', auth: 'user', clientAvailability: 'web'),
   ApiOperation(method: 'GET', path: '/api/billing/lava/status/{invoiceId}', operationId: 'getLavaInvoiceStatus', auth: 'user', clientAvailability: 'web-mobile'),
@@ -250,13 +255,23 @@ const apiSchemasJson = r'''{
       }
     }
   },
-  "Profile": {
+  "AuthLocation": {
+    "type": "object",
+    "properties": {
+      "country": {
+        "type": "string"
+      },
+      "city": {
+        "type": "string"
+      }
+    }
+  },
+  "AuthUser": {
     "type": "object",
     "required": [
       "id",
       "email",
-      "language",
-      "coinBalance"
+      "createdAt"
     ],
     "properties": {
       "id": {
@@ -267,36 +282,186 @@ const apiSchemasJson = r'''{
         "type": "string",
         "format": "email"
       },
-      "displayName": {
-        "type": [
-          "string",
-          "null"
-        ]
+      "name": {
+        "type": "string"
       },
       "avatarUrl": {
-        "type": [
-          "string",
-          "null"
+        "type": "string"
+      },
+      "location": {
+        "$ref": "#/components/schemas/AuthLocation"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "AuthSession": {
+    "type": "object",
+    "required": [
+      "token",
+      "expiresAt"
+    ],
+    "properties": {
+      "token": {
+        "type": "string"
+      },
+      "expiresAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "AuthResponse": {
+    "type": "object",
+    "required": [
+      "requiresEmailConfirmation"
+    ],
+    "properties": {
+      "session": {
+        "$ref": "#/components/schemas/AuthSession"
+      },
+      "user": {
+        "$ref": "#/components/schemas/AuthUser"
+      },
+      "profile": {
+        "$ref": "#/components/schemas/Profile"
+      },
+      "requiresEmailConfirmation": {
+        "type": "boolean"
+      }
+    }
+  },
+  "AuthRegistrationRequest": {
+    "type": "object",
+    "required": [
+      "email",
+      "password"
+    ],
+    "properties": {
+      "email": {
+        "type": "string",
+        "format": "email"
+      },
+      "password": {
+        "type": "string",
+        "minLength": 8
+      },
+      "name": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "locale": {
+        "$ref": "#/components/schemas/Locale"
+      }
+    }
+  },
+  "AuthLoginRequest": {
+    "type": "object",
+    "required": [
+      "email",
+      "password"
+    ],
+    "properties": {
+      "email": {
+        "type": "string",
+        "format": "email"
+      },
+      "password": {
+        "type": "string"
+      }
+    }
+  },
+  "AuthRecoveryRequest": {
+    "type": "object",
+    "required": [
+      "email"
+    ],
+    "properties": {
+      "email": {
+        "type": "string",
+        "format": "email"
+      }
+    }
+  },
+  "AuthRecoveryResponse": {
+    "type": "object",
+    "required": [
+      "delivery",
+      "email"
+    ],
+    "properties": {
+      "delivery": {
+        "type": "string",
+        "enum": [
+          "email"
         ]
       },
-      "language": {
+      "email": {
+        "type": "string",
+        "format": "email"
+      }
+    }
+  },
+  "AuthLogoutResponse": {
+    "type": "object",
+    "required": [
+      "ok"
+    ],
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      }
+    }
+  },
+  "Profile": {
+    "type": "object",
+    "required": [
+      "userId",
+      "email",
+      "displayName",
+      "locale",
+      "coinBalance",
+      "createdAt",
+      "updatedAt"
+    ],
+    "properties": {
+      "userId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "email": {
+        "type": "string",
+        "format": "email"
+      },
+      "displayName": {
+        "type": "string"
+      },
+      "avatarUrl": {
+        "type": "string"
+      },
+      "locale": {
         "$ref": "#/components/schemas/Locale"
       },
       "country": {
-        "type": [
-          "string",
-          "null"
-        ]
+        "type": "string"
       },
       "city": {
-        "type": [
-          "string",
-          "null"
-        ]
+        "type": "string"
       },
       "coinBalance": {
         "type": "integer",
         "minimum": 0
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
       }
     }
   },
@@ -308,7 +473,7 @@ const apiSchemasJson = r'''{
         "minLength": 1,
         "maxLength": 80
       },
-      "language": {
+      "locale": {
         "$ref": "#/components/schemas/Locale"
       },
       "country": {
@@ -324,6 +489,12 @@ const apiSchemasJson = r'''{
           "null"
         ],
         "maxLength": 80
+      },
+      "avatarUrl": {
+        "type": [
+          "string",
+          "null"
+        ]
       }
     }
   },
@@ -1346,6 +1517,79 @@ const apiOperationPayloadsJson = r'''{
         "explode": null
       }
     ],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "loginWithPassword": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "AuthLoginRequest",
+    "responseSchemas": [
+      "AuthResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "logout": {
+    "requestRequired": false,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "responseSchemas": [
+      "AuthLogoutResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "requestPasswordRecovery": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "AuthRecoveryRequest",
+    "responseSchemas": [
+      "AuthRecoveryResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "registerWithPassword": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "AuthRegistrationRequest",
+    "responseSchemas": [
+      "AuthResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "getCurrentSession": {
+    "requestRequired": false,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": null,
+    "responseSchemas": [
+      "AuthResponse"
+    ],
+    "pathParameters": [],
     "queryParameters": [],
     "headerParameters": [],
     "cookieParameters": []

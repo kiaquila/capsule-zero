@@ -128,16 +128,23 @@ Server logs may include provider/raw details, but client responses must keep mes
 
 ## Auth
 
-Ory Kratos self-service endpoints handle sign-up, login, session refresh, and password recovery in Stage 1. OAuth callbacks are kept in the contract as Stage 2 boundaries for Google OAuth and Apple Sign-In.
+The Go API wraps Ory Kratos API self-service flows for sign-up, login, session
+resolution, logout, and password recovery in Stage 1. OAuth callbacks are kept
+in the contract as Stage 2 boundaries for Google OAuth and Apple Sign-In.
 
-| Route                   | Method | Auth   | Purpose                                                               |
-| ----------------------- | -----: | ------ | --------------------------------------------------------------------- |
-| `/auth/callback`        |    GET | Public | Stage 2 web OAuth callback; exchanges code and redirects to dashboard |
-| `/auth/mobile-callback` |    GET | Public | Stage 2 mobile OAuth callback; redirects into React Native deep link  |
-| `/api/profile`          |    GET | User   | Read current profile                                                  |
-| `/api/profile`          |  PATCH | User   | Update display name, language, country, city                          |
-| `/api/profile/avatar`   |   POST | User   | Upload or replace avatar metadata after storage upload                |
-| `/api/profile/avatar`   | DELETE | User   | Remove custom avatar                                                  |
+| Route                    | Method | Auth   | Purpose                                                               |
+| ------------------------ | -----: | ------ | --------------------------------------------------------------------- |
+| `/api/auth/registration` |   POST | Public | Create a password account and return a session or email-confirm state |
+| `/api/auth/login`        |   POST | Public | Establish a password session                                          |
+| `/api/auth/whoami`       |    GET | Public | Resolve the presented session token, or return an empty auth response |
+| `/api/auth/recovery`     |   POST | Public | Start password recovery without revealing whether the account exists  |
+| `/api/auth/logout`       |   POST | Public | Revoke the presented session token; idempotent when absent            |
+| `/auth/callback`         |    GET | Public | Stage 2 web OAuth callback; exchanges code and redirects to dashboard |
+| `/auth/mobile-callback`  |    GET | Public | Stage 2 mobile OAuth callback; redirects into React Native deep link  |
+| `/api/profile`           |    GET | User   | Read current profile                                                  |
+| `/api/profile`           |  PATCH | User   | Update display name, locale, country, city, or avatar URL             |
+| `/api/profile/avatar`    |   POST | User   | Upload or replace avatar metadata after storage upload                |
+| `/api/profile/avatar`    | DELETE | User   | Remove custom avatar                                                  |
 
 ## Journey
 

@@ -25,19 +25,19 @@ func TestWriteProfileError(t *testing.T) {
 			name:       "not found remains 404",
 			err:        profiles.ErrNotFound,
 			wantStatus: http.StatusNotFound,
-			wantCode:   "profile_not_found",
+			wantCode:   "NOT_FOUND",
 		},
 		{
 			name:       "unsupported locale is client error",
 			err:        profiles.ErrUnsupportedLocale,
 			wantStatus: http.StatusBadRequest,
-			wantCode:   "invalid_locale",
+			wantCode:   "VALIDATION_ERROR",
 		},
 		{
 			name:       "storage errors are server errors",
 			err:        errors.New("database unavailable"),
 			wantStatus: http.StatusInternalServerError,
-			wantCode:   "profile_error",
+			wantCode:   "INTERNAL_ERROR",
 		},
 	}
 
@@ -55,8 +55,8 @@ func TestWriteProfileError(t *testing.T) {
 			if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
 				t.Fatalf("decode error body: %v", err)
 			}
-			if body.Code != tt.wantCode {
-				t.Fatalf("code = %q, want %q", body.Code, tt.wantCode)
+			if body.Error.Code != tt.wantCode {
+				t.Fatalf("code = %q, want %q", body.Error.Code, tt.wantCode)
 			}
 		})
 	}
@@ -85,8 +85,8 @@ func TestRecoveryReportsUnexpectedKratosFailure(t *testing.T) {
 	if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
 		t.Fatalf("decode error body: %v", err)
 	}
-	if body.Code != "recovery_unavailable" {
-		t.Fatalf("code = %q, want recovery_unavailable", body.Code)
+	if body.Error.Code != "INTERNAL_ERROR" {
+		t.Fatalf("code = %q, want INTERNAL_ERROR", body.Error.Code)
 	}
 }
 

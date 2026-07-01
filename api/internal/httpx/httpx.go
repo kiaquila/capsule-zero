@@ -16,15 +16,25 @@ func WriteJSON(w http.ResponseWriter, status int, v any) {
 }
 
 // ErrorBody is the stable error envelope returned to clients. The web provider
-// surfaces Message inline; Code lets the UI branch without string matching.
+// surfaces Error.Message inline; Error.Code lets the UI branch without string
+// matching.
 type ErrorBody struct {
+	Error ErrorPayload `json:"error"`
+}
+
+type ErrorPayload struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
 }
 
 // WriteError writes a JSON error envelope.
 func WriteError(w http.ResponseWriter, status int, code, message string) {
-	WriteJSON(w, status, ErrorBody{Code: code, Message: message})
+	WriteJSON(w, status, ErrorBody{
+		Error: ErrorPayload{
+			Code:    code,
+			Message: message,
+		},
+	})
 }
 
 // DecodeJSON reads and strictly decodes a JSON request body into v.

@@ -61,6 +61,12 @@ async function apiFetch<T>(
 }
 
 function errorMessage(data: unknown, fallback: string): string {
+  if (data && typeof data === "object" && "error" in data) {
+    const error = (data as { error?: { message?: unknown } }).error;
+    if (error && typeof error.message === "string" && error.message.trim()) {
+      return error.message;
+    }
+  }
   if (data && typeof data === "object" && "message" in data) {
     const message = (data as { message?: unknown }).message;
     if (typeof message === "string" && message.trim()) {

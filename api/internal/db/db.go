@@ -7,6 +7,8 @@ import (
 	"io/fs"
 	"sort"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -82,7 +84,7 @@ func applyOne(ctx context.Context, pool *pgxpool.Pool, files fs.FS, version stri
 	}
 	defer tx.Rollback(ctx)
 
-	if _, err := tx.Exec(ctx, string(sqlBytes)); err != nil {
+	if err := execMigrationSQL(ctx, tx, string(sqlBytes)); err != nil {
 		return err
 	}
 	if _, err := tx.Exec(ctx,
@@ -91,4 +93,13 @@ func applyOne(ctx context.Context, pool *pgxpool.Pool, files fs.FS, version stri
 		return err
 	}
 	return tx.Commit(ctx)
+}
+
+type sqlExecutor interface {
+	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
+}
+
+func execMigrationSQL(ctx context.Context, tx sqlExecutor, sql string) error {
+	_, err := tx.Exec(ctx, sql, pgx.QueryExecModeSimpleProtocol)
+	return err
 }

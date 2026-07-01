@@ -71,18 +71,18 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 		Locale   string `json:"locale"`
 	}
 	if err := httpx.DecodeJSON(r, &in); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid_request", "Malformed request body.")
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Malformed request body.")
 		return
 	}
 	locale, err := profiles.NormalizeLocale(in.Locale)
 	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid_locale", "Unsupported locale.")
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Unsupported locale.")
 		return
 	}
 
 	session, err := h.Kratos.Register(r.Context(), in.Email, in.Password, in.Name, locale)
 	if err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "registration_failed", kratosMessage(err))
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err))
 		return
 	}
 	if session == nil {
@@ -101,17 +101,17 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password"`
 	}
 	if err := httpx.DecodeJSON(r, &in); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid_request", "Malformed request body.")
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Malformed request body.")
 		return
 	}
 
 	session, err := h.Kratos.Login(r.Context(), in.Email, in.Password)
 	if err != nil {
 		if errors.Is(err, kratos.ErrInvalidCredentials) {
-			httpx.WriteError(w, http.StatusUnauthorized, "invalid_credentials", "Invalid email or password.")
+			httpx.WriteError(w, http.StatusUnauthorized, "UNAUTHENTICATED", "Invalid email or password.")
 			return
 		}
-		httpx.WriteError(w, http.StatusBadGateway, "auth_unavailable", "Authentication is temporarily unavailable.")
+		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Authentication is temporarily unavailable.")
 		return
 	}
 
@@ -142,12 +142,12 @@ func (h *Handler) Recovery(w http.ResponseWriter, r *http.Request) {
 		Email string `json:"email"`
 	}
 	if err := httpx.DecodeJSON(r, &in); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid_request", "Malformed request body.")
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Malformed request body.")
 		return
 	}
 	// Never reveal whether the address exists.
 	if err := h.Kratos.Recovery(r.Context(), in.Email); err != nil {
-		httpx.WriteError(w, http.StatusBadGateway, "recovery_unavailable", "Password recovery is temporarily unavailable.")
+		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Password recovery is temporarily unavailable.")
 		return
 	}
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"delivery": "email", "email": in.Email})
@@ -184,7 +184,7 @@ func (h *Handler) PatchProfile(w http.ResponseWriter, r *http.Request) {
 		AvatarURL   *string `json:"avatarUrl"`
 	}
 	if err := httpx.DecodeJSON(r, &in); err != nil {
-		httpx.WriteError(w, http.StatusBadRequest, "invalid_request", "Malformed request body.")
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Malformed request body.")
 		return
 	}
 
@@ -209,12 +209,12 @@ func (h *Handler) RequireSession(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := bearerToken(r)
 		if token == "" {
-			httpx.WriteError(w, http.StatusUnauthorized, "unauthenticated", "Sign in required.")
+			httpx.WriteError(w, http.StatusUnauthorized, "UNAUTHENTICATED", "Sign in required.")
 			return
 		}
 		session, err := h.Kratos.WhoAmI(r.Context(), token)
 		if err != nil {
-			httpx.WriteError(w, http.StatusUnauthorized, "unauthenticated", "Sign in required.")
+			httpx.WriteError(w, http.StatusUnauthorized, "UNAUTHENTICATED", "Sign in required.")
 			return
 		}
 		profile, err := h.Profiles.EnsureForIdentity(
@@ -224,7 +224,7 @@ func (h *Handler) RequireSession(next http.HandlerFunc) http.HandlerFunc {
 			session.Identity.Traits.Locale,
 		)
 		if err != nil {
-			httpx.WriteError(w, http.StatusInternalServerError, "profile_error", "Could not resolve profile.")
+			httpx.WriteError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Could not resolve profile.")
 			return
 		}
 		ctx := context.WithValue(r.Context(), sessionTokenKey, profile.UserID)
@@ -240,7 +240,7 @@ func (h *Handler) respondWithSession(w http.ResponseWriter, ctx context.Context,
 		session.Identity.Traits.Locale,
 	)
 	if err != nil {
-		httpx.WriteError(w, http.StatusInternalServerError, "profile_error", "Could not resolve profile.")
+		httpx.WriteError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Could not resolve profile.")
 		return
 	}
 
@@ -287,10 +287,10 @@ func kratosMessage(err error) string {
 func writeProfileError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, profiles.ErrNotFound):
-		httpx.WriteError(w, http.StatusNotFound, "profile_not_found", "Profile not found.")
+		httpx.WriteError(w, http.StatusNotFound, "NOT_FOUND", "Profile not found.")
 	case errors.Is(err, profiles.ErrUnsupportedLocale):
-		httpx.WriteError(w, http.StatusBadRequest, "invalid_locale", "Unsupported locale.")
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Unsupported locale.")
 	default:
-		httpx.WriteError(w, http.StatusInternalServerError, "profile_error", "Profile storage is temporarily unavailable.")
+		httpx.WriteError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Profile storage is temporarily unavailable.")
 	}
 }
