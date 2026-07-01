@@ -12,8 +12,10 @@
 #      system trust store and writes `infra/dev-certs/{cert,key}.pem`.
 #   3. Add `127.0.0.1 capsulezero.local` to `/etc/hosts`.
 #
-# Daily use:
-#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# Daily use (the --env-file supplies dev credentials; the base file fails fast on
+# missing production secrets, which an override default cannot rescue):
+#   docker compose --env-file deploy/compose.dev.env \
+#     -f docker-compose.yml -f docker-compose.dev.yml up --build
 #   open https://capsulezero.local
 #
 # The `!override` tag replaces the nginx `volumes` list rather than appending

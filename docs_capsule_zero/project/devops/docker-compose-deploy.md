@@ -77,10 +77,13 @@ Start the stack:
 docker compose up -d
 ```
 
-For local development against the dev override:
+For local development against the dev override (the `--env-file` supplies dev
+credentials; the base file fails fast on missing production secrets, which an
+override default cannot rescue):
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+docker compose --env-file deploy/compose.dev.env \
+  -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
 Schema migrations apply during API startup (the embedded SQL migrator runs against `postgres` before the API serves traffic). Kratos manages its own migrations against its own database via its built-in `kratos migrate sql` step run from an init container.

@@ -313,9 +313,14 @@ func (h *Handler) respondWithSession(w http.ResponseWriter, ctx context.Context,
 }
 
 func buildUser(p profiles.Profile, firstName string) *userDTO {
-	name := firstName
+	// Prefer the stored profile display name: EnsureForIdentity keeps a
+	// user-edited display_name (only seeding it from the Kratos trait while
+	// empty), so returning the trait here would surface a stale name after a
+	// PATCH /api/profile edit. Fall back to the trait only when no display name
+	// has been set yet.
+	name := p.DisplayName
 	if name == "" {
-		name = p.DisplayName
+		name = firstName
 	}
 	user := &userDTO{
 		ID:        p.UserID,

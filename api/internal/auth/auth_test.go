@@ -387,6 +387,20 @@ func TestRegistrationRejectsOverLongName(t *testing.T) {
 	}
 }
 
+func TestBuildUserPrefersEditedDisplayName(t *testing.T) {
+	// A user who edited displayName must see the edited value, not the original
+	// Kratos registration trait.
+	edited := buildUser(profiles.Profile{UserID: "u1", Email: "e@x.com", DisplayName: "Edited Name"}, "OriginalTrait")
+	if edited.Name != "Edited Name" {
+		t.Fatalf("name = %q, want edited display name", edited.Name)
+	}
+	// With no display name set yet, fall back to the Kratos trait.
+	fresh := buildUser(profiles.Profile{UserID: "u2", Email: "e2@x.com"}, "TraitFallback")
+	if fresh.Name != "TraitFallback" {
+		t.Fatalf("name = %q, want trait fallback", fresh.Name)
+	}
+}
+
 func TestRegistrationRejectsWhitespaceName(t *testing.T) {
 	handler := Handler{Kratos: fakeIdentityClient{}}
 	request := httptest.NewRequest(

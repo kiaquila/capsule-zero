@@ -118,8 +118,9 @@ npm run ci:check     # CI baseline checks
 Full runtime (after spec 024 ships):
 
 ```bash
-docker compose up -d                 # Production-shape stack
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up   # Dev with MailHog, hot-reload, debug logging
+docker compose up -d                 # Production-shape stack (needs the droplet env file)
+# Dev with MailHog, hot-reload, debug logging (--env-file supplies dev credentials):
+docker compose --env-file deploy/compose.dev.env -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
 ## Tests
