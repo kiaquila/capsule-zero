@@ -94,10 +94,18 @@ export async function requestPasswordRecoveryAction(
 
 export async function signOutAction(): Promise<AuthActionResult> {
   const providers = createProviderRegistry();
-  await providers.auth.signOut();
-  await clearMockSession();
+  let revocationError: unknown;
+  try {
+    await providers.auth.signOut();
+  } catch (error) {
+    revocationError = error;
+  } finally {
+    await clearMockSession();
+  }
 
-  return { ok: true };
+  return revocationError
+    ? { ok: true, message: authActionErrorMessage(revocationError) }
+    : { ok: true };
 }
 
 function normalizeActionLocale(locale: string | undefined): AppLocale {
