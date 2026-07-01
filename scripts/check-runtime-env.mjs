@@ -12,20 +12,6 @@ const groups = {
     { name: "NEXT_PUBLIC_SUPABASE_ANON_KEY", kind: "secret" },
     { name: "SUPABASE_SERVICE_ROLE_KEY", kind: "secret", serverOnly: true },
     { name: "SESSION_SIGNING_SECRET", kind: "secret", serverOnly: true },
-    { name: "MOBILE_DEEP_LINK_SCHEME", kind: "scheme" },
-  ],
-  mobile: [
-    {
-      name: "SUPABASE_URL",
-      fallback: "NEXT_PUBLIC_SUPABASE_URL",
-      kind: "url",
-    },
-    {
-      name: "SUPABASE_ANON_KEY",
-      fallback: "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-      kind: "secret",
-    },
-    { name: "MOBILE_DEEP_LINK_SCHEME", kind: "scheme" },
   ],
   billing: [
     { name: "LAVA_API_URL", kind: "url" },
@@ -104,7 +90,7 @@ function printHelp() {
 
 Examples:
   node scripts/check-runtime-env.mjs --env app/.env.local
-  node scripts/check-runtime-env.mjs --env app/.env.local.example --env mobile/.env.example --allow-placeholders
+  node scripts/check-runtime-env.mjs --env app/.env.local.example --allow-placeholders
 `);
 }
 

@@ -11,7 +11,7 @@
 - [x] Remove the stale Flutter/Dart mobile shell from `mobile/`.
 - [x] Replace `mobile/README.md` with a React Native placeholder and cleanup warning.
 - [x] Remove Dart and mobile output targets from `scripts/generate-api-clients.mjs`.
-- [x] Remove stale Flutter/mobile runtime checks from local tooling.
+- [x] Remove stale Flutter/mobile runtime checks and retired mobile env validation from local tooling.
 - [x] Correct `docs_capsule_zero/project/mobile/mobile-docs.md` to acknowledge the removed Sprint 0 shell.
 - [x] Add this feature memory package after `guard` and Codex Review identified the missing SENAR artifacts.
 
@@ -35,10 +35,12 @@
 - Add a dedicated `030-remove-stale-flutter-mobile-shell` feature-memory package because this PR changes product-root files under `mobile/`.
 - Keep `mobile/README.md` as the sole tracked mobile file until the future React Native scaffold defines real source paths and generated-client placement.
 - Keep web and legacy `app/` TypeScript client generation intact while deleting only stale mobile targets and Dart generation.
+- Remove the `mobile` runtime-env surface with the deleted mobile env file so default env validation no longer requires retired mobile Supabase variables.
 - Use command-backed verification instead of TDD because the change removes a retired scaffold and leaves no executable mobile app behavior to test.
 
 ### Known Issues
 
 - The React Native scaffold is still future work and must arrive in its own later spec.
-- GitHub AI Review must be refreshed after the feature-memory commit because the existing review was attached to commit `c7dc302091`.
+- The future React Native scaffold must define its own env surface; this cleanup intentionally does not preserve legacy mobile Supabase env validation.
+- GitHub AI Review must be refreshed after each fix commit because review findings attach to a specific PR head SHA.
 - PR #61 may have a small mechanical overlap with a separate generator/docs cleanup PR if that PR merges first.
