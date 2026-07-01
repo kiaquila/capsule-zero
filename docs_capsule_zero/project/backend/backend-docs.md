@@ -33,7 +33,7 @@ The Go monolith owns all business logic; the database has no RLS. Authorization 
     methodology/                  ← color compatibility, OPR, gap analysis (pure logic)
     upload/                       ← signed PUT URLs, upload_jobs, asset attach
     marketplace/                  ← link parser adapters, import jobs
-    catalog/                      ← FTS + pgvector search, public reads
+    catalog/                      ← FTS-first catalog search, public reads
     billing/                      ← Lava.top stub, invoice + webhook handlers, coin ledger
     moderation/                   ← admin moderation queue
     storage/                      ← Spaces client wrapper (S3 SDK)
@@ -95,10 +95,11 @@ Canonical ownership column name is `user_id` (referencing `profiles.id`). Shared
 | `items`               | Canonical item metadata: name, category, colors, brand, material, source URL, source type, owner, visibility, moderation state |
 | `wardrobe_entries`    | Per-user relationship to an item: active/uncapsulated/for_sale/for_repair, favorite, from catalog, user overrides              |
 | `item_assets`         | Storage object metadata for original, processed, thumbnail, marketplace, and avatar variants                                   |
-| `upload_jobs`         | Status and error tracking for photo uploads, background removal, marketplace parsing, and embeddings                           |
+| `upload_jobs`         | Status and error tracking for photo uploads, marketplace parsing, and deferred jobs such as background removal and embeddings  |
 | `marketplace_imports` | Submitted URLs, parse status, parsed candidates, confirmed item link                                                           |
 | `moderation_queue`    | Internal approval flow before marketplace items become public catalog entries                                                  |
-| `item_embeddings`     | pgvector vectors and searchable text for public catalog items                                                                  |
+
+Deferred by ADR-007: `item_embeddings` stores pgvector vectors and searchable text when the semantic-search slice promotes pgvector. v0.1 catalog search uses FTS-ready item text on plain Postgres.
 
 ### Capsules
 
@@ -138,7 +139,7 @@ Object storage is DigitalOcean Spaces, with logical buckets implemented as path 
 Job types:
 
 - `marketplace_parse` — fetch + parse a product URL into candidate items
-- `item_embedding` — compute embedding for a public catalog item
+- `item_embedding` — deferred until ADR-007 promotes pgvector and the semantic-search slice
 - `webhook_fanout` — forward a verified Lava.top webhook to downstream handlers (v0.2)
 - `background_removal` — Stage 2, when the self-hosted image model ships
 
@@ -185,7 +186,7 @@ For v0.1 the runtime ships with **`pgbouncer`, `grafana`, and the standalone `wo
 | `LAVA_API_URL`                | server        | Lava.top base URL (v0.2)                                                                              |
 | `APP_BASE_URL`                | server/web    | Public app URL (e.g. `https://capsulezero.app`)                                                       |
 | `MOBILE_DEEP_LINK_SCHEME`     | server/mobile | Mobile return URL scheme for auth callbacks (Stage 2)                                                 |
-| `EMBEDDING_PROVIDER`          | server        | Catalog embedding provider switch                                                                     |
+| `EMBEDDING_PROVIDER`          | server        | Catalog embedding provider switch, introduced when ADR-007 promotes pgvector/semantic search          |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | server        | Trace exporter target                                                                                 |
 
 ## Local Development

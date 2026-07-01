@@ -21,7 +21,7 @@ Slice work modifies packages inside `/api/internal/`:
 - `methodology` — color compatibility, OPR, gap analysis (pure logic)
 - `upload` — signed PUT URLs, upload_jobs, asset attach
 - `marketplace` — link parser adapters, import jobs
-- `catalog` — FTS + pgvector search, public reads
+- `catalog` — FTS-first search and public reads; pgvector upgrades in slice 11
 - `billing` — Lava.top stub, invoice + webhook handlers, coin ledger (v0.2 wiring)
 - `moderation` — admin moderation queue
 - `storage` — Spaces client wrapper

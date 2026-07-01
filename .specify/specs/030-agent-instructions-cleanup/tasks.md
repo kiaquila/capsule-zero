@@ -22,6 +22,7 @@
 - [x] Address the fresh AI Review P2s for stale PgBouncer/pgvector/Grafana active-runtime language in ADR/runbook docs.
 - [x] Address the fresh AI Review P2 for stale canonical-frontend deletion guidance in spec-024 process memory.
 - [x] Address the fresh AI Review P2 for stale `web/**` deploy-relevant guidance in the dev CD runbook/spec.
+- [x] Address the fresh AI Review P2 for deferred pgvector/PgBouncer drift in read-first source docs.
 
 ## Verification
 
@@ -55,9 +56,10 @@
 - Keep active v0.1 runtime docs limited to plain Postgres, direct `pgx` pooling, in-process queue workers, and syslog/traces; pgvector, PgBouncer, standalone `worker`, and Grafana stay deferred until ADR-007 promotion triggers fire.
 - Treat old frontend-deletion notes as superseded history: `/app` stays canonical, and only Supabase env/provider code is retired domain by domain.
 - Keep the dev CD deploy-relevant path docs aligned with `.github/workflows/cd-dev.yml`: `app/**` is active, `web/**` is absent.
+- Keep active catalog-search docs FTS-first; hybrid pgvector ranking, embeddings, and vector indexes belong to the later semantic-search slice.
 
 ### Known Issues
 
 - GitHub checks must be re-run on the pushed commit before the PR can be considered merge ready.
-- The prior AI Review P2 about stale `/web` source docs and the fresh P2s on golangci-lint, SENAR tables, pgvector evidence, Phase 2 status, provider-mode guidance, deferred runtime wording, stale canonical-frontend deletion wording, and dev CD runbook filtering are addressed locally; a fresh AI Review must run on the new pushed SHA.
+- The prior AI Review P2 about stale `/web` source docs and the fresh P2s on golangci-lint, SENAR tables, pgvector evidence, Phase 2 status, provider-mode guidance, deferred runtime wording, stale canonical-frontend deletion wording, dev CD runbook filtering, and read-first pgvector drift are addressed locally; a fresh AI Review must run on the new pushed SHA.
 - Local `npm run lint` passes with 73 module-size/complexity warnings and 0 errors, matching the warning-only scope of this PR.
