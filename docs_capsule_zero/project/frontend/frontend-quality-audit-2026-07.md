@@ -131,6 +131,18 @@ Ranked by ROI against the findings above:
 
 ---
 
+## Applied in this PR
+
+Tooling (the "auto-catch" controls), all **warnings-first** so CI stays green against the existing debt, plus the safest quick-wins:
+
+- **stylelint** added (`app/stylelint.config.mjs`, `lint:css` script, wired into `ci:check` and the pre-commit `lint-staged` for changed `*.css`). Focused rules: `no-duplicate-selectors` (`disallowInList` — verified to flag the original `.auth-server-message` bug), `declaration-block-no-duplicate-properties`, and a disallowed-list rule forcing the error colour through `var(--color-error)`. 102 warnings surfaced (0 errors) for triage.
+- **eslint-plugin-jsx-a11y** label rules turned on (warn) — surfaces the placeholder-only inputs (14 warnings).
+- **Deleted** the dead `Button.tsx` competing design system and removed the now-unused `framer-motion` dependency.
+- **Fixed** the second live duplicate-override (`.dashboard-more-item-active`) and replaced the 5 solid hardcoded `#FFD600` literals with `var(--color-error)`.
+- Verified: `npm run ci:check` (lint + lint:css + typecheck + build) green.
+
+Deliberately deferred (own PRs / need input): the `error.tsx`/`loading.tsx` boundaries, the `WardrobeListShell` extraction, the CSS `@layer`/split, the `palette-compatibility.ts` unification, the auth a11y label fix (the auth form is being edited in the open auth-slice PR — avoid double-editing), the rgba error-tint alpha tokens, and the "honesty pass" on the fake flows (C1 + wardrobe mutations) which needs a founder decision.
+
 ## Open questions for the founder
 
 - Is the Guided Journey `setTimeout` an intentional placeholder pending the capsule backend slice, or an oversight? Either way it needs a visible "preview only" affordance so it isn't a silent lie.
