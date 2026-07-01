@@ -2,6 +2,7 @@ package kratos
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -27,6 +28,16 @@ func TestRecoveryStatusMapping(t *testing.T) {
 					w.Header().Set("Content-Type", "application/json")
 					_, _ = w.Write([]byte(`{"id":"recovery-flow"}`))
 				case r.Method == http.MethodPost && r.URL.Path == "/self-service/recovery":
+					var body map[string]string
+					if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+						t.Fatalf("decode recovery request: %v", err)
+					}
+					if body["method"] != "link" {
+						t.Fatalf("recovery method = %q, want link", body["method"])
+					}
+					if body["email"] != "person@example.com" {
+						t.Fatalf("recovery email = %q, want person@example.com", body["email"])
+					}
 					w.WriteHeader(tt.submitCode)
 				default:
 					t.Fatalf("unexpected request %s %s", r.Method, r.URL.String())

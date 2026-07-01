@@ -58,7 +58,10 @@ selfservice:
     recovery:
       enabled: true
       ui_url: http://127.0.0.1:3000/auth/recovery
-      use: code
+      # The current web auth panel starts recovery by email and does not render
+      # a one-time-code/password reset step, so use email links instead of
+      # sending unrecoverable codes.
+      use: link
 
     verification:
       enabled: true

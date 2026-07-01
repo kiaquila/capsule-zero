@@ -169,15 +169,15 @@ func (c *Client) WhoAmI(ctx context.Context, token string) (*Session, error) {
 	return &Session{Token: token, Identity: out.Identity, ExpiresAt: out.ExpiresAt}, nil
 }
 
-// Recovery starts an API recovery flow for the given email. It never reveals
-// whether the address exists; validation-style rejections are flattened, while
-// unexpected Kratos/courier failures are returned.
+// Recovery starts an email-link recovery flow for the given email. It never
+// reveals whether the address exists; validation-style rejections are
+// flattened, while unexpected Kratos/courier failures are returned.
 func (c *Client) Recovery(ctx context.Context, email string) error {
 	action, err := c.initFlow(ctx, "/self-service/recovery/api", "/self-service/recovery")
 	if err != nil {
 		return err
 	}
-	body := map[string]any{"method": "code", "email": email}
+	body := map[string]any{"method": "link", "email": email}
 	resp, err := c.postJSON(ctx, action, body)
 	if err != nil {
 		return err
