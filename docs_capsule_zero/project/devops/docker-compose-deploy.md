@@ -85,9 +85,10 @@ Start the stack:
 docker compose up -d
 ```
 
-To exercise the rollback compose edge instead of the host-managed nginx edge:
+To exercise the rollback compose edge instead of the host-managed nginx edge, stop host nginx first — the compose edge publishes the same host ports 80/443 and cannot bind while systemd nginx is active:
 
 ```bash
+sudo systemctl stop nginx
 docker compose --profile docker-edge up -d nginx
 ```
 

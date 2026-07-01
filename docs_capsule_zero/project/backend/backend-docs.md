@@ -149,19 +149,19 @@ Jobs are produced by API handlers and consumed by queue-worker goroutines in the
 
 The v0.1 runtime is delivered by `.specify/specs/024-production-stack-runtime/`. Active v0.1 services are declared as separate `services:` blocks in `docker-compose.yml`; deferred rows remain in the catalog only to document their promotion path:
 
-| Service     | Image                    | Role                                                                           | v0.1                                                                     |
-| ----------- | ------------------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
-| `nginx`     | `nginx:1.27-alpine`      | API gateway, TLS termination, HTTP redirect, rate-limit, Kratos `auth_request` | yes                                                                      |
-| `kratos`    | `oryd/kratos`            | Identity provider                                                              | yes                                                                      |
-| `postgres`  | `postgres:16`            | Application database + Kratos database                                         | yes                                                                      |
-| `pgbouncer` | `edoburu/pgbouncer`      | Connection pool in front of Postgres                                           | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md)          |
-| `redis`     | `redis:7-alpine`         | Cache, sessions, job queue                                                     | yes                                                                      |
-| `api`       | local build of `/api`    | Go monolith (also runs worker goroutines in v0.1)                              | yes                                                                      |
-| `worker`    | local build of `/worker` | Background job consumer                                                        | folded into `api` — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md) |
-| `web`       | local build of `/app`    | Next.js App Router web frontend                                                | yes                                                                      |
-| `imgproxy`  | `darthsim/imgproxy`      | On-the-fly image resize/WebP conversion for derived sizes                      | yes                                                                      |
-| `grafana`   | `grafana/grafana`        | Dashboards over syslog and traces                                              | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md)          |
-| `mailhog`   | `mailhog/mailhog`        | Dev-only; replaced by Resend in prod                                           | dev only                                                                 |
+| Service     | Image                    | Role                                                                                                             | v0.1                                                                     |
+| ----------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `nginx`     | `nginx:1.27-alpine`      | Rollback compose edge (TLS, redirect, rate-limit, Kratos `auth_request`); the default edge is host-managed nginx | rollback-only — profile-gated `docker-edge`                              |
+| `kratos`    | `oryd/kratos`            | Identity provider                                                                                                | yes                                                                      |
+| `postgres`  | `postgres:16`            | Application database + Kratos database                                                                           | yes                                                                      |
+| `pgbouncer` | `edoburu/pgbouncer`      | Connection pool in front of Postgres                                                                             | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md)          |
+| `redis`     | `redis:7-alpine`         | Cache, sessions, job queue                                                                                       | yes                                                                      |
+| `api`       | local build of `/api`    | Go monolith (also runs worker goroutines in v0.1)                                                                | yes                                                                      |
+| `worker`    | local build of `/worker` | Background job consumer                                                                                          | folded into `api` — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md) |
+| `web`       | local build of `/app`    | Next.js App Router web frontend                                                                                  | yes                                                                      |
+| `imgproxy`  | `darthsim/imgproxy`      | On-the-fly image resize/WebP conversion for derived sizes                                                        | yes                                                                      |
+| `grafana`   | `grafana/grafana`        | Dashboards over syslog and traces                                                                                | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md)          |
+| `mailhog`   | `mailhog/mailhog`        | Dev-only; replaced by Resend in prod                                                                             | dev only                                                                 |
 
 For v0.1 the runtime ships with **`pgbouncer`, `grafana`, and the standalone `worker` container deferred**. Each has an explicit promotion trigger in [ADR-007](../../adr/adr-007-v01-slim-runtime.md). The Redis-queue contract for background jobs is unchanged — only the deployment topology changes.
 
