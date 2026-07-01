@@ -22,13 +22,13 @@ Sprint 0 must create and verify these artifacts before Stage 1 product feature w
 | ----------------------- | --------------------------------------------- | ---------------------------------------------------------------------- |
 | OpenAPI contract        | `docs_capsule_zero/adr/openapi.yaml`          | Authoritative REST path, auth, request, response, and error schemas    |
 | TypeScript client/types | `web/src/lib/api/generated/`                  | Web client/server API types generated from OpenAPI                     |
-| React Native client     | `mobile/lib/api/generated/`                   | TypeScript client for the React Native app generated from OpenAPI      |
+| React Native client     | deferred until the React Native scaffold defines `mobile/lib/api/generated/` or its replacement path | TypeScript client for the React Native app generated from OpenAPI |
 | Go schema/handlers      | `api/internal/httpapi/` + `api/migrations/`   | Typed Go handlers from OpenAPI and golang-migrate SQL files            |
 | Contract tests          | `api/tests/contract/` or equivalent CI target | Auth/error conventions and representative endpoint schema verification |
 
 Endpoint names may change only with the OpenAPI contract, generated clients, and contract tests updated in the same PR.
 
-Until the legacy `/app` shell and Flutter scaffold are removed, the generator also mirrors compatibility artifacts into `app/src/lib/api/generated/openapi.ts` and `mobile/lib/api/generated/openapi.dart`. The canonical production-stack clients are the TypeScript outputs under `/web` and `/mobile`.
+The legacy `/app` shell remains a temporary compatibility target until the post-runtime cleanup removes it, so the generator still mirrors `app/src/lib/api/generated/openapi.ts`. The stale Flutter scaffold and mobile generated outputs were removed on 2026-07-01; mobile TypeScript generation is intentionally deferred until the React Native scaffold lands and defines its source layout in the same PR.
 
 OpenAPI operations marked `x-client-availability: web` must not be wired into mobile purchase UI. Mobile generation may include low-level types for status reads, but mobile v0.1 must not expose invoice creation as a user action.
 

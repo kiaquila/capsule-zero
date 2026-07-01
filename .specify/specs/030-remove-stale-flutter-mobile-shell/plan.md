@@ -8,7 +8,7 @@ Finish the mobile-stack cleanup by pairing the existing Flutter/Dart deletion wi
 
 - runtime behavior changes: none; the stale Flutter shell is removed rather than replaced
 - product roots: `mobile/`
-- support paths: `scripts/`, `lint-staged.config.mjs`, `docs_capsule_zero/project/mobile/mobile-docs.md`, `.specify/specs/030-remove-stale-flutter-mobile-shell/`
+- support paths: `scripts/`, `lint-staged.config.mjs`, `docs_capsule_zero/adr/api-spec.md`, `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md`, `docs_capsule_zero/project/mobile/mobile-docs.md`, `.specify/specs/030-remove-stale-flutter-mobile-shell/`
 - accepted architecture: React Native mobile app delivered in a later spec
 
 ## Scope Boundaries
@@ -32,7 +32,7 @@ Finish the mobile-stack cleanup by pairing the existing Flutter/Dart deletion wi
 | AC-002 | `grep -n "React Native\\|Flutter\\|supabase_flutter" mobile/README.md` shows the placeholder target, cleanup note, and no-reintroduction warning. |
 | AC-003 | `grep -n "generateDart\\|mobile/lib/api/generated" scripts/generate-api-clients.mjs` returns no matches; `node scripts/generate-api-clients.mjs --check` passes. |
 | AC-004 | `grep -n "flutter\\|mobile/.env.local\\|MOBILE_DEEP_LINK_SCHEME\\|name: \"SUPABASE_URL\"\\|name: \"SUPABASE_ANON_KEY\"" scripts/check-runtime-tooling.mjs scripts/check-runtime-env.mjs` returns no retired mobile matches; `node --check scripts/check-runtime-tooling.mjs scripts/check-runtime-env.mjs` passes; `node scripts/check-runtime-env.mjs --surface mobile` exits with `Unknown runtime surface(s): mobile`. |
-| AC-005 | `grep -n "React Native\\|Flutter shell\\|later spec" docs_capsule_zero/project/mobile/mobile-docs.md mobile/README.md` shows the pivot and future-scaffold language. |
+| AC-005 | `grep -n "React Native\\|Flutter shell\\|later spec\\|mobile TypeScript generation is intentionally deferred\\|mobile path deferred" docs_capsule_zero/project/mobile/mobile-docs.md docs_capsule_zero/adr/api-spec.md docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md mobile/README.md` shows the pivot, future-scaffold language, and deferred mobile generated-client contract. |
 | AC-006 | `node scripts/check-feature-memory.mjs origin/main HEAD` passes via `.specify/specs/030-remove-stale-flutter-mobile-shell/{spec,plan,tasks}.md`. |
 
 Supporting verification:
@@ -51,7 +51,7 @@ Negative scenario evidence:
 ## Risks
 
 - Risk: Removing generated mobile client output and mobile env validation could surprise later mobile implementers.
-  Mitigation: `mobile/README.md` states that generated API types will be regenerated once the React Native scaffold defines its path, and the future scaffold spec must define its own non-Supabase env surface.
+  Mitigation: `mobile/README.md`, `api-spec.md`, and the Phase 5 entrance checklist state that generated API types and mobile env validation are restored once the React Native scaffold defines its path and non-Supabase env surface.
 
 - Risk: The cleanup is treated as product-root work by CI even though it removes stale code.
   Mitigation: add complete feature memory instead of weakening `scripts/check-feature-memory.mjs`.

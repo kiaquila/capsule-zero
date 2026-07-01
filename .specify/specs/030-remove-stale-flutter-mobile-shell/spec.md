@@ -12,7 +12,7 @@ In scope:
 - keep `mobile/README.md` as a React Native placeholder that records the cleanup and warns against reintroducing Flutter, Dart, or `supabase_flutter`
 - remove Dart and mobile-client emission from `scripts/generate-api-clients.mjs`
 - remove stale Flutter/mobile runtime checks and the retired mobile env surface from local tooling scripts and lint-staged configuration
-- correct the mobile architecture docs so they acknowledge the removed Sprint 0 Flutter shell and preserve React Native as the accepted target
+- correct the mobile architecture and API-contract docs so they acknowledge the removed Sprint 0 Flutter shell, preserve React Native as the accepted target, and defer physical mobile client generation until the React Native scaffold defines its path
 - add feature memory required by the product-root guard because this PR edits `mobile/`
 
 Out of scope:
@@ -43,7 +43,7 @@ As a developer, I want API code generation to emit only active clients so stale 
 - AC-002: `mobile/README.md` identifies React Native as the mobile target, records that the previous Flutter shell was removed, and warns against Flutter, Dart, and `supabase_flutter` reintroduction.
 - AC-003: `scripts/generate-api-clients.mjs` no longer contains `generateDart()` or writes generated clients into `mobile/`.
 - AC-004: runtime/tooling checks no longer require Flutter, a mobile `.env.local`, or a mobile env surface while the React Native scaffold is absent.
-- AC-005: docs under `docs_capsule_zero/project/mobile/` align with the production-stack pivot and describe the React Native scaffold as future work.
+- AC-005: mobile/API architecture docs align with the production-stack pivot and describe the React Native scaffold plus mobile generated-client path as future work.
 - AC-006: feature-memory guard passes because this spec folder includes `spec.md`, `plan.md`, and `tasks.md` in the PR diff.
 
 ## Negative Scenarios
@@ -59,7 +59,8 @@ As a developer, I want API code generation to emit only active clients so stale 
 - FR-002: API client generation must keep web and legacy `app/` TypeScript clients intact.
 - FR-003: Local runtime checks must not require Flutter tooling or legacy mobile Supabase env after Flutter is retired.
 - FR-004: Mobile docs and README must make the architecture handoff explicit: Flutter was removed, React Native arrives later.
-- FR-005: Verification evidence must be command-backed in `plan.md`.
+- FR-005: API contract docs must not require a tracked mobile generated-client artifact while `mobile/` is only a placeholder.
+- FR-006: Verification evidence must be command-backed in `plan.md`.
 
 ## Test-First Verification Waiver
 

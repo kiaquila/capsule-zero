@@ -84,7 +84,7 @@ function main() {
 
   if (failures.length > 0 && !args.allowMissing) {
     console.error(
-      `Missing required runtime tooling: ${failures.join(", ")}. Install these before running Supabase/mobile validation.`,
+      `Missing required runtime tooling: ${failures.join(", ")}. Install these before running runtime validation.`,
     );
     process.exit(1);
   }

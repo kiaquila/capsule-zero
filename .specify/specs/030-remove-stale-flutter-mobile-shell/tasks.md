@@ -13,6 +13,7 @@
 - [x] Remove Dart and mobile output targets from `scripts/generate-api-clients.mjs`.
 - [x] Remove stale Flutter/mobile runtime checks and retired mobile env validation from local tooling.
 - [x] Correct `docs_capsule_zero/project/mobile/mobile-docs.md` to acknowledge the removed Sprint 0 shell.
+- [x] Defer the documented mobile generated-client artifact in `docs_capsule_zero/adr/api-spec.md` and the Phase 5 entrance checklist until the React Native scaffold defines its path.
 - [x] Add this feature memory package after `guard` and Codex Review identified the missing SENAR artifacts.
 
 ## Verification
@@ -36,11 +37,13 @@
 - Keep `mobile/README.md` as the sole tracked mobile file until the future React Native scaffold defines real source paths and generated-client placement.
 - Keep web and legacy `app/` TypeScript client generation intact while deleting only stale mobile targets and Dart generation.
 - Remove the `mobile` runtime-env surface with the deleted mobile env file so default env validation no longer requires retired mobile Supabase variables.
+- Defer the physical mobile generated-client artifact in API/architecture docs instead of keeping a dead `mobile/lib/api/generated/` target without a scaffold.
 - Use command-backed verification instead of TDD because the change removes a retired scaffold and leaves no executable mobile app behavior to test.
 
 ### Known Issues
 
 - The React Native scaffold is still future work and must arrive in its own later spec.
 - The future React Native scaffold must define its own env surface; this cleanup intentionally does not preserve legacy mobile Supabase env validation.
+- The future React Native scaffold must also restore mobile TypeScript client generation when it defines the source layout.
 - GitHub AI Review must be refreshed after each fix commit because review findings attach to a specific PR head SHA.
 - PR #61 may have a small mechanical overlap with a separate generator/docs cleanup PR if that PR merges first.
