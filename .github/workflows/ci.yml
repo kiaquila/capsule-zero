@@ -43,6 +43,9 @@ jobs:
       - name: Run lint
         run: npm run lint
 
+      - name: Run CSS lint
+        run: npm run lint:css
+
       - name: Run typecheck
         run: npm run typecheck
 

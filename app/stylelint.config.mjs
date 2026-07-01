@@ -8,9 +8,12 @@
 //
 // Rules are WARNINGS-first on purpose: the legacy `globals.css` still carries
 // ~196 duplicate selectors, so making these `error` today would wall off CI.
-// The pre-commit hook (lint-staged) runs stylelint on *changed* CSS, so NEW
-// duplicates/hardcodes surface immediately; ratchet the severity to `error`
-// once the CSS is split into layered per-feature files (see the audit report).
+// Regression protection comes from the `--max-warnings` baseline pinned in the
+// `lint:css` script: any app CSS change triggers a lint of the whole CSS tree
+// (pre-commit via lint-staged, and the required `baseline-checks` CI job), and
+// warnings past the baseline fail the run. Ratchet the severity to `error` and
+// drop the baseline once the CSS is split into layered per-feature files (see
+// the audit report).
 const config = {
   rules: {
     // Catches the exact class of the shipped bug. `disallowInList` is what
@@ -28,7 +31,7 @@ const config = {
     // (rgba(255,214,0,a) error tints still need dedicated alpha tokens — tracked
     // as a follow-up in the audit report — so they are not enforced here yet.)
     "declaration-property-value-disallowed-list": [
-      { "/^color$|background|border/": [/#ffd600/i] },
+      { "/^(color|background|border)/": [/#ffd600/i] },
       {
         message:
           "Use var(--color-error) instead of the raw #FFD600 error colour (design-system token).",

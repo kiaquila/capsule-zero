@@ -1,4 +1,4 @@
-# Spec 030 — Frontend Quality Tooling & Quick-Win Cleanups
+# Spec 032 — Frontend Quality Tooling & Quick-Win Cleanups
 
 ## Goal
 
@@ -13,7 +13,9 @@ quick-win cleanups surfaced by the 2026-07 frontend quality audit
 - **stylelint** for `app/**/*.css` — focused, warnings-first config
   (`app/stylelint.config.mjs`): `no-duplicate-selectors` (`disallowInList`),
   `declaration-block-no-duplicate-properties`, and an error-colour-token rule.
-  New `lint:css` script; wired into `ci:check` and the pre-commit `lint-staged`.
+  New `lint:css` script with a `--max-warnings 102` regression baseline; wired
+  into `ci:check`, the pre-commit `lint-staged`, the repo-root `lint:css`
+  projection + `preflight`, and the required `baseline-checks` CI job.
 - **eslint-plugin-jsx-a11y** label rules turned on (warn).
 - Quick-wins: delete the dead `Button.tsx` design system + drop `framer-motion`;
   remove the second live duplicate-override (`.dashboard-more-item-active`);
@@ -32,13 +34,15 @@ quick-win cleanups surfaced by the 2026-07 frontend quality audit
 ## Negative Scenarios
 
 - **A newly introduced duplicate selector** (the original bug class) is flagged
-  by stylelint `no-duplicate-selectors` at commit time (pre-commit lint-staged
-  on the changed `*.css`) and in `lint:css`. Verified empirically against the
-  original `.auth-server-message` case.
+  by stylelint `no-duplicate-selectors` at commit time (pre-commit lint-staged:
+  any changed app CSS triggers a whole-tree lint) and in `lint:css`, and fails
+  the run via the `--max-warnings 102` baseline. Verified empirically against
+  the original `.auth-server-message` case (probe: 104 found → exit 2).
 - **A raw `#FFD600` reintroduced for a `color`/`background`/`border`** is flagged
   by the disallowed-list rule.
-- **The tooling must not break CI:** all new rules are warnings-first, so
-  `lint`/`lint:css` exit 0 despite existing debt.
+- **The tooling must not break CI on legacy debt:** all new rules are
+  warnings-first, so `lint`/`lint:css` exit 0 at the current 102-warning
+  baseline — while any warning past the baseline fails the run.
 
 ## TDD Waiver
 
