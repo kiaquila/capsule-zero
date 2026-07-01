@@ -20,21 +20,21 @@ set -euo pipefail
 : "${KRATOS_DB_NAME:?KRATOS_DB_NAME must be set for the postgres init}"
 
 # Create the Kratos login role if it does not already exist, then (re)set its
-# password. CREATE DATABASE cannot run inside a DO block, so it is issued
-# separately and guarded by a \gexec lookup against pg_database.
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-	DO \$\$
-	BEGIN
-	  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = '${KRATOS_DB_USER}') THEN
-	    CREATE ROLE ${KRATOS_DB_USER} LOGIN PASSWORD '${KRATOS_DB_PASSWORD}';
-	  ELSE
-	    ALTER ROLE ${KRATOS_DB_USER} WITH LOGIN PASSWORD '${KRATOS_DB_PASSWORD}';
-	  END IF;
-	END
-	\$\$;
+# password. psql's identifier/literal quoting protects generated names and
+# passwords before \gexec runs dynamic CREATE statements.
+psql -v ON_ERROR_STOP=1 \
+	--username "$POSTGRES_USER" \
+	--dbname "$POSTGRES_DB" \
+	--set=kratos_user="$KRATOS_DB_USER" \
+	--set=kratos_password="$KRATOS_DB_PASSWORD" \
+	--set=kratos_db="$KRATOS_DB_NAME" <<-EOSQL
+	SELECT format('CREATE ROLE %I LOGIN PASSWORD %L', :'kratos_user', :'kratos_password')
+	  WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'kratos_user')\gexec
 
-	SELECT 'CREATE DATABASE ${KRATOS_DB_NAME} OWNER ${KRATOS_DB_USER}'
-	  WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = '${KRATOS_DB_NAME}')\gexec
+	ALTER ROLE :"kratos_user" WITH LOGIN PASSWORD :'kratos_password';
+
+	SELECT format('CREATE DATABASE %I OWNER %I', :'kratos_db', :'kratos_user')
+	  WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = :'kratos_db')\gexec
 EOSQL
 
 echo "postgres-init: kratos role '${KRATOS_DB_USER}' and database '${KRATOS_DB_NAME}' provisioned"

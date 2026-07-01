@@ -29,7 +29,7 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - [x] Add `infra/kratos/` identity schema (`traits.email`, `traits.name.first`, `traits.locale`) + self-service flows; Resend SMTP courier (prod placeholder), MailHog in dev
 - [x] Reintroduce `docker-compose.dev.yml` with the MailHog override for the Kratos courier
 - [x] Scaffold the Go `api` auth/profile context: `GET /api/health`, Kratos session validation, `profiles` table + `kratos_identity_id → profiles.id` mapping, profile/session endpoints; embedded SQL migrations at boot
-- [x] nginx routes `/api/*` to `api:8080` (`auth_request` snippet lands with the first protected server-rendered route in a later slice — the `api` provider talks to the Go API server-side)
+- [x] nginx routes `/api/*` to the Go API in both edge paths: Docker nginx → `api:8080`; active host nginx → `127.0.0.1:8080` (`auth_request` snippet lands with the first protected server-rendered route in a later slice — the `api` provider talks to the Go API server-side)
 - [x] Add the `api` provider mode in `app/src/lib/providers/api/` (AuthPort + ProfileRepository) against the Go API; register it, default `CAPSULE_PROVIDER_MODE=api`; unmigrated domains inherit mock fixtures
 - [x] Verify acceptance 9a–9d + 11–13: registration + login work end-to-end on `/app` (Playwright e2e green)
 
@@ -95,6 +95,8 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - **2026-06-30 the `api` provider composes real auth/profiles + mock fixtures for unmigrated domains.** `createApiProviderRegistry()` spreads a mock registry and overrides `auth`, `profiles`, and `health` with real Go-API-backed ports. Keeps the app fully navigable (dashboard/wardrobe render fixtures) while auth is real; each later slice replaces one mock port with its real `api` port. `mock` mode stays for local/tests.
 - **2026-06-30 the Go API drives Kratos "API"-type self-service flows server-side.** The `api` provider (Next.js `server-only`) calls the Go API, which calls Kratos — one backend for the frontend. Registration uses a `session` hook so sign-up auto-logs-in (matches the existing UI, which redirects to the dashboard on success). The browser never talks to Kratos directly.
 - **2026-06-30 Kratos runs with `--dev` in v0.1.** It is internal-only (Go API is the only caller over the private network), so relaxing its HTTPS assumptions is acceptable for now; hardening to non-dev mode is a Known Issue below.
+- **2026-07-01 PR #57 review fix: public `/api/*` is routed at both nginx edges.** The Docker nginx config already routes `/api/` to `api:8080`, but the active production path is host/systemd nginx with compose publishing the Go API on `127.0.0.1:8080`. Added the matching host route and verified the host config pair with `nginx:1.27 nginx -t` using a temporary test cert.
+- **2026-07-01 PR #57 review fix: Postgres init quotes env-sourced role, database, and password values before SQL execution.** `00-kratos-db.sh` now passes values as psql variables and uses identifier/literal quoting plus `format('%I'/'%L')` before `\gexec`. Verified with a fresh `postgres:16` container using `KRATOS_DB_USER=kratos.user`, `KRATOS_DB_NAME=kratos-db`, and a password containing a single quote and spaces.
 
 ### Known Issues
 
