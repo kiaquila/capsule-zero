@@ -67,10 +67,10 @@ services:
     command: migrate sql -e --yes
     networks: [internal]
 
-  # Ory Kratos identity provider. Internal only — the Go API drives Kratos over
-  # the private network via its API self-service flows; the browser never talks
-  # to Kratos directly. `--dev` relaxes HTTPS assumptions for this internal,
-  # non-internet-facing service (hardening tracked in spec-024 Known Issues).
+  # Ory Kratos identity provider. The Go API drives Kratos over the private
+  # network for API self-service flows. Browser-visible verification/recovery
+  # links reach only the public Kratos API through nginx (/self-service/* and
+  # /sessions/*); the admin API stays internal.
   kratos:
     image: oryd/kratos:v1.1.0
     restart: unless-stopped
@@ -96,7 +96,7 @@ services:
       SELFSERVICE_FLOWS_REGISTRATION_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
     volumes:
       - ./infra/kratos:/etc/config/kratos:ro
-    command: serve --config /etc/config/kratos/kratos.yml --dev --watch-courier
+    command: serve --config /etc/config/kratos/kratos.yml --watch-courier
     expose:
       - "4433"
       - "4434"

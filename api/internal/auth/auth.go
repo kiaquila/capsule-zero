@@ -215,7 +215,8 @@ func (h *Handler) PatchProfile(w http.ResponseWriter, r *http.Request) {
 
 // RequireSession is middleware that resolves the Kratos session token to a
 // profile UUID and stores it in the request context. Unauthenticated requests
-// get 401 before the handler runs.
+// get 401 before the handler runs; upstream identity outages stay visible as
+// temporary server errors.
 func (h *Handler) RequireSession(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := bearerToken(r)
@@ -225,7 +226,11 @@ func (h *Handler) RequireSession(next http.HandlerFunc) http.HandlerFunc {
 		}
 		session, err := h.Kratos.WhoAmI(r.Context(), token)
 		if err != nil {
-			httpx.WriteError(w, http.StatusUnauthorized, "UNAUTHENTICATED", "Sign in required.")
+			if errors.Is(err, kratos.ErrInvalidCredentials) {
+				httpx.WriteError(w, http.StatusUnauthorized, "UNAUTHENTICATED", "Sign in required.")
+				return
+			}
+			httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Session check is temporarily unavailable.")
 			return
 		}
 		profile, err := h.Profiles.EnsureForIdentity(

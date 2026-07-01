@@ -203,6 +203,57 @@ func TestWhoAmIClassifiesKratosErrors(t *testing.T) {
 	}
 }
 
+func TestRequireSessionClassifiesKratosErrors(t *testing.T) {
+	tests := []struct {
+		name       string
+		err        error
+		wantStatus int
+		wantCode   string
+	}{
+		{
+			name:       "invalid session remains unauthenticated",
+			err:        kratos.ErrInvalidCredentials,
+			wantStatus: http.StatusUnauthorized,
+			wantCode:   "UNAUTHENTICATED",
+		},
+		{
+			name:       "upstream failure is temporary server error",
+			err:        errors.New("kratos unavailable"),
+			wantStatus: http.StatusBadGateway,
+			wantCode:   "INTERNAL_ERROR",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			handler := Handler{
+				Kratos: fakeIdentityClient{
+					whoamiErr: tt.err,
+				},
+			}
+			request := httptest.NewRequest(http.MethodGet, "/protected", nil)
+			request.Header.Set("Authorization", "Bearer session-token")
+			recorder := httptest.NewRecorder()
+
+			handler.RequireSession(func(http.ResponseWriter, *http.Request) {
+				t.Fatal("next handler should not run")
+			})(recorder, request)
+
+			if recorder.Code != tt.wantStatus {
+				t.Fatalf("status = %d, want %d", recorder.Code, tt.wantStatus)
+			}
+
+			var body httpx.ErrorBody
+			if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
+				t.Fatalf("decode error body: %v", err)
+			}
+			if body.Error.Code != tt.wantCode {
+				t.Fatalf("code = %q, want %q", body.Error.Code, tt.wantCode)
+			}
+		})
+	}
+}
+
 func TestLogoutReportsUnexpectedKratosFailure(t *testing.T) {
 	handler := Handler{
 		Kratos: fakeIdentityClient{
