@@ -55,7 +55,8 @@
   open auth-slice PR; fixing labels here would double-edit the same file. Left
   as surfaced warnings + a documented follow-up.
 - **Report location:** `docs_capsule_zero/project/frontend/frontend-quality-audit-2026-07.md`,
-  the frontend-docs home, so the findings are discoverable during `/web` work.
+  the frontend-docs home, so the findings are discoverable during ongoing `/app`
+  frontend work (`/app` is canonical — no `/app`→`/web` rename planned).
 
 ### Known Issues
 - The count-based `--max-warnings` baseline is coarse: a PR that fixes N legacy

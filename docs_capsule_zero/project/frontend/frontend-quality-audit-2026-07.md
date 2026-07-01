@@ -44,7 +44,7 @@ Severity: **C** critical · **P1** high · **P2** medium · **P3** low. "Auto-ca
 ### P1 — No `error.tsx` / `loading.tsx` / `not-found.tsx` anywhere
 - **Where:** none exist under `app/src/app/`; every page calls `await buildXSnapshot(...)` with no `try/catch` (data builders have zero `try/catch`).
 - **Why it matters:** any provider throw → raw Next 500 with no UI. Violates the constitution red line "error surfaces to user" and the "min 3 states per screen" quality gate. Invisible today only because the mock never throws — it detonates the moment the real API is wired.
-- **Action:** add root `app/[locale]/error.tsx` + `loading.tsx` (+ `global-error.tsx`); wrap section builders so a partial failure renders a per-panel error/empty state. Establish now so `/web` inherits it. **Auto-catch:** not statically catchable; convention + review.
+- **Action:** add root `app/[locale]/error.tsx` + `loading.tsx` (+ `global-error.tsx`); wrap section builders so a partial failure renders a per-panel error/empty state. Establish now so every later `/app` slice inherits it. **Auto-catch:** not statically catchable; convention + review.
 
 ### P1 — Error colour `#FFD600` hardcoded past the token (13+ sites)
 - **Where:** `--color-error` (`tokens.css:31`) is used only 4× via token; the literal `#ffd600` / `rgba(255,214,0,…)` is hardcoded 13× (`globals.css:230, 402, 404, 4931, 4980, 5666, 5712, 5716, 5961-5963, 1009, …`). Separately, ~372 raw `rgba(255,255,255,…)` literals bypass the glass/text tokens.
@@ -58,7 +58,7 @@ Severity: **C** critical · **P1** high · **P2** medium · **P3** low. "Auto-ca
 ### P1 — `Button.tsx` is a dead, competing design system
 - **Where:** `components/ui/Button.tsx` — zero importers; sole consumer of `framer-motion` (a shipped dependency) and of the neumorphism tokens (`--color-neu-bg`, `--shadow-neu-*`). Real buttons use raw global classes (`.auth-primary`, `.dashboard-primary-action`).
 - **Why it matters:** a second, unused design language (neumorphism) next to the real one (glassmorphism); drags in `framer-motion` for nothing; misleads contributors (DRY rule #7).
-- **Action:** delete `Button.tsx` + drop `framer-motion` + neu tokens (given `/app` is legacy), carrying one canonical `Button` into `/web`. **Auto-catch:** `knip` (dead export/file); `depcheck` (unused dependency).
+- **Action:** delete `Button.tsx` + drop `framer-motion` + neu tokens — dead code with zero importers. `/app` is the canonical frontend (no `/app`→`/web` rename; AGENTS.md frontend/provider decision, 2026-06-30): if a shared button abstraction is ever needed, grow one canonical `Button` inside `/app` matching the established CSS glass-button convention. **Auto-catch:** `knip` (dead export/file); `depcheck` (unused dependency).
 
 ### P2 — ~7,000 lines of near-duplicated wardrobe-shell scaffolding
 - **Where:** `FavoritesShell` (1,550), `ForSaleShell` (1,446), `ForRepairShell` (1,361), `UncapsulatedShell` (1,468), `MyItemsShell` (1,380) each re-implement the same page scaffold (header, filter/sort toolbar, colour-dot filter, item grid, detail-panel wiring, delete confirm, toast). Leaf components (`WardrobeItemCard`, `WardrobeItemDetailPanel`) are correctly shared; the surrounding shell was copy-pasted (~900 duplicated lines per pair). Violates DRY rule #7, which explicitly names "repeated wardrobe actions".
@@ -93,7 +93,7 @@ Severity: **C** critical · **P1** high · **P2** medium · **P3** low. "Auto-ca
 
 ---
 
-## What's genuinely healthy (keep as the template for `/web`)
+## What's genuinely healthy (keep as the template for future `/app` slices)
 
 - **Type safety:** zero `any`, zero `!.` non-null assertions, zero stray `console.*` (one intentional `console.warn` in the legacy provider). Excellent.
 - **Provider port/adapter layer:** clean capability-segregated contracts (`contracts.ts`), a uniform `guard*Port(port, authorize)` decorator centralising authorization (supabase adapter). This is the strongest layer — make it the pattern for the Go-backed `api` provider. (One leak: the **mock** adapter does authorization ad-hoc inline rather than via the guard wrapper, so the two adapters enforce it differently — align them.)
