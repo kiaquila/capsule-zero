@@ -68,9 +68,12 @@ services:
     networks: [internal]
 
   # Ory Kratos identity provider. The Go API drives Kratos over the private
-  # network for API self-service flows. Browser-visible verification/recovery
-  # links reach only the public Kratos API through nginx (/self-service/* and
-  # /sessions/*); the admin API stays internal.
+  # internal network (never the host). Kratos public (4433) is reachable only
+  # inside the compose network: it is neither bound to the host nor exposed at
+  # the nginx edge, so every auth write must go through the Go API
+  # (/api/auth/*), which owns duplicate-identifier sanitization + the auth rate
+  # limit. Recovery/verification browser flows are disabled this slice; the
+  # dedicated completion-UI slice re-exposes the exact public paths it needs.
   kratos:
     image: oryd/kratos:v1.1.0
     restart: unless-stopped
@@ -101,8 +104,6 @@ services:
     expose:
       - "4433"
       - "4434"
-    ports:
-      - "${KRATOS_PUBLIC_HOST_BIND:-127.0.0.1}:4433:4433"
     networks: [internal]
     healthcheck:
       test: ["CMD", "kratos", "remote", "status", "--endpoint", "http://127.0.0.1:4434", "--quiet"]

@@ -36,6 +36,11 @@ services:
 
   kratos:
     command: serve --config /etc/config/kratos/kratos.yml --dev --watch-courier
+    # Local dev binds Kratos public to loopback so developers can inspect flows
+    # directly (matches SERVE_PUBLIC_BASE_URL below). Production never binds it to
+    # the host — see docker-compose.yml.
+    ports:
+      - "127.0.0.1:4433:4433"
     environment:
       COURIER_SMTP_CONNECTION_URI: smtp://mailhog:1025/?disable_starttls=true
       SERVE_PUBLIC_BASE_URL: http://127.0.0.1:4433/

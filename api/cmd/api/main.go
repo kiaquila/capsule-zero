@@ -18,7 +18,17 @@ import (
 	"github.com/kiaquila/capsule-zero/api/internal/httpx"
 	"github.com/kiaquila/capsule-zero/api/internal/kratos"
 	"github.com/kiaquila/capsule-zero/api/internal/profiles"
+	"github.com/kiaquila/capsule-zero/api/internal/ratelimit"
 	"github.com/kiaquila/capsule-zero/api/migrations"
+)
+
+// Public auth writes are throttled per originating client in the Go API itself
+// (mirroring the nginx edge `rate=10r/m`, `burst=10`) so the limit also covers
+// auth traffic forwarded by the Next.js server actions over the private network,
+// which never traverses the edge `limit_req`.
+const (
+	authRateLimitPerMinute = 10
+	authRateLimitBurst     = 10
 )
 
 func main() {
@@ -72,12 +82,17 @@ func run() error {
 		Profiles: profiles.New(pool),
 	}
 
+	authLimiter := ratelimit.New(authRateLimitPerMinute, authRateLimitBurst)
+	cleanupCtx, stopCleanup := context.WithCancel(context.Background())
+	defer stopCleanup()
+	go runLimiterCleanup(cleanupCtx, authLimiter)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", healthHandler(pool, kratosClient))
-	mux.HandleFunc("POST /api/auth/registration", handler.Registration)
-	mux.HandleFunc("POST /api/auth/login", handler.Login)
+	mux.HandleFunc("POST /api/auth/registration", authLimiter.Middleware(handler.Registration))
+	mux.HandleFunc("POST /api/auth/login", authLimiter.Middleware(handler.Login))
 	mux.HandleFunc("GET /api/auth/whoami", handler.WhoAmI)
-	mux.HandleFunc("POST /api/auth/recovery", handler.Recovery)
+	mux.HandleFunc("POST /api/auth/recovery", authLimiter.Middleware(handler.Recovery))
 	mux.HandleFunc("POST /api/auth/logout", handler.Logout)
 	mux.HandleFunc("GET /api/profile", handler.RequireSession(handler.GetProfile))
 	mux.HandleFunc("PATCH /api/profile", handler.RequireSession(handler.PatchProfile))
@@ -101,6 +116,21 @@ func run() error {
 		return err
 	}
 	return nil
+}
+
+// runLimiterCleanup periodically evicts idle rate-limit buckets so the in-memory
+// map stays bounded for the lifetime of the process.
+func runLimiterCleanup(ctx context.Context, limiter *ratelimit.Limiter) {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			limiter.Cleanup(15 * time.Minute)
+		}
+	}
 }
 
 func waitForSignal() <-chan os.Signal {

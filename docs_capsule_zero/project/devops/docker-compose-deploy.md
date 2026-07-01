@@ -162,10 +162,10 @@ Public traffic enters through Cloudflare → nginx on the droplet (ports 80/443)
 - runs an `auth_request` against Kratos for protected routes,
 - routes `/` to `web`,
 - routes `/api/*` to `api`,
-- routes `/self-service/*` and `/sessions/*` to `kratos` (public API),
+- returns `404` for `/self-service/*` and `/sessions/*` — the Kratos public API is **not** exposed at the edge this slice. All auth writes go through the Go API (`/api/auth/*`), which drives Kratos over the internal network and owns duplicate-identifier sanitization + the auth rate limit; recovery/verification browser flows are deferred, so no public self-service path is needed yet. The recovery/verification (and Stage 2 OAuth) slice re-exposes only the exact public paths its completion UI needs.
 - routes `grafana.capsulezero.app` to `grafana`.
 
-Cloudflare proxy provides edge TLS, DDoS protection, Bot Fight Mode, and CDN. Postgres, Redis, and Kratos admin APIs stay internal to the compose network; no host port is exposed.
+Cloudflare proxy provides edge TLS, DDoS protection, Bot Fight Mode, and CDN. Postgres, Redis, and both the Kratos public and admin APIs stay internal to the compose network in production; no host port is exposed (the dev override binds Kratos public to `127.0.0.1:4433` for local inspection only).
 
 ## Operational Constraints
 

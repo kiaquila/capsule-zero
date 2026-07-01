@@ -1,5 +1,6 @@
 import "server-only";
 
+import { headers as requestHeaders } from "next/headers";
 import type { Capsule, User } from "@/types";
 import { readSignedAppSession } from "@/features/auth/session";
 import { createMockProviderRegistry } from "../mock";
@@ -40,16 +41,37 @@ async function sessionToken(): Promise<string | null> {
   return persisted?.accessToken ?? null;
 }
 
+// Forward the originating client's address to the Go API. Server actions call
+// the API over the private compose network, so without this the API would see
+// only the web container's address and the auth rate limit would bucket every
+// user together. The host-nginx edge sets X-Forwarded-For / X-Real-IP on the
+// inbound web request; we pass it through so the API throttles per real client.
+async function clientForwardedFor(): Promise<string | undefined> {
+  try {
+    const incoming = await requestHeaders();
+    return (
+      incoming.get("x-forwarded-for") ??
+      incoming.get("x-real-ip") ??
+      undefined
+    );
+  } catch {
+    // Called outside a request scope (no inbound headers to forward).
+    return undefined;
+  }
+}
+
 async function apiFetch<T>(
   path: string,
   init: RequestInit & { token?: string | null } = {},
 ): Promise<{ status: number; data: T }> {
   const { token, headers, ...rest } = init;
+  const forwardedFor = await clientForwardedFor();
   const response = await fetch(`${apiBaseUrl()}${path}`, {
     ...rest,
     cache: "no-store",
     headers: {
       "Content-Type": "application/json",
+      ...(forwardedFor ? { "X-Forwarded-For": forwardedFor } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,
     },
