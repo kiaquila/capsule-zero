@@ -44,7 +44,10 @@ export function AuthPanel({
   const t = useTranslations("auth");
   const landing = useTranslations("landing");
   const [mode, setMode] = useState<AuthMode>(initialMode);
-  const [serverMessage, setServerMessage] = useState<string | null>(null);
+  const [serverMessage, setServerMessage] = useState<{
+    text: string;
+    kind: "error" | "info";
+  } | null>(null);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
 
@@ -103,8 +106,12 @@ export function AuthPanel({
     setServerMessage(null);
   };
 
+  const showError = (text: string) =>
+    setServerMessage({ text, kind: "error" });
+  const showInfo = (text: string) => setServerMessage({ text, kind: "info" });
+
   const redirectToDashboard = () => {
-    setServerMessage(t("successRedirect"));
+    showInfo(t("successRedirect"));
     router.push(`/${locale}/dashboard`);
     router.refresh();
   };
@@ -114,7 +121,7 @@ export function AuthPanel({
     const result = await signInWithPasswordAction(values);
 
     if (!result.ok) {
-      setServerMessage(result.message ?? t("enterPassword"));
+      showError(result.message ?? t("enterPassword"));
       return;
     }
 
@@ -126,7 +133,7 @@ export function AuthPanel({
     const result = await signUpWithPasswordAction({ ...values, locale });
 
     if (!result.ok) {
-      setServerMessage(result.message ?? t("weakPassword"));
+      showError(result.message ?? t("weakPassword"));
       return;
     }
 
@@ -134,7 +141,7 @@ export function AuthPanel({
       signInForm.setValue("email", values.email);
       signUpForm.reset();
       setMode("signIn");
-      setServerMessage(t("confirmationRequired"));
+      showInfo(t("confirmationRequired"));
       return;
     }
 
@@ -146,11 +153,11 @@ export function AuthPanel({
     const result = await requestPasswordRecoveryAction(values);
 
     if (!result.ok) {
-      setServerMessage(result.message ?? t("invalidEmail"));
+      showError(result.message ?? t("invalidEmail"));
       return;
     }
 
-    setServerMessage(t("recoverySent"));
+    showInfo(t("recoverySent"));
   });
 
   const headerAction =
@@ -336,8 +343,15 @@ export function AuthPanel({
       ) : null}
 
       {serverMessage ? (
-        <p className="auth-server-message" aria-live="polite">
-          {serverMessage}
+        <p
+          className={cn(
+            "auth-server-message",
+            serverMessage.kind === "error" && "auth-server-message-error",
+          )}
+          role={serverMessage.kind === "error" ? "alert" : undefined}
+          aria-live={serverMessage.kind === "error" ? "assertive" : "polite"}
+        >
+          {serverMessage.text}
         </p>
       ) : null}
 
