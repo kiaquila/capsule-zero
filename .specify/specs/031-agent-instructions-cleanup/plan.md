@@ -9,8 +9,8 @@ Update the repository onboarding and support-tooling contract to match the curre
 - runtime changes: none
 - application behavior changes: none
 - dependencies: none
-- product paths: `app/eslint.config.mjs`, `api/.golangci.yml`, deleted `web/**`
-- support paths: `AGENTS.md`, `CLAUDE.md`, `.github/workflows/cd-dev.yml`, `scripts/generate-api-clients.mjs`, `docs_capsule_zero/**`, `.specify/specs/**`, `tests/**`, `.specify/specs/031-agent-instructions-cleanup/`
+- product paths: `app/eslint.config.mjs`, `api/.golangci.yml`, `api/README.md`, deleted `web/**`
+- support paths: `AGENTS.md`, `CLAUDE.md`, `.github/workflows/cd-dev.yml`, `scripts/generate-api-clients.mjs`, `infra/README.md`, `docs_capsule_zero/**`, `.specify/specs/**`, `tests/**`, `.specify/specs/031-agent-instructions-cleanup/`
 
 ## Scope Boundaries
 
@@ -28,18 +28,18 @@ Update the repository onboarding and support-tooling contract to match the curre
 
 ## Verification
 
-| Acceptance criterion | Evidence                                                                                                                                 |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| AC-001               | V-001 shows `/app` as canonical and no `/app` to `/web` migration instruction.                                                           |
-| AC-002               | V-002 shows implementation routing starts from `/app` screens and no active `html-prototypes/` source-of-truth section remains.          |
-| AC-003               | V-003 shows the reuse-check contract.                                                                                                    |
-| AC-004               | V-004 shows thresholds are advisory review signals.                                                                                      |
-| AC-005               | V-005 shows `CLAUDE.md` is slimmed and links back to canonical `AGENTS.md` rules.                                                        |
-| AC-006               | V-006 exits 0 with module-size warnings only; V-007 verifies the optional Go linter config against golangci-lint v2.                     |
-| AC-007               | V-008 verifies obsolete `/web` files and codegen target are gone.                                                                        |
-| AC-008               | V-009 verifies the dev CD regex keeps `app/` and no longer includes `web/`.                                                              |
-| AC-009               | V-010 passes and reports feature-memory coverage via `.specify/specs/031-agent-instructions-cleanup/{spec,plan,tasks}.md`.               |
-| AC-010               | V-011 returns no current guidance hits; remaining `/web` mentions are explicit no-`/web` policy, superseded history, or API route names. |
+| Acceptance criterion | Evidence                                                                                                                                       |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-001               | V-001 shows `/app` as canonical and no `/app` to `/web` migration instruction.                                                                 |
+| AC-002               | V-002 shows implementation routing starts from `/app` screens and no active `html-prototypes/` source-of-truth section remains.                |
+| AC-003               | V-003 shows the reuse-check contract.                                                                                                          |
+| AC-004               | V-004 shows thresholds are advisory review signals.                                                                                            |
+| AC-005               | V-005 shows `CLAUDE.md` is slimmed and links back to canonical `AGENTS.md` rules.                                                              |
+| AC-006               | V-006 exits 0 with module-size warnings only; V-007 verifies the optional Go linter config against golangci-lint v2.                           |
+| AC-007               | V-008 verifies obsolete `/web` files and codegen target are gone.                                                                              |
+| AC-008               | V-009 verifies the dev CD regex keeps `app/` and no longer includes `web/`.                                                                    |
+| AC-009               | V-010 passes and reports feature-memory coverage via `.specify/specs/031-agent-instructions-cleanup/{spec,plan,tasks}.md`.                     |
+| AC-010               | V-011 returns no current stale guidance hits; remaining `/web` mentions are explicit no-`/web` policy, superseded history, or API route names. |
 
 Verification commands:
 
@@ -75,7 +75,8 @@ rg -n "deploy_path_pattern" .github/workflows/cd-dev.yml
 node scripts/check-feature-memory.mjs origin/main HEAD
 
 # V-011
-rg -n 'golang-migrate|Traefik forward|through Traefik|behind Traefik|with Traefik|\+ Traefik|Traefik \+|future home is .*/web|web/src/lib/api/generated|local build of .*/web|new home for the web frontend is .*/web' docs_capsule_zero AGENTS.md CLAUDE.md .specify tests --glob '!.specify/specs/024-production-stack-runtime/tasks.md' --glob '!.specify/specs/031-agent-instructions-cleanup/**'
+! rg -n 'golang-migrate|Traefik forward|through Traefik|behind Traefik|with Traefik|\+ Traefik|Traefik \+|future home is .*/web|web/src/lib/api/generated|local build of .*/web|new home for the web frontend is .*/web' docs_capsule_zero AGENTS.md CLAUDE.md .specify tests --glob '!.specify/specs/024-production-stack-runtime/tasks.md' --glob '!.specify/specs/031-agent-instructions-cleanup/**'
+! rg -n 'golang-migrate|traefik/|Traefik dynamic|CREATE EXTENSION pgvector|FTS \+ pgvector' api infra
 ```
 
 Negative scenario evidence:

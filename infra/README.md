@@ -5,15 +5,17 @@ Implementation in [`.specify/specs/024-production-stack-runtime/`](../.specify/s
 Contents:
 
 ```
-traefik/                        ← Traefik dynamic config
-  middlewares.yml               ← Rate-limit, forward-auth into Kratos
-  routers.yml                   ← Route definitions for api, web, grafana
-kratos/                         ← Ory Kratos config
-  kratos.yml                    ← Identity schema, courier, self-service flows
+nginx/                          ← nginx container config (Phase 1)
+  nginx.conf                    ← base nginx config
+  conf.d/                       ← production vhosts and upstream routing
+  conf.d.dev/                   ← dev-edge vhosts and routing
+nginx-host/                     ← host nginx migration/reference configs
+scripts/                        ← deploy and runtime helper scripts
+kratos/                         ← Ory Kratos config (Phase 2)
+  kratos.yml                    ← identity schema, courier, self-service flows
   identity.schema.json          ← traits.email, traits.name.first, traits.locale
-postgres/                       ← Postgres init scripts
-  00-extensions.sql             ← CREATE EXTENSION pgvector
-  01-kratos-db.sql              ← Create the Kratos database and role
+postgres/                       ← plain Postgres init scripts (Phase 2)
+  01-kratos-db.sql              ← create the Kratos database and role
 ```
 
-Until spec 024 lands, this directory holds only this README. The `docker-compose.yml` scaffold mounts these paths as read-only volumes; spec 024 fills them in.
+Spec 024 fills this directory incrementally. Phase 1 has landed the nginx/web edge; later phases add Kratos and plain `postgres:16` init scripts. pgvector remains deferred by ADR-007 until the semantic-search slice promotes it.

@@ -10,14 +10,14 @@ This spec delivers the **runtime**. It does not implement product features beyon
 
 The spec ships in incremental PRs against the same feature folder. Each phase keeps the droplet servable end-to-end; nothing breaks between phases.
 
-| Phase                                        | Scope                                                                                                                                                                 | Status          |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
-| Phase 1 — nginx + web                        | Replace the host Caddy + legacy Supabase compose with `nginx + web` in `docker-compose.yml`. `https://capsulezero.app/en` keeps serving the existing Next.js landing. | **In progress** |
-| Phase 2 — Postgres + Kratos                  | Add plain `postgres:16` and `kratos` to compose. nginx `auth_request` middleware against Kratos. Wire Kratos self-service flows for sign-up/sign-in.                  | Pending         |
-| Phase 3 — Go API + Redis + in-process worker | Add `redis` and `api` (Go modular monolith with `GET /api/health` plus Redis queue consumer goroutines). nginx routes `/api/*` to the Go API.                         | Pending         |
-| Phase 4 — Storage + email + imgproxy         | DigitalOcean Spaces bucket with CORS for `https://capsulezero.app`. Resend domain verified with SPF + DKIM. `imgproxy` deployed for on-the-fly derivatives.           | Pending         |
-| Phase 5 — Observability + backups            | syslog rotation, OTLP trace exporter, and nightly `pg_dump` cron with 14-day Spaces lifecycle. Grafana remains deferred by ADR-007.                                   | Pending         |
-| Phase 6 — Supabase provider retirement       | Remove the retired Supabase provider/env surface domain by domain once the Go API owns the matching contexts. `/app` remains the canonical web frontend.              | Pending         |
+| Phase                                        | Scope                                                                                                                                                                 | Status     |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Phase 1 — nginx + web                        | Replace the host Caddy + legacy Supabase compose with `nginx + web` in `docker-compose.yml`. `https://capsulezero.app/en` keeps serving the existing Next.js landing. | **Landed** |
+| Phase 2 — Postgres + Kratos                  | Add plain `postgres:16` and `kratos` to compose. nginx `auth_request` middleware against Kratos. Wire Kratos self-service flows for sign-up/sign-in.                  | Pending    |
+| Phase 3 — Go API + Redis + in-process worker | Add `redis` and `api` (Go modular monolith with `GET /api/health` plus Redis queue consumer goroutines). nginx routes `/api/*` to the Go API.                         | Pending    |
+| Phase 4 — Storage + email + imgproxy         | DigitalOcean Spaces bucket with CORS for `https://capsulezero.app`. Resend domain verified with SPF + DKIM. `imgproxy` deployed for on-the-fly derivatives.           | Pending    |
+| Phase 5 — Observability + backups            | syslog rotation, OTLP trace exporter, and nightly `pg_dump` cron with 14-day Spaces lifecycle. Grafana remains deferred by ADR-007.                                   | Pending    |
+| Phase 6 — Supabase provider retirement       | Remove the retired Supabase provider/env surface domain by domain once the Go API owns the matching contexts. `/app` remains the canonical web frontend.              | Pending    |
 
 Each phase ships as its own PR with feature-memory updates against this folder. The `## Verification` table in `plan.md` records acceptance criteria for each phase separately.
 

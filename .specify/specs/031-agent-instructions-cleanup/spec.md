@@ -18,6 +18,7 @@ In scope:
 - keep dev CD path filtering aligned with the canonical `/app` frontend and the absence of `/web`
 - add feature-memory evidence for the product-root support changes in this PR
 - align affected source-of-truth docs, specs, tests, and generated-client references so they no longer instruct agents or tooling to use `/web`
+- align stale scaffold README references under `api/` and `infra/` so placeholders do not reintroduce Traefik, golang-migrate, or active pgvector guidance
 
 Out of scope:
 
@@ -73,7 +74,7 @@ This spec is documentation and support-tooling cleanup, plus deletion of an obso
 - FR-004: Remove obsolete `/web` codegen and deploy references so the repository presents a single `/app` web frontend.
 - FR-005: Preserve the No Supabase / legacy-backend recoupling rule.
 - FR-006: Satisfy the feature-memory guard for product-root support changes by adding this complete spec folder.
-- FR-007: Resolve AI-review feedback by actualizing stale source docs that still referenced `/web`, Traefik, or obsolete migration tooling as current guidance.
+- FR-007: Resolve AI-review feedback by actualizing stale source docs and scaffold READMEs that still referenced `/web`, Traefik, active pgvector, or obsolete migration tooling as current guidance.
 
 ## Success Criteria
 
