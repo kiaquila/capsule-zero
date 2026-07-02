@@ -65,7 +65,7 @@ The previous Phase 4 stack does not satisfy the new founder constraints. Three f
 | Email                  | Supabase + provider        | Resend (via Kratos SMTP courier and Go API)                                   | Cheapest credible deliverability                                     |
 | API gateway            | Vercel + Supabase Kong     | nginx 1.27 (TLS, rate-limit, `auth_request`)                                  | Self-hosted, predictable routing + TLS + auth                        |
 | Cache / queue          | Supabase Postgres + ad-hoc | Redis 7 with River/asynq job queue (Kafka deferred)                           | Kafka cannot run on the v0.1 droplet                                 |
-| DNS / front-door       | Vercel + Supabase          | Spaceship registrar + Cloudflare proxy                                        | Free DDoS protection + CDN; one front-door                           |
+| DNS / front-door       | Vercel + Supabase          | Spaceship registrar + Cloudflare proxy (activation deferred to Stage 2 — 2026-07-02, spec 033; v0.1 runs direct DNS) | Free DDoS protection + CDN; one front-door                           |
 | Observability          | Sentry first               | syslog + traces in v0.1; Grafana/Sentry/Prometheus deferred                   | Fits a 4 GB droplet                                                  |
 | Implementation posture | Mock-first Stage 1         | Production-first from the first feature slice (see ADR-006)                   | We own the runtime; mocks would now cost more than the real services |
 | GSD Core               | Advisory pilot             | No change                                                                     | GSD outputs remain optional review inputs                            |
@@ -97,3 +97,5 @@ Proceed with the rewritten ADRs and the production-stack runtime spec. Real prod
 Recorded approval posture:
 
 > Founder confirms the Phase 4 production-stack pivot: Go modular monolith behind nginx, Ory Kratos for identity, PostgreSQL with FTS (pgvector deferred), Redis for cache/queue, DigitalOcean Spaces for object storage, Cloudflare proxy at the edge, Resend for transactional email, syslog + traces for v0.1 observability, React Native for mobile, Lava.top stubbed in v0.1 and integrated in v0.2, self-hosted image model deferred to Stage 2. Implementation goes straight to real services (no mock-first stage). Production credentials remain in the droplet's encrypted env and provider dashboards and are not shared with agents.
+
+The quote above is the dated 2026-06-27 record. Two elements were later revised by founder decisions on 2026-07-02 (spec 033): hosting migrated to a Hetzner CX23, and the Cloudflare proxy activation is deferred to Stage 2 — v0.1 runs direct DNS to the host nginx edge.

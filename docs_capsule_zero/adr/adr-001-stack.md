@@ -70,9 +70,9 @@ The original rationale was same-provider convenience: hosting was on DigitalOcea
 
 The 4 GB server cannot host Kafka (JVM eats > 1 GB of RAM) and we do not yet have multiple consumers. A Redis-based job queue covers image processing, embedding generation, marketplace parsing, and webhook fanout. Kafka becomes interesting only when the image worker, the API, and a second downstream consumer all need durable, replayable streams — i.e. when we extract the image worker into its own service.
 
-### Why Cloudflare and not nginx rate-limit alone
+### Why Cloudflare and not nginx rate-limit alone (activation: Stage 2)
 
-Cloudflare is free at the level we need, gives DNS, DDoS protection, bot fight mode, CDN, and TLS edge — all in one provider — and lets the droplet stay behind a proxy. nginx then handles app-level TLS, rate-limit, and auth routing without also having to play "first line of defense".
+The choice stands; the activation is deferred to Stage 2 (founder decision 2026-07-02, spec 033). Once enabled, Cloudflare is free at the level we need, gives DNS, DDoS protection, bot fight mode, CDN, and TLS edge — all in one provider — and lets the server stay behind a proxy; nginx then handles app-level TLS, rate-limit, and auth routing without also having to play "first line of defense". Until then v0.1 pre-launch runs direct DNS: host nginx `limit_req` plus the Go API's per-client limiter carry the rate-limiting, and the missing DDoS floor is an accepted pre-launch risk (no users yet; the shipped realip/CF-ranges nginx config stays inert until the cut-over).
 
 ### Why nginx and not Traefik or Caddy
 
@@ -100,7 +100,7 @@ Positive:
 - Bounded contexts inside the monolith map directly to future microservice extractions.
 - One language (Go) for backend, one (TypeScript) for web + mobile — smaller cognitive surface than Supabase + Flutter + Vercel + RLS DSL.
 - No BaaS lock-in. The schema, auth, and storage all run on commodity software the team owns.
-- Cloudflare absorbs the noisy traffic floor for free.
+- Cloudflare absorbs the noisy traffic floor for free (from its Stage-2 activation on; v0.1 pre-launch accepts direct-DNS exposure).
 - Resend keeps Kratos email flows working without rolling our own SMTP.
 
 Tradeoffs:

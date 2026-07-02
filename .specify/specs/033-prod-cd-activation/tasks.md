@@ -128,6 +128,14 @@
   consequence (the adr-001 storage-rationale finding one file over) and the
   "production droplet" constraint wording in ADR-002/ADR-003. Generic "droplet" jargon
   (env-file phrasing etc.) is left alone — only provider/topology claims are in scope.
+- **2026-07-02 PR #65 Codex P2 (d315dd7 review — seventh pass):** the adr-001 "Why
+  Cloudflare and not nginx rate-limit alone" rationale and the "absorbs the noisy
+  traffic floor" consequence still read as current protection — both now carry the
+  Stage-2 framing plus the v0.1 direct-DNS tradeoff (host nginx `limit_req` + the Go
+  limiter carry rate-limiting; the missing DDoS floor is an accepted pre-launch risk).
+  `gsd-convergence-validation.md` gets the deferral note in its DNS/front-door decision
+  row and a dated revision note after the founder-approval quote (the quote itself
+  stays verbatim as the 2026-06-27 record).
 
 ### Known Issues
 
