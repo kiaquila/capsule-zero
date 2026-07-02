@@ -17,7 +17,7 @@ This document records the Architectura-style decision pass that produced the v0.
 The council was rerun after the founder accepted these new constraints:
 
 - Target production high-load from Day 1; no BaaS lock-in.
-- Hosting is a single DigitalOcean droplet running docker-compose; every service declared as a separate `services:` entry.
+- Hosting is a single DigitalOcean droplet running docker-compose; every service declared as a separate `services:` entry. (Migrated to a Hetzner CX23 on 2026-07-02 — spec 033; the single-server compose shape is unchanged.)
 - React Native replaces Flutter for mobile (shared TypeScript ecosystem with web).
 - Image processing moves to a self-hosted Capsule Zero model (deferred to Stage 2); Photoroom and remove.bg are dropped.
 - Observability stays self-hosted and lightweight in v0.1: syslog + traces. Grafana, Sentry, and Prometheus are deferred.
@@ -93,7 +93,7 @@ Custom Go services can be extracted out of the monolith later — the first natu
 ## Open Follow-Ups
 
 - Founder approval on the rewritten ADRs (`adr-001-stack.md`, `adr-002-auth.md`, `adr-003-storage.md`, `adr-006-mock-first-mvp-stage-one.md`).
-- DigitalOcean droplet upgrade to at least 4 GB / 2 vCPU / 80 GB.
+- DigitalOcean droplet upgrade to at least 4 GB / 2 vCPU / 80 GB. (Resolved 2026-07-02 by migrating to a Hetzner CX23 instead — spec 033.)
 - Spaceship DNS pointed at Cloudflare nameservers; Cloudflare proxy enabled on `capsulezero.app`. (Deferred to Stage 2 — 2026-07-02.)
 - Resend account created and SPF/DKIM published.
 - DigitalOcean Spaces bucket created with CORS for `capsulezero.app`.

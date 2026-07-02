@@ -100,6 +100,14 @@
   spec 024 `spec.md` is retargeted to the Hetzner CX23 gate (≥ 2 vCPU / 4 GB) in the
   same pass.
 
+- **2026-07-02 PR #65 Codex P2 (9e7e5cb review — third pass, DO→Hetzner class):** the same
+  sweep discipline applied to the retired DigitalOcean hosting claims: `adr-001-stack.md`
+  Hosting row + founder-constraint bullet, spec 024 `spec.md` Goal line, `backend-docs.md`
+  stack intro, `docker-compose-deploy.md` intro, `phase-4-council.md` constraint bullet +
+  Sprint-0 row, `adr-007` context line, and `gsd-convergence-validation.md` operational-fit
+  bullet now all state the Hetzner CX23 (or carry a dated inline supersession note) instead
+  of prescribing the retired DO droplet / 80 GB gate.
+
 ### Known Issues
 
 - **Production is the only environment.** Docs/tests-only merges skip deploy, but any

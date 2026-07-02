@@ -2,7 +2,7 @@
 
 ## Goal
 
-Bring up Capsule Zero's v0.1 production runtime on the DigitalOcean droplet via docker-compose so that `https://capsulezero.app` serves a healthy stack with every active v0.1 service declared, configured, and health-checked. After the spec ships in full, every subsequent feature slice runs against real Kratos / direct Postgres / Redis / DigitalOcean Spaces / Resend from the first PR with no mock-first layer (see ADR-006 and ADR-007).
+Bring up Capsule Zero's v0.1 production runtime on the production server (a Hetzner CX23 since 2026-07-02, spec 033; originally a DigitalOcean droplet) via docker-compose so that `https://capsulezero.app` serves a healthy stack with every active v0.1 service declared, configured, and health-checked. After the spec ships in full, every subsequent feature slice runs against real Kratos / direct Postgres / Redis / DigitalOcean Spaces / Resend from the first PR with no mock-first layer (see ADR-006 and ADR-007).
 
 This spec delivers the **runtime**. It does not implement product features beyond what is required to prove that each service is wired correctly — the Go API ships with `GET /api/health` and the auth/profile bounded contexts wired only enough for the health probe and a smoke sign-up. Product features ship in later stateful slices (see `docs_capsule_zero/project/backend/backend-stateful-slices-plan.md`).
 

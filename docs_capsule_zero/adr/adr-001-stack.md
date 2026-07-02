@@ -17,7 +17,7 @@ Capsule Zero is targeting production-grade v0.1 directly. There is no Stage 1 mo
 - a shared item database for public marketplace imports
 - EN and RU from v0.1 day 1, with ES-AR globally deferred to v0.2
 - coins-only monetization through Lava.top one-time purchases — coins and image enhancement are in the v0.2 backlog; v0.1 ships with a Lava.top stub
-- a single DigitalOcean droplet running docker-compose with every service declared explicitly
+- a single DigitalOcean droplet running docker-compose with every service declared explicitly (hosting migrated to a Hetzner CX23 on 2026-07-02, spec 033 — the single-server docker-compose shape is unchanged)
 - self-hosted observability under tight RAM budget (no Sentry/Prometheus in v0.1)
 - a Cloudflare front-door for DDoS protection and CDN (activation deferred to Stage 2 — founder decision 2026-07-02; see the accepted-stack table)
 
@@ -42,7 +42,7 @@ Adopt the following production stack:
 | Email                    | Resend for transactional email (verification, password reset, security notifications), MailHog for local dev                                                      |
 | DNS / anti-DDoS          | Spaceship registrar; Cloudflare nameservers + proxy on `capsulezero.app` are **deferred to Stage 2** (founder decision 2026-07-02, spec 033) — v0.1 pre-launch runs direct DNS A records to the host nginx edge |
 | Observability            | syslog file logs + OpenTelemetry trace export in v0.1; Grafana dashboards, Sentry, and Prometheus are deferred                                                    |
-| Hosting                  | Single DigitalOcean droplet running docker-compose; minimum 4 GB RAM / 2 vCPU / 80 GB disk                                                                        |
+| Hosting                  | Single Hetzner Cloud server (CX23: 2 vCPU / 4 GB / 40 GB, Ubuntu 26.04) running docker-compose — migrated from the DigitalOcean droplet 2026-07-02 (spec 033)     |
 | Payments                 | Lava.top one-time product payments on web; stubbed in v0.1, integrated after core wardrobe and capsule flows ship                                                 |
 | i18n                     | next-intl                                                                                                                                                         |
 | Local web state          | Zustand                                                                                                                                                           |

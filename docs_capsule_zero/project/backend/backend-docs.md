@@ -2,7 +2,7 @@
 
 ## Stack
 
-Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a single DigitalOcean droplet. Every deployed v0.1 container is declared as a separate `services:` entry in one root `docker-compose.yml`; the Redis queue consumer runs inside the `api` process until the standalone worker promotion trigger in ADR-007 fires.
+Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a single Hetzner Cloud server (migrated from DigitalOcean 2026-07-02, spec 033). Every deployed v0.1 container is declared as a separate `services:` entry in one root `docker-compose.yml`; the Redis queue consumer runs inside the `api` process until the standalone worker promotion trigger in ADR-007 fires.
 
 | Layer                    | Choice                                                                                                              |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------- |

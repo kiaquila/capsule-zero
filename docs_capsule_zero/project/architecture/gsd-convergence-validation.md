@@ -48,7 +48,7 @@ A multi-lens review (software architect, platform architect, mobile architect, A
 The previous Phase 4 stack does not satisfy the new founder constraints. Three failure modes drove the pivot:
 
 1. **BaaS lock-in.** Supabase Auth, Storage, RLS, and Edge Functions are tightly coupled. Migrating later is expensive; pivoting now is cheap because none of the Supabase-derived product code is in production.
-2. **Operational fit.** The accepted runtime is one DO droplet. Vercel cannot host the API economically without splitting the stack across vendors; Supabase Storage adds another vendor relationship.
+2. **Operational fit.** The accepted runtime is one single server (a DO droplet at decision time; a Hetzner CX23 since 2026-07-02, spec 033). Vercel cannot host the API economically without splitting the stack across vendors; Supabase Storage adds another vendor relationship.
 3. **Language coherence.** Flutter pulled Dart into a TypeScript-heavy team. React Native keeps web and mobile on the same language and lets the same generated OpenAPI client serve both clients.
 
 ### Decision Delta
