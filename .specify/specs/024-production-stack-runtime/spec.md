@@ -74,7 +74,7 @@ The runtime must survive the following without silently degrading. Each is cover
 
 ## Constraints
 
-- DigitalOcean droplet ≥ 4 GB RAM / 2 vCPU / 80 GB disk. The runtime fails closed if memory pressure drives any service into OOM during the first-start smoke.
+- Production server ≥ 2 vCPU / 4 GB RAM (current: Hetzner CX23 — 2 vCPU / 4 GB / 40 GB, Ubuntu 26.04; superseded the DigitalOcean droplet requirement 2026-07-02, spec 033). The runtime fails closed if memory pressure drives any service into OOM during the first-start smoke.
 - DNS: `capsulezero.app` A records point directly at the production server; the Cloudflare cut-over (Spaceship nameservers → Cloudflare proxy → nginx) is **deferred to Stage 2** (founder decision 2026-07-02, spec 033). No third-party CDN in v0.1 beyond the DigitalOcean Spaces CDN for catalog images; the realip/CF-ranges nginx config already shipped stays inert until activation.
 - All secrets live only in the droplet's encrypted `.env` and provider dashboards. Never in git, never in chat with agents.
 - Every deployed v0.1 container in `docker-compose.yml` is its own `services:` block. The one explicit exception is the Redis queue consumer, which runs as goroutines inside `api` until ADR-007 promotes the standalone worker.

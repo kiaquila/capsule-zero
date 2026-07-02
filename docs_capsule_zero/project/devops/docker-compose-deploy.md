@@ -173,10 +173,10 @@ Object storage durability is provided by DigitalOcean Spaces; no extra backup of
 
 ## Ingress
 
-Public traffic enters through Cloudflare -> host nginx on the droplet (ports 80/443). The rollback compose nginx profile preserves the same routing contract when `docker-edge` is enabled:
+Public traffic enters via direct DNS -> host nginx on the server (ports 80/443); the Cloudflare front-door is deferred to Stage 2 (founder decision 2026-07-02, spec 033). The rollback compose nginx profile preserves the same routing contract when `docker-edge` is enabled:
 
 - terminates Let's Encrypt TLS for `capsulezero.app` (certs issued by host certbot, mounted from `/etc/letsencrypt`),
-- restores the real client IP from Cloudflare via the `realip` module (`set_real_ip_from` Cloudflare ranges + `real_ip_header CF-Connecting-IP`), so `$remote_addr` is the true client behind the Cloudflare POP,
+- carries the `realip` config for Cloudflare (`set_real_ip_from` Cloudflare ranges + `real_ip_header CF-Connecting-IP`) — inert until the Stage-2 Cloudflare activation; with direct DNS, `$remote_addr` is already the true client,
 - runs a per-IP `limit_req_zone` rate-limit (keyed on the realip-corrected client),
 - runs an `auth_request` against Kratos for protected routes,
 - routes `/` to `web`,
@@ -184,7 +184,7 @@ Public traffic enters through Cloudflare -> host nginx on the droplet (ports 80/
 - returns `404` for `/self-service/*` and `/sessions/*` — the Kratos public API is **not** exposed at the edge this slice. All auth writes go through the Go API (`/api/auth/*`), which drives Kratos over the internal network and owns duplicate-identifier sanitization + the auth rate limit; recovery/verification browser flows are deferred, so no public self-service path is needed yet. The recovery/verification (and Stage 2 OAuth) slice re-exposes only the exact public paths its completion UI needs.
 - adds a `grafana.capsulezero.app` route only after ADR-007 promotes Grafana.
 
-Cloudflare proxy provides edge TLS, DDoS protection, Bot Fight Mode, and CDN. Postgres, Redis, and both the Kratos public and admin APIs stay internal to the compose network in production; no host port is exposed (the dev override binds Kratos public to `127.0.0.1:4433` for local inspection only).
+The Cloudflare proxy (edge TLS offload, DDoS protection, Bot Fight Mode, CDN) joins at Stage 2; until then host nginx is the sole edge. Postgres, Redis, and both the Kratos public and admin APIs stay internal to the compose network in production; no host port is exposed (the dev override binds Kratos public to `127.0.0.1:4433` for local inspection only).
 
 ## Operational Constraints
 

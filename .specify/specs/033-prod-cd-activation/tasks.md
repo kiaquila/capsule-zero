@@ -80,15 +80,25 @@
   had to be commented out in `/etc/nginx/nginx.conf` because the shared snippet owns that
   directive (duplicate-directive boot failure otherwise).
 
-- **2026-07-02 PR #65 Codex P2 ×2:** (1) **the Cloudflare Stage-2 deferral is now swept
-  through every doc that prescribed Cloudflare in the active path**, not only
-  AGENTS/constitution: `adr-001-stack.md` DNS row, spec 024 `spec.md` scope bullet +
-  DNS constraint, `phase-5-entrance-checklist.md` server/DNS gates (also actualized
-  DO→Hetzner there), and the `phase-4-council.md` status preamble supersedes DI-006 /
-  DI-020 in those respects while the dated register keeps its 2026-06-27 wording as
-  history. (2) **plan.md rows 3–9 now carry the actual evidence in the Verification
-  table itself** (run link, statuses, throttle results, dated) per the SENAR contract —
-  the tasks.md checkbox alone was not the canonical evidence location.
+- **2026-07-02 PR #65 Codex P2 ×2 (77bdf52 review):** (1) **the Cloudflare Stage-2
+  deferral is now swept through every doc that prescribed Cloudflare in the active
+  path**, not only AGENTS/constitution: `adr-001-stack.md` DNS row, spec 024 `spec.md`
+  scope bullet + DNS constraint, `phase-5-entrance-checklist.md` server/DNS gates (also
+  actualized DO→Hetzner there), and the `phase-4-council.md` status preamble supersedes
+  DI-006 / DI-020 in those respects while the dated register keeps its 2026-06-27
+  wording as history. (2) **plan.md rows 3–9 now carry the actual evidence in the
+  Verification table itself** (run link, statuses, throttle results, dated) per the
+  SENAR contract — the tasks.md checkbox alone was not the canonical evidence location.
+- **2026-07-02 PR #65 Codex P2 ×2 (309353d review — second sweep pass):** the operator
+  runbooks the first pass missed are actualized: `sprint-0-runtime-provisioning.md`
+  (Cloudflare preconditions marked Stage 2, direct-DNS `A` record precondition, the
+  "DNS and Cloudflare" bring-up step split into v0.1 direct DNS vs Stage-2 activation,
+  "real Cloudflare from the first deploy" dropped from the posture line),
+  `backend-docs.md` (front-door stack row + Phase-5 completion item), and
+  `docker-compose-deploy.md` Ingress (direct DNS wording; realip bullet marked inert
+  until Stage 2). The stale `DigitalOcean droplet ≥ 4 GB / 80 GB` host constraint in
+  spec 024 `spec.md` is retargeted to the Hetzner CX23 gate (≥ 2 vCPU / 4 GB) in the
+  same pass.
 
 ### Known Issues
 
