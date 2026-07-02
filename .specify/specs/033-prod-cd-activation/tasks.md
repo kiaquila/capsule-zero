@@ -121,6 +121,13 @@
   `${VAR:?…}`-guarded Phase-2 keys from `docker-compose.yml` as the minimum, with
   CF/Spaces/Resend/mobile keys under an explicit "later-phase, not required for v0.1
   bootstrap" block.
+- **2026-07-02 PR #65 Codex P2 (aba8f17 review — sixth pass):**
+  `backend-stateful-slices-plan.md` still named Cloudflare "on the droplet" as the spec
+  024 prerequisite for every backend slice — fixed to the Hetzner/direct-DNS reality.
+  The same manual pass caught the ADR-003 "one provider for storage and compute"
+  consequence (the adr-001 storage-rationale finding one file over) and the
+  "production droplet" constraint wording in ADR-002/ADR-003. Generic "droplet" jargon
+  (env-file phrasing etc.) is left alone — only provider/topology claims are in scope.
 
 ### Known Issues
 

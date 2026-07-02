@@ -18,7 +18,7 @@ The storage architecture must support both web uploads and React Native camera/g
 
 Personal photos must never become public in v0.1. Marketplace-imported items may enter the shared item database after moderation. The quality gate requires upload plus optional background removal to complete in under 5 seconds whenever the user opts into background removal — this gate is enforced once the self-hosted Capsule Zero image model ships in Stage 2.
 
-The previous Phase 4 choice (Supabase Storage + Photoroom/remove.bg) is dropped. The replacement must run alongside the production droplet, ship a CDN out of the box, and integrate cleanly with the Go monolith.
+The previous Phase 4 choice (Supabase Storage + Photoroom/remove.bg) is dropped. The replacement must run alongside the production server, ship a CDN out of the box, and integrate cleanly with the Go monolith.
 
 ## Decision
 
@@ -73,7 +73,7 @@ Background removal is performed by the self-hosted Capsule Zero model running as
 
 Positive:
 
-- Storage, metadata, and authorization sit inside one provider (DigitalOcean) we already use for compute.
+- Storage ships with a mature S3-compatible API and built-in CDN behind the `internal/storage` port, with no new provider relationship for v0.1. (The original same-provider-as-compute argument retired with the 2026-07-02 Hetzner migration, spec 033 — see the cross-provider rationale in ADR-001 § "Why DigitalOcean Spaces and not Cloudflare R2".)
 - Built-in Spaces CDN — no extra wiring for cache.
 - Direct browser uploads via signed PUT URLs bypass the API for the byte stream, keeping the Go monolith light.
 - Adapter boundary (`internal/storage`) lets us swap to R2/AWS S3 with no business-logic change.
