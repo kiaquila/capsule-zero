@@ -6,6 +6,8 @@ Rerun complete (2026-06-27). Production-stack pivot accepted: Go modular monolit
 
 API-gateway choice revised 2026-06-28: nginx 1.27 replaces Traefik v3 in DI-017. Rationale recorded in ADR-001 § "Why nginx and not Traefik or Caddy".
 
+Hosting and front-door revised 2026-07-02 (spec 033): the DigitalOcean droplet in DI-006 is superseded by a Hetzner CX23 (2 vCPU / 4 GB / 40 GB), and the Cloudflare proxy in DI-006 / DI-020 is **deferred to Stage 2** — v0.1 pre-launch runs direct DNS to the host nginx edge. The dated DI-006 / DI-020 register rows keep their 2026-06-27 wording as history; the affected constraint and follow-up bullets carry inline deferral notes. Current state lives in AGENTS.md.
+
 ## Purpose
 
 This document records the Architectura-style decision pass that produced the v0.1 production architecture. The durable source of truth remains the Capsule Zero ADRs (`docs_capsule_zero/adr/`); this council document captures the reasoning and quorum behind them.
@@ -15,7 +17,7 @@ This document records the Architectura-style decision pass that produced the v0.
 The council was rerun after the founder accepted these new constraints:
 
 - Target production high-load from Day 1; no BaaS lock-in.
-- Hosting is a single DigitalOcean droplet running docker-compose; every service declared as a separate `services:` entry.
+- Hosting is a single DigitalOcean droplet running docker-compose; every service declared as a separate `services:` entry. (Migrated to a Hetzner CX23 on 2026-07-02 — spec 033; the single-server compose shape is unchanged.)
 - React Native replaces Flutter for mobile (shared TypeScript ecosystem with web).
 - Image processing moves to a self-hosted Capsule Zero model (deferred to Stage 2); Photoroom and remove.bg are dropped.
 - Observability stays self-hosted and lightweight in v0.1: syslog + traces. Grafana, Sentry, and Prometheus are deferred.
@@ -23,7 +25,7 @@ The council was rerun after the founder accepted these new constraints:
 - Object storage is DigitalOcean Spaces (S3-compatible, built-in CDN) instead of Supabase Storage.
 - API gateway is nginx 1.27 with `auth_request` into Kratos and `limit_req_zone` rate-limit (Traefik was the original pick on 2026-06-27; revised on 2026-06-28).
 - Email is Resend.
-- DNS is Spaceship; Cloudflare proxy fronts the droplet for DDoS and CDN.
+- DNS is Spaceship; Cloudflare proxy fronts the server for DDoS and CDN (activation deferred to Stage 2 — 2026-07-02; v0.1 runs direct DNS).
 - No Kafka in v0.1 — Redis-based job queue is enough for the worker count we have.
 - Coins, image enhancement, and the self-hosted image model are in v0.2 backlog; Lava.top integration is stubbed in v0.1.
 - ES-AR remains globally deferred to v0.2.
@@ -84,15 +86,15 @@ Capsule Zero is a mobile-first product with two clients over one self-hosted bac
 - **Web** — Next.js App Router served by the `web` container.
 - **Mobile** — React Native iOS/Android app distributed through TestFlight and Google Play internal testing.
 
-A **Go modular monolith** behind **nginx** owns identity (via Kratos), relational data, signed-URL issuance, background jobs, and search. Postgres handles structured data and FTS in v0.1; pgvector is deferred until the semantic-search slice. Redis handles cache, sessions, and the job queue. DigitalOcean Spaces handles object storage with a built-in CDN. Resend handles transactional email. Cloudflare absorbs the noisy traffic floor.
+A **Go modular monolith** behind **nginx** owns identity (via Kratos), relational data, signed-URL issuance, background jobs, and search. Postgres handles structured data and FTS in v0.1; pgvector is deferred until the semantic-search slice. Redis handles cache, sessions, and the job queue. DigitalOcean Spaces handles object storage with a built-in CDN. Resend handles transactional email. Cloudflare absorbs the noisy traffic floor from its Stage-2 activation on (deferred 2026-07-02, spec 033 — v0.1 runs direct DNS to the host nginx edge).
 
 Custom Go services can be extracted out of the monolith later — the first natural extraction is the image-processing worker when the self-hosted Capsule Zero model lands.
 
 ## Open Follow-Ups
 
 - Founder approval on the rewritten ADRs (`adr-001-stack.md`, `adr-002-auth.md`, `adr-003-storage.md`, `adr-006-mock-first-mvp-stage-one.md`).
-- DigitalOcean droplet upgrade to at least 4 GB / 2 vCPU / 80 GB.
-- Spaceship DNS pointed at Cloudflare nameservers; Cloudflare proxy enabled on `capsulezero.app`.
+- DigitalOcean droplet upgrade to at least 4 GB / 2 vCPU / 80 GB. (Resolved 2026-07-02 by migrating to a Hetzner CX23 instead — spec 033.)
+- Spaceship DNS pointed at Cloudflare nameservers; Cloudflare proxy enabled on `capsulezero.app`. (Deferred to Stage 2 — 2026-07-02.)
 - Resend account created and SPF/DKIM published.
 - DigitalOcean Spaces bucket created with CORS for `capsulezero.app`.
 - Ship `.specify/specs/024-production-stack-runtime/`.

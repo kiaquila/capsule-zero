@@ -1,6 +1,6 @@
 # Docker Compose Deployment
 
-Capsule Zero ships a production-shaped Docker Compose runtime that runs the **Go modular monolith API**, the **Next.js web frontend**, and the active v0.1 supporting infrastructure (Ory Kratos, plain PostgreSQL 16, Redis, imgproxy) as separate services on a single DigitalOcean droplet. The public edge is host-managed nginx in the current Phase 1 runtime; the compose-managed nginx service is retained only as a `docker-edge` rollback profile. Compose is the only process supervisor for application containers; VM-level firewalling, host nginx, backups, and secret delivery remain outside git. PgBouncer, pgvector, a standalone worker container, and Grafana dashboards remain deferred by ADR-007.
+Capsule Zero ships a production-shaped Docker Compose runtime that runs the **Go modular monolith API**, the **Next.js web frontend**, and the active v0.1 supporting infrastructure (Ory Kratos, plain PostgreSQL 16, Redis, imgproxy) as separate services on a single Hetzner Cloud server (migrated from DigitalOcean 2026-07-02, spec 033). The public edge is host-managed nginx in the current Phase 1 runtime; the compose-managed nginx service is retained only as a `docker-edge` rollback profile. Compose is the only process supervisor for application containers; VM-level firewalling, host nginx, backups, and secret delivery remain outside git. PgBouncer, pgvector, a standalone worker container, and Grafana dashboards remain deferred by ADR-007.
 
 The full runtime is delivered by `.specify/specs/024-production-stack-runtime/` across six phases. Phase 1 ships host nginx + web (operational runbook: `docs_capsule_zero/project/devops/nginx-reverse-proxy.md`); this document describes the steady-state operational contract once every phase has shipped.
 
@@ -69,13 +69,21 @@ Prepare env files:
 cp deploy/compose.env.example .env
 ```
 
-Fill the real values for the droplet's encrypted `.env`. Required keys at minimum:
+Fill the real values for the server's encrypted `.env`. Required keys at minimum for the
+current Phase-2 stack — exactly the `${VAR:?…}`-guarded interpolations in
+`docker-compose.yml`, which fail fast when missing:
 
-- `POSTGRES_PASSWORD`, `KRATOS_DSN`, `KRATOS_PUBLIC_BASE_URL`, `KRATOS_SMTP_CONNECTION_URI`, `SECRETS_COOKIE_0`, `SECRETS_CIPHER_0`
-- `CF_DNS_API_TOKEN` for certbot DNS-01 ACME against Cloudflare (only once the Cloudflare proxy is enabled; until then certbot uses HTTP-01 directly)
-- `SPACES_ACCESS_KEY`, `SPACES_SECRET_KEY`, `SPACES_BUCKET`, `SPACES_REGION`, `SPACES_CDN_BASE`
-- `RESEND_API_KEY`, `RESEND_FROM`
-- `APP_BASE_URL`, `MOBILE_DEEP_LINK_SCHEME`
+- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `KRATOS_DB_PASSWORD`, `API_DATABASE_URL`, `SESSION_SIGNING_SECRET`
+- `KRATOS_DSN`, `KRATOS_PUBLIC_BASE_URL`, `KRATOS_SMTP_CONNECTION_URI`, `SECRETS_COOKIE_0`, `SECRETS_CIPHER_0`
+- `APP_BASE_URL`
+
+Later-phase keys — **not** required for the v0.1 bootstrap, listed so the template reads
+complete when their slices land:
+
+- `CF_DNS_API_TOKEN` — Stage 2 only: certbot DNS-01 against Cloudflare once the deferred front-door activates (founder decision 2026-07-02); until then certbot uses HTTP-01 directly
+- `SPACES_ACCESS_KEY`, `SPACES_SECRET_KEY`, `SPACES_BUCKET`, `SPACES_REGION`, `SPACES_CDN_BASE` — Phase 4 (Spaces storage slice)
+- `RESEND_API_KEY`, `RESEND_FROM` — Phase 4 (real Resend courier lands with the recovery/verification slice)
+- `MOBILE_DEEP_LINK_SCHEME` — React Native slice
 
 Grafana-specific secrets are introduced only after ADR-007 promotes the dashboard service back into the active runtime.
 
@@ -173,10 +181,10 @@ Object storage durability is provided by DigitalOcean Spaces; no extra backup of
 
 ## Ingress
 
-Public traffic enters through Cloudflare -> host nginx on the droplet (ports 80/443). The rollback compose nginx profile preserves the same routing contract when `docker-edge` is enabled:
+Public traffic enters via direct DNS -> host nginx on the server (ports 80/443); the Cloudflare front-door is deferred to Stage 2 (founder decision 2026-07-02, spec 033). The rollback compose nginx profile preserves the same routing contract when `docker-edge` is enabled:
 
 - terminates Let's Encrypt TLS for `capsulezero.app` (certs issued by host certbot, mounted from `/etc/letsencrypt`),
-- restores the real client IP from Cloudflare via the `realip` module (`set_real_ip_from` Cloudflare ranges + `real_ip_header CF-Connecting-IP`), so `$remote_addr` is the true client behind the Cloudflare POP,
+- carries the `realip` config for Cloudflare (`set_real_ip_from` Cloudflare ranges + `real_ip_header CF-Connecting-IP`) — inert until the Stage-2 Cloudflare activation; with direct DNS, `$remote_addr` is already the true client,
 - runs a per-IP `limit_req_zone` rate-limit (keyed on the realip-corrected client),
 - runs an `auth_request` against Kratos for protected routes,
 - routes `/` to `web`,
@@ -184,7 +192,7 @@ Public traffic enters through Cloudflare -> host nginx on the droplet (ports 80/
 - returns `404` for `/self-service/*` and `/sessions/*` — the Kratos public API is **not** exposed at the edge this slice. All auth writes go through the Go API (`/api/auth/*`), which drives Kratos over the internal network and owns duplicate-identifier sanitization + the auth rate limit; recovery/verification browser flows are deferred, so no public self-service path is needed yet. The recovery/verification (and Stage 2 OAuth) slice re-exposes only the exact public paths its completion UI needs.
 - adds a `grafana.capsulezero.app` route only after ADR-007 promotes Grafana.
 
-Cloudflare proxy provides edge TLS, DDoS protection, Bot Fight Mode, and CDN. Postgres, Redis, and both the Kratos public and admin APIs stay internal to the compose network in production; no host port is exposed (the dev override binds Kratos public to `127.0.0.1:4433` for local inspection only).
+The Cloudflare proxy (edge TLS offload, DDoS protection, Bot Fight Mode, CDN) joins at Stage 2; until then host nginx is the sole edge. Postgres, Redis, and both the Kratos public and admin APIs stay internal to the compose network in production; no host port is exposed (the dev override binds Kratos public to `127.0.0.1:4433` for local inspection only).
 
 ## Operational Constraints
 

@@ -8,7 +8,7 @@ Map every user-visible mutation in the approved HTML prototypes to a backend sli
 
 ## Prerequisite
 
-Slices below depend on `.specify/specs/024-production-stack-runtime/` shipping first. That spec brings up the Go monolith, Kratos, Postgres, Redis, nginx, Spaces, Cloudflare, and Resend in docker-compose on the droplet. The `/app` frontend stays; its Supabase provider is replaced domain by domain with a real `api` provider as each slice lands.
+Slices below depend on `.specify/specs/024-production-stack-runtime/` shipping first. That spec brings up the Go monolith, Kratos, Postgres, Redis, nginx, Spaces, and Resend in docker-compose on the production server (a Hetzner CX23 since 2026-07-02, spec 033; the Cloudflare front-door is deferred to Stage 2 — v0.1 runs direct DNS). The `/app` frontend stays; its Supabase provider is replaced domain by domain with a real `api` provider as each slice lands.
 
 ## Bounded Contexts In The Monolith
 

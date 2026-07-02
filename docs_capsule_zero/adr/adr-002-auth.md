@@ -19,7 +19,7 @@ Stage 2 adds:
 
 The app must preserve sessions between visits, support password recovery, store optional location and language preferences, and redirect authenticated users to the dashboard. Auth must also secure private wardrobe items, photos, capsules, payments, and profile data across web and React Native mobile clients.
 
-The previous Phase 4 choice (Supabase Auth) is dropped together with Supabase. The replacement must run self-hosted on the production droplet, integrate cleanly with the Go monolith and React Native client, and deliver email verification and password reset using Resend.
+The previous Phase 4 choice (Supabase Auth) is dropped together with Supabase. The replacement must run self-hosted on the production server, integrate cleanly with the Go monolith and React Native client, and deliver email verification and password reset using Resend.
 
 ## Decision
 

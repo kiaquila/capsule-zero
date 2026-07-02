@@ -2,7 +2,7 @@
 
 ## Stack
 
-Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a single DigitalOcean droplet. Every deployed v0.1 container is declared as a separate `services:` entry in one root `docker-compose.yml`; the Redis queue consumer runs inside the `api` process until the standalone worker promotion trigger in ADR-007 fires.
+Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a single Hetzner Cloud server (migrated from DigitalOcean 2026-07-02, spec 033). Every deployed v0.1 container is declared as a separate `services:` entry in one root `docker-compose.yml`; the Redis queue consumer runs inside the `api` process until the standalone worker promotion trigger in ADR-007 fires.
 
 | Layer                    | Choice                                                                                                              |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
@@ -14,7 +14,7 @@ Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a
 | Cache / sessions / queue | Redis 7 (cache, idempotency keys, River/asynq job queue)                                                            |
 | Object storage           | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                   |
 | Email                    | Resend (SMTP courier for Kratos; transactional sends from `internal/email`)                                         |
-| Front-door               | Cloudflare proxy on `capsulezero.app` for DDoS, bot fight, CDN                                                      |
+| Front-door               | Direct DNS → host nginx in v0.1; the Cloudflare proxy (DDoS, bot fight, CDN) is deferred to Stage 2 (2026-07-02)    |
 | Observability            | syslog file logs + OpenTelemetry trace export; Grafana dashboards deferred by ADR-007 (Sentry/Prometheus → Stage 2) |
 | Migrations               | Embedded SQL migration files applied at API boot                                                                      |
 
@@ -211,7 +211,7 @@ Before the first feature slice (slice 01 — auth/session/profile), the producti
 - Kratos identity schema, courier (Resend SMTP) configured, sample identity admin script;
 - nginx config with TLS, rate-limit, and Kratos `auth_request` middleware;
 - Health-check on every service plus a smoke script that walks the stack end-to-end;
-- Cloudflare proxy active on `capsulezero.app`;
+- ~~Cloudflare proxy active on `capsulezero.app`~~ — deferred to Stage 2 (founder decision 2026-07-02, spec 033);
 - DigitalOcean Spaces bucket with CORS configured;
 - Resend account with SPF/DKIM published.
 

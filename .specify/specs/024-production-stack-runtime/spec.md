@@ -2,7 +2,7 @@
 
 ## Goal
 
-Bring up Capsule Zero's v0.1 production runtime on the DigitalOcean droplet via docker-compose so that `https://capsulezero.app` serves a healthy stack with every active v0.1 service declared, configured, and health-checked. After the spec ships in full, every subsequent feature slice runs against real Kratos / direct Postgres / Redis / DigitalOcean Spaces / Resend from the first PR with no mock-first layer (see ADR-006 and ADR-007).
+Bring up Capsule Zero's v0.1 production runtime on the production server (a Hetzner CX23 since 2026-07-02, spec 033; originally a DigitalOcean droplet) via docker-compose so that `https://capsulezero.app` serves a healthy stack with every active v0.1 service declared, configured, and health-checked. After the spec ships in full, every subsequent feature slice runs against real Kratos / direct Postgres / Redis / DigitalOcean Spaces / Resend from the first PR with no mock-first layer (see ADR-006 and ADR-007).
 
 This spec delivers the **runtime**. It does not implement product features beyond what is required to prove that each service is wired correctly — the Go API ships with `GET /api/health` and the auth/profile bounded contexts wired only enough for the health probe and a smoke sign-up. Product features ship in later stateful slices (see `docs_capsule_zero/project/backend/backend-stateful-slices-plan.md`).
 
@@ -38,7 +38,7 @@ Each phase ships as its own PR with feature-memory updates against this folder. 
   - `infra/kratos/` — identity schema, courier (Resend SMTP) configuration, self-service flow config (Phase 2)
   - `infra/postgres/` — init scripts: provision the Kratos database + role and the app database (Phase 2). pgvector is deferred by ADR-007 to the semantic catalog-search slice.
 - `api/migrations/` — SQL migrations applied at boot by the embedded migrator. The auth slice ships `0001_initial_auth.sql` (`profiles`); the wardrobe/capsule/catalog schema plus methodology seed (`color_catalog`, `category_catalog`, `compatibility_rules`) arrive with their domain slices.
-- Cloudflare configuration walkthrough in the runtime spec (DNS, proxy on, SSL/TLS Full strict, Bot Fight Mode) — applied when DNS migration happens (Phase 4 or earlier as separate config work)
+- ~~Cloudflare configuration walkthrough (DNS, proxy on, SSL/TLS Full strict, Bot Fight Mode)~~ — the Cloudflare front-door is **deferred to Stage 2** (founder decision 2026-07-02, spec 033); v0.1 runs direct DNS → host nginx
 - DigitalOcean Spaces bucket `capsulezero` with CORS for `https://capsulezero.app` and the dev origin (Phase 4)
 - Resend account verified for `no-reply@capsulezero.app` with SPF/DKIM published (Phase 4)
 - Nightly cron uploading `pg_dump` to `backups/` prefix in Spaces with a 14 day lifecycle rule (Phase 5)
@@ -74,8 +74,8 @@ The runtime must survive the following without silently degrading. Each is cover
 
 ## Constraints
 
-- DigitalOcean droplet ≥ 4 GB RAM / 2 vCPU / 80 GB disk. The runtime fails closed if memory pressure drives any service into OOM during the first-start smoke.
-- Spaceship registrar → Cloudflare nameservers → Cloudflare proxy → nginx on the droplet. No third-party CDN beyond the Cloudflare proxy and the DigitalOcean Spaces CDN for catalog images. Cloudflare cut-over may land in any phase before Phase 4 because it is an organisational gate independent of compose service rollout.
+- Production server ≥ 2 vCPU / 4 GB RAM (current: Hetzner CX23 — 2 vCPU / 4 GB / 40 GB, Ubuntu 26.04; superseded the DigitalOcean droplet requirement 2026-07-02, spec 033). The runtime fails closed if memory pressure drives any service into OOM during the first-start smoke.
+- DNS: `capsulezero.app` A records point directly at the production server; the Cloudflare cut-over (Spaceship nameservers → Cloudflare proxy → nginx) is **deferred to Stage 2** (founder decision 2026-07-02, spec 033). No third-party CDN in v0.1 beyond the DigitalOcean Spaces CDN for catalog images; the realip/CF-ranges nginx config already shipped stays inert until activation.
 - All secrets live only in the droplet's encrypted `.env` and provider dashboards. Never in git, never in chat with agents.
 - Every deployed v0.1 container in `docker-compose.yml` is its own `services:` block. The one explicit exception is the Redis queue consumer, which runs as goroutines inside `api` until ADR-007 promotes the standalone worker.
 - syslog files rotate daily with 7 day retention (Phase 5).

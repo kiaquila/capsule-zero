@@ -6,7 +6,7 @@ Accepted (2026-06-29).
 
 ## Context
 
-[ADR-001](adr-001-stack.md) accepted the full production stack as the long-term target: nginx, Kratos, Postgres + pgvector, PgBouncer, Redis, Go API, Go worker, Next.js web, imgproxy, Grafana, MailHog (dev-only). That set is the right long-term shape, but the v0.1 launch sits on a single DigitalOcean droplet (4 GB RAM / 2 vCPU / 80 GB disk) and ships before there is any real load or semantic-search traffic to defend against.
+[ADR-001](adr-001-stack.md) accepted the full production stack as the long-term target: nginx, Kratos, Postgres + pgvector, PgBouncer, Redis, Go API, Go worker, Next.js web, imgproxy, Grafana, MailHog (dev-only). That set is the right long-term shape, but the v0.1 launch sits on a single small server (a DigitalOcean droplet at decision time; a Hetzner CX23 — 2 vCPU / 4 GB / 40 GB — since 2026-07-02, spec 033: the same capacity class, so this ADR's reasoning is unchanged) and ships before there is any real load or semantic-search traffic to defend against.
 
 Three services and one database extension in the full stack are not load-bearing for v0.1 traffic and add operational surface, RAM, image-pull weight, or migration risk without paying for themselves yet:
 

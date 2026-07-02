@@ -6,7 +6,7 @@
 
 **Capsule Zero** is a premium fashion-tech platform — "the Aesop of wardrobe apps". It helps affluent users (25–40 yo) build maximally productive capsule wardrobes using a proprietary color and wardrobe methodology. Core metric: **Outfit Productivity Ratio** (outfits / items).
 
-**Tech stack:** Next.js 14+ App Router web frontend (`/app`), React Native mobile app (iOS + Android), Go modular monolith backend, nginx 1.27 reverse proxy / API gateway, Ory Kratos auth, PostgreSQL 16 (plain `postgres:16` in v0.1 — pgvector deferred to the semantic-search slice, see ADR-007), Redis, DigitalOcean Spaces, Cloudflare front-door, all wired through docker-compose on a Hetzner Cloud server (migrated from DigitalOcean on 2026-07-02).
+**Tech stack:** Next.js 14+ App Router web frontend (`/app`), React Native mobile app (iOS + Android), Go modular monolith backend, nginx 1.27 reverse proxy / API gateway, Ory Kratos auth, PostgreSQL 16 (plain `postgres:16` in v0.1 — pgvector deferred to the semantic-search slice, see ADR-007), Redis, DigitalOcean Spaces, Cloudflare front-door (deferred to Stage 2), all wired through docker-compose on a Hetzner Cloud server (migrated from DigitalOcean on 2026-07-02).
 **Languages:** EN (primary) and RU are active in v0.1 — i18n from Day 1. ES-AR is retained as reference copy and deferred to v0.2.
 **Target:** Buenos Aires-based startup, global premium segment.
 
@@ -292,7 +292,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 | **File Storage**        | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                                   |
 | **Image processing**    | Self-hosted Capsule Zero model behind a worker (deferred — first ship core wardrobe flows with manual/placeholder behavior)         |
 | **API gateway**         | nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos                        |
-| **Hosting**             | Single Hetzner Cloud server (CX23: 2 vCPU / 4 GB / 40 GB, Ubuntu 26.04) running docker-compose — migrated from DigitalOcean 2026-07-02; Cloudflare front-door still pending |
+| **Hosting**             | Single Hetzner Cloud server (CX23: 2 vCPU / 4 GB / 40 GB, Ubuntu 26.04) running docker-compose — migrated from DigitalOcean 2026-07-02; Cloudflare front-door deferred to Stage 2 (founder decision 2026-07-02) |
 | **Email**               | Resend for transactional email (verification, password reset, security notifications)                                               |
 | **Observability**       | syslog file logs + tracing in v0.1; Grafana dashboards, Sentry, and Prometheus deferred                                             |
 | **State Management**    | Zustand for local Journey/UI state; TanStack Query for interactive server-state                                                     |
@@ -307,7 +307,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 
 - Founder approval on the rewritten Phase 4 ADRs.
 - ~~DigitalOcean droplet upgrade to at least 4 GB RAM / 2 vCPU / 80 GB disk~~ — resolved 2026-07-02 by migrating to a Hetzner CX23 (2 vCPU / 4 GB / 40 GB; capacity budget verified in spec 033).
-- Spaceship DNS pointed at Cloudflare; Cloudflare proxy enabled for `capsulezero.app`.
+- ~~Spaceship DNS pointed at Cloudflare; Cloudflare proxy enabled for `capsulezero.app`~~ — deferred to Stage 2 (founder decision 2026-07-02); v0.1 pre-launch runs direct DNS → host nginx, and the realip/CF-ranges edge config stays inert until activation.
 - Resend account created and SPF/DKIM published on `capsulezero.app`.
 - DigitalOcean Spaces bucket created with CORS configured for `capsulezero.app`.
 - Ship `.specify/specs/024-production-stack-runtime/` to bring the stack up in docker-compose on the server, with every service health-checked end-to-end. (Phases 1–2 landed and deploy via prod CD, spec 033; Redis / Spaces / observability phases remain.)
