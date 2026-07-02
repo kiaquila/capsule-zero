@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import YAML from "yaml";
 
@@ -202,6 +202,45 @@ for (const parameter of ["q", "categoryId", "colorIds", "limit"]) {
   }
 }
 
+// spec 034: every route the Go binary actually registers must exist in the
+// OpenAPI contract with the same method + path, so an endpoint can never ship
+// undocumented. The reverse direction stays loose on purpose — the contract is
+// authored ahead of the domain-by-domain Go migration (wardrobe/capsule/billing
+// routes have no handlers yet).
+function collectGoRoutes(apiRoot) {
+  const routes = [];
+
+  for (const entry of readdirSync(apiRoot, { recursive: true })) {
+    const file = String(entry);
+    if (!file.endsWith(".go") || file.endsWith("_test.go")) {
+      continue;
+    }
+
+    const source = readFileSync(resolve(apiRoot, file), "utf8");
+    for (const match of source.matchAll(/HandleFunc\(\s*"([A-Z]+) ([^"]+)"/g)) {
+      routes.push({ method: match[1].toLowerCase(), path: match[2], file });
+    }
+  }
+
+  return routes;
+}
+
+const goRoutes = collectGoRoutes(resolve(root, "api"));
+
+if (goRoutes.length === 0) {
+  errors.push(
+    "No Go route registrations parsed under api/ — the Go↔OpenAPI guard is disarmed; adjust collectGoRoutes if the registration style changed.",
+  );
+}
+
+for (const route of goRoutes) {
+  if (!paths[route.path]?.[route.method]) {
+    errors.push(
+      `Go route ${route.method.toUpperCase()} ${route.path} (api/${route.file}) is not in openapi.yaml.`,
+    );
+  }
+}
+
 if (errors.length > 0) {
   console.error("API contract validation failed:");
   for (const error of errors) {
@@ -211,5 +250,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `API contract check passed: ${expectedRoutes.length} route-methods verified.`,
+  `API contract check passed: ${expectedRoutes.length} route-methods verified, ${goRoutes.length} Go route registrations covered.`,
 );

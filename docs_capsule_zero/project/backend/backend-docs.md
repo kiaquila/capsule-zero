@@ -10,13 +10,13 @@ Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a
 | Background worker        | Redis-queue consumer goroutines inside `/api` for v0.1; standalone `/worker` container deferred by ADR-007          |
 | API gateway / TLS        | nginx 1.27 with host-managed Let's Encrypt certbot, rate-limit middleware, `auth_request` into Ory Kratos           |
 | Auth                     | Ory Kratos email/password (Stage 1); Google OAuth and Apple Sign-In in Stage 2                                      |
-| Database                 | PostgreSQL 16 with Postgres FTS; API connects directly in v0.1, PgBouncer and pgvector are deferred by ADR-007      |
+| Database                 | PostgreSQL 16 with Postgres FTS; API connects directly in v0.1 as the least-privilege `capsule_app` role (spec 034), PgBouncer and pgvector are deferred by ADR-007 |
 | Cache / sessions / queue | Redis 7 (cache, idempotency keys, River/asynq job queue)                                                            |
 | Object storage           | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                   |
 | Email                    | Resend (SMTP courier for Kratos; transactional sends from `internal/email`)                                         |
 | Front-door               | Cloudflare proxy on `capsulezero.app` for DDoS, bot fight, CDN                                                      |
 | Observability            | syslog file logs + OpenTelemetry trace export; Grafana dashboards deferred by ADR-007 (Sentry/Prometheus → Stage 2) |
-| Migrations               | Embedded SQL migration files applied at API boot                                                                      |
+| Migrations               | Embedded SQL migration files applied at API boot, serialized behind a `pg_advisory_lock` (spec 034); files from `0002` on must be runnable by the non-superuser `capsule_app` owner role |
 
 The Go monolith owns all business logic; the database has no RLS. Authorization is enforced in every Go handler against the Kratos session before any data access. Internal interfaces (`internal/auth`, `internal/storage`, `internal/email`, `internal/billing`, …) let tests substitute fakes per call site, but there is **no global mock mode** — production code wires the real client (see ADR-006).
 

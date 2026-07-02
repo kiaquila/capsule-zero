@@ -24,7 +24,7 @@
 
 ### Follow-ups (not this PR)
 
-- [ ] Auth hardening before real-provider QA (carried from spec 024 `tasks.md` Known Issues): throttle `whoami`/`logout`/`profile`; Kratos Argon2 `iterations: 2`; `openapi ↔ Go` contract guard; `profiles.email` UNIQUE + `pg_advisory_lock` migrator; least-privilege Postgres app role
+- [x] Auth hardening before real-provider QA (carried from spec 024 `tasks.md` Known Issues): throttle `whoami`/`logout`/`profile`; Kratos Argon2 `iterations: 2`; `openapi ↔ Go` contract guard; `profiles.email` UNIQUE + `pg_advisory_lock` migrator; least-privilege Postgres app role — delivered by `.specify/specs/034-auth-hardening/` (prod role rollout tracked there)
 - [ ] Recovery + email verification completion slice (flow-aware `/auth` UI, Go endpoints, re-enable Kratos flows, real Resend SMTP + SPF/DKIM, re-expose exact `/self-service/*` paths)
 - [ ] Decide the registration account-enumeration residual (verification-gated sign-up vs auto-login) inside the recovery/verification slice
 - [ ] Decommission the old DigitalOcean droplet once prod is verified (data: nothing to migrate — it never ran the backend)

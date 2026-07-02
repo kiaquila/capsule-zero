@@ -2,21 +2,28 @@
 
 ## Tasks
 
-- [ ] TDD red commit: `TestSessionEndpointsThrottled`, `TestAuthAndSessionBucketsIndependent` (cmd/api), `TestMigrateAcquiresAdvisoryLock` (internal/db)
-- [ ] Go: `newMux(...)` route constructor; session limiter 120/min burst 60 around whoami/logout/profile; cleanup loop covers both limiters
-- [ ] `api/migrations/0002_profiles_email_unique.sql` (UNIQUE index replaces `profiles_email_idx`)
-- [ ] `db.Migrate`: `pg_advisory_lock` held on one pooled connection for the run
-- [ ] `infra/kratos/kratos.yml` `iterations: 2`; `docker-compose.dev.yml` pins `HASHERS_ARGON2_ITERATIONS=1`
-- [ ] `scripts/check-api-contract.mjs`: Go route registrations ⊆ `openapi.yaml` (fail on zero parsed routes)
-- [ ] `infra/postgres/00-kratos-db.sh` provisions optional `capsule_app` role on fresh init; env templates updated
-- [ ] Docs: spec 024/033 memory rows point here; `backend-docs.md` migrations/roles notes
-- [ ] Prod rollout (operator step, after merge+deploy): create `capsule_app`, transfer ownership, swap API DSN in `/opt/capsule-zero/.env`, `up -d api`, smoke — record evidence here
+- [x] TDD red commit: `TestSessionEndpointsThrottled`, `TestAuthAndSessionBucketsIndependent` (cmd/api), `TestMigrationLockWrapsBody` / `TestMigrationLockReleasesOnBodyError` (internal/db)
+- [x] Go: `newMux(...)` route constructor; session limiter 120/min burst 60 around whoami/logout/profile; cleanup loop covers both limiters
+- [x] `api/migrations/0002_profiles_email_unique.sql` (UNIQUE index replaces `profiles_email_idx`)
+- [x] `db.Migrate`: `pg_advisory_lock` held on one pooled connection for the run
+- [x] `infra/kratos/kratos.yml` `iterations: 2`; `docker-compose.dev.yml` pins `HASHERS_ARGON2_ITERATIONS=1`
+- [x] `scripts/check-api-contract.mjs`: Go route registrations ⊆ `openapi.yaml` (fail on zero parsed routes)
+- [x] `infra/postgres/00-kratos-db.sh` provisions optional `capsule_app` role on fresh init + revokes PUBLIC CONNECT on both databases; env templates updated
+- [x] Docs: spec 024/033 memory rows point here; `backend-docs.md` migrations/roles notes; `prod-cd-pipeline.md` one-time role rollout runbook
+- [ ] Prod rollout (operator step, after merge+deploy): run the `capsule_app` runbook section of `prod-cd-pipeline.md`, smoke `/api/health` + login — record evidence here
 
 ## Process Memory
 
 ### Dead Ends
 
-_(populated as work proceeds)_
+- **"Role separation is enough" was not enough:** Postgres grants CONNECT on every new
+  database to PUBLIC by default, so `capsule_app` (and any future role) could connect to
+  the `kratos` database even with no table grants. The init script and the prod runbook
+  now `REVOKE CONNECT ... FROM PUBLIC` on both databases; owners keep implicit access.
+- An 11-request *sequential* curl probe never trips a `rate=10r/m burst=10 nodelay`
+  limiter (nginx rejects from request 12, and per-request TLS round-trips refill the
+  bucket) — discovered while attaching spec 033 evidence; throttle probes must be
+  parallel bursts.
 
 ### Decisions
 

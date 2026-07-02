@@ -160,6 +160,42 @@ curl -fsS https://capsulezero.app/en >/dev/null && echo edge-ok
 curl -fsS https://capsulezero.app/api/health && echo api-ok
 ```
 
+## One-time rollout: least-privilege `capsule_app` role (spec 034)
+
+The production `pgdata` volume predates spec 034, so `/docker-entrypoint-initdb.d` never
+re-runs and the `capsule_app` role must be provisioned once by the operator. Run on the
+server as root, **after** the spec 034 images have deployed (so migration `0002` has
+already applied under the old superuser DSN). The password is generated on the host and
+written straight into the env file — it never leaves the box.
+
+```bash
+cd /opt/capsule-zero
+APP_PW="$(openssl rand -hex 24)"
+docker compose --env-file .env -p capsule-zero exec -T postgres \
+  psql -U "$(grep ^POSTGRES_USER .env | cut -d= -f2)" -d capsule_zero \
+       -v app_pw="$APP_PW" <<'EOSQL'
+SELECT format('CREATE ROLE capsule_app LOGIN PASSWORD %L', :'app_pw')
+  WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'capsule_app')\gexec
+ALTER ROLE capsule_app WITH LOGIN PASSWORD :'app_pw';
+ALTER DATABASE capsule_zero OWNER TO capsule_app;
+ALTER SCHEMA public OWNER TO capsule_app;
+ALTER TABLE profiles OWNER TO capsule_app;
+ALTER TABLE schema_migrations OWNER TO capsule_app;
+REVOKE CONNECT ON DATABASE kratos FROM PUBLIC;
+REVOKE CONNECT ON DATABASE capsule_zero FROM PUBLIC;
+EOSQL
+# swap the API DSN to the new role (keep the old line commented for rollback):
+sed -i "s|^API_DATABASE_URL=.*|API_DATABASE_URL=postgres://capsule_app:${APP_PW}@postgres:5432/capsule_zero?sslmode=disable|" .env
+unset APP_PW
+docker compose --env-file .env -p capsule-zero -f docker-compose.yml up -d api
+curl -fsS https://capsulezero.app/api/health && echo api-ok
+```
+
+Rollback: restore the previous `API_DATABASE_URL` (superuser) line and `up -d api`.
+Migration files from `0002` on must stay runnable by this non-superuser owner role —
+plain DDL on owned objects only (`pgcrypto` is a trusted extension in PG16, so its
+`IF NOT EXISTS` re-run is safe).
+
 ## Rollback
 
 Every build is tagged immutably by commit SHA. Run **CD Prod** via **workflow_dispatch**
