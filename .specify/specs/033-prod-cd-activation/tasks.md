@@ -114,6 +114,13 @@
   the ADR-003 storage port, built-in CDN, no new provider relationship — R2 would couple
   storage to Cloudflare before the Stage-2 front-door), with the Stage-2 activation or a
   real storage cost line item as the re-evaluation triggers.
+- **2026-07-02 PR #65 Codex P2 (4d618b3 review — fifth pass):** the
+  `docker-compose-deploy.md` First Start section listed `CF_DNS_API_TOKEN` (and other
+  future-slice keys) under "Required keys at minimum", so a v0.1 operator would block
+  bootstrap on a Stage-2 credential. The list is rewritten to state exactly the
+  `${VAR:?…}`-guarded Phase-2 keys from `docker-compose.yml` as the minimum, with
+  CF/Spaces/Resend/mobile keys under an explicit "later-phase, not required for v0.1
+  bootstrap" block.
 
 ### Known Issues
 

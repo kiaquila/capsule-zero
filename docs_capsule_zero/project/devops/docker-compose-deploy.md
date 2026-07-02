@@ -69,13 +69,21 @@ Prepare env files:
 cp deploy/compose.env.example .env
 ```
 
-Fill the real values for the droplet's encrypted `.env`. Required keys at minimum:
+Fill the real values for the server's encrypted `.env`. Required keys at minimum for the
+current Phase-2 stack — exactly the `${VAR:?…}`-guarded interpolations in
+`docker-compose.yml`, which fail fast when missing:
 
-- `POSTGRES_PASSWORD`, `KRATOS_DSN`, `KRATOS_PUBLIC_BASE_URL`, `KRATOS_SMTP_CONNECTION_URI`, `SECRETS_COOKIE_0`, `SECRETS_CIPHER_0`
-- `CF_DNS_API_TOKEN` for certbot DNS-01 ACME against Cloudflare (only once the Cloudflare proxy is enabled; until then certbot uses HTTP-01 directly)
-- `SPACES_ACCESS_KEY`, `SPACES_SECRET_KEY`, `SPACES_BUCKET`, `SPACES_REGION`, `SPACES_CDN_BASE`
-- `RESEND_API_KEY`, `RESEND_FROM`
-- `APP_BASE_URL`, `MOBILE_DEEP_LINK_SCHEME`
+- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `KRATOS_DB_PASSWORD`, `API_DATABASE_URL`, `SESSION_SIGNING_SECRET`
+- `KRATOS_DSN`, `KRATOS_PUBLIC_BASE_URL`, `KRATOS_SMTP_CONNECTION_URI`, `SECRETS_COOKIE_0`, `SECRETS_CIPHER_0`
+- `APP_BASE_URL`
+
+Later-phase keys — **not** required for the v0.1 bootstrap, listed so the template reads
+complete when their slices land:
+
+- `CF_DNS_API_TOKEN` — Stage 2 only: certbot DNS-01 against Cloudflare once the deferred front-door activates (founder decision 2026-07-02); until then certbot uses HTTP-01 directly
+- `SPACES_ACCESS_KEY`, `SPACES_SECRET_KEY`, `SPACES_BUCKET`, `SPACES_REGION`, `SPACES_CDN_BASE` — Phase 4 (Spaces storage slice)
+- `RESEND_API_KEY`, `RESEND_FROM` — Phase 4 (real Resend courier lands with the recovery/verification slice)
+- `MOBILE_DEEP_LINK_SCHEME` — React Native slice
 
 Grafana-specific secrets are introduced only after ADR-007 promotes the dashboard service back into the active runtime.
 
