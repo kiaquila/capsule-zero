@@ -103,9 +103,13 @@ export async function signOutAction(): Promise<AuthActionResult> {
     await clearMockSession();
   }
 
-  return revocationError
-    ? { ok: true, message: authActionErrorMessage(revocationError) }
-    : { ok: true };
+  if (revocationError) {
+    // Best-effort logout: the local app session is already cleared, so the
+    // user is signed out even when Kratos revocation fails. Log for operators
+    // instead of returning an error-shaped message on a successful sign-out.
+    console.error("Sign-out revocation failed:", revocationError);
+  }
+  return { ok: true };
 }
 
 function normalizeActionLocale(locale: string | undefined): AppLocale {
@@ -121,7 +125,9 @@ function authActionErrorMessage(error: unknown): string {
       ? error.message
       : "Authentication failed. Please try again.";
 
-  const providerMessage = message.split(":").at(-1)?.trim();
+  // Strip only a leading provider error code (e.g. "AUTH_FAILED: ..."),
+  // keeping any colons inside the human-readable part of the message.
+  const providerMessage = message.replace(/^[A-Z_]+:\s*/, "").trim();
   if (providerMessage) {
     return providerMessage;
   }

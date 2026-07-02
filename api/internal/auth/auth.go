@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -18,6 +19,9 @@ import (
 // maxProfileFieldRunes mirrors the ProfileUpdateRequest maxLength (see
 // docs_capsule_zero/adr/openapi.yaml) for the free-text profile fields.
 const maxProfileFieldRunes = 80
+
+// maxAvatarURLRunes mirrors the ProfileUpdateRequest avatarUrl maxLength.
+const maxAvatarURLRunes = 2048
 
 type ctxKey int
 
@@ -235,11 +239,13 @@ func (h *Handler) PatchProfile(w http.ResponseWriter, r *http.Request) {
 	// stored verbatim nor able to slip past the blank/length checks, then enforce
 	// the ProfileUpdateRequest contract before persisting: the repository only
 	// normalizes locale, so a non-web API client could otherwise store an empty
-	// display name or an over-long country/city as a "successful" update.
+	// display name, a blank/over-long country/city, or a non-https avatar URL as
+	// a "successful" update.
 	displayName := trimOptional(in.DisplayName)
 	country := trimOptional(in.Country)
 	city := trimOptional(in.City)
-	if msg, ok := validateProfileUpdate(displayName, country, city); !ok {
+	avatarURL := trimOptional(in.AvatarURL)
+	if msg, ok := validateProfileUpdate(displayName, country, city, avatarURL); !ok {
 		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", msg)
 		return
 	}
@@ -249,7 +255,7 @@ func (h *Handler) PatchProfile(w http.ResponseWriter, r *http.Request) {
 		Locale:      in.Locale,
 		Country:     country,
 		City:        city,
-		AvatarURL:   in.AvatarURL,
+		AvatarURL:   avatarURL,
 	})
 	if err != nil {
 		writeProfileError(w, err)
@@ -364,7 +370,7 @@ func trimOptional(s *string) *string {
 // the mutable text fields. Only provided (non-nil) fields are checked; an omitted
 // field is left unchanged by the repository. Returns a user-facing message and
 // false when a field is invalid.
-func validateProfileUpdate(displayName, country, city *string) (string, bool) {
+func validateProfileUpdate(displayName, country, city, avatarURL *string) (string, bool) {
 	if displayName != nil {
 		if strings.TrimSpace(*displayName) == "" {
 			return "Display name cannot be empty.", false
@@ -373,11 +379,34 @@ func validateProfileUpdate(displayName, country, city *string) (string, bool) {
 			return "Display name must be 80 characters or fewer.", false
 		}
 	}
-	if country != nil && utf8.RuneCountInString(*country) > maxProfileFieldRunes {
-		return "Country must be 80 characters or fewer.", false
+	if country != nil {
+		if *country == "" {
+			return "Country cannot be blank; omit the field to keep the stored value.", false
+		}
+		if utf8.RuneCountInString(*country) > maxProfileFieldRunes {
+			return "Country must be 80 characters or fewer.", false
+		}
 	}
-	if city != nil && utf8.RuneCountInString(*city) > maxProfileFieldRunes {
-		return "City must be 80 characters or fewer.", false
+	if city != nil {
+		if *city == "" {
+			return "City cannot be blank; omit the field to keep the stored value.", false
+		}
+		if utf8.RuneCountInString(*city) > maxProfileFieldRunes {
+			return "City must be 80 characters or fewer.", false
+		}
+	}
+	if avatarURL != nil {
+		// Constrain the stored value to an absolute https URL so future
+		// consumers that render it as <img src>/<a href> or fetch it
+		// server-side do not inherit a javascript:/data:/file: or
+		// internal-address vector from a direct API client.
+		if utf8.RuneCountInString(*avatarURL) > maxAvatarURLRunes {
+			return "Avatar URL must be 2048 characters or fewer.", false
+		}
+		parsed, err := url.Parse(*avatarURL)
+		if err != nil || parsed.Scheme != "https" || parsed.Host == "" {
+			return "Avatar URL must be an absolute https URL.", false
+		}
 	}
 	return "", true
 }

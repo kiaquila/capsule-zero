@@ -1906,14 +1906,20 @@ export const API_SCHEMAS = {
       },
       "country": {
         "type": "string",
+        "minLength": 1,
         "maxLength": 80
       },
       "city": {
         "type": "string",
+        "minLength": 1,
         "maxLength": 80
       },
       "avatarUrl": {
-        "type": "string"
+        "type": "string",
+        "format": "uri",
+        "minLength": 1,
+        "maxLength": 2048,
+        "description": "Absolute https URL of the avatar image."
       }
     }
   },

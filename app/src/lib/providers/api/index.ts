@@ -82,7 +82,15 @@ async function apiFetch<T>(
   });
 
   const text = await response.text();
-  const data = (text ? JSON.parse(text) : {}) as T;
+  let data: T;
+  try {
+    data = (text ? JSON.parse(text) : {}) as T;
+  } catch {
+    // Non-JSON upstream body (e.g. an nginx 502 HTML page while the API is
+    // down) must fall through to the caller's status-based error handling
+    // instead of throwing a SyntaxError out of the provider.
+    data = {} as T;
+  }
   return { status: response.status, data };
 }
 

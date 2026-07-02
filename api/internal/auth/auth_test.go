@@ -435,6 +435,12 @@ func TestPatchProfileRejectsInvalidFields(t *testing.T) {
 		{"over-long display name", `{"displayName":"` + strings.Repeat("a", 81) + `"}`},
 		{"over-long country", `{"country":"` + strings.Repeat("a", 81) + `"}`},
 		{"over-long city", `{"city":"` + strings.Repeat("a", 81) + `"}`},
+		{"whitespace country", `{"country":"   "}`},
+		{"whitespace city", `{"city":"  "}`},
+		{"non-https avatar", `{"avatarUrl":"javascript:alert(1)"}`},
+		{"http avatar", `{"avatarUrl":"http://cdn.example.com/a.png"}`},
+		{"schemaless avatar", `{"avatarUrl":"cdn.example.com/a.png"}`},
+		{"over-long avatar", `{"avatarUrl":"https://cdn.example.com/` + strings.Repeat("a", 2048) + `"}`},
 	}
 
 	for _, tc := range cases {
@@ -461,17 +467,19 @@ func TestPatchProfileRejectsInvalidFields(t *testing.T) {
 
 func TestValidateProfileUpdateAcceptsValidAndOmitted(t *testing.T) {
 	valid := "Buenos Aires"
-	if msg, ok := validateProfileUpdate(&valid, &valid, &valid); !ok {
+	avatar := "https://cdn.capsulezero.app/avatars/a.png"
+	if msg, ok := validateProfileUpdate(&valid, &valid, &valid, &avatar); !ok {
 		t.Fatalf("valid update rejected: %q", msg)
 	}
 	// All-nil (every field omitted) is a valid no-op patch.
-	if msg, ok := validateProfileUpdate(nil, nil, nil); !ok {
+	if msg, ok := validateProfileUpdate(nil, nil, nil, nil); !ok {
 		t.Fatalf("omitted-only update rejected: %q", msg)
 	}
-	// An empty country/city is allowed (only maxLength is constrained).
+	// A provided-but-blank country/city is rejected (set-or-leave has no clear
+	// semantics); the handler-level cases live in TestPatchProfileRejectsInvalidFields.
 	empty := ""
-	if msg, ok := validateProfileUpdate(nil, &empty, &empty); !ok {
-		t.Fatalf("empty country/city rejected: %q", msg)
+	if _, ok := validateProfileUpdate(nil, &empty, nil, nil); ok {
+		t.Fatal("blank country accepted, want rejection")
 	}
 }
 

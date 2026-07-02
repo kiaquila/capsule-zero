@@ -50,6 +50,11 @@ selfservice:
     error:
       ui_url: http://127.0.0.1:3000/error
 
+    # The settings self-service flow cannot be disabled in Kratos config (only
+    # recovery/verification expose `enabled`). It is intentionally inert this
+    # slice: the edge returns 404 for /self-service/*, and neither the web app
+    # nor the Go API drives a settings flow. The dedicated profile/settings
+    # slice ships its completion UI before the edge re-exposes it.
     settings:
       ui_url: http://127.0.0.1:3000/profile
       privileged_session_max_age: 15m

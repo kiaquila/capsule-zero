@@ -62,9 +62,21 @@ const columns = `id, email, COALESCE(display_name, '') AS display_name, locale,
 // EnsureForIdentity returns the profile for a Kratos identity, creating it on
 // first sign-in. Email is refreshed from the identity; display name is seeded
 // only while empty so user profile edits are not overwritten by stale traits.
-// Concurrency-safe via ON CONFLICT.
+// Concurrency-safe via ON CONFLICT plus one retry: when two first sign-ins
+// race, the loser's ON CONFLICT waits for the winner's insert to commit and
+// then no-ops under the update guard, so the upsert CTE returns no row — and
+// the fallback SELECT runs on a statement snapshot taken before that commit,
+// which cannot see the new row yet. The retry re-executes on a fresh snapshot.
 func (r *Repo) EnsureForIdentity(ctx context.Context, identityID, email, displayName, locale string) (Profile, error) {
 	locale = NormalizeLocaleOrDefault(locale)
+	profile, err := r.ensureForIdentity(ctx, identityID, email, displayName, locale)
+	if errors.Is(err, ErrNotFound) {
+		profile, err = r.ensureForIdentity(ctx, identityID, email, displayName, locale)
+	}
+	return profile, err
+}
+
+func (r *Repo) ensureForIdentity(ctx context.Context, identityID, email, displayName, locale string) (Profile, error) {
 	row := r.pool.QueryRow(ctx, `
 		WITH upsert AS (
 			INSERT INTO profiles (kratos_identity_id, email, display_name, locale)
