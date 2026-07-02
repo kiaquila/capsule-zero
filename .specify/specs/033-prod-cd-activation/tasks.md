@@ -80,6 +80,16 @@
   had to be commented out in `/etc/nginx/nginx.conf` because the shared snippet owns that
   directive (duplicate-directive boot failure otherwise).
 
+- **2026-07-02 PR #65 Codex P2 ×2:** (1) **the Cloudflare Stage-2 deferral is now swept
+  through every doc that prescribed Cloudflare in the active path**, not only
+  AGENTS/constitution: `adr-001-stack.md` DNS row, spec 024 `spec.md` scope bullet +
+  DNS constraint, `phase-5-entrance-checklist.md` server/DNS gates (also actualized
+  DO→Hetzner there), and the `phase-4-council.md` status preamble supersedes DI-006 /
+  DI-020 in those respects while the dated register keeps its 2026-06-27 wording as
+  history. (2) **plan.md rows 3–9 now carry the actual evidence in the Verification
+  table itself** (run link, statuses, throttle results, dated) per the SENAR contract —
+  the tasks.md checkbox alone was not the canonical evidence location.
+
 ### Known Issues
 
 - **Production is the only environment.** Docs/tests-only merges skip deploy, but any

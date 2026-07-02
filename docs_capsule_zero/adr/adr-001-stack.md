@@ -19,7 +19,7 @@ Capsule Zero is targeting production-grade v0.1 directly. There is no Stage 1 mo
 - coins-only monetization through Lava.top one-time purchases — coins and image enhancement are in the v0.2 backlog; v0.1 ships with a Lava.top stub
 - a single DigitalOcean droplet running docker-compose with every service declared explicitly
 - self-hosted observability under tight RAM budget (no Sentry/Prometheus in v0.1)
-- a Cloudflare front-door for DDoS protection and CDN
+- a Cloudflare front-door for DDoS protection and CDN (activation deferred to Stage 2 — founder decision 2026-07-02; see the accepted-stack table)
 
 The previous Phase 4 stack (Supabase / Vercel / Flutter / Photoroom / mock-first Stage 1) is dropped before any product code derived from it lands in production. `/app` remains the canonical provider-abstracted Next.js frontend; the retired Supabase provider inside it is removed domain by domain as the Go API absorbs each bounded context.
 
@@ -40,7 +40,7 @@ Adopt the following production stack:
 | File storage             | DigitalOcean Spaces (S3-compatible) with the built-in Spaces CDN                                                                                                  |
 | Image processing         | Self-hosted Capsule Zero model behind a Go worker, deferred to Stage 2                                                                                            |
 | Email                    | Resend for transactional email (verification, password reset, security notifications), MailHog for local dev                                                      |
-| DNS / anti-DDoS          | Spaceship registrar pointed at Cloudflare nameservers; Cloudflare proxy enabled on `capsulezero.app` for DDoS and CDN                                             |
+| DNS / anti-DDoS          | Spaceship registrar; Cloudflare nameservers + proxy on `capsulezero.app` are **deferred to Stage 2** (founder decision 2026-07-02, spec 033) — v0.1 pre-launch runs direct DNS A records to the host nginx edge |
 | Observability            | syslog file logs + OpenTelemetry trace export in v0.1; Grafana dashboards, Sentry, and Prometheus are deferred                                                    |
 | Hosting                  | Single DigitalOcean droplet running docker-compose; minimum 4 GB RAM / 2 vCPU / 80 GB disk                                                                        |
 | Payments                 | Lava.top one-time product payments on web; stubbed in v0.1, integrated after core wardrobe and capsule flows ship                                                 |
