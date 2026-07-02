@@ -14,6 +14,7 @@ nginx/                          ← in-container nginx config (rollback + local 
   conf.d/                       ← prod-shape vhost (capsulezero.app)
   conf.d.dev/                   ← mkcert vhost (capsulezero.local)
 nginx-host/                     ← host (systemd) nginx vhosts — the live edge
+scripts/                        ← deploy and runtime helper scripts
 postgres/                       ← Postgres init scripts (run once on empty volume)
   00-kratos-db.sh               ← provision the Kratos role + database
 kratos/                         ← Ory Kratos config

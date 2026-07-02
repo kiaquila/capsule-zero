@@ -43,18 +43,18 @@ Implementation rules:
 
 `profiles`
 
-| Field             | Type          | Notes                                                                  |
-| ----------------- | ------------- | ---------------------------------------------------------------------- |
-| `id`              | uuid PK       | Internal app primary key                                               |
-| `kratos_identity_id` | uuid unique | References Kratos identity                                            |
-| `display_name`    | text          | User-editable                                                          |
-| `avatar_asset_id` | uuid nullable | References selected avatar asset                                      |
-| `language`        | text          | `en`, `ru`; default `en`. `es-AR` is deferred to v0.2                  |
-| `country`         | text nullable | Optional                                                              |
-| `city`            | text nullable | Optional                                                              |
-| `coin_balance`    | integer       | Cached from coin ledger; ledger is canonical                          |
-| `created_at`      | timestamptz   | Server-generated                                                      |
-| `updated_at`      | timestamptz   | Server-generated                                                      |
+| Field                | Type          | Notes                                                 |
+| -------------------- | ------------- | ----------------------------------------------------- |
+| `id`                 | uuid PK       | Internal app primary key                              |
+| `kratos_identity_id` | uuid unique   | References Kratos identity                            |
+| `display_name`       | text          | User-editable                                         |
+| `avatar_asset_id`    | uuid nullable | References selected avatar asset                      |
+| `language`           | text          | `en`, `ru`; default `en`. `es-AR` is deferred to v0.2 |
+| `country`            | text nullable | Optional                                              |
+| `city`               | text nullable | Optional                                              |
+| `coin_balance`       | integer       | Cached from coin ledger; ledger is canonical          |
+| `created_at`         | timestamptz   | Server-generated                                      |
+| `updated_at`         | timestamptz   | Server-generated                                      |
 
 `coin_ledger`
 
@@ -119,7 +119,7 @@ Tradeoffs:
 - Kratos self-service flows: https://www.ory.sh/docs/kratos/self-service
 - Kratos identity schema: https://www.ory.sh/docs/kratos/manage-identities/identity-schema
 - Resend SMTP: https://resend.com/docs/send-with-smtp
-- nginx auth_request: https://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+- nginx `auth_request`: https://nginx.org/en/docs/http/ngx_http_auth_request_module.html
 - React Native deep links: https://reactnative.dev/docs/linking
 - Apple Sign-In: https://developer.apple.com/sign-in-with-apple/
 - Google OAuth: https://developers.google.com/identity/protocols/oauth2

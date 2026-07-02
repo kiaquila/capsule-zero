@@ -525,10 +525,6 @@
   z-index: var(--z-toast);
 }
 
-.dashboard-more-item-active {
-  background: rgba(255, 255, 255, 0.1);
-}
-
 @media (max-width: 1024px) {
   .profile-content {
     padding: 18px 28px 88px;
@@ -4982,7 +4978,7 @@ textarea {
 
 .capsule-result-picker-blocked {
   margin-top: 8px;
-  color: #ffd600;
+  color: var(--color-error);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -5668,7 +5664,7 @@ textarea {
   max-width: calc(100% - 24px);
   border-radius: var(--radius-pill);
   background: rgba(0, 0, 0, 0.58);
-  color: #ffd600;
+  color: var(--color-error);
   font-size: 11px;
   line-height: 1.35;
   padding: 5px 9px;
@@ -5714,11 +5710,11 @@ textarea {
 
 .my-items-field input[aria-invalid="true"],
 .my-items-field select[aria-invalid="true"] {
-  border-color: #ffd600;
+  border-color: var(--color-error);
 }
 
 .my-items-field small {
-  color: #ffd600;
+  color: var(--color-error);
   font-size: 11px;
   line-height: 1.35;
 }
@@ -5965,7 +5961,7 @@ textarea {
 .for-repair-delete-button {
   border-color: rgba(255, 214, 0, 0.42);
   background: rgba(255, 214, 0, 0.08);
-  color: #ffd600;
+  color: var(--color-error);
 }
 
 .dashboard-more-item-active {

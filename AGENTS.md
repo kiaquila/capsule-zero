@@ -6,7 +6,7 @@
 
 **Capsule Zero** is a premium fashion-tech platform — "the Aesop of wardrobe apps". It helps affluent users (25–40 yo) build maximally productive capsule wardrobes using a proprietary color and wardrobe methodology. Core metric: **Outfit Productivity Ratio** (outfits / items).
 
-**Tech stack:** Next.js 14+ App Router web frontend, React Native mobile app (iOS + Android), Go modular monolith backend, nginx 1.27 reverse proxy / API gateway, Ory Kratos auth, PostgreSQL + pgvector, Redis, DigitalOcean Spaces, Cloudflare front-door, all wired through docker-compose on a DigitalOcean droplet.
+**Tech stack:** Next.js 14+ App Router web frontend (`/app`), React Native mobile app (iOS + Android), Go modular monolith backend, nginx 1.27 reverse proxy / API gateway, Ory Kratos auth, PostgreSQL 16 (plain `postgres:16` in v0.1 — pgvector deferred to the semantic-search slice, see ADR-007), Redis, DigitalOcean Spaces, Cloudflare front-door, all wired through docker-compose on a DigitalOcean droplet.
 **Languages:** EN (primary) and RU are active in v0.1 — i18n from Day 1. ES-AR is retained as reference copy and deferred to v0.2.
 **Target:** Buenos Aires-based startup, global premium segment.
 
@@ -27,15 +27,17 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
 | 0. Founder Vision             | COMPLETE — `.specify/memory/constitution.md`                                                                                                                                       |
 | 1. Market Research            | COMPLETE — `docs_capsule_zero/marketing/go-to-market.md`                                                                                                                           |
 | 2. Product Definition         | COMPLETE — `.specify/specs/001-capsule-zero-mvp/spec.md`, `docs_capsule_zero/project/methodology/`, `docs_capsule_zero/ux/emotion-map.md`, `docs_capsule_zero/ux/ux-validation.md` |
-| 3. UX/UI Design               | COMPLETE — 16 logical screens across 12 HTML files + `html-prototypes/design-system.html`, `html-prototypes/color-system.html` — all in `html-prototypes/`                         |
-| **4. Technical Architecture** | **PIVOTED TO PRODUCTION STACK** — Go modular monolith + nginx + Ory Kratos + Postgres/pgvector + Redis + DO Spaces + Cloudflare + Resend; React Native replaces Flutter        |
-| 5. Development Sprint         | Upcoming — starts with `.specify/specs/024-production-stack-runtime/`                                                                                                              |
+| 3. UX/UI Design               | COMPLETE — all 16 v0.1 logical screens designed and implemented in the `/app` frontend                                                                                             |
+| **4. Technical Architecture** | **PIVOTED TO PRODUCTION STACK** — Go modular monolith + nginx + Ory Kratos + Postgres + Redis + DO Spaces + Cloudflare + Resend; React Native replaces Flutter                     |
+| 5. Development Sprint         | IN PROGRESS — `.specify/specs/024-production-stack-runtime/`: Phase 1 (nginx + web compose) landed; Phase 2 (Postgres + Kratos) remains pending                                    |
 | 6. QA & Soft Launch           | Upcoming                                                                                                                                                                           |
 | 7. Commercial Launch          | Upcoming                                                                                                                                                                           |
 
 **Locale scope decision, 2026-06-07:** Spanish / ES-AR is removed from active v0.1 scope and moved globally to v0.2. Keep Spanish source copy as future reference only; do not expose ES-AR in active routing, language switchers, profile language persistence, OpenAPI enums, generated clients, or launch acceptance criteria until v0.2 locale scope is reopened.
 
-**Production-stack pivot decision, 2026-06-27:** Phase 4 architecture was rewritten from a Supabase BaaS posture to a production-grade self-hosted stack. The previous Supabase-based code under `/app` is treated as legacy and will be removed in the implementation iteration after `.specify/specs/024-production-stack-runtime/` ships. The mock-first Stage 1 posture (previously ADR-006) is dropped entirely — implementation goes straight to real services behind production-shape contracts.
+**Production-stack pivot decision, 2026-06-27:** Phase 4 architecture was rewritten from a Supabase BaaS posture to a production-grade self-hosted stack. The mock-first Stage 1 posture (previously ADR-006) is dropped entirely — implementation goes straight to real services behind production-shape contracts.
+
+**Frontend / provider decision, 2026-06-30 (spec 024 follow-up — PR #57):** `/app` **stays** as the canonical, provider-abstracted Next.js frontend — there is no `/app` → `/web` rename, and `/app` is **not** slated for deletion. Current `/app` provider modes are `mock` and `supabase`; the Supabase provider is frozen and removed **domain by domain** as the future Go API absorbs each bounded context. Do not document an `api` provider mode as available until the `/app` API provider actually lands. Postgres ships as plain `postgres:16`; pgvector is deferred (ADR-007).
 
 ## Where to Find Specifications
 
@@ -48,7 +50,7 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
   specs/
     001-capsule-zero-mvp/
       spec.md            ← Full v0.1 spec: 25 user stories, flows, requirements
-      prototype-map.md   ← Maps HTML files → spec sections → screens
+      prototype-map.md   ← Maps v0.1 screens → spec sections (cross-cutting + backend-only stories)
     024-production-stack-runtime/
       spec.md            ← Production runtime delivery spec (next implementation iteration)
       plan.md            ← Verification table for the runtime delivery
@@ -56,30 +58,6 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
 ```
 
 > The folder name `001-capsule-zero-mvp` is historical and remains for git stability; the content is the v0.1 product spec. Do not rename grandfathered spec folders.
-
-## HTML Prototypes
-
-Located in `html-prototypes/`. These are **pixel-perfect hi-fi prototypes** (pure HTML+CSS, no frameworks) representing the approved Phase 3 design. The folder also contains the design system and color palette references used for development.
-
-**Current source of truth:** the HTML prototypes in `html-prototypes/` are the most up-to-date product reference for product behavior, layout, and scope. If an older doc conflicts with an approved HTML prototype, follow the prototype and then align the docs.
-
-| File                                  | Screen                                       | User Stories           |
-| ------------------------------------- | -------------------------------------------- | ---------------------- |
-| `html-prototypes/index.html`          | Landing + Auth popup                         | US-001, US-002, US-003 |
-| `html-prototypes/auth.html`           | Standalone Auth                              | US-002, US-003         |
-| `html-prototypes/dashboard.html`      | Dashboard                                    | US-004, US-005         |
-| `html-prototypes/guided-journey.html` | Guided Journey (3 steps)                     | US-008–012, US-017     |
-| `html-prototypes/capsule-result.html` | Capsule Result                               | US-013–016             |
-| `html-prototypes/my-items.html`       | My Items                                     | US-006, US-007         |
-| `html-prototypes/uncapsulated.html`   | Uncapsulated                                 | US-020                 |
-| `html-prototypes/favorites.html`      | Favorites                                    | US-019                 |
-| `html-prototypes/for-sale.html`       | For Sale                                     | US-021                 |
-| `html-prototypes/for-repair.html`     | For Repair                                   | US-024                 |
-| `html-prototypes/profile.html`        | Profile                                      | US-005, US-018         |
-| `html-prototypes/design-system.html`  | Design System (tokens, components, patterns) | —                      |
-| `html-prototypes/color-system.html`   | Color Palette (51 colors, capsule palette)   | —                      |
-
-**To view:** `python3 -m http.server 3100` from `html-prototypes/`, then `http://localhost:3100/<file>.html`
 
 ## Key Principles to ALWAYS Respect
 
@@ -120,7 +98,7 @@ The interface uses frosted glass surfaces. Two variants: main panels (blur 40px)
 
 Photo upload, marketplace link import, semantic search from shared DB. All three are critical — they solve the #1 competitor pain point (upload friction).
 
-### 7. Engineering Reuse Rule (DRY/SOLID)
+### 7. Engineering Reuse Rule (DRY/SOLID) & Module-Size Discipline
 
 If a product or technical object type already exists in code, reuse its component, service, adapter, schema, helper, and CSS/API contract before adding a new variant. This applies across frontend, backend, API, data, and mobile layers.
 
@@ -128,6 +106,17 @@ If a product or technical object type already exists in code, reuse its componen
 - Backend/API examples: provider adapters, route handlers, validation schemas, DTOs, repository helpers, domain services, and fixture builders.
 - Shared structure belongs in a shared abstraction; feature-specific screens or endpoints should pass only section-specific labels, metadata, behavior, and policy.
 - Code review must reject copy-pasted markup, logic, schemas, or one-off classes/modules when an established object type can cover the same responsibility.
+
+**Mandatory reuse-check (before writing new code).** Before creating a new module, function, component, service, adapter, schema, or helper, first search for an existing one that already covers the responsibility and try to extend it. If you still add a new unit, the PR description must state, in one line, which existing unit you checked and why it did not fit. "I didn't find one" is not evidence — name the search. Reviewers reject new units that duplicate an existing responsibility without this note.
+
+**Module-size discipline (soft gate — a signal to split, not a hard CI failure).** The real criterion is single responsibility; the line counts below are the review trigger. Exceeding them is allowed only with a one-line justification in the PR.
+
+| Layer                          | Function / component | File / module | Cyclomatic complexity |
+| ------------------------------ | -------------------- | ------------- | --------------------- |
+| Go (`/api`, `/worker`)         | ≤ ~60 lines          | ≤ ~500 lines  | ≤ 15                  |
+| TS / React (`/app`, `/mobile`) | ≤ ~60 lines          | ≤ ~300 lines  | ≤ 15                  |
+
+Thresholds are wired as **warnings** (never CI failures): ESLint `max-lines` / `max-lines-per-function` / `complexity` in `app/eslint.config.mjs`, and opt-in `funlen` / `gocyclo` in `api/.golangci.yml` (schema-validated with `golangci-lint config verify`; full run waits until `/api` has a Go module). The Go file-size row (≤ ~500 lines) has no linter wired — `funlen` is function-level — so it stays review-only until a file-length linter is added. Generated clients (`**/generated/**`) and tests are exempt.
 
 ### 8. No Supabase / Legacy-Backend Recoupling (NON-NEGOTIABLE)
 
@@ -174,45 +163,46 @@ When you change an architecture or implementation decision, actualize **all** af
 
 When assigned to implement a specific feature, read in this order:
 
-1. HTML prototype (`html-prototypes/`) — current source of truth for approved behavior, layout, and scope
+1. The implemented screen in the `/app` frontend — the current reference for approved behavior, layout, and scope
 2. `docs_capsule_zero/features/f-XXX-name.md` — requirements, acceptance criteria, edge cases
 3. `docs_capsule_zero/screens/screen-name.md` — layout, component details, states
 4. `.specify/specs/001-capsule-zero-mvp/spec.md` — user stories and acceptance criteria
 5. `.specify/specs/001-capsule-zero-mvp/prototype-map.md` — cross-cutting stories and backend-only stories
 
 **Feature → Screen mapping:**
-| Feature | Screen file | HTML prototype |
-|---|---|---|
-| f-001-landing | screen-landing | html-prototypes/index.html |
-| f-002-auth | screen-auth | html-prototypes/auth.html, html-prototypes/index.html (popup) |
-| f-003-dashboard | screen-dashboard | html-prototypes/dashboard.html |
-| f-004-profile | screen-profile | html-prototypes/profile.html |
-| f-005-my-items | screen-my-items | html-prototypes/my-items.html |
-| f-006-guided-journey | screen-guided-journey | html-prototypes/guided-journey.html |
-| f-007-marketplace-import | screen-guided-journey (tab) | html-prototypes/guided-journey.html |
-| f-008-semantic-search | screen-guided-journey (tab) | html-prototypes/guided-journey.html |
-| f-009-capsule-result | screen-capsule-result | html-prototypes/capsule-result.html |
-| f-010-capsule-management | screen-capsule-result | html-prototypes/capsule-result.html |
-| f-011-photo-upload | screen-guided-journey, my-items | html-prototypes/guided-journey.html |
-| f-012-i18n | all screens | all HTML files |
-| f-013-favorites | screen-favorites | html-prototypes/favorites.html |
-| f-014-wardrobe-management | screen-my-items, uncapsulated, for-sale, for-repair | html-prototypes/my-items.html + others |
-| f-015-opr | screen-dashboard, capsule-result | html-prototypes/dashboard.html |
+| Feature | Screen file |
+|---|---|
+| f-001-landing | screen-landing |
+| f-002-auth | screen-auth |
+| f-003-dashboard | screen-dashboard |
+| f-004-profile | screen-profile |
+| f-005-my-items | screen-my-items |
+| f-006-guided-journey | screen-guided-journey |
+| f-007-marketplace-import | screen-guided-journey (tab) |
+| f-008-semantic-search | screen-guided-journey (tab) |
+| f-009-capsule-result | screen-capsule-result |
+| f-010-capsule-management | screen-capsule-result |
+| f-011-photo-upload | screen-guided-journey, my-items |
+| f-012-i18n | all screens |
+| f-013-favorites | screen-favorites |
+| f-014-wardrobe-management | screen-my-items, uncapsulated, for-sale, for-repair |
+| f-015-opr | screen-dashboard, capsule-result |
 
-## Repository Layout (target after spec 024 ships)
+## Repository Layout
 
 ```
+/app/             ← Next.js App Router web frontend — canonical, provider-abstracted (mock / supabase today; api provider lands later)
 /api/             ← Go modular monolith (bounded contexts: auth, wardrobe, capsule, search, billing)
 /worker/          ← Go background worker (Redis-queue consumer for image jobs, embeddings, webhooks)
-/web/             ← Next.js App Router web frontend
 /mobile/          ← React Native iOS + Android app
-/infra/           ← docker-compose.yml + service configs + nginx conf.d + Kratos config + migrations
-/html-prototypes/ ← Phase 3 design source of truth
+/infra/           ← nginx conf.d + Kratos config + Postgres init + service configs
+/deploy/          ← compose env templates + deploy artifacts
+/scripts/         ← repo tooling (API-client codegen, contract/feature-memory checks)
 /docs_capsule_zero/ ← Product, methodology, devops, architecture docs
 /.specify/        ← spec-kit feature memory
 ```
 
-The current `/app` directory contains the legacy Supabase-based Next.js shell. It is scheduled for removal in the implementation iteration that follows `.specify/specs/024-production-stack-runtime/`.
+`/app` is the single web frontend — there is no separate `/web`, and no `/app` → `/web` rename is planned. The Supabase provider under `app/src/lib/providers/supabase/` is frozen and will be retired **domain by domain** as the Go API absorbs each bounded context (see the Frontend / provider decision above). Root `docker-compose.yml` currently wires the Phase 1 nginx/web stack.
 
 ## Delivery Workflow
 
@@ -238,7 +228,7 @@ The current `/app` directory contains the legacy Supabase-based Next.js shell. I
 
 All automated tests live under `tests/` at the repo root:
 
-- `tests/e2e/` — Playwright web e2e (TypeScript). Currently targets `/app`; retargets to `/web` when `/app` is removed. Gated by the required GitHub check **`test`** (`.github/workflows/test.yml`).
+- `tests/e2e/` — Playwright web e2e (TypeScript). Targets the `/app` frontend. Gated by the required GitHub check **`test`** (`.github/workflows/test.yml`).
 - `tests/unit/` — `go test` for the Go API. Stub today; populated once spec-024 lands product code.
 - `tests/mobile/` — Detox e2e for the React Native app. Stub today; populated once `/mobile/` ships its first build.
 
@@ -277,41 +267,41 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 
 ### What's already done
 
-| Item                                | Status                                            | Location                                                               |
-| ----------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------- |
-| Frontend framework                  | ✅ Next.js 14+ App Router, React, TypeScript      | `/app` (legacy, scheduled removal); future `/web`                      |
-| Styling                             | ✅ Tailwind CSS v4 with custom @theme tokens      | `app/src/styles/tokens.css`                                            |
-| Design tokens                       | ✅ Glass tokens, colors, typography               | `docs_capsule_zero/project/frontend/styling.md`                        |
-| Production-stack ADR refresh        | ✅ Rewritten in-place                              | `docs_capsule_zero/adr/adr-001-stack.md` through `adr-006-…`            |
-| Architecture council                | ✅ Decisions + validation (updated for the pivot) | `docs_capsule_zero/project/architecture/phase-4-council.md`            |
-| Phase 5 entrance checklist          | ✅ Updated for production runtime gate            | `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` |
-| API spec                            | ✅ Product contract                                | `docs_capsule_zero/adr/api-spec.md`                                    |
-| Backend docs                        | ✅ Go modular monolith                            | `docs_capsule_zero/project/backend/backend-docs.md`                    |
-| Frontend docs                       | ✅ Next.js against Go API                          | `docs_capsule_zero/project/frontend/frontend-docs.md`                  |
-| Components guide                    | ✅ Component conventions, glass patterns          | `docs_capsule_zero/project/frontend/components.md`                     |
-| Mobile docs                         | ✅ React Native stack                              | `docs_capsule_zero/project/mobile/mobile-docs.md`                      |
+| Item                         | Status                                            | Location                                                               |
+| ---------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------- |
+| Frontend framework           | ✅ Next.js 14+ App Router, React, TypeScript      | `/app` (canonical, provider-abstracted frontend)                       |
+| Styling                      | ✅ Tailwind CSS v4 with custom @theme tokens      | `app/src/styles/tokens.css`                                            |
+| Design tokens                | ✅ Glass tokens, colors, typography               | `docs_capsule_zero/project/frontend/styling.md`                        |
+| Production-stack ADR refresh | ✅ Rewritten in-place                             | `docs_capsule_zero/adr/adr-001-stack.md` through `adr-006-…`           |
+| Architecture council         | ✅ Decisions + validation (updated for the pivot) | `docs_capsule_zero/project/architecture/phase-4-council.md`            |
+| Phase 5 entrance checklist   | ✅ Updated for production runtime gate            | `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` |
+| API spec                     | ✅ Product contract                               | `docs_capsule_zero/adr/api-spec.md`                                    |
+| Backend docs                 | ✅ Go modular monolith                            | `docs_capsule_zero/project/backend/backend-docs.md`                    |
+| Frontend docs                | ✅ Next.js against Go API                         | `docs_capsule_zero/project/frontend/frontend-docs.md`                  |
+| Components guide             | ✅ Component conventions, glass patterns          | `docs_capsule_zero/project/frontend/components.md`                     |
+| Mobile docs                  | ✅ React Native stack                             | `docs_capsule_zero/project/mobile/mobile-docs.md`                      |
 
 ### Accepted Phase 4 decisions
 
-| Decision               | Accepted option                                                                                                              |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| **Backend**            | Go modular monolith (single binary, bounded contexts inside the same process)                                                |
-| **Database**           | PostgreSQL 16 with pgvector (semantic) and Postgres FTS (full-text), PgBouncer for connection pooling                        |
-| **Cache / queue**      | Redis 7 (cache, sessions, Redis-based job queue — Kafka deferred until multi-service split)                                  |
-| **Auth**               | Ory Kratos with email/password Stage 1; Google OAuth and Apple Sign-In deferred to Stage 2                                   |
-| **File Storage**       | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                            |
-| **Image processing**   | Self-hosted Capsule Zero model behind a worker (deferred — first ship core wardrobe flows with manual/placeholder behavior)  |
-| **API gateway**        | nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos                  |
-| **Hosting**            | Single DigitalOcean droplet running docker-compose; Cloudflare in front of nginx for DDoS protection and CDN                  |
-| **Email**              | Resend for transactional email (verification, password reset, security notifications)                                        |
-| **Observability**      | Grafana dashboards + syslog file logs + tracing; Sentry and Prometheus deferred to Stage 2                                   |
-| **State Management**   | Zustand for local Journey/UI state; TanStack Query for interactive server-state                                              |
-| **API Client**         | Next.js Server Components/Actions and Route Handlers call the Go API through nginx (typed fetch + TanStack Query)            |
-| **Forms**              | React Hook Form + Zod                                                                                                        |
-| **i18n**               | next-intl                                                                                                                    |
-| **Payments**           | Lava.top web purchases — stubbed in v0.1, integrated after the core wardrobe and capsule flows ship                          |
-| **Mobile App**         | React Native (iOS + Android) sharing the Go API contract                                                                     |
-| **Coins/image enhance**| Backlog — deferred until after v0.1 launch                                                                                   |
+| Decision                | Accepted option                                                                                                                     |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Backend**             | Go modular monolith (single binary, bounded contexts inside the same process)                                                       |
+| **Database**            | PostgreSQL 16 — plain `postgres:16` in v0.1; pgvector (semantic), Postgres FTS (full-text) and PgBouncer pooling deferred (ADR-007) |
+| **Cache / queue**       | Redis 7 (cache, sessions, Redis-based job queue — Kafka deferred until multi-service split)                                         |
+| **Auth**                | Ory Kratos with email/password Stage 1; Google OAuth and Apple Sign-In deferred to Stage 2                                          |
+| **File Storage**        | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                                   |
+| **Image processing**    | Self-hosted Capsule Zero model behind a worker (deferred — first ship core wardrobe flows with manual/placeholder behavior)         |
+| **API gateway**         | nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos                        |
+| **Hosting**             | Single DigitalOcean droplet running docker-compose; Cloudflare in front of nginx for DDoS protection and CDN                        |
+| **Email**               | Resend for transactional email (verification, password reset, security notifications)                                               |
+| **Observability**       | syslog file logs + tracing in v0.1; Grafana dashboards, Sentry, and Prometheus deferred                                             |
+| **State Management**    | Zustand for local Journey/UI state; TanStack Query for interactive server-state                                                     |
+| **API Client**          | Next.js Server Components/Actions and Route Handlers call the Go API through nginx (typed fetch + TanStack Query)                   |
+| **Forms**               | React Hook Form + Zod                                                                                                               |
+| **i18n**                | next-intl                                                                                                                           |
+| **Payments**            | Lava.top web purchases — stubbed in v0.1, integrated after the core wardrobe and capsule flows ship                                 |
+| **Mobile App**          | React Native (iOS + Android) sharing the Go API contract                                                                            |
+| **Coins/image enhance** | Backlog — deferred until after v0.1 launch                                                                                          |
 
 ### Required Sprint 0 follow-ups before Phase 5 production-stack runtime work
 
@@ -320,8 +310,8 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 - Spaceship DNS pointed at Cloudflare; Cloudflare proxy enabled for `capsulezero.app`.
 - Resend account created and SPF/DKIM published on `capsulezero.app`.
 - DigitalOcean Spaces bucket created with CORS configured for `capsulezero.app`.
-- Ship `.specify/specs/024-production-stack-runtime/` to bring the stack up in docker-compose on the droplet, with every service health-checked end-to-end.
-- After spec 024 ships: delete legacy `/app` Supabase code in a follow-up PR.
+- Ship `.specify/specs/024-production-stack-runtime/` to bring the stack up in docker-compose on the droplet, with every service health-checked end-to-end. (Phase 1 nginx+web has landed; Phase 2 Postgres+Kratos remains pending.)
+- Retire the Supabase provider domain by domain as the Go API absorbs each bounded context — no wholesale `/app` deletion.
 
 ### Provider integration gates before real-provider QA/staging/launch
 
@@ -335,7 +325,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 - All stack decisions documented as ADRs: ✅ done (rewritten for the production-stack pivot)
 - CI/CD pipeline set up (auto-build, preview deployments): ✅ baseline GitHub checks documented and configured
 - Local dev setup documented (env vars, seed data): ✅ documented in backend/frontend docs
-- Repository has linting + commit hooks configured: pending Sprint 0 follow-up
+- Repository has linting configured: ✅ ESLint (`/app`) + module-size soft-gate lints (`app/eslint.config.mjs`, `api/.golangci.yml`); commit hooks pending Sprint 0 follow-up
 - Founder approval on the production-stack pivot: pending
 
 ### Key constraints for architecture decisions

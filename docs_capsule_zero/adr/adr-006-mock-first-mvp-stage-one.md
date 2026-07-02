@@ -23,17 +23,17 @@ Capsule Zero v0.1 implementation goes straight to real services from the first f
 
 Concretely:
 
-| Surface             | v0.1 posture                                                                                       |
-| ------------------- | -------------------------------------------------------------------------------------------------- |
-| Auth                | Ory Kratos email/password running in docker-compose from the production runtime spec. No mock auth.|
-| Database            | Real PostgreSQL with migrations applied at boot. No mock repositories.                              |
-| Storage             | Real DigitalOcean Spaces buckets accessed via signed URLs. No mock storage.                         |
-| Email               | Real Resend account with SPF/DKIM published on `capsulezero.app`. MailHog only for local dev.       |
-| Marketplace import  | Real best-effort parser inside the Go monolith. No mock parser.                                     |
-| Semantic search     | Real Postgres FTS + pgvector with embeddings written by the worker.                                 |
-| Background removal  | Deferred to v0.2 (Stage 2). v0.1 stores originals only.                                             |
-| Payments / coins    | Lava.top is **stubbed** in v0.1 — the API surface exists but no real money moves; full integration ships in v0.2. |
-| Observability       | Real Grafana + syslog + traces running in docker-compose.                                           |
+| Surface            | v0.1 posture                                                                                                      |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| Auth               | Ory Kratos email/password running in docker-compose from the production runtime spec. No mock auth.               |
+| Database           | Real plain PostgreSQL with migrations applied at boot. No mock repositories.                                      |
+| Storage            | Real DigitalOcean Spaces buckets accessed via signed URLs. No mock storage.                                       |
+| Email              | Real Resend account with SPF/DKIM published on `capsulezero.app`. MailHog only for local dev.                     |
+| Marketplace import | Real best-effort parser inside the Go monolith. No mock parser.                                                   |
+| Semantic search    | Real Postgres FTS first; pgvector/embeddings ship with the semantic-search slice per ADR-007.                     |
+| Background removal | Deferred to v0.2 (Stage 2). v0.1 stores originals only.                                                           |
+| Payments / coins   | Lava.top is **stubbed** in v0.1 — the API surface exists but no real money moves; full integration ships in v0.2. |
+| Observability      | Real syslog + traces in docker-compose; Grafana is deferred by ADR-007.                                           |
 
 External dependencies still sit behind Go interfaces (`internal/auth`, `internal/storage`, `internal/email`, `internal/billing`, …) so tests can substitute fakes per call site. Production code wires the real client; there is no "mode switch" that flips the whole app into fake-everything.
 

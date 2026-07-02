@@ -1,28 +1,9 @@
-# Capsule Zero Mobile
+# Mobile (React Native)
 
-React Native is the accepted mobile target for iOS and Android in the
-production-stack pivot. The app consumes the same Go API contract as web through
-the generated TypeScript client and intentionally keeps v0.1 mobile payments
-read-only: mobile may display coin balance and web-originated payment status,
-but must not show Lava.top purchase CTAs or external payment links.
+Capsule Zero's native iOS + Android app is **React Native**, sharing the same Go API contract as the web frontend through nginx. Architecture and constraints: `docs_capsule_zero/project/mobile/mobile-docs.md`.
 
-The tracked Flutter scaffold is legacy and is scheduled for removal after
-`.specify/specs/024-production-stack-runtime/` ships. Until that cleanup lands,
-the OpenAPI generator keeps a Dart metadata mirror for the old scaffold, but the
-canonical mobile contract is TypeScript.
+Mobile payments stay read-only in v0.1: the app may display coin balance and web-originated payment status, but must not show Lava.top purchase CTAs or external payment links.
 
-## Target Local Boot
-
-```bash
-cd mobile
-npm install
-npx expo start
-```
-
-These are the target commands once the React Native scaffold lands in spec 024.
-The tracked `mobile/.env.example` mirrors the React Native runtime values for
-local operators. Copy it to `mobile/.env.local` and keep real values out of git.
-
-Generated API types live in `lib/api/generated/openapi.ts` and are updated from
-`docs_capsule_zero/adr/openapi.yaml` by running `npm run generate:api` at the
-repository root.
+> **Status:** placeholder. The React Native scaffold is delivered in a later spec; generated API types will be regenerated into this directory by `npm run generate:api` once that scaffold defines its path.
+>
+> An earlier **Flutter** Sprint-0 shell (`pubspec.yaml`, Dart sources, generated Dart client, `.env.example`) lived here and was **removed on 2026-07-01** as stale — Flutter was dropped in favour of React Native in the 2026-06-27 production-stack pivot, but the shell was never cleaned up. Do not re-introduce Flutter, Dart, or `supabase_flutter` here.

@@ -54,7 +54,7 @@ Each phase ships as its own PR with feature-memory updates against this folder. 
 - Self-hosted Capsule Zero image-processing model (Stage 2)
 - Google OAuth and Apple Sign-In (Stage 2)
 - Sentry and Prometheus (Stage 2)
-- PgBouncer, a standalone `worker` container, and Grafana dashboards until ADR-007 promotion triggers fire
+- pgvector, PgBouncer, a standalone `worker` container, and Grafana dashboards until ADR-007 promotion triggers fire
 - Kubernetes / multi-droplet topology (deferred until objective scale demands it)
 - HTTP/3 at the origin (Cloudflare provides HTTP/3 at the edge once the proxy is on)
 - ES-AR locale activation (v0.2)

@@ -10,6 +10,8 @@ deploy/*.env
 !**/.env.example
 !**/.env.*.example
 !deploy/*.env.example
+# Committed dev-compose env: throwaway local-dev credentials only (see docker-compose.dev.yml header)
+!deploy/compose.dev.env
 
 # IDE
 .idea/

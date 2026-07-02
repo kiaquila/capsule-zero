@@ -21,7 +21,7 @@ Slice work modifies packages inside `/api/internal/`:
 - `methodology` — color compatibility, OPR, gap analysis (pure logic)
 - `upload` — signed PUT URLs, upload_jobs, asset attach
 - `marketplace` — link parser adapters, import jobs
-- `catalog` — FTS + pgvector search, public reads
+- `catalog` — FTS-first search and public reads; pgvector upgrades in slice 11
 - `billing` — Lava.top stub, invoice + webhook handlers, coin ledger (v0.2 wiring)
 - `moderation` — admin moderation queue
 - `storage` — Spaces client wrapper
@@ -49,7 +49,7 @@ Implementation:
 - `internal/auth`: Kratos session middleware; `RequireSession(handler)` helper.
 - `internal/profile`: repository + service + handlers for `GET /api/profile`, `PATCH /api/profile`.
 - Kratos courier configured against Resend SMTP; verification + recovery templates ship with the slice.
-- Web frontend renders Kratos self-service flows in `web/src/app/(auth)/...`.
+- Web frontend renders Kratos self-service flows in `app/src/app/[locale]/auth/...`.
 
 ## Slice 02 — Profile Avatar Upload
 

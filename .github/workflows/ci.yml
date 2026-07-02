@@ -31,6 +31,9 @@ jobs:
       - name: Install repository tooling
         run: npm ci --ignore-scripts
 
+      - name: Run gate script tests
+        run: node --test scripts/lib/*.test.mjs
+
       - name: Install app dependencies
         run: npm ci --prefix app
 
@@ -42,6 +45,9 @@ jobs:
 
       - name: Run lint
         run: npm run lint
+
+      - name: Run CSS lint
+        run: npm run lint:css
 
       - name: Run typecheck
         run: npm run typecheck

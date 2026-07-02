@@ -2,6 +2,8 @@
 
 import { appendFileSync, readFileSync } from "node:fs";
 
+import { pickLatestCodexSummaryComment } from "./lib/codex-summary.mjs";
+
 const token = process.env.GITHUB_TOKEN;
 const repository = process.env.GITHUB_REPOSITORY;
 const eventPath = process.env.GITHUB_EVENT_PATH;
@@ -197,9 +199,21 @@ const matchesCodexReview = (review) =>
   codexReviewerLogins.has(review.user?.login || "") &&
   (review.body || "").includes("Codex Review");
 
-const matchesCodexSummaryComment = (comment) =>
-  codexReviewerLogins.has(comment.user?.login || "") &&
-  /^Codex Review:/i.test((comment.body || "").trim());
+const validateCodexReviewedCommitAnchor = async (reviewedCommit, currentHeadSha) => {
+  if (!currentHeadSha.startsWith(reviewedCommit)) {
+    return false;
+  }
+
+  try {
+    const commit = await request(`/repos/${owner}/${repo}/commits/${reviewedCommit}`);
+    return (commit.sha || "").toLowerCase() === currentHeadSha;
+  } catch (error) {
+    console.warn(
+      `Could not validate Codex reviewed-commit anchor "${reviewedCommit}": ${error.message}`,
+    );
+    return false;
+  }
+};
 
 const extractClaudeOutcome = (body) => {
   const match = body.match(/^AI_REVIEW_OUTCOME:\s*(pass|advisory|block)\s*$/im);
@@ -531,16 +545,13 @@ while (Date.now() < deadline) {
     const issueComments = await listPaginated(
       `/repos/${owner}/${repo}/issues/${prNumber}/comments?per_page=100`,
     );
-    const recentIssueComments = issueComments.filter(
-      (comment) => new Date(comment.created_at || 0).getTime() >= triggerTime,
-    );
-    const summaryComment =
-      recentIssueComments
-        .filter((comment) => matchesCodexSummaryComment(comment))
-        .sort(
-          (left, right) =>
-            new Date(right.created_at).getTime() - new Date(left.created_at).getTime(),
-        )[0] || null;
+    const summaryComment = await pickLatestCodexSummaryComment({
+      comments: issueComments,
+      codexReviewerLogins,
+      triggerTime,
+      headSha,
+      validateReviewedCommitAnchor: validateCodexReviewedCommitAnchor,
+    });
 
     if (summaryComment) {
       const mapped = classifyCodexSummaryComment(summaryComment);

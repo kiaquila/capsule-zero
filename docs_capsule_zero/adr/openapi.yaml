@@ -1732,7 +1732,7 @@ paths:
       tags: [Catalog]
       operationId: searchCatalog
       x-auth: user
-      summary: Hybrid semantic search over public catalog items.
+      summary: FTS-first search over public catalog items.
       parameters:
         - in: query
           name: q

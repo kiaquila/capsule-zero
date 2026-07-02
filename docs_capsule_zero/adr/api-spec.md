@@ -9,7 +9,7 @@ Accepted for v0.1 planning. Before Stage 1 feature implementation, Sprint 0 must
 - Ory Kratos owns identity and session state. nginx runs an `auth_request` subrequest against Kratos in front of protected routes; the Go API re-validates the Kratos session on every authenticated request.
 - The Go modular monolith exposes the REST API at `/api/*`; the Next.js web app and React Native mobile app both consume the same OpenAPI contract through generated clients.
 - Next.js Server Actions may wrap calls to the Go API for in-app mutations; they never embed admin credentials.
-- The Go monolith owns database-heavy operations: compatibility validation, outfit regeneration, OPR, gap analysis, and hybrid FTS + pgvector search.
+- The Go monolith owns database-heavy operations: compatibility validation, outfit regeneration, OPR, gap analysis, and catalog search. Catalog search is Postgres FTS-first in v0.1; hybrid FTS + pgvector ranking ships later with the semantic-search slice per ADR-007.
 - All request payloads are validated against the OpenAPI schema in Go (via a typed router such as `oapi-codegen`) and mirrored on the web with Zod where useful for inline form validation.
 - All mutating routes require an authenticated user unless explicitly marked as webhook.
 - Authorization is enforced in Go on every request — there is no Postgres RLS.
@@ -18,17 +18,17 @@ Accepted for v0.1 planning. Before Stage 1 feature implementation, Sprint 0 must
 
 Sprint 0 must create and verify these artifacts before Stage 1 product feature work:
 
-| Artifact                | Location                                      | Purpose                                                                |
-| ----------------------- | --------------------------------------------- | ---------------------------------------------------------------------- |
-| OpenAPI contract        | `docs_capsule_zero/adr/openapi.yaml`          | Authoritative REST path, auth, request, response, and error schemas    |
-| TypeScript client/types | `web/src/lib/api/generated/`                  | Web client/server API types generated from OpenAPI                     |
-| React Native client     | `mobile/lib/api/generated/`                   | TypeScript client for the React Native app generated from OpenAPI      |
-| Go schema/handlers      | `api/internal/httpapi/` + `api/migrations/`   | Typed Go handlers from OpenAPI and embedded SQL migration files            |
-| Contract tests          | `api/tests/contract/` or equivalent CI target | Auth/error conventions and representative endpoint schema verification |
+| Artifact                | Location                                                                                             | Purpose                                                                |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| OpenAPI contract        | `docs_capsule_zero/adr/openapi.yaml`                                                                 | Authoritative REST path, auth, request, response, and error schemas    |
+| TypeScript client/types | `app/src/lib/api/generated/`                                                                         | Web client/server API types generated from OpenAPI                     |
+| React Native client     | deferred until the React Native scaffold defines `mobile/lib/api/generated/` or its replacement path | TypeScript client for the React Native app generated from OpenAPI      |
+| Go schema/handlers      | `api/internal/httpapi/` + `api/migrations/`                                                          | Typed Go handlers from OpenAPI and embedded SQL migration files            |
+| Contract tests          | `api/tests/contract/` or equivalent CI target                                                        | Auth/error conventions and representative endpoint schema verification |
 
 Endpoint names may change only with the OpenAPI contract, generated clients, and contract tests updated in the same PR.
 
-Until the legacy `/app` shell and Flutter scaffold are removed, the generator also mirrors compatibility artifacts into `app/src/lib/api/generated/openapi.ts` and `mobile/lib/api/generated/openapi.dart`. The canonical production-stack clients are the TypeScript outputs under `/web` and `/mobile`.
+The generator writes the canonical web client to `app/src/lib/api/generated/openapi.ts`. Do not regenerate a `/web` client target. The stale Flutter scaffold and mobile generated outputs were removed on 2026-07-01; mobile TypeScript generation is intentionally deferred until the React Native scaffold lands and defines its source layout in the same PR.
 
 OpenAPI operations marked `x-client-availability: web` must not be wired into mobile purchase UI. Mobile generation may include low-level types for status reads, but mobile v0.1 must not expose invoice creation as a user action.
 
@@ -202,7 +202,7 @@ in the contract as Stage 2 boundaries for Google OAuth and Apple Sign-In.
 
 | Route                            | Method | Auth | Purpose                                            |
 | -------------------------------- | -----: | ---- | -------------------------------------------------- |
-| `/api/catalog/search`            |    GET | User | Hybrid semantic search over public catalog items   |
+| `/api/catalog/search`            |    GET | User | FTS-first search over public catalog items         |
 | `/api/catalog/items/:itemId`     |    GET | User | Read public catalog item                           |
 | `/api/catalog/items/:itemId/add` |   POST | User | Add public catalog item to user's wardrobe/capsule |
 
@@ -227,10 +227,11 @@ Mobile apps must not expose a Lava.top purchase CTA, external payment link, or i
 
 ## Domain RPC Functions
 
-| Function                                                   | Purpose                                                  |
-| ---------------------------------------------------------- | -------------------------------------------------------- |
-| `validate_palette(color_ids text[])`                       | Enforce compatibility matrix and blocked color messaging |
-| `validate_item_for_capsule(item_id uuid, capsule_id uuid)` | Block incompatible item additions                        |
-| `regenerate_capsule_outputs(capsule_id uuid)`              | Recompute outfits, OPR, gaps, and shopping list          |
-| `search_catalog_hybrid(query text, filters jsonb)`         | Combine full-text and vector ranking for catalog search  |
-| `queue_item_embedding(item_id uuid)`                       | Queue embedding generation/update                        |
+| Function                                                   | Purpose                                                   |
+| ---------------------------------------------------------- | --------------------------------------------------------- |
+| `validate_palette(color_ids text[])`                       | Enforce compatibility matrix and blocked color messaging  |
+| `validate_item_for_capsule(item_id uuid, capsule_id uuid)` | Block incompatible item additions                         |
+| `regenerate_capsule_outputs(capsule_id uuid)`              | Recompute outfits, OPR, gaps, and shopping list           |
+| `search_catalog_fts(query text, filters jsonb)`            | Rank public catalog items with full-text search/filtering |
+
+Deferred semantic-search work adds `search_catalog_hybrid(...)` and `queue_item_embedding(...)` when pgvector, embedding dimensions, and vector indexes are promoted by ADR-007.

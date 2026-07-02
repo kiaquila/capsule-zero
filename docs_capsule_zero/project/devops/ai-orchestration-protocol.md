@@ -71,8 +71,8 @@ Administrative workflows may use `workflow_dispatch`, but that path is operation
 - Codex remains the orchestration surface used to steer work remotely, including from Codex cloud and mobile-capable ChatGPT surfaces where available.
 - Codex review guidance is defined in `AGENTS.md`.
 - The repository gate validates Codex review using native GitHub review output from `chatgpt-codex-connector[bot]`, the PR head SHA, and Codex severity badges as defined in `docs_capsule_zero/project/devops/review-contract.md`.
-- If Codex has no concrete findings, the connector may emit a top-level `Codex Review:` comment instead of a formal PR review; the gate treats that native no-findings reply as a pass for the active cycle.
-- Any untagged Codex inline finding fails the gate closed, and reruns may reuse an already-published valid Codex review for the same head SHA.
+- If Codex has no concrete findings, the connector may emit a top-level `Codex Review:` comment instead of a formal PR review; the gate treats that native no-findings reply as a pass when its full `Reviewed commit` anchor matches the current head SHA, when its abbreviated anchor uniquely resolves to the current head, or, for anchorless replies, when it lands inside the active cycle.
+- Any untagged Codex inline finding fails the gate closed, and reruns may reuse an already-published valid Codex review or validated head-SHA-anchored no-findings summary for the same head SHA.
 - Codex Automatic reviews stay disabled because reviewer routing is repository-owned.
 - Comment-driven Codex tasks require a Codex cloud environment for the repository. If it is missing, the connector emits a setup reply and `AI Review` fails closed.
 - Validation on April 3, 2026 showed that GitHub-triggered `@codex <task brief>` cloud tasks can complete without updating the active PR branch when no remote push destination is configured in the task environment. Capsule Zero therefore standardizes on Codex-owned PR creation from Codex app or web for canonical Codex implementation cycles.

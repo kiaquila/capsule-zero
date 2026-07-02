@@ -38,11 +38,13 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - [ ] Widen the Go API + `api` provider to wardrobe / capsule / catalog / billing, retiring the matching Supabase provider paths per domain
 
 ### Phase 4 — Storage + email + imgproxy
+
 - [ ] DigitalOcean Spaces bucket `capsulezero` created with CORS for `https://capsulezero.app`
 - [ ] Resend domain verified for `no-reply@capsulezero.app`; SPF + DKIM published
 - [ ] Add `imgproxy` service
 
 ### Phase 5 — Observability + backups
+
 - [ ] Configure syslog rotation and OTLP trace exporter target; Grafana remains deferred by ADR-007
 - [ ] Nightly `pg_dump` cron uploading to `s3://capsulezero/backups/` with 14-day lifecycle
 
@@ -81,7 +83,7 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - 2026-06-27 PR #48 review fix: `check-feature-memory.mjs` now treats `api/`, `worker/`, `web/`, and `mobile/` as product roots alongside legacy `app/`, and the active workflow docs describe the same gate.
 - 2026-06-27 PR #48 review fix: Traefik routed browser-visible Kratos self-service paths through a priority-100 router. (Superseded 2026-06-28 — see nginx decision below; nginx will do this via `location ^~ /self-service/` in Phase 2.)
 - **2026-06-28 nginx replaces Traefik as the v0.1 reverse proxy.** Rationale: universally understood directives, smallest mental tax for ops engineers joining later, no `docker.sock` mount required on the edge container, first-class `auth_request` for Kratos, first-class `limit_req_zone` for rate-limit. ADR-001 § "Why nginx and not Traefik or Caddy" carries the full reasoning. The Phase 1 PR replaces the previous 10-service compose scaffold with a minimum-shape `nginx + web` stack and keeps `docker-compose.legacy-supabase.yml` in the repo until Phase 6.
-- **2026-06-28 Caddy on host is retired during Phase 1 droplet rollout.** Migration sequence in `nginx-reverse-proxy.md`: stop and disable `caddy.service`; `certbot certonly --standalone -d capsulezero.app` (port 80 free because Caddy is down and the new compose is not up yet); `docker compose up -d`. After this, certbot runs as the host renewal manager via `certbot.timer` and the deploy hook reloads nginx in-place.
+- **2026-06-28 Caddy on host is retired during Phase 1 droplet rollout.** Migration sequence in `nginx-reverse-proxy.md`: stop and disable `caddy.service`; `certbot certonly --standalone -d capsulezero.app` (port 80 free because Caddy is down and the new compose is not up yet); `docker compose up -d`. After this, certbot runs as the host renewal manager via `certbot.timer` and the deploy hook reloads nginx in-place. (Updated 2026-07-01: the edge is host-managed nginx now — the compose `nginx` service is a `docker-edge` rollback profile, so plain `docker compose up -d` starts only the application services.)
 - **2026-06-28 incremental phased delivery.** Originally spec 024 shipped as a single big PR. The droplet currently has no production traffic, but rolling 10 services at once still risks a multi-day rollback if any one of them has a config bug. Phased delivery makes each PR independently verifiable and revertable.
 - **2026-06-28 keep `/app`, defer rename to `/web` to Phase 6.** Phase 1 builds `web` from `app/Dockerfile` to avoid a rename diff that would obscure the actual compose change being reviewed.
 - **2026-06-28 retain legacy Supabase env keys in `compose.env.example` as documented placeholders.** Superseded 2026-07-01 for the production `api` path: the keys remain in the sample env for rollback / explicit legacy mode, but `web` no longer imports the shared env file as runtime environment. Keys are removed in Phase 6 alongside the Supabase provider removal.
@@ -136,12 +138,12 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 
 ### Known Issues
 
-- The legacy `/app` Supabase shell stays in the repo until Phase 6. Reason: keeping the working tree pristine across phases so we can rollback DNS to the old shell if needed.
+- The retired Supabase provider stays in `/app` only for domains not yet owned by the Go API. `/app` remains canonical; removal is domain-by-domain provider retirement, not a frontend rename.
 - React Native scaffold ships in this spec, but real auth integration with Kratos lands in a follow-up auth/profile slice.
 - Sentry and Prometheus are deferred to Stage 2. v0.1 observability is syslog + OTLP traces only; Grafana is also deferred by ADR-007 until its promotion trigger fires.
 - Lava.top remains stubbed in `/api/billing/*` — the routes exist with stub responses so the OpenAPI contract is stable, but no real money moves until v0.2.
 - Self-hosted Capsule Zero image-processing model is deferred to Stage 2 — v0.1 stores originals only and the 5 second processing gate is dormant.
-- `npm run check:runtime-env` still validates the legacy Supabase/Lava/Photoroom env contract and fails with local placeholder values on this branch. It is **not** invoked from CI (`ci.yml` runs only `check:repo`, `check:api-contract`, `lint`, `typecheck`, `build`, `docker build`, `npm test`). Phase 6 retires the script alongside the legacy `/app` removal.
+- `npm run check:runtime-env` may still validate legacy Supabase/Lava/Photoroom env keys until the matching provider slices are retired. It is **not** invoked from CI (`ci.yml` runs only `check:repo`, `check:api-contract`, `lint`, `typecheck`, `build`, `docker build`, `npm test`). Phase 6 retires the Supabase env surface domain by domain.
 - HTTP/3 / QUIC is unavailable at the origin while nginx-alpine ships without the QUIC build. Cloudflare gives HTTP/3 at the edge once the proxy is on. No action expected until then.
 - During the Phase 1 droplet rollout there is a brief connection-refused window between `systemctl stop caddy` and `docker compose up -d` while certbot issues the cert. This is acceptable today because the droplet has no production traffic.
 - **(Phase 2) `postgres` is added to the root `docker-compose.yml` only, not to `docker-compose.dev-server.yml`.** The remote `dev.capsulezero.app` stack stays web-only until the slice rolls out there; bringing Postgres up on the droplet is an operator rollout step, exactly like the Phase 1 first-rollout row. Local `docker compose up -d postgres` is the evidence.

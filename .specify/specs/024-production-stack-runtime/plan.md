@@ -6,8 +6,8 @@ Each phase below is its own PR. The phases are intentionally additive — each o
 
 ### Phase 1 — nginx + web (current PR)
 
-1. Add `infra/nginx/nginx.conf` and `infra/nginx/conf.d/capsulezero.conf` with TLS + HTTP→HTTPS redirect + ACME challenge location + reverse_proxy to `web:3000`.
-2. Replace the existing `docker-compose.yml` scaffold (10-service Traefik draft) with a minimal compose declaring `nginx` and `web` only. `web` builds from `app/Dockerfile` (the legacy `/app` source is the current frontend; renaming to `/web` ships in Phase 6).
+1. Add `infra/nginx/nginx.conf` and `infra/nginx/conf.d/capsulezero.conf` with TLS + HTTP→HTTPS redirect + ACME challenge location + reverse_proxy to `web:3000`. (The production edge is host nginx from `infra/nginx-host/`; this compose config backs the `docker-edge` rollback profile.)
+2. Replace the existing `docker-compose.yml` scaffold (10-service Traefik draft) with a minimal compose declaring `nginx` and `web` only. `web` builds from `app/Dockerfile`; `/app` remains the canonical frontend.
 3. Slim `deploy/compose.env.example` to the minimum needed for `nginx + web`. Document the legacy Supabase env keys that the `/app` bundle still imports at boot.
 4. Add `docs_capsule_zero/project/devops/nginx-reverse-proxy.md` — operator runbook covering bootstrap, renewal, migration from Caddy, rollback, local dev posture.
 5. Update ADR-001 § "Why nginx and not Traefik or Caddy" and Phase 4 council DI-017 to record the API-gateway choice.
@@ -95,7 +95,7 @@ Every acceptance criterion below is verifiable by a command, screenshot, or link
 ## Risks
 
 - **TLS bootstrap window during Caddy → nginx migration.** Stopping Caddy frees ports 80/443 for the standalone `certbot certonly`, then compose comes up with the new cert. During this window the site returns connection refused. Mitigation: rollout is documented as a single sequence in `nginx-reverse-proxy.md`; the droplet has no production traffic today, so the window is acceptable.
-- **Legacy Supabase env keys remain in `deploy/compose.env.example` until Phase 6.** They are retained for rollback / explicit `CAPSULE_PROVIDER_MODE=supabase` use, but the production `web` service no longer imports the shared compose env file wholesale. Mitigation: keep base production on `CAPSULE_PROVIDER_MODE=api`; use the legacy Supabase compose path for rollback rather than leaking provider secrets into the web container.
+- **Retired Supabase provider modules remain in `/app` for unmigrated domains until Phase 6.** The production env contract (`deploy/compose.env.example`) carries no `SUPABASE_*` keys; rollback-only Supabase credentials stay with the legacy rollback artifacts (`docker-compose.legacy-supabase.yml`). Mitigation: keep base production on `CAPSULE_PROVIDER_MODE=api` and remove the Supabase provider domain by domain as `api` slices land.
 - **Memory pressure on 4 GB droplet** (returns as data services arrive). Mitigation: monitor syslog and `docker stats` for OOM kills during smoke; document droplet upgrade path if `kratos` + `postgres` + `api` together exceed 70% RAM under idle.
 - **Let's Encrypt rate limits.** Mitigation: first issue with staging endpoint when reproducing locally; production droplet issues directly because we have one apex domain and use case is small.
 - **Cloudflare DNS API token scope/rotation** (Phase 4 onwards). Mitigation: use a scoped Zone Read + DNS Edit token for `capsulezero.app`, store only in the droplet `.env`, and verify DNS-01 issuance if Cloudflare proxy is later enabled.
@@ -108,4 +108,4 @@ If a phase smoke fails on the droplet:
 1. **Phase 1:** Bring the previous stack back. `docker compose down` on the new compose, `systemctl enable --now caddy`, `docker compose -f docker-compose.legacy-supabase.yml up -d web`. Document the failure mode in `tasks.md` → Process Memory → Known Issues with the exact failed verification row.
 2. **Phase 2+:** Stop the newly-added service(s), keep nginx + web (or whatever the previous phase delivered) running. Document the failure mode the same way.
 
-The legacy `/app` Supabase shell and `docker-compose.legacy-supabase.yml` remain in `main` until Phase 6 ships, exactly to make rollback fast.
+The retired Supabase provider and `docker-compose.legacy-supabase.yml` remain only where a not-yet-migrated domain still needs rollback coverage. `/app` itself is not removed.
