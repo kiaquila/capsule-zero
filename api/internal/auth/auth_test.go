@@ -443,6 +443,11 @@ func TestPatchProfileRejectsInvalidFields(t *testing.T) {
 		{"over-long avatar", `{"avatarUrl":"https://cdn.example.com/` + strings.Repeat("a", 2048) + `"}`},
 		{"blank locale", `{"locale":""}`},
 		{"whitespace locale", `{"locale":"   "}`},
+		{"null display name", `{"displayName":null}`},
+		{"null locale", `{"locale":null}`},
+		{"null country", `{"country":null}`},
+		{"null city", `{"city":null}`},
+		{"null avatar", `{"avatarUrl":null}`},
 	}
 
 	for _, tc := range cases {

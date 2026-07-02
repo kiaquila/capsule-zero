@@ -2,7 +2,9 @@
 package httpx
 
 import (
+	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 )
 
@@ -42,4 +44,30 @@ func DecodeJSON(r *http.Request, v any) error {
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 	return decoder.Decode(v)
+}
+
+// DecodeJSONObject strictly decodes a JSON object body into v and also returns
+// the raw field values, so handlers can distinguish an explicitly provided
+// JSON null from an omitted field — encoding/json decodes both into a nil
+// pointer, which set-or-leave contracts must not conflate.
+func DecodeJSONObject(r *http.Request, v any) (map[string]json.RawMessage, error) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return nil, err
+	}
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(v); err != nil {
+		return nil, err
+	}
+	return raw, nil
+}
+
+// IsJSONNull reports whether a raw field value is an explicit JSON null.
+func IsJSONNull(raw json.RawMessage) bool {
+	return string(bytes.TrimSpace(raw)) == "null"
 }

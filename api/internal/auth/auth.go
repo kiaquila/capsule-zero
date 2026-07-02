@@ -230,9 +230,21 @@ func (h *Handler) PatchProfile(w http.ResponseWriter, r *http.Request) {
 		City        *string `json:"city"`
 		AvatarURL   *string `json:"avatarUrl"`
 	}
-	if err := httpx.DecodeJSON(r, &in); err != nil {
+	raw, err := httpx.DecodeJSONObject(r, &in)
+	if err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Malformed request body.")
 		return
+	}
+	// ProfileUpdateRequest is set-or-leave and does not accept null, but
+	// encoding/json decodes an explicit null into the same nil pointer as an
+	// omitted field — without this check {"country":null} would skip validation
+	// and no-op with 200 instead of the contract's validation error.
+	for _, field := range []string{"displayName", "locale", "country", "city", "avatarUrl"} {
+		if value, ok := raw[field]; ok && httpx.IsJSONNull(value) {
+			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR",
+				"null is not accepted; omit a field to keep its stored value.")
+			return
+		}
 	}
 
 	// Trim the free-text fields so a surrounding-whitespace value is neither
