@@ -40,7 +40,7 @@ When you change an architecture or implementation decision, actualize **all** af
 
 ## Current Phase
 
-**Phase 5 — Development Sprint, in progress** against `.specify/specs/024-production-stack-runtime/`. Phase 1 (nginx + web compose) has landed; Phase 2 (Postgres + Kratos) remains pending, and the Go API / `api` provider arrives in later spec-024 phases. Postgres is plain `postgres:16` (pgvector deferred, ADR-007). Full status and decisions: AGENTS.md → "Current Phase & Status" and "Phase 4 — Technical Architecture".
+**Phase 5 — Development Sprint, in progress** against `.specify/specs/024-production-stack-runtime/`. Phases 1–2 have landed (nginx + web; Postgres + Kratos + Go API + the `api` provider, PR #57). Every merge to `main` auto-deploys the full stack to `https://capsulezero.app` via `.github/workflows/cd-prod.yml` (spec 033) — there is no separate dev environment. Postgres is plain `postgres:16` (pgvector deferred, ADR-007). Full status and decisions: AGENTS.md → "Current Phase & Status" and "Phase 4 — Technical Architecture".
 
 ## Build & Dev Commands
 
