@@ -136,6 +136,10 @@
   `gsd-convergence-validation.md` gets the deferral note in its DNS/front-door decision
   row and a dated revision note after the founder-approval quote (the quote itself
   stays verbatim as the 2026-06-27 record).
+- **2026-07-02 PR #65 Codex P2 (c4ccfd0 review — eighth pass):** the second copy of the
+  "Cloudflare absorbs the noisy traffic floor" sentence — in the non-dated Accepted
+  Architecture Summary of `phase-4-council.md` — gets the same Stage-2/direct-DNS
+  qualifier its adr-001 twin received in the seventh pass.
 
 ### Known Issues
 

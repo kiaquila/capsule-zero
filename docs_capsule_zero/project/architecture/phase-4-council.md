@@ -86,7 +86,7 @@ Capsule Zero is a mobile-first product with two clients over one self-hosted bac
 - **Web** — Next.js App Router served by the `web` container.
 - **Mobile** — React Native iOS/Android app distributed through TestFlight and Google Play internal testing.
 
-A **Go modular monolith** behind **nginx** owns identity (via Kratos), relational data, signed-URL issuance, background jobs, and search. Postgres handles structured data and FTS in v0.1; pgvector is deferred until the semantic-search slice. Redis handles cache, sessions, and the job queue. DigitalOcean Spaces handles object storage with a built-in CDN. Resend handles transactional email. Cloudflare absorbs the noisy traffic floor.
+A **Go modular monolith** behind **nginx** owns identity (via Kratos), relational data, signed-URL issuance, background jobs, and search. Postgres handles structured data and FTS in v0.1; pgvector is deferred until the semantic-search slice. Redis handles cache, sessions, and the job queue. DigitalOcean Spaces handles object storage with a built-in CDN. Resend handles transactional email. Cloudflare absorbs the noisy traffic floor from its Stage-2 activation on (deferred 2026-07-02, spec 033 — v0.1 runs direct DNS to the host nginx edge).
 
 Custom Go services can be extracted out of the monolith later — the first natural extraction is the image-processing worker when the self-hosted Capsule Zero model lands.
 
