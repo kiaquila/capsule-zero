@@ -20,6 +20,41 @@ export const API_OPERATIONS = [
   },
   {
     "method": "POST",
+    "path": "/api/auth/login",
+    "operationId": "loginWithPassword",
+    "auth": "public",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/logout",
+    "operationId": "logout",
+    "auth": "public",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/recovery",
+    "operationId": "requestPasswordRecovery",
+    "auth": "public",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/registration",
+    "operationId": "registerWithPassword",
+    "auth": "public",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "GET",
+    "path": "/api/auth/whoami",
+    "operationId": "getCurrentSession",
+    "auth": "public",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "POST",
     "path": "/api/billing/coins/spend",
     "operationId": "spendCoins",
     "auth": "user",
@@ -365,22 +400,76 @@ export type Category = {
   layer: "tops" | "dresses_skirts" | "bottoms" | "outerwear" | "shoes" | "bags" | "accessories";
 };
 
-export type Profile = {
+export type AuthLocation = {
+  country?: string;
+  city?: string;
+};
+
+export type AuthUser = {
   id: string;
   email: string;
-  displayName?: string | null;
-  avatarUrl?: string | null;
-  language: Locale;
-  country?: string | null;
-  city?: string | null;
+  name?: string;
+  avatarUrl?: string;
+  location?: AuthLocation;
+  createdAt: string;
+};
+
+export type AuthSession = {
+  token: string;
+  expiresAt: string;
+};
+
+export type AuthResponse = {
+  session?: AuthSession;
+  user?: AuthUser;
+  profile?: Profile;
+  requiresEmailConfirmation: boolean;
+};
+
+export type AuthRegistrationRequest = {
+  email: string;
+  password: string;
+  name?: string;
+  locale?: Locale;
+};
+
+export type AuthLoginRequest = {
+  email: string;
+  password: string;
+};
+
+export type AuthRecoveryRequest = {
+  email: string;
+};
+
+export type AuthRecoveryResponse = {
+  delivery: "email";
+  email: string;
+};
+
+export type AuthLogoutResponse = {
+  ok: boolean;
+};
+
+export type Profile = {
+  userId: string;
+  email: string;
+  displayName: string;
+  avatarUrl?: string;
+  locale: Locale;
+  country?: string;
+  city?: string;
   coinBalance: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ProfileUpdateRequest = {
   displayName?: string;
-  language?: Locale;
-  country?: string | null;
-  city?: string | null;
+  locale?: Locale;
+  country?: string;
+  city?: string;
+  avatarUrl?: string;
 };
 
 export type AvatarRequest = {
@@ -633,6 +722,46 @@ export interface ApiOperationPayloads {
     cookie: UpdateModerationItemCookieParams;
     request: UpdateModerationItemRequestBody;
     response: UpdateModerationItemResponseBody;
+  };
+  loginWithPassword: {
+    path: LoginWithPasswordPathParams;
+    query: LoginWithPasswordQueryParams;
+    header: LoginWithPasswordHeaderParams;
+    cookie: LoginWithPasswordCookieParams;
+    request: LoginWithPasswordRequestBody;
+    response: LoginWithPasswordResponseBody;
+  };
+  logout: {
+    path: LogoutPathParams;
+    query: LogoutQueryParams;
+    header: LogoutHeaderParams;
+    cookie: LogoutCookieParams;
+    request: LogoutRequestBody;
+    response: LogoutResponseBody;
+  };
+  requestPasswordRecovery: {
+    path: RequestPasswordRecoveryPathParams;
+    query: RequestPasswordRecoveryQueryParams;
+    header: RequestPasswordRecoveryHeaderParams;
+    cookie: RequestPasswordRecoveryCookieParams;
+    request: RequestPasswordRecoveryRequestBody;
+    response: RequestPasswordRecoveryResponseBody;
+  };
+  registerWithPassword: {
+    path: RegisterWithPasswordPathParams;
+    query: RegisterWithPasswordQueryParams;
+    header: RegisterWithPasswordHeaderParams;
+    cookie: RegisterWithPasswordCookieParams;
+    request: RegisterWithPasswordRequestBody;
+    response: RegisterWithPasswordResponseBody;
+  };
+  getCurrentSession: {
+    path: GetCurrentSessionPathParams;
+    query: GetCurrentSessionQueryParams;
+    header: GetCurrentSessionHeaderParams;
+    cookie: GetCurrentSessionCookieParams;
+    request: GetCurrentSessionRequestBody;
+    response: GetCurrentSessionResponseBody;
   };
   spendCoins: {
     path: SpendCoinsPathParams;
@@ -981,6 +1110,41 @@ export type UpdateModerationItemHeaderParams = Record<string, never>;
 export type UpdateModerationItemCookieParams = Record<string, never>;
 export type UpdateModerationItemRequestBody = AdminModerationRequest;
 export type UpdateModerationItemResponseBody = Item;
+
+export type LoginWithPasswordPathParams = Record<string, never>;
+export type LoginWithPasswordQueryParams = Record<string, never>;
+export type LoginWithPasswordHeaderParams = Record<string, never>;
+export type LoginWithPasswordCookieParams = Record<string, never>;
+export type LoginWithPasswordRequestBody = AuthLoginRequest;
+export type LoginWithPasswordResponseBody = AuthResponse;
+
+export type LogoutPathParams = Record<string, never>;
+export type LogoutQueryParams = Record<string, never>;
+export type LogoutHeaderParams = Record<string, never>;
+export type LogoutCookieParams = Record<string, never>;
+export type LogoutRequestBody = Record<string, never>;
+export type LogoutResponseBody = AuthLogoutResponse;
+
+export type RequestPasswordRecoveryPathParams = Record<string, never>;
+export type RequestPasswordRecoveryQueryParams = Record<string, never>;
+export type RequestPasswordRecoveryHeaderParams = Record<string, never>;
+export type RequestPasswordRecoveryCookieParams = Record<string, never>;
+export type RequestPasswordRecoveryRequestBody = AuthRecoveryRequest;
+export type RequestPasswordRecoveryResponseBody = AuthRecoveryResponse;
+
+export type RegisterWithPasswordPathParams = Record<string, never>;
+export type RegisterWithPasswordQueryParams = Record<string, never>;
+export type RegisterWithPasswordHeaderParams = Record<string, never>;
+export type RegisterWithPasswordCookieParams = Record<string, never>;
+export type RegisterWithPasswordRequestBody = AuthRegistrationRequest;
+export type RegisterWithPasswordResponseBody = AuthResponse;
+
+export type GetCurrentSessionPathParams = Record<string, never>;
+export type GetCurrentSessionQueryParams = Record<string, never>;
+export type GetCurrentSessionHeaderParams = Record<string, never>;
+export type GetCurrentSessionCookieParams = Record<string, never>;
+export type GetCurrentSessionRequestBody = never;
+export type GetCurrentSessionResponseBody = AuthResponse;
 
 export type SpendCoinsPathParams = Record<string, never>;
 export type SpendCoinsQueryParams = Record<string, never>;
@@ -1519,13 +1683,23 @@ export const API_SCHEMAS = {
       }
     }
   },
-  "Profile": {
+  "AuthLocation": {
+    "type": "object",
+    "properties": {
+      "country": {
+        "type": "string"
+      },
+      "city": {
+        "type": "string"
+      }
+    }
+  },
+  "AuthUser": {
     "type": "object",
     "required": [
       "id",
       "email",
-      "language",
-      "coinBalance"
+      "createdAt"
     ],
     "properties": {
       "id": {
@@ -1536,36 +1710,186 @@ export const API_SCHEMAS = {
         "type": "string",
         "format": "email"
       },
-      "displayName": {
-        "type": [
-          "string",
-          "null"
-        ]
+      "name": {
+        "type": "string"
       },
       "avatarUrl": {
-        "type": [
-          "string",
-          "null"
+        "type": "string"
+      },
+      "location": {
+        "$ref": "#/components/schemas/AuthLocation"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "AuthSession": {
+    "type": "object",
+    "required": [
+      "token",
+      "expiresAt"
+    ],
+    "properties": {
+      "token": {
+        "type": "string"
+      },
+      "expiresAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "AuthResponse": {
+    "type": "object",
+    "required": [
+      "requiresEmailConfirmation"
+    ],
+    "properties": {
+      "session": {
+        "$ref": "#/components/schemas/AuthSession"
+      },
+      "user": {
+        "$ref": "#/components/schemas/AuthUser"
+      },
+      "profile": {
+        "$ref": "#/components/schemas/Profile"
+      },
+      "requiresEmailConfirmation": {
+        "type": "boolean"
+      }
+    }
+  },
+  "AuthRegistrationRequest": {
+    "type": "object",
+    "required": [
+      "email",
+      "password"
+    ],
+    "properties": {
+      "email": {
+        "type": "string",
+        "format": "email"
+      },
+      "password": {
+        "type": "string",
+        "minLength": 8
+      },
+      "name": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      },
+      "locale": {
+        "$ref": "#/components/schemas/Locale"
+      }
+    }
+  },
+  "AuthLoginRequest": {
+    "type": "object",
+    "required": [
+      "email",
+      "password"
+    ],
+    "properties": {
+      "email": {
+        "type": "string",
+        "format": "email"
+      },
+      "password": {
+        "type": "string"
+      }
+    }
+  },
+  "AuthRecoveryRequest": {
+    "type": "object",
+    "required": [
+      "email"
+    ],
+    "properties": {
+      "email": {
+        "type": "string",
+        "format": "email"
+      }
+    }
+  },
+  "AuthRecoveryResponse": {
+    "type": "object",
+    "required": [
+      "delivery",
+      "email"
+    ],
+    "properties": {
+      "delivery": {
+        "type": "string",
+        "enum": [
+          "email"
         ]
       },
-      "language": {
+      "email": {
+        "type": "string",
+        "format": "email"
+      }
+    }
+  },
+  "AuthLogoutResponse": {
+    "type": "object",
+    "required": [
+      "ok"
+    ],
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      }
+    }
+  },
+  "Profile": {
+    "type": "object",
+    "required": [
+      "userId",
+      "email",
+      "displayName",
+      "locale",
+      "coinBalance",
+      "createdAt",
+      "updatedAt"
+    ],
+    "properties": {
+      "userId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "email": {
+        "type": "string",
+        "format": "email"
+      },
+      "displayName": {
+        "type": "string"
+      },
+      "avatarUrl": {
+        "type": "string"
+      },
+      "locale": {
         "$ref": "#/components/schemas/Locale"
       },
       "country": {
-        "type": [
-          "string",
-          "null"
-        ]
+        "type": "string"
       },
       "city": {
-        "type": [
-          "string",
-          "null"
-        ]
+        "type": "string"
       },
       "coinBalance": {
         "type": "integer",
         "minimum": 0
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
       }
     }
   },
@@ -1577,22 +1901,25 @@ export const API_SCHEMAS = {
         "minLength": 1,
         "maxLength": 80
       },
-      "language": {
+      "locale": {
         "$ref": "#/components/schemas/Locale"
       },
       "country": {
-        "type": [
-          "string",
-          "null"
-        ],
+        "type": "string",
+        "minLength": 1,
         "maxLength": 80
       },
       "city": {
-        "type": [
-          "string",
-          "null"
-        ],
+        "type": "string",
+        "minLength": 1,
         "maxLength": 80
+      },
+      "avatarUrl": {
+        "type": "string",
+        "format": "uri",
+        "minLength": 1,
+        "maxLength": 2048,
+        "description": "Absolute https URL of the avatar image."
       }
     }
   },
@@ -2615,6 +2942,79 @@ export const API_OPERATION_PAYLOADS = {
         "explode": null
       }
     ],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "loginWithPassword": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "AuthLoginRequest",
+    "responseSchemas": [
+      "AuthResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "logout": {
+    "requestRequired": false,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "responseSchemas": [
+      "AuthLogoutResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "requestPasswordRecovery": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "AuthRecoveryRequest",
+    "responseSchemas": [
+      "AuthRecoveryResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "registerWithPassword": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "AuthRegistrationRequest",
+    "responseSchemas": [
+      "AuthResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "getCurrentSession": {
+    "requestRequired": false,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": null,
+    "responseSchemas": [
+      "AuthResponse"
+    ],
+    "pathParameters": [],
     "queryParameters": [],
     "headerParameters": [],
     "cookieParameters": []

@@ -1036,8 +1036,7 @@ textarea {
   line-height: 1.3;
 }
 
-.auth-field-message-error,
-.auth-server-message {
+.auth-field-message-error {
   color: var(--color-error);
 }
 
@@ -1068,6 +1067,12 @@ textarea {
   font-size: 12px;
   line-height: 1.6;
   text-align: center;
+}
+
+/* Error variant of the server message — overrides the neutral colour above. */
+.auth-server-message-error {
+  color: var(--color-error);
+  font-weight: 600;
 }
 
 .auth-switch-link button {

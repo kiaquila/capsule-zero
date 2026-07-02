@@ -1,6 +1,7 @@
 "use server";
 
 import { createProviderRegistry } from "@/lib/providers";
+import { routing, type AppLocale } from "@/i18n/routing";
 import {
   createRecoverySchema,
   createSignInSchema,
@@ -45,7 +46,7 @@ export async function signInWithPasswordAction(
 }
 
 export async function signUpWithPasswordAction(
-  input: SignUpInput,
+  input: SignUpInput & { locale?: string },
 ): Promise<AuthActionResult> {
   const parsed = createSignUpSchema(serverValidationMessages).safeParse(input);
 
@@ -59,6 +60,7 @@ export async function signUpWithPasswordAction(
       email: parsed.data.email,
       password: parsed.data.password,
       name: parsed.data.name,
+      locale: normalizeActionLocale(input.locale),
     });
     if (!session) {
       return { ok: true, requiresEmailConfirmation: true };
@@ -92,10 +94,29 @@ export async function requestPasswordRecoveryAction(
 
 export async function signOutAction(): Promise<AuthActionResult> {
   const providers = createProviderRegistry();
-  await providers.auth.signOut();
-  await clearMockSession();
+  let revocationError: unknown;
+  try {
+    await providers.auth.signOut();
+  } catch (error) {
+    revocationError = error;
+  } finally {
+    await clearMockSession();
+  }
 
+  if (revocationError) {
+    // Best-effort logout: the local app session is already cleared, so the
+    // user is signed out even when Kratos revocation fails. Log for operators
+    // instead of returning an error-shaped message on a successful sign-out.
+    console.error("Sign-out revocation failed:", revocationError);
+  }
   return { ok: true };
+}
+
+function normalizeActionLocale(locale: string | undefined): AppLocale {
+  if (routing.locales.includes(locale as AppLocale)) {
+    return locale as AppLocale;
+  }
+  return routing.defaultLocale;
 }
 
 function authActionErrorMessage(error: unknown): string {
@@ -104,7 +125,9 @@ function authActionErrorMessage(error: unknown): string {
       ? error.message
       : "Authentication failed. Please try again.";
 
-  const providerMessage = message.split(":").at(-1)?.trim();
+  // Strip only a leading provider error code (e.g. "AUTH_FAILED: ..."),
+  // keeping any colons inside the human-readable part of the message.
+  const providerMessage = message.replace(/^[A-Z_]+:\s*/, "").trim();
   if (providerMessage) {
     return providerMessage;
   }

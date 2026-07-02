@@ -15,7 +15,136 @@ networks:
   internal:
     driver: bridge
 
+volumes:
+  pgdata:
+
 services:
+  # PostgreSQL 16 — the v0.1 data tier (spec 024 Phase 2, auth slice).
+  # Plain postgres: users/profiles/wardrobe are relational. pgvector is NOT
+  # enabled here — it is deferred to the semantic catalog-search slice (US-012),
+  # which is the first feature that actually needs vectors. The API connects
+  # directly; PgBouncer is deferred by ADR-007. Init scripts in infra/postgres/
+  # run once on an empty volume: they provision the Kratos role + database so the
+  # Kratos container attaches to an already-prepared data tier. Published on
+  # loopback only — nothing outside the droplet talks to Postgres directly.
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in the env file}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in the env file}
+      POSTGRES_DB: ${POSTGRES_DB:-capsule_zero}
+      # Consumed by infra/postgres/00-kratos-db.sh during first-time init.
+      KRATOS_DB_USER: ${KRATOS_DB_USER:-kratos}
+      KRATOS_DB_PASSWORD: ${KRATOS_DB_PASSWORD:?set KRATOS_DB_PASSWORD in the env file}
+      KRATOS_DB_NAME: ${KRATOS_DB_NAME:-kratos}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${POSTGRES_HOST_BIND:-127.0.0.1}:5432:5432"
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # Ory Kratos identity schema migration — one-shot, runs to completion then
+  # exits. Idempotent: Kratos tracks applied migrations in its own database, so a
+  # repeat run on an up-to-date schema is a no-op (negative scenario 6).
+  kratos-migrate:
+    image: oryd/kratos:v1.1.0
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DSN: ${KRATOS_DSN:?set KRATOS_DSN in the env file}
+    volumes:
+      - ./infra/kratos:/etc/config/kratos:ro
+    command: migrate sql -e --yes
+    networks: [internal]
+
+  # Ory Kratos identity provider. The Go API drives Kratos over the private
+  # internal network (never the host). Kratos public (4433) is reachable only
+  # inside the compose network: it is neither bound to the host nor exposed at
+  # the nginx edge, so every auth write must go through the Go API
+  # (/api/auth/*), which owns duplicate-identifier sanitization + the auth rate
+  # limit. Recovery/verification browser flows are disabled this slice; the
+  # dedicated completion-UI slice re-exposes the exact public paths it needs.
+  kratos:
+    image: oryd/kratos:v1.1.0
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kratos-migrate:
+        condition: service_completed_successfully
+    environment:
+      DSN: ${KRATOS_DSN:?set KRATOS_DSN in the env file}
+      COURIER_SMTP_CONNECTION_URI: ${KRATOS_SMTP_CONNECTION_URI:?set KRATOS_SMTP_CONNECTION_URI in the env file}
+      SERVE_PUBLIC_BASE_URL: ${KRATOS_PUBLIC_BASE_URL:?set KRATOS_PUBLIC_BASE_URL in the env file}
+      SECRETS_COOKIE_0: ${SECRETS_COOKIE_0:?set SECRETS_COOKIE_0 in the env file}
+      SECRETS_CIPHER_0: ${SECRETS_CIPHER_0:?set SECRETS_CIPHER_0 in the env file}
+      SELFSERVICE_DEFAULT_BROWSER_RETURN_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en
+      SELFSERVICE_ALLOWED_RETURN_URLS_0: ${APP_BASE_URL:?set APP_BASE_URL in the env file}
+      SELFSERVICE_FLOWS_ERROR_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
+      SELFSERVICE_FLOWS_SETTINGS_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/profile
+      # Recovery and verification flows are disabled in this slice (see
+      # infra/kratos/kratos.yml): the auth UI has no flow-aware completion step,
+      # so no recovery/verification UI URLs are advertised. They return with the
+      # dedicated recovery/verification slice.
+      SELFSERVICE_FLOWS_LOGIN_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
+      SELFSERVICE_FLOWS_REGISTRATION_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
+    volumes:
+      - ./infra/kratos:/etc/config/kratos:ro
+    command: serve --config /etc/config/kratos/kratos.yml --watch-courier
+    expose:
+      - "4433"
+      - "4434"
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "kratos", "remote", "status", "--endpoint", "http://127.0.0.1:4434", "--quiet"]
+      interval: 10s
+      timeout: 15s
+      retries: 5
+      start_period: 20s
+
+  # Go modular monolith — Phase 2 serves the auth/profile bounded context plus
+  # GET /api/health. The browser reaches it only through nginx (/api/* -> api).
+  # Published on loopback so the host (systemd) nginx edge can proxy to it.
+  api:
+    image: ${CAPSULE_API_IMAGE:-capsule-zero-api:local}
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      args:
+        GO_VERSION: ${GO_VERSION_API:-1.25.11}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kratos:
+        condition: service_healthy
+    environment:
+      API_PORT: "8080"
+      DATABASE_URL: ${API_DATABASE_URL:?set API_DATABASE_URL in the env file}
+      KRATOS_PUBLIC_URL: ${KRATOS_INTERNAL_PUBLIC_URL:-http://kratos:4433}
+      KRATOS_ADMIN_URL: ${KRATOS_INTERNAL_ADMIN_URL:-http://kratos:4434}
+    expose:
+      - "8080"
+    ports:
+      - "${API_HOST_BIND:-127.0.0.1}:8080:8080"
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "/api", "-healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
   # Retired as edge: a host (systemd) nginx now terminates TLS and reverse-proxies to the
   # web container published on 127.0.0.1:3000. See infra/nginx-host/ and
   # docs_capsule_zero/project/devops/dev-cd-pipeline.md. Kept (profile-gated) for rollback:
@@ -55,15 +184,19 @@ services:
         NODE_VERSION: ${NODE_VERSION:-22-bookworm-slim}
     init: true
     restart: unless-stopped
-    env_file:
-      - path: ./.env
-        required: false
     environment:
       HOSTNAME: 0.0.0.0
       PORT: "3000"
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
       NEXT_PUBLIC_APP_URL: ${APP_BASE_URL:-https://capsulezero.app}
+      # Talk to the Go API (server-side) over the private network.
+      CAPSULE_PROVIDER_MODE: ${CAPSULE_PROVIDER_MODE:-api}
+      CAPSULE_API_BASE_URL: ${CAPSULE_API_BASE_URL:-http://api:8080}
+      SESSION_SIGNING_SECRET: ${SESSION_SIGNING_SECRET:?set SESSION_SIGNING_SECRET in the env file}
+    depends_on:
+      api:
+        condition: service_healthy
     expose:
       - "3000"
     # Published on loopback for the host (systemd) nginx edge.

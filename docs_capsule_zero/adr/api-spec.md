@@ -6,7 +6,7 @@ Accepted for v0.1 planning. Before Stage 1 feature implementation, Sprint 0 must
 
 ## API Principles
 
-- Ory Kratos owns identity and session state. nginx runs `auth_request` against Kratos in front of protected routes; the Go API re-validates the Kratos session on every authenticated request.
+- Ory Kratos owns identity and session state. nginx runs an `auth_request` subrequest against Kratos in front of protected routes; the Go API re-validates the Kratos session on every authenticated request.
 - The Go modular monolith exposes the REST API at `/api/*`; the Next.js web app and React Native mobile app both consume the same OpenAPI contract through generated clients.
 - Next.js Server Actions may wrap calls to the Go API for in-app mutations; they never embed admin credentials.
 - The Go monolith owns database-heavy operations: compatibility validation, outfit regeneration, OPR, gap analysis, and catalog search. Catalog search is Postgres FTS-first in v0.1; hybrid FTS + pgvector ranking ships later with the semantic-search slice per ADR-007.
@@ -23,7 +23,7 @@ Sprint 0 must create and verify these artifacts before Stage 1 product feature w
 | OpenAPI contract        | `docs_capsule_zero/adr/openapi.yaml`                                                                 | Authoritative REST path, auth, request, response, and error schemas    |
 | TypeScript client/types | `app/src/lib/api/generated/`                                                                         | Web client/server API types generated from OpenAPI                     |
 | React Native client     | deferred until the React Native scaffold defines `mobile/lib/api/generated/` or its replacement path | TypeScript client for the React Native app generated from OpenAPI      |
-| Go schema/handlers      | `api/internal/httpapi/` + `api/migrations/`                                                          | Typed Go handlers from OpenAPI and versioned SQL migrations            |
+| Go schema/handlers      | `api/internal/httpapi/` + `api/migrations/`                                                          | Typed Go handlers from OpenAPI and embedded SQL migration files            |
 | Contract tests          | `api/tests/contract/` or equivalent CI target                                                        | Auth/error conventions and representative endpoint schema verification |
 
 Endpoint names may change only with the OpenAPI contract, generated clients, and contract tests updated in the same PR.
@@ -128,16 +128,26 @@ Server logs may include provider/raw details, but client responses must keep mes
 
 ## Auth
 
-Ory Kratos self-service endpoints handle sign-up, login, session refresh, and password recovery in Stage 1. OAuth callbacks are kept in the contract as Stage 2 boundaries for Google OAuth and Apple Sign-In.
+The Go API wraps Ory Kratos API self-service flows for sign-up, login, session
+resolution, and logout in Stage 1. The password-recovery wrapper is dormant
+while the recovery/verification slice is deferred: Kratos recovery is disabled,
+so calls fail with 502 until that slice re-enables the flow. OAuth callbacks
+are kept in the contract as Stage 2 boundaries for Google OAuth and Apple
+Sign-In.
 
-| Route                   | Method | Auth   | Purpose                                                               |
-| ----------------------- | -----: | ------ | --------------------------------------------------------------------- |
-| `/auth/callback`        |    GET | Public | Stage 2 web OAuth callback; exchanges code and redirects to dashboard |
-| `/auth/mobile-callback` |    GET | Public | Stage 2 mobile OAuth callback; redirects into React Native deep link  |
-| `/api/profile`          |    GET | User   | Read current profile                                                  |
-| `/api/profile`          |  PATCH | User   | Update display name, language, country, city                          |
-| `/api/profile/avatar`   |   POST | User   | Upload or replace avatar metadata after storage upload                |
-| `/api/profile/avatar`   | DELETE | User   | Remove custom avatar                                                  |
+| Route                    | Method | Auth   | Purpose                                                               |
+| ------------------------ | -----: | ------ | --------------------------------------------------------------------- |
+| `/api/auth/registration` |   POST | Public | Create a password account and return a session or email-confirm state |
+| `/api/auth/login`        |   POST | Public | Establish a password session                                          |
+| `/api/auth/whoami`       |    GET | Public | Resolve the presented session token, or return an empty auth response |
+| `/api/auth/recovery`     |   POST | Public | Deferred/dormant this slice (Kratos recovery disabled; calls fail 502) |
+| `/api/auth/logout`       |   POST | Public | Revoke the presented session token; idempotent when absent            |
+| `/auth/callback`         |    GET | Public | Stage 2 web OAuth callback; exchanges code and redirects to dashboard |
+| `/auth/mobile-callback`  |    GET | Public | Stage 2 mobile OAuth callback; redirects into React Native deep link  |
+| `/api/profile`           |    GET | User   | Read current profile                                                  |
+| `/api/profile`           |  PATCH | User   | Update display name, locale, country, city, or avatar URL             |
+| `/api/profile/avatar`    |   POST | User   | Upload or replace avatar metadata after storage upload                |
+| `/api/profile/avatar`    | DELETE | User   | Remove custom avatar                                                  |
 
 ## Journey
 

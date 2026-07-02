@@ -1,0 +1,125 @@
+# Capsule Zero — Ory Kratos config (spec 024 Phase 2, auth slice).
+#
+# Non-secret config lives here with dev-friendly defaults. Secrets and
+# environment-specific values are overridden by env vars in docker-compose:
+#   DSN                          postgres://kratos:...@postgres:5432/kratos
+#   COURIER_SMTP_CONNECTION_URI  smtp://mailhog:1025/?disable_starttls=true (dev)
+#   SECRETS_COOKIE_0 / SECRETS_CIPHER_0   32-char secrets (prod)
+#   SERVE_PUBLIC_BASE_URL        externally reachable Kratos public URL
+#   SELFSERVICE_*                public app flow URLs (prod/dev compose)
+#
+# The Go API drives Kratos self-service via the API flow (server-side); the web
+# UI is the existing /app forms, not Kratos's own UI.
+
+version: v1.1.0
+
+dsn: "postgres://kratos:placeholder-kratos-db-password@postgres:5432/kratos?sslmode=disable"
+
+serve:
+  public:
+    base_url: http://127.0.0.1:4433/
+    cors:
+      enabled: false
+  admin:
+    base_url: http://kratos:4434/
+
+selfservice:
+  default_browser_return_url: http://127.0.0.1:3000/
+  allowed_return_urls:
+    - http://127.0.0.1:3000
+    - https://capsulezero.local
+    - https://capsulezero.app
+
+  methods:
+    password:
+      enabled: true
+      config:
+        # 8-char minimum matches the web Zod schema (createSignUpSchema).
+        min_password_length: 8
+        haveibeenpwned_enabled: false
+    link:
+      enabled: true
+      config:
+        lifespan: 1h
+    code:
+      enabled: true
+      config:
+        lifespan: 1h
+
+  flows:
+    error:
+      ui_url: http://127.0.0.1:3000/error
+
+    # The settings self-service flow cannot be disabled in Kratos config (only
+    # recovery/verification expose `enabled`). It is intentionally inert this
+    # slice: the edge returns 404 for /self-service/*, and neither the web app
+    # nor the Go API drives a settings flow. The dedicated profile/settings
+    # slice ships its completion UI before the edge re-exposes it.
+    settings:
+      ui_url: http://127.0.0.1:3000/profile
+      privileged_session_max_age: 15m
+      required_aal: highest_available
+
+    # Recovery and verification are DISABLED in the Phase 2 auth slice. The web
+    # auth UI has no flow-aware completion step (it never reads the Kratos
+    # `flow`/`code` params), so a recovery/verification email link would land the
+    # user on /auth with no way to finish the reset/verification. Rather than
+    # advertise a dead-end email flow, we do not enable these flows until the
+    # dedicated recovery/verification slice ships the completion UI plus the Go
+    # API settings/verification endpoints. See tasks.md Process Memory.
+    recovery:
+      enabled: false
+
+    verification:
+      enabled: false
+
+    login:
+      ui_url: http://127.0.0.1:3000/auth
+      lifespan: 10m
+
+    registration:
+      ui_url: http://127.0.0.1:3000/auth
+      lifespan: 10m
+      after:
+        password:
+          hooks:
+            # Issue a session immediately on sign-up so the web UI logs the user
+            # in without a second round-trip. Email verification is disabled in
+            # this slice (see the recovery/verification note above), so no
+            # verification email is sent.
+            - hook: session
+
+log:
+  level: info
+  format: text
+  leak_sensitive_values: false
+
+secrets:
+  cookie:
+    - dev-only-kratos-cookie-secret-change-me-32
+  cipher:
+    - dev0only0kratos0cipher0secret032
+
+ciphers:
+  algorithm: xchacha20-poly1305
+
+hashers:
+  algorithm: argon2
+  argon2:
+    parallelism: 1
+    memory: 128MB
+    iterations: 1
+    salt_length: 16
+    key_length: 32
+
+identity:
+  default_schema_id: default
+  schemas:
+    - id: default
+      url: file:///etc/config/kratos/identity.schema.json
+
+courier:
+  smtp:
+    connection_uri: smtp://mailhog:1025/?disable_starttls=true
+    from_address: no-reply@capsulezero.app
+    from_name: Capsule Zero

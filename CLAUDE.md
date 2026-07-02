@@ -14,6 +14,10 @@ Before every task — research, doc edits, code changes, even quick lookups — 
 
 When you change an architecture or implementation decision, actualize **all** affected docs in the **same** change (ADRs, `.specify/specs/**`, `docs_capsule_zero/**`, AGENTS.md, CLAUDE.md, constitution). No doc drift — stale docs silently produce wrong work. Cautionary example: Traefik → nginx. Full rule: AGENTS.md §9.
 
+## Docs Are the Single Source of Truth
+
+When you change an architecture or implementation decision, actualize **all** affected docs in the **same** change (ADRs, `.specify/specs/**`, `docs_capsule_zero/**`, AGENTS.md, CLAUDE.md, constitution). No doc drift — stale docs silently produce wrong work. Cautionary example: Traefik → nginx.
+
 ## Read Before Coding
 
 1. @.specify/memory/constitution.md — project principles, methodology, design rules
@@ -53,8 +57,9 @@ npm run build        # Production build
 Full runtime:
 
 ```bash
-docker compose up -d                                                # Production-shape stack
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up   # Dev (MailHog, hot-reload, debug)
+docker compose up -d                 # Production-shape stack (needs the droplet env file)
+# Dev with MailHog, hot-reload, debug logging (--env-file supplies dev credentials):
+docker compose --env-file deploy/compose.dev.env -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
 ## Spec-Driven Development & SENAR

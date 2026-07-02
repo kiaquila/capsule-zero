@@ -58,7 +58,7 @@ Object storage and email leave the droplet:
 | `api/Dockerfile`             | Go API multi-stage build (distroless runtime image)                      |
 | `worker/Dockerfile`          | Go worker multi-stage build, introduced when ADR-007 promotes the worker |
 | `app/Dockerfile`             | Next.js standalone production image                                      |
-| `api/migrations/`            | Versioned SQL files; applied by the API runtime                          |
+| `api/migrations/`            | Embedded SQL migration files; applied at API boot                          |
 | `deploy/compose.env.example` | Env template for compose interpolation; copy to `.env` and fill secrets  |
 
 ## First Start
@@ -71,7 +71,7 @@ cp deploy/compose.env.example .env
 
 Fill the real values for the droplet's encrypted `.env`. Required keys at minimum:
 
-- `POSTGRES_PASSWORD`, `KRATOS_DSN`, `KRATOS_SECRETS_COOKIE`, `KRATOS_SECRETS_CIPHER`
+- `POSTGRES_PASSWORD`, `KRATOS_DSN`, `KRATOS_PUBLIC_BASE_URL`, `KRATOS_SMTP_CONNECTION_URI`, `SECRETS_COOKIE_0`, `SECRETS_CIPHER_0`
 - `CF_DNS_API_TOKEN` for certbot DNS-01 ACME against Cloudflare (only once the Cloudflare proxy is enabled; until then certbot uses HTTP-01 directly)
 - `SPACES_ACCESS_KEY`, `SPACES_SECRET_KEY`, `SPACES_BUCKET`, `SPACES_REGION`, `SPACES_CDN_BASE`
 - `RESEND_API_KEY`, `RESEND_FROM`
@@ -92,13 +92,16 @@ sudo systemctl stop nginx
 docker compose --profile docker-edge up -d nginx
 ```
 
-For local development against the dev override:
+For local development against the dev override (the `--env-file` supplies dev
+credentials; the base file fails fast on missing production secrets, which an
+override default cannot rescue):
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+docker compose --env-file deploy/compose.dev.env \
+  -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
-Schema migrations apply during API startup against `postgres` before the API serves traffic. Kratos manages its own migrations against its own database via its built-in `kratos migrate sql` step run from an init container.
+Schema migrations apply during API startup (the embedded SQL migrator runs against `postgres` before the API serves traffic). Kratos manages its own migrations against its own database via its built-in `kratos migrate sql` step run from an init container.
 
 ## Health Checks
 
@@ -128,7 +131,7 @@ docker compose logs api --tail=100
 
 ## Migrations
 
-API migrations live in `api/migrations/` and apply at API boot. The runner records applied versions in a dedicated `schema_migrations` table inside the app schema.
+API migrations live in `api/migrations/` and apply via the embedded SQL migrator at API boot. The runner records applied versions in a dedicated `schema_migrations` table inside the app schema.
 
 Rules:
 
@@ -172,15 +175,16 @@ Object storage durability is provided by DigitalOcean Spaces; no extra backup of
 
 Public traffic enters through Cloudflare -> host nginx on the droplet (ports 80/443). The rollback compose nginx profile preserves the same routing contract when `docker-edge` is enabled:
 
-- terminates Let's Encrypt TLS for `capsulezero.app` (certs issued by host certbot under `/etc/letsencrypt`),
-- runs a per-IP `limit_req_zone` rate-limit,
+- terminates Let's Encrypt TLS for `capsulezero.app` (certs issued by host certbot, mounted from `/etc/letsencrypt`),
+- restores the real client IP from Cloudflare via the `realip` module (`set_real_ip_from` Cloudflare ranges + `real_ip_header CF-Connecting-IP`), so `$remote_addr` is the true client behind the Cloudflare POP,
+- runs a per-IP `limit_req_zone` rate-limit (keyed on the realip-corrected client),
 - runs an `auth_request` against Kratos for protected routes,
 - routes `/` to `web`,
 - routes `/api/*` to `api`,
-- routes `/self-service/*` and `/sessions/*` to `kratos` (public API),
+- returns `404` for `/self-service/*` and `/sessions/*` — the Kratos public API is **not** exposed at the edge this slice. All auth writes go through the Go API (`/api/auth/*`), which drives Kratos over the internal network and owns duplicate-identifier sanitization + the auth rate limit; recovery/verification browser flows are deferred, so no public self-service path is needed yet. The recovery/verification (and Stage 2 OAuth) slice re-exposes only the exact public paths its completion UI needs.
 - adds a `grafana.capsulezero.app` route only after ADR-007 promotes Grafana.
 
-Cloudflare proxy provides edge TLS, DDoS protection, Bot Fight Mode, and CDN. Postgres, Redis, and Kratos admin APIs stay internal to the compose network; no host port is exposed.
+Cloudflare proxy provides edge TLS, DDoS protection, Bot Fight Mode, and CDN. Postgres, Redis, and both the Kratos public and admin APIs stay internal to the compose network in production; no host port is exposed (the dev override binds Kratos public to `127.0.0.1:4433` for local inspection only).
 
 ## Operational Constraints
 

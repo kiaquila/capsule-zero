@@ -29,10 +29,10 @@ Implementation rules:
 
 - Run Ory Kratos as a docker-compose service, configured headless: the Capsule Zero UI (Next.js for web, React Native for mobile) renders all auth screens, while Kratos handles the identity/session machinery over its self-service API.
 - Use Kratos identity schema fields: `traits.email`, `traits.name.first` (optional), `traits.locale`.
-- Email flows (verification, recovery, password change confirmation) are delivered by Kratos through the SMTP courier connected to Resend.
-- nginx runs `auth_request` against Kratos session check on protected routes; the Go API also validates the Kratos session cookie on every request.
+- Email flows (verification, recovery, password change confirmation) are delivered by Kratos through the SMTP courier connected to Resend once their completion UI ships. The Phase 2 auth slice keeps `recovery` and `verification` disabled (`infra/kratos/kratos.yml`): the auth UI has no flow-aware completion step yet, so advertising those email flows would dead-end (see spec 024 Process Memory).
+- nginx runs an `auth_request` subrequest against the Kratos session check on protected routes; the Go API also validates the Kratos session cookie on every request.
 - The Go monolith maps `kratos_identity_id` → `profiles.id` on first sign-in and stores `display_name`, `language`, `country`, `city`, and `coin_balance` in its own Postgres tables.
-- Email/password registration and recovery are active in v0.1. Google OAuth and Apple Sign-In are configured in Kratos only when the Stage 2 social-auth integration gate opens.
+- Email/password registration and login are active in v0.1; password recovery and email verification are deferred to a dedicated recovery/verification slice. Google OAuth and Apple Sign-In are configured in Kratos only when the Stage 2 social-auth integration gate opens.
 - Configure mobile deep links for OAuth callbacks in Stage 2 (React Native handles the redirect; Kratos validates the flow). Payment-return deep links are deferred — v0.1 mobile has no purchase CTA.
 - Persist language preference on `profiles.language` (allowed values: `en`, `ru`).
 - Persist optional `country` and `city` on `profiles`, but never block registration if absent.
@@ -108,7 +108,7 @@ Positive:
 Tradeoffs:
 
 - We own the Kratos config, migrations, and upgrade cycle.
-- The forward-auth path adds one in-cluster hop on protected requests (cheap, but real).
+- The nginx `auth_request` path adds one in-cluster hop on protected requests (cheap, but real).
 - OAuth provider setup must happen in Kratos and provider dashboards before Stage 2 social auth QA, staging, or launch.
 - Apple Sign-In may not always provide name metadata on repeat sign-ins, so Stage 2 profile completion must tolerate missing provider names.
 - React Native requires deep-link configuration, secure token storage, and platform-specific OAuth redirect testing in Stage 2.

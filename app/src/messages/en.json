@@ -237,6 +237,7 @@
       "firstName": "Enter your first name.",
       "lastName": "Enter your last name.",
       "nameLength": "Keep names under 40 characters.",
+      "displayNameLength": "Keep the combined name under 80 characters.",
       "usernameLength": "Use 3-30 characters.",
       "usernamePattern": "Use lowercase letters, numbers, and underscores only.",
       "usernameTaken": "This username is already taken.",

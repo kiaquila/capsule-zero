@@ -16,6 +16,7 @@ const serverValidationMessages: ProfileValidationMessages = {
   firstName: "Enter your first name.",
   lastName: "Enter your last name.",
   nameLength: "Keep names under 40 characters.",
+  displayNameLength: "Keep the combined name under 80 characters.",
   usernameLength: "Use 3-30 characters.",
   usernamePattern: "Use lowercase letters, numbers, and underscores only.",
   email: "Enter a valid email.",
@@ -60,11 +61,18 @@ export async function saveProfileAction(
   const displayName = `${data.firstName} ${data.lastName}`.trim();
   const registry = createProviderRegistry();
 
-  await registry.profiles.updateProfile(session.userId, {
-    city: data.city || undefined,
-    country: data.country || undefined,
-    displayName,
-  });
+  try {
+    await registry.profiles.updateProfile(session.userId, {
+      city: data.city || undefined,
+      country: data.country || undefined,
+      displayName,
+    });
+  } catch (error) {
+    // Surface provider rejections (e.g. an API 400/5xx) through the form's
+    // save-error path instead of an unhandled server-action error.
+    console.error("Profile save failed:", error);
+    return { ok: false, message: "PROFILE_SAVE_FAILED" };
+  }
 
   const persisted = await persistMockProfilePreferences(session.userId, data);
 

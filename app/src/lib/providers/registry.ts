@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { ProviderMode, ProviderRegistry } from "./contracts";
+import { createApiProviderRegistry } from "./api";
 import { createMockProviderRegistry } from "./mock";
 import { createSupabaseProviderRegistry } from "./supabase";
 
@@ -13,16 +14,20 @@ export function createProviderRegistry(
 ): ProviderRegistry {
   const mode = options.mode ?? readProviderMode();
 
-  if (mode === "mock") {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error(
-        "Provider mode 'mock' is disabled in production. Use CAPSULE_PROVIDER_MODE=supabase.",
-      );
-    }
-    return createMockProviderRegistry();
+  if (mode === "api") {
+    return createApiProviderRegistry();
   }
 
-  return createSupabaseProviderRegistry();
+  if (mode === "supabase") {
+    return createSupabaseProviderRegistry();
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Provider mode 'mock' is disabled in production. Use CAPSULE_PROVIDER_MODE=api.",
+    );
+  }
+  return createMockProviderRegistry();
 }
 
 function readProviderMode(): ProviderMode {
@@ -32,11 +37,11 @@ function readProviderMode(): ProviderMode {
     return "mock";
   }
 
-  if (rawMode === "mock" || rawMode === "supabase") {
+  if (rawMode === "mock" || rawMode === "supabase" || rawMode === "api") {
     return rawMode;
   }
 
   throw new Error(
-    `Unsupported CAPSULE_PROVIDER_MODE '${rawMode}'. Use 'supabase' for production or 'mock' for local fixture-only development.`,
+    `Unsupported CAPSULE_PROVIDER_MODE '${rawMode}'. Use 'api' for the Go backend, 'supabase' for the legacy backend, or 'mock' for local fixture-only development.`,
   );
 }

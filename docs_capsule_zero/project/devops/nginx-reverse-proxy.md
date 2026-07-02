@@ -199,7 +199,8 @@ All three are handled by `docker-compose.dev.yml`. The base
 ### Daily flow
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+docker compose --env-file deploy/compose.dev.env \
+  -f docker-compose.yml -f docker-compose.dev.yml up --build
 # open https://capsulezero.local
 ```
 

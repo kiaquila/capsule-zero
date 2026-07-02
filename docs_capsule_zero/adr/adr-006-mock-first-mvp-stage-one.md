@@ -12,7 +12,7 @@ The production-stack pivot changes the calculus:
 
 - the team owns the runtime end-to-end (docker-compose on a droplet), so there is no third-party registration overhead blocking work;
 - Ory Kratos, Postgres, Redis, nginx, DigitalOcean Spaces, and Resend all come up directly from the production runtime spec;
-- the previous Supabase code under `/app` is being thrown away rather than promoted from mock to real;
+- the `/app` frontend stays (it is already built on a provider port/adapter abstraction); its Supabase provider is replaced by a real `api` provider that calls the Go API + Kratos, domain by domain, rather than being promoted from mock to real;
 - coins, image enhancement, and the self-hosted image model are pushed to v0.2 backlog — there are no expensive vendor flows in v0.1 to defer.
 
 Continuing to maintain a "mock-first" layer would now add structure for no benefit: the real services are cheaper to bring up than the fakes.

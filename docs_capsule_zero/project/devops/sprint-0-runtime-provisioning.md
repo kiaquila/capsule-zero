@@ -68,7 +68,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-The root compose file keeps the rollback `nginx` service behind the `docker-edge` profile. Do not enable that profile during the normal production bootstrap while host nginx owns ports 80/443. The default compose command brings up Kratos, Postgres, Redis, the Go API, the in-process queue worker, the Next.js web container, and imgproxy once every v0.1 phase of spec 024 has shipped. PgBouncer, Grafana, and the standalone worker container are promoted only when ADR-007 triggers open. In earlier phases only the services delivered so far come up. API migrations run at API boot from Phase 3 onward. Kratos runs its own migrations through its init container from Phase 2 onward.
+The root compose file keeps the rollback `nginx` service behind the `docker-edge` profile. Do not enable that profile during the normal production bootstrap while host nginx owns ports 80/443. The default compose command brings up Kratos, Postgres, Redis, the Go API, the in-process queue worker, the Next.js web container, and imgproxy once every v0.1 phase of spec 024 has shipped. PgBouncer, Grafana, and the standalone worker container are promoted only when ADR-007 triggers open. In earlier phases only the services delivered so far come up. The embedded SQL migrator runs at API boot from Phase 2 onward (the Go API ships with the Phase 2 auth slice). Kratos runs its own migrations through its init container from Phase 2 onward.
 
 Use the compose edge only as an explicit rollback path after stopping host nginx:
 

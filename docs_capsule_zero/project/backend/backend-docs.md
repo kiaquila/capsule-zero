@@ -16,7 +16,7 @@ Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a
 | Email                    | Resend (SMTP courier for Kratos; transactional sends from `internal/email`)                                         |
 | Front-door               | Cloudflare proxy on `capsulezero.app` for DDoS, bot fight, CDN                                                      |
 | Observability            | syslog file logs + OpenTelemetry trace export; Grafana dashboards deferred by ADR-007 (Sentry/Prometheus → Stage 2) |
-| Migrations               | Versioned SQL files applied by the API runtime                                                                      |
+| Migrations               | Embedded SQL migration files applied at API boot                                                                      |
 
 The Go monolith owns all business logic; the database has no RLS. Authorization is enforced in every Go handler against the Kratos session before any data access. Internal interfaces (`internal/auth`, `internal/storage`, `internal/email`, `internal/billing`, …) let tests substitute fakes per call site, but there is **no global mock mode** — production code wires the real client (see ADR-006).
 
@@ -41,7 +41,7 @@ The Go monolith owns all business logic; the database has no RLS. Authorization 
     eventbus/                     ← Redis-backed job enqueue / consume
     httpapi/                      ← chi router, OpenAPI-typed handlers, middleware
     obs/                          ← logger, tracer, syslog sink
-  migrations/                     ← versioned SQL files
+  migrations/                     ← embedded SQL migration files
 /worker                            ← deferred until ADR-007 promotes the standalone worker container
   cmd/worker/                     ← main.go: queue consumer
   internal/
