@@ -129,15 +129,18 @@ Server logs may include provider/raw details, but client responses must keep mes
 ## Auth
 
 The Go API wraps Ory Kratos API self-service flows for sign-up, login, session
-resolution, logout, and password recovery in Stage 1. OAuth callbacks are kept
-in the contract as Stage 2 boundaries for Google OAuth and Apple Sign-In.
+resolution, and logout in Stage 1. The password-recovery wrapper is dormant
+while the recovery/verification slice is deferred: Kratos recovery is disabled,
+so calls fail with 502 until that slice re-enables the flow. OAuth callbacks
+are kept in the contract as Stage 2 boundaries for Google OAuth and Apple
+Sign-In.
 
 | Route                    | Method | Auth   | Purpose                                                               |
 | ------------------------ | -----: | ------ | --------------------------------------------------------------------- |
 | `/api/auth/registration` |   POST | Public | Create a password account and return a session or email-confirm state |
 | `/api/auth/login`        |   POST | Public | Establish a password session                                          |
 | `/api/auth/whoami`       |    GET | Public | Resolve the presented session token, or return an empty auth response |
-| `/api/auth/recovery`     |   POST | Public | Start password recovery without revealing whether the account exists  |
+| `/api/auth/recovery`     |   POST | Public | Deferred/dormant this slice (Kratos recovery disabled; calls fail 502) |
 | `/api/auth/logout`       |   POST | Public | Revoke the presented session token; idempotent when absent            |
 | `/auth/callback`         |    GET | Public | Stage 2 web OAuth callback; exchanges code and redirects to dashboard |
 | `/auth/mobile-callback`  |    GET | Public | Stage 2 mobile OAuth callback; redirects into React Native deep link  |

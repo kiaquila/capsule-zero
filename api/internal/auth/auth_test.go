@@ -441,6 +441,8 @@ func TestPatchProfileRejectsInvalidFields(t *testing.T) {
 		{"http avatar", `{"avatarUrl":"http://cdn.example.com/a.png"}`},
 		{"schemaless avatar", `{"avatarUrl":"cdn.example.com/a.png"}`},
 		{"over-long avatar", `{"avatarUrl":"https://cdn.example.com/` + strings.Repeat("a", 2048) + `"}`},
+		{"blank locale", `{"locale":""}`},
+		{"whitespace locale", `{"locale":"   "}`},
 	}
 
 	for _, tc := range cases {
@@ -468,18 +470,23 @@ func TestPatchProfileRejectsInvalidFields(t *testing.T) {
 func TestValidateProfileUpdateAcceptsValidAndOmitted(t *testing.T) {
 	valid := "Buenos Aires"
 	avatar := "https://cdn.capsulezero.app/avatars/a.png"
-	if msg, ok := validateProfileUpdate(&valid, &valid, &valid, &avatar); !ok {
+	locale := "ru"
+	if msg, ok := validateProfileUpdate(&valid, &valid, &valid, &avatar, &locale); !ok {
 		t.Fatalf("valid update rejected: %q", msg)
 	}
 	// All-nil (every field omitted) is a valid no-op patch.
-	if msg, ok := validateProfileUpdate(nil, nil, nil, nil); !ok {
+	if msg, ok := validateProfileUpdate(nil, nil, nil, nil, nil); !ok {
 		t.Fatalf("omitted-only update rejected: %q", msg)
 	}
-	// A provided-but-blank country/city is rejected (set-or-leave has no clear
-	// semantics); the handler-level cases live in TestPatchProfileRejectsInvalidFields.
+	// A provided-but-blank country/city/locale is rejected (set-or-leave has no
+	// clear semantics; a blank locale must not default a RU profile back to EN).
+	// The handler-level cases live in TestPatchProfileRejectsInvalidFields.
 	empty := ""
-	if _, ok := validateProfileUpdate(nil, &empty, nil, nil); ok {
+	if _, ok := validateProfileUpdate(nil, &empty, nil, nil, nil); ok {
 		t.Fatal("blank country accepted, want rejection")
+	}
+	if _, ok := validateProfileUpdate(nil, nil, nil, nil, &empty); ok {
+		t.Fatal("blank locale accepted, want rejection")
 	}
 }
 

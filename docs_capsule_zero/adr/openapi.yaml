@@ -1000,7 +1000,16 @@ paths:
       operationId: requestPasswordRecovery
       x-auth: public
       security: []
-      summary: Start password recovery without revealing whether the account exists.
+      deprecated: true
+      summary: "Deferred: start password recovery without revealing whether the account exists."
+      description: >-
+        Dormant in the Phase 2 auth slice: the backing Kratos recovery flow is
+        disabled (infra/kratos/kratos.yml) because the web UI has no flow-aware
+        completion step yet, so calls currently fail with 502 INTERNAL_ERROR
+        instead of the documented 200 acceptance. The operation stays in the
+        contract for the dedicated recovery/verification slice, which
+        re-enables the flow and ships the completion UI; it is marked
+        deprecated until then so generated clients discourage use.
       requestBody:
         required: true
         content:

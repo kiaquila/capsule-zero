@@ -245,14 +245,15 @@ func (h *Handler) PatchProfile(w http.ResponseWriter, r *http.Request) {
 	country := trimOptional(in.Country)
 	city := trimOptional(in.City)
 	avatarURL := trimOptional(in.AvatarURL)
-	if msg, ok := validateProfileUpdate(displayName, country, city, avatarURL); !ok {
+	locale := trimOptional(in.Locale)
+	if msg, ok := validateProfileUpdate(displayName, country, city, avatarURL, locale); !ok {
 		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", msg)
 		return
 	}
 
 	profile, err := h.Profiles.Apply(r.Context(), userID, profiles.Update{
 		DisplayName: displayName,
-		Locale:      in.Locale,
+		Locale:      locale,
 		Country:     country,
 		City:        city,
 		AvatarURL:   avatarURL,
@@ -370,7 +371,14 @@ func trimOptional(s *string) *string {
 // the mutable text fields. Only provided (non-nil) fields are checked; an omitted
 // field is left unchanged by the repository. Returns a user-facing message and
 // false when a field is invalid.
-func validateProfileUpdate(displayName, country, city, avatarURL *string) (string, bool) {
+func validateProfileUpdate(displayName, country, city, avatarURL, locale *string) (string, bool) {
+	// A provided-but-blank locale must not fall through to NormalizeLocale,
+	// whose ""->"en" default exists for omitted registration/identity traits:
+	// here it would let {"locale":""} silently reset a RU profile to EN while
+	// "" is outside the OpenAPI Locale enum. Enum validation stays in Apply.
+	if locale != nil && *locale == "" {
+		return "Locale cannot be blank; omit the field to keep the stored value.", false
+	}
 	if displayName != nil {
 		if strings.TrimSpace(*displayName) == "" {
 			return "Display name cannot be empty.", false
