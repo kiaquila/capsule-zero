@@ -141,7 +141,7 @@ The platform guides the user through methodology without imposing. It suggests, 
 - **File storage:** DigitalOcean Spaces (S3-compatible with built-in CDN)
 - **Email:** Resend for transactional email (verification, password reset, security alerts)
 - **Image processing:** Self-hosted Capsule Zero model behind a worker (deferred to Stage 2)
-- **DNS / front-door:** Spaceship registrar with Cloudflare proxy for DDoS protection and CDN
+- **DNS / front-door:** Spaceship registrar; Cloudflare proxy for DDoS protection and CDN is deferred to Stage 2 (founder decision 2026-07-02) — v0.1 pre-launch runs direct DNS to the host nginx edge
 - **Observability:** syslog file logs + tracing in v0.1; Grafana, Sentry, and Prometheus are deferred
 - **Hosting:** Single Hetzner Cloud server running docker-compose (migrated from DigitalOcean 2026-07-02); every service declared as a separate `services:` entry
 - **Languages:** EN (primary) and RU in v0.1 — i18n from Day 1, switching without reload. ES-AR is retained as reference copy and deferred globally to v0.2.
@@ -197,4 +197,4 @@ Every spec ≥ 025 must follow test-driven development **for application code**.
 
 These principles apply to every spec authored after the SENAR layer shipped. Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered and keep their original shape.
 
-**Version**: 1.3 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-06-29
+**Version**: 1.3 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-07-02

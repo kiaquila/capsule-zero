@@ -20,7 +20,7 @@
 - [x] Modernize `infra/nginx-host/capsulezero.app.conf` for nginx 1.28 (`http2 on;`)
 - [x] `docs_capsule_zero/project/devops/prod-cd-pipeline.md` (replaces `dev-cd-pipeline.md`); `infra/nginx-host/README.md` rewrite
 - [x] Actualize AGENTS.md (§8, phase status, hosting, Sprint-0 rows), CLAUDE.md, constitution §V, `nginx-reverse-proxy.md`, `sprint-0-runtime-provisioning.md`
-- [ ] `PROD_DEPLOY_*` GitHub secrets set; first CD run green; prod smoke evidence attached (plan rows 3–9)
+- [x] `PROD_DEPLOY_*` GitHub secrets set; first CD run green; prod smoke evidence attached (plan rows 3–9) — run [28602708611](https://github.com/kiaquila/capsule-zero/actions/runs/28602708611) + [evidence comment on PR #64](https://github.com/kiaquila/capsule-zero/pull/64#issuecomment-4868518412) (2026-07-02)
 
 ### Follow-ups (not this PR)
 
@@ -29,7 +29,7 @@
 - [ ] Decide the registration account-enumeration residual (verification-gated sign-up vs auto-login) inside the recovery/verification slice
 - [ ] Decommission the old DigitalOcean droplet once prod is verified (data: nothing to migrate — it never ran the backend)
 - [ ] Reintroduce a preview/dev environment when the team wants pre-prod isolation again (re-derive from spec 026 + this pipeline)
-- [ ] Cloudflare front-door (Phase 4 decision) — realip/CF-ranges config in nginx stays inert until then
+- [ ] Cloudflare front-door — **deferred to Stage 2** (founder decision 2026-07-02); realip/CF-ranges config in nginx stays inert until then, and the CF-ranges refresh mechanism (spec 024 hardening note) lands with the same Stage-2 activation
 
 ## Process Memory
 
@@ -70,6 +70,11 @@
   verification flows are disabled this slice (spec 024 decision), so the courier never
   dials out; the compose `:?` guard still enforces the key's presence. Resend + SPF/DKIM
   land with the recovery/verification slice.
+- **2026-07-02 Cloudflare front-door deferred to Stage 2.** Founder decision: v0.1 pre-launch
+  runs direct DNS → host nginx (no proxy layer to debug while the stack is young). The
+  realip/CF-ranges edge config already shipped stays inert, and the Cloudflare-IP-ranges
+  refresh mechanism (spec 024 Known Issues hardening note) moves to the Stage-2 activation
+  rather than pre-real-QA hardening.
 - **2026-07-02 nginx 1.28 (Ubuntu 26.04) required two edge adjustments:** the vhost moved
   to the modern `http2 on;` directive, and the distro's http-level `server_tokens build;`
   had to be commented out in `/etc/nginx/nginx.conf` because the shared snippet owns that
