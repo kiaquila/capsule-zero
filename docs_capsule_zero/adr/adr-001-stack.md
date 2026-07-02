@@ -64,11 +64,11 @@ The previous Phase 4 chose Flutter. The pivot replaces it with React Native: sha
 
 ### Why DigitalOcean Spaces and not Cloudflare R2
 
-Hosting is on DigitalOcean, so Spaces ships in one bill, with one set of credentials, and includes a CDN with no extra wiring. R2 has cheaper egress on paper, but requires gluing two providers together and is a Stage 2 optimization if storage cost becomes a real line item.
+The original rationale was same-provider convenience: hosting was on DigitalOcean, so Spaces shipped in one bill with one set of credentials. That argument retired with the 2026-07-02 Hetzner migration (spec 033) — the topology is now cross-provider by construction — but Spaces stays preferred for v0.1 on its remaining merits: a mature S3-compatible API behind the storage port (ADR-003, no code or contract change), a built-in CDN with no fronting setup, and no new provider relationship. R2 would couple object storage to Cloudflare **before** the Stage-2 front-door activation (deferred, founder decision 2026-07-02), adding the very dependency v0.1 deliberately runs without. Object traffic is predominantly user ↔ CDN rather than server ↔ bucket, so cross-provider egress/latency between the Hetzner box and an EU Spaces region is not load-bearing at v0.1 scale. Natural re-evaluation point: the Stage-2 Cloudflare activation (R2 becomes same-provider with the edge), or storage cost becoming a real line item — whichever comes first.
 
 ### Why no Kafka in v0.1
 
-The droplet cannot host Kafka (JVM eats > 1 GB of RAM) and we do not yet have multiple consumers. A Redis-based job queue covers image processing, embedding generation, marketplace parsing, and webhook fanout. Kafka becomes interesting only when the image worker, the API, and a second downstream consumer all need durable, replayable streams — i.e. when we extract the image worker into its own service.
+The 4 GB server cannot host Kafka (JVM eats > 1 GB of RAM) and we do not yet have multiple consumers. A Redis-based job queue covers image processing, embedding generation, marketplace parsing, and webhook fanout. Kafka becomes interesting only when the image worker, the API, and a second downstream consumer all need durable, replayable streams — i.e. when we extract the image worker into its own service.
 
 ### Why Cloudflare and not nginx rate-limit alone
 

@@ -107,6 +107,13 @@
   Sprint-0 row, `adr-007` context line, and `gsd-convergence-validation.md` operational-fit
   bullet now all state the Hetzner CX23 (or carry a dated inline supersession note) instead
   of prescribing the retired DO droplet / 80 GB gate.
+- **2026-07-02 PR #65 Codex P2 (6e6e48b review — fourth pass):** the adr-001 "Why
+  DigitalOcean Spaces and not Cloudflare R2" rationale rested on same-provider billing
+  with DO hosting, which the Hetzner migration invalidated. Rewritten for the
+  cross-provider topology: Spaces stays on its remaining merits (mature S3 API behind
+  the ADR-003 storage port, built-in CDN, no new provider relationship — R2 would couple
+  storage to Cloudflare before the Stage-2 front-door), with the Stage-2 activation or a
+  real storage cost line item as the re-evaluation triggers.
 
 ### Known Issues
 
