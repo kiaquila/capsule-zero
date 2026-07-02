@@ -6,7 +6,7 @@
 
 **Capsule Zero** is a premium fashion-tech platform — "the Aesop of wardrobe apps". It helps affluent users (25–40 yo) build maximally productive capsule wardrobes using a proprietary color and wardrobe methodology. Core metric: **Outfit Productivity Ratio** (outfits / items).
 
-**Tech stack:** Next.js 14+ App Router web frontend (`/app`), React Native mobile app (iOS + Android), Go modular monolith backend, nginx 1.27 reverse proxy / API gateway, Ory Kratos auth, PostgreSQL 16 (plain `postgres:16` in v0.1 — pgvector deferred to the semantic-search slice, see ADR-007), Redis, DigitalOcean Spaces, Cloudflare front-door, all wired through docker-compose on a DigitalOcean droplet.
+**Tech stack:** Next.js 14+ App Router web frontend (`/app`), React Native mobile app (iOS + Android), Go modular monolith backend, nginx 1.27 reverse proxy / API gateway, Ory Kratos auth, PostgreSQL 16 (plain `postgres:16` in v0.1 — pgvector deferred to the semantic-search slice, see ADR-007), Redis, DigitalOcean Spaces, Cloudflare front-door, all wired through docker-compose on a Hetzner Cloud server (migrated from DigitalOcean on 2026-07-02).
 **Languages:** EN (primary) and RU are active in v0.1 — i18n from Day 1. ES-AR is retained as reference copy and deferred to v0.2.
 **Target:** Buenos Aires-based startup, global premium segment.
 
@@ -29,7 +29,7 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
 | 2. Product Definition         | COMPLETE — `.specify/specs/001-capsule-zero-mvp/spec.md`, `docs_capsule_zero/project/methodology/`, `docs_capsule_zero/ux/emotion-map.md`, `docs_capsule_zero/ux/ux-validation.md` |
 | 3. UX/UI Design               | COMPLETE — all 16 v0.1 logical screens designed and implemented in the `/app` frontend                                                                                             |
 | **4. Technical Architecture** | **PIVOTED TO PRODUCTION STACK** — Go modular monolith + nginx + Ory Kratos + Postgres + Redis + DO Spaces + Cloudflare + Resend; React Native replaces Flutter                     |
-| 5. Development Sprint         | IN PROGRESS — `.specify/specs/024-production-stack-runtime/`: Phase 1 (nginx + web compose) landed; Phase 2 (Postgres + Kratos) remains pending                                    |
+| 5. Development Sprint         | IN PROGRESS — `.specify/specs/024-production-stack-runtime/`: Phases 1–2 landed (nginx + web; Postgres + Kratos + Go API + `api` provider, PR #57); every merge to `main` deploys to `https://capsulezero.app` via prod CD (spec 033)  |
 | 6. QA & Soft Launch           | Upcoming                                                                                                                                                                           |
 | 7. Commercial Launch          | Upcoming                                                                                                                                                                           |
 
@@ -123,7 +123,7 @@ Thresholds are wired as **warnings** (never CI failures): ESLint `max-lines` / `
 Supabase is **retired** (production-stack pivot, 2026-06-27). The legacy Supabase provider is frozen and being deleted domain by domain — **do not extend it, and do not re-introduce it into anything new.**
 
 - No new spec, `docker-compose*.yml`, GitHub workflow, deploy/provisioning script, infra/nginx config, or doc may add or re-introduce Supabase coupling: no `SUPABASE_*` env, no Supabase client imports.
-- The **dev edge** (`dev.capsulezero.app` via `docker-compose.dev-server.yml`) stays web-only and provider-free — deploys preview the **frontend only** and smoke **provider-free routes (`/en`)**, never provider-backed `/api/*`, until the Go / Postgres / Kratos backend is wired into the dev edge in its own slice.
+- The **dev edge** (`dev.capsulezero.app`, spec 026) was **decommissioned on 2026-07-02** with the Hetzner migration — DNS record deleted, `docker-compose.dev-server.yml` and the dev vhost removed. There is no separate dev environment: every merge to `main` deploys the full production stack to `https://capsulezero.app` via `.github/workflows/cd-prod.yml` (runbook: `docs_capsule_zero/project/devops/prod-cd-pipeline.md`). The no-Supabase rule applies to the prod pipeline unchanged.
 - Exception, by design: the **production stack** (`docker-compose.yml`) is where the Go / Postgres / Kratos backend lands and wires **its own** env behind production-shape contracts (`CAPSULE_PROVIDER_MODE=api`, `/api/*` routing). That is the sanctioned arrival this rule anticipates — it is not a Supabase recoupling.
 - **Reviewers must reject** any diff that recouples deployment, CI/CD, or runtime to the retired **Supabase** backend. Regression that motivated this rule: PR #53 (spec 026) grafted a full `SUPABASE_*` env contract + `/api/health` healthcheck into the brand-new `docker-compose.dev-server.yml` instead of mirroring the web-only `docker-compose.yml`, silently breaking dev CD.
 
@@ -292,7 +292,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 | **File Storage**        | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                                   |
 | **Image processing**    | Self-hosted Capsule Zero model behind a worker (deferred — first ship core wardrobe flows with manual/placeholder behavior)         |
 | **API gateway**         | nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos                        |
-| **Hosting**             | Single DigitalOcean droplet running docker-compose; Cloudflare in front of nginx for DDoS protection and CDN                        |
+| **Hosting**             | Single Hetzner Cloud server (CX23: 2 vCPU / 4 GB / 40 GB, Ubuntu 26.04) running docker-compose — migrated from DigitalOcean 2026-07-02; Cloudflare front-door still pending |
 | **Email**               | Resend for transactional email (verification, password reset, security notifications)                                               |
 | **Observability**       | syslog file logs + tracing in v0.1; Grafana dashboards, Sentry, and Prometheus deferred                                             |
 | **State Management**    | Zustand for local Journey/UI state; TanStack Query for interactive server-state                                                     |
@@ -306,11 +306,11 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 ### Required Sprint 0 follow-ups before Phase 5 production-stack runtime work
 
 - Founder approval on the rewritten Phase 4 ADRs.
-- DigitalOcean droplet upgrade to at least 4 GB RAM / 2 vCPU / 80 GB disk (current 512 MB / 1 vCPU droplet cannot host the new stack).
+- ~~DigitalOcean droplet upgrade to at least 4 GB RAM / 2 vCPU / 80 GB disk~~ — resolved 2026-07-02 by migrating to a Hetzner CX23 (2 vCPU / 4 GB / 40 GB; capacity budget verified in spec 033).
 - Spaceship DNS pointed at Cloudflare; Cloudflare proxy enabled for `capsulezero.app`.
 - Resend account created and SPF/DKIM published on `capsulezero.app`.
 - DigitalOcean Spaces bucket created with CORS configured for `capsulezero.app`.
-- Ship `.specify/specs/024-production-stack-runtime/` to bring the stack up in docker-compose on the droplet, with every service health-checked end-to-end. (Phase 1 nginx+web has landed; Phase 2 Postgres+Kratos remains pending.)
+- Ship `.specify/specs/024-production-stack-runtime/` to bring the stack up in docker-compose on the server, with every service health-checked end-to-end. (Phases 1–2 landed and deploy via prod CD, spec 033; Redis / Spaces / observability phases remain.)
 - Retire the Supabase provider domain by domain as the Go API absorbs each bounded context — no wholesale `/app` deletion.
 
 ### Provider integration gates before real-provider QA/staging/launch

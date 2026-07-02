@@ -1,0 +1,92 @@
+# Tasks 033 — Production CD Activation
+
+## Tasks
+
+### Server provisioning (operator, 2026-07-02)
+
+- [x] Hetzner CX23 created (Ubuntu 26.04, `178.105.95.17`); DNS A `capsulezero.app` repointed; `dev.capsulezero.app` record deleted
+- [x] Base system: docker.io + docker-compose-v2 + nginx 1.28 + certbot + git; 2 G swap; ufw 22/80/443
+- [x] `deploy` user with fresh `capsule-zero-prod-ci` keypair; sudoers restricted to `/usr/local/sbin/capsule-zero-deploy`
+- [x] Root-owned `/opt/capsule-zero` checkout (read-only GitHub deploy key) + GHCR `read:packages` login
+- [x] Root-owned `/opt/capsule-zero/.env` with generated secrets (Resend URI is a placeholder — courier inert while recovery/verification are disabled)
+- [x] Let's Encrypt cert for `capsulezero.app` (standalone issuance; webroot + `reload-host-nginx.sh` deploy hook for renewals)
+- [x] Host nginx vhost installed; distro `server_tokens` conflict resolved (commented in `/etc/nginx/nginx.conf`)
+
+### Repo changes (this PR)
+
+- [x] `.github/workflows/cd-prod.yml` — two-image build + SSH deploy; replaces `cd-dev.yml`
+- [x] `infra/scripts/capsule-zero-deploy` — prod wrapper (two image refs, full-stack up, `/api/health` smoke); replaces the dev wrapper
+- [x] Delete `docker-compose.dev-server.yml` + `infra/nginx-host/dev.capsulezero.app.conf`
+- [x] Modernize `infra/nginx-host/capsulezero.app.conf` for nginx 1.28 (`http2 on;`)
+- [x] `docs_capsule_zero/project/devops/prod-cd-pipeline.md` (replaces `dev-cd-pipeline.md`); `infra/nginx-host/README.md` rewrite
+- [x] Actualize AGENTS.md (§8, phase status, hosting, Sprint-0 rows), CLAUDE.md, constitution §V, `nginx-reverse-proxy.md`, `sprint-0-runtime-provisioning.md`
+- [ ] `PROD_DEPLOY_*` GitHub secrets set; first CD run green; prod smoke evidence attached (plan rows 3–9)
+
+### Follow-ups (not this PR)
+
+- [ ] Auth hardening before real-provider QA (carried from spec 024 `tasks.md` Known Issues): throttle `whoami`/`logout`/`profile`; Kratos Argon2 `iterations: 2`; `openapi ↔ Go` contract guard; `profiles.email` UNIQUE + `pg_advisory_lock` migrator; least-privilege Postgres app role
+- [ ] Recovery + email verification completion slice (flow-aware `/auth` UI, Go endpoints, re-enable Kratos flows, real Resend SMTP + SPF/DKIM, re-expose exact `/self-service/*` paths)
+- [ ] Decide the registration account-enumeration residual (verification-gated sign-up vs auto-login) inside the recovery/verification slice
+- [ ] Decommission the old DigitalOcean droplet once prod is verified (data: nothing to migrate — it never ran the backend)
+- [ ] Reintroduce a preview/dev environment when the team wants pre-prod isolation again (re-derive from spec 026 + this pipeline)
+- [ ] Cloudflare front-door (Phase 4 decision) — realip/CF-ranges config in nginx stays inert until then
+
+## Process Memory
+
+### Dead Ends
+
+- **Deploying the backend to the old DigitalOcean droplet was investigated and abandoned.**
+  The box ran 458 MiB RAM / 1 vCPU / 8.7 GB disk at 88% — the Sprint 0 resize
+  (≥ 4 GB / 2 vCPU / 80 GB) was never executed, and two full stacks (dev + prod) could
+  never fit. The founder chose a cheaper Hetzner CX23 over resizing DO.
+- **An earlier draft of this spec (as `033-auth-full-activation`) planned wiring the
+  backend into the dev edge first.** Obsoleted the same day: the founder deleted
+  `dev.capsulezero.app` and decided to test on production directly (pre-launch, no users),
+  so the dev-edge phases were dropped in favor of prod CD.
+
+### Decisions
+
+- **2026-07-02 hosting migrated DigitalOcean → Hetzner CX23; dev environment
+  decommissioned.** Founder decision: cheaper capacity that actually clears the Phase-0
+  gate (2 vCPU / 4 GB / 40 GB vs the unresized 458 MiB droplet), and a single production
+  environment until launch — every merge to `main` deploys to `capsulezero.app`.
+- **2026-07-02 the 40 GB included disk is sufficient; no Hetzner volume purchased.**
+  Measured on the old box: the entire workload is ≈ 1.35 GB (images 1.01 GB deduped,
+  containers 10 MB, build cache 327 MB). Budget on CX23: ≈ 8–10 GB used, ~30 GB free.
+  Growth goes to object storage (Spaces), not local disk. A network volume would also be
+  slower for Postgres than local NVMe.
+- **2026-07-02 plain Ubuntu OS image over the Hetzner "Docker CE" app image.** Docker is
+  installed from Ubuntu's own repos (`docker.io` + `docker-compose-v2` — same packages the
+  old box ran); app images drift and carry pre-baked config that has to be reverse-engineered.
+- **2026-07-02 prod deploys always `--no-build`.** The server pulls SHA-pinned GHCR images
+  only; building on a 4 GB box competes with live services and bypasses CI provenance.
+- **2026-07-02 a fresh `capsule-zero-prod-ci` SSH keypair + `PROD_DEPLOY_*` secrets**
+  instead of reusing the dev keypair/secrets: the dev private key exists only inside
+  GitHub secrets (unreadable), and clean naming survives a future dev-environment revival.
+- **2026-07-02 GHCR pull auth and the GitHub read deploy key were copied from the old
+  box** (same owner, same purpose) rather than minting new tokens — one less operator
+  round-trip; rotate whenever desired.
+- **2026-07-02 Kratos SMTP stays a syntactically-valid placeholder.** Recovery and
+  verification flows are disabled this slice (spec 024 decision), so the courier never
+  dials out; the compose `:?` guard still enforces the key's presence. Resend + SPF/DKIM
+  land with the recovery/verification slice.
+- **2026-07-02 nginx 1.28 (Ubuntu 26.04) required two edge adjustments:** the vhost moved
+  to the modern `http2 on;` directive, and the distro's http-level `server_tokens build;`
+  had to be commented out in `/etc/nginx/nginx.conf` because the shared snippet owns that
+  directive (duplicate-directive boot failure otherwise).
+
+### Known Issues
+
+- **Production is the only environment.** Docs/tests-only merges skip deploy, but any
+  deploy-relevant merge to `main` goes straight to `capsulezero.app`. Acceptable
+  pre-launch (no users); revisit before commercial launch.
+- **`KRATOS_SMTP_CONNECTION_URI` is a non-functional placeholder** until Resend is
+  configured — fine while recovery/verification are disabled; becomes a hard blocker for
+  the recovery/verification slice.
+- The old DigitalOcean droplet still runs the retired Phase-1 web containers; it serves no
+  traffic (DNS moved) and awaits decommission.
+- `x-real-ip` / realip Cloudflare ranges in the edge config are inert (no Cloudflare in
+  front); the Go limiter keys on the nginx-set `X-Capsule-Client-IP` which host nginx
+  overwrites with `$remote_addr` — correct for the direct-DNS topology.
+- The GitHub `environment:` hardening (scoping `PROD_DEPLOY_*` to a protected environment)
+  is optional and not configured; consider before launch.

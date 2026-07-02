@@ -32,7 +32,7 @@ the edge container.
 Cloudflare (later)
     │
     ▼  TCP/443
-DigitalOcean droplet
+Hetzner Cloud server (migrated from DigitalOcean 2026-07-02)
     │  host ports 80/443
     ▼
 docker compose stack (network: internal)

@@ -143,7 +143,7 @@ The platform guides the user through methodology without imposing. It suggests, 
 - **Image processing:** Self-hosted Capsule Zero model behind a worker (deferred to Stage 2)
 - **DNS / front-door:** Spaceship registrar with Cloudflare proxy for DDoS protection and CDN
 - **Observability:** syslog file logs + tracing in v0.1; Grafana, Sentry, and Prometheus are deferred
-- **Hosting:** Single DigitalOcean droplet running docker-compose; every service declared as a separate `services:` entry
+- **Hosting:** Single Hetzner Cloud server running docker-compose (migrated from DigitalOcean 2026-07-02); every service declared as a separate `services:` entry
 - **Languages:** EN (primary) and RU in v0.1 — i18n from Day 1, switching without reload. ES-AR is retained as reference copy and deferred globally to v0.2.
 - **Responsive:** iPhone 14+ (375px), iPad (768px), Desktop 1280px+
 - **Performance targets:** Page load < 2 sec on 4G, Upload + bg removal < 5 sec (gated by self-hosted image model Stage 2 delivery)

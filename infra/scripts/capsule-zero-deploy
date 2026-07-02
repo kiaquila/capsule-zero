@@ -1,27 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-app_dir="/opt/capsule-zero-dev"
-compose_project="capsule-zero-dev"
-compose_file="docker-compose.dev-server.yml"
-env_file=".env.dev"
-state_dir="/var/lib/capsule-zero-dev"
+app_dir="/opt/capsule-zero"
+compose_project="capsule-zero"
+compose_file="docker-compose.yml"
+env_file=".env"
+state_dir="/var/lib/capsule-zero"
 nginx_sync_marker="$state_dir/last-host-nginx-sync-sha"
 nginx_paths=(
   /etc/nginx/conf.d/00-capsule-zero.conf
   /etc/nginx/sites-available/capsulezero.app.conf
-  /etc/nginx/sites-available/dev.capsulezero.app.conf
   /etc/nginx/sites-enabled/capsulezero.app.conf
-  /etc/nginx/sites-enabled/dev.capsulezero.app.conf
   /etc/nginx/sites-enabled/default
 )
 
 usage() {
-  echo "usage: capsule-zero-dev-deploy <image-ref> <deploy-sha> <sync-host-nginx:true|false>" >&2
+  echo "usage: capsule-zero-deploy <web-image-ref> <api-image-ref> <deploy-sha> <sync-host-nginx:true|false>" >&2
 }
 
 die() {
-  echo "capsule-zero-dev-deploy: $*" >&2
+  echo "capsule-zero-deploy: $*" >&2
   exit 1
 }
 
@@ -29,18 +27,21 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "missing required command: $1"
 }
 
-if [ "$#" -ne 3 ]; then
+if [ "$#" -ne 4 ]; then
   usage
   exit 64
 fi
 
-image_ref="$1"
-deploy_sha="$2"
-sync_host_nginx="$3"
+web_image_ref="$1"
+api_image_ref="$2"
+deploy_sha="$3"
+sync_host_nginx="$4"
 
 [ "$(id -u)" -eq 0 ] || die "must run as root via sudo"
-[[ "$image_ref" =~ ^ghcr\.io/kiaquila/capsule-zero-web:sha-[0-9a-f]{40}$ ]] \
-  || die "image ref must be ghcr.io/kiaquila/capsule-zero-web:sha-<40 lowercase hex>"
+[[ "$web_image_ref" =~ ^ghcr\.io/kiaquila/capsule-zero-web:sha-[0-9a-f]{40}$ ]] \
+  || die "web image ref must be ghcr.io/kiaquila/capsule-zero-web:sha-<40 lowercase hex>"
+[[ "$api_image_ref" =~ ^ghcr\.io/kiaquila/capsule-zero-api:sha-[0-9a-f]{40}$ ]] \
+  || die "api image ref must be ghcr.io/kiaquila/capsule-zero-api:sha-<40 lowercase hex>"
 [[ "$deploy_sha" =~ ^[0-9a-f]{40}$ ]] || die "deploy SHA must be 40 lowercase hex characters"
 [[ "$sync_host_nginx" =~ ^(true|false)$ ]] || die "sync-host-nginx must be true or false"
 
@@ -60,6 +61,7 @@ require_cmd rm
 require_cmd systemctl
 
 [ -d "$app_dir/.git" ] || die "$app_dir is not a git checkout"
+[ -f "$app_dir/$env_file" ] || die "$app_dir/$env_file is missing (operator setup incomplete)"
 cd "$app_dir"
 
 git fetch --prune origin
@@ -84,27 +86,34 @@ fi
 
 git checkout --force "$deploy_sha"
 
-export CAPSULE_WEB_IMAGE="$image_ref"
+export CAPSULE_WEB_IMAGE="$web_image_ref"
+export CAPSULE_API_IMAGE="$api_image_ref"
 compose=(docker compose --env-file "$env_file" -p "$compose_project" -f "$compose_file")
 
-"${compose[@]}" pull web
-"${compose[@]}" up -d --remove-orphans
+# Images are always pulled from GHCR, never built on the server: a build here
+# would compete with the running services for RAM/CPU and bypass CI provenance.
+"${compose[@]}" pull web api
+"${compose[@]}" up -d --no-build --remove-orphans
 
-web_cid="$("${compose[@]}" ps -q web)"
-[ -n "$web_cid" ] || die "web container was not created"
+wait_healthy() {
+  local service="$1" tries="$2" cid status
+  cid="$("${compose[@]}" ps -q "$service")"
+  [ -n "$cid" ] || die "$service container was not created"
+  status="starting"
+  for _ in $(seq 1 "$tries"); do
+    status="$(docker inspect -f '{{.State.Health.Status}}' "$cid" 2>/dev/null || echo starting)"
+    [ "$status" = "healthy" ] && return 0
+    sleep 5
+  done
+  echo "$service did not become healthy (status=$status)" >&2
+  "${compose[@]}" logs --tail=80 "$service" >&2
+  return 1
+}
 
-status="starting"
-for _ in $(seq 1 30); do
-  status="$(docker inspect -f '{{.State.Health.Status}}' "$web_cid" 2>/dev/null || echo starting)"
-  [ "$status" = "healthy" ] && break
-  sleep 5
-done
-
-if [ "$status" != "healthy" ]; then
-  echo "web did not become healthy (status=$status)" >&2
-  "${compose[@]}" logs --tail=80 web >&2
-  exit 1
-fi
+# First boot runs Postgres init + Kratos migrations before api/web can pass
+# healthchecks, so the waits are generous (5 s steps).
+wait_healthy api 60
+wait_healthy web 60
 
 backup_nginx_config() {
   backup_dir="$(mktemp -d)"
@@ -145,30 +154,26 @@ restore_nginx_config() {
 apply_host_nginx_config() {
   install -m 644 infra/nginx-host/00-capsule-zero.conf /etc/nginx/conf.d/00-capsule-zero.conf || return
   install -m 644 infra/nginx-host/capsulezero.app.conf /etc/nginx/sites-available/capsulezero.app.conf || return
-  install -m 644 infra/nginx-host/dev.capsulezero.app.conf /etc/nginx/sites-available/dev.capsulezero.app.conf || return
   ln -sf /etc/nginx/sites-available/capsulezero.app.conf /etc/nginx/sites-enabled/ || return
-  ln -sf /etc/nginx/sites-available/dev.capsulezero.app.conf /etc/nginx/sites-enabled/ || return
   rm -f /etc/nginx/sites-enabled/default || return
   nginx -t || return
   systemctl reload nginx || return
-  curl -fsS -o /dev/null --resolve capsulezero.app:443:127.0.0.1 https://capsulezero.app/en || return
 }
 
-smoke_dev_edge() {
-  # Smoke the dev web on its loopback port, then end-to-end through the host nginx.
-  # --resolve keeps the request on the droplet while preserving hostname/SNI/cert validation.
-  #
-  # Frontend-only: the dev edge previews the frontend with no provider backend wired, so we
-  # smoke the provider-free /en page only. /api/health calls the provider registry and 500s
-  # without a backend — it is NOT a valid liveness signal for a frontend-only dev deploy.
-  curl -fsS -o /dev/null http://127.0.0.1:3001/en || return
-  curl -fsS -o /dev/null --resolve dev.capsulezero.app:443:127.0.0.1 https://dev.capsulezero.app/en || return
+smoke_prod_edge() {
+  # Smoke the web on its loopback port, then end-to-end through the host nginx.
+  # --resolve keeps the request on the server while preserving hostname/SNI/cert
+  # validation. /api/health proves the whole provider chain: nginx -> Go API ->
+  # Postgres/Kratos.
+  curl -fsS -o /dev/null http://127.0.0.1:3000/en || return
+  curl -fsS -o /dev/null --resolve capsulezero.app:443:127.0.0.1 https://capsulezero.app/en || return
+  curl -fsS -o /dev/null --resolve capsulezero.app:443:127.0.0.1 https://capsulezero.app/api/health || return
 }
 
 if [ "$host_nginx_changed" = "true" ]; then
   echo "host nginx config changed; installing and reloading"
   backup_nginx_config
-  if ! apply_host_nginx_config || ! smoke_dev_edge; then
+  if ! apply_host_nginx_config || ! smoke_prod_edge; then
     echo "host nginx update or smoke failed; restoring previous config" >&2
     if ! restore_nginx_config; then
       echo "failed to restore previous host nginx config; manual intervention required" >&2
@@ -179,7 +184,7 @@ if [ "$host_nginx_changed" = "true" ]; then
   rm -rf "$backup_dir"
 else
   echo "host nginx config unchanged"
-  smoke_dev_edge
+  smoke_prod_edge
 fi
 
 echo "smoke ok"

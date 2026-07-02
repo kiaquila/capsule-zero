@@ -2,14 +2,14 @@
 
 ## Purpose
 
-This runbook describes how to bring up the production-shape Capsule Zero stack on the DigitalOcean droplet across the phased rollout in `.specify/specs/024-production-stack-runtime/`. It is the operational companion to that spec and does not store secrets in git.
+This runbook describes how to bring up the production-shape Capsule Zero stack on the production server across the phased rollout in `.specify/specs/024-production-stack-runtime/`. It is the operational companion to that spec and does not store secrets in git. (Since 2026-07-02 the server is a Hetzner Cloud CX23; day-to-day deploys are automated by `prod-cd-pipeline.md`, and that runbook also owns the current one-time provisioning sequence.)
 
 Phase 1 delivers the host `nginx + web` runtime that replaces the host Caddy + legacy Supabase compose currently on the droplet. The dedicated runbook for Phase 1 lives at `docs_capsule_zero/project/devops/nginx-reverse-proxy.md`; this document keeps the steady-state operational contract for the whole stack once every phase has shipped.
 
 ## Preconditions
 
 - GitHub `main` is current and required checks are green.
-- DigitalOcean droplet of at least 4 GB / 2 vCPU / 80 GB, Ubuntu 24.04 LTS, Docker + docker-compose installed.
+- Server of at least 2 vCPU / 4 GB (current: Hetzner CX23, Ubuntu 26.04), Docker + docker-compose installed.
 - Cloudflare account with the `capsulezero.app` zone.
 - (Phase 4+ when Cloudflare proxy is enabled.) Cloudflare API token with Zone Read + DNS Edit on `capsulezero.app`, stored as `CF_DNS_API_TOKEN` in the droplet `.env` for ACME DNS-01. Until the proxy is on, nginx + certbot use HTTP-01 with port 80 directly.
 - Spaceship registrar account with `capsulezero.app` set to Cloudflare nameservers.

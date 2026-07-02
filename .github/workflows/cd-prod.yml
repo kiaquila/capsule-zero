@@ -1,13 +1,17 @@
-name: CD Dev
+name: CD Prod
 
-# Auto-deploy to the dev environment (https://dev.capsulezero.app) on merge to main.
+# Auto-deploy to production (https://capsulezero.app) on merge to main.
 #
-# Build-in-CI, pull-on-droplet: GitHub Actions builds and pushes the web image to GHCR;
-# the droplet only pulls the SHA-pinned image and rolls the isolated `capsule-zero-dev`
-# compose project. Merges that touch only docs/tests/specs do NOT deploy.
+# Build-in-CI, pull-on-server: GitHub Actions builds and pushes the web + api images to
+# GHCR; the server only pulls the SHA-pinned images and rolls the `capsule-zero` compose
+# project (postgres + kratos + api + web behind the host nginx edge). Merges that touch
+# only docs/tests/specs do NOT deploy.
 #
-# Spec: .specify/specs/026-dev-cd-pipeline/
-# Runbook (operator setup): docs_capsule_zero/project/devops/dev-cd-pipeline.md
+# There is no separate dev environment: dev.capsulezero.app was decommissioned with the
+# 2026-07-02 Hetzner migration; every merge to main lands on production directly.
+#
+# Spec: .specify/specs/033-prod-cd-activation/
+# Runbook (operator setup): docs_capsule_zero/project/devops/prod-cd-pipeline.md
 
 on:
   push:
@@ -21,7 +25,7 @@ on:
         default: ""
 
 concurrency:
-  group: cd-dev
+  group: cd-prod
   cancel-in-progress: false
 
 permissions:
@@ -29,7 +33,8 @@ permissions:
   packages: write
 
 env:
-  IMAGE: ghcr.io/kiaquila/capsule-zero-web
+  IMAGE_WEB: ghcr.io/kiaquila/capsule-zero-web
+  IMAGE_API: ghcr.io/kiaquila/capsule-zero-api
 
 jobs:
   gate:
@@ -71,7 +76,7 @@ jobs:
           changed="$(git diff --name-only "$BEFORE" "$AFTER")"
           echo "$changed"
 
-          deploy_path_pattern='^(app/|api/|worker/|infra/|docker-compose\.yml$|docker-compose\.dev-server\.yml$|package-lock\.json$|app/package-lock\.json$|\.github/workflows/cd-dev\.yml$)'
+          deploy_path_pattern='^(app/|api/|worker/|infra/|docker-compose\.yml$|package-lock\.json$|app/package-lock\.json$|\.github/workflows/cd-prod\.yml$)'
           if grep -E "$deploy_path_pattern" <<< "$changed" >/dev/null; then
             echo "deploy-relevant paths changed -> deploy"
             echo "run=true" >> "$GITHUB_OUTPUT"
@@ -89,14 +94,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
-      image: ${{ steps.meta.outputs.image }}
+      image_web: ${{ steps.meta.outputs.image_web }}
+      image_api: ${{ steps.meta.outputs.image_api }}
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Compute image ref
+      - name: Compute image refs
         id: meta
-        run: echo "image=${IMAGE}:sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+        run: |
+          {
+            echo "image_web=${IMAGE_WEB}:sha-${GITHUB_SHA}"
+            echo "image_api=${IMAGE_API}:sha-${GITHUB_SHA}"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
@@ -109,15 +119,26 @@ jobs:
           set -euo pipefail
           docker buildx build \
             --target runner \
-            --tag "${IMAGE}:sha-${GITHUB_SHA}" \
-            --tag "${IMAGE}:dev" \
-            --cache-from "type=registry,ref=${IMAGE}:buildcache" \
-            --cache-to   "type=registry,ref=${IMAGE}:buildcache,mode=max" \
+            --tag "${IMAGE_WEB}:sha-${GITHUB_SHA}" \
+            --tag "${IMAGE_WEB}:prod" \
+            --cache-from "type=registry,ref=${IMAGE_WEB}:buildcache" \
+            --cache-to   "type=registry,ref=${IMAGE_WEB}:buildcache,mode=max" \
             --push \
             ./app
 
+      - name: Build and push api image
+        run: |
+          set -euo pipefail
+          docker buildx build \
+            --tag "${IMAGE_API}:sha-${GITHUB_SHA}" \
+            --tag "${IMAGE_API}:prod" \
+            --cache-from "type=registry,ref=${IMAGE_API}:buildcache" \
+            --cache-to   "type=registry,ref=${IMAGE_API}:buildcache,mode=max" \
+            --push \
+            ./api
+
   deploy:
-    name: deploy-to-dev-droplet
+    name: deploy-to-prod-server
     needs: [gate, build]
     # Run when gated true and build either succeeded (push / build-HEAD dispatch)
     # or was skipped (workflow_dispatch redeploy of an existing image_sha).
@@ -127,14 +148,15 @@ jobs:
       needs.build.result != 'failure' &&
       needs.build.result != 'cancelled'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
-      - name: Resolve image ref
+      - name: Resolve image refs
         id: ref
         env:
           EVENT_NAME: ${{ github.event_name }}
           ROLLBACK_IMAGE_SHA: ${{ github.event.inputs.image_sha }}
-          BUILT_IMAGE_REF: ${{ needs.build.outputs.image }}
+          BUILT_IMAGE_WEB: ${{ needs.build.outputs.image_web }}
+          BUILT_IMAGE_API: ${{ needs.build.outputs.image_api }}
           CURRENT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
@@ -144,13 +166,14 @@ jobs:
               exit 1
             fi
             {
-              echo "image=${IMAGE}:${ROLLBACK_IMAGE_SHA}"
+              echo "image_web=${IMAGE_WEB}:${ROLLBACK_IMAGE_SHA}"
+              echo "image_api=${IMAGE_API}:${ROLLBACK_IMAGE_SHA}"
               echo "deploy_sha=${ROLLBACK_IMAGE_SHA#sha-}"
               echo "sync_host_nginx=false"
             } >> "$GITHUB_OUTPUT"
           else
-            if [ -z "${BUILT_IMAGE_REF:-}" ]; then
-              echo "::error::build job did not produce an image ref"
+            if [ -z "${BUILT_IMAGE_WEB:-}" ] || [ -z "${BUILT_IMAGE_API:-}" ]; then
+              echo "::error::build job did not produce image refs"
               exit 1
             fi
             if [[ ! "$CURRENT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
@@ -158,7 +181,8 @@ jobs:
               exit 1
             fi
             {
-              echo "image=${BUILT_IMAGE_REF}"
+              echo "image_web=${BUILT_IMAGE_WEB}"
+              echo "image_api=${BUILT_IMAGE_API}"
               echo "deploy_sha=${CURRENT_SHA}"
               echo "sync_host_nginx=true"
             } >> "$GITHUB_OUTPUT"
@@ -166,17 +190,22 @@ jobs:
 
       - name: Deploy over SSH
         env:
-          SSH_KEY: ${{ secrets.DEV_DEPLOY_SSH_KEY }}
-          SSH_HOST: ${{ secrets.DEV_DEPLOY_HOST }}
-          SSH_USER: ${{ secrets.DEV_DEPLOY_USER }}
-          KNOWN_HOSTS: ${{ secrets.DEV_DEPLOY_KNOWN_HOSTS }}
-          IMAGE_REF: ${{ steps.ref.outputs.image }}
+          SSH_KEY: ${{ secrets.PROD_DEPLOY_SSH_KEY }}
+          SSH_HOST: ${{ secrets.PROD_DEPLOY_HOST }}
+          SSH_USER: ${{ secrets.PROD_DEPLOY_USER }}
+          KNOWN_HOSTS: ${{ secrets.PROD_DEPLOY_KNOWN_HOSTS }}
+          IMAGE_WEB_REF: ${{ steps.ref.outputs.image_web }}
+          IMAGE_API_REF: ${{ steps.ref.outputs.image_api }}
           DEPLOY_SHA: ${{ steps.ref.outputs.deploy_sha }}
           SYNC_HOST_NGINX: ${{ steps.ref.outputs.sync_host_nginx }}
         run: |
           set -euo pipefail
-          if [[ ! "$IMAGE_REF" =~ ^ghcr\.io/kiaquila/capsule-zero-web:sha-[0-9a-f]{40}$ ]]; then
-            echo "::error::resolved image ref is not an expected immutable web image tag"
+          if [[ ! "$IMAGE_WEB_REF" =~ ^ghcr\.io/kiaquila/capsule-zero-web:sha-[0-9a-f]{40}$ ]]; then
+            echo "::error::resolved web image ref is not an expected immutable tag"
+            exit 1
+          fi
+          if [[ ! "$IMAGE_API_REF" =~ ^ghcr\.io/kiaquila/capsule-zero-api:sha-[0-9a-f]{40}$ ]]; then
+            echo "::error::resolved api image ref is not an expected immutable tag"
             exit 1
           fi
           if [[ ! "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]; then
@@ -194,4 +223,4 @@ jobs:
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
 
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "$SSH_USER@$SSH_HOST" \
-            sudo /usr/local/sbin/capsule-zero-dev-deploy "$IMAGE_REF" "$DEPLOY_SHA" "$SYNC_HOST_NGINX"
+            sudo /usr/local/sbin/capsule-zero-deploy "$IMAGE_WEB_REF" "$IMAGE_API_REF" "$DEPLOY_SHA" "$SYNC_HOST_NGINX"
