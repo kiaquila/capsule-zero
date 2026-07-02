@@ -51,6 +51,7 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
       firstName: t("validation.firstName"),
       lastName: t("validation.lastName"),
       nameLength: t("validation.nameLength"),
+      displayNameLength: t("validation.displayNameLength"),
       usernameLength: t("validation.usernameLength"),
       usernamePattern: t("validation.usernamePattern"),
       email: t("validation.email"),

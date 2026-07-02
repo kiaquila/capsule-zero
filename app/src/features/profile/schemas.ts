@@ -4,6 +4,7 @@ export interface ProfileValidationMessages {
   firstName: string;
   lastName: string;
   nameLength: string;
+  displayNameLength: string;
   usernameLength: string;
   usernamePattern: string;
   email: string;
@@ -45,6 +46,19 @@ export function createProfileFormSchema(messages: ProfileValidationMessages) {
     pushNotifications: z.boolean(),
     googleAuthenticator: z.boolean(),
     pushSecondFactor: z.boolean(),
+  }).superRefine((data, ctx) => {
+    // The API persists the joined "first last" value as displayName with an
+    // 80-rune limit (ProfileUpdateRequest maxLength). Two form-valid
+    // 40-character names joined with a space exceed it, so the combined
+    // length is validated here as well.
+    const displayName = `${data.firstName} ${data.lastName}`.trim();
+    if ([...displayName].length > 80) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: messages.displayNameLength,
+        path: ["lastName"],
+      });
+    }
   });
 }
 
