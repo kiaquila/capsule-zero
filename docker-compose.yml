@@ -38,6 +38,12 @@ services:
       KRATOS_DB_USER: ${KRATOS_DB_USER:-kratos}
       KRATOS_DB_PASSWORD: ${KRATOS_DB_PASSWORD:?set KRATOS_DB_PASSWORD in the env file}
       KRATOS_DB_NAME: ${KRATOS_DB_NAME:-kratos}
+      # Optional least-privilege app role, provisioned only on first init of an
+      # empty volume (spec 034); the populated prod volume was provisioned by
+      # the one-time operator rollout instead. API_DATABASE_URL should use this
+      # role, not the superuser above.
+      APP_DB_USER: ${APP_DB_USER:-}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./infra/postgres:/docker-entrypoint-initdb.d:ro

@@ -26,9 +26,17 @@ import (
 // (mirroring the nginx edge `rate=10r/m`, `burst=10`) so the limit also covers
 // auth traffic forwarded by the Next.js server actions over the private network,
 // which never traverses the edge `limit_req`.
+//
+// The session-validation surface (whoami/logout/profile) gets its own, far
+// roomier bucket: the web app resolves the session server-side on page renders,
+// so the auth-write budget would throttle normal navigation, while no budget at
+// all lets a bot drive Kratos WhoAmI lookups with arbitrary token probes.
 const (
 	authRateLimitPerMinute = 10
 	authRateLimitBurst     = 10
+
+	sessionRateLimitPerMinute = 120
+	sessionRateLimitBurst     = 60
 )
 
 func main() {
@@ -83,19 +91,13 @@ func run() error {
 	}
 
 	authLimiter := ratelimit.New(authRateLimitPerMinute, authRateLimitBurst)
+	sessionLimiter := ratelimit.New(sessionRateLimitPerMinute, sessionRateLimitBurst)
 	cleanupCtx, stopCleanup := context.WithCancel(context.Background())
 	defer stopCleanup()
-	go runLimiterCleanup(cleanupCtx, authLimiter)
+	go runLimiterCleanup(cleanupCtx, authLimiter, sessionLimiter)
 
-	mux := http.NewServeMux()
+	mux := newMux(handler, authLimiter, sessionLimiter)
 	mux.HandleFunc("GET /api/health", healthHandler(pool, kratosClient))
-	mux.HandleFunc("POST /api/auth/registration", authLimiter.Middleware(handler.Registration))
-	mux.HandleFunc("POST /api/auth/login", authLimiter.Middleware(handler.Login))
-	mux.HandleFunc("GET /api/auth/whoami", handler.WhoAmI)
-	mux.HandleFunc("POST /api/auth/recovery", authLimiter.Middleware(handler.Recovery))
-	mux.HandleFunc("POST /api/auth/logout", handler.Logout)
-	mux.HandleFunc("GET /api/profile", handler.RequireSession(handler.GetProfile))
-	mux.HandleFunc("PATCH /api/profile", handler.RequireSession(handler.PatchProfile))
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,
@@ -118,9 +120,24 @@ func run() error {
 	return nil
 }
 
+// newMux wires the auth/profile routes behind their rate-limit buckets: public
+// auth writes keep the strict edge-mirroring bucket, and the session-validation
+// surface shares one independent, roomier bucket (spec 034 acceptance 1).
+func newMux(handler *auth.Handler, authLimiter, sessionLimiter *ratelimit.Limiter) *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /api/auth/registration", authLimiter.Middleware(handler.Registration))
+	mux.HandleFunc("POST /api/auth/login", authLimiter.Middleware(handler.Login))
+	mux.HandleFunc("POST /api/auth/recovery", authLimiter.Middleware(handler.Recovery))
+	mux.HandleFunc("GET /api/auth/whoami", sessionLimiter.Middleware(handler.WhoAmI))
+	mux.HandleFunc("POST /api/auth/logout", sessionLimiter.Middleware(handler.Logout))
+	mux.HandleFunc("GET /api/profile", sessionLimiter.Middleware(handler.RequireSession(handler.GetProfile)))
+	mux.HandleFunc("PATCH /api/profile", sessionLimiter.Middleware(handler.RequireSession(handler.PatchProfile)))
+	return mux
+}
+
 // runLimiterCleanup periodically evicts idle rate-limit buckets so the in-memory
-// map stays bounded for the lifetime of the process.
-func runLimiterCleanup(ctx context.Context, limiter *ratelimit.Limiter) {
+// maps stay bounded for the lifetime of the process.
+func runLimiterCleanup(ctx context.Context, limiters ...*ratelimit.Limiter) {
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
 	for {
@@ -128,7 +145,9 @@ func runLimiterCleanup(ctx context.Context, limiter *ratelimit.Limiter) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			limiter.Cleanup(15 * time.Minute)
+			for _, limiter := range limiters {
+				limiter.Cleanup(15 * time.Minute)
+			}
 		}
 	}
 }

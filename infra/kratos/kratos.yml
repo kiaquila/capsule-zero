@@ -108,7 +108,11 @@ hashers:
   argon2:
     parallelism: 1
     memory: 128MB
-    iterations: 1
+    # OWASP Argon2id minimum is t >= 2 (spec 034). The local dev stack overrides
+    # this to 1 via HASHERS_ARGON2_ITERATIONS in docker-compose.dev.yml so
+    # full-stack e2e keeps its measured sign-up timings; production hashes with
+    # the value below.
+    iterations: 2
     salt_length: 16
     key_length: 32
 
