@@ -174,7 +174,10 @@ cd /opt/capsule-zero
 # before any restart. docker-compose.yml's api service is
 # `image: ${CAPSULE_API_IMAGE:-capsule-zero-api:local}` with a build: fallback, so a plain
 # `up -d api` without CAPSULE_API_IMAGE would compile the image on the host.
-PIN="$(docker compose -p capsule-zero ps --format '{{.Image}}' api)"
+# `-a` so a stopped/exited api container still resolves; abort rather than fall through
+# to the local build tag if no pinned image is found.
+PIN="$(docker compose -p capsule-zero ps -a --format '{{.Image}}' api)"
+case "$PIN" in ""|capsule-zero-api:local) echo "abort: no CD-pinned api image found (would host-build)"; exit 1;; esac
 cp .env ".env.bak.pre-034-role-$(date -u +%Y%m%dT%H%M%SZ)"   # rollback safety
 APP_PW="$(openssl rand -hex 24)"
 docker compose --env-file .env -p capsule-zero exec -T postgres \
@@ -199,8 +202,16 @@ curl -fsS https://capsulezero.app/api/health && echo api-ok
 ```
 
 Rollback: restore the `.env` backup (`.env.bak.pre-034-role-*`) and recreate api on the
-pinned image — `CAPSULE_API_IMAGE="$(docker compose -p capsule-zero ps --format '{{.Image}}' api)"
-docker compose --env-file .env -p capsule-zero -f docker-compose.yml up -d --no-build api`.
+pinned image. Capture it with `ps -a` — in the rollback path the api container has usually
+**exited** (the bad DSN killed it), and plain `docker compose ps` lists only running
+containers, so it would return an empty `PIN` that falls through to the `capsule-zero-api:local`
+build tag exactly when recovery is needed:
+
+```bash
+PIN="$(docker compose -p capsule-zero ps -a --format '{{.Image}}' api)"
+case "$PIN" in ""|capsule-zero-api:local) echo "abort: no CD-pinned api image found"; exit 1;; esac
+CAPSULE_API_IMAGE="$PIN" docker compose --env-file .env -p capsule-zero -f docker-compose.yml up -d --no-build api
+```
 Migration files from `0002` on must stay runnable by this non-superuser owner role —
 plain DDL on owned objects only (`pgcrypto` is a trusted extension in PG16, so its
 `IF NOT EXISTS` re-run is safe).
