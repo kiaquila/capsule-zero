@@ -17,6 +17,7 @@ import {
   type SignUpInput,
   type VerificationCodeInput,
 } from "./schemas";
+import { authActionFailure } from "./error-codes";
 import {
   clearMockSession,
   markAppSessionEmailVerified,
@@ -32,6 +33,8 @@ const serverValidationMessages: AuthValidationMessages = {
 
 export interface AuthActionResult {
   ok: boolean;
+  /** Machine error code the UI maps to a localized message (spec 035). */
+  code?: string;
   message?: string;
   requiresEmailConfirmation?: boolean;
   /** Flow the emailed one-time code is bound to (recovery/verification). */
@@ -52,7 +55,7 @@ export async function signInWithPasswordAction(
     const session = await providers.auth.signInWithPassword(parsed.data);
     await persistMockSession(session);
   } catch (error) {
-    return { ok: false, message: authActionErrorMessage(error) };
+    return { ok: false, ...authActionFailure(error) };
   }
 
   return { ok: true };
@@ -80,7 +83,7 @@ export async function signUpWithPasswordAction(
     }
     await persistMockSession(session);
   } catch (error) {
-    return { ok: false, message: authActionErrorMessage(error) };
+    return { ok: false, ...authActionFailure(error) };
   }
 
   return { ok: true };
@@ -102,7 +105,7 @@ export async function requestPasswordRecoveryAction(
     );
     return { ok: true, flowId: request.flowId };
   } catch (error) {
-    return { ok: false, message: authActionErrorMessage(error) };
+    return { ok: false, ...authActionFailure(error) };
   }
 }
 
@@ -128,7 +131,7 @@ export async function completePasswordRecoveryAction(
     });
     await persistMockSession(session);
   } catch (error) {
-    return { ok: false, message: authActionErrorMessage(error) };
+    return { ok: false, ...authActionFailure(error) };
   }
 
   return { ok: true };
@@ -150,7 +153,7 @@ export async function startEmailVerificationAction(
     );
     return { ok: true, flowId: request.flowId };
   } catch (error) {
-    return { ok: false, message: authActionErrorMessage(error) };
+    return { ok: false, ...authActionFailure(error) };
   }
 }
 
@@ -174,7 +177,7 @@ export async function completeEmailVerificationAction(
       code: parsed.data.code,
     });
   } catch (error) {
-    return { ok: false, message: authActionErrorMessage(error) };
+    return { ok: false, ...authActionFailure(error) };
   }
 
   await markAppSessionEmailVerified();
@@ -198,7 +201,7 @@ export async function changePasswordAction(
       newPassword: parsed.data.newPassword,
     });
   } catch (error) {
-    return { ok: false, message: authActionErrorMessage(error) };
+    return { ok: false, ...authActionFailure(error) };
   }
 
   return { ok: true };
@@ -231,18 +234,3 @@ function normalizeActionLocale(locale: string | undefined): AppLocale {
   return routing.defaultLocale;
 }
 
-function authActionErrorMessage(error: unknown): string {
-  const message =
-    error instanceof Error && error.message.trim()
-      ? error.message
-      : "Authentication failed. Please try again.";
-
-  // Strip only a leading provider error code (e.g. "AUTH_FAILED: ..."),
-  // keeping any colons inside the human-readable part of the message.
-  const providerMessage = message.replace(/^[A-Z_]+:\s*/, "").trim();
-  if (providerMessage) {
-    return providerMessage;
-  }
-
-  return "Authentication failed. Please try again.";
-}

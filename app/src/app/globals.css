@@ -1106,23 +1106,35 @@ textarea {
   line-height: 1.2;
 }
 
-/* Verify-email banner (spec 035) — glass surface on the dashboard while the
-   signed-in user's address is unconfirmed. Reuses auth input/button tokens. */
-.verify-email-banner {
+/* Standard notification banner (spec 035) — the shared glass surface for
+   inline notifications across the app (see components/common/
+   NotificationBanner.tsx). Sits inside the page's content column so its
+   margins align with the neighbouring cards; info glyph top-right. */
+.notification-banner {
+  position: relative;
   display: grid;
   gap: 16px;
   margin-bottom: 24px;
   padding: 24px;
 }
 
-.verify-email-copy h2 {
+.notification-banner-icon {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  color: var(--color-text-secondary);
+  line-height: 0;
+}
+
+.notification-banner-copy h2 {
   margin: 0 0 8px;
+  padding-right: 32px;
   color: var(--color-text-primary);
   font-size: 20px;
   line-height: 1.2;
 }
 
-.verify-email-copy p {
+.notification-banner-copy p {
   margin: 0;
   color: var(--color-text-secondary);
   font-size: 14px;

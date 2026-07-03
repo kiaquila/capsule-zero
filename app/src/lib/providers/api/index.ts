@@ -95,6 +95,27 @@ async function apiFetch<T>(
   return { status: response.status, data };
 }
 
+function errorCode(data: unknown): string | undefined {
+  if (data && typeof data === "object" && "error" in data) {
+    const error = (data as { error?: { code?: unknown } }).error;
+    if (error && typeof error.code === "string" && error.code.trim()) {
+      return error.code;
+    }
+  }
+  return undefined;
+}
+
+// providerError carries the API's machine code as the message prefix so the
+// server actions can hand the UI a localizable code (spec 035).
+function providerError(
+  data: unknown,
+  fallbackCode: string,
+  fallbackMessage: string,
+): Error {
+  const code = errorCode(data) ?? fallbackCode;
+  return new Error(`${code}: ${errorMessage(data, fallbackMessage)}`);
+}
+
 function errorMessage(data: unknown, fallback: string): string {
   if (data && typeof data === "object" && "error" in data) {
     const error = (data as { error?: { message?: unknown } }).error;
@@ -135,11 +156,10 @@ function buildAuthPort(): AuthPort {
         token,
       });
       if (status >= 400) {
-        throw new Error(
-          `SESSION_CHECK_FAILED: ${errorMessage(
-            data,
-            "Session check is temporarily unavailable.",
-          )}`,
+        throw providerError(
+          data,
+          "INTERNAL_ERROR",
+          "Session check is temporarily unavailable.",
         );
       }
       return data.session && data.user ? mapSession(data) : null;
@@ -159,9 +179,7 @@ function buildAuthPort(): AuthPort {
         },
       );
       if (status >= 400) {
-        throw new Error(
-          `REGISTRATION_FAILED: ${errorMessage(data, "Registration failed.")}`,
-        );
+        throw providerError(data, "VALIDATION_ERROR", "Registration failed.");
       }
       if (data.requiresEmailConfirmation || !data.session) {
         return null;
@@ -178,8 +196,10 @@ function buildAuthPort(): AuthPort {
         }),
       });
       if (status >= 400) {
-        throw new Error(
-          `SIGN_IN_FAILED: ${errorMessage(data, "Invalid email or password")}`,
+        throw providerError(
+          data,
+          "UNAUTHENTICATED",
+          "Invalid email or password",
         );
       }
       return mapSession(data);
@@ -194,11 +214,10 @@ function buildAuthPort(): AuthPort {
         },
       );
       if (status >= 400 || !data.flowId) {
-        throw new Error(
-          `RECOVERY_FAILED: ${errorMessage(
-            data,
-            "Password recovery is temporarily unavailable.",
-          )}`,
+        throw providerError(
+          data,
+          "INTERNAL_ERROR",
+          "Password recovery is temporarily unavailable.",
         );
       }
       return { delivery: "email" as const, email, flowId: data.flowId };
@@ -213,11 +232,10 @@ function buildAuthPort(): AuthPort {
         },
       );
       if (status >= 400) {
-        throw new Error(
-          `RECOVERY_FAILED: ${errorMessage(
-            data,
-            "The recovery code is invalid or has expired.",
-          )}`,
+        throw providerError(
+          data,
+          "INVALID_CODE",
+          "The recovery code is invalid or has expired.",
         );
       }
       return mapSession(data);
@@ -232,11 +250,10 @@ function buildAuthPort(): AuthPort {
         },
       );
       if (status >= 400 || !data.flowId) {
-        throw new Error(
-          `VERIFICATION_FAILED: ${errorMessage(
-            data,
-            "Email verification is temporarily unavailable.",
-          )}`,
+        throw providerError(
+          data,
+          "INTERNAL_ERROR",
+          "Email verification is temporarily unavailable.",
         );
       }
       return { delivery: "email" as const, email, flowId: data.flowId };
@@ -251,11 +268,10 @@ function buildAuthPort(): AuthPort {
         },
       );
       if (status >= 400) {
-        throw new Error(
-          `VERIFICATION_FAILED: ${errorMessage(
-            data,
-            "The verification code is invalid or has expired.",
-          )}`,
+        throw providerError(
+          data,
+          "INVALID_CODE",
+          "The verification code is invalid or has expired.",
         );
       }
     },
@@ -271,11 +287,10 @@ function buildAuthPort(): AuthPort {
         },
       );
       if (status >= 400) {
-        throw new Error(
-          `PASSWORD_CHANGE_FAILED: ${errorMessage(
-            data,
-            "Password change is temporarily unavailable.",
-          )}`,
+        throw providerError(
+          data,
+          "INTERNAL_ERROR",
+          "Password change is temporarily unavailable.",
         );
       }
     },

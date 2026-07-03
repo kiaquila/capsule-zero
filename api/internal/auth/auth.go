@@ -236,7 +236,9 @@ func (h *Handler) RecoveryComplete(w http.ResponseWriter, r *http.Request) {
 	session, err := h.Kratos.RecoveryComplete(r.Context(), in.FlowID, in.Code, in.NewPassword)
 	if err != nil {
 		if errors.Is(err, kratos.ErrFlowRejected) {
-			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err))
+			// Machine-readable code: the web client localizes it (spec 035 fix
+			// round 2 — raw Kratos English must never reach the user).
+			httpx.WriteError(w, http.StatusBadRequest, "INVALID_CODE", kratosMessage(err))
 			return
 		}
 		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Password recovery is temporarily unavailable.")
@@ -285,7 +287,7 @@ func (h *Handler) VerificationComplete(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := h.Kratos.VerificationComplete(r.Context(), in.FlowID, in.Code); err != nil {
 		if errors.Is(err, kratos.ErrFlowRejected) {
-			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err))
+			httpx.WriteError(w, http.StatusBadRequest, "INVALID_CODE", kratosMessage(err))
 			return
 		}
 		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Email verification is temporarily unavailable.")
@@ -330,7 +332,7 @@ func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	fresh, err := h.Kratos.Login(r.Context(), session.Identity.Traits.Email, in.CurrentPassword)
 	if err != nil {
 		if errors.Is(err, kratos.ErrInvalidCredentials) {
-			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Current password is incorrect.")
+			httpx.WriteError(w, http.StatusBadRequest, "INVALID_CURRENT_PASSWORD", "Current password is incorrect.")
 			return
 		}
 		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Password change is temporarily unavailable.")

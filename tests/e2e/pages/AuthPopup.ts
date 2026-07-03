@@ -24,6 +24,8 @@ export class AuthPopup {
   readonly recoveryConfirmPasswordInput: Locator;
   /** Submit button of whichever recovery step is active. */
   readonly recoverySubmit: Locator;
+  /** "Resend code" affordance on the recovery completion step. */
+  readonly recoveryResend: Locator;
   /** Server-reported message area shared by every auth mode. */
   readonly serverMessage: Locator;
 
@@ -51,6 +53,7 @@ export class AuthPopup {
       "recovery-confirm-password-input",
     );
     this.recoverySubmit = this.container.getByTestId("recovery-submit");
+    this.recoveryResend = this.container.getByTestId("recovery-resend");
     this.serverMessage = this.container.locator(".auth-server-message");
   }
 
@@ -60,6 +63,31 @@ export class AuthPopup {
 
   async close(): Promise<void> {
     await this.closeButton.click();
+  }
+
+  /** Submit the sign-in form (popup must be in sign-in mode). */
+  async signIn(email: string, password: string): Promise<void> {
+    await this.container.locator('input[name="email"]').fill(email);
+    await this.container.locator('input[name="password"]').fill(password);
+    await this.container.locator('button[type="submit"]').click();
+  }
+
+  /** Switch to sign-up mode and register an account. */
+  async signUp(
+    email: string,
+    password: string,
+    name?: string,
+  ): Promise<void> {
+    await this.clickModeSwitch();
+    await this.container.locator('input[name="email"]').fill(email);
+    await this.container.locator('input[name="password"]').fill(password);
+    await this.container
+      .locator('input[name="confirmPassword"]')
+      .fill(password);
+    if (name) {
+      await this.container.locator('input[name="name"]').fill(name);
+    }
+    await this.container.locator('button[type="submit"]').click();
   }
 
   /** Open recovery mode and request a code for the given email. */

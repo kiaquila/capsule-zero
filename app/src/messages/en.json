@@ -83,7 +83,16 @@
     "newPassword": "New password",
     "resetCta": "Set new password",
     "resetting": "Saving",
-    "resendCode": "Resend code"
+    "resendCode": "Resend code",
+    "errors": {
+      "INVALID_CODE": "The code is invalid or has expired. Request a new one.",
+      "INVALID_CURRENT_PASSWORD": "The current password is incorrect.",
+      "UNAUTHENTICATED": "Invalid email or password",
+      "RATE_LIMITED": "Too many attempts. Please try again in a minute.",
+      "VALIDATION_ERROR": "Please check your details and try again.",
+      "INTERNAL_ERROR": "The service is temporarily unavailable. Please try again.",
+      "default": "Something went wrong. Please try again."
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -902,7 +911,7 @@
   },
   "verifyEmail": {
     "title": "Confirm your email",
-    "hint": "We sent a confirmation code to {email}.",
+    "hint": "We sent a confirmation code to {email}. Confirm it so you can always restore access to your account — password recovery works through this address.",
     "codePlaceholder": "Code from email",
     "submit": "Confirm",
     "checking": "Checking",
@@ -910,17 +919,5 @@
     "sent": "Code sent. Check your inbox.",
     "error": "The code is invalid or has expired.",
     "invalidCode": "Enter the code from the email"
-  },
-  "verifyEmailPage": {
-    "title": "Email confirmation",
-    "verifying": "Confirming your email…",
-    "success": "Email confirmed. You're all set.",
-    "error": "The code is invalid or has expired.",
-    "enterCode": "Enter the code from the email.",
-    "codePlaceholder": "Code from email",
-    "submit": "Confirm",
-    "goToDashboard": "Go to dashboard",
-    "goToLogin": "Log in",
-    "noFlow": "This link is incomplete. Sign in and request a new code from the dashboard."
   }
 }

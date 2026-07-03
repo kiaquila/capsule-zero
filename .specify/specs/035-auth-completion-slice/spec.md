@@ -36,15 +36,24 @@ no dormant plumbing and no dead-end email links remain in production.
   - AuthPanel: "Forgot password?" affordance restored; recovery mode (email →
     code + new password completion step) → auto-login → dashboard.
   - Verify-email banner for signed-in users with an unverified address:
-    code entry + resend (dashboard surface).
-  - `/[locale]/verify-email` page: landing for emailed verification links
-    (`?flow=…&code=…` auto-submit; code-entry fallback), success/error states.
+    code entry + resend, built on the shared `NotificationBanner` component
+    (the standard inline-notification surface introduced by this slice),
+    aligned with the dashboard content cards, info glyph top-right, and copy
+    that explains why verification matters (account access recovery).
+  - `/[locale]/verify-email`: silent landing for emailed verification links.
+    A custom Kratos courier template links straight here with `code+flow`;
+    the route completes the verification server-side and forwards to the
+    dashboard — no code entry, no extra screens (founder feedback, review
+    round 2). The edge keeps `/self-service/*` fully 404.
   - Profile: the mock "Change password" button becomes a real form
     (current + new password) against `POST /api/auth/password`.
   - Provider contracts + `api` and `mock` providers + server actions extended
     accordingly (mock uses the deterministic code `123456` so provider-agnostic
     e2e runs in CI without email).
-- Contract: `openapi.yaml`, `api-spec.md`, generated client, contract guard.
+- Contract: `openapi.yaml`, `api-spec.md`, generated client, contract guard;
+  machine error codes `INVALID_CODE` / `INVALID_CURRENT_PASSWORD` so the web
+  UI localizes every user-facing auth error (EN/RU) instead of echoing
+  provider English.
 - Docs actualized in the same change (ADR-002, AGENTS.md Sprint-0 row,
   backend docs, `deploy/compose.env.example` **SMTP port fix 465 → 2465** —
   Hetzner blocks outbound 25/465 platform-wide; verified live 2026-07-03).
@@ -64,12 +73,12 @@ no dormant plumbing and no dead-end email links remain in production.
 
 ## Negative scenarios (SENAR)
 
-1. Recovery completion with a wrong/expired code → `400 VALIDATION_ERROR`,
-   no session issued, password unchanged.
-2. Password change with a wrong current password → `400 VALIDATION_ERROR`
-   (generic message; no oracle beyond what login already exposes), password
-   unchanged.
+1. Recovery completion with a wrong/expired code → `400 INVALID_CODE`,
+   no session issued, password unchanged, localized message in the UI.
+2. Password change with a wrong current password → `400
+   INVALID_CURRENT_PASSWORD` (no oracle beyond what login already exposes),
+   password unchanged, localized message in the UI.
 3. Recovery/verification start for an unknown email → same success shape as
    for a known email (no account enumeration).
-4. Verification completion with a wrong code → `400 VALIDATION_ERROR`,
-   address stays unverified, banner persists.
+4. Verification completion with a wrong code → `400 INVALID_CODE`,
+   address stays unverified, banner persists with a localized error.

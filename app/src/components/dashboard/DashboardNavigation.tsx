@@ -163,6 +163,7 @@ export function DashboardNavigationFrame({
             </Link>
             <button
               className="dashboard-nav-item dashboard-nav-button"
+              data-testid="nav-sign-out"
               onClick={onSignOut}
               type="button"
             >
@@ -210,6 +211,7 @@ export function DashboardNavigationFrame({
         />
         <button
           aria-expanded={moreOpen}
+          data-testid="nav-more-toggle"
           aria-label={t("nav.more")}
           className={cn(
             "dashboard-bottom-item dashboard-bottom-button",
@@ -263,6 +265,7 @@ export function DashboardNavigationFrame({
           ))}
           <button
             className="dashboard-more-item dashboard-more-action"
+            data-testid="nav-sign-out-mobile"
             onClick={() => {
               setMoreOpen(false);
               onSignOut();

@@ -32,6 +32,14 @@ services:
       - ./infra/nginx/conf.d.dev:/etc/nginx/conf.d:ro
       - ./infra/dev-certs:/etc/nginx/certs:ro
 
+  api:
+    environment:
+      # Everything behind the dev edge shares one client address, so manual
+      # testing plus the e2e suites would exhaust the prod-strict 10/min auth
+      # bucket in a single run (spec 035). Production keeps the default.
+      API_AUTH_RATE_PER_MINUTE: "120"
+      API_AUTH_RATE_BURST: "60"
+
   web:
     environment:
       NEXT_PUBLIC_APP_URL: https://capsulezero.local
@@ -39,13 +47,16 @@ services:
   kratos:
     command: serve --config /etc/config/kratos/kratos.yml --dev --watch-courier
     # Local dev binds Kratos public to loopback so developers can inspect flows
-    # directly (matches SERVE_PUBLIC_BASE_URL below). Production never binds it to
-    # the host — see docker-compose.yml.
+    # directly. Production also publishes 4433 on loopback (spec 035) — the host
+    # edge proxies the single emailed verification-link path to it.
     ports:
       - "127.0.0.1:4433:4433"
     environment:
       COURIER_SMTP_CONNECTION_URI: smtp://mailhog:1025/?disable_starttls=true
-      SERVE_PUBLIC_BASE_URL: http://127.0.0.1:4433/
+      # Emailed verification links carry this base; pointing it at the dev edge
+      # makes link clicks traverse nginx exactly like prod (spec 035). The
+      # 127.0.0.1:4433 bind below remains for direct flow inspection.
+      SERVE_PUBLIC_BASE_URL: https://capsulezero.local/
       # Local-only Argon2 relaxation: production hashes with iterations: 2
       # (kratos.yml, OWASP t>=2); dev keeps 1 so full-stack e2e sign-up stays
       # inside its measured timings (spec 024 dead-end 2026-06-30, spec 034).

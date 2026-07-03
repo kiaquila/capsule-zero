@@ -74,13 +74,12 @@ services:
     networks: [internal]
 
   # Ory Kratos identity provider. The Go API drives Kratos over the private
-  # internal network (never the host). Kratos public (4433) is reachable only
-  # inside the compose network: it is neither bound to the host nor exposed at
-  # the nginx edge, so every auth write must go through the Go API
-  # (/api/auth/*), which owns duplicate-identifier sanitization + the auth rate
-  # limit. Recovery/verification run as code-method API flows driven entirely
-  # by the Go API (spec 035) — the edge still 404s /self-service/*. v1.3.1:
-  # native code recovery needs continue_with session hand-off (kratos.yml
+  # internal network; every auth WRITE goes through the Go API (/api/auth/*),
+  # which owns duplicate-identifier sanitization + the auth rate limit.
+  # Recovery/verification run as code-method API flows (spec 035); the emailed
+  # verification link lands on the app's /verify-email route (custom courier
+  # template), so /self-service/* stays fully 404 at the edge. v1.3.1: native
+  # code recovery needs the continue_with session hand-off (kratos.yml
   # feature_flags), which v1.1 did not support.
   kratos:
     image: oryd/kratos:v1.3.1

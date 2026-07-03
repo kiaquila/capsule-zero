@@ -1,25 +1,23 @@
 import { expect, test } from "../../fixtures/base";
+import {
+  MOCK_WRONG_CURRENT_PASSWORD,
+  PASSWORDS,
+  uniqueEmail,
+} from "../../fixtures/accounts";
 import { ProfilePage } from "../../pages/ProfilePage";
 
 /**
- * Spec 035 — password change from the profile screen (provider-agnostic).
- *
- * The former mock "Change password" button becomes a real form (current + new
- * password). Mock rules (spec 035): the sentinel current password
- * `WrongPass123` is rejected; any other current password succeeds.
+ * Profile — the "Change Password" form in Login & Security (provider-agnostic
+ * UI mechanics; the mock rejects the sentinel current password). The real
+ * credential rotation — old password stops working — is covered by
+ * profile-change-password-fullstack.spec.ts.
  */
-test.describe("Auth slice — profile password change (spec 035)", () => {
+test.describe("Profile — change password", () => {
   test.beforeEach(async ({ page, landing }) => {
     await landing.goto();
     await landing.dismissCookieBannerIfPresent();
     await landing.openAuth();
-
-    const form = landing.auth.container;
-    await form
-      .locator('input[name="email"]')
-      .fill(`e2e+pwd-${Date.now()}@example.com`);
-    await form.locator('input[name="password"]').fill("SuperSecret123");
-    await form.locator('button[type="submit"]').click();
+    await landing.auth.signIn(uniqueEmail("pwd"), PASSWORDS.initial);
     await page.waitForURL(/\/(en|ru)\/dashboard/, { timeout: 25_000 });
   });
 
@@ -31,11 +29,14 @@ test.describe("Auth slice — profile password change (spec 035)", () => {
     await profile.goto();
 
     // Negative scenario 2: wrong current password → error, form stays open.
-    await profile.changePassword("WrongPass123", "NewSecret456");
+    await profile.changePassword(
+      MOCK_WRONG_CURRENT_PASSWORD,
+      PASSWORDS.changed,
+    );
     await expect(profile.passwordError).toBeVisible();
     await expect(profile.passwordForm).toBeVisible();
 
-    await profile.currentPasswordInput.fill("SuperSecret123");
+    await profile.currentPasswordInput.fill(PASSWORDS.initial);
     await profile.passwordSubmit.click();
     await expect(profile.toast).toBeVisible();
     await expect(profile.passwordForm).toBeHidden();

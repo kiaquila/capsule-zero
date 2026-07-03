@@ -77,8 +77,9 @@ func TestRecoveryCompleteRejectsInvalidCode(t *testing.T) {
 	if recorder.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want 400", recorder.Code)
 	}
-	if body := decodeErrorBody(t, recorder); body.Error.Code != "VALIDATION_ERROR" {
-		t.Fatalf("code = %q, want VALIDATION_ERROR", body.Error.Code)
+	// Machine-readable code: the web client maps it to a localized message.
+	if body := decodeErrorBody(t, recorder); body.Error.Code != "INVALID_CODE" {
+		t.Fatalf("code = %q, want INVALID_CODE", body.Error.Code)
 	}
 }
 
@@ -139,10 +140,10 @@ func TestVerificationCompleteStatusMapping(t *testing.T) {
 	}{
 		{name: "valid code succeeds", err: nil, wantStatus: http.StatusOK},
 		{
-			name:       "invalid code is a validation error",
+			name:       "invalid code carries its machine code",
 			err:        fmt.Errorf("%w: the verification code is invalid", kratos.ErrFlowRejected),
 			wantStatus: http.StatusBadRequest,
-			wantCode:   "VALIDATION_ERROR",
+			wantCode:   "INVALID_CODE",
 		},
 		{
 			name:       "upstream failure is temporary server error",
@@ -211,8 +212,8 @@ func TestPasswordChangeRejectsWrongCurrentPassword(t *testing.T) {
 	if recorder.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want 400", recorder.Code)
 	}
-	if body := decodeErrorBody(t, recorder); body.Error.Code != "VALIDATION_ERROR" {
-		t.Fatalf("code = %q, want VALIDATION_ERROR", body.Error.Code)
+	if body := decodeErrorBody(t, recorder); body.Error.Code != "INVALID_CURRENT_PASSWORD" {
+		t.Fatalf("code = %q, want INVALID_CURRENT_PASSWORD", body.Error.Code)
 	}
 }
 

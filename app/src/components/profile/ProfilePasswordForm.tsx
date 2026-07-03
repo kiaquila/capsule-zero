@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { changePasswordAction } from "@/features/auth/actions";
+import { authErrorMessageKey } from "@/features/auth/error-codes";
 import {
   createPasswordChangeSchema,
   type PasswordChangeInput,
@@ -52,7 +53,7 @@ export function ProfilePasswordForm({ onSuccess }: ProfilePasswordFormProps) {
     const result = await changePasswordAction(values);
 
     if (!result.ok) {
-      setServerError(result.message ?? t("password.error"));
+      setServerError(auth(authErrorMessageKey(result.code)));
       return;
     }
 

@@ -5,10 +5,12 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { NotificationBanner } from "@/components/common/NotificationBanner";
 import {
   completeEmailVerificationAction,
   startEmailVerificationAction,
 } from "@/features/auth/actions";
+import { authErrorMessageKey } from "@/features/auth/error-codes";
 import {
   createVerificationCodeSchema,
   type VerificationCodeInput,
@@ -22,14 +24,15 @@ interface VerifyEmailBannerProps {
 
 /**
  * Non-blocking verify-email prompt for signed-in users with an unverified
- * address (spec 035). Glass surface + quiet completion per the design system;
- * disappears once the emailed code is confirmed.
+ * address (spec 035), composed on the standard NotificationBanner surface.
+ * Disappears once the emailed code is confirmed.
  */
 export function VerifyEmailBanner({
   email,
   initialFlowId,
 }: VerifyEmailBannerProps) {
   const t = useTranslations("verifyEmail");
+  const auth = useTranslations("auth");
   const router = useRouter();
   const [flowId, setFlowId] = useState(initialFlowId ?? "");
   const [status, setStatus] = useState<{
@@ -58,7 +61,7 @@ export function VerifyEmailBanner({
     setStatus(null);
     const result = await startEmailVerificationAction({ email });
     if (!result.ok || !result.flowId) {
-      setStatus({ text: result.message ?? t("error"), kind: "error" });
+      setStatus({ text: auth(authErrorMessageKey(result.code)), kind: "error" });
       return;
     }
     setFlowId(result.flowId);
@@ -78,7 +81,7 @@ export function VerifyEmailBanner({
       flowId,
     });
     if (!result.ok) {
-      setStatus({ text: result.message ?? t("error"), kind: "error" });
+      setStatus({ text: auth(authErrorMessageKey(result.code)), kind: "error" });
       return;
     }
     setVerified(true);
@@ -90,14 +93,11 @@ export function VerifyEmailBanner({
   }
 
   return (
-    <section
-      className="dashboard-glass verify-email-banner"
-      data-testid="verify-email-banner"
+    <NotificationBanner
+      description={t("hint", { email })}
+      testId="verify-email-banner"
+      title={t("title")}
     >
-      <div className="verify-email-copy">
-        <h2>{t("title")}</h2>
-        <p>{t("hint", { email })}</p>
-      </div>
       <form className="verify-email-form" noValidate onSubmit={submit}>
         <input
           aria-invalid={Boolean(form.formState.errors.code)}
@@ -139,6 +139,6 @@ export function VerifyEmailBanner({
           {form.formState.errors.code?.message ?? status?.text}
         </p>
       ) : null}
-    </section>
+    </NotificationBanner>
   );
 }

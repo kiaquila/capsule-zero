@@ -141,3 +141,16 @@ courier:
     connection_uri: smtp://mailhog:1025/?disable_starttls=true
     from_address: no-reply@capsulezero.app
     from_name: Capsule Zero
+  templates:
+    # Custom verification email (spec 035): the emailed link must land on the
+    # app's silent /verify-email route carrying code+flow — Kratos's default
+    # link points at its own public GET, which does NOT consume the code (it
+    # expects an auto-submitting UI) and is not exposed at our edge. The
+    # template rewrites only the path; the origin comes from
+    # SERVE_PUBLIC_BASE_URL, which points at the app origin in every env.
+    verification_code:
+      valid:
+        email:
+          body:
+            html: file:///etc/config/kratos/templates/verification_code.valid.email.body.gotmpl
+            plaintext: file:///etc/config/kratos/templates/verification_code.valid.email.body.plaintext.gotmpl

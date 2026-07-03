@@ -12,7 +12,9 @@ import {
   requestPasswordRecoveryAction,
   signInWithPasswordAction,
   signUpWithPasswordAction,
+  type AuthActionResult,
 } from "@/features/auth/actions";
+import { authErrorMessageKey } from "@/features/auth/error-codes";
 import {
   createRecoveryCompleteSchema,
   createRecoverySchema,
@@ -147,6 +149,10 @@ export function AuthPanel({
   const showError = (text: string) =>
     setServerMessage({ text, kind: "error" });
   const showInfo = (text: string) => setServerMessage({ text, kind: "info" });
+  // Every server-side failure is shown through the localized code map — raw
+  // provider text never reaches the user (spec 035 review round 2).
+  const showFailure = (result: AuthActionResult) =>
+    showError(t(authErrorMessageKey(result.code)));
 
   const redirectToDashboard = () => {
     showInfo(t("successRedirect"));
@@ -159,7 +165,7 @@ export function AuthPanel({
     const result = await signInWithPasswordAction(values);
 
     if (!result.ok) {
-      showError(result.message ?? t("enterPassword"));
+      showFailure(result);
       return;
     }
 
@@ -171,7 +177,7 @@ export function AuthPanel({
     const result = await requestPasswordRecoveryAction(values);
 
     if (!result.ok || !result.flowId) {
-      showError(result.message ?? t("invalidEmail"));
+      showFailure(result);
       return;
     }
 
@@ -190,7 +196,7 @@ export function AuthPanel({
       });
 
       if (!result.ok) {
-        showError(result.message ?? t("invalidCode"));
+        showFailure(result);
         return;
       }
 
@@ -208,7 +214,7 @@ export function AuthPanel({
       email: recoveryEmail,
     });
     if (!result.ok || !result.flowId) {
-      showError(result.message ?? t("invalidEmail"));
+      showFailure(result);
       return;
     }
     setRecoveryFlowId(result.flowId);
@@ -220,7 +226,7 @@ export function AuthPanel({
     const result = await signUpWithPasswordAction({ ...values, locale });
 
     if (!result.ok) {
-      showError(result.message ?? t("weakPassword"));
+      showFailure(result);
       return;
     }
 
@@ -292,7 +298,15 @@ export function AuthPanel({
             <button
               data-testid="auth-forgot-link"
               type="button"
-              onClick={() => switchMode("recovery")}
+              onClick={() => {
+                const typedEmail = signInForm.getValues("email").trim();
+                if (typedEmail) {
+                  recoveryForm.setValue("email", typedEmail, {
+                    shouldValidate: true,
+                  });
+                }
+                switchMode("recovery");
+              }}
             >
               {t("forgotPassword")}
             </button>
@@ -398,9 +412,15 @@ export function AuthPanel({
               : t("resetCta")}
           </button>
           <p className="auth-switch-link">
-            <button type="button" onClick={resendRecoveryCode}>
+            <button
+              data-testid="recovery-resend"
+              type="button"
+              onClick={resendRecoveryCode}
+            >
               {t("resendCode")}
-            </button>{" "}
+            </button>
+          </p>
+          <p className="auth-switch-link">
             <button type="button" onClick={() => switchMode("signIn")}>
               {t("backToLogin")}
             </button>

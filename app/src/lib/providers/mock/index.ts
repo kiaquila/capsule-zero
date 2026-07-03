@@ -519,7 +519,7 @@ export function createMockProviderRegistry(
       async completePasswordRecovery(completion) {
         if (completion.code !== MOCK_ONE_TIME_CODE) {
           throw new Error(
-            "RECOVERY_FAILED: The recovery code is invalid or has expired.",
+            "INVALID_CODE: The recovery code is invalid or has expired.",
           );
         }
         const timestamp = now();
@@ -535,7 +535,7 @@ export function createMockProviderRegistry(
       async completeEmailVerification(completion) {
         if (completion.code !== MOCK_ONE_TIME_CODE) {
           throw new Error(
-            "VERIFICATION_FAILED: The verification code is invalid or has expired.",
+            "INVALID_CODE: The verification code is invalid or has expired.",
           );
         }
         if (currentSession) {
@@ -548,7 +548,7 @@ export function createMockProviderRegistry(
         // is always rejected so the negative e2e path stays testable.
         if (change.currentPassword === MOCK_WRONG_CURRENT_PASSWORD) {
           throw new Error(
-            "PASSWORD_CHANGE_FAILED: Current password is incorrect.",
+            "INVALID_CURRENT_PASSWORD: Current password is incorrect.",
           );
         }
       },

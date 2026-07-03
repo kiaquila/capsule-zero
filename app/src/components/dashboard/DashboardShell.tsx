@@ -63,14 +63,13 @@ export function DashboardShell({
           </div>
         </header>
 
-        {verifyEmail ? (
-          <VerifyEmailBanner
-            email={verifyEmail.email}
-            initialFlowId={verifyEmail.flowId}
-          />
-        ) : null}
-
         <div className="dashboard-content">
+          {verifyEmail ? (
+            <VerifyEmailBanner
+              email={verifyEmail.email}
+              initialFlowId={verifyEmail.flowId}
+            />
+          ) : null}
           {snapshot.activeCapsule ? (
             <section className="dashboard-glass dashboard-capsule-card">
               <div className="dashboard-capsule-body">

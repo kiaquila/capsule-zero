@@ -117,6 +117,8 @@ Every REST operation returns the common `ErrorResponse` shape for failures. The 
 | HTTP | `ErrorResponse.error.code`   | Meaning                                                                                                    |
 | ---: | ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
 |  400 | `VALIDATION_ERROR`           | Request syntax, shape, enum, file metadata, or query validation failed                                     |
+|  400 | `INVALID_CODE`               | Recovery/verification one-time code is wrong, expired, or already used (spec 035)                          |
+|  400 | `INVALID_CURRENT_PASSWORD`   | Password change rejected because the presented current password is wrong (spec 035)                        |
 |  401 | `UNAUTHENTICATED`            | Kratos session is missing, expired, or invalid                                                             |
 |  402 | `INSUFFICIENT_BALANCE`       | Coin balance is too low for a paid action                                                                  |
 |  403 | `FORBIDDEN`                  | User is authenticated but cannot access the resource or webhook key is invalid                             |
