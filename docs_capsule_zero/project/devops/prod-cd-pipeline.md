@@ -170,9 +170,18 @@ written straight into the env file — it never leaves the box.
 
 ```bash
 cd /opt/capsule-zero
+# prod must never host-build (CI-provenance only): capture the CD-pinned api image now,
+# before any restart. docker-compose.yml's api service is
+# `image: ${CAPSULE_API_IMAGE:-capsule-zero-api:local}` with a build: fallback, so a plain
+# `up -d api` without CAPSULE_API_IMAGE would compile the image on the host.
+# `-a` so a stopped/exited api container still resolves; abort rather than fall through
+# to the local build tag if no pinned image is found.
+PIN="$(docker compose -p capsule-zero ps -a --format '{{.Image}}' api)"
+case "$PIN" in ""|capsule-zero-api:local) echo "abort: no CD-pinned api image found (would host-build)"; exit 1;; esac
+cp .env ".env.bak.pre-034-role-$(date -u +%Y%m%dT%H%M%SZ)"   # rollback safety
 APP_PW="$(openssl rand -hex 24)"
 docker compose --env-file .env -p capsule-zero exec -T postgres \
-  psql -U "$(grep ^POSTGRES_USER .env | cut -d= -f2)" -d capsule_zero \
+  psql -v ON_ERROR_STOP=1 -U "$(grep ^POSTGRES_USER .env | cut -d= -f2)" -d capsule_zero \
        -v app_pw="$APP_PW" <<'EOSQL'
 SELECT format('CREATE ROLE capsule_app LOGIN PASSWORD %L', :'app_pw')
   WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'capsule_app')\gexec
@@ -184,14 +193,25 @@ ALTER TABLE schema_migrations OWNER TO capsule_app;
 REVOKE CONNECT ON DATABASE kratos FROM PUBLIC;
 REVOKE CONNECT ON DATABASE capsule_zero FROM PUBLIC;
 EOSQL
-# swap the API DSN to the new role (keep the old line commented for rollback):
+# swap the API DSN to the new role (restore the .env backup above to roll back):
 sed -i "s|^API_DATABASE_URL=.*|API_DATABASE_URL=postgres://capsule_app:${APP_PW}@postgres:5432/capsule_zero?sslmode=disable|" .env
 unset APP_PW
-docker compose --env-file .env -p capsule-zero -f docker-compose.yml up -d api
+# recreate api on the SAME pinned image — --no-build keeps CI provenance and avoids the host build:
+CAPSULE_API_IMAGE="$PIN" docker compose --env-file .env -p capsule-zero -f docker-compose.yml up -d --no-build api
 curl -fsS https://capsulezero.app/api/health && echo api-ok
 ```
 
-Rollback: restore the previous `API_DATABASE_URL` (superuser) line and `up -d api`.
+Rollback: restore the `.env` backup (`.env.bak.pre-034-role-*`) and recreate api on the
+pinned image. Capture it with `ps -a` — in the rollback path the api container has usually
+**exited** (the bad DSN killed it), and plain `docker compose ps` lists only running
+containers, so it would return an empty `PIN` that falls through to the `capsule-zero-api:local`
+build tag exactly when recovery is needed:
+
+```bash
+PIN="$(docker compose -p capsule-zero ps -a --format '{{.Image}}' api)"
+case "$PIN" in ""|capsule-zero-api:local) echo "abort: no CD-pinned api image found"; exit 1;; esac
+CAPSULE_API_IMAGE="$PIN" docker compose --env-file .env -p capsule-zero -f docker-compose.yml up -d --no-build api
+```
 Migration files from `0002` on must stay runnable by this non-superuser owner role —
 plain DDL on owned objects only (`pgcrypto` is a trusted extension in PG16, so its
 `IF NOT EXISTS` re-run is safe).
