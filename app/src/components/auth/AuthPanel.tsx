@@ -4,25 +4,42 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, type CSSProperties } from "react";
-import { useForm, type UseFormRegisterReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
+  completePasswordRecoveryAction,
+  requestPasswordRecoveryAction,
   signInWithPasswordAction,
   signUpWithPasswordAction,
 } from "@/features/auth/actions";
 import {
+  createRecoveryCompleteSchema,
+  createRecoverySchema,
   createSignInSchema,
   createSignUpSchema,
+  type RecoveryInput,
   type SignInInput,
   type SignUpInput,
 } from "@/features/auth/schemas";
+import { AuthField } from "./AuthField";
 
-// Password recovery / email verification are deferred to a dedicated slice that
-// ships the flow-aware completion UI; the auth panel intentionally exposes only
-// sign-in and sign-up here. The recovery action/schema/provider plumbing stays
-// in place for that follow-up. See tasks.md Process Memory (spec 024).
-type AuthMode = "signIn" | "signUp";
+// Auth modes include the spec-035 recovery pair: "recovery" asks for the email
+// and sends a one-time code; "recoveryCode" completes the reset (code + new
+// password) against the flow the code is bound to, then auto-logs-in.
+type AuthMode = "signIn" | "signUp" | "recovery" | "recoveryCode";
+
+// Fields the user types on the completion step; the flow id lives in state.
+interface RecoveryCompleteFields {
+  code: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface RecoveryDeepLink {
+  flowId: string;
+  code?: string;
+}
 
 const elevatedGlassStyle = {
   backdropFilter: "blur(64px) saturate(118%)",
@@ -31,12 +48,15 @@ const elevatedGlassStyle = {
 
 interface AuthPanelProps {
   initialMode?: AuthMode;
+  /** Pre-bound recovery flow from an emailed link (/auth?flow=…&code=…). */
+  initialRecovery?: RecoveryDeepLink;
   onClose?: () => void;
   variant?: "popup" | "standalone";
 }
 
 export function AuthPanel({
   initialMode = "signIn",
+  initialRecovery,
   onClose,
   variant = "standalone",
 }: AuthPanelProps) {
@@ -44,7 +64,13 @@ export function AuthPanel({
   const locale = useLocale();
   const t = useTranslations("auth");
   const landing = useTranslations("landing");
-  const [mode, setMode] = useState<AuthMode>(initialMode);
+  const [mode, setMode] = useState<AuthMode>(
+    initialRecovery ? "recoveryCode" : initialMode,
+  );
+  const [recoveryFlowId, setRecoveryFlowId] = useState(
+    initialRecovery?.flowId ?? "",
+  );
+  const [recoveryEmail, setRecoveryEmail] = useState("");
   const [serverMessage, setServerMessage] = useState<{
     text: string;
     kind: "error" | "info";
@@ -57,6 +83,7 @@ export function AuthPanel({
       invalidEmail: t("invalidEmail"),
       weakPassword: t("weakPassword"),
       passwordsMismatch: t("passwordsMismatch"),
+      invalidCode: t("invalidCode"),
     }),
     [t],
   );
@@ -90,6 +117,28 @@ export function AuthPanel({
       city: "",
     },
   });
+  const recoverySchema = useMemo(
+    () => createRecoverySchema(validationMessages),
+    [validationMessages],
+  );
+  const recoveryCompleteSchema = useMemo(
+    () => createRecoveryCompleteSchema(validationMessages),
+    [validationMessages],
+  );
+  const recoveryForm = useForm<RecoveryInput>({
+    resolver: zodResolver(recoverySchema),
+    mode: "onChange",
+    defaultValues: { email: "" },
+  });
+  const recoveryCompleteForm = useForm<RecoveryCompleteFields>({
+    resolver: zodResolver(recoveryCompleteSchema),
+    mode: "onChange",
+    defaultValues: {
+      code: initialRecovery?.code ?? "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
   const switchMode = (nextMode: AuthMode) => {
     setMode(nextMode);
     setServerMessage(null);
@@ -116,6 +165,55 @@ export function AuthPanel({
 
     redirectToDashboard();
   });
+
+  const onRecoveryRequest = recoveryForm.handleSubmit(async (values) => {
+    setServerMessage(null);
+    const result = await requestPasswordRecoveryAction(values);
+
+    if (!result.ok || !result.flowId) {
+      showError(result.message ?? t("invalidEmail"));
+      return;
+    }
+
+    setRecoveryFlowId(result.flowId);
+    setRecoveryEmail(values.email);
+    setMode("recoveryCode");
+    showInfo(t("recoverySent"));
+  });
+
+  const onRecoveryComplete = recoveryCompleteForm.handleSubmit(
+    async (values) => {
+      setServerMessage(null);
+      const result = await completePasswordRecoveryAction({
+        ...values,
+        flowId: recoveryFlowId,
+      });
+
+      if (!result.ok) {
+        showError(result.message ?? t("invalidCode"));
+        return;
+      }
+
+      redirectToDashboard();
+    },
+  );
+
+  const resendRecoveryCode = async () => {
+    if (!recoveryEmail) {
+      switchMode("recovery");
+      return;
+    }
+    setServerMessage(null);
+    const result = await requestPasswordRecoveryAction({
+      email: recoveryEmail,
+    });
+    if (!result.ok || !result.flowId) {
+      showError(result.message ?? t("invalidEmail"));
+      return;
+    }
+    setRecoveryFlowId(result.flowId);
+    showInfo(t("recoverySent"));
+  };
 
   const onSignUp = signUpForm.handleSubmit(async (values) => {
     setServerMessage(null);
@@ -144,7 +242,7 @@ export function AuthPanel({
       </button>
     ) : (
       <button className="auth-mode-switch" type="button" onClick={() => switchMode("signIn")}>
-        {t("logInTab")}
+        {mode === "signUp" ? t("logInTab") : t("backToLogin")}
       </button>
     );
 
@@ -190,6 +288,15 @@ export function AuthPanel({
             }}
             type={passwordVisible ? "text" : "password"}
           />
+          <div className="auth-forgot-row">
+            <button
+              data-testid="auth-forgot-link"
+              type="button"
+              onClick={() => switchMode("recovery")}
+            >
+              {t("forgotPassword")}
+            </button>
+          </div>
           <button
             className="auth-primary"
             disabled={signInForm.formState.isSubmitting}
@@ -201,6 +308,101 @@ export function AuthPanel({
             {t("signInLinkPrefix")}{" "}
             <button type="button" onClick={() => switchMode("signUp")}>
               {t("signInLinkAction")}
+            </button>
+          </p>
+        </form>
+      ) : null}
+
+      {mode === "recovery" ? (
+        <form noValidate onSubmit={onRecoveryRequest}>
+          <h2 className="auth-recovery-title">{t("recoveryTitle")}</h2>
+          <p className="auth-recovery-hint">{t("recoveryHint")}</p>
+          <AuthField
+            autoComplete="email"
+            error={recoveryForm.formState.errors.email?.message}
+            inputMode="email"
+            name="recoveryEmail"
+            placeholder={t("email")}
+            register={recoveryForm.register("email")}
+            testId="recovery-email-input"
+            type="email"
+          />
+          <button
+            className="auth-primary"
+            data-testid="recovery-submit"
+            disabled={recoveryForm.formState.isSubmitting}
+            type="submit"
+          >
+            {recoveryForm.formState.isSubmitting ? t("sending") : t("recoveryCta")}
+          </button>
+          <p className="auth-switch-link">
+            <button type="button" onClick={() => switchMode("signIn")}>
+              {t("backToLogin")}
+            </button>
+          </p>
+        </form>
+      ) : null}
+
+      {mode === "recoveryCode" ? (
+        <form noValidate onSubmit={onRecoveryComplete}>
+          <h2 className="auth-recovery-title">{t("recoveryTitle")}</h2>
+          <p className="auth-recovery-hint">{t("recoveryCodeHint")}</p>
+          <AuthField
+            autoComplete="one-time-code"
+            error={recoveryCompleteForm.formState.errors.code?.message}
+            inputMode="numeric"
+            name="recoveryCode"
+            placeholder={t("codePlaceholder")}
+            register={recoveryCompleteForm.register("code")}
+            testId="recovery-code-input"
+            type="text"
+          />
+          <AuthField
+            autoComplete="new-password"
+            error={recoveryCompleteForm.formState.errors.newPassword?.message}
+            name="recoveryNewPassword"
+            placeholder={t("newPassword")}
+            register={recoveryCompleteForm.register("newPassword")}
+            reveal={{
+              visible: passwordVisible,
+              toggle: () => setPasswordVisible((value) => !value),
+              label: passwordVisible ? t("hidePassword") : t("showPassword"),
+            }}
+            testId="recovery-new-password-input"
+            type={passwordVisible ? "text" : "password"}
+          />
+          <AuthField
+            autoComplete="new-password"
+            error={
+              recoveryCompleteForm.formState.errors.confirmPassword?.message
+            }
+            name="recoveryConfirmPassword"
+            placeholder={t("confirmPassword")}
+            register={recoveryCompleteForm.register("confirmPassword")}
+            reveal={{
+              visible: confirmVisible,
+              toggle: () => setConfirmVisible((value) => !value),
+              label: confirmVisible ? t("hidePassword") : t("showPassword"),
+            }}
+            testId="recovery-confirm-password-input"
+            type={confirmVisible ? "text" : "password"}
+          />
+          <button
+            className="auth-primary"
+            data-testid="recovery-submit"
+            disabled={recoveryCompleteForm.formState.isSubmitting}
+            type="submit"
+          >
+            {recoveryCompleteForm.formState.isSubmitting
+              ? t("resetting")
+              : t("resetCta")}
+          </button>
+          <p className="auth-switch-link">
+            <button type="button" onClick={resendRecoveryCode}>
+              {t("resendCode")}
+            </button>{" "}
+            <button type="button" onClick={() => switchMode("signIn")}>
+              {t("backToLogin")}
             </button>
           </p>
         </form>
@@ -306,96 +508,5 @@ export function AuthPanel({
         <Link href="/privacy-policy">{landing("privacy")}</Link>
       </p>
     </section>
-  );
-}
-
-interface AuthFieldProps {
-  autoComplete: string;
-  error?: string;
-  inputMode?: "email";
-  name: string;
-  placeholder: string;
-  register: UseFormRegisterReturn;
-  reveal?: {
-    visible: boolean;
-    toggle: () => void;
-    label: string;
-  };
-  type: string;
-}
-
-function AuthField({
-  autoComplete,
-  error,
-  inputMode,
-  name,
-  placeholder,
-  register,
-  reveal,
-  type,
-}: AuthFieldProps) {
-  return (
-    <div className="auth-field">
-      <div className="auth-field-wrap">
-        <input
-          aria-invalid={Boolean(error)}
-          autoComplete={autoComplete}
-          className={cn("auth-input", error && "auth-input-error", reveal && "auth-input-with-reveal")}
-          id={name}
-          inputMode={inputMode}
-          placeholder={placeholder}
-          type={type}
-          {...register}
-        />
-        {reveal ? (
-          <button
-            aria-label={reveal.label}
-            className="auth-eye"
-            onClick={reveal.toggle}
-            type="button"
-          >
-            <EyeIcon hidden={reveal.visible} />
-          </button>
-        ) : null}
-      </div>
-      <p className={cn("auth-field-message", error && "auth-field-message-error")}>
-        {error ?? ""}
-      </p>
-    </div>
-  );
-}
-
-function EyeIcon({ hidden }: { hidden: boolean }) {
-  if (hidden) {
-    return (
-      <svg aria-hidden="true" fill="none" height="16" viewBox="0 0 24 24" width="16">
-        <path
-          d="M17.94 17.94A10.1 10.1 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 0 1-4.24-4.24M1 1l22 22"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-        />
-      </svg>
-    );
-  }
-
-  return (
-    <svg aria-hidden="true" fill="none" height="16" viewBox="0 0 24 24" width="16">
-      <path
-        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12Z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.5"
-      />
-      <path
-        d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.5"
-      />
-    </svg>
   );
 }

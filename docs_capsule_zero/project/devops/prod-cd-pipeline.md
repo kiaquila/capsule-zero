@@ -111,9 +111,10 @@ echo "<read:packages token>" | docker login ghcr.io -u kiaquila --password-stdin
 Create `/opt/capsule-zero/.env` (root-owned, mode 600) from the
 `deploy/compose.env.example` contract with real random secrets (`openssl rand -hex 24` for
 passwords; `SECRETS_CIPHER_0` must be exactly 32 characters — `openssl rand -hex 16`).
-Note: until Resend is configured, `KRATOS_SMTP_CONNECTION_URI` holds a syntactically valid
-placeholder — safe because the recovery/verification flows are disabled this slice, so the
-courier never sends (tracked in spec 033 Known Issues).
+Note: `KRATOS_SMTP_CONNECTION_URI` carries the real Resend sending key since 2026-07-03
+(`smtps://resend:<key>@smtp.resend.com:2465/`). Port 2465, NOT 465 — Hetzner Cloud blocks
+outbound 25/465 platform-wide; 587/2465/2587 are open (SMTP AUTH verified from the host).
+The recovery/verification code emails depend on it (spec 035).
 
 ### 4. TLS certificate + host nginx
 

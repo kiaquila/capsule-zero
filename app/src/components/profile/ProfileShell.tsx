@@ -10,6 +10,7 @@ import { DashboardNavigationFrame } from "@/components/dashboard/DashboardNaviga
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { signOutAction } from "@/features/auth/actions";
 import { saveProfileAction } from "@/features/profile/actions";
+import { ProfilePasswordForm } from "./ProfilePasswordForm";
 import {
   createProfileFormSchema,
   type ProfileFormInput,
@@ -446,13 +447,7 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
 
             <div className="profile-security-block">
               <h3>{t("password.title")}</h3>
-              <button
-                className="profile-ghost-button"
-                onClick={() => setNotice(t("notice.passwordMock"))}
-                type="button"
-              >
-                {t("buttons.changePassword")}
-              </button>
+              <ProfilePasswordForm onSuccess={setNotice} />
             </div>
           </section>
 
@@ -523,17 +518,19 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
   );
 }
 
-function ProfileTextField({
+export function ProfileTextField({
   error,
   label,
   placeholder,
   registration,
+  testId,
   type = "text",
 }: {
   error?: string;
   label: string;
   placeholder?: string;
   registration: UseFormRegisterReturn;
+  testId?: string;
   type?: string;
 }) {
   return (
@@ -542,6 +539,7 @@ function ProfileTextField({
       <input
         aria-invalid={Boolean(error)}
         className={cn("profile-input", error && "profile-input-error")}
+        data-testid={testId}
         placeholder={placeholder}
         type={type}
         {...registration}

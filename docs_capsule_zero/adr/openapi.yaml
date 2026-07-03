@@ -233,7 +233,7 @@ components:
           type: string
     AuthUser:
       type: object
-      required: [id, email, createdAt]
+      required: [id, email, emailVerified, createdAt]
       properties:
         id:
           type: string
@@ -247,6 +247,11 @@ components:
           type: string
         location:
           $ref: "#/components/schemas/AuthLocation"
+        emailVerified:
+          type: boolean
+          description: >-
+            Whether every verifiable address on the identity is confirmed. The
+            web app shows the verify-email banner while false.
         createdAt:
           type: string
           format: date-time
@@ -271,6 +276,12 @@ components:
           $ref: "#/components/schemas/Profile"
         requiresEmailConfirmation:
           type: boolean
+        verificationFlowId:
+          type: string
+          description: >-
+            Present on registration when Kratos started an email verification
+            flow for the new address; the emailed code must be submitted
+            against this flow via /api/auth/verification/complete.
     AuthRegistrationRequest:
       type: object
       required: [email, password]
@@ -305,7 +316,7 @@ components:
           format: email
     AuthRecoveryResponse:
       type: object
-      required: [delivery, email]
+      required: [delivery, email, flowId]
       properties:
         delivery:
           type: string
@@ -313,6 +324,64 @@ components:
         email:
           type: string
           format: email
+        flowId:
+          type: string
+          description: >-
+            Kratos flow the emailed one-time code is bound to; completion must
+            submit the code against this flow.
+    AuthRecoveryCompleteRequest:
+      type: object
+      required: [flowId, code, newPassword]
+      properties:
+        flowId:
+          type: string
+        code:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+    AuthVerificationRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+    AuthVerificationResponse:
+      type: object
+      required: [delivery, email, flowId]
+      properties:
+        delivery:
+          type: string
+          enum: [email]
+        email:
+          type: string
+          format: email
+        flowId:
+          type: string
+    AuthVerificationCompleteRequest:
+      type: object
+      required: [flowId, code]
+      properties:
+        flowId:
+          type: string
+        code:
+          type: string
+    AuthPasswordChangeRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+    AuthOkResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
     AuthLogoutResponse:
       type: object
       required: [ok]
@@ -1000,16 +1069,11 @@ paths:
       operationId: requestPasswordRecovery
       x-auth: public
       security: []
-      deprecated: true
-      summary: "Deferred: start password recovery without revealing whether the account exists."
+      summary: Start code-method password recovery without revealing whether the account exists.
       description: >-
-        Dormant in the Phase 2 auth slice: the backing Kratos recovery flow is
-        disabled (infra/kratos/kratos.yml) because the web UI has no flow-aware
-        completion step yet, so calls currently fail with 502 INTERNAL_ERROR
-        instead of the documented 200 acceptance. The operation stays in the
-        contract for the dedicated recovery/verification slice, which
-        re-enables the flow and ships the completion UI; it is marked
-        deprecated until then so generated clients discourage use.
+        Sends a one-time recovery code by email (Kratos code method, spec 035)
+        and returns the flow the code is bound to. The response shape is
+        identical for known and unknown addresses.
       requestBody:
         required: true
         content:
@@ -1025,6 +1089,111 @@ paths:
                 $ref: "#/components/schemas/AuthRecoveryResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+  /api/auth/recovery/complete:
+    post:
+      tags: [Auth]
+      operationId: completePasswordRecovery
+      x-auth: public
+      security: []
+      summary: Exchange the emailed recovery code for a new password and a session.
+      description: >-
+        Submits the one-time code against its flow, sets the new password, and
+        signs the user in (spec 035). A wrong or expired code is a validation
+        error and never issues a session.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRecoveryCompleteRequest"
+      responses:
+        "200":
+          description: Password replaced; authenticated session returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+  /api/auth/verification:
+    post:
+      tags: [Auth]
+      operationId: startEmailVerification
+      x-auth: public
+      security: []
+      summary: Start or resend a code-method email verification without revealing whether the account exists.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthVerificationRequest"
+      responses:
+        "200":
+          description: Verification request accepted for email delivery.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthVerificationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+  /api/auth/verification/complete:
+    post:
+      tags: [Auth]
+      operationId: completeEmailVerification
+      x-auth: public
+      security: []
+      summary: Confirm the email address with the emailed verification code.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthVerificationCompleteRequest"
+      responses:
+        "200":
+          description: Address verified.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthOkResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+  /api/auth/password:
+    post:
+      tags: [Auth]
+      operationId: changePassword
+      x-auth: session
+      summary: Change the password of the signed-in user (current password required).
+      description: >-
+        Verifies the current password by re-authenticating (which also mints
+        the privileged session Kratos requires) before setting the new one
+        via the settings flow (spec 035).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthPasswordChangeRequest"
+      responses:
+        "200":
+          description: Password changed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthOkResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "502":
           $ref: "#/components/responses/BadGateway"
   /api/auth/logout:

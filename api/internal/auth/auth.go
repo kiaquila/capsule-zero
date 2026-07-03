@@ -23,6 +23,11 @@ const maxProfileFieldRunes = 80
 // maxAvatarURLRunes mirrors the ProfileUpdateRequest avatarUrl maxLength.
 const maxAvatarURLRunes = 2048
 
+// minPasswordRunes mirrors the web Zod schema and kratos.yml
+// min_password_length so a policy rejection is caught before the Kratos
+// round-trip.
+const minPasswordRunes = 8
+
 type ctxKey int
 
 const sessionTokenKey ctxKey = iota
@@ -31,7 +36,11 @@ type identityClient interface {
 	Register(context.Context, string, string, string, string) (*kratos.Session, error)
 	Login(context.Context, string, string) (*kratos.Session, error)
 	WhoAmI(context.Context, string) (*kratos.Session, error)
-	Recovery(context.Context, string) error
+	RecoveryStart(context.Context, string) (string, error)
+	RecoveryComplete(ctx context.Context, flowID, code, newPassword string) (*kratos.Session, error)
+	VerificationStart(context.Context, string) (string, error)
+	VerificationComplete(ctx context.Context, flowID, code string) error
+	SettingsPassword(ctx context.Context, token, newPassword string) error
 	Logout(context.Context, string) error
 }
 
@@ -49,12 +58,13 @@ type locationDTO struct {
 }
 
 type userDTO struct {
-	ID        string       `json:"id"`
-	Email     string       `json:"email"`
-	Name      string       `json:"name,omitempty"`
-	AvatarURL string       `json:"avatarUrl,omitempty"`
-	Location  *locationDTO `json:"location,omitempty"`
-	CreatedAt time.Time    `json:"createdAt"`
+	ID            string       `json:"id"`
+	Email         string       `json:"email"`
+	Name          string       `json:"name,omitempty"`
+	AvatarURL     string       `json:"avatarUrl,omitempty"`
+	Location      *locationDTO `json:"location,omitempty"`
+	EmailVerified bool         `json:"emailVerified"`
+	CreatedAt     time.Time    `json:"createdAt"`
 }
 
 type sessionDTO struct {
@@ -67,6 +77,9 @@ type authResponse struct {
 	User                      *userDTO          `json:"user,omitempty"`
 	Profile                   *profiles.Profile `json:"profile,omitempty"`
 	RequiresEmailConfirmation bool              `json:"requiresEmailConfirmation"`
+	// VerificationFlowID carries the after-sign-up email verification flow so
+	// the web banner can submit the emailed code against the right flow.
+	VerificationFlowID string `json:"verificationFlowId,omitempty"`
 }
 
 // --- Handlers ---
@@ -176,7 +189,8 @@ func (h *Handler) WhoAmI(w http.ResponseWriter, r *http.Request) {
 	h.respondWithSession(w, r.Context(), session)
 }
 
-// Recovery: POST /api/auth/recovery
+// Recovery: POST /api/auth/recovery — starts a code-method recovery flow and
+// returns the flow id the completion call must reference.
 func (h *Handler) Recovery(w http.ResponseWriter, r *http.Request) {
 	var in struct {
 		Email string `json:"email"`
@@ -186,11 +200,152 @@ func (h *Handler) Recovery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Never reveal whether the address exists.
-	if err := h.Kratos.Recovery(r.Context(), in.Email); err != nil {
+	flowID, err := h.Kratos.RecoveryStart(r.Context(), in.Email)
+	if err != nil {
 		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Password recovery is temporarily unavailable.")
 		return
 	}
-	httpx.WriteJSON(w, http.StatusOK, map[string]any{"delivery": "email", "email": in.Email})
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+		"delivery": "email",
+		"email":    in.Email,
+		"flowId":   flowID,
+	})
+}
+
+// RecoveryComplete: POST /api/auth/recovery/complete — exchanges the emailed
+// code for a session, sets the new password, and signs the user in.
+func (h *Handler) RecoveryComplete(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		FlowID      string `json:"flowId"`
+		Code        string `json:"code"`
+		NewPassword string `json:"newPassword"`
+	}
+	if err := httpx.DecodeJSON(r, &in); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Malformed request body.")
+		return
+	}
+	if in.FlowID == "" || in.Code == "" {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Recovery code and flow are required.")
+		return
+	}
+	if utf8.RuneCountInString(in.NewPassword) < minPasswordRunes {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Password must be at least 8 characters.")
+		return
+	}
+
+	session, err := h.Kratos.RecoveryComplete(r.Context(), in.FlowID, in.Code, in.NewPassword)
+	if err != nil {
+		if errors.Is(err, kratos.ErrFlowRejected) {
+			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err))
+			return
+		}
+		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Password recovery is temporarily unavailable.")
+		return
+	}
+
+	h.respondWithSession(w, r.Context(), session)
+}
+
+// VerificationStart: POST /api/auth/verification — starts (or resends) a
+// code-method email verification flow.
+func (h *Handler) VerificationStart(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		Email string `json:"email"`
+	}
+	if err := httpx.DecodeJSON(r, &in); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Malformed request body.")
+		return
+	}
+	// Same enumeration-safe posture as recovery.
+	flowID, err := h.Kratos.VerificationStart(r.Context(), in.Email)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Email verification is temporarily unavailable.")
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+		"delivery": "email",
+		"email":    in.Email,
+		"flowId":   flowID,
+	})
+}
+
+// VerificationComplete: POST /api/auth/verification/complete
+func (h *Handler) VerificationComplete(w http.ResponseWriter, r *http.Request) {
+	var in struct {
+		FlowID string `json:"flowId"`
+		Code   string `json:"code"`
+	}
+	if err := httpx.DecodeJSON(r, &in); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Malformed request body.")
+		return
+	}
+	if in.FlowID == "" || in.Code == "" {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Verification code and flow are required.")
+		return
+	}
+	if err := h.Kratos.VerificationComplete(r.Context(), in.FlowID, in.Code); err != nil {
+		if errors.Is(err, kratos.ErrFlowRejected) {
+			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err))
+			return
+		}
+		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Email verification is temporarily unavailable.")
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
+}
+
+// ChangePassword: POST /api/auth/password — requires a session and the current
+// password. Re-authenticating mints a fresh privileged session, so the change
+// works regardless of how old the presented session is, and the current
+// password is verified as a side effect.
+func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	token := bearerToken(r)
+	if token == "" {
+		httpx.WriteError(w, http.StatusUnauthorized, "UNAUTHENTICATED", "Sign in required.")
+		return
+	}
+	session, err := h.Kratos.WhoAmI(r.Context(), token)
+	if err != nil {
+		if errors.Is(err, kratos.ErrInvalidCredentials) {
+			httpx.WriteError(w, http.StatusUnauthorized, "UNAUTHENTICATED", "Sign in required.")
+			return
+		}
+		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Session check is temporarily unavailable.")
+		return
+	}
+
+	var in struct {
+		CurrentPassword string `json:"currentPassword"`
+		NewPassword     string `json:"newPassword"`
+	}
+	if err := httpx.DecodeJSON(r, &in); err != nil {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Malformed request body.")
+		return
+	}
+	if utf8.RuneCountInString(in.NewPassword) < minPasswordRunes {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Password must be at least 8 characters.")
+		return
+	}
+
+	fresh, err := h.Kratos.Login(r.Context(), session.Identity.Traits.Email, in.CurrentPassword)
+	if err != nil {
+		if errors.Is(err, kratos.ErrInvalidCredentials) {
+			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Current password is incorrect.")
+			return
+		}
+		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Password change is temporarily unavailable.")
+		return
+	}
+
+	if err := h.Kratos.SettingsPassword(r.Context(), fresh.Token, in.NewPassword); err != nil {
+		if errors.Is(err, kratos.ErrFlowRejected) {
+			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err))
+			return
+		}
+		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Password change is temporarily unavailable.")
+		return
+	}
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
 // Logout: POST /api/auth/logout
@@ -324,10 +479,14 @@ func (h *Handler) respondWithSession(w http.ResponseWriter, ctx context.Context,
 		return
 	}
 
+	user := buildUser(profile, session.Identity.Traits.Name.First)
+	user.EmailVerified = session.Identity.EmailVerified()
+
 	httpx.WriteJSON(w, http.StatusOK, authResponse{
-		Session: &sessionDTO{Token: session.Token, ExpiresAt: session.ExpiresAt},
-		User:    buildUser(profile, session.Identity.Traits.Name.First),
-		Profile: &profile,
+		Session:            &sessionDTO{Token: session.Token, ExpiresAt: session.ExpiresAt},
+		User:               user,
+		Profile:            &profile,
+		VerificationFlowID: session.VerificationFlowID,
 	})
 }
 

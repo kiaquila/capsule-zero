@@ -30,6 +30,7 @@ interface AuthResponse {
   user?: User;
   profile?: Profile;
   requiresEmailConfirmation?: boolean;
+  verificationFlowId?: string;
 }
 
 function apiBaseUrl(): string {
@@ -118,6 +119,7 @@ function mapSession(payload: AuthResponse): Session {
     user: payload.user,
     accessToken: payload.session.token,
     expiresAt: payload.session.expiresAt,
+    verificationFlowId: payload.verificationFlowId,
   };
 }
 
@@ -184,14 +186,14 @@ function buildAuthPort(): AuthPort {
     },
 
     async requestPasswordRecovery(email: string) {
-      const { status, data } = await apiFetch<Record<string, unknown>>(
+      const { status, data } = await apiFetch<{ flowId?: string }>(
         "/api/auth/recovery",
         {
           method: "POST",
           body: JSON.stringify({ email }),
         },
       );
-      if (status >= 400) {
+      if (status >= 400 || !data.flowId) {
         throw new Error(
           `RECOVERY_FAILED: ${errorMessage(
             data,
@@ -199,7 +201,83 @@ function buildAuthPort(): AuthPort {
           )}`,
         );
       }
-      return { delivery: "email", email };
+      return { delivery: "email" as const, email, flowId: data.flowId };
+    },
+
+    async completePasswordRecovery(completion) {
+      const { status, data } = await apiFetch<AuthResponse>(
+        "/api/auth/recovery/complete",
+        {
+          method: "POST",
+          body: JSON.stringify(completion),
+        },
+      );
+      if (status >= 400) {
+        throw new Error(
+          `RECOVERY_FAILED: ${errorMessage(
+            data,
+            "The recovery code is invalid or has expired.",
+          )}`,
+        );
+      }
+      return mapSession(data);
+    },
+
+    async startEmailVerification(email: string) {
+      const { status, data } = await apiFetch<{ flowId?: string }>(
+        "/api/auth/verification",
+        {
+          method: "POST",
+          body: JSON.stringify({ email }),
+        },
+      );
+      if (status >= 400 || !data.flowId) {
+        throw new Error(
+          `VERIFICATION_FAILED: ${errorMessage(
+            data,
+            "Email verification is temporarily unavailable.",
+          )}`,
+        );
+      }
+      return { delivery: "email" as const, email, flowId: data.flowId };
+    },
+
+    async completeEmailVerification(completion) {
+      const { status, data } = await apiFetch<Record<string, unknown>>(
+        "/api/auth/verification/complete",
+        {
+          method: "POST",
+          body: JSON.stringify(completion),
+        },
+      );
+      if (status >= 400) {
+        throw new Error(
+          `VERIFICATION_FAILED: ${errorMessage(
+            data,
+            "The verification code is invalid or has expired.",
+          )}`,
+        );
+      }
+    },
+
+    async changePassword(change) {
+      const token = await sessionToken();
+      const { status, data } = await apiFetch<Record<string, unknown>>(
+        "/api/auth/password",
+        {
+          method: "POST",
+          token,
+          body: JSON.stringify(change),
+        },
+      );
+      if (status >= 400) {
+        throw new Error(
+          `PASSWORD_CHANGE_FAILED: ${errorMessage(
+            data,
+            "Password change is temporarily unavailable.",
+          )}`,
+        );
+      }
     },
 
     async signOut() {

@@ -37,10 +37,10 @@ selfservice:
         # 8-char minimum matches the web Zod schema (createSignUpSchema).
         min_password_length: 8
         haveibeenpwned_enabled: false
+    # Recovery/verification run on one-time codes only (spec 035): the link
+    # method stays off so there is no alternate magic-link path to reason about.
     link:
-      enabled: true
-      config:
-        lifespan: 1h
+      enabled: false
     code:
       enabled: true
       config:
@@ -60,18 +60,22 @@ selfservice:
       privileged_session_max_age: 15m
       required_aal: highest_available
 
-    # Recovery and verification are DISABLED in the Phase 2 auth slice. The web
-    # auth UI has no flow-aware completion step (it never reads the Kratos
-    # `flow`/`code` params), so a recovery/verification email link would land the
-    # user on /auth with no way to finish the reset/verification. Rather than
-    # advertise a dead-end email flow, we do not enable these flows until the
-    # dedicated recovery/verification slice ships the completion UI plus the Go
-    # API settings/verification endpoints. See tasks.md Process Memory.
+    # Recovery and verification are ENABLED with the one-time-code method
+    # (spec 035): the Go API drives both as server-side API flows
+    # (/api/auth/recovery*, /api/auth/verification*), and the web UI ships the
+    # flow-aware completion steps (code entry). The edge still 404s
+    # /self-service/* — nothing browser-side talks to Kratos directly.
     recovery:
-      enabled: false
+      enabled: true
+      use: code
+      ui_url: http://127.0.0.1:3000/auth
+      lifespan: 1h
 
     verification:
-      enabled: false
+      enabled: true
+      use: code
+      ui_url: http://127.0.0.1:3000/verify-email
+      lifespan: 1h
 
     login:
       ui_url: http://127.0.0.1:3000/auth
@@ -84,9 +88,10 @@ selfservice:
         password:
           hooks:
             # Issue a session immediately on sign-up so the web UI logs the user
-            # in without a second round-trip. Email verification is disabled in
-            # this slice (see the recovery/verification note above), so no
-            # verification email is sent.
+            # in without a second round-trip (founder decision 2026-07-03:
+            # verification is non-blocking). With verification enabled, Kratos
+            # also emails a confirmation code and reports the flow id via
+            # continue_with, which the web verify-email banner consumes.
             - hook: session
 
 log:

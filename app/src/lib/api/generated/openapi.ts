@@ -34,6 +34,13 @@ export const API_OPERATIONS = [
   },
   {
     "method": "POST",
+    "path": "/api/auth/password",
+    "operationId": "changePassword",
+    "auth": "session",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "POST",
     "path": "/api/auth/recovery",
     "operationId": "requestPasswordRecovery",
     "auth": "public",
@@ -41,8 +48,29 @@ export const API_OPERATIONS = [
   },
   {
     "method": "POST",
+    "path": "/api/auth/recovery/complete",
+    "operationId": "completePasswordRecovery",
+    "auth": "public",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "POST",
     "path": "/api/auth/registration",
     "operationId": "registerWithPassword",
+    "auth": "public",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/verification",
+    "operationId": "startEmailVerification",
+    "auth": "public",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/verification/complete",
+    "operationId": "completeEmailVerification",
     "auth": "public",
     "clientAvailability": "web-mobile"
   },
@@ -411,6 +439,7 @@ export type AuthUser = {
   name?: string;
   avatarUrl?: string;
   location?: AuthLocation;
+  emailVerified: boolean;
   createdAt: string;
 };
 
@@ -424,6 +453,7 @@ export type AuthResponse = {
   user?: AuthUser;
   profile?: Profile;
   requiresEmailConfirmation: boolean;
+  verificationFlowId?: string;
 };
 
 export type AuthRegistrationRequest = {
@@ -445,6 +475,37 @@ export type AuthRecoveryRequest = {
 export type AuthRecoveryResponse = {
   delivery: "email";
   email: string;
+  flowId: string;
+};
+
+export type AuthRecoveryCompleteRequest = {
+  flowId: string;
+  code: string;
+  newPassword: string;
+};
+
+export type AuthVerificationRequest = {
+  email: string;
+};
+
+export type AuthVerificationResponse = {
+  delivery: "email";
+  email: string;
+  flowId: string;
+};
+
+export type AuthVerificationCompleteRequest = {
+  flowId: string;
+  code: string;
+};
+
+export type AuthPasswordChangeRequest = {
+  currentPassword: string;
+  newPassword: string;
+};
+
+export type AuthOkResponse = {
+  ok: boolean;
 };
 
 export type AuthLogoutResponse = {
@@ -739,6 +800,14 @@ export interface ApiOperationPayloads {
     request: LogoutRequestBody;
     response: LogoutResponseBody;
   };
+  changePassword: {
+    path: ChangePasswordPathParams;
+    query: ChangePasswordQueryParams;
+    header: ChangePasswordHeaderParams;
+    cookie: ChangePasswordCookieParams;
+    request: ChangePasswordRequestBody;
+    response: ChangePasswordResponseBody;
+  };
   requestPasswordRecovery: {
     path: RequestPasswordRecoveryPathParams;
     query: RequestPasswordRecoveryQueryParams;
@@ -747,6 +816,14 @@ export interface ApiOperationPayloads {
     request: RequestPasswordRecoveryRequestBody;
     response: RequestPasswordRecoveryResponseBody;
   };
+  completePasswordRecovery: {
+    path: CompletePasswordRecoveryPathParams;
+    query: CompletePasswordRecoveryQueryParams;
+    header: CompletePasswordRecoveryHeaderParams;
+    cookie: CompletePasswordRecoveryCookieParams;
+    request: CompletePasswordRecoveryRequestBody;
+    response: CompletePasswordRecoveryResponseBody;
+  };
   registerWithPassword: {
     path: RegisterWithPasswordPathParams;
     query: RegisterWithPasswordQueryParams;
@@ -754,6 +831,22 @@ export interface ApiOperationPayloads {
     cookie: RegisterWithPasswordCookieParams;
     request: RegisterWithPasswordRequestBody;
     response: RegisterWithPasswordResponseBody;
+  };
+  startEmailVerification: {
+    path: StartEmailVerificationPathParams;
+    query: StartEmailVerificationQueryParams;
+    header: StartEmailVerificationHeaderParams;
+    cookie: StartEmailVerificationCookieParams;
+    request: StartEmailVerificationRequestBody;
+    response: StartEmailVerificationResponseBody;
+  };
+  completeEmailVerification: {
+    path: CompleteEmailVerificationPathParams;
+    query: CompleteEmailVerificationQueryParams;
+    header: CompleteEmailVerificationHeaderParams;
+    cookie: CompleteEmailVerificationCookieParams;
+    request: CompleteEmailVerificationRequestBody;
+    response: CompleteEmailVerificationResponseBody;
   };
   getCurrentSession: {
     path: GetCurrentSessionPathParams;
@@ -1125,6 +1218,13 @@ export type LogoutCookieParams = Record<string, never>;
 export type LogoutRequestBody = Record<string, never>;
 export type LogoutResponseBody = AuthLogoutResponse;
 
+export type ChangePasswordPathParams = Record<string, never>;
+export type ChangePasswordQueryParams = Record<string, never>;
+export type ChangePasswordHeaderParams = Record<string, never>;
+export type ChangePasswordCookieParams = Record<string, never>;
+export type ChangePasswordRequestBody = AuthPasswordChangeRequest;
+export type ChangePasswordResponseBody = AuthOkResponse;
+
 export type RequestPasswordRecoveryPathParams = Record<string, never>;
 export type RequestPasswordRecoveryQueryParams = Record<string, never>;
 export type RequestPasswordRecoveryHeaderParams = Record<string, never>;
@@ -1132,12 +1232,33 @@ export type RequestPasswordRecoveryCookieParams = Record<string, never>;
 export type RequestPasswordRecoveryRequestBody = AuthRecoveryRequest;
 export type RequestPasswordRecoveryResponseBody = AuthRecoveryResponse;
 
+export type CompletePasswordRecoveryPathParams = Record<string, never>;
+export type CompletePasswordRecoveryQueryParams = Record<string, never>;
+export type CompletePasswordRecoveryHeaderParams = Record<string, never>;
+export type CompletePasswordRecoveryCookieParams = Record<string, never>;
+export type CompletePasswordRecoveryRequestBody = AuthRecoveryCompleteRequest;
+export type CompletePasswordRecoveryResponseBody = AuthResponse;
+
 export type RegisterWithPasswordPathParams = Record<string, never>;
 export type RegisterWithPasswordQueryParams = Record<string, never>;
 export type RegisterWithPasswordHeaderParams = Record<string, never>;
 export type RegisterWithPasswordCookieParams = Record<string, never>;
 export type RegisterWithPasswordRequestBody = AuthRegistrationRequest;
 export type RegisterWithPasswordResponseBody = AuthResponse;
+
+export type StartEmailVerificationPathParams = Record<string, never>;
+export type StartEmailVerificationQueryParams = Record<string, never>;
+export type StartEmailVerificationHeaderParams = Record<string, never>;
+export type StartEmailVerificationCookieParams = Record<string, never>;
+export type StartEmailVerificationRequestBody = AuthVerificationRequest;
+export type StartEmailVerificationResponseBody = AuthVerificationResponse;
+
+export type CompleteEmailVerificationPathParams = Record<string, never>;
+export type CompleteEmailVerificationQueryParams = Record<string, never>;
+export type CompleteEmailVerificationHeaderParams = Record<string, never>;
+export type CompleteEmailVerificationCookieParams = Record<string, never>;
+export type CompleteEmailVerificationRequestBody = AuthVerificationCompleteRequest;
+export type CompleteEmailVerificationResponseBody = AuthOkResponse;
 
 export type GetCurrentSessionPathParams = Record<string, never>;
 export type GetCurrentSessionQueryParams = Record<string, never>;
@@ -1699,6 +1820,7 @@ export const API_SCHEMAS = {
     "required": [
       "id",
       "email",
+      "emailVerified",
       "createdAt"
     ],
     "properties": {
@@ -1718,6 +1840,10 @@ export const API_SCHEMAS = {
       },
       "location": {
         "$ref": "#/components/schemas/AuthLocation"
+      },
+      "emailVerified": {
+        "type": "boolean",
+        "description": "Whether every verifiable address on the identity is confirmed. The web app shows the verify-email banner while false."
       },
       "createdAt": {
         "type": "string",
@@ -1758,6 +1884,10 @@ export const API_SCHEMAS = {
       },
       "requiresEmailConfirmation": {
         "type": "boolean"
+      },
+      "verificationFlowId": {
+        "type": "string",
+        "description": "Present on registration when Kratos started an email verification flow for the new address; the emailed code must be submitted against this flow via /api/auth/verification/complete."
       }
     }
   },
@@ -1818,7 +1948,8 @@ export const API_SCHEMAS = {
     "type": "object",
     "required": [
       "delivery",
-      "email"
+      "email",
+      "flowId"
     ],
     "properties": {
       "delivery": {
@@ -1830,6 +1961,107 @@ export const API_SCHEMAS = {
       "email": {
         "type": "string",
         "format": "email"
+      },
+      "flowId": {
+        "type": "string",
+        "description": "Kratos flow the emailed one-time code is bound to; completion must submit the code against this flow."
+      }
+    }
+  },
+  "AuthRecoveryCompleteRequest": {
+    "type": "object",
+    "required": [
+      "flowId",
+      "code",
+      "newPassword"
+    ],
+    "properties": {
+      "flowId": {
+        "type": "string"
+      },
+      "code": {
+        "type": "string"
+      },
+      "newPassword": {
+        "type": "string",
+        "minLength": 8
+      }
+    }
+  },
+  "AuthVerificationRequest": {
+    "type": "object",
+    "required": [
+      "email"
+    ],
+    "properties": {
+      "email": {
+        "type": "string",
+        "format": "email"
+      }
+    }
+  },
+  "AuthVerificationResponse": {
+    "type": "object",
+    "required": [
+      "delivery",
+      "email",
+      "flowId"
+    ],
+    "properties": {
+      "delivery": {
+        "type": "string",
+        "enum": [
+          "email"
+        ]
+      },
+      "email": {
+        "type": "string",
+        "format": "email"
+      },
+      "flowId": {
+        "type": "string"
+      }
+    }
+  },
+  "AuthVerificationCompleteRequest": {
+    "type": "object",
+    "required": [
+      "flowId",
+      "code"
+    ],
+    "properties": {
+      "flowId": {
+        "type": "string"
+      },
+      "code": {
+        "type": "string"
+      }
+    }
+  },
+  "AuthPasswordChangeRequest": {
+    "type": "object",
+    "required": [
+      "currentPassword",
+      "newPassword"
+    ],
+    "properties": {
+      "currentPassword": {
+        "type": "string"
+      },
+      "newPassword": {
+        "type": "string",
+        "minLength": 8
+      }
+    }
+  },
+  "AuthOkResponse": {
+    "type": "object",
+    "required": [
+      "ok"
+    ],
+    "properties": {
+      "ok": {
+        "type": "boolean"
       }
     }
   },
@@ -2977,6 +3209,20 @@ export const API_OPERATION_PAYLOADS = {
     "headerParameters": [],
     "cookieParameters": []
   },
+  "changePassword": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "AuthPasswordChangeRequest",
+    "responseSchemas": [
+      "AuthOkResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
   "requestPasswordRecovery": {
     "requestRequired": true,
     "successStatusCodes": [
@@ -2991,6 +3237,20 @@ export const API_OPERATION_PAYLOADS = {
     "headerParameters": [],
     "cookieParameters": []
   },
+  "completePasswordRecovery": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "AuthRecoveryCompleteRequest",
+    "responseSchemas": [
+      "AuthResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
   "registerWithPassword": {
     "requestRequired": true,
     "successStatusCodes": [
@@ -2999,6 +3259,34 @@ export const API_OPERATION_PAYLOADS = {
     "requestSchema": "AuthRegistrationRequest",
     "responseSchemas": [
       "AuthResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "startEmailVerification": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "AuthVerificationRequest",
+    "responseSchemas": [
+      "AuthVerificationResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "completeEmailVerification": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "AuthVerificationCompleteRequest",
+    "responseSchemas": [
+      "AuthOkResponse"
     ],
     "pathParameters": [],
     "queryParameters": [],

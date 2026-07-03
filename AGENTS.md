@@ -308,7 +308,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 - Founder approval on the rewritten Phase 4 ADRs.
 - ~~DigitalOcean droplet upgrade to at least 4 GB RAM / 2 vCPU / 80 GB disk~~ — resolved 2026-07-02 by migrating to a Hetzner CX23 (2 vCPU / 4 GB / 40 GB; capacity budget verified in spec 033).
 - ~~Spaceship DNS pointed at Cloudflare; Cloudflare proxy enabled for `capsulezero.app`~~ — deferred to Stage 2 (founder decision 2026-07-02); v0.1 pre-launch runs direct DNS → host nginx, and the realip/CF-ranges edge config stays inert until activation.
-- Resend account created and SPF/DKIM published on `capsulezero.app`.
+- ~~Resend account created and SPF/DKIM published on `capsulezero.app`~~ — done 2026-07-03: domain verified in Resend (eu-west-1), SPF/DKIM/DMARC live at Spaceship DNS, sending key installed on the prod host (`KRATOS_SMTP_CONNECTION_URI`, port 2465 — Hetzner blocks outbound 25/465).
 - DigitalOcean Spaces bucket created with CORS configured for `capsulezero.app`.
 - Ship `.specify/specs/024-production-stack-runtime/` to bring the stack up in docker-compose on the server, with every service health-checked end-to-end. (Phases 1–2 landed and deploy via prod CD, spec 033; Redis / Spaces / observability phases remain.)
 - Retire the Supabase provider domain by domain as the Go API absorbs each bounded context — no wholesale `/app` deletion.

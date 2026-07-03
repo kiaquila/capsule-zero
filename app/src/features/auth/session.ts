@@ -87,7 +87,25 @@ function toPersistedAppSession(session: Session): PersistedAppSession {
     refreshToken: session.refreshToken,
     createdAt: session.user.createdAt,
     expiresAt: session.expiresAt,
+    verificationFlowId: session.verificationFlowId,
+    emailVerified: session.user.emailVerified,
   };
+}
+
+// markAppSessionEmailVerified records a completed email verification in the
+// signed session cookie so the banner stays dismissed across requests even
+// when the provider cannot report live state (mock mode). The live whoami
+// value still wins where available (spec 035).
+export async function markAppSessionEmailVerified(): Promise<void> {
+  const persisted = await readSignedAppSession();
+  if (!persisted) {
+    return;
+  }
+  await writeAppSessionCookie({
+    ...persisted,
+    emailVerified: true,
+    verificationFlowId: undefined,
+  });
 }
 
 async function writeAppSessionCookie(

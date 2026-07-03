@@ -2,11 +2,16 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { AuthPanel } from "./AuthPanel";
+import { AuthPanel, type RecoveryDeepLink } from "./AuthPanel";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { CookieBanner } from "@/components/landing/CookieBanner";
 
-export function AuthPage() {
+interface AuthPageProps {
+  /** Recovery flow carried by an emailed link (/auth?flow=…&code=…). */
+  recovery?: RecoveryDeepLink;
+}
+
+export function AuthPage({ recovery }: AuthPageProps) {
   const locale = useLocale();
 
   return (
@@ -22,7 +27,7 @@ export function AuthPage() {
       </header>
 
       <main className="auth-page-main">
-        <AuthPanel variant="standalone" />
+        <AuthPanel initialRecovery={recovery} variant="standalone" />
       </main>
 
       <Footer />

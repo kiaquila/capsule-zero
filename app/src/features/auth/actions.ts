@@ -3,26 +3,39 @@
 import { createProviderRegistry } from "@/lib/providers";
 import { routing, type AppLocale } from "@/i18n/routing";
 import {
+  createPasswordChangeSchema,
+  createRecoveryCompleteSchema,
   createRecoverySchema,
   createSignInSchema,
   createSignUpSchema,
+  createVerificationCodeSchema,
   type AuthValidationMessages,
+  type PasswordChangeInput,
+  type RecoveryCompleteInput,
   type RecoveryInput,
   type SignInInput,
   type SignUpInput,
+  type VerificationCodeInput,
 } from "./schemas";
-import { clearMockSession, persistMockSession } from "./session";
+import {
+  clearMockSession,
+  markAppSessionEmailVerified,
+  persistMockSession,
+} from "./session";
 
 const serverValidationMessages: AuthValidationMessages = {
   invalidEmail: "Please enter a valid email",
   weakPassword: "Password must be at least 8 characters",
   passwordsMismatch: "Passwords don't match",
+  invalidCode: "Enter the code from the email",
 };
 
 export interface AuthActionResult {
   ok: boolean;
   message?: string;
   requiresEmailConfirmation?: boolean;
+  /** Flow the emailed one-time code is bound to (recovery/verification). */
+  flowId?: string;
 }
 
 export async function signInWithPasswordAction(
@@ -84,7 +97,106 @@ export async function requestPasswordRecoveryAction(
 
   const providers = createProviderRegistry();
   try {
-    await providers.auth.requestPasswordRecovery(parsed.data.email);
+    const request = await providers.auth.requestPasswordRecovery(
+      parsed.data.email,
+    );
+    return { ok: true, flowId: request.flowId };
+  } catch (error) {
+    return { ok: false, message: authActionErrorMessage(error) };
+  }
+}
+
+export async function completePasswordRecoveryAction(
+  input: RecoveryCompleteInput & { flowId: string },
+): Promise<AuthActionResult> {
+  const parsed =
+    createRecoveryCompleteSchema(serverValidationMessages).safeParse(input);
+
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message };
+  }
+  if (!input.flowId) {
+    return { ok: false, message: serverValidationMessages.invalidCode };
+  }
+
+  const providers = createProviderRegistry();
+  try {
+    const session = await providers.auth.completePasswordRecovery({
+      flowId: input.flowId,
+      code: parsed.data.code,
+      newPassword: parsed.data.newPassword,
+    });
+    await persistMockSession(session);
+  } catch (error) {
+    return { ok: false, message: authActionErrorMessage(error) };
+  }
+
+  return { ok: true };
+}
+
+export async function startEmailVerificationAction(
+  input: RecoveryInput,
+): Promise<AuthActionResult> {
+  const parsed = createRecoverySchema(serverValidationMessages).safeParse(input);
+
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message };
+  }
+
+  const providers = createProviderRegistry();
+  try {
+    const request = await providers.auth.startEmailVerification(
+      parsed.data.email,
+    );
+    return { ok: true, flowId: request.flowId };
+  } catch (error) {
+    return { ok: false, message: authActionErrorMessage(error) };
+  }
+}
+
+export async function completeEmailVerificationAction(
+  input: VerificationCodeInput & { flowId: string },
+): Promise<AuthActionResult> {
+  const parsed =
+    createVerificationCodeSchema(serverValidationMessages).safeParse(input);
+
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message };
+  }
+  if (!input.flowId) {
+    return { ok: false, message: serverValidationMessages.invalidCode };
+  }
+
+  const providers = createProviderRegistry();
+  try {
+    await providers.auth.completeEmailVerification({
+      flowId: input.flowId,
+      code: parsed.data.code,
+    });
+  } catch (error) {
+    return { ok: false, message: authActionErrorMessage(error) };
+  }
+
+  await markAppSessionEmailVerified();
+  return { ok: true };
+}
+
+export async function changePasswordAction(
+  input: PasswordChangeInput,
+): Promise<AuthActionResult> {
+  const parsed =
+    createPasswordChangeSchema(serverValidationMessages).safeParse(input);
+
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message };
+  }
+
+  const providers = createProviderRegistry();
+  try {
+    await providers.auth.changePassword({
+      currentPassword: parsed.data.currentPassword,
+      newPassword: parsed.data.newPassword,
+    });
   } catch (error) {
     return { ok: false, message: authActionErrorMessage(error) };
   }

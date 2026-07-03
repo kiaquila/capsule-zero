@@ -1106,6 +1106,80 @@ textarea {
   line-height: 1.2;
 }
 
+/* Verify-email banner (spec 035) — glass surface on the dashboard while the
+   signed-in user's address is unconfirmed. Reuses auth input/button tokens. */
+.verify-email-banner {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 24px;
+}
+
+.verify-email-copy h2 {
+  margin: 0 0 8px;
+  color: var(--color-text-primary);
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.verify-email-copy p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.verify-email-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.verify-email-input {
+  flex: 1 1 160px;
+  max-width: 240px;
+}
+
+.verify-email-submit {
+  width: auto;
+  padding: 12px 24px;
+}
+
+.verify-email-resend {
+  padding: 8px;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.verify-email-resend:hover {
+  color: var(--color-text-primary);
+}
+
+.verify-email-status {
+  margin: 0;
+  color: var(--color-error);
+  font-size: 13px;
+}
+
+/* Profile change-password form (spec 035). */
+.profile-password-form {
+  margin-top: 8px;
+}
+
+.profile-password-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.profile-password-error {
+  margin: 0;
+}
+
 .cookie-banner {
   position: fixed;
   z-index: var(--z-toast);

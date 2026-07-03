@@ -16,6 +16,8 @@ export interface User {
     country?: string;
     city?: string;
   };
+  /** False while the address still has a pending email verification (spec 035). */
+  emailVerified?: boolean;
   createdAt: string;
 }
 

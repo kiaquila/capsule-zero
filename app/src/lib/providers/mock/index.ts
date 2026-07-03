@@ -49,6 +49,14 @@ const MAX_PALETTE_COLORS = 15;
 const MAX_CHROMATIC_COLORS = 12;
 const DEFAULT_NOW = new Date("2026-06-01T15:00:00.000Z");
 
+// Deterministic auth-completion fixtures (spec 035): the one-time code every
+// mock recovery/verification accepts, and the sentinel current password the
+// mock change-password always rejects. Provider-agnostic e2e relies on these.
+const MOCK_ONE_TIME_CODE = "123456";
+const MOCK_WRONG_CURRENT_PASSWORD = "WrongPass123";
+const MOCK_RECOVERY_FLOW_ID = "mock-recovery-flow";
+const MOCK_VERIFICATION_FLOW_ID = "mock-verification-flow";
+
 interface MockProviderOptions {
   now?: () => Date;
 }
@@ -484,6 +492,11 @@ export function createMockProviderRegistry(
           credentials.email,
           credentials.name,
         );
+        // A fresh sign-up starts unverified with a pending verification flow,
+        // mirroring the api provider (spec 035). The deterministic mock code
+        // MOCK_ONE_TIME_CODE completes it.
+        currentSession.user.emailVerified = false;
+        currentSession.verificationFlowId = MOCK_VERIFICATION_FLOW_ID;
         upsertProfileFromSession(profiles, currentSession, timestamp);
         return clone(currentSession);
       },
@@ -500,7 +513,44 @@ export function createMockProviderRegistry(
       },
 
       async requestPasswordRecovery(email) {
-        return { delivery: "email", email };
+        return { delivery: "email", email, flowId: MOCK_RECOVERY_FLOW_ID };
+      },
+
+      async completePasswordRecovery(completion) {
+        if (completion.code !== MOCK_ONE_TIME_CODE) {
+          throw new Error(
+            "RECOVERY_FAILED: The recovery code is invalid or has expired.",
+          );
+        }
+        const timestamp = now();
+        currentSession = buildSession(timestamp);
+        upsertProfileFromSession(profiles, currentSession, timestamp);
+        return clone(currentSession);
+      },
+
+      async startEmailVerification(email) {
+        return { delivery: "email", email, flowId: MOCK_VERIFICATION_FLOW_ID };
+      },
+
+      async completeEmailVerification(completion) {
+        if (completion.code !== MOCK_ONE_TIME_CODE) {
+          throw new Error(
+            "VERIFICATION_FAILED: The verification code is invalid or has expired.",
+          );
+        }
+        if (currentSession) {
+          currentSession.user.emailVerified = true;
+        }
+      },
+
+      async changePassword(change) {
+        // Deterministic mock rule (spec 035): this sentinel current password
+        // is always rejected so the negative e2e path stays testable.
+        if (change.currentPassword === MOCK_WRONG_CURRENT_PASSWORD) {
+          throw new Error(
+            "PASSWORD_CHANGE_FAILED: Current password is incorrect.",
+          );
+        }
       },
 
       async signOut() {

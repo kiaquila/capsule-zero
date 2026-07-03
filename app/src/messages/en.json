@@ -76,7 +76,14 @@
     "confirmationRequired": "Account created. Check your inbox to confirm your email, then log in.",
     "backToLogin": "Back to log in",
     "successRedirect": "Redirecting to dashboard...",
-    "close": "Close"
+    "close": "Close",
+    "invalidCode": "Enter the code from the email",
+    "recoveryCodeHint": "We sent a code to your email. Enter it below and choose a new password.",
+    "codePlaceholder": "Code from email",
+    "newPassword": "New password",
+    "resetCta": "Set new password",
+    "resetting": "Saving",
+    "resendCode": "Resend code"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -197,7 +204,13 @@
       "pushDesc": "Approve login from linked app"
     },
     "password": {
-      "title": "Password"
+      "title": "Password",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "submit": "Update password",
+      "cancel": "Cancel",
+      "error": "Password change failed. Try again."
     },
     "account": {
       "userId": "User ID",
@@ -231,7 +244,8 @@
       "avatarReady": "Avatar preview ready.",
       "avatarRemoved": "Avatar removed. Initials are shown again.",
       "passwordMock": "Password change is design-only in Stage 1.",
-      "deleteMock": "Delete account is disabled in Stage 1 mock mode."
+      "deleteMock": "Delete account is disabled in Stage 1 mock mode.",
+      "passwordChanged": "Password updated"
     },
     "validation": {
       "firstName": "Enter your first name.",
@@ -885,5 +899,28 @@
       "photoType": "Upload a JPEG, PNG, or WebP image.",
       "photoSize": "Upload an image up to 10 MB."
     }
+  },
+  "verifyEmail": {
+    "title": "Confirm your email",
+    "hint": "We sent a confirmation code to {email}.",
+    "codePlaceholder": "Code from email",
+    "submit": "Confirm",
+    "checking": "Checking",
+    "resend": "Resend code",
+    "sent": "Code sent. Check your inbox.",
+    "error": "The code is invalid or has expired.",
+    "invalidCode": "Enter the code from the email"
+  },
+  "verifyEmailPage": {
+    "title": "Email confirmation",
+    "verifying": "Confirming your email…",
+    "success": "Email confirmed. You're all set.",
+    "error": "The code is invalid or has expired.",
+    "enterCode": "Enter the code from the email.",
+    "codePlaceholder": "Code from email",
+    "submit": "Confirm",
+    "goToDashboard": "Go to dashboard",
+    "goToLogin": "Log in",
+    "noFlow": "This link is incomplete. Sign in and request a new code from the dashboard."
   }
 }

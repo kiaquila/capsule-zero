@@ -128,6 +128,13 @@ func newMux(handler *auth.Handler, authLimiter, sessionLimiter *ratelimit.Limite
 	mux.HandleFunc("POST /api/auth/registration", authLimiter.Middleware(handler.Registration))
 	mux.HandleFunc("POST /api/auth/login", authLimiter.Middleware(handler.Login))
 	mux.HandleFunc("POST /api/auth/recovery", authLimiter.Middleware(handler.Recovery))
+	mux.HandleFunc("POST /api/auth/recovery/complete", authLimiter.Middleware(handler.RecoveryComplete))
+	mux.HandleFunc("POST /api/auth/verification", authLimiter.Middleware(handler.VerificationStart))
+	mux.HandleFunc("POST /api/auth/verification/complete", authLimiter.Middleware(handler.VerificationComplete))
+	// Password change sits in the strict auth bucket: each attempt verifies a
+	// password, so a roomier session bucket would hand a stolen token a
+	// brute-force budget.
+	mux.HandleFunc("POST /api/auth/password", authLimiter.Middleware(handler.ChangePassword))
 	mux.HandleFunc("GET /api/auth/whoami", sessionLimiter.Middleware(handler.WhoAmI))
 	mux.HandleFunc("POST /api/auth/logout", sessionLimiter.Middleware(handler.Logout))
 	mux.HandleFunc("GET /api/profile", sessionLimiter.Middleware(handler.RequireSession(handler.GetProfile)))

@@ -630,7 +630,34 @@ function buildAuthPort(
         redirectTo,
       });
       throwIfError(error, "Supabase password recovery failed");
-      return { delivery: "email", email };
+      return { delivery: "email", email, flowId: "supabase-recovery" };
+    },
+
+    // The frozen Supabase provider never grew the spec-035 completion flows;
+    // it is being retired domain by domain (AGENTS.md §8), so these surface a
+    // clear failure instead of a half-working path.
+    async completePasswordRecovery() {
+      throw new Error(
+        "RECOVERY_FAILED: not supported by the retired Supabase provider.",
+      );
+    },
+
+    async startEmailVerification(email) {
+      throw new Error(
+        `VERIFICATION_FAILED: not supported by the retired Supabase provider (${email}).`,
+      );
+    },
+
+    async completeEmailVerification() {
+      throw new Error(
+        "VERIFICATION_FAILED: not supported by the retired Supabase provider.",
+      );
+    },
+
+    async changePassword() {
+      throw new Error(
+        "PASSWORD_CHANGE_FAILED: not supported by the retired Supabase provider.",
+      );
     },
 
     async signOut() {
