@@ -496,26 +496,64 @@ func TestValidateProfileUpdateAcceptsValidAndOmitted(t *testing.T) {
 }
 
 type fakeIdentityClient struct {
-	registerErr error
-	whoamiErr   error
-	recoveryErr error
-	logoutErr   error
+	registerSession *kratos.Session
+	registerErr     error
+
+	loginSession *kratos.Session
+	loginErr     error
+
+	whoamiSession *kratos.Session
+	whoamiErr     error
+
+	recoveryFlowID string
+	recoveryErr    error
+
+	recoveryCompleteSession *kratos.Session
+	recoveryCompleteErr     error
+
+	verificationFlowID      string
+	verificationStartErr    error
+	verificationCompleteErr error
+
+	settingsPasswordErr   error
+	settingsPasswordCalls *[][2]string
+
+	logoutErr error
 }
 
 func (f fakeIdentityClient) Register(context.Context, string, string, string, string) (*kratos.Session, error) {
-	return nil, f.registerErr
+	return f.registerSession, f.registerErr
 }
 
 func (f fakeIdentityClient) Login(context.Context, string, string) (*kratos.Session, error) {
-	panic("not used")
+	return f.loginSession, f.loginErr
 }
 
 func (f fakeIdentityClient) WhoAmI(context.Context, string) (*kratos.Session, error) {
-	return nil, f.whoamiErr
+	return f.whoamiSession, f.whoamiErr
 }
 
-func (f fakeIdentityClient) Recovery(context.Context, string) error {
-	return f.recoveryErr
+func (f fakeIdentityClient) RecoveryStart(context.Context, string) (string, error) {
+	return f.recoveryFlowID, f.recoveryErr
+}
+
+func (f fakeIdentityClient) RecoveryComplete(context.Context, string, string, string) (*kratos.Session, error) {
+	return f.recoveryCompleteSession, f.recoveryCompleteErr
+}
+
+func (f fakeIdentityClient) VerificationStart(context.Context, string) (string, error) {
+	return f.verificationFlowID, f.verificationStartErr
+}
+
+func (f fakeIdentityClient) VerificationComplete(context.Context, string, string) error {
+	return f.verificationCompleteErr
+}
+
+func (f fakeIdentityClient) SettingsPassword(_ context.Context, token, newPassword string) error {
+	if f.settingsPasswordCalls != nil {
+		*f.settingsPasswordCalls = append(*f.settingsPasswordCalls, [2]string{token, newPassword})
+	}
+	return f.settingsPasswordErr
 }
 
 func (f fakeIdentityClient) Logout(context.Context, string) error {
