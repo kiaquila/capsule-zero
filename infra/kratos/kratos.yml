@@ -11,7 +11,7 @@
 # The Go API drives Kratos self-service via the API flow (server-side); the web
 # UI is the existing /app forms, not Kratos's own UI.
 
-version: v1.1.0
+version: v1.3.1
 
 dsn: "postgres://kratos:placeholder-kratos-db-password@postgres:5432/kratos?sslmode=disable"
 
@@ -50,11 +50,12 @@ selfservice:
     error:
       ui_url: http://127.0.0.1:3000/error
 
-    # The settings self-service flow cannot be disabled in Kratos config (only
-    # recovery/verification expose `enabled`). It is intentionally inert this
-    # slice: the edge returns 404 for /self-service/*, and neither the web app
-    # nor the Go API drives a settings flow. The dedicated profile/settings
-    # slice ships its completion UI before the edge re-exposes it.
+    # The settings flow is driven server-side by the Go API (spec 035): it sets
+    # the new password after a code recovery and on profile password change.
+    # Both callers present a freshly-minted session (recovery continue_with or
+    # a re-authenticated login), so privileged_session_max_age never bites.
+    # The edge still returns 404 for /self-service/* — browsers never talk to
+    # this flow directly.
     settings:
       ui_url: http://127.0.0.1:3000/profile
       privileged_session_max_age: 15m
@@ -107,6 +108,14 @@ secrets:
 
 ciphers:
   algorithm: xchacha20-poly1305
+
+# Kratos v1.3: native (API-flow) code recovery hands the session back via
+# continue_with set_ory_session_token only behind this flag; without it the
+# flow dead-ends in a browser redirect the Go API cannot follow (v1.1 had no
+# supported native path at all — the reason for the v1.1.0 → v1.3.1 bump,
+# spec 035).
+feature_flags:
+  use_continue_with_transitions: true
 
 hashers:
   algorithm: argon2

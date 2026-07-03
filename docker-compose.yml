@@ -61,7 +61,7 @@ services:
   # exits. Idempotent: Kratos tracks applied migrations in its own database, so a
   # repeat run on an up-to-date schema is a no-op (negative scenario 6).
   kratos-migrate:
-    image: oryd/kratos:v1.1.0
+    image: oryd/kratos:v1.3.1
     restart: "no"
     depends_on:
       postgres:
@@ -78,10 +78,12 @@ services:
   # inside the compose network: it is neither bound to the host nor exposed at
   # the nginx edge, so every auth write must go through the Go API
   # (/api/auth/*), which owns duplicate-identifier sanitization + the auth rate
-  # limit. Recovery/verification browser flows are disabled this slice; the
-  # dedicated completion-UI slice re-exposes the exact public paths it needs.
+  # limit. Recovery/verification run as code-method API flows driven entirely
+  # by the Go API (spec 035) — the edge still 404s /self-service/*. v1.3.1:
+  # native code recovery needs continue_with session hand-off (kratos.yml
+  # feature_flags), which v1.1 did not support.
   kratos:
-    image: oryd/kratos:v1.1.0
+    image: oryd/kratos:v1.3.1
     restart: unless-stopped
     depends_on:
       postgres:

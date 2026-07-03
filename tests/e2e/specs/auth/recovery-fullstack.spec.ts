@@ -12,7 +12,7 @@ import { expect, test } from "../../fixtures/base";
 const mailhogUrl = process.env.E2E_MAILHOG_URL;
 
 interface MailhogMessage {
-  Content: { Body: string };
+  Content: { Body: string; Headers: Record<string, string[]> };
 }
 
 async function fetchRecoveryCode(email: string): Promise<string> {
@@ -22,7 +22,12 @@ async function fetchRecoveryCode(email: string): Promise<string> {
     );
     const payload = (await response.json()) as { items: MailhogMessage[] };
     for (const item of payload.items ?? []) {
-      // Quoted-printable bodies keep the 6-digit code intact on its own line.
+      // Registration also emails a verification code to the same address, so
+      // pick the recovery email by subject before extracting the 6-digit code.
+      const subject = (item.Content.Headers.Subject ?? []).join(" ");
+      if (!/recover/i.test(subject)) {
+        continue;
+      }
       const match = item.Content.Body.match(/\b(\d{6})\b/);
       if (match) {
         return match[1];

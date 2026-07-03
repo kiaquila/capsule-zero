@@ -119,22 +119,30 @@ func TestRecoveryCompleteExchangesCodeAndSetsPassword(t *testing.T) {
 }
 
 func TestRecoveryCompleteRejectsInvalidCode(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode(map[string]any{
-			"ui": map[string]any{
-				"messages": []map[string]any{
-					{"id": 4060006, "type": "error", "text": "The recovery code is invalid or has already been used."},
-				},
+	// Kratos v1.1 rejects a wrong code in two shapes (both observed): a 400,
+	// and — on the live stack — a 200 whose flow stays open with the rejection
+	// in ui.messages. Both must classify as ErrFlowRejected, never a session.
+	rejection := map[string]any{
+		"state": "sent_email",
+		"ui": map[string]any{
+			"messages": []map[string]any{
+				{"id": 4060006, "type": "error", "text": "The recovery code is invalid or has already been used."},
 			},
-		})
-	}))
-	defer server.Close()
+		},
+	}
 
-	client := New(server.URL, server.URL)
-	_, err := client.RecoveryComplete(context.Background(), "rec-flow-1", "000000", "NewSecret456")
-	if !errors.Is(err, ErrFlowRejected) {
-		t.Fatalf("err = %v, want ErrFlowRejected", err)
+	for _, status := range []int{http.StatusBadRequest, http.StatusOK} {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(status)
+			_ = json.NewEncoder(w).Encode(rejection)
+		}))
+
+		client := New(server.URL, server.URL)
+		_, err := client.RecoveryComplete(context.Background(), "rec-flow-1", "000000", "NewSecret456")
+		server.Close()
+		if !errors.Is(err, ErrFlowRejected) {
+			t.Fatalf("status %d: err = %v, want ErrFlowRejected", status, err)
+		}
 	}
 }
 
@@ -185,6 +193,21 @@ func TestVerificationCompleteStatusMapping(t *testing.T) {
 			name:   "invalid code is a flow rejection",
 			status: http.StatusBadRequest,
 			body: map[string]any{
+				"ui": map[string]any{
+					"messages": []map[string]any{
+						{"id": 4070006, "type": "error", "text": "The verification code is invalid or has already been used."},
+					},
+				},
+			},
+			wantErr: ErrFlowRejected,
+		},
+		{
+			// Live Kratos v1.1 shape: wrong code answered with 200, flow stays
+			// in sent_email, rejection in ui.messages.
+			name:   "invalid code behind a 200 is still a flow rejection",
+			status: http.StatusOK,
+			body: map[string]any{
+				"state": "sent_email",
 				"ui": map[string]any{
 					"messages": []map[string]any{
 						{"id": 4070006, "type": "error", "text": "The verification code is invalid or has already been used."},

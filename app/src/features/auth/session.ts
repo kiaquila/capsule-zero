@@ -69,7 +69,19 @@ export async function readVerifiedAppSession(): Promise<PersistedAppSession | nu
 
   const { createProviderRegistry } = await import("@/lib/providers/registry");
   const session = await createProviderRegistry().auth.getCurrentSession();
-  return session ? toPersistedAppSession(session) : null;
+  if (!session) {
+    return null;
+  }
+  const live = toPersistedAppSession(session);
+  return {
+    ...live,
+    // whoami cannot know the after-sign-up verification flow (only the
+    // registration response carries it), so keep the cookie's copy — the
+    // verify-email banner submits the emailed code against it. Live
+    // emailVerified stays authoritative when the provider reports one.
+    verificationFlowId: live.verificationFlowId ?? persisted.verificationFlowId,
+    emailVerified: live.emailVerified ?? persisted.emailVerified,
+  };
 }
 
 export async function clearAppSession() {

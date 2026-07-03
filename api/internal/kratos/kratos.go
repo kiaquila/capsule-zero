@@ -283,6 +283,12 @@ func (c *Client) RecoveryComplete(ctx context.Context, flowID, code, newPassword
 	}
 	token := sessionTokenFromContinueWith(ok.ContinueWith)
 	if token == "" {
+		// Kratos v1.1 answers a *wrong* code with 200: the flow stays open and
+		// the rejection lives in ui.messages (verified against the live stack).
+		// Only a 200 with neither a session nor an error is an upstream fault.
+		if _, msg := firstError(raw); msg != "" {
+			return nil, fmt.Errorf("%w: %s", ErrFlowRejected, msg)
+		}
 		return nil, errors.New("kratos recovery complete: no session token in continue_with")
 	}
 
@@ -313,7 +319,22 @@ func (c *Client) VerificationComplete(ctx context.Context, flowID, code string) 
 	}
 	switch resp.StatusCode {
 	case http.StatusOK:
-		return nil
+		// Kratos v1.1 answers a *wrong* code with 200 too: the flow stays in
+		// sent_email with the rejection in ui.messages (verified against the
+		// live stack). Only state passed_challenge is a success.
+		var flow struct {
+			State string `json:"state"`
+		}
+		if err := json.Unmarshal(raw, &flow); err != nil {
+			return err
+		}
+		if flow.State == "passed_challenge" {
+			return nil
+		}
+		if _, msg := firstError(raw); msg != "" {
+			return fmt.Errorf("%w: %s", ErrFlowRejected, msg)
+		}
+		return fmt.Errorf("kratos verification complete: unexpected state %q", flow.State)
 	case http.StatusBadRequest, http.StatusGone, http.StatusUnprocessableEntity:
 		if _, msg := firstError(raw); msg != "" {
 			return fmt.Errorf("%w: %s", ErrFlowRejected, msg)

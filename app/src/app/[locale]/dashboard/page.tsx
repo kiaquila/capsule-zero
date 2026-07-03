@@ -29,24 +29,13 @@ export default async function DashboardRoute({ params }: DashboardRouteProps) {
     locale: locale as AppLocale,
   });
 
-  // Verify-email banner (spec 035): the signed cookie carries the last known
-  // verification state (kept current by the sign-up and verification actions);
-  // a live whoami overrides it where the provider can report one. An identity
-  // hiccup must not break the dashboard — the banner just stays hidden.
-  let emailVerified = session.emailVerified;
-  let verificationFlowId = session.verificationFlowId;
-  try {
-    const liveSession = await registry.auth.getCurrentSession();
-    if (typeof liveSession?.user.emailVerified === "boolean") {
-      emailVerified = liveSession.user.emailVerified;
-    }
-    verificationFlowId = liveSession?.verificationFlowId ?? verificationFlowId;
-  } catch {
-    // keep the persisted state
-  }
+  // Verify-email banner (spec 035): readMockSession already merges the live
+  // whoami verification state with the cookie-persisted after-sign-up flow id
+  // (see readVerifiedAppSession), so the banner shows exactly while the
+  // provider reports the address unverified.
   const verifyEmail =
-    emailVerified === false
-      ? { email: session.email, flowId: verificationFlowId }
+    session.emailVerified === false
+      ? { email: session.email, flowId: session.verificationFlowId }
       : undefined;
 
   return <DashboardShell snapshot={snapshot} verifyEmail={verifyEmail} />;
