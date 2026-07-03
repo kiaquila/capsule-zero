@@ -17,9 +17,9 @@ Capsule Zero is targeting production-grade v0.1 directly. There is no Stage 1 mo
 - a shared item database for public marketplace imports
 - EN and RU from v0.1 day 1, with ES-AR globally deferred to v0.2
 - coins-only monetization through Lava.top one-time purchases — coins and image enhancement are in the v0.2 backlog; v0.1 ships with a Lava.top stub
-- a single DigitalOcean droplet running docker-compose with every service declared explicitly
+- a single DigitalOcean droplet running docker-compose with every service declared explicitly (hosting migrated to a Hetzner CX23 on 2026-07-02, spec 033 — the single-server docker-compose shape is unchanged)
 - self-hosted observability under tight RAM budget (no Sentry/Prometheus in v0.1)
-- a Cloudflare front-door for DDoS protection and CDN
+- a Cloudflare front-door for DDoS protection and CDN (activation deferred to Stage 2 — founder decision 2026-07-02; see the accepted-stack table)
 
 The previous Phase 4 stack (Supabase / Vercel / Flutter / Photoroom / mock-first Stage 1) is dropped before any product code derived from it lands in production. `/app` remains the canonical provider-abstracted Next.js frontend; the retired Supabase provider inside it is removed domain by domain as the Go API absorbs each bounded context.
 
@@ -40,9 +40,9 @@ Adopt the following production stack:
 | File storage             | DigitalOcean Spaces (S3-compatible) with the built-in Spaces CDN                                                                                                  |
 | Image processing         | Self-hosted Capsule Zero model behind a Go worker, deferred to Stage 2                                                                                            |
 | Email                    | Resend for transactional email (verification, password reset, security notifications), MailHog for local dev                                                      |
-| DNS / anti-DDoS          | Spaceship registrar pointed at Cloudflare nameservers; Cloudflare proxy enabled on `capsulezero.app` for DDoS and CDN                                             |
+| DNS / anti-DDoS          | Spaceship registrar; Cloudflare nameservers + proxy on `capsulezero.app` are **deferred to Stage 2** (founder decision 2026-07-02, spec 033) — v0.1 pre-launch runs direct DNS A records to the host nginx edge |
 | Observability            | syslog file logs + OpenTelemetry trace export in v0.1; Grafana dashboards, Sentry, and Prometheus are deferred                                                    |
-| Hosting                  | Single DigitalOcean droplet running docker-compose; minimum 4 GB RAM / 2 vCPU / 80 GB disk                                                                        |
+| Hosting                  | Single Hetzner Cloud server (CX23: 2 vCPU / 4 GB / 40 GB, Ubuntu 26.04) running docker-compose — migrated from the DigitalOcean droplet 2026-07-02 (spec 033)     |
 | Payments                 | Lava.top one-time product payments on web; stubbed in v0.1, integrated after core wardrobe and capsule flows ship                                                 |
 | i18n                     | next-intl                                                                                                                                                         |
 | Local web state          | Zustand                                                                                                                                                           |
@@ -64,15 +64,15 @@ The previous Phase 4 chose Flutter. The pivot replaces it with React Native: sha
 
 ### Why DigitalOcean Spaces and not Cloudflare R2
 
-Hosting is on DigitalOcean, so Spaces ships in one bill, with one set of credentials, and includes a CDN with no extra wiring. R2 has cheaper egress on paper, but requires gluing two providers together and is a Stage 2 optimization if storage cost becomes a real line item.
+The original rationale was same-provider convenience: hosting was on DigitalOcean, so Spaces shipped in one bill with one set of credentials. That argument retired with the 2026-07-02 Hetzner migration (spec 033) — the topology is now cross-provider by construction — but Spaces stays preferred for v0.1 on its remaining merits: a mature S3-compatible API behind the storage port (ADR-003, no code or contract change), a built-in CDN with no fronting setup, and no new provider relationship. R2 would couple object storage to Cloudflare **before** the Stage-2 front-door activation (deferred, founder decision 2026-07-02), adding the very dependency v0.1 deliberately runs without. Object traffic is predominantly user ↔ CDN rather than server ↔ bucket, so cross-provider egress/latency between the Hetzner box and an EU Spaces region is not load-bearing at v0.1 scale. Natural re-evaluation point: the Stage-2 Cloudflare activation (R2 becomes same-provider with the edge), or storage cost becoming a real line item — whichever comes first.
 
 ### Why no Kafka in v0.1
 
-The droplet cannot host Kafka (JVM eats > 1 GB of RAM) and we do not yet have multiple consumers. A Redis-based job queue covers image processing, embedding generation, marketplace parsing, and webhook fanout. Kafka becomes interesting only when the image worker, the API, and a second downstream consumer all need durable, replayable streams — i.e. when we extract the image worker into its own service.
+The 4 GB server cannot host Kafka (JVM eats > 1 GB of RAM) and we do not yet have multiple consumers. A Redis-based job queue covers image processing, embedding generation, marketplace parsing, and webhook fanout. Kafka becomes interesting only when the image worker, the API, and a second downstream consumer all need durable, replayable streams — i.e. when we extract the image worker into its own service.
 
-### Why Cloudflare and not nginx rate-limit alone
+### Why Cloudflare and not nginx rate-limit alone (activation: Stage 2)
 
-Cloudflare is free at the level we need, gives DNS, DDoS protection, bot fight mode, CDN, and TLS edge — all in one provider — and lets the droplet stay behind a proxy. nginx then handles app-level TLS, rate-limit, and auth routing without also having to play "first line of defense".
+The choice stands; the activation is deferred to Stage 2 (founder decision 2026-07-02, spec 033). Once enabled, Cloudflare is free at the level we need, gives DNS, DDoS protection, bot fight mode, CDN, and TLS edge — all in one provider — and lets the server stay behind a proxy; nginx then handles app-level TLS, rate-limit, and auth routing without also having to play "first line of defense". Until then v0.1 pre-launch runs direct DNS: host nginx `limit_req` plus the Go API's per-client limiter carry the rate-limiting, and the missing DDoS floor is an accepted pre-launch risk (no users yet; the shipped realip/CF-ranges nginx config stays inert until the cut-over).
 
 ### Why nginx and not Traefik or Caddy
 
@@ -100,7 +100,7 @@ Positive:
 - Bounded contexts inside the monolith map directly to future microservice extractions.
 - One language (Go) for backend, one (TypeScript) for web + mobile — smaller cognitive surface than Supabase + Flutter + Vercel + RLS DSL.
 - No BaaS lock-in. The schema, auth, and storage all run on commodity software the team owns.
-- Cloudflare absorbs the noisy traffic floor for free.
+- Cloudflare absorbs the noisy traffic floor for free (from its Stage-2 activation on; v0.1 pre-launch accepts direct-DNS exposure).
 - Resend keeps Kratos email flows working without rolling our own SMTP.
 
 Tradeoffs:

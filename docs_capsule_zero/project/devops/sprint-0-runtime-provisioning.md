@@ -10,9 +10,9 @@ Phase 1 delivers the host `nginx + web` runtime that replaces the host Caddy + l
 
 - GitHub `main` is current and required checks are green.
 - Server of at least 2 vCPU / 4 GB (current: Hetzner CX23, Ubuntu 26.04), Docker + docker-compose installed.
-- Cloudflare account with the `capsulezero.app` zone.
-- (Phase 4+ when Cloudflare proxy is enabled.) Cloudflare API token with Zone Read + DNS Edit on `capsulezero.app`, stored as `CF_DNS_API_TOKEN` in the droplet `.env` for ACME DNS-01. Until the proxy is on, nginx + certbot use HTTP-01 with port 80 directly.
-- Spaceship registrar account with `capsulezero.app` set to Cloudflare nameservers.
+- (Stage 2 — the Cloudflare front-door is deferred, founder decision 2026-07-02.) Cloudflare account with the `capsulezero.app` zone; not needed for the v0.1 bring-up.
+- (Stage 2, with the Cloudflare proxy.) Cloudflare API token with Zone Read + DNS Edit on `capsulezero.app`, stored as `CF_DNS_API_TOKEN` in the server `.env` for ACME DNS-01. Until the proxy is on, nginx + certbot use HTTP-01 with port 80 directly.
+- Spaceship registrar account with a direct `A` record for `capsulezero.app` pointing at the server IP (the Cloudflare nameserver cut-over is deferred to Stage 2).
 - Resend account with API key and `no-reply@capsulezero.app` verified.
 - DigitalOcean Spaces bucket `capsulezero` with CORS for `https://capsulezero.app` (and the dev origin) configured.
 
@@ -28,7 +28,7 @@ Required keys at minimum: see `docs_capsule_zero/project/devops/docker-compose-d
 
 ## Production-First Posture
 
-There is no Stage 1 mock-first layer (see ADR-006). Every active service in the runtime comes up against real Postgres / real Kratos / real Spaces / real Resend / real Cloudflare from the first deploy. Local development uses the same stack with a `docker-compose.dev.yml` override that swaps Resend for MailHog and enables API hot-reload (the override is reintroduced in Phase 2 alongside Kratos).
+There is no Stage 1 mock-first layer (see ADR-006). Every active service in the runtime comes up against real Postgres / real Kratos / real Spaces / real Resend from the first deploy (the Cloudflare front-door joins at Stage 2 — founder decision 2026-07-02). Local development uses the same stack with a `docker-compose.dev.yml` override that swaps Resend for MailHog and enables API hot-reload (the override is reintroduced in Phase 2 alongside Kratos).
 
 Real provider integration gates that remain:
 
@@ -40,13 +40,10 @@ Until these gates open, the corresponding API surface exists as stubs (Lava.top)
 
 ## Bring-Up Steps
 
-### 1. DNS and Cloudflare
+### 1. DNS
 
-- Confirm Spaceship nameservers point to Cloudflare.
-- In Cloudflare, add an `A` record for `capsulezero.app` pointing to the droplet IP, with proxy (orange cloud) enabled. Add `grafana.capsulezero.app` only after ADR-007 promotes Grafana.
-- SSL/TLS mode: `Full (strict)`.
-- Enable `Bot Fight Mode` and `Always Use HTTPS`.
-- Add a Page Rule (or Rules Engine entry) for `capsulezero.app/api/*` with cache level `Bypass`.
+- v0.1 (current): at the Spaceship registrar, point a direct `A` record for `capsulezero.app` at the server IP. TLS is Let's Encrypt on host nginx (HTTP-01). Add `grafana.capsulezero.app` only after ADR-007 promotes Grafana.
+- Stage 2 (Cloudflare front-door activation — founder decision 2026-07-02 deferred it out of v0.1): switch Spaceship nameservers to Cloudflare; `A` record with proxy (orange cloud) enabled; SSL/TLS mode `Full (strict)`; enable `Bot Fight Mode` and `Always Use HTTPS`; add a cache-`Bypass` rule for `capsulezero.app/api/*`; refresh the nginx realip CF-ranges snippet (spec 024 Known Issues) in the same change.
 
 ### 2. Droplet baseline
 
@@ -156,19 +153,17 @@ Branch/commit:
 
 Droplet
 
-- Plan: 4 GB / 2 vCPU / 80 GB (or larger)
+- Plan: ≥ 2 vCPU / 4 GB (current: Hetzner CX23 — 2 vCPU / 4 GB / 40 GB; superseded the DO 80 GB row 2026-07-02, spec 033)
 - IP:
 - Hostname: capsulezero-prod
 - ufw status: pass/fail
 
-DNS / Cloudflare
+DNS (v0.1 — direct; Cloudflare deferred to Stage 2)
 
-- Spaceship → Cloudflare NS: pass/fail
-- Cloudflare A record (apex): pass/fail
+- Spaceship direct `A` record (apex) → server IP: pass/fail
 - Grafana A record omitted until ADR-007 promotion: pass/fail
-- Proxy enabled: pass/fail
-- SSL/TLS Full (strict): pass/fail
-- Bot Fight Mode: enabled
+- Let's Encrypt cert valid on host nginx: pass/fail
+- Stage 2 only (do not verify in v0.1): Spaceship → Cloudflare NS; proxy enabled; SSL/TLS Full (strict); Bot Fight Mode
 
 docker-compose
 
