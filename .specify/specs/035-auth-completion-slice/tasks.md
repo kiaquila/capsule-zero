@@ -157,6 +157,11 @@
   but Enter from its password inputs now prevents the outer profile submit and
   runs the password-change handler. Enter on the action buttons keeps native
   button behavior.
+- **P2: recovery completion distinguishes password-policy rejection from an
+  invalid code.** Kratos settings-flow password rejections now return the
+  `ErrPasswordRejected` sentinel (still wrapping `ErrFlowRejected` for
+  compatibility). The auth handler maps that case to `VALIDATION_ERROR`; only
+  recovery-code rejections map to `INVALID_CODE`.
 
 ### Verification evidence (local stack, 2026-07-03)
 
@@ -204,6 +209,8 @@
 - `npm run lint:e2e` — 0 errors; three existing MailHog-gated skip warnings.
 - `npm --prefix tests/e2e run test -- specs/auth/profile-change-password.spec.ts`
   — 2 passed (chromium + webkit-iphone), including the Enter submit path.
+- `go test ./...` in `api/` — green after the recovery password-policy
+  regression tests.
 
 ### Known Issues / Follow-ups
 

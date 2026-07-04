@@ -235,6 +235,10 @@ func (h *Handler) RecoveryComplete(w http.ResponseWriter, r *http.Request) {
 
 	session, err := h.Kratos.RecoveryComplete(r.Context(), in.FlowID, in.Code, in.NewPassword)
 	if err != nil {
+		if errors.Is(err, kratos.ErrPasswordRejected) {
+			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err))
+			return
+		}
 		if errors.Is(err, kratos.ErrFlowRejected) {
 			// Machine-readable code: the web client localizes it (spec 035 fix
 			// round 2 — raw Kratos English must never reach the user).

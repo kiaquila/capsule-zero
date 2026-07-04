@@ -77,10 +77,13 @@ no dormant plumbing and no dead-end email links remain in production.
 
 1. Recovery completion with a wrong/expired code → `400 INVALID_CODE`,
    no session issued, password unchanged, localized message in the UI.
-2. Password change with a wrong current password → `400
+2. Recovery completion with a valid code but Kratos password-policy
+   rejection → `400 VALIDATION_ERROR`, no session issued, password unchanged,
+   and the UI must not tell the user the code is invalid.
+3. Password change with a wrong current password → `400
    INVALID_CURRENT_PASSWORD` (no oracle beyond what login already exposes),
    password unchanged, localized message in the UI.
-3. Recovery/verification start for an unknown email → same success shape as
+4. Recovery/verification start for an unknown email → same success shape as
    for a known email (no account enumeration).
-4. Verification completion with a wrong code → `400 INVALID_CODE`,
+5. Verification completion with a wrong code → `400 INVALID_CODE`,
    address stays unverified, banner persists with a localized error.

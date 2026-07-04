@@ -99,6 +99,24 @@ func TestRecoveryCompleteRejectsWeakPassword(t *testing.T) {
 	}
 }
 
+func TestRecoveryCompleteMapsPasswordPolicyRejectionToValidation(t *testing.T) {
+	handler := Handler{Kratos: fakeIdentityClient{
+		recoveryCompleteErr: fmt.Errorf("%w: password must not contain the identifier", kratos.ErrPasswordRejected),
+	}}
+	request := httptest.NewRequest(http.MethodPost, "/api/auth/recovery/complete",
+		strings.NewReader(`{"flowId":"rec-flow-9","code":"123456","newPassword":"person@example.com123"}`))
+	recorder := httptest.NewRecorder()
+
+	handler.RecoveryComplete(recorder, request)
+
+	if recorder.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want 400", recorder.Code)
+	}
+	if body := decodeErrorBody(t, recorder); body.Error.Code != "VALIDATION_ERROR" {
+		t.Fatalf("code = %q, want VALIDATION_ERROR", body.Error.Code)
+	}
+}
+
 func TestRecoveryCompleteUpstreamFailureIs502(t *testing.T) {
 	handler := Handler{Kratos: fakeIdentityClient{
 		recoveryCompleteErr: errors.New("kratos unavailable"),

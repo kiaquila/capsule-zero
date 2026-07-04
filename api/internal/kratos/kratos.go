@@ -23,6 +23,12 @@ var ErrInvalidCredentials = errors.New("invalid email or password")
 // errors so handlers can classify them as temporary infrastructure failures.
 var ErrFlowRejected = errors.New("kratos flow rejected")
 
+// ErrPasswordRejected is returned when Kratos specifically rejects a submitted
+// password during a settings flow. It wraps ErrFlowRejected for compatibility
+// while letting recovery callers distinguish "valid code, bad password" from
+// "bad recovery code".
+var ErrPasswordRejected = fmt.Errorf("%w: password rejected", ErrFlowRejected)
+
 // ErrIdentifierExists is returned when a registration is rejected because an
 // account with the submitted identifier already exists. It wraps
 // ErrFlowRejected so login-style callers still collapse it into a generic
@@ -374,8 +380,14 @@ func (c *Client) SettingsPassword(ctx context.Context, token, newPassword string
 	switch resp.StatusCode {
 	case http.StatusOK:
 		return nil
-	case http.StatusBadRequest, http.StatusForbidden, http.StatusUnprocessableEntity:
-		// 400: password policy rejection; 403: privileged session required.
+	case http.StatusBadRequest, http.StatusUnprocessableEntity:
+		if _, msg := firstError(raw); msg != "" {
+			return fmt.Errorf("%w: %s", ErrPasswordRejected, msg)
+		}
+		return ErrPasswordRejected
+	case http.StatusForbidden:
+		// Privileged-session failures are flow rejections, not password-policy
+		// feedback, so recovery callers must not surface them as field errors.
 		if _, msg := firstError(raw); msg != "" {
 			return fmt.Errorf("%w: %s", ErrFlowRejected, msg)
 		}

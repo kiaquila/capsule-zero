@@ -18,7 +18,7 @@ stack for founder UI review → PR only after founder approval.
 | # | Acceptance criterion | Evidence |
 |---|---|---|
 | 1 | Failing tests committed before implementation (TDD) | Commit history: test commit precedes implementation commits on the PR branch |
-| 2 | Go unit tests cover recovery start (code method + flowId), recovery complete (happy + wrong code), verification start/complete (happy + wrong code), password change (happy + wrong current password + unauthenticated) | `go test ./...` in `api/` green on PR head; test names in `internal/kratos` + `internal/auth` |
+| 2 | Go unit tests cover recovery start (code method + flowId), recovery complete (happy + wrong code + password-policy rejection), verification start/complete (happy + wrong code), password change (happy + wrong current password + unauthenticated) | `go test ./...` in `api/` green on PR head; test names in `internal/kratos` + `internal/auth` |
 | 3 | Provider-agnostic e2e: forgot-password via UI (mock code `123456`, sign-in email prefilled) lands on dashboard | Playwright `specs/auth/forgot-password.spec.ts` green in the required `test` check |
 | 4 | Provider-agnostic e2e: sign-up shows the verify-email banner; completing the code hides it | Playwright `specs/auth/verify-email-banner.spec.ts` green in the required `test` check |
 | 5 | Provider-agnostic e2e: profile password change succeeds via click or Enter and rejects a wrong current password | Playwright `specs/auth/profile-change-password.spec.ts` green in the required `test` check; local review-fix run covers Enter |

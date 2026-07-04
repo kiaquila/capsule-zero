@@ -146,6 +146,44 @@ func TestRecoveryCompleteRejectsInvalidCode(t *testing.T) {
 	}
 }
 
+func TestRecoveryCompleteDistinguishesSettingsPasswordPolicyRejection(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == http.MethodPost && r.URL.Path == "/self-service/recovery":
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"state": "passed_challenge",
+				"continue_with": []map[string]any{
+					{"action": "set_ory_session_token", "ory_session_token": "recovered-token"},
+				},
+			})
+		case r.Method == http.MethodGet && r.URL.Path == "/self-service/settings/api":
+			_ = json.NewEncoder(w).Encode(map[string]any{"id": "settings-2"})
+		case r.Method == http.MethodPost && r.URL.Path == "/self-service/settings":
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode(map[string]any{
+				"ui": map[string]any{
+					"messages": []map[string]any{
+						{"id": 4000005, "type": "error", "text": "The password can not be used."},
+					},
+				},
+			})
+		default:
+			t.Errorf("unexpected request: %s %s", r.Method, r.URL.Path)
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	client := New(server.URL, server.URL)
+	_, err := client.RecoveryComplete(context.Background(), "rec-flow-1", "123456", "person@example.com123")
+	if !errors.Is(err, ErrPasswordRejected) {
+		t.Fatalf("err = %v, want ErrPasswordRejected", err)
+	}
+	if !errors.Is(err, ErrFlowRejected) {
+		t.Fatalf("err = %v, want ErrFlowRejected compatibility", err)
+	}
+}
+
 func TestVerificationStartUsesCodeMethodAndReturnsFlowID(t *testing.T) {
 	var submitted map[string]any
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
