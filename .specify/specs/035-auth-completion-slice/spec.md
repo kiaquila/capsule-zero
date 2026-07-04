@@ -35,6 +35,9 @@ no dormant plumbing and no dead-end email links remain in production.
 - Web `/app` (reusing existing styles/classes/i18n — founder decision):
   - AuthPanel: "Forgot password?" affordance restored; recovery mode (email →
     code + new password completion step) → auto-login → dashboard.
+    A custom Kratos courier template links emailed recovery URLs straight to
+    `/{locale}/auth?flow=…&code=…`, so the edge can keep `/self-service/*`
+    closed without dead-ending users who click the email link.
   - Verify-email banner for signed-in users with an unverified address:
     code entry + resend, built on the shared `NotificationBanner` component
     (the standard inline-notification surface introduced by this slice),
@@ -67,8 +70,8 @@ no dormant plumbing and no dead-end email links remain in production.
   for v0.1 (founder decision 2026-07-03); the known account-enumeration
   residual via registration response shape (spec 024 Known Issues) stays
   accepted.
-- Custom Kratos courier email templates / branded emails — follow-up; default
-  code emails ship first (see Process Memory for the link-in-email decision).
+- Branded Kratos courier email design — follow-up; minimal link-rewrite
+  templates for recovery and verification ship in this slice.
 - Session management UI (list/revoke other sessions), 2FA — later slices.
 - Rate-limit changes beyond routing the new endpoints through the existing
   auth bucket (edge `limit_req` + Go limiter).

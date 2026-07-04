@@ -6,7 +6,7 @@ One vertical slice on branch `feat/035-auth-completion`, TDD-first (this spec
 is ≥ 025: failing tests are committed before the product code that makes them
 pass). Kratos flow mechanics (exact `continue_with` payload shapes, email
 link format of the `code`-method templates) are pinned against the live local
-docker stack (Kratos v1.1.0 + MailHog) during verification, and the client is
+docker stack (Kratos v1.3.1 + MailHog) during verification, and the client is
 written defensively against both documented shapes.
 
 Order: spec + failing tests → Kratos config → Go client/handlers → contract →
@@ -33,4 +33,4 @@ stack for founder UI review → PR only after founder approval.
 | 11 | Contract in sync: openapi.yaml ↔ api-spec.md ↔ Go routes ↔ generated client | `node scripts/check-api-contract.mjs` green (part of `baseline-checks`) |
 | 12 | Web quality gates | `npm run typecheck` + `npm run lint` clean |
 | 13 | SMTP port doc fix (465 → 2465, Hetzner outbound block) | Diff of `deploy/compose.env.example` + runbook; live host already on 2465 (AUTH 235 recorded 2026-07-03) |
-| 14 | Edge stays fully closed: `/self-service/*` and `/sessions/*` 404; the emailed link lands on the app route (custom courier template) | `infra/nginx*` diff; kratos boots with the template config; full-stack link-click e2e green |
+| 14 | Edge stays fully closed: `/self-service/*` and `/sessions/*` 404; emailed recovery/verification links land on app routes (custom courier templates) | `infra/nginx*` diff; kratos boots with the template config; full-stack link-click e2e green |

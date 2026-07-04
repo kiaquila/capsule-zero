@@ -118,7 +118,8 @@
   rate-limit bucket for all browsers (no X-Real-IP forwarding on the dev
   vhost `location /`), so heavy manual testing can hit 429 — now at least
   surfaced as a localized RATE_LIMITED message.
-- **Emailed link → app route via custom courier template, edge stays closed.**
+- **Emailed verification link → app route via custom courier template, edge
+  stays closed.**
   Discovered live: Kratos v1.3's own emailed link (`GET
   /self-service/verification?code&flow`) does NOT consume the code — it stows
   it in the flow and redirects to the UI expecting an auto-submitting SPA, so
@@ -162,6 +163,11 @@
   `ErrPasswordRejected` sentinel (still wrapping `ErrFlowRejected` for
   compatibility). The auth handler maps that case to `VALIDATION_ERROR`; only
   recovery-code rejections map to `INVALID_CODE`.
+- **P2: recovery email links route to the app.** The `recovery_code.valid`
+  courier templates mirror the verification template: they keep the one-time
+  code visible and rewrite Kratos's `/self-service/recovery?code&flow` URL to
+  `/{locale}/auth?code&flow`, so clicking the email opens the Capsule Zero
+  recovery completion UI while `/self-service/*` remains 404.
 
 ### Verification evidence (local stack, 2026-07-03)
 
@@ -211,6 +217,13 @@
   — 2 passed (chromium + webkit-iphone), including the Enter submit path.
 - `go test ./...` in `api/` — green after the recovery password-policy
   regression tests.
+- Recovery-link P2 follow-up: `docker compose --env-file
+  deploy/compose.env.example config`, `npm run typecheck:e2e`,
+  `npm run lint:e2e`, `node scripts/check-api-contract.mjs`, `go test ./...`
+  in `api/`, and `git diff --check` are green locally. `kratos validate
+  config` is not available in `oryd/kratos:v1.3.1` (the CLI only exposes
+  identity validation), so compose render + full-stack boot evidence remains
+  the applicable config check.
 
 ### Known Issues / Follow-ups
 
@@ -220,7 +233,6 @@
   Stop the stack (or run the mock suite first) — tracked as a tests/README
   follow-up note.
 
-- Default Kratos courier templates ship first (plain-text code emails).
-  Branded/custom templates (and a guaranteed in-email deep link to the app's
-  completion page) are a follow-up; the code always works cross-device.
+- Minimal Kratos courier templates now guarantee recovery/verification email
+  links land on app routes. Branded email design remains a follow-up.
 - Coins/billing untouched; session management UI untouched.

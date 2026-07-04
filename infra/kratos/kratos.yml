@@ -142,12 +142,16 @@ courier:
     from_address: no-reply@capsulezero.app
     from_name: Capsule Zero
   templates:
-    # Custom verification email (spec 035): the emailed link must land on the
-    # app's silent /verify-email route carrying code+flow — Kratos's default
-    # link points at its own public GET, which does NOT consume the code (it
-    # expects an auto-submitting UI) and is not exposed at our edge. The
-    # template rewrites only the path; the origin comes from
+    # Custom code-method emails (spec 035): emailed links must land on app
+    # routes carrying code+flow, because /self-service/* stays closed at the
+    # nginx edge. The templates rewrite only the path; the origin comes from
     # SERVE_PUBLIC_BASE_URL, which points at the app origin in every env.
+    recovery_code:
+      valid:
+        email:
+          body:
+            html: file:///etc/config/kratos/templates/recovery_code.valid.email.body.gotmpl
+            plaintext: file:///etc/config/kratos/templates/recovery_code.valid.email.body.plaintext.gotmpl
     verification_code:
       valid:
         email:

@@ -1,0 +1,13 @@
+Hi,
+
+we received a request to reset your Capsule Zero password.
+
+Your recovery code: {{ .RecoveryCode }}
+
+Or open this link to continue password recovery:
+{{- $locale := "en" }}
+{{- if .Identity }}{{ with index .Identity.traits "locale" }}{{ $locale = . }}{{ end }}{{ end }}
+{{ .RecoveryURL | replace "/self-service/recovery?" (printf "/%s/auth?" $locale) }}
+
+The code and link expire in 1 hour. If you did not request a password reset,
+you can safely ignore this email.

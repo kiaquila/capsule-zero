@@ -50,6 +50,28 @@ export async function fetchOneTimeCode(
 }
 
 /**
+ * Poll for the emailed recovery LINK — the custom courier template links
+ * straight to the app's /auth route with code+flow (spec 035).
+ */
+export async function fetchRecoveryLink(email: string): Promise<string> {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    for (const message of await searchMessages(email)) {
+      if (!/recover/i.test(subjectOf(message))) {
+        continue;
+      }
+      const link = decodedBody(message).match(
+        /https?:\/\/[^\s"<>]+\/auth\?[^\s"<>]+/,
+      )?.[0];
+      if (link) {
+        return link.replace(/&amp;/g, "&");
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+  }
+  throw new Error(`no recovery link delivered to ${email}`);
+}
+
+/**
  * Poll for the emailed verification LINK — the custom courier template links
  * straight to the app's silent /verify-email route with code+flow (spec 035).
  */

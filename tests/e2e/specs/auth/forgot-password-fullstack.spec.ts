@@ -1,6 +1,10 @@
 import { expect, test } from "../../fixtures/base";
 import { PASSWORDS, uniqueEmail } from "../../fixtures/accounts";
-import { fetchOneTimeCode, mailhogUrl } from "../../fixtures/mailhog";
+import {
+  fetchOneTimeCode,
+  fetchRecoveryLink,
+  mailhogUrl,
+} from "../../fixtures/mailhog";
 
 /**
  * Auth — forgot password against the production-shape docker stack (Go API +
@@ -35,6 +39,10 @@ test.describe("Auth — forgot password (full stack)", () => {
     await landing.auth.requestRecovery(email);
     await expect(landing.auth.recoveryCodeInput).toBeVisible();
     const firstCode = await fetchOneTimeCode(email, /recover/i);
+    const firstLink = new URL(await fetchRecoveryLink(email));
+    expect(firstLink.pathname).toBe("/en/auth");
+    expect(firstLink.searchParams.get("code")).toBe(firstCode);
+    expect(firstLink.searchParams.get("flow")).toBeTruthy();
 
     // Resend: a fresh code arrives and the flow is replaced.
     await landing.auth.recoveryResend.click();
