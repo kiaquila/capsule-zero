@@ -377,6 +377,8 @@ export type ApiClientAvailability = ApiOperation["clientAvailability"];
 
 export const API_ERROR_CODES = [
   "VALIDATION_ERROR",
+  "INVALID_CODE",
+  "INVALID_CURRENT_PASSWORD",
   "UNAUTHENTICATED",
   "FORBIDDEN",
   "NOT_FOUND",
@@ -390,7 +392,7 @@ export const API_ERROR_CODES = [
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
-export type ErrorCode = "VALIDATION_ERROR" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "IDEMPOTENCY_CONFLICT" | "SEMANTIC_VALIDATION_FAILED" | "INSUFFICIENT_BALANCE" | "WEBHOOK_AUTH_FAILED" | "RATE_LIMITED" | "INTERNAL_ERROR";
+export type ErrorCode = "VALIDATION_ERROR" | "INVALID_CODE" | "INVALID_CURRENT_PASSWORD" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "IDEMPOTENCY_CONFLICT" | "SEMANTIC_VALIDATION_FAILED" | "INSUFFICIENT_BALANCE" | "WEBHOOK_AUTH_FAILED" | "RATE_LIMITED" | "INTERNAL_ERROR";
 
 export type ErrorResponse = {
   error: {
@@ -1639,6 +1641,8 @@ export const API_SCHEMAS = {
     "type": "string",
     "enum": [
       "VALIDATION_ERROR",
+      "INVALID_CODE",
+      "INVALID_CURRENT_PASSWORD",
       "UNAUTHENTICATED",
       "FORBIDDEN",
       "NOT_FOUND",
