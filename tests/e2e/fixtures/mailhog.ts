@@ -39,9 +39,9 @@ export async function fetchOneTimeCode(
       if (!subjectPattern.test(subjectOf(message))) {
         continue;
       }
-      const match = decodedBody(message).match(/\b(\d{6})\b/);
-      if (match) {
-        return match[1];
+      const code = decodedBody(message).match(/\b(\d{6})\b/)?.[1];
+      if (code) {
+        return code;
       }
     }
     await new Promise((resolve) => setTimeout(resolve, 1_000));
@@ -59,11 +59,11 @@ export async function fetchVerificationLink(email: string): Promise<string> {
       if (!/verif/i.test(subjectOf(message))) {
         continue;
       }
-      const match = decodedBody(message).match(
+      const link = decodedBody(message).match(
         /https?:\/\/[^\s"<>]+\/verify-email\?[^\s"<>]+/,
-      );
-      if (match) {
-        return match[0].replace(/&amp;/g, "&");
+      )?.[0];
+      if (link) {
+        return link.replace(/&amp;/g, "&");
       }
     }
     await new Promise((resolve) => setTimeout(resolve, 1_000));
