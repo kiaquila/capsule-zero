@@ -621,21 +621,16 @@ function buildAuthPort(
       return mapSession(data.user, data.session);
     },
 
+    // The frozen Supabase provider never grew the spec-035 code-method flows;
+    // it is being retired domain by domain (AGENTS.md §8). Starting a recovery
+    // here would route the UI into a code-entry step that can never complete
+    // (Codex P2), so every spec-035 auth flow fails loudly instead.
     async requestPasswordRecovery(email) {
-      const redirectTo = new URL(
-        "/en/auth",
-        process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
-      ).toString();
-      const { error } = await clients.anon.auth.resetPasswordForEmail(email, {
-        redirectTo,
-      });
-      throwIfError(error, "Supabase password recovery failed");
-      return { delivery: "email", email, flowId: "supabase-recovery" };
+      throw new Error(
+        `RECOVERY_FAILED: not supported by the retired Supabase provider (${email}).`,
+      );
     },
 
-    // The frozen Supabase provider never grew the spec-035 completion flows;
-    // it is being retired domain by domain (AGENTS.md §8), so these surface a
-    // clear failure instead of a half-working path.
     async completePasswordRecovery() {
       throw new Error(
         "RECOVERY_FAILED: not supported by the retired Supabase provider.",

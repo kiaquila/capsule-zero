@@ -142,6 +142,17 @@
   that own credential truth: resend rotation, old-password-dies, emailed-link
   verification). Shared fixtures: `fixtures/accounts.ts`, `fixtures/mailhog.ts`.
 
+### Decisions — Codex review fixes (PR #68, 2026-07-04)
+
+- **P2: retired Supabase provider no longer fakes a recovery flow.** Its
+  `requestPasswordRecovery` previously sent a Supabase reset email and
+  returned a synthetic `flowId`, routing the UI into a code-entry step that
+  could never complete. It now fails loudly like the other spec-035 stubs —
+  the auth domain has moved to the Go API (AGENTS §8).
+- **P2: verification links are locale-aware.** The courier template reads the
+  `locale` identity trait (default `en`) and builds `/{locale}/verify-email`;
+  verified live: EN sign-up → `/en/…`, RU sign-up → `/ru/…`.
+
 ### Verification evidence (local stack, 2026-07-03)
 
 - `go vet ./... && go test ./...` — 6/6 packages ok (includes the live-shape
