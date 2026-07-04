@@ -33,7 +33,7 @@ test.describe("Profile — change password (full stack)", () => {
 
     // The real current password goes through.
     await profile.currentPasswordInput.fill(PASSWORDS.initial);
-    await profile.passwordSubmit.click();
+    await profile.submitPasswordWithEnter();
     await expect(profile.toast).toBeVisible();
 
     // Old password dead, new one works.

@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { type KeyboardEvent, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { changePasswordAction } from "@/features/auth/actions";
 import { authErrorMessageKey } from "@/features/auth/error-codes";
@@ -62,6 +62,21 @@ export function ProfilePasswordForm({ onSuccess }: ProfilePasswordFormProps) {
     onSuccess(t("notice.passwordChanged"));
   });
 
+  const handlePasswordKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (
+      event.key !== "Enter" ||
+      event.nativeEvent.isComposing ||
+      !(event.target instanceof HTMLInputElement) ||
+      form.formState.isSubmitting
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    void submit();
+  };
+
   if (!open) {
     return (
       <button
@@ -82,6 +97,7 @@ export function ProfilePasswordForm({ onSuccess }: ProfilePasswordFormProps) {
     <div
       className="profile-field-grid profile-password-form"
       data-testid="profile-password-form"
+      onKeyDown={handlePasswordKeyDown}
     >
       <ProfileTextField
         error={form.formState.errors.currentPassword?.message}

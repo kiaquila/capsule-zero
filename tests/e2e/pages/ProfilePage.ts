@@ -42,4 +42,8 @@ export class ProfilePage extends BasePage {
     await this.confirmPasswordInput.fill(next);
     await this.passwordSubmit.click();
   }
+
+  async submitPasswordWithEnter(): Promise<void> {
+    await this.confirmPasswordInput.press("Enter");
+  }
 }

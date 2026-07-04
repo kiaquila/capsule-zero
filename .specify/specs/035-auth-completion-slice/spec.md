@@ -46,7 +46,9 @@ no dormant plumbing and no dead-end email links remain in production.
     dashboard — no code entry, no extra screens (founder feedback, review
     round 2). The edge keeps `/self-service/*` fully 404.
   - Profile: the mock "Change password" button becomes a real form
-    (current + new password) against `POST /api/auth/password`.
+    (current + new password) against `POST /api/auth/password`; click and
+    Enter from the password inputs both run the password-change action, not
+    the outer profile-save action.
   - Provider contracts + `api` and `mock` providers + server actions extended
     accordingly (mock uses the deterministic code `123456` so provider-agnostic
     e2e runs in CI without email).

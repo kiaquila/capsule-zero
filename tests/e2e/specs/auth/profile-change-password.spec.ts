@@ -37,7 +37,7 @@ test.describe("Profile — change password", () => {
     await expect(profile.passwordForm).toBeVisible();
 
     await profile.currentPasswordInput.fill(PASSWORDS.initial);
-    await profile.passwordSubmit.click();
+    await profile.submitPasswordWithEnter();
     await expect(profile.toast).toBeVisible();
     await expect(profile.passwordForm).toBeHidden();
   });

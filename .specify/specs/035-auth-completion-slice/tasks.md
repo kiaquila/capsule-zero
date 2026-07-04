@@ -152,6 +152,11 @@
 - **P2: verification links are locale-aware.** The courier template reads the
   `locale` identity trait (default `en`) and builds `/{locale}/verify-email`;
   verified live: EN sign-up → `/en/…`, RU sign-up → `/ru/…`.
+- **P3: password change handles Enter inside the nested profile form.** The
+  password block remains a `<div>` because it lives inside the profile form,
+  but Enter from its password inputs now prevents the outer profile submit and
+  runs the password-change handler. Enter on the action buttons keeps native
+  button behavior.
 
 ### Verification evidence (local stack, 2026-07-03)
 
@@ -188,6 +193,17 @@
   screens, profile change password (old dead / new works).
 - Kratos boots healthy with the courier template config; compose renders for
   both env files; docker nginx healthy on the rolled-back vhost.
+
+### Verification evidence — Codex review fixes (local, 2026-07-04)
+
+- `git diff --check` — clean.
+- `npm run typecheck` — green.
+- `npm run typecheck:e2e` — green.
+- `npm run lint` — 0 errors; module-size/a11y warnings remain warnings-only
+  and pre-existing soft gates.
+- `npm run lint:e2e` — 0 errors; three existing MailHog-gated skip warnings.
+- `npm --prefix tests/e2e run test -- specs/auth/profile-change-password.spec.ts`
+  — 2 passed (chromium + webkit-iphone), including the Enter submit path.
 
 ### Known Issues / Follow-ups
 
