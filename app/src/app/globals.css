@@ -1081,6 +1081,12 @@ textarea {
   text-underline-offset: 2px;
 }
 
+/* Stacked auth links (e.g. "Resend code" over "Back to log in") keep only
+   line spacing between them — matching the wrapped terms/privacy note. */
+.auth-switch-link + .auth-switch-link {
+  margin-top: 0;
+}
+
 .auth-terms-note {
   margin-top: 14px;
   color: rgba(255, 255, 255, 0.5);
@@ -1114,7 +1120,6 @@ textarea {
   position: relative;
   display: grid;
   gap: 16px;
-  margin-bottom: 24px;
   padding: 24px;
 }
 
