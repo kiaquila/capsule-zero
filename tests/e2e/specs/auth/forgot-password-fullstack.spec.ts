@@ -2,7 +2,7 @@ import { expect, test } from "../../fixtures/base";
 import { PASSWORDS, uniqueEmail } from "../../fixtures/accounts";
 import {
   fetchOneTimeCode,
-  fetchRecoveryLink,
+  fetchRecoveryEmailBody,
   mailhogUrl,
 } from "../../fixtures/mailhog";
 
@@ -39,10 +39,9 @@ test.describe("Auth — forgot password (full stack)", () => {
     await landing.auth.requestRecovery(email);
     await expect(landing.auth.recoveryCodeInput).toBeVisible();
     const firstCode = await fetchOneTimeCode(email, /recover/i);
-    const firstLink = new URL(await fetchRecoveryLink(email));
-    expect(firstLink.pathname).toBe("/en/auth");
-    expect(firstLink.searchParams.get("code")).toBe(firstCode);
-    expect(firstLink.searchParams.get("flow")).toBeTruthy();
+    const firstEmailBody = await fetchRecoveryEmailBody(email);
+    expect(firstEmailBody).toContain(firstCode);
+    expect(firstEmailBody).not.toContain("/self-service/recovery");
 
     // Resend: a fresh code arrives and the flow is replaced.
     await landing.auth.recoveryResend.click();

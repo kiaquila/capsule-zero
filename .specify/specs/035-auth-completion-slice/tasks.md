@@ -163,11 +163,12 @@
   `ErrPasswordRejected` sentinel (still wrapping `ErrFlowRejected` for
   compatibility). The auth handler maps that case to `VALIDATION_ERROR`; only
   recovery-code rejections map to `INVALID_CODE`.
-- **P2: recovery email links route to the app.** The `recovery_code.valid`
-  courier templates mirror the verification template: they keep the one-time
-  code visible and rewrite Kratos's `/self-service/recovery?code&flow` URL to
-  `/{locale}/auth?code&flow`, so clicking the email opens the Capsule Zero
-  recovery completion UI while `/self-service/*` remains 404.
+- **P2: recovery code emails do not expose dead self-service links.** Ory's
+  custom email template docs list `RecoveryCode`, `Identity`, and expiry for
+  `recovery_code.valid`, but reserve `RecoveryURL` for link-based
+  `recovery.valid` (verified 2026-07-04), so the custom recovery template is
+  code-only and never emails
+  `/self-service/recovery?...` while `/self-service/*` remains 404.
 
 ### Verification evidence (local stack, 2026-07-03)
 
@@ -233,6 +234,7 @@
   Stop the stack (or run the mock suite first) — tracked as a tests/README
   follow-up note.
 
-- Minimal Kratos courier templates now guarantee recovery/verification email
-  links land on app routes. Branded email design remains a follow-up.
+- Minimal Kratos courier templates now guarantee recovery emails contain no
+  self-service links and verification email links land on app routes. Branded
+  email design remains a follow-up.
 - Coins/billing untouched; session management UI untouched.

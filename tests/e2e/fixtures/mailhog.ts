@@ -1,7 +1,7 @@
 /**
  * MailHog helpers for the full-stack auth specs. The docker dev stack routes
  * every Kratos email into MailHog (http://127.0.0.1:8025); these helpers pull
- * one-time codes and emailed links back out by recipient + subject.
+ * one-time codes, bodies, and emailed links back out by recipient + subject.
  */
 export const mailhogUrl = process.env.E2E_MAILHOG_URL;
 
@@ -50,25 +50,21 @@ export async function fetchOneTimeCode(
 }
 
 /**
- * Poll for the emailed recovery LINK — the custom courier template links
- * straight to the app's /auth route with code+flow (spec 035).
+ * Poll for the recovery email body. The code-method template intentionally
+ * contains the code only; Kratos does not expose a RecoveryURL variable for
+ * recovery_code.valid templates.
  */
-export async function fetchRecoveryLink(email: string): Promise<string> {
+export async function fetchRecoveryEmailBody(email: string): Promise<string> {
   for (let attempt = 0; attempt < 20; attempt += 1) {
     for (const message of await searchMessages(email)) {
       if (!/recover/i.test(subjectOf(message))) {
         continue;
       }
-      const link = decodedBody(message).match(
-        /https?:\/\/[^\s"<>]+\/auth\?[^\s"<>]+/,
-      )?.[0];
-      if (link) {
-        return link.replace(/&amp;/g, "&");
-      }
+      return decodedBody(message);
     }
     await new Promise((resolve) => setTimeout(resolve, 1_000));
   }
-  throw new Error(`no recovery link delivered to ${email}`);
+  throw new Error(`no recovery email delivered to ${email}`);
 }
 
 /**

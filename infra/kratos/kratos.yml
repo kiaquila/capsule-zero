@@ -142,10 +142,12 @@ courier:
     from_address: no-reply@capsulezero.app
     from_name: Capsule Zero
   templates:
-    # Custom code-method emails (spec 035): emailed links must land on app
-    # routes carrying code+flow, because /self-service/* stays closed at the
-    # nginx edge. The templates rewrite only the path; the origin comes from
-    # SERVE_PUBLIC_BASE_URL, which points at the app origin in every env.
+    # Custom code-method emails (spec 035): recovery emails contain the code
+    # only, because Kratos does not expose RecoveryURL for recovery_code.valid;
+    # verification links land on the app route carrying code+flow. /self-service/*
+    # stays closed at the nginx edge. The verification template rewrites only
+    # the path; the origin comes from SERVE_PUBLIC_BASE_URL, which points at the
+    # app origin in every env.
     recovery_code:
       valid:
         email:

@@ -1,7 +1,4 @@
 <p>Hi,</p>
 <p>we received a request to reset your Capsule Zero password.</p>
 <p>Your recovery code: <strong>{{ .RecoveryCode }}</strong></p>
-{{- $locale := "en" }}
-{{- if .Identity }}{{ with index .Identity.traits "locale" }}{{ $locale = . }}{{ end }}{{ end }}
-<p>Or <a href="{{ .RecoveryURL | replace "/self-service/recovery?" (printf "/%s/auth?" $locale) }}">open this link</a> to continue password recovery.</p>
-<p>The code and link expire in 1 hour. If you did not request a password reset, you can safely ignore this email.</p>
+<p>The code expires in 1 hour. If you did not request a password reset, you can safely ignore this email.</p>

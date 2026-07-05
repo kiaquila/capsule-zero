@@ -189,7 +189,7 @@ Public traffic enters via direct DNS -> host nginx on the server (ports 80/443);
 - runs an `auth_request` against Kratos for protected routes,
 - routes `/` to `web`,
 - routes `/api/*` to `api`,
-- returns `404` for `/self-service/*` and `/sessions/*` — the Kratos public API is **not** exposed at the edge. All auth writes go through the Go API (`/api/auth/*`), which drives Kratos over the internal network and owns duplicate-identifier sanitization + the auth rate limit; recovery/verification email links land on app routes via custom Kratos courier templates, so no public self-service path is needed in v0.1.
+- returns `404` for `/self-service/*` and `/sessions/*` — the Kratos public API is **not** exposed at the edge. All auth writes go through the Go API (`/api/auth/*`), which drives Kratos over the internal network and owns duplicate-identifier sanitization + the auth rate limit; recovery emails contain code only and verification email links land on app routes via custom Kratos courier templates, so no public self-service path is needed in v0.1.
 - adds a `grafana.capsulezero.app` route only after ADR-007 promotes Grafana.
 
 The Cloudflare proxy (edge TLS offload, DDoS protection, Bot Fight Mode, CDN) joins at Stage 2; until then host nginx is the sole edge. Postgres, Redis, and both the Kratos public and admin APIs stay internal to the compose network in production; no host port is exposed (the dev override binds Kratos public to `127.0.0.1:4433` for local inspection only).

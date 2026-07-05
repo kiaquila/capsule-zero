@@ -33,4 +33,4 @@ stack for founder UI review → PR only after founder approval.
 | 11 | Contract in sync: openapi.yaml ↔ api-spec.md ↔ Go routes ↔ generated client | `node scripts/check-api-contract.mjs` green (part of `baseline-checks`) |
 | 12 | Web quality gates | `npm run typecheck` + `npm run lint` clean |
 | 13 | SMTP port doc fix (465 → 2465, Hetzner outbound block) | Diff of `deploy/compose.env.example` + runbook; live host already on 2465 (AUTH 235 recorded 2026-07-03) |
-| 14 | Edge stays fully closed: `/self-service/*` and `/sessions/*` 404; emailed recovery/verification links land on app routes (custom courier templates) | `infra/nginx*` diff; kratos boots with the template config; full-stack link-click e2e green |
+| 14 | Edge stays fully closed: `/self-service/*` and `/sessions/*` 404; recovery code emails contain no self-service link, and emailed verification links land on app routes (custom courier templates) | `infra/nginx*` diff; kratos boots with the template config; full-stack recovery email + verification link e2e green |
