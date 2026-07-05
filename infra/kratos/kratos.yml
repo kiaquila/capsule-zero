@@ -94,6 +94,7 @@ selfservice:
             # also emails a confirmation code and reports the flow id via
             # continue_with, which the web verify-email banner consumes.
             - hook: session
+            - hook: show_verification_ui
 
 log:
   level: info

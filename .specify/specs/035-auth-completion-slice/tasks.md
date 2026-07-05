@@ -176,6 +176,11 @@
   `recoveryContinuationId` and returns it in `error.details`; the web form
   retries with the id and a different password instead of resubmitting the
   consumed code.
+- **P2: registration starts verification continuation.** Kratos v1.3.1 needs
+  `show_verification_ui` in `registration.after.password.hooks` to return the
+  initial verification flow id in `continue_with`; `session` alone logs the
+  user in but leaves the verify-email banner unable to submit the first emailed
+  code without resending.
 
 ### Verification evidence (local stack, 2026-07-03)
 
@@ -239,6 +244,11 @@
   config`, and `npm --prefix tests/e2e run test --
   specs/auth/forgot-password.spec.ts` are green locally. App lint remains
   warning-only on the known module-size/a11y soft gates.
+- Registration-verification P2 follow-up: `docker compose --env-file
+  deploy/compose.env.example config`, `npm run check:feature-memory --
+  --worktree`, and `git diff --check` are green locally; Go already has
+  `TestRegisterCapturesVerificationFlowID` for the returned
+  `show_verification_ui` continuation shape.
 
 ### Known Issues / Follow-ups
 
