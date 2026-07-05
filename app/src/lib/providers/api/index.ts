@@ -33,6 +33,10 @@ interface AuthResponse {
   verificationFlowId?: string;
 }
 
+interface ApiError extends Error {
+  details?: Record<string, unknown>;
+}
+
 function apiBaseUrl(): string {
   return process.env.CAPSULE_API_BASE_URL ?? "http://api:8080";
 }
@@ -105,6 +109,20 @@ function errorCode(data: unknown): string | undefined {
   return undefined;
 }
 
+function errorDetails(data: unknown): Record<string, unknown> | undefined {
+  if (data && typeof data === "object" && "error" in data) {
+    const error = (data as { error?: { details?: unknown } }).error;
+    if (error && isRecord(error.details)) {
+      return error.details;
+    }
+  }
+  return undefined;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
 // providerError carries the API's machine code as the message prefix so the
 // server actions can hand the UI a localizable code (spec 035).
 function providerError(
@@ -113,7 +131,9 @@ function providerError(
   fallbackMessage: string,
 ): Error {
   const code = errorCode(data) ?? fallbackCode;
-  return new Error(`${code}: ${errorMessage(data, fallbackMessage)}`);
+  const error = new Error(`${code}: ${errorMessage(data, fallbackMessage)}`) as ApiError;
+  error.details = errorDetails(data);
+  return error;
 }
 
 function errorMessage(data: unknown, fallback: string): string {

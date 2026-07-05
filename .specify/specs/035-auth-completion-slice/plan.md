@@ -27,7 +27,7 @@ stack for founder UI review → PR only after founder approval.
 | 7 | Full-stack verification: banner code entry AND the emailed link (no extra screens) both verify; state survives reload | `specs/auth/verify-email-fullstack.spec.ts` green against the docker stack |
 | 7a | Full-stack profile password change: old password stops working, new one signs in | `specs/auth/profile-change-password-fullstack.spec.ts` green against the docker stack |
 | 7b | Every user-facing auth error renders localized (EN/RU) via the machine-code map | Code review of `error-codes.ts` + `auth.errors.*` keys; wrong-code/wrong-password full-stack negatives show mapped text |
-| 8 | Wrong/expired recovery code never issues a session (negative 1) | Go handler test + full-stack probe (`curl` recorded in Process Memory) |
+| 8 | Wrong/expired recovery code never issues a session; valid-code/password-policy rejection preserves an opaque retry continuation (negative 1) | Go handler test + full-stack probe (`curl` recorded in Process Memory); Codex review-fix regression covers continuation retry |
 | 9 | Unknown email on recovery/verification start returns the same shape as a known email (negative 3) | Go handler test + `curl` probe against the local stack |
 | 10 | Config is valid: `kratos.yml` schema-checked by container boot; compose renders | `docker compose --env-file deploy/compose.env.example config` + local stack boot healthy |
 | 11 | Contract in sync: openapi.yaml ↔ api-spec.md ↔ Go routes ↔ generated client | `node scripts/check-api-contract.mjs` green (part of `baseline-checks`) |

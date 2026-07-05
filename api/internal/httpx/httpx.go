@@ -25,16 +25,23 @@ type ErrorBody struct {
 }
 
 type ErrorPayload struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Code    string         `json:"code"`
+	Message string         `json:"message"`
+	Details map[string]any `json:"details,omitempty"`
 }
 
 // WriteError writes a JSON error envelope.
 func WriteError(w http.ResponseWriter, status int, code, message string) {
+	WriteErrorDetails(w, status, code, message, nil)
+}
+
+// WriteErrorDetails writes a JSON error envelope with machine-readable details.
+func WriteErrorDetails(w http.ResponseWriter, status int, code, message string, details map[string]any) {
 	WriteJSON(w, status, ErrorBody{
 		Error: ErrorPayload{
 			Code:    code,
 			Message: message,
+			Details: details,
 		},
 	})
 }

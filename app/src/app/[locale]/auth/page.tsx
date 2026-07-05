@@ -18,7 +18,7 @@ export default async function AuthRoute({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  // An emailed recovery link (or a Kratos recovery-UI redirect) lands here
+  // A Kratos recovery-UI redirect or legacy/manual URL can still land here
   // with the flow id — open the completion step directly (spec 035).
   const { flow, code } = await searchParams;
 

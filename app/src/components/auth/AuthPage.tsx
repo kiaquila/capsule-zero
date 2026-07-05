@@ -7,7 +7,7 @@ import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { CookieBanner } from "@/components/landing/CookieBanner";
 
 interface AuthPageProps {
-  /** Recovery flow carried by an emailed link (/auth?flow=…&code=…). */
+  /** Recovery flow carried by /auth?flow=…&code=… URL params. */
   recovery?: RecoveryDeepLink;
 }
 

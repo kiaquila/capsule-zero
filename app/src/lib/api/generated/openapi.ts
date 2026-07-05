@@ -481,9 +481,10 @@ export type AuthRecoveryResponse = {
 };
 
 export type AuthRecoveryCompleteRequest = {
-  flowId: string;
-  code: string;
+  flowId?: string;
+  code?: string;
   newPassword: string;
+  recoveryContinuationId?: string;
 };
 
 export type AuthVerificationRequest = {
@@ -1975,20 +1976,24 @@ export const API_SCHEMAS = {
   "AuthRecoveryCompleteRequest": {
     "type": "object",
     "required": [
-      "flowId",
-      "code",
       "newPassword"
     ],
     "properties": {
       "flowId": {
-        "type": "string"
+        "type": "string",
+        "description": "Required with `code` for the first completion attempt."
       },
       "code": {
-        "type": "string"
+        "type": "string",
+        "description": "Required with `flowId` for the first completion attempt."
       },
       "newPassword": {
         "type": "string",
         "minLength": 8
+      },
+      "recoveryContinuationId": {
+        "type": "string",
+        "description": "Opaque retry id returned in `error.details.recoveryContinuationId` when the recovery code was valid but the submitted password was rejected by Kratos policy. Retrying with this id lets the user choose a different password without consuming the already-used recovery code again."
       }
     }
   },

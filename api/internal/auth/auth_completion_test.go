@@ -14,6 +14,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/kiaquila/capsule-zero/api/internal/httpx"
 	"github.com/kiaquila/capsule-zero/api/internal/kratos"
@@ -114,6 +115,59 @@ func TestRecoveryCompleteMapsPasswordPolicyRejectionToValidation(t *testing.T) {
 	}
 	if body := decodeErrorBody(t, recorder); body.Error.Code != "VALIDATION_ERROR" {
 		t.Fatalf("code = %q, want VALIDATION_ERROR", body.Error.Code)
+	}
+}
+
+func TestRecoveryCompletePreservesContinuationForPasswordPolicyRetry(t *testing.T) {
+	recoveryContinuations = newRecoveryContinuationStore(time.Minute)
+	t.Cleanup(func() {
+		recoveryContinuations = newRecoveryContinuationStore(recoveryContinuationTTL)
+	})
+
+	handler := Handler{Kratos: fakeIdentityClient{
+		recoveryCompleteErr: &kratos.RecoveryPasswordRejectedError{
+			Token: "recovered-token",
+			Err:   fmt.Errorf("%w: password must not contain the identifier", kratos.ErrPasswordRejected),
+		},
+	}}
+	request := httptest.NewRequest(http.MethodPost, "/api/auth/recovery/complete",
+		strings.NewReader(`{"flowId":"rec-flow-9","code":"123456","newPassword":"person@example.com123"}`))
+	recorder := httptest.NewRecorder()
+
+	handler.RecoveryComplete(recorder, request)
+
+	if recorder.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want 400", recorder.Code)
+	}
+	body := decodeErrorBody(t, recorder)
+	continuationID, _ := body.Error.Details["recoveryContinuationId"].(string)
+	if continuationID == "" {
+		t.Fatalf("details = %v, want recoveryContinuationId", body.Error.Details)
+	}
+
+	var calls [][2]string
+	handler = Handler{Kratos: fakeIdentityClient{
+		settingsPasswordCalls: &calls,
+		settingsPasswordErr: fmt.Errorf(
+			"%w: password still rejected",
+			kratos.ErrPasswordRejected,
+		),
+	}}
+	retry := httptest.NewRequest(http.MethodPost, "/api/auth/recovery/complete",
+		strings.NewReader(fmt.Sprintf(`{"recoveryContinuationId":%q,"newPassword":"StillRejected456"}`, continuationID)))
+	recorder = httptest.NewRecorder()
+
+	handler.RecoveryComplete(recorder, retry)
+
+	if recorder.Code != http.StatusBadRequest {
+		t.Fatalf("retry status = %d, want 400", recorder.Code)
+	}
+	if len(calls) != 1 || calls[0] != [2]string{"recovered-token", "StillRejected456"} {
+		t.Fatalf("settings calls = %v, want recovered-token retry", calls)
+	}
+	retryBody := decodeErrorBody(t, recorder)
+	if got := retryBody.Error.Details["recoveryContinuationId"]; got != continuationID {
+		t.Fatalf("retry continuation = %v, want %q", got, continuationID)
 	}
 }
 

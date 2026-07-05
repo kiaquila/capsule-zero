@@ -18,6 +18,7 @@ export type AuthErrorCode = (typeof KNOWN_AUTH_ERROR_CODES)[number];
 export interface AuthActionFailure {
   code?: string;
   message: string;
+  details?: Record<string, unknown>;
 }
 
 /** Split a provider error into its machine code and human-readable remainder. */
@@ -28,7 +29,17 @@ export function authActionFailure(error: unknown): AuthActionFailure {
   const message =
     raw.replace(/^[A-Z_]+:\s*/, "").trim() ||
     "Authentication failed. Please try again.";
-  return { code: match?.[1], message };
+  const details =
+    error instanceof Error &&
+    "details" in error &&
+    isRecord(error.details)
+      ? error.details
+      : undefined;
+  return { code: match?.[1], message, details };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
 /**

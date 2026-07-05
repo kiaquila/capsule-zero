@@ -29,6 +29,39 @@ var ErrFlowRejected = errors.New("kratos flow rejected")
 // "bad recovery code".
 var ErrPasswordRejected = fmt.Errorf("%w: password rejected", ErrFlowRejected)
 
+// RecoveryPasswordRejectedError is returned when the recovery code was valid
+// and Kratos issued a recovery session, but the follow-up settings password
+// submit was rejected. Token lets the API keep a short-lived retry continuation
+// without asking the user for a now-consumed recovery code again.
+type RecoveryPasswordRejectedError struct {
+	Token string
+	Err   error
+}
+
+func (e *RecoveryPasswordRejectedError) Error() string {
+	if e.Err == nil {
+		return ErrPasswordRejected.Error()
+	}
+	return e.Err.Error()
+}
+
+func (e *RecoveryPasswordRejectedError) Unwrap() error {
+	if e.Err == nil {
+		return ErrPasswordRejected
+	}
+	return e.Err
+}
+
+// RecoverySessionToken extracts a recovery session token from a password
+// rejection caused after a valid recovery-code exchange.
+func RecoverySessionToken(err error) (string, bool) {
+	var rejected *RecoveryPasswordRejectedError
+	if errors.As(err, &rejected) && rejected.Token != "" {
+		return rejected.Token, true
+	}
+	return "", false
+}
+
 // ErrIdentifierExists is returned when a registration is rejected because an
 // account with the submitted identifier already exists. It wraps
 // ErrFlowRejected so login-style callers still collapse it into a generic
@@ -299,6 +332,9 @@ func (c *Client) RecoveryComplete(ctx context.Context, flowID, code, newPassword
 	}
 
 	if err := c.SettingsPassword(ctx, token, newPassword); err != nil {
+		if errors.Is(err, ErrPasswordRejected) {
+			return nil, &RecoveryPasswordRejectedError{Token: token, Err: err}
+		}
 		return nil, err
 	}
 	return c.WhoAmI(ctx, token)

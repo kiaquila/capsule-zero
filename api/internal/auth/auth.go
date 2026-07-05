@@ -216,27 +216,32 @@ func (h *Handler) Recovery(w http.ResponseWriter, r *http.Request) {
 // code for a session, sets the new password, and signs the user in.
 func (h *Handler) RecoveryComplete(w http.ResponseWriter, r *http.Request) {
 	var in struct {
-		FlowID      string `json:"flowId"`
-		Code        string `json:"code"`
-		NewPassword string `json:"newPassword"`
+		FlowID                 string `json:"flowId"`
+		Code                   string `json:"code"`
+		NewPassword            string `json:"newPassword"`
+		RecoveryContinuationID string `json:"recoveryContinuationId"`
 	}
 	if err := httpx.DecodeJSON(r, &in); err != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Malformed request body.")
-		return
-	}
-	if in.FlowID == "" || in.Code == "" {
-		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Recovery code and flow are required.")
 		return
 	}
 	if utf8.RuneCountInString(in.NewPassword) < minPasswordRunes {
 		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Password must be at least 8 characters.")
 		return
 	}
+	if in.RecoveryContinuationID != "" {
+		h.completeRecoveryContinuation(w, r, in.RecoveryContinuationID, in.NewPassword)
+		return
+	}
+	if in.FlowID == "" || in.Code == "" {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Recovery code and flow are required.")
+		return
+	}
 
 	session, err := h.Kratos.RecoveryComplete(r.Context(), in.FlowID, in.Code, in.NewPassword)
 	if err != nil {
 		if errors.Is(err, kratos.ErrPasswordRejected) {
-			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err))
+			h.writeRecoveryPasswordRejected(w, err, "")
 			return
 		}
 		if errors.Is(err, kratos.ErrFlowRejected) {
@@ -250,6 +255,57 @@ func (h *Handler) RecoveryComplete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.respondWithSession(w, r.Context(), session)
+}
+
+func (h *Handler) completeRecoveryContinuation(
+	w http.ResponseWriter,
+	r *http.Request,
+	continuationID string,
+	newPassword string,
+) {
+	token, ok := recoveryContinuations.get(continuationID)
+	if !ok {
+		httpx.WriteError(w, http.StatusBadRequest, "INVALID_CODE", "Recovery session expired. Request a new code.")
+		return
+	}
+	if err := h.Kratos.SettingsPassword(r.Context(), token, newPassword); err != nil {
+		if errors.Is(err, kratos.ErrPasswordRejected) {
+			h.writeRecoveryPasswordRejected(w, err, continuationID)
+			return
+		}
+		if errors.Is(err, kratos.ErrFlowRejected) {
+			recoveryContinuations.delete(continuationID)
+			httpx.WriteError(w, http.StatusBadRequest, "INVALID_CODE", "Recovery session expired. Request a new code.")
+			return
+		}
+		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Password recovery is temporarily unavailable.")
+		return
+	}
+	session, err := h.Kratos.WhoAmI(r.Context(), token)
+	if err != nil {
+		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Password recovery is temporarily unavailable.")
+		return
+	}
+	recoveryContinuations.delete(continuationID)
+	h.respondWithSession(w, r.Context(), session)
+}
+
+func (h *Handler) writeRecoveryPasswordRejected(w http.ResponseWriter, err error, continuationID string) {
+	if continuationID == "" {
+		if token, ok := kratos.RecoverySessionToken(err); ok {
+			issuedID, issueErr := recoveryContinuations.issue(token)
+			if issueErr != nil {
+				httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Password recovery is temporarily unavailable.")
+				return
+			}
+			continuationID = issuedID
+		}
+	}
+	var details map[string]any
+	if continuationID != "" {
+		details = map[string]any{"recoveryContinuationId": continuationID}
+	}
+	httpx.WriteErrorDetails(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err), details)
 }
 
 // VerificationStart: POST /api/auth/verification — starts (or resends) a

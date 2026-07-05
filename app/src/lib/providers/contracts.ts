@@ -59,9 +59,10 @@ export interface PasswordRecoveryRequest {
 }
 
 export interface PasswordRecoveryCompletion {
-  flowId: string;
-  code: string;
+  flowId?: string;
+  code?: string;
   newPassword: string;
+  recoveryContinuationId?: string;
 }
 
 export interface EmailVerificationRequest {

@@ -50,7 +50,7 @@ const elevatedGlassStyle = {
 
 interface AuthPanelProps {
   initialMode?: AuthMode;
-  /** Pre-bound recovery flow from an emailed link (/auth?flow=…&code=…). */
+  /** Pre-bound recovery flow from /auth?flow=…&code=… URL params. */
   initialRecovery?: RecoveryDeepLink;
   onClose?: () => void;
   variant?: "popup" | "standalone";
@@ -72,6 +72,7 @@ export function AuthPanel({
   const [recoveryFlowId, setRecoveryFlowId] = useState(
     initialRecovery?.flowId ?? "",
   );
+  const [recoveryContinuationId, setRecoveryContinuationId] = useState("");
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const [serverMessage, setServerMessage] = useState<{
     text: string;
@@ -182,6 +183,7 @@ export function AuthPanel({
     }
 
     setRecoveryFlowId(result.flowId);
+    setRecoveryContinuationId("");
     setRecoveryEmail(values.email);
     setMode("recoveryCode");
     showInfo(t("recoverySent"));
@@ -193,9 +195,15 @@ export function AuthPanel({
       const result = await completePasswordRecoveryAction({
         ...values,
         flowId: recoveryFlowId,
+        recoveryContinuationId,
       });
 
       if (!result.ok) {
+        if (result.recoveryContinuationId) {
+          setRecoveryContinuationId(result.recoveryContinuationId);
+        } else if (result.code === "INVALID_CODE") {
+          setRecoveryContinuationId("");
+        }
         showFailure(result);
         return;
       }
@@ -218,6 +226,7 @@ export function AuthPanel({
       return;
     }
     setRecoveryFlowId(result.flowId);
+    setRecoveryContinuationId("");
     showInfo(t("recoverySent"));
   };
 

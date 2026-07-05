@@ -39,6 +39,8 @@ export interface AuthActionResult {
   requiresEmailConfirmation?: boolean;
   /** Flow the emailed one-time code is bound to (recovery/verification). */
   flowId?: string;
+  /** Opaque retry id after a valid recovery code hit a password-policy error. */
+  recoveryContinuationId?: string;
 }
 
 export async function signInWithPasswordAction(
@@ -110,7 +112,10 @@ export async function requestPasswordRecoveryAction(
 }
 
 export async function completePasswordRecoveryAction(
-  input: RecoveryCompleteInput & { flowId: string },
+  input: RecoveryCompleteInput & {
+    flowId?: string;
+    recoveryContinuationId?: string;
+  },
 ): Promise<AuthActionResult> {
   const parsed =
     createRecoveryCompleteSchema(serverValidationMessages).safeParse(input);
@@ -118,7 +123,7 @@ export async function completePasswordRecoveryAction(
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message };
   }
-  if (!input.flowId) {
+  if (!input.flowId && !input.recoveryContinuationId) {
     return { ok: false, message: serverValidationMessages.invalidCode };
   }
 
@@ -128,13 +133,28 @@ export async function completePasswordRecoveryAction(
       flowId: input.flowId,
       code: parsed.data.code,
       newPassword: parsed.data.newPassword,
+      recoveryContinuationId: input.recoveryContinuationId,
     });
     await persistMockSession(session);
   } catch (error) {
-    return { ok: false, ...authActionFailure(error) };
+    const failure = authActionFailure(error);
+    return {
+      ok: false,
+      ...failure,
+      recoveryContinuationId: recoveryContinuationIdFromDetails(
+        failure.details,
+      ),
+    };
   }
 
   return { ok: true };
+}
+
+function recoveryContinuationIdFromDetails(
+  details: Record<string, unknown> | undefined,
+): string | undefined {
+  const value = details?.recoveryContinuationId;
+  return typeof value === "string" && value.trim() ? value : undefined;
 }
 
 export async function startEmailVerificationAction(
@@ -233,4 +253,3 @@ function normalizeActionLocale(locale: string | undefined): AppLocale {
   }
   return routing.defaultLocale;
 }
-

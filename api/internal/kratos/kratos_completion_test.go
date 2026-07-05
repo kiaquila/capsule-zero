@@ -182,6 +182,10 @@ func TestRecoveryCompleteDistinguishesSettingsPasswordPolicyRejection(t *testing
 	if !errors.Is(err, ErrFlowRejected) {
 		t.Fatalf("err = %v, want ErrFlowRejected compatibility", err)
 	}
+	token, ok := RecoverySessionToken(err)
+	if !ok || token != "recovered-token" {
+		t.Fatalf("recovery token = %q, %v; want recovered-token, true", token, ok)
+	}
 }
 
 func TestVerificationStartUsesCodeMethodAndReturnsFlowID(t *testing.T) {

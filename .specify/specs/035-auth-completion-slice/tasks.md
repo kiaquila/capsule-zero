@@ -169,6 +169,13 @@
   `recovery.valid` (verified 2026-07-04), so the custom recovery template is
   code-only and never emails
   `/self-service/recovery?...` while `/self-service/*` remains 404.
+- **P2: recovery password-policy retries preserve the consumed-code session.**
+  Once Kratos accepts a recovery code it returns a privileged session token, and
+  the code cannot be reused. If the subsequent settings password submit is
+  rejected by Kratos policy, the API stores that token behind a 15-minute opaque
+  `recoveryContinuationId` and returns it in `error.details`; the web form
+  retries with the id and a different password instead of resubmitting the
+  consumed code.
 
 ### Verification evidence (local stack, 2026-07-03)
 
@@ -225,6 +232,13 @@
   config` is not available in `oryd/kratos:v1.3.1` (the CLI only exposes
   identity validation), so compose render + full-stack boot evidence remains
   the applicable config check.
+- Recovery-continuation P2 follow-up: `go test ./...` in `api/`, `npm run
+  typecheck`, `npm run lint`, `npm run typecheck:e2e`, `npm run lint:e2e`,
+  `npm run check:api-contract`, `npm run check:feature-memory -- --worktree`,
+  `git diff --check`, `docker compose --env-file deploy/compose.env.example
+  config`, and `npm --prefix tests/e2e run test --
+  specs/auth/forgot-password.spec.ts` are green locally. App lint remains
+  warning-only on the known module-size/a11y soft gates.
 
 ### Known Issues / Follow-ups
 

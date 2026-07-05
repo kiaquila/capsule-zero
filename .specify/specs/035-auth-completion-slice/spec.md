@@ -37,7 +37,10 @@ no dormant plumbing and no dead-end email links remain in production.
     code + new password completion step) → auto-login → dashboard.
     A custom Kratos courier template sends the recovery code without a
     Kratos `/self-service/recovery` link, so the edge can keep
-    `/self-service/*` closed without emailing dead-end URLs.
+    `/self-service/*` closed without emailing dead-end URLs. If Kratos accepts
+    the code but rejects the new password policy, the API returns an opaque
+    continuation id so the UI can retry the password without consuming or
+    resubmitting the already-used code.
   - Verify-email banner for signed-in users with an unverified address:
     code entry + resend, built on the shared `NotificationBanner` component
     (the standard inline-notification surface introduced by this slice),
