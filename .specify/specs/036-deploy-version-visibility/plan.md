@@ -29,9 +29,12 @@ the container.
 
 `workflow_dispatch` redeploy of a pre-036 `image_sha` serves a binary with no build info
 (`commit = "unknown"`). The verifier treats an `"unknown"` commit as "cannot assert
-— warn and defer to the wrapper's health smoke", and hard-fails on a *concrete
-different* commit. This keeps the guarantee (a wrong live release fails the job) without
-red-flagging legitimate rollbacks to images built before this feature.
+— warn and defer to the wrapper's health smoke" **only on that explicit rollback path**
+(`IS_ROLLBACK`, Codex P2 round 3): a merge or build-HEAD deploy just built the image
+with `-ldflags`, so `"unknown"` there means the SHA injection is broken and hard-fails.
+A *concrete different* commit always hard-fails. This keeps the guarantee (a wrong or
+unproven live release fails the job) without red-flagging legitimate rollbacks to
+images built before this feature.
 
 The tolerance is gated on evidence (Codex P1 fix): it applies only after at least one
 attempt returned parseable health JSON. If all 10 attempts fail at the transport/HTTP
@@ -54,7 +57,7 @@ superseding the implicit record as Active. Merge deploys never reach that job.
 | 1 | `/api/health` reports `commit` + `builtAt`, stays 200 when healthy | `go test ./cmd/api/` — `TestHealthHandlerReportsBuildInfo` PASS (failing-first commit `87cb81f` → green after impl) |
 | 2 | Images carry the revision label; api binary reports the same SHA | `docker build --build-arg GIT_SHA=deadbeefcafe … && docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}'` → `deadbeefcafe`; `strings` of the extracted `/api` binary contains `deadbeefcafe` + the build time (recorded in PR) |
 | 3 | Merge deploy records a `production` GitHub Deployment for the merged commit | Post-merge `cd-prod` run shows the `deploy` job under `environment: production`; repo Environments/Deployments page shows the commit as Active (screenshot/link in PR) |
-| 4 | **(Negative)** live commit ≠ deployed SHA fails the job → deployment marked failure; `"unknown"` degrades to warning; unreadable health fails | `go test` — `TestHealthHandlerBuildInfoWhenUninjectedAndDegraded` PASS (503 still carries `"unknown"`, never blank); verify-step script extracted from `cd-prod.yml` and run against 5 mocked-`curl` scenarios: transport failure → `exit 1`, non-JSON body → `exit 1`, pre-036 `{"ok":true}` → `::warning::` + `exit 0`, SHA match → `exit 0`, concrete mismatch → `exit 1` (recorded in PR) |
+| 4 | **(Negative)** live commit ≠ deployed SHA fails the job → deployment marked failure; `"unknown"` degrades to warning only on rollback dispatch; unreadable health fails | `go test` — `TestHealthHandlerBuildInfoWhenUninjectedAndDegraded` PASS (503 still carries `"unknown"`, never blank); verify-step script extracted from `cd-prod.yml` and run against 6 mocked-`curl` scenarios: transport failure → `exit 1`, non-JSON body → `exit 1`, pre-036 `{"ok":true}` + `IS_ROLLBACK=true` → `::warning::` + `exit 0`, pre-036 + `IS_ROLLBACK=false` → `exit 1` (broken ldflags injection), SHA match → `exit 0`, concrete mismatch → `exit 1` (recorded in PR) |
 | 5 | `/api/health` contract stays in sync: OpenAPI + generated client expose `commit`/`builtAt` | `docs_capsule_zero/adr/openapi.yaml` — `getHealth` → `HealthResponse` (200 + 503); `npm run generate:api` regenerated `app/src/lib/api/generated/openapi.ts`; `npm run check:api-contract` PASS (52 operations) |
 | 6 | **(Negative)** rollback dispatch records the rolled-back SHA as the Active production deployment, not the run's `github.sha` | `record-rollback-release` job in `cd-prod.yml`: gated on `workflow_dispatch` + non-empty `image_sha` + `needs.deploy.result == 'success'`; creates Deployment + success status for `deploy_sha` via REST; YAML parse + job-graph review recorded in PR (infra — config-evidence lane) |
 

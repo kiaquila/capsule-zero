@@ -250,17 +250,20 @@ jobs:
       - name: Verify live release matches deployed SHA
         env:
           DEPLOY_SHA: ${{ steps.ref.outputs.deploy_sha }}
+          IS_ROLLBACK: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.image_sha != '' }}
         # Read the running commit back from the public edge and confirm prod is
         # actually serving the SHA we just shipped. A concrete different commit
         # is a hard failure (the deploy did not really take). The "unknown"
-        # rollback tolerance (image predates build-info, only possible when
-        # rolling back to a pre-036 image) applies only after a successfully
-        # parsed JSON health response — if the edge never returns readable
-        # health JSON (transport error, timeout, nginx error page), the job
-        # fails rather than reporting an unverified deploy as green. curl runs
-        # without -f on purpose: a degraded 503 still carries build info, and
-        # healthiness itself is owned by the deploy wrapper's smoke check —
-        # this step only asserts release identity.
+        # tolerance (image predates build-info) applies only on an explicit
+        # workflow_dispatch rollback — a freshly built merge/build-HEAD deploy
+        # reporting "unknown" means the ldflags SHA injection is broken and
+        # hard-fails. The tolerance also requires a successfully parsed JSON
+        # health response — if the edge never returns readable health JSON
+        # (transport error, timeout, nginx error page), the job fails rather
+        # than reporting an unverified deploy as green. curl runs without -f on
+        # purpose: a degraded 503 still carries build info, and healthiness
+        # itself is owned by the deploy wrapper's smoke check — this step only
+        # asserts release identity.
         run: |
           set -euo pipefail
           url="https://capsulezero.app/api/health"
@@ -285,8 +288,12 @@ jobs:
             exit 1
           fi
           if [ "$live" = "unknown" ]; then
-            echo "::warning::/api/health reports no build info (pre-036 image?) — cannot assert the SHA; the deploy wrapper's health smoke already passed"
-            exit 0
+            if [ "$IS_ROLLBACK" = "true" ]; then
+              echo "::warning::/api/health reports no build info (pre-036 rollback image) — cannot assert the SHA; the deploy wrapper's health smoke already passed"
+              exit 0
+            fi
+            echo "::error::freshly built image reports no build info — ldflags SHA injection is broken; deployment not verified"
+            exit 1
           fi
           echo "::error::prod is serving commit ${live}, expected ${DEPLOY_SHA} — deployment not verified"
           exit 1

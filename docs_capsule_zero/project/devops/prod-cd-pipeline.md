@@ -62,11 +62,13 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
    *Verify live release* step polls `https://capsulezero.app/api/health` and compares its
    `commit` field to the deployed SHA: a concrete mismatch fails the job (the production
    deployment is marked *failure*), so an active production deployment means prod was
-   verified against the running server — not merely that `compose up` returned 0. A
-   missing/`"unknown"` commit (only possible when rolling back to a pre-036 image) is a
-   warning that defers to the wrapper's own `/api/health` 200 smoke — but that tolerance
-   applies only after a successfully parsed JSON health response: if the edge never
-   returns readable health JSON (transport error, timeout, nginx error page) for all 10
+   verified against the running server — not merely that `compose up` returned 0. An
+   `"unknown"` commit is tolerated (warning, defer to the wrapper's own `/api/health`
+   smoke) **only on an explicit `workflow_dispatch` rollback** to a pre-036 image; on a
+   merge or build-HEAD deploy the image was just built with `-ldflags`, so `"unknown"`
+   means the SHA injection broke and the step fails the job. The tolerance also applies
+   only after a successfully parsed JSON health response: if the edge never returns
+   readable health JSON (transport error, timeout, nginx error page) for all 10
    attempts, the step fails the job rather than reporting an unverified deploy as green.
 
 ### Checking the live release

@@ -46,12 +46,14 @@
 - **No new package/endpoint.** Build metadata lives in `package main` next to the health
   handler (it is link-time data, not env config), and rides the existing `/api/health`
   body — Engineering Reuse Rule.
-- **Rollback tolerance is explicit, not silent — and gated on evidence.** Pre-036 images
+- **Rollback tolerance is explicit, not silent — and doubly gated.** Pre-036 images
   report `commit = "unknown"`; the verifier warns (`::warning::`) and defers to the
-  wrapper's health smoke rather than failing. The tolerance applies only after at least
-  one successfully parsed JSON health response (Codex P1 fix): if all attempts fail at the
-  transport/HTTP layer or return non-JSON, the step hard-fails — an unreadable prod is
-  never reported as verified. A concrete different commit is always a hard failure.
+  wrapper's health smoke rather than failing. Two gates (Codex P1 round 1 + P2 round 3):
+  (a) the tolerance requires at least one successfully parsed JSON health response — if
+  all attempts fail at the transport/HTTP layer or return non-JSON, the step hard-fails;
+  (b) it applies only on an explicit `workflow_dispatch` rollback (`IS_ROLLBACK`) — a
+  freshly built merge/build-HEAD deploy reporting `"unknown"` means the `-ldflags` SHA
+  injection broke and hard-fails. A concrete different commit is always a hard failure.
 - **Health contract synced, not just the handler.** Codex P2: the new `commit`/`builtAt`
   fields (plus the pre-existing `postgres`/`kratos`) are now modeled as `HealthResponse`
   in `docs_capsule_zero/adr/openapi.yaml` (200 + degraded 503) and the generated client
