@@ -40,7 +40,10 @@
   the job also explicitly inactivates every other still-active production deployment — a
   success status auto-inactivates only *non-production* deployments per GitHub REST
   semantics, so the implicit `github.sha` record would otherwise stay active alongside the
-  rollback record.
+  rollback record. *Round 5:* the same sweep runs at the end of every verified deploy
+  (deploy job's last step, own in_progress deployment untouched), so Active records don't
+  accumulate on the normal merge path either — "Active production == verified live SHA"
+  holds on every path.
 
 ### Decisions
 

@@ -155,6 +155,9 @@ jobs:
       needs.build.result != 'cancelled'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      deployments: write
     outputs:
       deploy_sha: ${{ steps.ref.outputs.deploy_sha }}
     # Records a GitHub Deployment for this commit under the `production`
@@ -297,6 +300,29 @@ jobs:
           fi
           echo "::error::prod is serving commit ${live}, expected ${DEPLOY_SHA} — deployment not verified"
           exit 1
+
+      - name: Inactivate superseded production deployments
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # GitHub's auto-inactivation on a success status skips production
+        # environments, so prior Active records would accumulate as merges
+        # land. After the release is verified, post `inactive` to every
+        # deployment whose latest status is success — they are all superseded
+        # by this run. The run's own implicit deployment is still in_progress
+        # here, so it is untouched and becomes the single Active record when
+        # the job completes. (On a rollback dispatch the implicit record
+        # carries the wrong SHA; record-rollback-release below replaces it.)
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/deployments?environment=production&per_page=100" --jq '.[].id' \
+            | while read -r dep_id; do
+                dep_state="$(gh api "repos/${GITHUB_REPOSITORY}/deployments/${dep_id}/statuses?per_page=1" --jq '.[0].state // "none"')"
+                if [ "$dep_state" = "success" ]; then
+                  jq -n '{state: "inactive"}' \
+                    | gh api "repos/${GITHUB_REPOSITORY}/deployments/${dep_id}/statuses" --input - --jq '.state' >/dev/null
+                  echo "inactivated superseded production deployment ${dep_id}"
+                fi
+              done
 
   # A workflow_dispatch rollback deploys an older commit than the run's own
   # github.sha, but the deploy job's implicit `environment: production`

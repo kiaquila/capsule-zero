@@ -70,6 +70,10 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
    only after a successfully parsed JSON health response: if the edge never returns
    readable health JSON (transport error, timeout, nginx error page) for all 10
    attempts, the step fails the job rather than reporting an unverified deploy as green.
+   After a verified deploy, an **Inactivate superseded production deployments** step
+   posts `inactive` to every prior success record (GitHub's auto-inactivation skips
+   production environments), so the Environments page always shows exactly one Active
+   production deployment — the verified live release.
 
 ### Checking the live release
 

@@ -51,7 +51,11 @@ explicit Deployment + success status for the verified rollback SHA via the REST 
 then explicitly inactivates every other still-active production deployment — a success
 status auto-inactivates only non-transient, *non-production* deployments (Codex P2
 round 4), so the implicit `github.sha` record would otherwise stay active alongside.
-Merge deploys never reach that job.
+Merge deploys never reach that job. The same REST semantics apply to normal deploys
+(Codex P2 round 5): the deploy job's final **Inactivate superseded production
+deployments** step sweeps every prior success record after the release is verified —
+the run's own implicit deployment is still `in_progress` at that point and becomes the
+single Active record on job completion.
 
 ## Verification
 
