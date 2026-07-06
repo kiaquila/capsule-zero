@@ -61,7 +61,7 @@ Repository default workflow permissions may remain `read` so long as individual 
 - Any Codex inline finding without a recognized `P0-P3` badge fails the gate closed.
 - On reruns for the same head SHA, `AI Review` may reuse the latest valid native review or validated head-SHA-anchored no-findings summary already published for that head instead of requiring a brand-new review.
 - `AI Review` fails closed when the selected reviewer does not run or its result cannot be validated.
-- Codex Automatic reviews should remain disabled so repository policy keeps owning reviewer selection.
+- Codex Automatic reviews are enabled with the `On every push` trigger so each head is reviewed automatically; this does not change repository-owned reviewer selection, which stays governed by `AI_REVIEW_AGENT` (auto-review controls _when_ Codex reviews, not _which_ agent is canonical). A clean automatic review posts only a `👍` reaction, which the gate does not consume, so a clean head still needs a human `@codex review` for a gate-consumable summary comment.
 - Validation details are defined in `docs_capsule_zero/project/devops/review-contract.md`.
 
 ## Implementation Flow

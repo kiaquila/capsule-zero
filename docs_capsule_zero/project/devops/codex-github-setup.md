@@ -15,9 +15,9 @@ Use this checklist before running the validation matrix with `AI_REVIEW_AGENT=co
 3. Enable Capsule Zero repository access.
 4. Create a Codex cloud environment for `kiaquila/capsule-zero` under `Settings -> Environments`.
 5. Turn on `Code review` for `kiaquila/capsule-zero`.
-6. Leave `Automatic reviews` turned off.
+6. Enable `Automatic reviews` and set the review trigger to `On every push` under `Settings -> Code review -> Repository preferences`.
 
-Automatic reviews must stay disabled because Capsule Zero keeps reviewer selection under repository policy through `AI_REVIEW_AGENT`.
+Automatic reviews are enabled so every pushed head gets its own Codex verdict, because the `AI Review` gate validates the current head SHA on each push. This does not change repository-owned routing: `AI_REVIEW_AGENT` stays the source of truth for the canonical reviewer — auto-review only controls _when_ Codex reviews, not _which_ agent is canonical.
 
 ## Required Repository State
 
@@ -42,10 +42,10 @@ The repository must also have a Codex cloud environment. Without it, the connect
 
 According to OpenAI's GitHub integration docs:
 
-- Codex review is requested through a PR comment with `@codex review`.
-- Codex posts a standard GitHub pull-request review.
+- Codex reviews automatically on every pushed head; `@codex review` from a connected human account remains available to request it manually.
+- When Codex has findings it posts a standard GitHub pull-request review with `P0-P3` inline badges.
 - Codex uses `AGENTS.md` review guidance when present.
-- Codex Automatic reviews are optional and should remain off for Capsule Zero.
+- A clean **automatic** review signals only with a `👍` reaction on the PR body, which the gate does **not** consume (`👍`-support is deferred); a clean head therefore still needs a human `@codex review`, whose no-findings reply is a `Codex Review:` summary comment anchored to the reviewed commit that the gate does consume.
 
 ## Capsule Zero-Specific Requirements
 

@@ -12,7 +12,7 @@ Legacy migration artifacts were removed after all scenarios below passed.
 - Codex GitHub integration is enabled for `kiaquila/capsule-zero`.
 - A Codex cloud environment exists for `kiaquila/capsule-zero`.
 - Codex `Code review` is enabled for the repository.
-- Codex `Automatic reviews` remains disabled.
+- Codex `Automatic reviews` is enabled with the `On every push` trigger (reviewer selection stays repository-owned via `AI_REVIEW_AGENT`).
 - `AGENTS.md`, `CLAUDE.md`, `ai-orchestration-protocol.md`, and `review-contract.md` are current.
 
 ## Matrix
