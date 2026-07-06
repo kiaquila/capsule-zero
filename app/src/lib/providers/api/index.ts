@@ -30,6 +30,11 @@ interface AuthResponse {
   user?: User;
   profile?: Profile;
   requiresEmailConfirmation?: boolean;
+  verificationFlowId?: string;
+}
+
+interface ApiError extends Error {
+  details?: Record<string, unknown>;
 }
 
 function apiBaseUrl(): string {
@@ -94,6 +99,43 @@ async function apiFetch<T>(
   return { status: response.status, data };
 }
 
+function errorCode(data: unknown): string | undefined {
+  if (data && typeof data === "object" && "error" in data) {
+    const error = (data as { error?: { code?: unknown } }).error;
+    if (error && typeof error.code === "string" && error.code.trim()) {
+      return error.code;
+    }
+  }
+  return undefined;
+}
+
+function errorDetails(data: unknown): Record<string, unknown> | undefined {
+  if (data && typeof data === "object" && "error" in data) {
+    const error = (data as { error?: { details?: unknown } }).error;
+    if (error && isRecord(error.details)) {
+      return error.details;
+    }
+  }
+  return undefined;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+// providerError carries the API's machine code as the message prefix so the
+// server actions can hand the UI a localizable code (spec 035).
+function providerError(
+  data: unknown,
+  fallbackCode: string,
+  fallbackMessage: string,
+): Error {
+  const code = errorCode(data) ?? fallbackCode;
+  const error = new Error(`${code}: ${errorMessage(data, fallbackMessage)}`) as ApiError;
+  error.details = errorDetails(data);
+  return error;
+}
+
 function errorMessage(data: unknown, fallback: string): string {
   if (data && typeof data === "object" && "error" in data) {
     const error = (data as { error?: { message?: unknown } }).error;
@@ -118,6 +160,7 @@ function mapSession(payload: AuthResponse): Session {
     user: payload.user,
     accessToken: payload.session.token,
     expiresAt: payload.session.expiresAt,
+    verificationFlowId: payload.verificationFlowId,
   };
 }
 
@@ -133,11 +176,10 @@ function buildAuthPort(): AuthPort {
         token,
       });
       if (status >= 400) {
-        throw new Error(
-          `SESSION_CHECK_FAILED: ${errorMessage(
-            data,
-            "Session check is temporarily unavailable.",
-          )}`,
+        throw providerError(
+          data,
+          "INTERNAL_ERROR",
+          "Session check is temporarily unavailable.",
         );
       }
       return data.session && data.user ? mapSession(data) : null;
@@ -157,9 +199,7 @@ function buildAuthPort(): AuthPort {
         },
       );
       if (status >= 400) {
-        throw new Error(
-          `REGISTRATION_FAILED: ${errorMessage(data, "Registration failed.")}`,
-        );
+        throw providerError(data, "VALIDATION_ERROR", "Registration failed.");
       }
       if (data.requiresEmailConfirmation || !data.session) {
         return null;
@@ -176,30 +216,103 @@ function buildAuthPort(): AuthPort {
         }),
       });
       if (status >= 400) {
-        throw new Error(
-          `SIGN_IN_FAILED: ${errorMessage(data, "Invalid email or password")}`,
+        throw providerError(
+          data,
+          "UNAUTHENTICATED",
+          "Invalid email or password",
         );
       }
       return mapSession(data);
     },
 
     async requestPasswordRecovery(email: string) {
-      const { status, data } = await apiFetch<Record<string, unknown>>(
+      const { status, data } = await apiFetch<{ flowId?: string }>(
         "/api/auth/recovery",
         {
           method: "POST",
           body: JSON.stringify({ email }),
         },
       );
-      if (status >= 400) {
-        throw new Error(
-          `RECOVERY_FAILED: ${errorMessage(
-            data,
-            "Password recovery is temporarily unavailable.",
-          )}`,
+      if (status >= 400 || !data.flowId) {
+        throw providerError(
+          data,
+          "INTERNAL_ERROR",
+          "Password recovery is temporarily unavailable.",
         );
       }
-      return { delivery: "email", email };
+      return { delivery: "email" as const, email, flowId: data.flowId };
+    },
+
+    async completePasswordRecovery(completion) {
+      const { status, data } = await apiFetch<AuthResponse>(
+        "/api/auth/recovery/complete",
+        {
+          method: "POST",
+          body: JSON.stringify(completion),
+        },
+      );
+      if (status >= 400) {
+        throw providerError(
+          data,
+          "INVALID_CODE",
+          "The recovery code is invalid or has expired.",
+        );
+      }
+      return mapSession(data);
+    },
+
+    async startEmailVerification(email: string) {
+      const { status, data } = await apiFetch<{ flowId?: string }>(
+        "/api/auth/verification",
+        {
+          method: "POST",
+          body: JSON.stringify({ email }),
+        },
+      );
+      if (status >= 400 || !data.flowId) {
+        throw providerError(
+          data,
+          "INTERNAL_ERROR",
+          "Email verification is temporarily unavailable.",
+        );
+      }
+      return { delivery: "email" as const, email, flowId: data.flowId };
+    },
+
+    async completeEmailVerification(completion) {
+      const { status, data } = await apiFetch<Record<string, unknown>>(
+        "/api/auth/verification/complete",
+        {
+          method: "POST",
+          body: JSON.stringify(completion),
+        },
+      );
+      if (status >= 400) {
+        throw providerError(
+          data,
+          "INVALID_CODE",
+          "The verification code is invalid or has expired.",
+        );
+      }
+    },
+
+    async changePassword(change) {
+      const token = await sessionToken();
+      const { status, data } = await apiFetch<Record<string, unknown>>(
+        "/api/auth/password",
+        {
+          method: "POST",
+          token,
+          body: JSON.stringify(change),
+        },
+      );
+      if (status >= 400) {
+        throw providerError(
+          data,
+          "INTERNAL_ERROR",
+          "Password change is temporarily unavailable.",
+        );
+      }
     },
 
     async signOut() {

@@ -1081,6 +1081,12 @@ textarea {
   text-underline-offset: 2px;
 }
 
+/* Stacked auth links (e.g. "Resend code" over "Back to log in") keep only
+   line spacing between them — matching the wrapped terms/privacy note. */
+.auth-switch-link + .auth-switch-link {
+  margin-top: 0;
+}
+
 .auth-terms-note {
   margin-top: 14px;
   color: rgba(255, 255, 255, 0.5);
@@ -1104,6 +1110,91 @@ textarea {
   color: var(--color-text-primary);
   font-size: 20px;
   line-height: 1.2;
+}
+
+/* Standard notification banner (spec 035) — the shared glass surface for
+   inline notifications across the app (see components/common/
+   NotificationBanner.tsx). Sits inside the page's content column so its
+   margins align with the neighbouring cards; info glyph top-right. */
+.notification-banner {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+}
+
+.notification-banner-icon {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  color: var(--color-text-secondary);
+  line-height: 0;
+}
+
+.notification-banner-copy h2 {
+  margin: 0 0 8px;
+  padding-right: 32px;
+  color: var(--color-text-primary);
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.notification-banner-copy p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.verify-email-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.verify-email-input {
+  flex: 1 1 160px;
+  max-width: 240px;
+}
+
+.verify-email-submit {
+  width: auto;
+  padding: 12px 24px;
+}
+
+.verify-email-resend {
+  padding: 8px;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.verify-email-resend:hover {
+  color: var(--color-text-primary);
+}
+
+.verify-email-status {
+  margin: 0;
+  color: var(--color-error);
+  font-size: 13px;
+}
+
+/* Profile change-password form (spec 035). */
+.profile-password-form {
+  margin-top: 8px;
+}
+
+.profile-password-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.profile-password-error {
+  margin: 0;
 }
 
 .cookie-banner {

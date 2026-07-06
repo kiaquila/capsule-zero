@@ -37,6 +37,11 @@ export interface Session {
   accessToken: string;
   refreshToken?: string;
   expiresAt: string;
+  /**
+   * After-sign-up email verification flow (spec 035). The emailed code is
+   * bound to this Kratos flow; the verify-email banner submits against it.
+   */
+  verificationFlowId?: string;
 }
 
 export interface PasswordCredentials {
@@ -49,6 +54,31 @@ export interface PasswordCredentials {
 export interface PasswordRecoveryRequest {
   delivery: "email";
   email: string;
+  /** Flow the emailed one-time code is bound to (spec 035). */
+  flowId: string;
+}
+
+export interface PasswordRecoveryCompletion {
+  flowId?: string;
+  code?: string;
+  newPassword: string;
+  recoveryContinuationId?: string;
+}
+
+export interface EmailVerificationRequest {
+  delivery: "email";
+  email: string;
+  flowId: string;
+}
+
+export interface EmailVerificationCompletion {
+  flowId: string;
+  code: string;
+}
+
+export interface PasswordChange {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export interface AuthPort {
@@ -56,6 +86,14 @@ export interface AuthPort {
   signUpWithPassword(credentials: PasswordCredentials): Promise<Session | null>;
   signInWithPassword(credentials: PasswordCredentials): Promise<Session>;
   requestPasswordRecovery(email: string): Promise<PasswordRecoveryRequest>;
+  completePasswordRecovery(
+    completion: PasswordRecoveryCompletion,
+  ): Promise<Session>;
+  startEmailVerification(email: string): Promise<EmailVerificationRequest>;
+  completeEmailVerification(
+    completion: EmailVerificationCompletion,
+  ): Promise<void>;
+  changePassword(change: PasswordChange): Promise<void>;
   signOut(): Promise<void>;
 }
 

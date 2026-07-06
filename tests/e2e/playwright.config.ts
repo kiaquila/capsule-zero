@@ -2,6 +2,10 @@ import { defineConfig, devices } from "@playwright/test";
 
 const isCI = Boolean(process.env.CI);
 const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3000";
+// An external target (e.g. the docker stack at https://capsulezero.local) is
+// already running — no dev server to spawn, and Node's TLS probe would reject
+// the mkcert certificate anyway (Node ignores the system trust store).
+const isExternalTarget = !baseURL.includes("localhost");
 
 export default defineConfig({
   testDir: "./specs",
@@ -18,6 +22,7 @@ export default defineConfig({
   outputDir: "test-results",
   use: {
     baseURL,
+    ignoreHTTPSErrors: isExternalTarget,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
@@ -32,12 +37,14 @@ export default defineConfig({
       use: { ...devices["iPhone 14"] },
     },
   ],
-  webServer: {
-    command: "npm --prefix ../../app run dev",
-    url: baseURL,
-    reuseExistingServer: !isCI,
-    timeout: 180_000,
-    stdout: "pipe",
-    stderr: "pipe",
-  },
+  webServer: isExternalTarget
+    ? undefined
+    : {
+        command: "npm --prefix ../../app run dev",
+        url: baseURL,
+        reuseExistingServer: !isCI,
+        timeout: 180_000,
+        stdout: "pipe",
+        stderr: "pipe",
+      },
 });

@@ -14,6 +14,20 @@ export class AuthPopup {
   readonly signInForm: Locator;
   /** Present only when the popup is in sign-up mode (new-password input). */
   readonly signUpForm: Locator;
+  /** "Forgot password?" affordance shown in sign-in mode (spec 035). */
+  readonly forgotPasswordLink: Locator;
+  /** Recovery step 1: email entry (spec 035). */
+  readonly recoveryEmailInput: Locator;
+  /** Recovery step 2: emailed one-time code entry (spec 035). */
+  readonly recoveryCodeInput: Locator;
+  readonly recoveryNewPasswordInput: Locator;
+  readonly recoveryConfirmPasswordInput: Locator;
+  /** Submit button of whichever recovery step is active. */
+  readonly recoverySubmit: Locator;
+  /** "Resend code" affordance on the recovery completion step. */
+  readonly recoveryResend: Locator;
+  /** Server-reported message area shared by every auth mode. */
+  readonly serverMessage: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -27,6 +41,20 @@ export class AuthPopup {
     this.signUpForm = this.container
       .locator('input[autocomplete="new-password"]')
       .first();
+    this.forgotPasswordLink = this.container.getByTestId("auth-forgot-link");
+    this.recoveryEmailInput = this.container.getByTestId(
+      "recovery-email-input",
+    );
+    this.recoveryCodeInput = this.container.getByTestId("recovery-code-input");
+    this.recoveryNewPasswordInput = this.container.getByTestId(
+      "recovery-new-password-input",
+    );
+    this.recoveryConfirmPasswordInput = this.container.getByTestId(
+      "recovery-confirm-password-input",
+    );
+    this.recoverySubmit = this.container.getByTestId("recovery-submit");
+    this.recoveryResend = this.container.getByTestId("recovery-resend");
+    this.serverMessage = this.container.locator(".auth-server-message");
   }
 
   async clickModeSwitch(): Promise<void> {
@@ -35,5 +63,45 @@ export class AuthPopup {
 
   async close(): Promise<void> {
     await this.closeButton.click();
+  }
+
+  /** Submit the sign-in form (popup must be in sign-in mode). */
+  async signIn(email: string, password: string): Promise<void> {
+    await this.container.locator('input[name="email"]').fill(email);
+    await this.container.locator('input[name="password"]').fill(password);
+    await this.container.locator('button[type="submit"]').click();
+  }
+
+  /** Switch to sign-up mode and register an account. */
+  async signUp(
+    email: string,
+    password: string,
+    name?: string,
+  ): Promise<void> {
+    await this.clickModeSwitch();
+    await this.container.locator('input[name="email"]').fill(email);
+    await this.container.locator('input[name="password"]').fill(password);
+    await this.container
+      .locator('input[name="confirmPassword"]')
+      .fill(password);
+    if (name) {
+      await this.container.locator('input[name="name"]').fill(name);
+    }
+    await this.container.locator('button[type="submit"]').click();
+  }
+
+  /** Open recovery mode and request a code for the given email. */
+  async requestRecovery(email: string): Promise<void> {
+    await this.forgotPasswordLink.click();
+    await this.recoveryEmailInput.fill(email);
+    await this.recoverySubmit.click();
+  }
+
+  /** Complete recovery with the emailed code and a new password. */
+  async completeRecovery(code: string, newPassword: string): Promise<void> {
+    await this.recoveryCodeInput.fill(code);
+    await this.recoveryNewPasswordInput.fill(newPassword);
+    await this.recoveryConfirmPasswordInput.fill(newPassword);
+    await this.recoverySubmit.click();
   }
 }

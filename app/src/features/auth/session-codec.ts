@@ -9,6 +9,10 @@ export interface PersistedAppSession {
   refreshToken?: string;
   createdAt?: string;
   expiresAt: string;
+  /** Pending after-sign-up email verification flow (spec 035). */
+  verificationFlowId?: string;
+  /** Last known email verification state (spec 035); live whoami wins. */
+  emailVerified?: boolean;
 }
 
 export async function serializeSignedSession(

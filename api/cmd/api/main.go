@@ -25,16 +25,15 @@ import (
 // Public auth writes are throttled per originating client in the Go API itself
 // (mirroring the nginx edge `rate=10r/m`, `burst=10`) so the limit also covers
 // auth traffic forwarded by the Next.js server actions over the private network,
-// which never traverses the edge `limit_req`.
+// which never traverses the edge `limit_req`. The auth bucket size comes from
+// config (API_AUTH_RATE_PER_MINUTE / API_AUTH_RATE_BURST, default 10/10) —
+// the dev stack raises it because all local browsers share one client address.
 //
 // The session-validation surface (whoami/logout/profile) gets its own, far
 // roomier bucket: the web app resolves the session server-side on page renders,
 // so the auth-write budget would throttle normal navigation, while no budget at
 // all lets a bot drive Kratos WhoAmI lookups with arbitrary token probes.
 const (
-	authRateLimitPerMinute = 10
-	authRateLimitBurst     = 10
-
 	sessionRateLimitPerMinute = 120
 	sessionRateLimitBurst     = 60
 )
@@ -90,7 +89,7 @@ func run() error {
 		Profiles: profiles.New(pool),
 	}
 
-	authLimiter := ratelimit.New(authRateLimitPerMinute, authRateLimitBurst)
+	authLimiter := ratelimit.New(float64(cfg.AuthRatePerMinute), cfg.AuthRateBurst)
 	sessionLimiter := ratelimit.New(sessionRateLimitPerMinute, sessionRateLimitBurst)
 	cleanupCtx, stopCleanup := context.WithCancel(context.Background())
 	defer stopCleanup()
@@ -128,6 +127,13 @@ func newMux(handler *auth.Handler, authLimiter, sessionLimiter *ratelimit.Limite
 	mux.HandleFunc("POST /api/auth/registration", authLimiter.Middleware(handler.Registration))
 	mux.HandleFunc("POST /api/auth/login", authLimiter.Middleware(handler.Login))
 	mux.HandleFunc("POST /api/auth/recovery", authLimiter.Middleware(handler.Recovery))
+	mux.HandleFunc("POST /api/auth/recovery/complete", authLimiter.Middleware(handler.RecoveryComplete))
+	mux.HandleFunc("POST /api/auth/verification", authLimiter.Middleware(handler.VerificationStart))
+	mux.HandleFunc("POST /api/auth/verification/complete", authLimiter.Middleware(handler.VerificationComplete))
+	// Password change sits in the strict auth bucket: each attempt verifies a
+	// password, so a roomier session bucket would hand a stolen token a
+	// brute-force budget.
+	mux.HandleFunc("POST /api/auth/password", authLimiter.Middleware(handler.ChangePassword))
 	mux.HandleFunc("GET /api/auth/whoami", sessionLimiter.Middleware(handler.WhoAmI))
 	mux.HandleFunc("POST /api/auth/logout", sessionLimiter.Middleware(handler.Logout))
 	mux.HandleFunc("GET /api/profile", sessionLimiter.Middleware(handler.RequireSession(handler.GetProfile)))

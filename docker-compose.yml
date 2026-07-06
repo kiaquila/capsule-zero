@@ -61,7 +61,7 @@ services:
   # exits. Idempotent: Kratos tracks applied migrations in its own database, so a
   # repeat run on an up-to-date schema is a no-op (negative scenario 6).
   kratos-migrate:
-    image: oryd/kratos:v1.1.0
+    image: oryd/kratos:v1.3.1
     restart: "no"
     depends_on:
       postgres:
@@ -74,14 +74,15 @@ services:
     networks: [internal]
 
   # Ory Kratos identity provider. The Go API drives Kratos over the private
-  # internal network (never the host). Kratos public (4433) is reachable only
-  # inside the compose network: it is neither bound to the host nor exposed at
-  # the nginx edge, so every auth write must go through the Go API
-  # (/api/auth/*), which owns duplicate-identifier sanitization + the auth rate
-  # limit. Recovery/verification browser flows are disabled this slice; the
-  # dedicated completion-UI slice re-exposes the exact public paths it needs.
+  # internal network; every auth WRITE goes through the Go API (/api/auth/*),
+  # which owns duplicate-identifier sanitization + the auth rate limit.
+  # Recovery/verification run as code-method API flows (spec 035); the emailed
+  # verification link lands on the app's /verify-email route (custom courier
+  # template), so /self-service/* stays fully 404 at the edge. v1.3.1: native
+  # code recovery needs the continue_with session hand-off (kratos.yml
+  # feature_flags), which v1.1 did not support.
   kratos:
-    image: oryd/kratos:v1.1.0
+    image: oryd/kratos:v1.3.1
     restart: unless-stopped
     depends_on:
       postgres:
@@ -98,10 +99,10 @@ services:
       SELFSERVICE_ALLOWED_RETURN_URLS_0: ${APP_BASE_URL:?set APP_BASE_URL in the env file}
       SELFSERVICE_FLOWS_ERROR_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
       SELFSERVICE_FLOWS_SETTINGS_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/profile
-      # Recovery and verification flows are disabled in this slice (see
-      # infra/kratos/kratos.yml): the auth UI has no flow-aware completion step,
-      # so no recovery/verification UI URLs are advertised. They return with the
-      # dedicated recovery/verification slice.
+      # Recovery/verification run as code-method flows driven by the Go API
+      # (spec 035); the UI URLs point at the app's flow-aware completion pages.
+      SELFSERVICE_FLOWS_RECOVERY_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
+      SELFSERVICE_FLOWS_VERIFICATION_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/verify-email
       SELFSERVICE_FLOWS_LOGIN_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
       SELFSERVICE_FLOWS_REGISTRATION_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
     volumes:

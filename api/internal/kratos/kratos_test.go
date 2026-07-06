@@ -33,8 +33,8 @@ func TestRecoveryStatusMapping(t *testing.T) {
 					if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 						t.Fatalf("decode recovery request: %v", err)
 					}
-					if body["method"] != "link" {
-						t.Fatalf("recovery method = %q, want link", body["method"])
+					if body["method"] != "code" {
+						t.Fatalf("recovery method = %q, want code", body["method"])
 					}
 					if body["email"] != "person@example.com" {
 						t.Fatalf("recovery email = %q, want person@example.com", body["email"])
@@ -47,16 +47,20 @@ func TestRecoveryStatusMapping(t *testing.T) {
 			defer server.Close()
 
 			client := New(server.URL, server.URL)
-			err := client.Recovery(context.Background(), "person@example.com")
+			flowID, err := client.RecoveryStart(context.Background(), "person@example.com")
 
 			if tt.wantErr {
 				if err == nil {
-					t.Fatal("Recovery() error = nil, want error")
+					t.Fatal("RecoveryStart() error = nil, want error")
 				}
 				return
 			}
 			if err != nil {
-				t.Fatalf("Recovery() unexpected error: %v", err)
+				t.Fatalf("RecoveryStart() unexpected error: %v", err)
+			}
+			// 200 and privacy-safe 400 both resolve to the created flow id.
+			if flowID != "recovery-flow" {
+				t.Fatalf("flowID = %q, want recovery-flow", flowID)
 			}
 		})
 	}

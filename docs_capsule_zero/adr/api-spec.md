@@ -117,6 +117,8 @@ Every REST operation returns the common `ErrorResponse` shape for failures. The 
 | HTTP | `ErrorResponse.error.code`   | Meaning                                                                                                    |
 | ---: | ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
 |  400 | `VALIDATION_ERROR`           | Request syntax, shape, enum, file metadata, or query validation failed                                     |
+|  400 | `INVALID_CODE`               | Recovery/verification one-time code is wrong, expired, or already used (spec 035)                          |
+|  400 | `INVALID_CURRENT_PASSWORD`   | Password change rejected because the presented current password is wrong (spec 035)                        |
 |  401 | `UNAUTHENTICATED`            | Kratos session is missing, expired, or invalid                                                             |
 |  402 | `INSUFFICIENT_BALANCE`       | Coin balance is too low for a paid action                                                                  |
 |  403 | `FORBIDDEN`                  | User is authenticated but cannot access the resource or webhook key is invalid                             |
@@ -129,18 +131,22 @@ Server logs may include provider/raw details, but client responses must keep mes
 ## Auth
 
 The Go API wraps Ory Kratos API self-service flows for sign-up, login, session
-resolution, and logout in Stage 1. The password-recovery wrapper is dormant
-while the recovery/verification slice is deferred: Kratos recovery is disabled,
-so calls fail with 502 until that slice re-enables the flow. OAuth callbacks
-are kept in the contract as Stage 2 boundaries for Google OAuth and Apple
-Sign-In.
+resolution, logout, code-method password recovery, code-method email
+verification, and password change (spec 035). Recovery and verification codes
+are bound to their Kratos flow, so the start endpoints return a `flowId` the
+completion endpoints must reference. OAuth callbacks are kept in the contract
+as Stage 2 boundaries for Google OAuth and Apple Sign-In.
 
 | Route                    | Method | Auth   | Purpose                                                               |
 | ------------------------ | -----: | ------ | --------------------------------------------------------------------- |
 | `/api/auth/registration` |   POST | Public | Create a password account and return a session or email-confirm state |
 | `/api/auth/login`        |   POST | Public | Establish a password session                                          |
 | `/api/auth/whoami`       |    GET | Public | Resolve the presented session token, or return an empty auth response |
-| `/api/auth/recovery`     |   POST | Public | Deferred/dormant this slice (Kratos recovery disabled; calls fail 502) |
+| `/api/auth/recovery`     |   POST | Public | Start code-method recovery; returns the flow the code is bound to     |
+| `/api/auth/recovery/complete` | POST | Public | Exchange the emailed code, or a recovery continuation retry, for a new password and a session |
+| `/api/auth/verification` |   POST | Public | Start or resend a code-method email verification                      |
+| `/api/auth/verification/complete` | POST | Public | Confirm the address with the emailed code                    |
+| `/api/auth/password`     |   POST | User   | Change the password (current password required; re-auths internally)  |
 | `/api/auth/logout`       |   POST | Public | Revoke the presented session token; idempotent when absent            |
 | `/auth/callback`         |    GET | Public | Stage 2 web OAuth callback; exchanges code and redirects to dashboard |
 | `/auth/mobile-callback`  |    GET | Public | Stage 2 mobile OAuth callback; redirects into React Native deep link  |

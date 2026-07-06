@@ -69,7 +69,19 @@ export async function readVerifiedAppSession(): Promise<PersistedAppSession | nu
 
   const { createProviderRegistry } = await import("@/lib/providers/registry");
   const session = await createProviderRegistry().auth.getCurrentSession();
-  return session ? toPersistedAppSession(session) : null;
+  if (!session) {
+    return null;
+  }
+  const live = toPersistedAppSession(session);
+  return {
+    ...live,
+    // whoami cannot know the after-sign-up verification flow (only the
+    // registration response carries it), so keep the cookie's copy — the
+    // verify-email banner submits the emailed code against it. Live
+    // emailVerified stays authoritative when the provider reports one.
+    verificationFlowId: live.verificationFlowId ?? persisted.verificationFlowId,
+    emailVerified: live.emailVerified ?? persisted.emailVerified,
+  };
 }
 
 export async function clearAppSession() {
@@ -87,7 +99,25 @@ function toPersistedAppSession(session: Session): PersistedAppSession {
     refreshToken: session.refreshToken,
     createdAt: session.user.createdAt,
     expiresAt: session.expiresAt,
+    verificationFlowId: session.verificationFlowId,
+    emailVerified: session.user.emailVerified,
   };
+}
+
+// markAppSessionEmailVerified records a completed email verification in the
+// signed session cookie so the banner stays dismissed across requests even
+// when the provider cannot report live state (mock mode). The live whoami
+// value still wins where available (spec 035).
+export async function markAppSessionEmailVerified(): Promise<void> {
+  const persisted = await readSignedAppSession();
+  if (!persisted) {
+    return;
+  }
+  await writeAppSessionCookie({
+    ...persisted,
+    emailVerified: true,
+    verificationFlowId: undefined,
+  });
 }
 
 async function writeAppSessionCookie(

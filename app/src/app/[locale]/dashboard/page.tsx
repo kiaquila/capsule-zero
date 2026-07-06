@@ -29,5 +29,14 @@ export default async function DashboardRoute({ params }: DashboardRouteProps) {
     locale: locale as AppLocale,
   });
 
-  return <DashboardShell snapshot={snapshot} />;
+  // Verify-email banner (spec 035): readMockSession already merges the live
+  // whoami verification state with the cookie-persisted after-sign-up flow id
+  // (see readVerifiedAppSession), so the banner shows exactly while the
+  // provider reports the address unverified.
+  const verifyEmail =
+    session.emailVerified === false
+      ? { email: session.email, flowId: session.verificationFlowId }
+      : undefined;
+
+  return <DashboardShell snapshot={snapshot} verifyEmail={verifyEmail} />;
 }

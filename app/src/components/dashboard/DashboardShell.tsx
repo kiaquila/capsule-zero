@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
+import { VerifyEmailBanner } from "@/components/auth/VerifyEmailBanner";
 import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -15,9 +16,14 @@ import type { DashboardSnapshot } from "./dashboard-data";
 
 interface DashboardShellProps {
   snapshot: DashboardSnapshot;
+  /** Present while the signed-in user's email is unverified (spec 035). */
+  verifyEmail?: { email: string; flowId?: string };
 }
 
-export function DashboardShell({ snapshot }: DashboardShellProps) {
+export function DashboardShell({
+  snapshot,
+  verifyEmail,
+}: DashboardShellProps) {
   const t = useTranslations("dashboard");
   const locale = useLocale();
   const router = useRouter();
@@ -58,6 +64,12 @@ export function DashboardShell({ snapshot }: DashboardShellProps) {
         </header>
 
         <div className="dashboard-content">
+          {verifyEmail ? (
+            <VerifyEmailBanner
+              email={verifyEmail.email}
+              initialFlowId={verifyEmail.flowId}
+            />
+          ) : null}
           {snapshot.activeCapsule ? (
             <section className="dashboard-glass dashboard-capsule-card">
               <div className="dashboard-capsule-body">
