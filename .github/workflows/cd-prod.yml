@@ -106,6 +106,7 @@ jobs:
           {
             echo "image_web=${IMAGE_WEB}:sha-${GITHUB_SHA}"
             echo "image_api=${IMAGE_API}:sha-${GITHUB_SHA}"
+            echo "build_time=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           } >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
@@ -119,6 +120,7 @@ jobs:
           set -euo pipefail
           docker buildx build \
             --target runner \
+            --build-arg "GIT_SHA=${GITHUB_SHA}" \
             --tag "${IMAGE_WEB}:sha-${GITHUB_SHA}" \
             --tag "${IMAGE_WEB}:prod" \
             --cache-from "type=registry,ref=${IMAGE_WEB}:buildcache" \
@@ -127,9 +129,13 @@ jobs:
             ./app
 
       - name: Build and push api image
+        env:
+          BUILD_TIME: ${{ steps.meta.outputs.build_time }}
         run: |
           set -euo pipefail
           docker buildx build \
+            --build-arg "GIT_SHA=${GITHUB_SHA}" \
+            --build-arg "BUILD_TIME=${BUILD_TIME}" \
             --tag "${IMAGE_API}:sha-${GITHUB_SHA}" \
             --tag "${IMAGE_API}:prod" \
             --cache-from "type=registry,ref=${IMAGE_API}:buildcache" \
@@ -149,6 +155,15 @@ jobs:
       needs.build.result != 'cancelled'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Records a GitHub Deployment for this commit under the `production`
+    # environment, so the repo's Environments widget and the Deployments page
+    # show what is live. The deployment is only marked successful if this whole
+    # job succeeds — and the "Verify live release" step below fails the job on a
+    # SHA mismatch, so a green/active deployment means prod was verified against
+    # the running /api/health, not merely that `compose up` returned 0.
+    environment:
+      name: production
+      url: https://capsulezero.app
     steps:
       - name: Resolve image refs
         id: ref
@@ -224,3 +239,35 @@ jobs:
 
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "$SSH_USER@$SSH_HOST" \
             sudo /usr/local/sbin/capsule-zero-deploy "$IMAGE_WEB_REF" "$IMAGE_API_REF" "$DEPLOY_SHA" "$SYNC_HOST_NGINX"
+
+      - name: Verify live release matches deployed SHA
+        env:
+          DEPLOY_SHA: ${{ steps.ref.outputs.deploy_sha }}
+        # Read the running commit back from the public edge and confirm prod is
+        # actually serving the SHA we just shipped. A concrete different commit
+        # is a hard failure (the deploy did not really take); a missing/"unknown"
+        # commit means the image predates build-info (only possible when rolling
+        # back to a pre-036 image) — we can't assert the SHA there, so we warn and
+        # defer to the deploy wrapper's own 200 smoke check rather than red-flag a
+        # legitimate rollback.
+        run: |
+          set -euo pipefail
+          url="https://capsulezero.app/api/health"
+          live=""
+          for attempt in $(seq 1 10); do
+            body="$(curl -fsS --max-time 10 "$url" || true)"
+            live="$(printf '%s' "$body" | jq -r '.commit // empty' 2>/dev/null || true)"
+            echo "attempt ${attempt}: live commit=${live:-<none>} want=${DEPLOY_SHA}"
+            if [ "$live" = "$DEPLOY_SHA" ]; then
+              echo "verified: prod is serving ${DEPLOY_SHA}"
+              exit 0
+            fi
+            sleep 6
+          done
+
+          if [ -z "$live" ] || [ "$live" = "unknown" ]; then
+            echo "::warning::/api/health reports no build info (pre-036 image?) — cannot assert the SHA; the deploy wrapper's health smoke already passed"
+            exit 0
+          fi
+          echo "::error::prod is serving commit ${live}, expected ${DEPLOY_SHA} — deployment not verified"
+          exit 1

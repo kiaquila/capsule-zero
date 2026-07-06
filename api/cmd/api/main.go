@@ -38,6 +38,18 @@ const (
 	sessionRateLimitBurst     = 60
 )
 
+// Build metadata is injected at link time via
+//
+//	-ldflags "-X main.commit=<git-sha> -X main.buildTime=<rfc3339>"
+//
+// (see api/Dockerfile). The defaults keep an un-injected build — local `go run`
+// or `go test` — honest rather than reporting a blank version. /api/health
+// surfaces these so the CD deploy verifier can confirm the running commit.
+var (
+	commit    = "unknown"
+	buildTime = "unknown"
+)
+
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "-healthcheck" {
 		os.Exit(healthcheck())
@@ -187,10 +199,24 @@ func healthHandler(pool interface {
 			status = http.StatusServiceUnavailable
 		}
 
-		body := map[string]any{"ok": status == http.StatusOK}
+		body := map[string]any{
+			"ok":      status == http.StatusOK,
+			"commit":  orUnknown(commit),
+			"builtAt": orUnknown(buildTime),
+		}
 		for k, v := range result {
 			body[k] = v
 		}
 		httpx.WriteJSON(w, status, body)
 	}
+}
+
+// orUnknown guards the deploy verifier from a blank build field: an un-set var
+// reads as "unknown" rather than an empty string, so a missing version is never
+// confused with a mismatched one.
+func orUnknown(s string) string {
+	if s == "" {
+		return "unknown"
+	}
+	return s
 }

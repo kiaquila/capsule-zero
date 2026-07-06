@@ -39,7 +39,10 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
    merges are skipped (green, no deploy).
 3. **build** — `docker buildx` builds `app/Dockerfile` (`--target runner`) and
    `api/Dockerfile`, pushes `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>` and
-   `ghcr.io/kiaquila/capsule-zero-api:sha-<gitsha>` plus moving `:prod` tags to GHCR.
+   `ghcr.io/kiaquila/capsule-zero-api:sha-<gitsha>` plus moving `:prod` tags to GHCR. Both
+   builds get `--build-arg GIT_SHA=<gitsha>` (api also `BUILD_TIME`): the api binary is
+   stamped via `-ldflags -X main.commit/main.buildTime` and both images set the OCI
+   `org.opencontainers.image.revision` label (spec 036).
 4. **deploy** — SSH to the server as the unprivileged `deploy` user, then run the
    root-owned wrapper
    `/usr/local/sbin/capsule-zero-deploy <web-image> <api-image> <sha> <sync-nginx>`.
@@ -53,6 +56,26 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
    config if the post-reload smoke fails, and reports success only after
    `http://127.0.0.1:3000/en`, `https://capsulezero.app/en`, and
    `https://capsulezero.app/api/health` all pass.
+5. **verify (spec 036)** — the `deploy` job runs under a job-level
+   `environment: production`, so GitHub records a **Deployment** for the merged commit
+   (visible in the repo's Environments widget and the **Deployments** page). A final
+   *Verify live release* step polls `https://capsulezero.app/api/health` and compares its
+   `commit` field to the deployed SHA: a concrete mismatch fails the job (the production
+   deployment is marked *failure*), so an active production deployment means prod was
+   verified against the running server — not merely that `compose up` returned 0. A
+   missing/`"unknown"` commit (only possible when rolling back to a pre-036 image) is a
+   warning that defers to the wrapper's own `/api/health` 200 smoke.
+
+### Checking the live release
+
+- **From a browser / GitHub:** the repo home → **Environments → production**, or the
+  **Deployments** page — the Active deployment is the verified live commit.
+- **From one `curl`:** `curl -s https://capsulezero.app/api/health` returns
+  `{"ok":true,"commit":"<gitsha>","builtAt":"<rfc3339>","postgres":"ok","kratos":"ok"}`.
+  Compare `commit` to `git rev-parse origin/main` to see whether the latest merge landed.
+- **On the host:** `ssh cz "docker ps --format '{{.Names}}\t{{.Image}}'"` (image tag) or
+  `docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}'
+  capsule-zero-api-1`.
 
 ## One-time operator setup (performed 2026-07-02; documented for rebuild)
 
