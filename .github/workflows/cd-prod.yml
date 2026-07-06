@@ -155,12 +155,19 @@ jobs:
       needs.build.result != 'cancelled'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      deploy_sha: ${{ steps.ref.outputs.deploy_sha }}
     # Records a GitHub Deployment for this commit under the `production`
     # environment, so the repo's Environments widget and the Deployments page
     # show what is live. The deployment is only marked successful if this whole
     # job succeeds — and the "Verify live release" step below fails the job on a
     # SHA mismatch, so a green/active deployment means prod was verified against
     # the running /api/health, not merely that `compose up` returned 0.
+    # Caveat: this implicit deployment is always bound to the workflow run's own
+    # github.sha. That is correct for merge deploys, but wrong for a
+    # workflow_dispatch rollback (deploy_sha = the older image's commit) — the
+    # record-rollback-release job below re-binds the environment to the
+    # verified rollback SHA after this job succeeds.
     environment:
       name: production
       url: https://capsulezero.app
@@ -283,3 +290,55 @@ jobs:
           fi
           echo "::error::prod is serving commit ${live}, expected ${DEPLOY_SHA} — deployment not verified"
           exit 1
+
+  # A workflow_dispatch rollback deploys an older commit than the run's own
+  # github.sha, but the deploy job's implicit `environment: production`
+  # deployment is always recorded against github.sha — exactly during a
+  # rollback the Environments page would mark the wrong commit Active. This job
+  # runs only after a successful (already health-verified) rollback deploy and
+  # creates an explicit Deployment + success status bound to the rolled-back
+  # SHA via the REST API, superseding the implicit record as Active. Merge
+  # deploys never reach this job: their implicit deployment is already correct.
+  record-rollback-release:
+    name: record-rollback-release
+    needs: deploy
+    if: >-
+      needs.deploy.result == 'success' &&
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.image_sha != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      deployments: write
+    steps:
+      - name: Bind production deployment to the rolled-back SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_SHA: ${{ needs.deploy.outputs.deploy_sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::deploy job did not expose a valid deploy_sha (got '${DEPLOY_SHA:-<empty>}')"
+            exit 1
+          fi
+          deployment_id="$(jq -n \
+            --arg ref "$DEPLOY_SHA" \
+            --arg run "$GITHUB_RUN_ID" \
+            '{
+              ref: $ref,
+              environment: "production",
+              auto_merge: false,
+              required_contexts: [],
+              production_environment: true,
+              description: ("rollback: verified live release (run " + $run + ")")
+            }' | gh api "repos/${GITHUB_REPOSITORY}/deployments" --input - --jq '.id')"
+          if [ -z "$deployment_id" ]; then
+            echo "::error::could not create a deployment for ${DEPLOY_SHA}"
+            exit 1
+          fi
+          jq -n \
+            --arg url "https://capsulezero.app" \
+            --arg log "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            '{state: "success", environment_url: $url, log_url: $log}' \
+            | gh api "repos/${GITHUB_REPOSITORY}/deployments/${deployment_id}/statuses" --input - --jq '.state'
+          echo "production deployment ${deployment_id} now points at ${DEPLOY_SHA}"

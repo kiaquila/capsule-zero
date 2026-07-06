@@ -31,8 +31,12 @@
 - **Manual GitHub Deployments API via `actions/github-script`.** Would let us write the live
   version into the deployment description explicitly, but job-level `environment:` gives the
   same Environments/Deployments UI natively and ties the deployment status to the job (so the
-  Verify step already makes "active" mean "verified"). Kept the native path; no extra
-  `deployments: write` script.
+  Verify step already makes "active" mean "verified"). Kept the native path for merge deploys;
+  no `actions/github-script`. *Revised in review round 2 (Codex P2):* the implicit deployment
+  is bound to the run's own `github.sha`, which is wrong exactly during a `workflow_dispatch`
+  rollback — so the narrow `record-rollback-release` job now re-binds the environment to the
+  verified rollback SHA via plain `gh api` (REST), rollback path only. The dead end stands for
+  the main path; the API is used only where the native record is provably wrong.
 
 ### Decisions
 

@@ -40,6 +40,13 @@ unreadable prod is a failed verification, never a silent pass. `curl` runs witho
 by design: a degraded 503 still carries build info, and healthiness itself is owned by
 the deploy wrapper's smoke check — this step asserts release identity only.
 
+Rollback runs also get a correct GitHub Deployment record (Codex P2, round 2): the
+implicit job-level `environment: production` deployment is always bound to the run's
+own `github.sha`, which is wrong exactly during a rollback. The `record-rollback-release`
+job (workflow_dispatch + `image_sha` only, after the deploy job succeeds) creates an
+explicit Deployment + success status for the verified rollback SHA via the REST API,
+superseding the implicit record as Active. Merge deploys never reach that job.
+
 ## Verification
 
 | # | Acceptance criterion | Evidence |
@@ -49,6 +56,7 @@ the deploy wrapper's smoke check — this step asserts release identity only.
 | 3 | Merge deploy records a `production` GitHub Deployment for the merged commit | Post-merge `cd-prod` run shows the `deploy` job under `environment: production`; repo Environments/Deployments page shows the commit as Active (screenshot/link in PR) |
 | 4 | **(Negative)** live commit ≠ deployed SHA fails the job → deployment marked failure; `"unknown"` degrades to warning; unreadable health fails | `go test` — `TestHealthHandlerBuildInfoWhenUninjectedAndDegraded` PASS (503 still carries `"unknown"`, never blank); verify-step script extracted from `cd-prod.yml` and run against 5 mocked-`curl` scenarios: transport failure → `exit 1`, non-JSON body → `exit 1`, pre-036 `{"ok":true}` → `::warning::` + `exit 0`, SHA match → `exit 0`, concrete mismatch → `exit 1` (recorded in PR) |
 | 5 | `/api/health` contract stays in sync: OpenAPI + generated client expose `commit`/`builtAt` | `docs_capsule_zero/adr/openapi.yaml` — `getHealth` → `HealthResponse` (200 + 503); `npm run generate:api` regenerated `app/src/lib/api/generated/openapi.ts`; `npm run check:api-contract` PASS (52 operations) |
+| 6 | **(Negative)** rollback dispatch records the rolled-back SHA as the Active production deployment, not the run's `github.sha` | `record-rollback-release` job in `cd-prod.yml`: gated on `workflow_dispatch` + non-empty `image_sha` + `needs.deploy.result == 'success'`; creates Deployment + success status for `deploy_sha` via REST; YAML parse + job-graph review recorded in PR (infra — config-evidence lane) |
 
 ## Negative scenario
 

@@ -250,6 +250,16 @@ with `image_sha = sha-<previous-gitsha>` — it skips the build, checks out the 
 commit, and redeploys those images (host-nginx sync is skipped on rollback). List tags in
 **Packages → capsule-zero-web / capsule-zero-api**.
 
+The deploy job's implicit `environment: production` deployment is always bound to the
+workflow run's own `github.sha` — during a rollback that would mark the *current* main
+tip Active while prod actually serves the older commit. The `record-rollback-release`
+job closes that gap: it runs only after a successful (health-verified) rollback deploy
+and creates an explicit Deployment + success status for the rolled-back SHA via the
+REST API, which supersedes the implicit record — so **Environments → production** keeps
+answering "what is live" correctly during rollbacks too. Rolling back to a pre-036
+image reports `commit "unknown"` on `/api/health`; the verify step warns and defers to
+the wrapper's health smoke.
+
 ## Notes
 
 - The server never builds images (RAM/CPU contention + CI provenance); the wrapper always
