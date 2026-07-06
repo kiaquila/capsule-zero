@@ -993,6 +993,28 @@ components:
       properties:
         ok:
           type: boolean
+    HealthResponse:
+      type: object
+      description: >-
+        Deployment health probe with build identity. `commit` and `builtAt`
+        are stamped at link time (`-ldflags -X`, see api/Dockerfile); a build
+        without injection reports "unknown", never an empty string.
+      required: [ok, commit, builtAt, postgres, kratos]
+      properties:
+        ok:
+          type: boolean
+        commit:
+          type: string
+          description: Git commit SHA of the running build, or "unknown".
+        builtAt:
+          type: string
+          description: RFC 3339 build timestamp, or "unknown".
+        postgres:
+          type: string
+          enum: [ok, error]
+        kratos:
+          type: string
+          enum: [ok, error]
     IdResponse:
       type: object
       required: [id]
@@ -2165,13 +2187,21 @@ paths:
       operationId: getHealth
       x-auth: public
       security: []
-      summary: Basic deployment health check.
+      summary: Basic deployment health check with build identity.
       responses:
         "200":
           description: Healthy deployment.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MessageResponse"
+                $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: >-
+            Degraded deployment — a dependency probe failed. The body still
+            carries build info so the CD verifier can read the running commit.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
         "400":
           $ref: "#/components/responses/BadRequest"

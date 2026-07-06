@@ -767,6 +767,14 @@ export type MessageResponse = {
   ok: boolean;
 };
 
+export type HealthResponse = {
+  ok: boolean;
+  commit: string;
+  builtAt: string;
+  postgres: "ok" | "error";
+  kratos: "ok" | "error";
+};
+
 export type IdResponse = {
   id: string;
 };
@@ -1426,7 +1434,7 @@ export type GetHealthQueryParams = Record<string, never>;
 export type GetHealthHeaderParams = Record<string, never>;
 export type GetHealthCookieParams = Record<string, never>;
 export type GetHealthRequestBody = never;
-export type GetHealthResponseBody = MessageResponse;
+export type GetHealthResponseBody = HealthResponse;
 
 export type GetMarketplaceImportPathParams = {
   importId: string;
@@ -3119,6 +3127,44 @@ export const API_SCHEMAS = {
       }
     }
   },
+  "HealthResponse": {
+    "type": "object",
+    "description": "Deployment health probe with build identity. `commit` and `builtAt` are stamped at link time (`-ldflags -X`, see api/Dockerfile); a build without injection reports \"unknown\", never an empty string.",
+    "required": [
+      "ok",
+      "commit",
+      "builtAt",
+      "postgres",
+      "kratos"
+    ],
+    "properties": {
+      "ok": {
+        "type": "boolean"
+      },
+      "commit": {
+        "type": "string",
+        "description": "Git commit SHA of the running build, or \"unknown\"."
+      },
+      "builtAt": {
+        "type": "string",
+        "description": "RFC 3339 build timestamp, or \"unknown\"."
+      },
+      "postgres": {
+        "type": "string",
+        "enum": [
+          "ok",
+          "error"
+        ]
+      },
+      "kratos": {
+        "type": "string",
+        "enum": [
+          "ok",
+          "error"
+        ]
+      }
+    }
+  },
   "IdResponse": {
     "type": "object",
     "required": [
@@ -3816,7 +3862,7 @@ export const API_OPERATION_PAYLOADS = {
     ],
     "requestSchema": null,
     "responseSchemas": [
-      "MessageResponse"
+      "HealthResponse"
     ],
     "pathParameters": [],
     "queryParameters": [],

@@ -39,7 +39,10 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
    merges are skipped (green, no deploy).
 3. **build** — `docker buildx` builds `app/Dockerfile` (`--target runner`) and
    `api/Dockerfile`, pushes `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>` and
-   `ghcr.io/kiaquila/capsule-zero-api:sha-<gitsha>` plus moving `:prod` tags to GHCR.
+   `ghcr.io/kiaquila/capsule-zero-api:sha-<gitsha>` plus moving `:prod` tags to GHCR. Both
+   builds get `--build-arg GIT_SHA=<gitsha>` (api also `BUILD_TIME`): the api binary is
+   stamped via `-ldflags -X main.commit/main.buildTime` and both images set the OCI
+   `org.opencontainers.image.revision` label (spec 036).
 4. **deploy** — SSH to the server as the unprivileged `deploy` user, then run the
    root-owned wrapper
    `/usr/local/sbin/capsule-zero-deploy <web-image> <api-image> <sha> <sync-nginx>`.
@@ -53,6 +56,35 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
    config if the post-reload smoke fails, and reports success only after
    `http://127.0.0.1:3000/en`, `https://capsulezero.app/en`, and
    `https://capsulezero.app/api/health` all pass.
+5. **verify (spec 036)** — the `deploy` job runs under a job-level
+   `environment: production`, so GitHub records a **Deployment** for the merged commit
+   (visible in the repo's Environments widget and the **Deployments** page). A final
+   *Verify live release* step polls `https://capsulezero.app/api/health` and compares its
+   `commit` field to the deployed SHA: a concrete mismatch fails the job (the production
+   deployment is marked *failure*), so an active production deployment means prod was
+   verified against the running server — not merely that `compose up` returned 0. An
+   `"unknown"` commit is tolerated (warning, defer to the wrapper's own `/api/health`
+   smoke) **only on an explicit `workflow_dispatch` rollback** to a pre-036 image; on a
+   merge or build-HEAD deploy the image was just built with `-ldflags`, so `"unknown"`
+   means the SHA injection broke and the step fails the job. The tolerance also applies
+   only after a successfully parsed JSON health response: if the edge never returns
+   readable health JSON (transport error, timeout, nginx error page) for all 10
+   attempts, the step fails the job rather than reporting an unverified deploy as green.
+   After a verified deploy, an **Inactivate superseded production deployments** step
+   posts `inactive` to every prior success record (GitHub's auto-inactivation skips
+   production environments), so the Environments page always shows exactly one Active
+   production deployment — the verified live release.
+
+### Checking the live release
+
+- **From a browser / GitHub:** the repo home → **Environments → production**, or the
+  **Deployments** page — the Active deployment is the verified live commit.
+- **From one `curl`:** `curl -s https://capsulezero.app/api/health` returns
+  `{"ok":true,"commit":"<gitsha>","builtAt":"<rfc3339>","postgres":"ok","kratos":"ok"}`.
+  Compare `commit` to `git rev-parse origin/main` to see whether the latest merge landed.
+- **On the host:** `ssh cz "docker ps --format '{{.Names}}\t{{.Image}}'"` (image tag) or
+  `docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}'
+  capsule-zero-api-1`.
 
 ## One-time operator setup (performed 2026-07-02; documented for rebuild)
 
@@ -223,6 +255,18 @@ Every build is tagged immutably by commit SHA. Run **CD Prod** via **workflow_di
 with `image_sha = sha-<previous-gitsha>` — it skips the build, checks out the matching
 commit, and redeploys those images (host-nginx sync is skipped on rollback). List tags in
 **Packages → capsule-zero-web / capsule-zero-api**.
+
+The deploy job's implicit `environment: production` deployment is always bound to the
+workflow run's own `github.sha` — during a rollback that would mark the *current* main
+tip Active while prod actually serves the older commit. The `record-rollback-release`
+job closes that gap: it runs only after a successful (health-verified) rollback deploy,
+creates an explicit Deployment + success status for the rolled-back SHA via the REST
+API, and then explicitly marks every other production deployment inactive (GitHub's
+auto-inactivation on a success status skips production environments, so the implicit
+record would otherwise stay active) — so **Environments → production** keeps answering
+"what is live" correctly during rollbacks too. Rolling back to a pre-036
+image reports `commit "unknown"` on `/api/health`; the verify step warns and defers to
+the wrapper's health smoke.
 
 ## Notes
 

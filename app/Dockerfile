@@ -18,6 +18,11 @@ FROM base AS runner
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
+# Standard OCI revision label so `docker inspect` / GHCR show the source commit.
+# web and api are always built and deployed from the same commit, so the API's
+# /api/health commit is authoritative for the deploy verifier.
+ARG GIT_SHA=unknown
+LABEL org.opencontainers.image.revision=${GIT_SHA}
 
 RUN groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 --gid nodejs nextjs
