@@ -64,7 +64,10 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
    deployment is marked *failure*), so an active production deployment means prod was
    verified against the running server — not merely that `compose up` returned 0. A
    missing/`"unknown"` commit (only possible when rolling back to a pre-036 image) is a
-   warning that defers to the wrapper's own `/api/health` 200 smoke.
+   warning that defers to the wrapper's own `/api/health` 200 smoke — but that tolerance
+   applies only after a successfully parsed JSON health response: if the edge never
+   returns readable health JSON (transport error, timeout, nginx error page) for all 10
+   attempts, the step fails the job rather than reporting an unverified deploy as green.
 
 ### Checking the live release
 

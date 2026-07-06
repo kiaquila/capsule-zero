@@ -245,18 +245,26 @@ jobs:
           DEPLOY_SHA: ${{ steps.ref.outputs.deploy_sha }}
         # Read the running commit back from the public edge and confirm prod is
         # actually serving the SHA we just shipped. A concrete different commit
-        # is a hard failure (the deploy did not really take); a missing/"unknown"
-        # commit means the image predates build-info (only possible when rolling
-        # back to a pre-036 image) — we can't assert the SHA there, so we warn and
-        # defer to the deploy wrapper's own 200 smoke check rather than red-flag a
-        # legitimate rollback.
+        # is a hard failure (the deploy did not really take). The "unknown"
+        # rollback tolerance (image predates build-info, only possible when
+        # rolling back to a pre-036 image) applies only after a successfully
+        # parsed JSON health response — if the edge never returns readable
+        # health JSON (transport error, timeout, nginx error page), the job
+        # fails rather than reporting an unverified deploy as green. curl runs
+        # without -f on purpose: a degraded 503 still carries build info, and
+        # healthiness itself is owned by the deploy wrapper's smoke check —
+        # this step only asserts release identity.
         run: |
           set -euo pipefail
           url="https://capsulezero.app/api/health"
-          live=""
+          live=""            # commit from the most recent parsed health response
+          got_health=false   # true once any attempt returned parseable health JSON
           for attempt in $(seq 1 10); do
-            body="$(curl -fsS --max-time 10 "$url" || true)"
-            live="$(printf '%s' "$body" | jq -r '.commit // empty' 2>/dev/null || true)"
+            if body="$(curl -sS --max-time 10 "$url")" \
+              && parsed="$(printf '%s' "$body" | jq -er '.commit // "unknown"' 2>/dev/null)"; then
+              got_health=true
+              live="$parsed"
+            fi
             echo "attempt ${attempt}: live commit=${live:-<none>} want=${DEPLOY_SHA}"
             if [ "$live" = "$DEPLOY_SHA" ]; then
               echo "verified: prod is serving ${DEPLOY_SHA}"
@@ -265,7 +273,11 @@ jobs:
             sleep 6
           done
 
-          if [ -z "$live" ] || [ "$live" = "unknown" ]; then
+          if [ "$got_health" != "true" ]; then
+            echo "::error::could not read health JSON from ${url} after 10 attempts — deployment not verified"
+            exit 1
+          fi
+          if [ "$live" = "unknown" ]; then
             echo "::warning::/api/health reports no build info (pre-036 image?) — cannot assert the SHA; the deploy wrapper's health smoke already passed"
             exit 0
           fi
