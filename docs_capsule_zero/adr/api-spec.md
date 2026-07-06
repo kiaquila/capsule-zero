@@ -232,7 +232,7 @@ Mobile apps must not expose a Lava.top purchase CTA, external payment link, or i
 | ------------------------------------- | -----: | ------ | ------------------------------------------ |
 | `/api/admin/moderation/items`         |    GET | Admin  | List marketplace items awaiting moderation |
 | `/api/admin/moderation/items/:itemId` |  PATCH | Admin  | Approve/reject catalog visibility          |
-| `/api/health`                         |    GET | Public | Basic deployment health check              |
+| `/api/health`                         |    GET | Public | Deployment health + build identity: `ok`, `commit`, `builtAt` (link-time `-ldflags`, `"unknown"` when un-injected), `postgres`, `kratos`; degraded dependency → 503 with the same body (spec 036) |
 
 ## Domain RPC Functions
 
