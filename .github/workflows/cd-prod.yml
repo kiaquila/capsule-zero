@@ -302,10 +302,13 @@ jobs:
   # github.sha, but the deploy job's implicit `environment: production`
   # deployment is always recorded against github.sha — exactly during a
   # rollback the Environments page would mark the wrong commit Active. This job
-  # runs only after a successful (already health-verified) rollback deploy and
+  # runs only after a successful (already health-verified) rollback deploy,
   # creates an explicit Deployment + success status bound to the rolled-back
-  # SHA via the REST API, superseding the implicit record as Active. Merge
-  # deploys never reach this job: their implicit deployment is already correct.
+  # SHA via the REST API, and then explicitly marks every other production
+  # deployment inactive — GitHub's auto-inactivation on a success status skips
+  # production environments, so without this the implicit github.sha-bound
+  # record could stay active alongside the rollback record. Merge deploys
+  # never reach this job: their implicit deployment is already correct.
   record-rollback-release:
     name: record-rollback-release
     needs: deploy
@@ -348,4 +351,22 @@ jobs:
             --arg log "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
             '{state: "success", environment_url: $url, log_url: $log}' \
             | gh api "repos/${GITHUB_REPOSITORY}/deployments/${deployment_id}/statuses" --input - --jq '.state'
+
+          # A success status auto-inactivates only non-transient, NON-production
+          # prior deployments (GitHub REST semantics), so the implicit
+          # github.sha-bound deployment from the deploy job would stay active.
+          # Explicitly inactivate every other still-active production
+          # deployment so exactly one active record — the rollback SHA — is left.
+          gh api "repos/${GITHUB_REPOSITORY}/deployments?environment=production&per_page=100" --jq '.[].id' \
+            | while read -r other_id; do
+                [ "$other_id" = "$deployment_id" ] && continue
+                other_state="$(gh api "repos/${GITHUB_REPOSITORY}/deployments/${other_id}/statuses?per_page=1" --jq '.[0].state // "none"')"
+                case "$other_state" in
+                  success|in_progress|queued|pending)
+                    jq -n '{state: "inactive"}' \
+                      | gh api "repos/${GITHUB_REPOSITORY}/deployments/${other_id}/statuses" --input - --jq '.state' >/dev/null
+                    echo "inactivated production deployment ${other_id} (was ${other_state})"
+                    ;;
+                esac
+              done
           echo "production deployment ${deployment_id} now points at ${DEPLOY_SHA}"

@@ -255,10 +255,12 @@ commit, and redeploys those images (host-nginx sync is skipped on rollback). Lis
 The deploy job's implicit `environment: production` deployment is always bound to the
 workflow run's own `github.sha` — during a rollback that would mark the *current* main
 tip Active while prod actually serves the older commit. The `record-rollback-release`
-job closes that gap: it runs only after a successful (health-verified) rollback deploy
-and creates an explicit Deployment + success status for the rolled-back SHA via the
-REST API, which supersedes the implicit record — so **Environments → production** keeps
-answering "what is live" correctly during rollbacks too. Rolling back to a pre-036
+job closes that gap: it runs only after a successful (health-verified) rollback deploy,
+creates an explicit Deployment + success status for the rolled-back SHA via the REST
+API, and then explicitly marks every other production deployment inactive (GitHub's
+auto-inactivation on a success status skips production environments, so the implicit
+record would otherwise stay active) — so **Environments → production** keeps answering
+"what is live" correctly during rollbacks too. Rolling back to a pre-036
 image reports `commit "unknown"` on `/api/health`; the verify step warns and defers to
 the wrapper's health smoke.
 

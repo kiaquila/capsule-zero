@@ -47,8 +47,11 @@ Rollback runs also get a correct GitHub Deployment record (Codex P2, round 2): t
 implicit job-level `environment: production` deployment is always bound to the run's
 own `github.sha`, which is wrong exactly during a rollback. The `record-rollback-release`
 job (workflow_dispatch + `image_sha` only, after the deploy job succeeds) creates an
-explicit Deployment + success status for the verified rollback SHA via the REST API,
-superseding the implicit record as Active. Merge deploys never reach that job.
+explicit Deployment + success status for the verified rollback SHA via the REST API and
+then explicitly inactivates every other still-active production deployment — a success
+status auto-inactivates only non-transient, *non-production* deployments (Codex P2
+round 4), so the implicit `github.sha` record would otherwise stay active alongside.
+Merge deploys never reach that job.
 
 ## Verification
 
@@ -59,7 +62,7 @@ superseding the implicit record as Active. Merge deploys never reach that job.
 | 3 | Merge deploy records a `production` GitHub Deployment for the merged commit | Post-merge `cd-prod` run shows the `deploy` job under `environment: production`; repo Environments/Deployments page shows the commit as Active (screenshot/link in PR) |
 | 4 | **(Negative)** live commit ≠ deployed SHA fails the job → deployment marked failure; `"unknown"` degrades to warning only on rollback dispatch; unreadable health fails | `go test` — `TestHealthHandlerBuildInfoWhenUninjectedAndDegraded` PASS (503 still carries `"unknown"`, never blank); verify-step script extracted from `cd-prod.yml` and run against 6 mocked-`curl` scenarios: transport failure → `exit 1`, non-JSON body → `exit 1`, pre-036 `{"ok":true}` + `IS_ROLLBACK=true` → `::warning::` + `exit 0`, pre-036 + `IS_ROLLBACK=false` → `exit 1` (broken ldflags injection), SHA match → `exit 0`, concrete mismatch → `exit 1` (recorded in PR) |
 | 5 | `/api/health` contract stays in sync: OpenAPI + generated client expose `commit`/`builtAt` | `docs_capsule_zero/adr/openapi.yaml` — `getHealth` → `HealthResponse` (200 + 503); `npm run generate:api` regenerated `app/src/lib/api/generated/openapi.ts`; `npm run check:api-contract` PASS (52 operations) |
-| 6 | **(Negative)** rollback dispatch records the rolled-back SHA as the Active production deployment, not the run's `github.sha` | `record-rollback-release` job in `cd-prod.yml`: gated on `workflow_dispatch` + non-empty `image_sha` + `needs.deploy.result == 'success'`; creates Deployment + success status for `deploy_sha` via REST; YAML parse + job-graph review recorded in PR (infra — config-evidence lane) |
+| 6 | **(Negative)** rollback dispatch records the rolled-back SHA as the *only* Active production deployment, not the run's `github.sha` | `record-rollback-release` job in `cd-prod.yml`: gated on `workflow_dispatch` + non-empty `image_sha` + `needs.deploy.result == 'success'`; creates Deployment + success status for `deploy_sha` via REST, then inactivates every other still-active production deployment; step script extracted from YAML and run against a mocked `gh` (create → success → inactivate others, skip self and already-inactive) — recorded in PR (infra — config-evidence lane) |
 
 ## Negative scenario
 

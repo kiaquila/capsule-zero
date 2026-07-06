@@ -36,7 +36,11 @@
   is bound to the run's own `github.sha`, which is wrong exactly during a `workflow_dispatch`
   rollback — so the narrow `record-rollback-release` job now re-binds the environment to the
   verified rollback SHA via plain `gh api` (REST), rollback path only. The dead end stands for
-  the main path; the API is used only where the native record is provably wrong.
+  the main path; the API is used only where the native record is provably wrong. *Round 4:*
+  the job also explicitly inactivates every other still-active production deployment — a
+  success status auto-inactivates only *non-production* deployments per GitHub REST
+  semantics, so the implicit `github.sha` record would otherwise stay active alongside the
+  rollback record.
 
 ### Decisions
 
