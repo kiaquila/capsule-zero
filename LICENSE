@@ -1,0 +1,19 @@
+Copyright (c) 2026 Capsule Zero. All rights reserved.
+
+This repository is public for reference and transparency only. Capsule Zero is
+a commercial product built openly with AI agents.
+
+APPLICATION CODE — proprietary. No license is granted to use, copy, modify,
+merge, publish, distribute, sublicense, or sell any part of the application
+(including `app/`, `api/`, `worker/`, `mobile/`, `infra/`, and the product docs
+under `docs_capsule_zero/` and `.specify/`), in whole or in part, without the
+prior written permission of the copyright holder. Viewing and forking within
+GitHub are permitted only as allowed by the GitHub Terms of Service and grant no
+additional rights.
+
+PROCESS & TOOLING — the delivery process is meant to be learned from. The
+agentic workflow scripts under `scripts/` may be studied and reused, provided
+this copyright notice is retained and they are not used to reproduce the
+Capsule Zero product, brand, or methodology.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
