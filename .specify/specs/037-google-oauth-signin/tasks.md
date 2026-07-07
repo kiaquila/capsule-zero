@@ -72,6 +72,9 @@
 - `docker compose --env-file deploy/compose.dev.env config` — valid with the
   default (OIDC off, providers `[]`) and with the enabled trio exported
   (provider JSON interpolates intact).
+- `nginx -t` (nginx:1.27-alpine, shared nginx.conf + conf.d.dev mounted) —
+  syntax ok after mirroring the Google-callback carve-out into the dev vhost
+  (Codex P3, 2026-07-07).
 - Playwright `specs/auth/google-sign-in.spec.ts` — 4 passed (chromium +
   webkit-iphone; happy loop + no-code negative). First webkit run caught the
   cookie banner overlapping the button on mobile — fixed by dismissing the
