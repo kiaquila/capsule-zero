@@ -69,8 +69,9 @@
   manifests under the production standalone bind, so it is verified by
   **Supervised Verification** — the standalone `node server.js` red/green smoke
   below plus the post-deploy prod smoke — rather than a committed failing e2e.
-  Follow-up (tracked separately): a standalone/docker-target e2e that asserts
-  the callback redirect **host** would give CI a real regression guard.
+  Follow-up **delivered same day** (see the origin-guard decision below): the
+  standalone-target e2e that asserts the callback redirect origin now runs in
+  the required `test` gate, so a revert to `request.nextUrl.origin` fails CI.
 
 - **2026-07-07 (deliberate, fail-loud on misconfig):** `appOrigin()` is
   awaited before the try block, so a production deploy with
@@ -83,7 +84,40 @@
   `request.nextUrl.origin` bind this fix removes. Failing loud on misconfig is
   preferable to silently re-emitting a broken `0.0.0.0` redirect.
 
+- **2026-07-07 (origin-guard e2e — CI regression guard for the fix above):** a
+  dedicated `origin-guard` Playwright project + webServer
+  (`tests/e2e/specs/auth/google-callback-origin.standalone.spec.ts`,
+  `tests/e2e/fixtures/origin-guard.ts`, wired in `playwright.config.ts`)
+  reproduces the prod shape the localhost suite cannot. It builds `/app` as the
+  standalone server with `NEXT_PUBLIC_APP_URL` baked to a canary origin
+  (`https://origin-guard.canary.test`), serves it via `node server.js` with
+  `HOSTNAME=0.0.0.0`, and asserts (request-level, `maxRedirects: 0`) that the
+  codeless-callback `location` origin === the canary. With
+  `trustHostHeader:false`, `request.nextUrl.origin` resolves to the
+  `0.0.0.0` bind, so the pre-fix route fails red (`http://0.0.0.0:3100`) and the
+  `appOrigin()` fix passes green — verified both directions by reverting the
+  route against a fresh build. The canary is baked at build (`NEXT_PUBLIC_*` is
+  inlined) and is deliberately neither the bind nor any reachable host, so the
+  divergence between "request origin" and "configured origin" is unmistakable.
+  Kept opt-in via `E2E_ORIGIN_GUARD=1` (set in `.github/workflows/test.yml`) so
+  local `npm test` skips the extra ~2 min standalone build; the browser projects
+  `testIgnore` the `*.standalone.spec.ts` file, so the localhost suite is
+  byte-for-byte unchanged (42 tests without the flag, 43 with).
+
 ### Dead Ends
+
+- **Reusing `NEXT_PUBLIC_APP_URL` globally for the whole e2e suite** to force the
+  divergence — rejected: it is process-global and inlined, so pointing it away
+  from the dev bind also breaks the happy-path (the start flow's `return_to` →
+  `window.location.assign` would target an unreachable origin). The guard must
+  own an isolated build; hence the dedicated project + `NEXT_DIST_DIR`
+  (`.next-origin-guard`) so its build never clobbers the dev server's `.next`.
+- **Standing up the full docker stack in CI (`E2E_BASE_URL` target job)** to get
+  a real nginx-in-front reproduction — deferred: far heavier and flakier (TLS,
+  Kratos, Postgres, migrations) than the defect warrants. The standalone
+  `node server.js` with `HOSTNAME=0.0.0.0` reproduces the exact
+  `request.nextUrl.origin → 0.0.0.0` condition without the stack, so option (a)
+  wins on cost and stability.
 
 - **Kratos browser OIDC flow** (standard docs path) — rejected for this
   stack; see the first decision. Not attempted in code.
@@ -138,6 +172,28 @@
   origin-aware) once the merge deploys — `location` host must be
   `capsulezero.app`, and the full consent dance must land signed-in on
   `/en/dashboard`.
+
+## Verification Log (2026-07-07, origin-guard CI regression guard)
+
+- **Green (fix in place):** `E2E_ORIGIN_GUARD=1 playwright test
+  --project=origin-guard` — webServer built the standalone bundle
+  (`NEXT_DIST_DIR=.next-origin-guard`, canary `NEXT_PUBLIC_APP_URL`) and served
+  it (`node server.js`, `HOSTNAME=0.0.0.0`, `PORT=3100`); `1 passed (19.9s)`.
+  `location` origin = `https://origin-guard.canary.test`.
+- **Red (route reverted to `request.nextUrl.origin`):** same command against a
+  fresh build → `1 failed`, `Received: "http://0.0.0.0:3100"` vs
+  `Expected: "https://origin-guard.canary.test"`. Confirms the guard fails on
+  the exact pre-fix behavior and is not a tautology; route restored after.
+- **Localhost suite unaffected:** `playwright test --list` → 42 tests without
+  `E2E_ORIGIN_GUARD`, 43 with (the extra one being the origin-guard project);
+  the browser projects never pick up `*.standalone.spec.ts`.
+- `npm run typecheck:e2e` clean; `npm run lint:e2e` — 0 errors (3 pre-existing
+  `.skip()` warnings in unrelated fullstack specs, unchanged).
+- `app/tsconfig.json` pre-includes the `.next-origin-guard/**/types` globs, so
+  the standalone guard build does not rewrite the worktree during local
+  verification.
+- `next build` with `NEXT_DIST_DIR` unset is byte-identical to before (default
+  `.next`), so the prod Dockerfile / prod CD path is untouched.
 
 ### Known Issues
 

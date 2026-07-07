@@ -29,10 +29,14 @@ docs → verification (below) → draft PR for founder review.
 | 7 | Contract: three new endpoints in openapi.yaml + regenerated client | `npm run check:api-contract` green (also runs in `baseline-checks`) |
 | 8 | Google-disabled degradation: no button, `POST /api/auth/google/start` → 404 (negative 3) | Go handler test + e2e default-mock run with availability forced off is covered by unit test; api provider returns `false` on 404 |
 | 9 | Full-stack Google dance on prod after credential install | Post-merge operator smoke per runbook `google-oauth-setup.md` (consent screen → dashboard); recorded in tasks.md after rollout |
-| 10 | Callback redirects target the configured public origin, not the standalone bind (`0.0.0.0`) — post-merge fix 2026-07-07 | **Supervised Verification** (app code; failing-test-first vehicle can't discriminate — the `test` gate runs `next dev` with `NEXT_PUBLIC_APP_URL` pinned to the localhost bind, so `appOrigin() === request.nextUrl.origin` there): standalone `node server.js` red/green (`HOSTNAME=0.0.0.0`, `NEXT_PUBLIC_APP_URL=https://capsulezero.app`) — callback `location` host is `0.0.0.0` before the fix, `capsulezero.app` after (and unspoofable by `Host` header); prod curl before (`0.0.0.0:3000`) in tasks.md; post-deploy prod smoke after (runbook row 3). Follow-up: a standalone/docker-target e2e host assertion as a CI regression guard |
+| 10 | Callback redirects target the configured public origin, not the standalone bind (`0.0.0.0`) — post-merge fix 2026-07-07 | **Automated CI regression guard** (delivered 2026-07-07): the `origin-guard` Playwright project (`tests/e2e/specs/auth/google-callback-origin.standalone.spec.ts`, gated by `E2E_ORIGIN_GUARD=1` in `.github/workflows/test.yml`) rebuilds `/app` as the production standalone server (`node server.js`, `HOSTNAME=0.0.0.0`) with `NEXT_PUBLIC_APP_URL` baked to a canary origin, then asserts the callback `location` origin === the canary. Red/green proven by reverting the route to `request.nextUrl.origin`: fresh standalone build → `Received: http://0.0.0.0:3100` (fail); `appOrigin()` → canary (pass). The localhost `next dev` suite still cannot discriminate (there `appOrigin() === request.nextUrl.origin`, `NEXT_PUBLIC_APP_URL` pinned to the bind), which is exactly why this dedicated standalone project exists. Original manual evidence retained below: prod curl before (`0.0.0.0:3000`) in tasks.md; post-deploy prod smoke after (runbook row 3) |
 
 ## Risks
 
+- **Origin-guard custom `distDir` typegen.** Next writes generated types under
+  the active `distDir`; `app/tsconfig.json` pre-includes the
+  `.next-origin-guard/**/types` globs so the standalone guard build stays
+  non-mutating during local verification.
 - **Kratos env-JSON for providers list.** `SELFSERVICE_METHODS_OIDC_CONFIG_PROVIDERS`
   is passed as a JSON string env var (koanf parses JSON values). Verified via
   `docker compose config` + local stack boot; if a Kratos version quirk

@@ -85,6 +85,31 @@ PR reviewers (human and AI) reject PRs for specs `025` and onward that introduce
 - `fixtures/base.ts` exports the project's `test` (custom-extended Playwright `test`) and `expect`. Specs import from there, not from `@playwright/test`.
 - Add a new fixture only when at least two specs need it. Premature fixtures hurt readability.
 
+### Standalone origin guard (`*.standalone.spec.ts`)
+
+Most specs run against the `next dev` server on `localhost:3000` (projects
+`chromium` + `webkit-iphone`). A **defect that only manifests under the
+production standalone server** (`node server.js`, `HOSTNAME=0.0.0.0`) cannot be
+caught there — `next dev` never runs that way. The `origin-guard` Playwright
+project exists for exactly that class of bug (introduced for spec 037's
+callback-redirect fix):
+
+- **Naming**: a guard spec is named `*.standalone.spec.ts`. The browser projects
+  `testIgnore` that suffix; only the `origin-guard` project `testMatch`es it.
+- **Opt-in**: it is gated behind `E2E_ORIGIN_GUARD=1` because it rebuilds `/app`
+  as a standalone bundle (~2 min). CI sets the flag in
+  `.github/workflows/test.yml` (required `test` job); local `npm test` skips it
+  unless you export the flag. It never runs against an external `E2E_BASE_URL`.
+- **Isolation**: the guard build uses `NEXT_DIST_DIR=.next-origin-guard` so it
+  never clobbers the `.next` the dev server uses; shared constants
+  (canary origin, port) live in `fixtures/origin-guard.ts` and are imported by
+  both `playwright.config.ts` and the spec so they can't drift. The matching
+  `.next-origin-guard/**/types` globs are pre-included in `app/tsconfig.json` so
+  local guard builds do not rewrite the worktree.
+- **Assertion style**: these are request-level (`request.get(url, {
+  maxRedirects: 0 }`)) — no rendered UI, so no Page Object. Assert on the
+  response status and headers.
+
 ## Adding a new e2e test
 
 1. Open the spec under `.specify/specs/<NNN>-<slug>/spec.md` and pick the next unverified acceptance criterion.
@@ -104,5 +129,7 @@ PR reviewers (human and AI) reject PRs for specs `025` and onward that introduce
 | `playwright.config.ts` webServer          | `npm --prefix ../../app run dev`                         |
 | `pages/LandingPage.path`                  | `/en`                                                    |
 | `data-testid` attrs on landing components | keep stable when `/app/src/components/landing/*` changes |
+| origin-guard flag / spec suffix / port    | `E2E_ORIGIN_GUARD=1` · `*.standalone.spec.ts` · `3100`   |
+| origin-guard canary origin                | `fixtures/origin-guard.ts` (`https://origin-guard.canary.test`) |
 
 The POM classes should not change for markup-only rewrites.
