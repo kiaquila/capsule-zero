@@ -32,11 +32,19 @@ export async function googleSignInAvailable(): Promise<boolean> {
  * Canonical app origin for the OIDC return_to. The configured public URL
  * wins so a client-controlled Host header can never steer the redirect;
  * request headers are only a dev/e2e convenience where the env is unset.
+ * In production a missing NEXT_PUBLIC_APP_URL is a config error — deriving
+ * the return_to from client-controllable headers is never acceptable there,
+ * even with the Kratos allowed_return_urls allowlist behind it.
  */
 export async function appOrigin(): Promise<string> {
   const configured = process.env.NEXT_PUBLIC_APP_URL;
   if (configured) {
     return configured.replace(/\/+$/, "");
+  }
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "INTERNAL_ERROR: NEXT_PUBLIC_APP_URL must be configured for Google sign-in.",
+    );
   }
   const incoming = await headers();
   const proto = incoming.get("x-forwarded-proto") ?? "http";

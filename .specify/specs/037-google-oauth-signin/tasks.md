@@ -79,6 +79,11 @@
 - **Consent dance not covered in CI:** unit tests pin the Kratos payload
   shapes; the real Google round-trip is a post-rollout operator smoke
   (plan.md row 9).
+- **Password change for Google-only identities:** an identity created via
+  Google has no password credential; "change password" re-authenticates with
+  the current password first, so such users cannot set one until account
+  linking / a "set password" path ships (critic review, 2026-07-07). Profile
+  view/edit are unaffected (they bypass Kratos settings).
 - **`/auth?flow=` param ambiguity:** a Kratos-side OIDC failure that
   redirects to the login ui_url can land on `/auth?flow=<login-flow-id>`,
   which the page treats as a recovery deep link (spec-035 behavior) and opens
