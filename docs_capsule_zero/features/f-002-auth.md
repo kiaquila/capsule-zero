@@ -9,7 +9,8 @@
 - **Entry point:** Register button on landing, `/auth` standalone page
 - **Emotional target:** TRUST — "Fast, beautiful, they respect my time"
 - **Stage 1 scope:** Email/password registration, login, recovery, and session persistence
-- **Stage 2 scope:** Google OAuth and Apple Sign-In
+- **v0.1 addition (spec 037):** Google sign-in — native-flow OIDC via Kratos, button hidden unless the deployment enables the provider
+- **Stage 2 scope:** Apple Sign-In; account linking for duplicate emails
 
 ## User Flow — Registration
 
@@ -38,7 +39,7 @@
 | Error                 | Validation/server error   | Inline error messages (yellow #FFD600)             |
 | Success               | Auth complete             | Redirect to Dashboard                              |
 | Recovery              | Forgot password           | Email input for password reset                     |
-| Social Auth (Stage 2) | Deferred OAuth variant    | Google and Apple buttons plus OAuth callback state |
+| Social Auth           | Google sign-in (spec 037) | "Continue with Google" under the primary CTA; failed callback lands on /auth with a localized error. Apple stays Stage 2 |
 
 ## Acceptance Criteria
 
@@ -50,13 +51,13 @@
 6. "Forgot password" → email recovery flow
 7. Session preserved between visits
 8. Adaptive: iPhone 14+, iPad, Desktop 1280px+
-9. Google OAuth and Apple Sign-In are not active in Stage 1
+9. Google sign-in active when the deployment enables it (spec 037); Apple Sign-In stays Stage 2
 
 ## Key Components
 
 - **AuthForm** — glassmorphic container, switches between register/login modes
 - **InlineValidation** — real-time field validation, error display
-- **SocialAuthButtons** — Stage 2 component for Google + Apple OAuth buttons (glass style)
+- **Google button** — design-system social surface (rgba(255,255,255,.28)), monochrome G glyph (achromatic rule), inside AuthPanel sign-in/sign-up modes (spec 037); Apple button stays Stage 2
 
 ## Edge Cases
 

@@ -45,6 +45,26 @@
 - **Kratos browser OIDC flow** (standard docs path) — rejected for this
   stack; see the first decision. Not attempted in code.
 
+## Verification Log (2026-07-06, pre-PR)
+
+- `go test ./...` (api/) — all packages ok; new tests in
+  `internal/kratos/kratos_oidc_test.go` (start happy/missing-exchange-code/
+  rejected-submit, exchange happy/403/404/410) and
+  `internal/auth/auth_google_test.go` (providers probe, start happy/disabled
+  404/missing returnTo, complete invalid-codes 401 GOOGLE_SIGN_IN_FAILED /
+  disabled 404 / missing codes 400). `gofmt -l` clean, `go vet ./...` clean.
+- `npm run typecheck` (app/) — clean; `npm run lint` — 0 errors (93
+  pre-existing module-size warnings, soft gate).
+- `node scripts/check-api-contract.mjs` — 55 route-methods verified, 15 Go
+  route registrations covered; `generate-api-clients.mjs --check` verified.
+- `docker compose --env-file deploy/compose.dev.env config` — valid with the
+  default (OIDC off, providers `[]`) and with the enabled trio exported
+  (provider JSON interpolates intact).
+- Playwright `specs/auth/google-sign-in.spec.ts` — 4 passed (chromium +
+  webkit-iphone; happy loop + no-code negative). First webkit run caught the
+  cookie banner overlapping the button on mobile — fixed by dismissing the
+  banner in the spec, mirroring the other auth specs.
+
 ### Known Issues
 
 - **No account linking (v0.1):** Google sign-in with an email that already
@@ -59,3 +79,9 @@
 - **Consent dance not covered in CI:** unit tests pin the Kratos payload
   shapes; the real Google round-trip is a post-rollout operator smoke
   (plan.md row 9).
+- **`/auth?flow=` param ambiguity:** a Kratos-side OIDC failure that
+  redirects to the login ui_url can land on `/auth?flow=<login-flow-id>`,
+  which the page treats as a recovery deep link (spec-035 behavior) and opens
+  the code-entry step. Cosmetic dead end (any submit fails cleanly); the
+  primary failure path targets `/auth?googleError=1` instead. Follow-up:
+  distinguish flow types on the /auth route.
