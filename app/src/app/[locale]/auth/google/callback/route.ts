@@ -27,12 +27,11 @@ export async function GET(
     request.nextUrl.origin,
   );
 
-  const returnToCode = request.nextUrl.searchParams.get("code");
-  if (!returnToCode) {
-    return NextResponse.redirect(failure);
-  }
+  // Consume the parked cookie on every path, including failures — the code
+  // pair is single-use, so a stale cookie only lingers uselessly otherwise.
   const exchangeCode = await takeGoogleExchangeCode();
-  if (!exchangeCode) {
+  const returnToCode = request.nextUrl.searchParams.get("code");
+  if (!returnToCode || !exchangeCode) {
     return NextResponse.redirect(failure);
   }
 
@@ -46,7 +45,10 @@ export async function GET(
       returnToCode,
     });
     await persistAppSession(session);
-  } catch {
+  } catch (error) {
+    // The user just sees /auth?googleError=1; leave operators the cause
+    // (Kratos config drift, rejected exchange) in the server log.
+    console.error("Google sign-in completion failed:", error);
     return NextResponse.redirect(failure);
   }
 

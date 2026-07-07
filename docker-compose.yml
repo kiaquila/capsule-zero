@@ -97,6 +97,10 @@ services:
       SECRETS_CIPHER_0: ${SECRETS_CIPHER_0:?set SECRETS_CIPHER_0 in the env file}
       SELFSERVICE_DEFAULT_BROWSER_RETURN_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en
       SELFSERVICE_ALLOWED_RETURN_URLS_0: ${APP_BASE_URL:?set APP_BASE_URL in the env file}
+      # Index 1 would otherwise keep the kratos.yml dev entry
+      # (https://capsulezero.local) in the production allowlist — env can
+      # override list items but never shrink the list (security review 037).
+      SELFSERVICE_ALLOWED_RETURN_URLS_1: ${APP_BASE_URL:?set APP_BASE_URL in the env file}
       SELFSERVICE_FLOWS_ERROR_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
       SELFSERVICE_FLOWS_SETTINGS_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/profile
       # Recovery/verification run as code-method flows driven by the Go API

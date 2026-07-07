@@ -40,6 +40,13 @@
 - **2026-07-06:** achromatic-interface rule wins over Google brand colors:
   monochrome white "G" glyph on the design-system social button surface.
 
+- **2026-07-07:** `OIDCExchange` deliberately keeps mapping every 4xx from
+  `/sessions/token-exchange` (400/403/404/410) to `ErrInvalidCredentials` →
+  user-facing 401 `GOOGLE_SIGN_IN_FAILED`. Splitting 400 out as an internal
+  error risks turning benign malformed/expired-code retries into 5xx alarms;
+  any 4xx means "no session" and the generic sign-in error is the right UX
+  (code review, 2026-07-07).
+
 ### Dead Ends
 
 - **Kratos browser OIDC flow** (standard docs path) — rejected for this
@@ -53,8 +60,13 @@
   `internal/auth/auth_google_test.go` (providers probe, start happy/disabled
   404/missing returnTo, complete invalid-codes 401 GOOGLE_SIGN_IN_FAILED /
   disabled 404 / missing codes 400). `gofmt -l` clean, `go vet ./...` clean.
-- `npm run typecheck` (app/) — clean; `npm run lint` — 0 errors (93
-  pre-existing module-size warnings, soft gate).
+- `npm run typecheck` (app/) — clean; `npm run lint` — 0 errors, 92
+  pre-existing soft-gate warnings (re-run 2026-07-07 after the AuthPanel
+  fix: the pre-PR log had claimed 0 errors from a stale local run while CI
+  correctly failed `react-hooks/set-state-in-effect` in `AuthPanel.tsx`;
+  fixed by deriving availability instead of syncing prop → state, which also
+  restored the landing-popup self-resolve branch the `= false` default had
+  made unreachable).
 - `node scripts/check-api-contract.mjs` — 55 route-methods verified, 15 Go
   route registrations covered; `generate-api-clients.mjs --check` verified.
 - `docker compose --env-file deploy/compose.dev.env config` — valid with the
@@ -76,6 +88,21 @@
   receives the standard non-blocking verification code email despite
   `email_verified=true` from Google. Acceptable for v0.1; candidates:
   admin-API patch after exchange, or a Kratos upgrade if the option lands.
+  The mock provider sets `emailVerified=true`, so provider-agnostic e2e does
+  not reproduce the banner — prod-shape divergence is covered only by the
+  operator smoke (architect review, 2026-07-07).
+- **Feature flags can drift (Go vs Kratos):** `AUTH_GOOGLE_ENABLED` and
+  `KRATOS_OIDC_ENABLED`/`KRATOS_OIDC_PROVIDERS` are independent; with Go on
+  and Kratos off the button renders but `google/start` → 502. No config
+  guard binds them — the enable runbook (google-oauth-setup.md) installs the
+  trio together and the operator smoke exercises the full loop (architect
+  review, 2026-07-07).
+- **`return_to` code appears in nginx access logs:** the callback lands as
+  `GET /<locale>/auth/google/callback?code=…` through the generic web
+  location, so the one-time return_to code is written to the access log.
+  Unexploitable alone (pairing init code lives in an httpOnly cookie, both
+  single-use), so v0.1 accepts it; follow-up: a log-format carve-out for the
+  callback path (security review, 2026-07-07).
 - **Consent dance not covered in CI:** unit tests pin the Kratos payload
   shapes; the real Google round-trip is a post-rollout operator smoke
   (plan.md row 9).
