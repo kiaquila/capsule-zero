@@ -18,7 +18,11 @@ import {
   type VerificationCodeInput,
 } from "./schemas";
 import { authActionFailure } from "./error-codes";
-import { appOrigin, storeGoogleExchangeCode } from "./google";
+import {
+  appOrigin,
+  googleSignInAvailable,
+  storeGoogleExchangeCode,
+} from "./google";
 import {
   clearMockSession,
   markAppSessionEmailVerified,
@@ -44,6 +48,16 @@ export interface AuthActionResult {
   recoveryContinuationId?: string;
   /** Google consent-screen URL the browser must visit (spec 037). */
   redirectUrl?: string;
+}
+
+/**
+ * Whether this deployment offers Google sign-in (spec 037). Exists as an
+ * action so AuthPanel instances mounted from STATIC pages (the landing
+ * popup) can resolve availability at request time — calling the provider
+ * registry during the landing prerender would break the production build.
+ */
+export async function googleSignInAvailableAction(): Promise<boolean> {
+  return googleSignInAvailable();
 }
 
 /**

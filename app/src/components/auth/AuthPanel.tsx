@@ -3,12 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
   completePasswordRecoveryAction,
+  googleSignInAvailableAction,
   requestPasswordRecoveryAction,
   signInWithPasswordAction,
   signUpWithPasswordAction,
@@ -53,7 +54,12 @@ interface AuthPanelProps {
   initialMode?: AuthMode;
   /** Pre-bound recovery flow from /auth?flow=…&code=… URL params. */
   initialRecovery?: RecoveryDeepLink;
-  /** Whether this deployment offers Google sign-in (spec 037). */
+  /**
+   * Whether this deployment offers Google sign-in (spec 037). Dynamic routes
+   * (/auth) resolve it server-side and pass it down; panels mounted from
+   * static pages (the landing popup) leave it undefined and the panel asks
+   * the server itself after mount — the landing stays prerenderable.
+   */
   googleSignIn?: boolean;
   /** A failed Google callback landed on /auth?googleError=1. */
   googleError?: boolean;
@@ -92,6 +98,27 @@ export function AuthPanel({
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
+  const [googleAvailable, setGoogleAvailable] = useState(googleSignIn ?? false);
+
+  useEffect(() => {
+    if (googleSignIn !== undefined) {
+      setGoogleAvailable(googleSignIn);
+      return;
+    }
+    let cancelled = false;
+    googleSignInAvailableAction()
+      .then((available) => {
+        if (!cancelled) {
+          setGoogleAvailable(available);
+        }
+      })
+      .catch(() => {
+        // Unknown availability keeps the button hidden.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [googleSignIn]);
 
   const validationMessages = useMemo(
     () => ({
@@ -257,7 +284,7 @@ export function AuthPanel({
 
   // Shared by the sign-in and sign-up forms; hidden when the deployment does
   // not offer Google. Monochrome glyph — the interface stays achromatic.
-  const googleBlock = googleSignIn ? (
+  const googleBlock = googleAvailable ? (
     <>
       <div aria-hidden="true" className="auth-divider">
         {t("orDivider")}

@@ -14,14 +14,16 @@ const GOOGLE_EXCHANGE_COOKIE = "capsule_zero_google_exchange";
 const EXCHANGE_MAX_AGE_SECONDS = 60 * 10;
 
 export async function googleSignInAvailable(): Promise<boolean> {
-  const { auth } = createProviderRegistry();
-  if (!auth.googleSignInEnabled) {
-    return false;
-  }
   try {
+    const { auth } = createProviderRegistry();
+    if (!auth.googleSignInEnabled) {
+      return false;
+    }
     return await auth.googleSignInEnabled();
   } catch {
-    // An unreachable API means no button, not a broken page render.
+    // Covers registry creation too: a production prerender has no provider
+    // mode configured, and an unreachable API at runtime means no button —
+    // never a broken build or render.
     return false;
   }
 }

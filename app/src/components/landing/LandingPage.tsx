@@ -8,12 +8,7 @@ import { openCookieSettings } from "@/lib/cookie-consent";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { CookieBanner } from "./CookieBanner";
 
-interface LandingPageProps {
-  /** Whether this deployment offers Google sign-in (spec 037). */
-  googleSignIn?: boolean;
-}
-
-export function LandingPage({ googleSignIn }: LandingPageProps) {
+export function LandingPage() {
   const t = useTranslations("landing");
   const locale = useLocale();
   const [authOpen, setAuthOpen] = useState(false);
@@ -69,11 +64,7 @@ export function LandingPage({ googleSignIn }: LandingPageProps) {
 
       {authOpen ? (
         <div className="landing-auth-popover" data-testid="auth-popover">
-          <AuthPanel
-            googleSignIn={googleSignIn}
-            onClose={() => setAuthOpen(false)}
-            variant="popup"
-          />
+          <AuthPanel onClose={() => setAuthOpen(false)} variant="popup" />
         </div>
       ) : null}
 
