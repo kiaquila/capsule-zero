@@ -1,5 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { AuthPage } from "@/components/auth/AuthPage";
+import { googleSignInAvailable } from "@/features/auth/google";
 
 interface AuthRouteProps {
   params: Promise<{
@@ -8,6 +9,7 @@ interface AuthRouteProps {
   searchParams: Promise<{
     flow?: string;
     code?: string;
+    googleError?: string;
   }>;
 }
 
@@ -20,7 +22,13 @@ export default async function AuthRoute({
 
   // A Kratos recovery-UI redirect or legacy/manual URL can still land here
   // with the flow id — open the completion step directly (spec 035).
-  const { flow, code } = await searchParams;
+  const { flow, code, googleError } = await searchParams;
 
-  return <AuthPage recovery={flow ? { flowId: flow, code } : undefined} />;
+  return (
+    <AuthPage
+      googleError={googleError === "1"}
+      googleSignIn={await googleSignInAvailable()}
+      recovery={flow ? { flowId: flow, code } : undefined}
+    />
+  );
 }

@@ -81,6 +81,19 @@ export interface PasswordChange {
   newPassword: string;
 }
 
+export interface GoogleSignInStart {
+  /** Google consent-screen URL the browser must visit. */
+  redirectUrl: string;
+  /** Session-token exchange (init) code the completion call presents again. */
+  exchangeCode: string;
+}
+
+export interface GoogleSignInCompletion {
+  exchangeCode: string;
+  /** Code Kratos appended to the callback redirect. */
+  returnToCode: string;
+}
+
 export interface AuthPort {
   getCurrentSession(): Promise<Session | null>;
   signUpWithPassword(credentials: PasswordCredentials): Promise<Session | null>;
@@ -95,6 +108,14 @@ export interface AuthPort {
   ): Promise<void>;
   changePassword(change: PasswordChange): Promise<void>;
   signOut(): Promise<void>;
+  /**
+   * Google sign-in (spec 037). Optional so the frozen Supabase provider
+   * (AGENTS §8) needs no edits; the UI hides the button when the port lacks
+   * these or reports the provider disabled.
+   */
+  googleSignInEnabled?(): Promise<boolean>;
+  startGoogleSignIn?(returnTo: string): Promise<GoogleSignInStart>;
+  completeGoogleSignIn?(completion: GoogleSignInCompletion): Promise<Session>;
 }
 
 export interface Profile {

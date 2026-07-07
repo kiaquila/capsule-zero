@@ -56,6 +56,13 @@ const MOCK_ONE_TIME_CODE = "123456";
 const MOCK_WRONG_CURRENT_PASSWORD = "WrongPass123";
 const MOCK_RECOVERY_FLOW_ID = "mock-recovery-flow";
 const MOCK_VERIFICATION_FLOW_ID = "mock-verification-flow";
+// Deterministic Google sign-in loop (spec 037): start redirects straight
+// back to the app callback with the return code; complete accepts exactly
+// this code pair so the provider-agnostic e2e can click through the flow.
+const MOCK_GOOGLE_EXCHANGE_CODE = "mock-google-exchange-code";
+const MOCK_GOOGLE_RETURN_CODE = "mock-google-return-code";
+const MOCK_GOOGLE_EMAIL = "google.user@capsulezero.app";
+const MOCK_GOOGLE_NAME = "Google User";
 
 interface MockProviderOptions {
   now?: () => Date;
@@ -555,6 +562,39 @@ export function createMockProviderRegistry(
 
       async signOut() {
         currentSession = null;
+      },
+
+      async googleSignInEnabled() {
+        return true;
+      },
+
+      async startGoogleSignIn(returnTo) {
+        const separator = returnTo.includes("?") ? "&" : "?";
+        return {
+          redirectUrl: `${returnTo}${separator}code=${MOCK_GOOGLE_RETURN_CODE}`,
+          exchangeCode: MOCK_GOOGLE_EXCHANGE_CODE,
+        };
+      },
+
+      async completeGoogleSignIn({ exchangeCode, returnToCode }) {
+        if (
+          exchangeCode !== MOCK_GOOGLE_EXCHANGE_CODE ||
+          returnToCode !== MOCK_GOOGLE_RETURN_CODE
+        ) {
+          throw new Error(
+            "GOOGLE_SIGN_IN_FAILED: Google sign-in could not be completed.",
+          );
+        }
+        const timestamp = now();
+        currentSession = buildSession(
+          timestamp,
+          MOCK_GOOGLE_EMAIL,
+          MOCK_GOOGLE_NAME,
+        );
+        // Google verified the address; no verify-email banner in mock mode.
+        currentSession.user.emailVerified = true;
+        upsertProfileFromSession(profiles, currentSession, timestamp);
+        return clone(currentSession);
       },
     },
     profiles: profileRepository,

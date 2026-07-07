@@ -10,8 +10,11 @@ import { expect, test } from "../../fixtures/base";
 test.describe("Auth — Google sign-in", () => {
   test("signs in via Google and lands on the dashboard; the session survives a reload", async ({
     page,
+    landing,
   }) => {
     await page.goto("/en/auth");
+    // On mobile viewports the cookie banner overlaps the auth panel.
+    await landing.dismissCookieBannerIfPresent();
 
     const googleButton = page.getByTestId("auth-google-button");
     await expect(googleButton).toBeVisible();
