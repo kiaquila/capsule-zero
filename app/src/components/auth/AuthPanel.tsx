@@ -70,7 +70,7 @@ interface AuthPanelProps {
 export function AuthPanel({
   initialMode = "signIn",
   initialRecovery,
-  googleSignIn = false,
+  googleSignIn,
   googleError = false,
   onClose,
   variant = "standalone",
@@ -98,18 +98,21 @@ export function AuthPanel({
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
-  const [googleAvailable, setGoogleAvailable] = useState(googleSignIn ?? false);
+  // Availability comes from the prop when the mounting page resolved it
+  // server-side (/auth); panels mounted from static pages (landing popup)
+  // leave the prop undefined and the panel asks the server after mount.
+  const [fetchedGoogleAvailable, setFetchedGoogleAvailable] = useState(false);
+  const googleAvailable = googleSignIn ?? fetchedGoogleAvailable;
 
   useEffect(() => {
     if (googleSignIn !== undefined) {
-      setGoogleAvailable(googleSignIn);
       return;
     }
     let cancelled = false;
     googleSignInAvailableAction()
       .then((available) => {
         if (!cancelled) {
-          setGoogleAvailable(available);
+          setFetchedGoogleAvailable(available);
         }
       })
       .catch(() => {
