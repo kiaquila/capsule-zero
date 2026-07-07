@@ -105,12 +105,22 @@ services:
       SELFSERVICE_FLOWS_VERIFICATION_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/verify-email
       SELFSERVICE_FLOWS_LOGIN_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
       SELFSERVICE_FLOWS_REGISTRATION_UI_URL: ${APP_BASE_URL:?set APP_BASE_URL in the env file}/en/auth
+      # Google sign-in (spec 037) — OFF unless the host env file provides the
+      # provider JSON (client id/secret stay out of the repo; template in
+      # deploy/compose.env.example, runbook google-oauth-setup.md).
+      SELFSERVICE_METHODS_OIDC_ENABLED: ${KRATOS_OIDC_ENABLED:-false}
+      SELFSERVICE_METHODS_OIDC_CONFIG_PROVIDERS: ${KRATOS_OIDC_PROVIDERS:-[]}
     volumes:
       - ./infra/kratos:/etc/config/kratos:ro
     command: serve --config /etc/config/kratos/kratos.yml --watch-courier
     expose:
       - "4433"
       - "4434"
+    # Kratos public on host loopback: the host nginx edge proxies exactly one
+    # path to it — the Google OIDC callback (spec 037). Same posture as
+    # web:3000 / api:8080; everything else under /self-service/* stays 404.
+    ports:
+      - "${KRATOS_HOST_BIND:-127.0.0.1}:4433:4433"
     networks: [internal]
     healthcheck:
       test: ["CMD", "kratos", "remote", "status", "--endpoint", "http://127.0.0.1:4434", "--quiet"]
@@ -140,6 +150,9 @@ services:
       DATABASE_URL: ${API_DATABASE_URL:?set API_DATABASE_URL in the env file}
       KRATOS_PUBLIC_URL: ${KRATOS_INTERNAL_PUBLIC_URL:-http://kratos:4433}
       KRATOS_ADMIN_URL: ${KRATOS_INTERNAL_ADMIN_URL:-http://kratos:4434}
+      # Mirrors KRATOS_OIDC_ENABLED: gates /api/auth/google/* and the
+      # provider-availability probe the web button reads (spec 037).
+      AUTH_GOOGLE_ENABLED: ${AUTH_GOOGLE_ENABLED:-false}
     expose:
       - "8080"
     ports:

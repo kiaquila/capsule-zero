@@ -9,7 +9,8 @@ reverse-proxies plain HTTP to the container ports published on loopback by the
 | --- | --- | --- |
 | `/` | `http://127.0.0.1:3000` | `web` (Next.js) |
 | `/api/*` | `http://127.0.0.1:8080` | `api` (Go monolith) |
-| `/self-service/*`, `/sessions/*` | `404` | Kratos public is not exposed at the edge |
+| `/self-service/methods/oidc/callback/google` (exact) | `http://127.0.0.1:4433` | `kratos` — Google OIDC callback, the only exposed Kratos path (spec 037) |
+| `/self-service/*`, `/sessions/*` | `404` | Kratos public is otherwise not exposed at the edge |
 
 There is **no Cloudflare** and **no in-Docker nginx** — the container stack only publishes
 its ports on loopback. The cert is issued by host `certbot`; renewals reload nginx via the
