@@ -78,6 +78,14 @@ jobs:
       - name: Run Playwright e2e suite
         env:
           CI: "true"
+          # Activate the standalone origin guard (spec 037): a dedicated project
+          # + webServer that rebuilds /app as the production standalone server
+          # (node server.js, HOSTNAME=0.0.0.0) with a canary NEXT_PUBLIC_APP_URL,
+          # then asserts the Google callback redirects to the configured origin
+          # and never the 0.0.0.0 bind. Off by default so local `npm test` skips
+          # the extra standalone build; required here so a revert of the callback
+          # route to request.nextUrl.origin fails the `test` gate red.
+          E2E_ORIGIN_GUARD: "1"
         run: npm --prefix tests/e2e test
 
       - name: Upload Playwright report

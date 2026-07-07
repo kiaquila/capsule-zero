@@ -15,6 +15,8 @@
 
 # next.js
 /.next/
+# Isolated standalone build produced by the e2e origin-guard (NEXT_DIST_DIR).
+/.next-origin-guard/
 /out/
 
 # production

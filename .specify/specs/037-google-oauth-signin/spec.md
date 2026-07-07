@@ -104,11 +104,15 @@ in — no password to invent or remember. (Spec 001 US-002 social-auth path.)
 6. (Post-merge fix 2026-07-07) Under the production standalone server the
    callback's success and failure redirects target the configured public
    origin (`capsulezero.app`), not the internal bind (`0.0.0.0`), and a
-   client-supplied `Host` header cannot steer them. Verified by the standalone
-   `node server.js` smoke in tasks.md (plan.md row 10); the localhost `test`
-   gate collapses `appOrigin()` and `request.nextUrl.origin` to the same value
-   so it cannot discriminate the fix (Supervised Verification, not a committed
-   failing e2e).
+   client-supplied `Host` header cannot steer them. Guarded in CI by the
+   `origin-guard` Playwright project (`*.standalone.spec.ts`, `E2E_ORIGIN_GUARD=1`
+   in the required `test` job): it rebuilds `/app` as the standalone server
+   (`HOSTNAME=0.0.0.0`) with a canary `NEXT_PUBLIC_APP_URL` and asserts the
+   callback redirect origin equals the canary — red on `request.nextUrl.origin`,
+   green on `appOrigin()` (plan.md row 10; tasks.md verification log). The
+   localhost `next dev` projects still collapse `appOrigin()` and
+   `request.nextUrl.origin` to the same value, which is exactly why the guard
+   runs a dedicated standalone build.
 
 ## Negative scenarios
 
