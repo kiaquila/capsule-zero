@@ -189,6 +189,9 @@
   the browser projects never pick up `*.standalone.spec.ts`.
 - `npm run typecheck:e2e` clean; `npm run lint:e2e` — 0 errors (3 pre-existing
   `.skip()` warnings in unrelated fullstack specs, unchanged).
+- `app/tsconfig.json` pre-includes the `.next-origin-guard/**/types` globs, so
+  the standalone guard build does not rewrite the worktree during local
+  verification.
 - `next build` with `NEXT_DIST_DIR` unset is byte-identical to before (default
   `.next`), so the prod Dockerfile / prod CD path is untouched.
 

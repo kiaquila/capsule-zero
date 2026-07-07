@@ -112,7 +112,9 @@ in — no password to invent or remember. (Spec 001 US-002 social-auth path.)
    green on `appOrigin()` (plan.md row 10; tasks.md verification log). The
    localhost `next dev` projects still collapse `appOrigin()` and
    `request.nextUrl.origin` to the same value, which is exactly why the guard
-   runs a dedicated standalone build.
+   runs a dedicated standalone build. The guard's custom `distDir` generated
+   types are pre-included in `app/tsconfig.json` so the verification build does
+   not rewrite the local worktree.
 
 ## Negative scenarios
 

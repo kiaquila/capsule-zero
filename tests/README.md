@@ -103,7 +103,9 @@ callback-redirect fix):
 - **Isolation**: the guard build uses `NEXT_DIST_DIR=.next-origin-guard` so it
   never clobbers the `.next` the dev server uses; shared constants
   (canary origin, port) live in `fixtures/origin-guard.ts` and are imported by
-  both `playwright.config.ts` and the spec so they can't drift.
+  both `playwright.config.ts` and the spec so they can't drift. The matching
+  `.next-origin-guard/**/types` globs are pre-included in `app/tsconfig.json` so
+  local guard builds do not rewrite the worktree.
 - **Assertion style**: these are request-level (`request.get(url, {
   maxRedirects: 0 }`)) — no rendered UI, so no Page Object. Assert on the
   response status and headers.

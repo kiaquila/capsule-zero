@@ -33,6 +33,10 @@ docs → verification (below) → draft PR for founder review.
 
 ## Risks
 
+- **Origin-guard custom `distDir` typegen.** Next writes generated types under
+  the active `distDir`; `app/tsconfig.json` pre-includes the
+  `.next-origin-guard/**/types` globs so the standalone guard build stays
+  non-mutating during local verification.
 - **Kratos env-JSON for providers list.** `SELFSERVICE_METHODS_OIDC_CONFIG_PROVIDERS`
   is passed as a JSON string env var (koanf parses JSON values). Verified via
   `docker compose config` + local stack boot; if a Kratos version quirk
