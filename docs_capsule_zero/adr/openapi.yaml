@@ -309,6 +309,45 @@ components:
           format: email
         password:
           type: string
+    AuthProvidersResponse:
+      type: object
+      required: [google]
+      properties:
+        google:
+          type: boolean
+          description: Whether this deployment offers Google sign-in (spec 037).
+    AuthGoogleStartRequest:
+      type: object
+      required: [returnTo]
+      properties:
+        returnTo:
+          type: string
+          format: uri
+          description: >-
+            App callback URL Kratos redirects the browser to after the
+            provider dance; must be inside the Kratos allowed_return_urls.
+    AuthGoogleStartResponse:
+      type: object
+      required: [redirectUrl, exchangeCode]
+      properties:
+        redirectUrl:
+          type: string
+          format: uri
+          description: Google consent-screen URL the browser must visit.
+        exchangeCode:
+          type: string
+          description: >-
+            Session-token exchange (init) code; the completion call presents
+            it together with the callback's return_to code.
+    AuthGoogleCompleteRequest:
+      type: object
+      required: [exchangeCode, returnToCode]
+      properties:
+        exchangeCode:
+          type: string
+        returnToCode:
+          type: string
+          description: Code Kratos appended to the callback redirect.
     AuthRecoveryRequest:
       type: object
       required: [email]
@@ -1231,6 +1270,86 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+  /api/auth/providers:
+    get:
+      tags: [Auth]
+      operationId: getAuthProviders
+      x-auth: public
+      security: []
+      summary: Report which social sign-in providers this deployment offers.
+      responses:
+        "200":
+          description: Provider availability map.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthProvidersResponse"
+        default:
+          $ref: "#/components/responses/InternalServerError"
+  /api/auth/google/start:
+    post:
+      tags: [Auth]
+      operationId: startGoogleSignIn
+      x-auth: public
+      security: []
+      summary: Begin the native Google OIDC flow (spec 037).
+      description: >-
+        Creates a Kratos API login flow with a session-token exchange code and
+        returns the Google consent URL for the browser plus the exchange code
+        the completion call must present. 404 while Google sign-in is
+        disabled for the deployment.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthGoogleStartRequest"
+      responses:
+        "200":
+          description: Consent redirect URL and exchange code.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthGoogleStartResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+  /api/auth/google/complete:
+    post:
+      tags: [Auth]
+      operationId: completeGoogleSignIn
+      x-auth: public
+      security: []
+      summary: Exchange the Google callback codes for an authenticated session.
+      description: >-
+        Trades the start call's exchange code plus the return_to code from the
+        Kratos callback redirect for a session token; answers with the
+        standard auth response. Wrong, expired, or reused codes are rejected
+        with GOOGLE_SIGN_IN_FAILED and never issue a session.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthGoogleCompleteRequest"
+      responses:
+        "200":
+          description: Authenticated session and mapped profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "502":
           $ref: "#/components/responses/BadGateway"
   /api/auth/logout:

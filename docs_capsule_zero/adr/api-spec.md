@@ -148,6 +148,9 @@ as Stage 2 boundaries for Google OAuth and Apple Sign-In.
 | `/api/auth/verification/complete` | POST | Public | Confirm the address with the emailed code                    |
 | `/api/auth/password`     |   POST | User   | Change the password (current password required; re-auths internally)  |
 | `/api/auth/logout`       |   POST | Public | Revoke the presented session token; idempotent when absent            |
+| `/api/auth/providers`    |    GET | Public | Which social sign-in providers this deployment offers (spec 037)      |
+| `/api/auth/google/start` |   POST | Public | Begin the native Google OIDC flow; consent URL + exchange code        |
+| `/api/auth/google/complete` | POST | Public | Exchange the Google callback codes for an authenticated session      |
 | `/auth/callback`         |    GET | Public | Stage 2 web OAuth callback; exchanges code and redirects to dashboard |
 | `/auth/mobile-callback`  |    GET | Public | Stage 2 mobile OAuth callback; redirects into React Native deep link  |
 | `/api/profile`           |    GET | User   | Read current profile                                                  |

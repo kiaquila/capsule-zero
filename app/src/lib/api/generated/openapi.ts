@@ -20,6 +20,20 @@ export const API_OPERATIONS = [
   },
   {
     "method": "POST",
+    "path": "/api/auth/google/complete",
+    "operationId": "completeGoogleSignIn",
+    "auth": "public",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/google/start",
+    "operationId": "startGoogleSignIn",
+    "auth": "public",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "POST",
     "path": "/api/auth/login",
     "operationId": "loginWithPassword",
     "auth": "public",
@@ -37,6 +51,13 @@ export const API_OPERATIONS = [
     "path": "/api/auth/password",
     "operationId": "changePassword",
     "auth": "session",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "GET",
+    "path": "/api/auth/providers",
+    "operationId": "getAuthProviders",
+    "auth": "public",
     "clientAvailability": "web-mobile"
   },
   {
@@ -470,6 +491,24 @@ export type AuthLoginRequest = {
   password: string;
 };
 
+export type AuthProvidersResponse = {
+  google: boolean;
+};
+
+export type AuthGoogleStartRequest = {
+  returnTo: string;
+};
+
+export type AuthGoogleStartResponse = {
+  redirectUrl: string;
+  exchangeCode: string;
+};
+
+export type AuthGoogleCompleteRequest = {
+  exchangeCode: string;
+  returnToCode: string;
+};
+
 export type AuthRecoveryRequest = {
   email: string;
 };
@@ -795,6 +834,22 @@ export interface ApiOperationPayloads {
     request: UpdateModerationItemRequestBody;
     response: UpdateModerationItemResponseBody;
   };
+  completeGoogleSignIn: {
+    path: CompleteGoogleSignInPathParams;
+    query: CompleteGoogleSignInQueryParams;
+    header: CompleteGoogleSignInHeaderParams;
+    cookie: CompleteGoogleSignInCookieParams;
+    request: CompleteGoogleSignInRequestBody;
+    response: CompleteGoogleSignInResponseBody;
+  };
+  startGoogleSignIn: {
+    path: StartGoogleSignInPathParams;
+    query: StartGoogleSignInQueryParams;
+    header: StartGoogleSignInHeaderParams;
+    cookie: StartGoogleSignInCookieParams;
+    request: StartGoogleSignInRequestBody;
+    response: StartGoogleSignInResponseBody;
+  };
   loginWithPassword: {
     path: LoginWithPasswordPathParams;
     query: LoginWithPasswordQueryParams;
@@ -818,6 +873,14 @@ export interface ApiOperationPayloads {
     cookie: ChangePasswordCookieParams;
     request: ChangePasswordRequestBody;
     response: ChangePasswordResponseBody;
+  };
+  getAuthProviders: {
+    path: GetAuthProvidersPathParams;
+    query: GetAuthProvidersQueryParams;
+    header: GetAuthProvidersHeaderParams;
+    cookie: GetAuthProvidersCookieParams;
+    request: GetAuthProvidersRequestBody;
+    response: GetAuthProvidersResponseBody;
   };
   requestPasswordRecovery: {
     path: RequestPasswordRecoveryPathParams;
@@ -1215,6 +1278,20 @@ export type UpdateModerationItemCookieParams = Record<string, never>;
 export type UpdateModerationItemRequestBody = AdminModerationRequest;
 export type UpdateModerationItemResponseBody = Item;
 
+export type CompleteGoogleSignInPathParams = Record<string, never>;
+export type CompleteGoogleSignInQueryParams = Record<string, never>;
+export type CompleteGoogleSignInHeaderParams = Record<string, never>;
+export type CompleteGoogleSignInCookieParams = Record<string, never>;
+export type CompleteGoogleSignInRequestBody = AuthGoogleCompleteRequest;
+export type CompleteGoogleSignInResponseBody = AuthResponse;
+
+export type StartGoogleSignInPathParams = Record<string, never>;
+export type StartGoogleSignInQueryParams = Record<string, never>;
+export type StartGoogleSignInHeaderParams = Record<string, never>;
+export type StartGoogleSignInCookieParams = Record<string, never>;
+export type StartGoogleSignInRequestBody = AuthGoogleStartRequest;
+export type StartGoogleSignInResponseBody = AuthGoogleStartResponse;
+
 export type LoginWithPasswordPathParams = Record<string, never>;
 export type LoginWithPasswordQueryParams = Record<string, never>;
 export type LoginWithPasswordHeaderParams = Record<string, never>;
@@ -1235,6 +1312,13 @@ export type ChangePasswordHeaderParams = Record<string, never>;
 export type ChangePasswordCookieParams = Record<string, never>;
 export type ChangePasswordRequestBody = AuthPasswordChangeRequest;
 export type ChangePasswordResponseBody = AuthOkResponse;
+
+export type GetAuthProvidersPathParams = Record<string, never>;
+export type GetAuthProvidersQueryParams = Record<string, never>;
+export type GetAuthProvidersHeaderParams = Record<string, never>;
+export type GetAuthProvidersCookieParams = Record<string, never>;
+export type GetAuthProvidersRequestBody = never;
+export type GetAuthProvidersResponseBody = AuthProvidersResponse;
 
 export type RequestPasswordRecoveryPathParams = Record<string, never>;
 export type RequestPasswordRecoveryQueryParams = Record<string, never>;
@@ -1942,6 +2026,65 @@ export const API_SCHEMAS = {
       },
       "password": {
         "type": "string"
+      }
+    }
+  },
+  "AuthProvidersResponse": {
+    "type": "object",
+    "required": [
+      "google"
+    ],
+    "properties": {
+      "google": {
+        "type": "boolean",
+        "description": "Whether this deployment offers Google sign-in (spec 037)."
+      }
+    }
+  },
+  "AuthGoogleStartRequest": {
+    "type": "object",
+    "required": [
+      "returnTo"
+    ],
+    "properties": {
+      "returnTo": {
+        "type": "string",
+        "format": "uri",
+        "description": "App callback URL Kratos redirects the browser to after the provider dance; must be inside the Kratos allowed_return_urls."
+      }
+    }
+  },
+  "AuthGoogleStartResponse": {
+    "type": "object",
+    "required": [
+      "redirectUrl",
+      "exchangeCode"
+    ],
+    "properties": {
+      "redirectUrl": {
+        "type": "string",
+        "format": "uri",
+        "description": "Google consent-screen URL the browser must visit."
+      },
+      "exchangeCode": {
+        "type": "string",
+        "description": "Session-token exchange (init) code; the completion call presents it together with the callback's return_to code."
+      }
+    }
+  },
+  "AuthGoogleCompleteRequest": {
+    "type": "object",
+    "required": [
+      "exchangeCode",
+      "returnToCode"
+    ],
+    "properties": {
+      "exchangeCode": {
+        "type": "string"
+      },
+      "returnToCode": {
+        "type": "string",
+        "description": "Code Kratos appended to the callback redirect."
       }
     }
   },
@@ -3233,6 +3376,34 @@ export const API_OPERATION_PAYLOADS = {
     "headerParameters": [],
     "cookieParameters": []
   },
+  "completeGoogleSignIn": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "AuthGoogleCompleteRequest",
+    "responseSchemas": [
+      "AuthResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "startGoogleSignIn": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "AuthGoogleStartRequest",
+    "responseSchemas": [
+      "AuthGoogleStartResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
   "loginWithPassword": {
     "requestRequired": true,
     "successStatusCodes": [
@@ -3272,6 +3443,20 @@ export const API_OPERATION_PAYLOADS = {
     "requestSchema": "AuthPasswordChangeRequest",
     "responseSchemas": [
       "AuthOkResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "getAuthProviders": {
+    "requestRequired": false,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": null,
+    "responseSchemas": [
+      "AuthProvidersResponse"
     ],
     "pathParameters": [],
     "queryParameters": [],
