@@ -51,7 +51,11 @@ edge posture (browser never talks to Kratos; sessions stay token-based).
     `/[locale]/auth/google/callback` **route handler** that completes the
     exchange, persists the standard signed app-session cookie, and redirects
     to the dashboard; failures land on `/auth?googleError=1` with a localized
-    message.
+    message. Both redirects are built from the configured public origin
+    (`appOrigin()` / `NEXT_PUBLIC_APP_URL`) — the same origin the start flow
+    uses for the OIDC `return_to` — **never** `request.nextUrl.origin`, which
+    under the production standalone server (`HOSTNAME=0.0.0.0`) resolves to the
+    unreachable internal bind (post-merge fix 2026-07-07; see tasks.md).
   - Optional `AuthPort` extensions (`googleSignInEnabled` /
     `startGoogleSignIn` / `completeGoogleSignIn`) — optional so the frozen
     Supabase provider is not touched (AGENTS §8).
@@ -97,6 +101,14 @@ in — no password to invent or remember. (Spec 001 US-002 social-auth path.)
    `/self-service/anything-else` still 404s.
 5. All three new endpoints appear in `openapi.yaml` and the regenerated
    client; `npm run check:api-contract` passes.
+6. (Post-merge fix 2026-07-07) Under the production standalone server the
+   callback's success and failure redirects target the configured public
+   origin (`capsulezero.app`), not the internal bind (`0.0.0.0`), and a
+   client-supplied `Host` header cannot steer them. Verified by the standalone
+   `node server.js` smoke in tasks.md (plan.md row 10); the localhost `test`
+   gate collapses `appOrigin()` and `request.nextUrl.origin` to the same value
+   so it cannot discriminate the fix (Supervised Verification, not a committed
+   failing e2e).
 
 ## Negative scenarios
 

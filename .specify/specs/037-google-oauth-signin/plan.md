@@ -29,6 +29,7 @@ docs → verification (below) → draft PR for founder review.
 | 7 | Contract: three new endpoints in openapi.yaml + regenerated client | `npm run check:api-contract` green (also runs in `baseline-checks`) |
 | 8 | Google-disabled degradation: no button, `POST /api/auth/google/start` → 404 (negative 3) | Go handler test + e2e default-mock run with availability forced off is covered by unit test; api provider returns `false` on 404 |
 | 9 | Full-stack Google dance on prod after credential install | Post-merge operator smoke per runbook `google-oauth-setup.md` (consent screen → dashboard); recorded in tasks.md after rollout |
+| 10 | Callback redirects target the configured public origin, not the standalone bind (`0.0.0.0`) — post-merge fix 2026-07-07 | **Supervised Verification** (app code; failing-test-first vehicle can't discriminate — the `test` gate runs `next dev` with `NEXT_PUBLIC_APP_URL` pinned to the localhost bind, so `appOrigin() === request.nextUrl.origin` there): standalone `node server.js` red/green (`HOSTNAME=0.0.0.0`, `NEXT_PUBLIC_APP_URL=https://capsulezero.app`) — callback `location` host is `0.0.0.0` before the fix, `capsulezero.app` after (and unspoofable by `Host` header); prod curl before (`0.0.0.0:3000`) in tasks.md; post-deploy prod smoke after (runbook row 3). Follow-up: a standalone/docker-target e2e host assertion as a CI regression guard |
 
 ## Risks
 

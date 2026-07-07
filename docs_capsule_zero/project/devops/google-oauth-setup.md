@@ -54,7 +54,15 @@ docker compose up -d kratos api web
 1. `curl -s https://capsulezero.app/api/auth/providers` → `{"google":true}`.
 2. `https://capsulezero.app/en/auth` shows **Continue with Google**; the full
    dance lands on the dashboard signed in.
-3. Negative: `https://capsulezero.app/self-service/anything` still 404s;
+3. **Redirect host** (regression guard, spec-037 fix 2026-07-07):
+   `curl -sI https://capsulezero.app/en/auth/google/callback` → the `location`
+   header host MUST be `capsulezero.app`, never `0.0.0.0:3000`. The callback
+   builds its redirects from `NEXT_PUBLIC_APP_URL`/`appOrigin()`. Two failure
+   modes to treat as a fail: a `0.0.0.0` host means the callback regressed to a
+   request-origin redirect (the exact leak that broke the first rollout); a
+   `500` on this curl means the web container is missing `NEXT_PUBLIC_APP_URL`
+   (`appOrigin()` throws by design rather than emit a bad origin).
+4. Negative: `https://capsulezero.app/self-service/anything` still 404s;
    `https://capsulezero.app/en/auth/google/callback` (no code) lands on
    `/auth?googleError=1` with the localized message and no session.
 
