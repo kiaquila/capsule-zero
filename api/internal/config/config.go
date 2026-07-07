@@ -9,8 +9,8 @@ import (
 
 // Config is the resolved API runtime configuration.
 type Config struct {
-	Port           string
-	DatabaseURL    string
+	Port            string
+	DatabaseURL     string
 	KratosPublicURL string
 	KratosAdminURL  string
 	// Auth-write rate limit (per client, mirroring the edge). Production keeps
@@ -19,6 +19,9 @@ type Config struct {
 	// the e2e suites would otherwise burn the shared budget (spec 035).
 	AuthRatePerMinute int
 	AuthRateBurst     int
+	// GoogleSignInEnabled mirrors the Kratos-side OIDC switch (spec 037):
+	// off by default so a deploy without operator prep hides Google cleanly.
+	GoogleSignInEnabled bool
 }
 
 // Load reads configuration from the environment, applying defaults that match
@@ -34,13 +37,19 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 
+	googleEnabled, err := getenvBool("AUTH_GOOGLE_ENABLED", false)
+	if err != nil {
+		return Config{}, err
+	}
+
 	cfg := Config{
-		Port:              getenv("API_PORT", "8080"),
-		DatabaseURL:       os.Getenv("DATABASE_URL"),
-		KratosPublicURL:   getenv("KRATOS_PUBLIC_URL", "http://kratos:4433"),
-		KratosAdminURL:    getenv("KRATOS_ADMIN_URL", "http://kratos:4434"),
-		AuthRatePerMinute: authRate,
-		AuthRateBurst:     authBurst,
+		Port:                getenv("API_PORT", "8080"),
+		DatabaseURL:         os.Getenv("DATABASE_URL"),
+		KratosPublicURL:     getenv("KRATOS_PUBLIC_URL", "http://kratos:4433"),
+		KratosAdminURL:      getenv("KRATOS_ADMIN_URL", "http://kratos:4434"),
+		AuthRatePerMinute:   authRate,
+		AuthRateBurst:       authBurst,
+		GoogleSignInEnabled: googleEnabled,
 	}
 
 	if cfg.DatabaseURL == "" {
@@ -58,6 +67,18 @@ func getenvInt(key string, fallback int) (int, error) {
 	parsed, err := strconv.Atoi(value)
 	if err != nil || parsed < 1 {
 		return 0, fmt.Errorf("%s must be a positive integer, got %q", key, value)
+	}
+	return parsed, nil
+}
+
+func getenvBool(key string, fallback bool) (bool, error) {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback, nil
+	}
+	parsed, err := strconv.ParseBool(value)
+	if err != nil {
+		return false, fmt.Errorf("%s must be a boolean, got %q", key, value)
 	}
 	return parsed, nil
 }

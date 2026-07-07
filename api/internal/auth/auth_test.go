@@ -519,6 +519,12 @@ type fakeIdentityClient struct {
 	settingsPasswordCalls *[][2]string
 
 	logoutErr error
+
+	oidcRedirectURL     string
+	oidcExchangeCode    string
+	oidcStartErr        error
+	oidcExchangeSession *kratos.Session
+	oidcExchangeErr     error
 }
 
 func (f fakeIdentityClient) Register(context.Context, string, string, string, string) (*kratos.Session, error) {
@@ -558,4 +564,12 @@ func (f fakeIdentityClient) SettingsPassword(_ context.Context, token, newPasswo
 
 func (f fakeIdentityClient) Logout(context.Context, string) error {
 	return f.logoutErr
+}
+
+func (f fakeIdentityClient) OIDCStart(context.Context, string, string) (string, string, error) {
+	return f.oidcRedirectURL, f.oidcExchangeCode, f.oidcStartErr
+}
+
+func (f fakeIdentityClient) OIDCExchange(context.Context, string, string) (*kratos.Session, error) {
+	return f.oidcExchangeSession, f.oidcExchangeErr
 }
