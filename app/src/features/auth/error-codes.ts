@@ -11,6 +11,7 @@ const KNOWN_AUTH_ERROR_CODES = [
   "RATE_LIMITED",
   "VALIDATION_ERROR",
   "INTERNAL_ERROR",
+  "GOOGLE_SIGN_IN_FAILED",
 ] as const;
 
 export type AuthErrorCode = (typeof KNOWN_AUTH_ERROR_CODES)[number];

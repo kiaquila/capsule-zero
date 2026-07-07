@@ -1059,6 +1059,56 @@ textarea {
   opacity: 0.72;
 }
 
+/* Google sign-in (spec 037): design-system social-button surface (.28 glass)
+   under the same shape/typography as .auth-primary. */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.auth-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 16px;
+  padding: 0 16px;
+  border: 1px solid var(--btn-primary-border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.28);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.auth-social:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.auth-social:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 .auth-switch-link,
 .auth-terms-note,
 .auth-server-message {

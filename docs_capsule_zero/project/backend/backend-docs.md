@@ -9,7 +9,7 @@ Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a
 | API process              | Go monolith (`/api`) — single binary with bounded contexts                                                          |
 | Background worker        | Redis-queue consumer goroutines inside `/api` for v0.1; standalone `/worker` container deferred by ADR-007          |
 | API gateway / TLS        | nginx 1.27 with host-managed Let's Encrypt certbot, rate-limit middleware, `auth_request` into Ory Kratos           |
-| Auth                     | Ory Kratos email/password (Stage 1); Google OAuth and Apple Sign-In in Stage 2                                      |
+| Auth                     | Ory Kratos email/password + Google sign-in (spec 037, native-flow OIDC); Apple Sign-In in Stage 2                                      |
 | Database                 | PostgreSQL 16 with Postgres FTS; API connects directly in v0.1 as the least-privilege `capsule_app` role (spec 034), PgBouncer and pgvector are deferred by ADR-007 |
 | Cache / sessions / queue | Redis 7 (cache, idempotency keys, River/asynq job queue)                                                            |
 | Object storage           | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                   |
@@ -174,6 +174,7 @@ For v0.1 the runtime ships with **`pgbouncer`, `grafana`, and the standalone `wo
 | `REDIS_URL`                   | server        | Redis connection string                                                                               |
 | `KRATOS_PUBLIC_URL`           | server        | Kratos public API base URL                                                                            |
 | `KRATOS_ADMIN_URL`            | server        | Kratos admin API base URL                                                                             |
+| `AUTH_GOOGLE_ENABLED`         | server        | Gates `/api/auth/google/*` + the provider probe (spec 037); mirrors the Kratos OIDC env switch        |
 | `SPACES_ACCESS_KEY`           | server        | DigitalOcean Spaces access key                                                                        |
 | `SPACES_SECRET_KEY`           | server        | DigitalOcean Spaces secret key                                                                        |
 | `SPACES_BUCKET`               | server        | Bucket name (single bucket, prefixes inside)                                                          |

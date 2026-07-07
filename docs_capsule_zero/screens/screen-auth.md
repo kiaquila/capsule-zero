@@ -43,7 +43,7 @@ Prototype: `html-prototypes/auth.html`, `html-prototypes/index.html` (popup)
 - **Inputs:** Glass input style
 - **Register Button:** Primary glass button
 - **Validation:** Inline, real-time, yellow (#FFD600) for errors
-- **OAuth Buttons:** Stage 2 only; Google and Apple buttons are not active in Stage 1
+- **Google Button:** active since spec 037 when the deployment enables the provider — social glass surface, monochrome G glyph, below the primary CTA behind an "or" divider; hidden otherwise
 - **Apple Icon:** Stage 2 only; always black when implemented
 
 ## Interactivity
@@ -54,7 +54,7 @@ Prototype: `html-prototypes/auth.html`, `html-prototypes/index.html` (popup)
 - Click "Forgot password" (login mode) → email recovery input
 - Success → redirect to Dashboard
 - Error → inline messages (no alert popups)
-- Stage 2 only: Click [Google] / [Apple] → OAuth flow
+- Click [Continue with Google] → consent screen → dashboard; failure returns to /auth with a localized inline error (spec 037). Apple stays Stage 2
 
 ## Responsive
 

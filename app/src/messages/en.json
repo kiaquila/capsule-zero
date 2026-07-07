@@ -84,6 +84,9 @@
     "resetCta": "Set new password",
     "resetting": "Saving",
     "resendCode": "Resend code",
+    "orDivider": "or",
+    "continueWithGoogle": "Continue with Google",
+    "googleRedirecting": "Opening Google…",
     "errors": {
       "INVALID_CODE": "The code is invalid or has expired. Request a new one.",
       "INVALID_CURRENT_PASSWORD": "The current password is incorrect.",
@@ -91,6 +94,7 @@
       "RATE_LIMITED": "Too many attempts. Please try again in a minute.",
       "VALIDATION_ERROR": "Please check your details and try again.",
       "INTERNAL_ERROR": "The service is temporarily unavailable. Please try again.",
+      "GOOGLE_SIGN_IN_FAILED": "We couldn't sign you in with Google. Try again — or use your password if this email already has an account.",
       "default": "Something went wrong. Please try again."
     }
   },

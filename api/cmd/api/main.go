@@ -97,8 +97,9 @@ func run() error {
 
 	kratosClient := kratos.New(cfg.KratosPublicURL, cfg.KratosAdminURL)
 	handler := &auth.Handler{
-		Kratos:   kratosClient,
-		Profiles: profiles.New(pool),
+		Kratos:              kratosClient,
+		Profiles:            profiles.New(pool),
+		GoogleSignInEnabled: cfg.GoogleSignInEnabled,
 	}
 
 	authLimiter := ratelimit.New(float64(cfg.AuthRatePerMinute), cfg.AuthRateBurst)
@@ -146,6 +147,11 @@ func newMux(handler *auth.Handler, authLimiter, sessionLimiter *ratelimit.Limite
 	// password, so a roomier session bucket would hand a stolen token a
 	// brute-force budget.
 	mux.HandleFunc("POST /api/auth/password", authLimiter.Middleware(handler.ChangePassword))
+	// Google sign-in start/complete are public auth writes (spec 037); the
+	// availability probe is a cheap read the web hits on auth-page renders.
+	mux.HandleFunc("POST /api/auth/google/start", authLimiter.Middleware(handler.GoogleStart))
+	mux.HandleFunc("POST /api/auth/google/complete", authLimiter.Middleware(handler.GoogleComplete))
+	mux.HandleFunc("GET /api/auth/providers", sessionLimiter.Middleware(handler.Providers))
 	mux.HandleFunc("GET /api/auth/whoami", sessionLimiter.Middleware(handler.WhoAmI))
 	mux.HandleFunc("POST /api/auth/logout", sessionLimiter.Middleware(handler.Logout))
 	mux.HandleFunc("GET /api/profile", sessionLimiter.Middleware(handler.RequireSession(handler.GetProfile)))

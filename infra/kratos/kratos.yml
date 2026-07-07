@@ -45,6 +45,16 @@ selfservice:
       enabled: true
       config:
         lifespan: 1h
+    # Google sign-in (spec 037) ships DISABLED by default. An environment
+    # enables it via env only: SELFSERVICE_METHODS_OIDC_ENABLED=true plus
+    # SELFSERVICE_METHODS_OIDC_CONFIG_PROVIDERS as a JSON value carrying the
+    # google provider (client id/secret live in the host env file, never in
+    # the repo; mapper_url points at the mounted oidc.google.jsonnet). The web
+    # drives the NATIVE-app OIDC flow through the Go API (session-token
+    # exchange), so the edge exposes exactly one Kratos path:
+    # /self-service/methods/oidc/callback/google.
+    oidc:
+      enabled: false
 
   flows:
     error:
@@ -95,6 +105,12 @@ selfservice:
             # continue_with, which the web verify-email banner consumes.
             - hook: session
             - hook: show_verification_ui
+        oidc:
+          hooks:
+            # A first-time Google sign-in registers the identity mid-flow; the
+            # session hook lets the native-flow token exchange hand that new
+            # session back to the Go API in the same round-trip (spec 037).
+            - hook: session
 
 log:
   level: info

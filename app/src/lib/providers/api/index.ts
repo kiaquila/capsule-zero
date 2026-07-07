@@ -333,6 +333,55 @@ function buildAuthPort(): AuthPort {
         );
       }
     },
+
+    async googleSignInEnabled() {
+      try {
+        const { status, data } = await apiFetch<{ google?: boolean }>(
+          "/api/auth/providers",
+          { method: "GET" },
+        );
+        return status < 400 && data.google === true;
+      } catch {
+        // An unreachable API hides the button instead of failing the render.
+        return false;
+      }
+    },
+
+    async startGoogleSignIn(returnTo: string) {
+      const { status, data } = await apiFetch<{
+        redirectUrl?: string;
+        exchangeCode?: string;
+      }>("/api/auth/google/start", {
+        method: "POST",
+        body: JSON.stringify({ returnTo }),
+      });
+      if (status >= 400 || !data.redirectUrl || !data.exchangeCode) {
+        throw providerError(
+          data,
+          "GOOGLE_SIGN_IN_FAILED",
+          "Google sign-in is temporarily unavailable.",
+        );
+      }
+      return { redirectUrl: data.redirectUrl, exchangeCode: data.exchangeCode };
+    },
+
+    async completeGoogleSignIn(completion) {
+      const { status, data } = await apiFetch<AuthResponse>(
+        "/api/auth/google/complete",
+        {
+          method: "POST",
+          body: JSON.stringify(completion),
+        },
+      );
+      if (status >= 400) {
+        throw providerError(
+          data,
+          "GOOGLE_SIGN_IN_FAILED",
+          "Google sign-in could not be completed.",
+        );
+      }
+      return mapSession(data);
+    },
   };
 }
 

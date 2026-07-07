@@ -104,7 +104,10 @@
 | Log in link | Already have an account? Log in | ¿Ya tenés cuenta? Iniciá sesión | Уже есть аккаунт? Войдите |
 | Required note | Required fields are marked * | Los campos obligatorios están marcados * | Обязательные поля отмечены * |
 | Create account CTA | Create Account | Crear Cuenta | Создать аккаунт |
-| Social: Google | Continue with Google | Continuar con Google | Войти с Google |
+| Social divider | or | o | или |
+| Social: Google | Continue with Google | Continuar con Google | Продолжить с Google |
+| Social: Google (redirecting) | Opening Google… | Abriendo Google… | Открываем Google… |
+| Error: Google sign-in | We couldn't sign you in with Google. Try again — or use your password if this email already has an account. | No pudimos iniciar sesión con Google. Probá de nuevo — o usá tu contraseña si este email ya tiene una cuenta. | Не удалось войти через Google. Попробуйте ещё раз — или войдите по паролю, если у этого email уже есть аккаунт. |
 | Social: Apple | Continue with Apple | Continuar con Apple | Войти с Apple |
 | Terms consent | By continuing you agree to our Terms of Use and Privacy Policy | Al continuar, aceptás nuestros Términos de Uso y Política de Privacidad | Продолжая, вы принимаете Условия использования и Политику конфиденциальности |
 | Error: Invalid email | Please enter a valid email | Ingresá un email válido | Введите корректный email |

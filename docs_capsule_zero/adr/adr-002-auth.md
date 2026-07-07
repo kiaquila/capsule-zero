@@ -11,10 +11,10 @@ US-002 and US-003 use staged auth scope.
 v0.1 requires registration and login through:
 
 - email/password
+- Google sign-in (pulled forward from Stage 2 by spec 037)
 
 Stage 2 adds:
 
-- Google OAuth
 - Apple Sign-In
 
 The app must preserve sessions between visits, support password recovery, store optional location and language preferences, and redirect authenticated users to the dashboard. Auth must also secure private wardrobe items, photos, capsules, payments, and profile data across web and React Native mobile clients.
@@ -32,8 +32,9 @@ Implementation rules:
 - Email flows (verification, recovery, password change) are delivered by Kratos through the SMTP courier connected to Resend (`smtps://…@smtp.resend.com:2465/` — Hetzner blocks outbound 25/465, so the courier uses Resend's 2465 implicit-TLS port). Since spec 035 both flows run the one-time-code method as server-side API flows driven by the Go API; the web UI ships the flow-aware completion steps (recovery code entry on /auth, the verify-email banner, and /verify-email for emailed verification links).
 - nginx runs an `auth_request` subrequest against the Kratos session check on protected routes; the Go API also validates the Kratos session cookie on every request.
 - The Go monolith maps `kratos_identity_id` → `profiles.id` on first sign-in and stores `display_name`, `language`, `country`, `city`, and `coin_balance` in its own Postgres tables.
-- Email/password registration, login, code-method password recovery, code-method email verification, and password change are active in v0.1 (spec 035). Sign-up keeps the auto-login `session` hook; verification is non-blocking (founder decision 2026-07-03). Google OAuth and Apple Sign-In are configured in Kratos only when the Stage 2 social-auth integration gate opens.
-- Configure mobile deep links for OAuth callbacks in Stage 2 (React Native handles the redirect; Kratos validates the flow). Payment-return deep links are deferred — v0.1 mobile has no purchase CTA.
+- Email/password registration, login, code-method password recovery, code-method email verification, and password change are active in v0.1 (spec 035). Sign-up keeps the auto-login `session` hook; verification is non-blocking (founder decision 2026-07-03).
+- Google sign-in is active in v0.1 (spec 037) through the Kratos **native-app OIDC flow with session-token exchange** — not the browser flow — because sessions are token-based and the edge keeps Kratos public closed except for the exact `/self-service/methods/oidc/callback/google` path. The Go API owns `/api/auth/providers`, `/api/auth/google/start`, and `/api/auth/google/complete`; provider credentials enter only via the host env file (`SELFSERVICE_METHODS_OIDC_CONFIG_PROVIDERS`), and everything defaults to off (`AUTH_GOOGLE_ENABLED=false`). Account linking for duplicate emails and auto-verified Google addresses are recorded follow-ups (spec 037 Known Issues). Operator runbook: `docs_capsule_zero/project/devops/google-oauth-setup.md`. Apple Sign-In stays behind the Stage 2 social-auth integration gate.
+- Configure mobile deep links for OAuth callbacks in Stage 2 (React Native submits the Google SDK `id_token` to the same Kratos provider config; Kratos validates the flow). Payment-return deep links are deferred — v0.1 mobile has no purchase CTA.
 - Persist language preference on `profiles.language` (allowed values: `en`, `ru`).
 - Persist optional `country` and `city` on `profiles`, but never block registration if absent.
 - Use inline UI errors with Capsule Zero yellow `#FFD600`; no alert popups.

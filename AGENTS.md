@@ -288,7 +288,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 | **Backend**             | Go modular monolith (single binary, bounded contexts inside the same process)                                                       |
 | **Database**            | PostgreSQL 16 — plain `postgres:16` in v0.1; pgvector (semantic), Postgres FTS (full-text) and PgBouncer pooling deferred (ADR-007) |
 | **Cache / queue**       | Redis 7 (cache, sessions, Redis-based job queue — Kafka deferred until multi-service split)                                         |
-| **Auth**                | Ory Kratos with email/password Stage 1; Google OAuth and Apple Sign-In deferred to Stage 2                                          |
+| **Auth**                | Ory Kratos with email/password + Google sign-in in v0.1 (spec 037, native-flow OIDC); Apple Sign-In deferred to Stage 2             |
 | **File Storage**        | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                                   |
 | **Image processing**    | Self-hosted Capsule Zero model behind a worker (deferred — first ship core wardrobe flows with manual/placeholder behavior)         |
 | **API gateway**         | nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos                        |
@@ -315,7 +315,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 
 ### Provider integration gates before real-provider QA/staging/launch
 
-- Configure Google and Apple OAuth providers only for Stage 2 social auth.
+- Google OAuth client configured per `docs_capsule_zero/project/devops/google-oauth-setup.md` before enabling Google sign-in in prod (spec 037; ships off by default). Apple Sign-In stays a Stage 2 gate.
 - Configure Lava.top products/API key/webhook before real web purchases are tested.
 - Self-hosted image processing model: training/inference spike against the < 5 sec latency gate before enabling real image processing.
 - Production credentials must be stored only in the droplet's encrypted env file or production dashboards and must not be shared with agents.

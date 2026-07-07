@@ -19,6 +19,11 @@ import {
 } from "./schemas";
 import { authActionFailure } from "./error-codes";
 import {
+  appOrigin,
+  googleSignInAvailable,
+  storeGoogleExchangeCode,
+} from "./google";
+import {
   clearMockSession,
   markAppSessionEmailVerified,
   persistMockSession,
@@ -41,6 +46,45 @@ export interface AuthActionResult {
   flowId?: string;
   /** Opaque retry id after a valid recovery code hit a password-policy error. */
   recoveryContinuationId?: string;
+  /** Google consent-screen URL the browser must visit (spec 037). */
+  redirectUrl?: string;
+}
+
+/**
+ * Whether this deployment offers Google sign-in (spec 037). Exists as an
+ * action so AuthPanel instances mounted from STATIC pages (the landing
+ * popup) can resolve availability at request time — calling the provider
+ * registry during the landing prerender would break the production build.
+ */
+export async function googleSignInAvailableAction(): Promise<boolean> {
+  return googleSignInAvailable();
+}
+
+/**
+ * Begin the Google sign-in loop (spec 037): the provider hands back the
+ * consent redirect URL plus the exchange code, which is parked in a
+ * short-lived httpOnly cookie for the callback route to consume.
+ */
+export async function startGoogleSignInAction(input: {
+  locale?: string;
+}): Promise<AuthActionResult> {
+  const providers = createProviderRegistry();
+  if (!providers.auth.startGoogleSignIn) {
+    return { ok: false, code: "GOOGLE_SIGN_IN_FAILED" };
+  }
+  const locale = normalizeActionLocale(input.locale);
+
+  try {
+    const origin = await appOrigin();
+    const { redirectUrl, exchangeCode } =
+      await providers.auth.startGoogleSignIn(
+        `${origin}/${locale}/auth/google/callback`,
+      );
+    await storeGoogleExchangeCode(exchangeCode);
+    return { ok: true, redirectUrl };
+  } catch (error) {
+    return { ok: false, ...authActionFailure(error) };
+  }
 }
 
 export async function signInWithPasswordAction(

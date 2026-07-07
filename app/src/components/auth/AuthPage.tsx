@@ -9,9 +9,13 @@ import { CookieBanner } from "@/components/landing/CookieBanner";
 interface AuthPageProps {
   /** Recovery flow carried by /auth?flow=…&code=… URL params. */
   recovery?: RecoveryDeepLink;
+  /** Whether this deployment offers Google sign-in (spec 037). */
+  googleSignIn?: boolean;
+  /** A failed Google callback landed on /auth?googleError=1. */
+  googleError?: boolean;
 }
 
-export function AuthPage({ recovery }: AuthPageProps) {
+export function AuthPage({ recovery, googleSignIn, googleError }: AuthPageProps) {
   const locale = useLocale();
 
   return (
@@ -27,7 +31,12 @@ export function AuthPage({ recovery }: AuthPageProps) {
       </header>
 
       <main className="auth-page-main">
-        <AuthPanel initialRecovery={recovery} variant="standalone" />
+        <AuthPanel
+          googleError={googleError}
+          googleSignIn={googleSignIn}
+          initialRecovery={recovery}
+          variant="standalone"
+        />
       </main>
 
       <Footer />

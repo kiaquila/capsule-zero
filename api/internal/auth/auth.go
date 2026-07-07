@@ -42,12 +42,17 @@ type identityClient interface {
 	VerificationComplete(ctx context.Context, flowID, code string) error
 	SettingsPassword(ctx context.Context, token, newPassword string) error
 	Logout(context.Context, string) error
+	OIDCStart(ctx context.Context, provider, returnTo string) (string, string, error)
+	OIDCExchange(ctx context.Context, initCode, returnToCode string) (*kratos.Session, error)
 }
 
 // Handler holds the dependencies for the auth/profile endpoints.
 type Handler struct {
 	Kratos   identityClient
 	Profiles *profiles.Repo
+	// GoogleSignInEnabled gates the /api/auth/google/* endpoints and the
+	// provider-availability probe (spec 037, AUTH_GOOGLE_ENABLED).
+	GoogleSignInEnabled bool
 }
 
 // --- DTOs (match the web contract in app/src/lib/providers/contracts.ts) ---

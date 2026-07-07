@@ -3,15 +3,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
   completePasswordRecoveryAction,
+  googleSignInAvailableAction,
   requestPasswordRecoveryAction,
   signInWithPasswordAction,
   signUpWithPasswordAction,
+  startGoogleSignInAction,
   type AuthActionResult,
 } from "@/features/auth/actions";
 import { authErrorMessageKey } from "@/features/auth/error-codes";
@@ -52,6 +54,15 @@ interface AuthPanelProps {
   initialMode?: AuthMode;
   /** Pre-bound recovery flow from /auth?flow=…&code=… URL params. */
   initialRecovery?: RecoveryDeepLink;
+  /**
+   * Whether this deployment offers Google sign-in (spec 037). Dynamic routes
+   * (/auth) resolve it server-side and pass it down; panels mounted from
+   * static pages (the landing popup) leave it undefined and the panel asks
+   * the server itself after mount — the landing stays prerenderable.
+   */
+  googleSignIn?: boolean;
+  /** A failed Google callback landed on /auth?googleError=1. */
+  googleError?: boolean;
   onClose?: () => void;
   variant?: "popup" | "standalone";
 }
@@ -59,6 +70,8 @@ interface AuthPanelProps {
 export function AuthPanel({
   initialMode = "signIn",
   initialRecovery,
+  googleSignIn,
+  googleError = false,
   onClose,
   variant = "standalone",
 }: AuthPanelProps) {
@@ -77,9 +90,38 @@ export function AuthPanel({
   const [serverMessage, setServerMessage] = useState<{
     text: string;
     kind: "error" | "info";
-  } | null>(null);
+  } | null>(
+    googleError
+      ? { text: t("errors.GOOGLE_SIGN_IN_FAILED"), kind: "error" }
+      : null,
+  );
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
+  // Availability comes from the prop when the mounting page resolved it
+  // server-side (/auth); panels mounted from static pages (landing popup)
+  // leave the prop undefined and the panel asks the server after mount.
+  const [fetchedGoogleAvailable, setFetchedGoogleAvailable] = useState(false);
+  const googleAvailable = googleSignIn ?? fetchedGoogleAvailable;
+
+  useEffect(() => {
+    if (googleSignIn !== undefined) {
+      return;
+    }
+    let cancelled = false;
+    googleSignInAvailableAction()
+      .then((available) => {
+        if (!cancelled) {
+          setFetchedGoogleAvailable(available);
+        }
+      })
+      .catch(() => {
+        // Unknown availability keeps the button hidden.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [googleSignIn]);
 
   const validationMessages = useMemo(
     () => ({
@@ -230,6 +272,39 @@ export function AuthPanel({
     showInfo(t("recoverySent"));
   };
 
+  const onGoogleSignIn = async () => {
+    setServerMessage(null);
+    setGoogleSubmitting(true);
+    const result = await startGoogleSignInAction({ locale });
+    if (!result.ok || !result.redirectUrl) {
+      setGoogleSubmitting(false);
+      showFailure(result);
+      return;
+    }
+    // Stay disabled until the browser leaves for the consent screen.
+    window.location.assign(result.redirectUrl);
+  };
+
+  // Shared by the sign-in and sign-up forms; hidden when the deployment does
+  // not offer Google. Monochrome glyph — the interface stays achromatic.
+  const googleBlock = googleAvailable ? (
+    <>
+      <div aria-hidden="true" className="auth-divider">
+        {t("orDivider")}
+      </div>
+      <button
+        className="auth-social"
+        data-testid="auth-google-button"
+        disabled={googleSubmitting}
+        onClick={onGoogleSignIn}
+        type="button"
+      >
+        <GoogleGlyph />
+        {googleSubmitting ? t("googleRedirecting") : t("continueWithGoogle")}
+      </button>
+    </>
+  ) : null;
+
   const onSignUp = signUpForm.handleSubmit(async (values) => {
     setServerMessage(null);
     const result = await signUpWithPasswordAction({ ...values, locale });
@@ -327,6 +402,7 @@ export function AuthPanel({
           >
             {signInForm.formState.isSubmitting ? t("checking") : t("logInTab")}
           </button>
+          {googleBlock}
           <p className="auth-switch-link">
             {t("signInLinkPrefix")}{" "}
             <button type="button" onClick={() => switchMode("signUp")}>
@@ -508,6 +584,7 @@ export function AuthPanel({
           >
             {signUpForm.formState.isSubmitting ? t("creating") : t("createAccountCta")}
           </button>
+          {googleBlock}
           <p className="auth-switch-link">
             {t("logInLinkPrefix")}{" "}
             <button type="button" onClick={() => switchMode("signIn")}>
@@ -537,5 +614,22 @@ export function AuthPanel({
         <Link href="/privacy-policy">{landing("privacy")}</Link>
       </p>
     </section>
+  );
+}
+
+// Monochrome Google "G" — the achromatic-interface rule wins over brand
+// colors (spec 037); inherits the button's text color.
+function GoogleGlyph() {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="currentColor"
+      height="16"
+      viewBox="0 0 24 24"
+      width="16"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M12 10.2v3.9h5.5c-.24 1.42-1.66 4.17-5.5 4.17-3.31 0-6.01-2.74-6.01-6.12S8.69 6.03 12 6.03c1.88 0 3.14.8 3.86 1.49l2.63-2.53C16.8 3.41 14.6 2.4 12 2.4 6.7 2.4 2.4 6.7 2.4 12s4.3 9.6 9.6 9.6c5.54 0 9.22-3.9 9.22-9.38 0-.63-.07-1.11-.15-1.59H12Z" />
+    </svg>
   );
 }
