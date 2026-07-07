@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { persistAppSession } from "@/features/auth/session";
-import { takeGoogleExchangeCode } from "@/features/auth/google";
+import { appOrigin, takeGoogleExchangeCode } from "@/features/auth/google";
 import { createProviderRegistry } from "@/lib/providers";
 
 // Google OIDC callback landing (spec 037). Kratos redirects the browser here
@@ -13,6 +13,14 @@ import { createProviderRegistry } from "@/lib/providers";
 // Every failure (canceled consent, duplicate email rejected by Kratos,
 // missing/expired codes, direct navigation) lands on /auth?googleError=1
 // with a localized message and no session (negative scenario 1).
+//
+// Redirect targets are built from appOrigin() — the configured public origin —
+// NEVER request.nextUrl.origin. Under the production standalone server the
+// request origin resolves to the internal bind (HOSTNAME=0.0.0.0 →
+// https://0.0.0.0:3000), so a nextUrl-based redirect strands the browser on an
+// unreachable host on BOTH the success and the failure path (prod incident
+// 2026-07-07). appOrigin() is the same canonical origin the start flow uses for
+// the OIDC return_to, so the whole loop stays on one origin.
 
 export async function GET(
   request: NextRequest,
@@ -22,10 +30,8 @@ export async function GET(
   const activeLocale: AppLocale = routing.locales.includes(locale as AppLocale)
     ? (locale as AppLocale)
     : routing.defaultLocale;
-  const failure = new URL(
-    `/${activeLocale}/auth?googleError=1`,
-    request.nextUrl.origin,
-  );
+  const origin = await appOrigin();
+  const failure = new URL(`/${activeLocale}/auth?googleError=1`, origin);
 
   // Consume the parked cookie on every path, including failures — the code
   // pair is single-use, so a stale cookie only lingers uselessly otherwise.
@@ -52,7 +58,5 @@ export async function GET(
     return NextResponse.redirect(failure);
   }
 
-  return NextResponse.redirect(
-    new URL(`/${activeLocale}/dashboard`, request.nextUrl.origin),
-  );
+  return NextResponse.redirect(new URL(`/${activeLocale}/dashboard`, origin));
 }

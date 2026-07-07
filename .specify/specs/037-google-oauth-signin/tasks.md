@@ -47,6 +47,42 @@
   any 4xx means "no session" and the generic sign-in error is the right UX
   (code review, 2026-07-07).
 
+- **2026-07-07 (post-merge prod fix):** the callback route
+  (`app/src/app/[locale]/auth/google/callback/route.ts`) now builds its
+  success and failure redirect targets from `appOrigin()` (the configured
+  public origin the start flow already uses), NOT `request.nextUrl.origin`.
+  Under the production standalone server (`node server.js`, `HOSTNAME=0.0.0.0`,
+  `next.config` `trustHostHeader:false`) `request.nextUrl.origin` resolves to
+  the internal bind, so every redirect out of the callback pointed the browser
+  at the unreachable `https://0.0.0.0:3000` — the whole Google loop failed at
+  the last hop even though the Kratos identity + session-token exchange
+  succeeded. Reusing `appOrigin()` (Engineering Reuse Rule) keeps the entire
+  loop on one canonical origin and matches the security posture already
+  documented in `features/auth/google.ts` (configured URL wins over any
+  client-controllable Host header — confirmed: a spoofed `Host` header does
+  not steer the redirect). This is application code (TDD normally applies),
+  but the failing-test-first vehicle cannot discriminate the fix: the required
+  `test` gate runs `next dev` on localhost and seeds
+  `NEXT_PUBLIC_APP_URL=http://localhost:3000` (`.env.local.example`), so
+  `appOrigin() === request.nextUrl.origin` there and a committed Playwright
+  assertion stays green on both the buggy and the fixed route. The defect only
+  manifests under the production standalone bind, so it is verified by
+  **Supervised Verification** — the standalone `node server.js` red/green smoke
+  below plus the post-deploy prod smoke — rather than a committed failing e2e.
+  Follow-up (tracked separately): a standalone/docker-target e2e that asserts
+  the callback redirect **host** would give CI a real regression guard.
+
+- **2026-07-07 (deliberate, fail-loud on misconfig):** `appOrigin()` is
+  awaited before the try block, so a production deploy with
+  `NEXT_PUBLIC_APP_URL` unset makes a direct callback navigation return `500`
+  (appOrigin throws) instead of a `googleError=1` redirect. Kept intentionally:
+  it mirrors the start flow's existing contract (both require the env), the
+  scenario is unreachable in a correctly configured deploy (start throws first,
+  so the user never reaches the callback), and there is no clean graceful
+  fallback — the only absolute origin available without the env is the very
+  `request.nextUrl.origin` bind this fix removes. Failing loud on misconfig is
+  preferable to silently re-emitting a broken `0.0.0.0` redirect.
+
 ### Dead Ends
 
 - **Kratos browser OIDC flow** (standard docs path) — rejected for this
@@ -79,6 +115,29 @@
   webkit-iphone; happy loop + no-code negative). First webkit run caught the
   cookie banner overlapping the button on mobile — fixed by dismissing the
   banner in the spec, mirroring the other auth specs.
+
+## Verification Log (2026-07-07, post-merge callback-origin fix)
+
+- **Prod repro (before):** `curl -sI https://capsulezero.app/en/auth/google/callback`
+  → `307` `location: https://0.0.0.0:3000/en/auth?googleError=1`. Kratos logs
+  for the same window show the full backend loop succeeding (OIDC start `200`,
+  `A new identity has registered`, `/sessions/token-exchange` `200`) — the
+  only failure was the unreachable redirect host.
+- **Standalone smoke (fix, local):** `next build` (standalone) + `HOSTNAME=0.0.0.0
+  PORT=<p> NEXT_PUBLIC_APP_URL=https://capsulezero.app NODE_ENV=production node
+  .next/standalone/server.js`, then `curl -sI -H 'X-Forwarded-Proto: https'
+  http://127.0.0.1:<p>/en/auth/google/callback` → `location:
+  https://capsulezero.app/en/auth?googleError=1`. Same command against the
+  pre-fix route returns `https://0.0.0.0:<p>/...` (red → green on the exact
+  production runtime shape the localhost CI harness cannot reproduce).
+- `npm run typecheck` (app/) — clean. `npm run lint` (app/) — 0 errors.
+- `specs/auth/google-sign-in.spec.ts` still green: on localhost `appOrigin()`
+  resolves to the request origin, so the mock happy loop and the no-code
+  negative are behaviourally unchanged.
+- **Prod smoke (after redeploy):** rerun the runbook smoke (row 3, now
+  origin-aware) once the merge deploys — `location` host must be
+  `capsulezero.app`, and the full consent dance must land signed-in on
+  `/en/dashboard`.
 
 ### Known Issues
 
