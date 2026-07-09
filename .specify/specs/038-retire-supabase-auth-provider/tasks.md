@@ -16,7 +16,11 @@
 4. `deploy/prod.env.example` + `deploy/stage.env.example`: delete.
 5. `app/src/lib/legal-content.ts`: fix the stale subprocessor row.
 6. Docs: frontend-docs provider-mode wording; this spec folder.
-7. Local gates per plan.md → PR with SENAR gate → operator + Codex review.
+7. Merge-readiness follow-up: bump the Go API toolchain/runtime pin from
+   `1.25.11` to `1.25.12` across `api/go.mod`, `api/Dockerfile`,
+   `docker-compose.yml`, `deploy/compose.env.example`, and
+   `.github/workflows/test.yml` after `osv-scan` reported `GO-2026-5856`.
+8. Local gates per plan.md → PR with SENAR gate → operator + Codex review.
 
 ## Process Memory
 
@@ -62,6 +66,12 @@
   (`nginx-reverse-proxy.md`) to require that pinned image. The Supabase-backend
   rollback is inherently a pre-pivot code+data path, so pinning pre-retirement
   code is the correct shape — not keeping dead Supabase auth in current source.
+- **2026-07-09:** The PR's non-required but visible `osv-scan` failed on
+  `GO-2026-5856` because `api/go.mod` declared stdlib `1.25.11` while OSV marks
+  `1.25.12` as fixed. Bumped the Go patch pin consistently in the module, API
+  Dockerfile, root compose build arg default, canonical compose env example, and
+  test workflow container image. This is a security/CI hygiene follow-up, not a
+  behavior change to the Go API.
 
 ### Dead Ends
 
@@ -101,6 +111,21 @@
 - `git grep -in supabase -- app/src/proxy.ts` → empty.
 - `node scripts/check-repo-baseline.mjs` and `node scripts/check-api-contract.mjs`
   → recorded below.
+- `osv-scan` initially failed on CI for Go stdlib `1.25.11`
+  (`GO-2026-5856`, fixed in `1.25.12`); PR follow-up bumps all API Go version
+  pins to `1.25.12`, including the workflow test container image, with the next
+  CI `osv-scan` run as canonical evidence.
+- `go test ./...` in `/api` → exit 0 after the Go patch-level bump.
+- `docker run --rm -v "$PWD/api:/src" -w /src golang:1.25.12-bookworm sh -c 'go vet ./... && go test ./...'`
+  → exit 0, matching the updated required `test` workflow's API step.
+- `docker compose --env-file deploy/compose.env.example config --quiet` → exit 0
+  (plain `docker compose config --quiet` requires real local secrets and is not
+  the canonical env path).
+- `docker run --rm -v "$PWD:/github/workspace" -w /github/workspace ghcr.io/google/osv-scanner-action:v2.3.5 scan source --recursive --experimental-exclude worktrees .`
+  → `No issues found` after excluding local in-repo worktree copies that are not
+  present in GitHub's clean checkout.
+- `docker build --build-arg GO_VERSION=1.25.12 --build-arg GIT_SHA=local-osv-fix --build-arg BUILD_TIME=2026-07-09T00:00:00Z -t capsule-zero-api:go-1.25.12-check ./api`
+  → exit 0.
 - Playwright e2e not run locally (browser install is heavy and the api/mock auth
   specs are untouched); the required `test` check on the PR head SHA is the
   canonical evidence for AC 8.

@@ -53,6 +53,11 @@ of spec 024).
   sign-in while `/api/health` still passes (Codex P2 on this PR). The rollback
   runbook `docs_capsule_zero/project/devops/nginx-reverse-proxy.md` is updated
   to require the pinned image.
+- Merge-readiness security follow-up: bump the Go API toolchain/build pin from
+  `1.25.11` to `1.25.12` in `api/go.mod`, `api/Dockerfile`,
+  `docker-compose.yml`, `deploy/compose.env.example`, and
+  `.github/workflows/test.yml` to clear OSV `GO-2026-5856` for the stdlib. No
+  API behavior changes.
 - Docs actualized in the same PR (AGENTS §9): frontend-docs provider-mode
   wording; rollback runbook; this spec folder.
 
@@ -100,6 +105,8 @@ disturbing the modes that actually run.
    `lint`, `lint:css`, `typecheck`, `build`, Docker build, `npm test` (no-op).
 8. `test` (Playwright e2e) green — api/mock auth flows are unchanged, proving no
    live-mode regression.
+9. `osv-scan` green on PR head — the Go stdlib pin is at the fixed `1.25.12`
+   level everywhere the API image/runtime/test version is declared.
 
 ## Negative scenario
 
