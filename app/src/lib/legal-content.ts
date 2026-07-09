@@ -709,8 +709,8 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
             rows: [
               [
                 "Hosting, database, authentication, storage",
-                "Supabase, Vercel",
-                "Application hosting, database, RLS-protected storage, authentication, edge functions",
+                "Hetzner Cloud, DigitalOcean Spaces",
+                "Application hosting and compute, PostgreSQL database, self-hosted authentication, object storage and CDN",
               ],
               [
                 "Payment, billing, fraud, tax",

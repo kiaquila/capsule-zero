@@ -13,7 +13,7 @@
 
 The web frontend talks to the Go API monolith through nginx; there is no Vercel runtime. Auth flows are rendered by the web app against Ory Kratos self-service endpoints, with the Kratos session validated by the Go API on every request.
 
-`/app` is the canonical, provider-abstracted Next.js frontend. There is no `/app` to `/web` rename planned. Current provider modes are `mock` and `supabase`; the `api` provider mode must not be documented as available until it actually lands in `/app`. The retired Supabase provider is frozen and removed domain by domain as the Go API absorbs each bounded context.
+`/app` is the canonical, provider-abstracted Next.js frontend. There is no `/app` to `/web` rename planned. Provider modes are `api` (the Go/Kratos backend — default in production, `CAPSULE_PROVIDER_MODE=api`), `mock` (local/CI fixtures — the default when the mode is unset, rejected in production), and `supabase` (the frozen legacy backend). The Supabase provider is retired domain by domain as the Go API absorbs each bounded context: its **auth and profile ports are retired** (they throw `SUPABASE_AUTH_RETIRED`; auth/profile run only on the `api` provider — specs 024/034/035/037/038), while its not-yet-migrated read domains (wardrobe, capsules, catalog, billing, storage, methodology) stay until their Go contexts land and the whole module is removed in Phase 6 of spec 024.
 
 ## Delivery Rules
 

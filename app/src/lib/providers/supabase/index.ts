@@ -21,7 +21,6 @@ import type {
   ColorTemperature,
   GarderType,
   Locale,
-  User,
 } from "@/types";
 import type {
   BillingPort,
@@ -48,7 +47,6 @@ import type {
   PhotoUploadMetadata,
   Profile,
   ProfileRepository,
-  ProfileUpdate,
   ProviderHealth,
   ProviderRegistry,
   Session,
@@ -305,7 +303,6 @@ export function createSupabaseProviderRegistry(): ProviderRegistry {
   const authorizeUser: UserAuthorizer = (userId) =>
     requireVerifiedProviderUser(clients, userId);
 
-  const profiles = buildProfileRepository(clients.service);
   const wardrobe = buildWardrobeRepository(
     clients,
     colorCatalog,
@@ -319,8 +316,8 @@ export function createSupabaseProviderRegistry(): ProviderRegistry {
 
   return {
     mode: "supabase",
-    auth: buildAuthPort(clients, profiles),
-    profiles: guardProfileRepository(profiles, authorizeUser),
+    auth: buildAuthPort(),
+    profiles: buildRetiredProfileRepository(),
     wardrobe: guardWardrobeRepository(wardrobe, authorizeUser),
     storage: guardStoragePort(buildStoragePort(clients), authorizeUser),
     imageProcessing: guardImageProcessingPort(
@@ -370,18 +367,25 @@ async function requireVerifiedProviderUser(
   }
 }
 
-function guardProfileRepository(
-  port: ProfileRepository,
-  authorize: UserAuthorizer,
-): ProfileRepository {
+// The Supabase provider is frozen and retired domain by domain (AGENTS.md §8).
+// Auth and profile fully moved to the `api` provider (Ory Kratos + Go API —
+// specs 024/034/035/037), so these ports fail loudly instead of silently
+// running Supabase auth. The provider's remaining read domains (wardrobe,
+// capsules, catalog, billing, storage, methodology) stay until their Go
+// contexts land and are removed with the whole module in Phase 6 of spec 024.
+function retiredSupabaseAuth(operation: string): never {
+  throw new Error(
+    `SUPABASE_AUTH_RETIRED: ${operation} is not available from the retired Supabase provider; use CAPSULE_PROVIDER_MODE=api.`,
+  );
+}
+
+function buildRetiredProfileRepository(): ProfileRepository {
   return {
-    async getProfile(userId) {
-      await authorize(userId);
-      return port.getProfile(userId);
+    async getProfile() {
+      return retiredSupabaseAuth("profile lookup");
     },
-    async updateProfile(userId, input) {
-      await authorize(userId);
-      return port.updateProfile(userId, input);
+    async updateProfile() {
+      return retiredSupabaseAuth("profile update");
     },
   };
 }
@@ -558,73 +562,20 @@ function createSupabaseClients(): {
   };
 }
 
-function buildAuthPort(
-  clients: ReturnType<typeof createSupabaseClients>,
-  profiles: ProfileRepository,
-): ProviderRegistry["auth"] {
+function buildAuthPort(): ProviderRegistry["auth"] {
   return {
     async getCurrentSession() {
-      const persisted = await readSignedAppSession();
-      if (!persisted) {
-        return null;
-      }
-
-      return verifyPersistedSession(clients, persisted);
+      return retiredSupabaseAuth("session lookup");
     },
 
-    async signUpWithPassword(credentials) {
-      const { data, error } = await clients.anon.auth.signUp({
-        email: credentials.email,
-        password: credentials.password,
-        options: {
-          data: { name: credentials.name },
-        },
-      });
-      throwIfError(error, "Supabase sign-up failed");
-
-      if (!data.user) {
-        throw new Error("AUTH_FAILED: Supabase did not return a user.");
-      }
-
-      await upsertProfileFromAuthUser(
-        clients.service,
-        data.user.id,
-        data.user.email ?? credentials.email,
-        credentials.name,
-      );
-
-      if (!data.session) {
-        return null;
-      }
-
-      return mapSession(data.user, data.session);
+    async signUpWithPassword() {
+      return retiredSupabaseAuth("sign-up");
     },
 
-    async signInWithPassword(credentials) {
-      const { data, error } = await clients.anon.auth.signInWithPassword({
-        email: credentials.email,
-        password: credentials.password,
-      });
-      throwIfError(error, "Supabase sign-in failed");
-
-      if (!data.user || !data.session) {
-        throw new Error("AUTH_FAILED: Supabase did not return a session.");
-      }
-
-      await upsertProfileFromAuthUser(
-        clients.service,
-        data.user.id,
-        data.user.email ?? credentials.email,
-        readMetadataName(data.user.user_metadata),
-      );
-
-      return mapSession(data.user, data.session);
+    async signInWithPassword() {
+      return retiredSupabaseAuth("sign-in");
     },
 
-    // The frozen Supabase provider never grew the spec-035 code-method flows;
-    // it is being retired domain by domain (AGENTS.md §8). Starting a recovery
-    // here would route the UI into a code-entry step that can never complete
-    // (Codex P2), so every spec-035 auth flow fails loudly instead.
     async requestPasswordRecovery(email) {
       throw new Error(
         `RECOVERY_FAILED: not supported by the retired Supabase provider (${email}).`,
@@ -656,17 +607,7 @@ function buildAuthPort(
     },
 
     async signOut() {
-      const persisted = await readSignedAppSession();
-      if (!persisted?.accessToken) {
-        return;
-      }
-      const { error } = await clients.service.auth.admin.signOut(
-        persisted.accessToken,
-      );
-      if (error) {
-        console.warn("Supabase sign-out failed", error.message);
-      }
-      void profiles;
+      return retiredSupabaseAuth("sign-out");
     },
   };
 }
@@ -727,56 +668,6 @@ async function verifyPersistedSession(
   }
 
   return session;
-}
-
-function buildProfileRepository(service: DbClient): ProfileRepository {
-  return {
-    async getProfile(userId) {
-      const { data, error } = await service
-        .from("profiles")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle();
-      throwIfError(error, "Failed to load profile");
-
-      if (data) {
-        return mapProfile(data as DbProfile);
-      }
-
-      const { data: userData, error: userError } =
-        await service.auth.admin.getUserById(userId);
-      throwIfError(userError, "Failed to bootstrap profile");
-
-      if (!userData.user?.email) {
-        throw new Error("NOT_FOUND: Profile not found.");
-      }
-
-      return upsertProfileFromAuthUser(
-        service,
-        userId,
-        userData.user.email,
-        readMetadataName(userData.user.user_metadata),
-      );
-    },
-
-    async updateProfile(userId, input: ProfileUpdate) {
-      const payload = {
-        display_name: input.displayName,
-        language: input.locale,
-        country: input.country,
-        city: input.city,
-        updated_at: new Date().toISOString(),
-      };
-      const { data, error } = await service
-        .from("profiles")
-        .update(stripUndefined(payload))
-        .eq("user_id", userId)
-        .select("*")
-        .single();
-      throwIfError(error, "Failed to update profile");
-      return mapProfile(data as DbProfile);
-    },
-  };
 }
 
 function buildWardrobeRepository(
@@ -2191,90 +2082,6 @@ function mapProfile(row: DbProfile): Profile {
     coinBalance: row.coin_balance,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-  };
-}
-
-async function upsertProfileFromAuthUser(
-  service: DbClient,
-  userId: string,
-  email: string,
-  name: string | undefined,
-): Promise<Profile> {
-  const now = new Date().toISOString();
-  const { data: existing, error: existingError } = await service
-    .from("profiles")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
-  throwIfError(existingError, "Failed to load Supabase profile");
-
-  if (existing) {
-    const existingProfile = existing as DbProfile;
-    const { data, error } = await service
-      .from("profiles")
-      .update(
-        stripUndefined({
-          email,
-          display_name: existingProfile.display_name ? undefined : name ?? email,
-          updated_at: now,
-        }),
-      )
-      .eq("user_id", userId)
-      .select("*")
-      .single();
-    throwIfError(error, "Failed to sync Supabase profile");
-    return mapProfile(data as DbProfile);
-  }
-
-  const { data, error } = await service
-    .from("profiles")
-    .insert({
-      user_id: userId,
-      email,
-      display_name: name ?? email,
-      language: "en",
-      updated_at: now,
-    })
-    .select("*")
-    .single();
-  throwIfError(error, "Failed to create Supabase profile");
-  return mapProfile(data as DbProfile);
-}
-
-function mapSession(
-  user: {
-    id: string;
-    email?: string | null;
-    created_at?: string;
-    user_metadata?: Record<string, unknown>;
-  },
-  session: {
-    access_token: string;
-    refresh_token?: string;
-    expires_at?: number;
-  },
-): Session {
-  return {
-    user: mapUser(user),
-    accessToken: session.access_token,
-    refreshToken: session.refresh_token,
-    expiresAt: session.expires_at
-      ? new Date(session.expires_at * 1000).toISOString()
-      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-  };
-}
-
-function mapUser(user: {
-  id: string;
-  email?: string | null;
-  created_at?: string;
-  user_metadata?: Record<string, unknown>;
-}): User {
-  return {
-    id: user.id,
-    email: user.email ?? "",
-    name: readMetadataName(user.user_metadata),
-    createdAt: user.created_at ?? new Date().toISOString(),
   };
 }
 
