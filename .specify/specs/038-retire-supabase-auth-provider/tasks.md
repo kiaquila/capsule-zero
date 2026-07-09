@@ -51,6 +51,18 @@
   wrong row; the other subprocessor rows (payment, email, analytics, etc.) are
   unchanged.
 
+- **2026-07-09 (Codex P2 on PR #75):** retiring Supabase auth in the shared web
+  image broke the documented legacy rollback —
+  `docker-compose.legacy-supabase.yml` ran `CAPSULE_PROVIDER_MODE=supabase` and
+  fell back to `build: ./app`, so a rollback would build current source and
+  every sign-in would throw `SUPABASE_AUTH_RETIRED` while `/api/health` still
+  passed. Fix: dropped the `build: ./app` fallback and pinned the `web` service
+  to a pre-spec-038 image (`CAPSULE_WEB_IMAGE`, default `capsule-zero-web:pre-spec-038`
+  so an unset tag fails fast), and updated the rollback runbook
+  (`nginx-reverse-proxy.md`) to require that pinned image. The Supabase-backend
+  rollback is inherently a pre-pivot code+data path, so pinning pre-retirement
+  code is the correct shape — not keeping dead Supabase auth in current source.
+
 ### Dead Ends
 
 - **Full Supabase retirement now (delete the module + `"supabase"` mode + env +

@@ -151,7 +151,7 @@ Rollback in case Phase 1 misbehaves before traffic ever arrives:
 
 1. `docker compose down --remove-orphans` in `/opt/capsule-zero`.
 2. `systemctl enable --now caddy` to bring the old reverse proxy back.
-3. `docker compose -f docker-compose.legacy-supabase.yml up -d web` to bring the legacy container back on `127.0.0.1:3000`.
+3. `CAPSULE_WEB_IMAGE=<pre-spec-038 tag> docker compose -f docker-compose.legacy-supabase.yml up -d web` to bring the legacy container back on `127.0.0.1:3000`. The web image **must** be a pre-spec-038 build — spec 038 retired the Supabase auth/profile provider, so a current-source image serves no working sign-in in supabase mode (`SUPABASE_AUTH_RETIRED`). The compose file no longer builds `./app`, so an unset/`pre-spec-038` tag fails fast instead of shipping dead auth.
 
 This rollback is acceptable today because there is no real user traffic yet.
 Once we have traffic, rollback becomes a Cloudflare maintenance page and an

@@ -45,8 +45,16 @@ of spec 024).
   `CAPSULE_PROVIDER_MODE=supabase` + a full `SUPABASE_*` contract for stage/prod
   VMs that no longer exist; the canonical prod env template is
   `deploy/compose.env.example` (`CAPSULE_PROVIDER_MODE=api`, no `SUPABASE_*`).
+- `docker-compose.legacy-supabase.yml`: pin the `web` service to a
+  **pre-spec-038** image (`CAPSULE_WEB_IMAGE`, default a non-existent
+  `capsule-zero-web:pre-spec-038` tag) and drop the `build: ./app` fallback.
+  Retiring Supabase auth in the shared web image would otherwise break this
+  rollback silently — a current-source build serves `SUPABASE_AUTH_RETIRED`
+  sign-in while `/api/health` still passes (Codex P2 on this PR). The rollback
+  runbook `docs_capsule_zero/project/devops/nginx-reverse-proxy.md` is updated
+  to require the pinned image.
 - Docs actualized in the same PR (AGENTS §9): frontend-docs provider-mode
-  wording; this spec folder.
+  wording; rollback runbook; this spec folder.
 
 **Out (explicitly):**
 
@@ -58,8 +66,10 @@ of spec 024).
   `@supabase/supabase-js`, and the `SUPABASE_*` keys in `app/.env.local.example`
   / `scripts/check-runtime-env.mjs` — still needed while the read domains remain
   reachable in supabase mode; removed in Phase 6.
-- `docker-compose.legacy-supabase.yml` + `deploy/supabase/**` — sanctioned
-  rollback artifacts (keep).
+- `deploy/supabase/**` — the sanctioned Supabase rollback stack config (keep).
+  `docker-compose.legacy-supabase.yml` stays as the rollback artifact but is
+  pinned to a pre-spec-038 web image (see In) rather than left to build the
+  current, auth-retired source.
 - Any change to the `api` or `mock` providers, or to real auth behavior.
 
 ## Context (not a user-facing feature)
