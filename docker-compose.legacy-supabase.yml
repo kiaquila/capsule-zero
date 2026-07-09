@@ -2,13 +2,15 @@ name: capsule-zero
 
 services:
   web:
-    image: ${CAPSULE_WEB_IMAGE:-capsule-zero-web:local}
-    build:
-      context: ./app
-      dockerfile: Dockerfile
-      target: runner
-      args:
-        NODE_VERSION: ${NODE_VERSION:-22-bookworm-slim}
+    # Rollback-only. The current /app source retired the Supabase auth/profile
+    # provider (spec 038): in supabase mode getSession / sign-in / sign-up /
+    # sign-out and the profile port now throw SUPABASE_AUTH_RETIRED. This legacy
+    # stack must therefore run a PRE-spec-038 web image — set CAPSULE_WEB_IMAGE
+    # to a tag built before the spec-038 merge. The `build: ./app` shortcut was
+    # removed on purpose: building the current source here would ship a web
+    # container whose auth is dead while the /api/health healthcheck still
+    # passes.
+    image: ${CAPSULE_WEB_IMAGE:-capsule-zero-web:pre-spec-038}
     init: true
     restart: unless-stopped
     env_file:
