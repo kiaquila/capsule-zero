@@ -56,6 +56,26 @@ func TestLoadAcceptsStrictHetznerObjectStorageEndpoint(t *testing.T) {
 	}
 }
 
+func TestLoadKeepsUploadEndpointsDisabledUnlessExplicitlyEnabled(t *testing.T) {
+	setValidObjectStorageEnv(t)
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if cfg.ObjectStorage.UploadsEnabled {
+		t.Fatal("UploadsEnabled = true without explicit opt-in")
+	}
+
+	t.Setenv("OBJECT_STORAGE_UPLOADS_ENABLED", "true")
+	cfg, err = Load()
+	if err != nil {
+		t.Fatalf("Load() with opt-in error = %v", err)
+	}
+	if !cfg.ObjectStorage.UploadsEnabled {
+		t.Fatal("UploadsEnabled = false after explicit opt-in")
+	}
+}
+
 func TestLoadRejectsUnsafeOrMismatchedObjectStorageEndpoint(t *testing.T) {
 	tests := []struct {
 		name     string

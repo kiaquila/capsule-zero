@@ -17,6 +17,20 @@ type stubReady struct{ err error }
 
 func (s stubReady) Ready(context.Context) error { return s.err }
 
+type countingPinger struct{ calls int }
+
+func (s *countingPinger) Ping(context.Context) error {
+	s.calls++
+	return nil
+}
+
+type countingReady struct{ calls int }
+
+func (s *countingReady) Ready(context.Context) error {
+	s.calls++
+	return nil
+}
+
 // The deploy verifier reads the running commit back from /api/health to confirm
 // the server actually rolled to the SHA CD just shipped (spec 036 acceptance 1).
 // The handler must therefore surface the link-time build metadata alongside the
@@ -28,7 +42,7 @@ func TestHealthHandlerReportsBuildInfo(t *testing.T) {
 	t.Cleanup(func() { commit, buildTime = origCommit, origBuilt })
 
 	rec := httptest.NewRecorder()
-	healthHandler(stubPinger{}, stubReady{})(rec, httptest.NewRequest(http.MethodGet, "/api/health", nil))
+	healthHandler(stubPinger{}, stubReady{}, stubReady{})(rec, httptest.NewRequest(http.MethodGet, "/api/health", nil))
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("health status = %d, want 200", rec.Code)
@@ -46,6 +60,9 @@ func TestHealthHandlerReportsBuildInfo(t *testing.T) {
 	if body["ok"] != true {
 		t.Fatalf("ok = %v, want true", body["ok"])
 	}
+	if body["storage"] != "ok" {
+		t.Fatalf("storage = %v, want ok", body["storage"])
+	}
 }
 
 // Negative scenario (spec 036): build metadata must still be reported when a
@@ -58,7 +75,7 @@ func TestHealthHandlerBuildInfoWhenUninjectedAndDegraded(t *testing.T) {
 	t.Cleanup(func() { commit, buildTime = origCommit, origBuilt })
 
 	rec := httptest.NewRecorder()
-	healthHandler(stubPinger{err: errors.New("db down")}, stubReady{})(rec, httptest.NewRequest(http.MethodGet, "/api/health", nil))
+	healthHandler(stubPinger{err: errors.New("db down")}, stubReady{}, stubReady{})(rec, httptest.NewRequest(http.MethodGet, "/api/health", nil))
 
 	if rec.Code != http.StatusServiceUnavailable {
 		t.Fatalf("health status = %d, want 503", rec.Code)
@@ -75,5 +92,24 @@ func TestHealthHandlerBuildInfoWhenUninjectedAndDegraded(t *testing.T) {
 	}
 	if body["postgres"] != "error" {
 		t.Fatalf("postgres = %v, want \"error\"", body["postgres"])
+	}
+}
+
+func TestHealthHandlerCachesDependencyProbes(t *testing.T) {
+	postgres := &countingPinger{}
+	kratos := &countingReady{}
+	objects := &countingReady{}
+	handler := healthHandler(postgres, kratos, objects)
+
+	for range 2 {
+		recorder := httptest.NewRecorder()
+		handler(recorder, httptest.NewRequest(http.MethodGet, "/api/health", nil))
+		if recorder.Code != http.StatusOK {
+			t.Fatalf("health status = %d, want 200", recorder.Code)
+		}
+	}
+	if postgres.calls != 1 || kratos.calls != 1 || objects.calls != 1 {
+		t.Fatalf("dependency probes: postgres=%d kratos=%d storage=%d, want one each",
+			postgres.calls, kratos.calls, objects.calls)
 	}
 }

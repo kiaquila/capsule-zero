@@ -14,6 +14,12 @@ import (
 	"github.com/kiaquila/capsule-zero/api/internal/storage"
 )
 
+const (
+	testJobID      = "11111111-1111-4111-8111-111111111111"
+	testAssetID    = "22222222-2222-4222-8222-222222222222"
+	completionBody = `{"jobId":"11111111-1111-4111-8111-111111111111","assetId":"22222222-2222-4222-8222-222222222222"}`
+)
+
 type fakeObjects struct {
 	readyErr  error
 	signErr   error
@@ -89,8 +95,9 @@ func (f *fakeJobs) Complete(_ context.Context, job Job, metadata storage.ObjectM
 }
 
 func testHandler(jobs *fakeJobs, objects *fakeObjects) Handler {
-	ids := []string{"job-1", "asset-1"}
+	ids := []string{testJobID, testAssetID}
 	return Handler{
+		Enabled: true,
 		Jobs:    jobs,
 		Objects: objects,
 		UserID:  func(context.Context) (string, bool) { return "user-1", true },
@@ -164,7 +171,7 @@ func TestInitReturnsOpaqueSignedUploadWithoutPrivatePath(t *testing.T) {
 	if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
 		t.Fatalf("decode response: %v", err)
 	}
-	if body["jobId"] != "job-1" || body["assetId"] != "asset-1" {
+	if body["jobId"] != testJobID || body["assetId"] != testAssetID {
 		t.Fatalf("ids = %v", body)
 	}
 	if body["uploadUrl"] == "" || body["expiresAt"] == "" || body["uploadHeaders"] == nil {
@@ -173,7 +180,7 @@ func TestInitReturnsOpaqueSignedUploadWithoutPrivatePath(t *testing.T) {
 	if _, exposed := body["storagePath"]; exposed {
 		t.Fatalf("private storagePath must not be exposed: %v", body)
 	}
-	if !strings.HasPrefix(objects.signInput.Key, "item-originals/user-1/asset-1.") {
+	if !strings.HasPrefix(objects.signInput.Key, "item-originals/user-1/"+testAssetID+".") {
 		t.Fatalf("object key = %q, want opaque server-generated key", objects.signInput.Key)
 	}
 	if strings.Contains(objects.signInput.Key, "look") {
@@ -235,8 +242,8 @@ func TestInitRequiresAuthenticatedOwner(t *testing.T) {
 
 func TestCompleteFailsClosedForMissingMismatchedOrUnavailableObject(t *testing.T) {
 	baseJob := Job{
-		ID: "job-1", AssetID: "asset-1", UserID: "user-1",
-		ObjectKey:   "item-originals/user-1/asset-1.jpg",
+		ID: testJobID, AssetID: testAssetID, UserID: "user-1",
+		ObjectKey:   "item-originals/user-1/" + testAssetID + ".jpg",
 		ContentType: "image/jpeg", SizeBytes: 4096, Status: StatusQueued,
 	}
 	tests := []struct {
@@ -260,7 +267,7 @@ func TestCompleteFailsClosedForMissingMismatchedOrUnavailableObject(t *testing.T
 
 			handler.Complete(recorder, httptest.NewRequest(
 				http.MethodPost, "/api/uploads/photo/complete",
-				strings.NewReader(`{"jobId":"job-1","assetId":"asset-1"}`),
+				strings.NewReader(completionBody),
 			))
 
 			if recorder.Code != tt.wantStatus {
@@ -275,8 +282,8 @@ func TestCompleteFailsClosedForMissingMismatchedOrUnavailableObject(t *testing.T
 
 func TestCompleteHidesCrossUserJobs(t *testing.T) {
 	jobs := &fakeJobs{found: Job{
-		ID: "job-1", AssetID: "asset-1", UserID: "user-2",
-		ObjectKey: "item-originals/user-2/asset-1.jpg", Status: StatusQueued,
+		ID: testJobID, AssetID: testAssetID, UserID: "user-2",
+		ObjectKey: "item-originals/user-2/" + testAssetID + ".jpg", Status: StatusQueued,
 	}}
 	objects := &fakeObjects{}
 	handler := testHandler(jobs, objects)
@@ -284,7 +291,7 @@ func TestCompleteHidesCrossUserJobs(t *testing.T) {
 
 	handler.Complete(recorder, httptest.NewRequest(
 		http.MethodPost, "/api/uploads/photo/complete",
-		strings.NewReader(`{"jobId":"job-1","assetId":"asset-1"}`),
+		strings.NewReader(completionBody),
 	))
 
 	if recorder.Code != http.StatusNotFound {
@@ -292,6 +299,27 @@ func TestCompleteHidesCrossUserJobs(t *testing.T) {
 	}
 	if objects.headCalls != 0 || jobs.completeCalls != 0 {
 		t.Fatalf("cross-user side effects: head=%d complete=%d", objects.headCalls, jobs.completeCalls)
+	}
+}
+
+func TestUploadsFailClosedWhenFeatureIsDisabled(t *testing.T) {
+	jobs, objects := &fakeJobs{}, &fakeObjects{}
+	handler := testHandler(jobs, objects)
+	handler.Enabled = false
+
+	initRecorder := httptest.NewRecorder()
+	handler.Init(initRecorder, initRequest(`{"fileName":"look.jpg","contentType":"image/jpeg","sizeBytes":4096}`))
+	completeRecorder := httptest.NewRecorder()
+	handler.Complete(completeRecorder, httptest.NewRequest(
+		http.MethodPost, "/api/uploads/photo/complete", strings.NewReader(completionBody),
+	))
+
+	if initRecorder.Code != http.StatusServiceUnavailable || completeRecorder.Code != http.StatusServiceUnavailable {
+		t.Fatalf("disabled statuses: init=%d complete=%d, want 503/503", initRecorder.Code, completeRecorder.Code)
+	}
+	if objects.signCalls != 0 || objects.headCalls != 0 || jobs.createCalls != 0 || jobs.findCalls != 0 {
+		t.Fatalf("disabled side effects: sign=%d head=%d create=%d find=%d",
+			objects.signCalls, objects.headCalls, jobs.createCalls, jobs.findCalls)
 	}
 }
 
@@ -316,11 +344,11 @@ func TestCompleteRejectsMalformedUUIDsBeforeRepositoryAccess(t *testing.T) {
 func TestCompletePersistsExactObjectOnce(t *testing.T) {
 	jobs := &fakeJobs{
 		found: Job{
-			ID: "job-1", AssetID: "asset-1", UserID: "user-1",
-			ObjectKey:   "item-originals/user-1/asset-1.jpg",
+			ID: testJobID, AssetID: testAssetID, UserID: "user-1",
+			ObjectKey:   "item-originals/user-1/" + testAssetID + ".jpg",
 			ContentType: "image/jpeg", SizeBytes: 4096, Status: StatusQueued,
 		},
-		completeAsset: Asset{ID: "asset-1"},
+		completeAsset: Asset{ID: testAssetID},
 	}
 	objects := &fakeObjects{metadata: storage.ObjectMetadata{
 		ContentType: "image/jpeg", SizeBytes: 4096, ETag: "etag-1",
@@ -330,7 +358,7 @@ func TestCompletePersistsExactObjectOnce(t *testing.T) {
 
 	handler.Complete(recorder, httptest.NewRequest(
 		http.MethodPost, "/api/uploads/photo/complete",
-		strings.NewReader(`{"jobId":"job-1","assetId":"asset-1"}`),
+		strings.NewReader(completionBody),
 	))
 
 	if recorder.Code != http.StatusOK {
@@ -343,15 +371,15 @@ func TestCompletePersistsExactObjectOnce(t *testing.T) {
 	if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
 		t.Fatalf("decode complete response: %v", err)
 	}
-	if body["id"] != "job-1" || body["assetId"] != "asset-1" || body["status"] != string(StatusCompleted) {
+	if body["id"] != testJobID || body["assetId"] != testAssetID || body["status"] != string(StatusCompleted) {
 		t.Fatalf("complete response = %v", body)
 	}
 }
 
 func TestCompleteIsIdempotent(t *testing.T) {
 	jobs := &fakeJobs{found: Job{
-		ID: "job-1", AssetID: "asset-1", UserID: "user-1",
-		ObjectKey:   "item-originals/user-1/asset-1.jpg",
+		ID: testJobID, AssetID: testAssetID, UserID: "user-1",
+		ObjectKey:   "item-originals/user-1/" + testAssetID + ".jpg",
 		ContentType: "image/jpeg", SizeBytes: 4096, Status: StatusCompleted,
 	}}
 	objects := &fakeObjects{}
@@ -361,7 +389,7 @@ func TestCompleteIsIdempotent(t *testing.T) {
 		recorder := httptest.NewRecorder()
 		handler.Complete(recorder, httptest.NewRequest(
 			http.MethodPost, "/api/uploads/photo/complete",
-			strings.NewReader(`{"jobId":"job-1","assetId":"asset-1"}`),
+			strings.NewReader(completionBody),
 		))
 		if recorder.Code != http.StatusOK {
 			t.Fatalf("call %d status = %d, want 200", i+1, recorder.Code)
