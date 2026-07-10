@@ -35,7 +35,7 @@ description: "Task list for 039-design-system-consistency"
 
 ## Phase 3: US1 — Token adherence + guardrails (P1)
 
-- [ ] T006 [US1] **Lane A (behavior-preserving)** `frontend`: replace the 222 exact-token-match raw whites with `--glass-*`/`--btn-*`/`--input-*`/`--card-*`/`--color-text-*` tokens (**not** `--text-*` — that `@theme` namespace is font sizes), the 32 exact radius dupes with `var(--radius-*)`, the 2 exact overlay blacks with `--color-overlay-*`, and the raw hex with `--color-*`; sweep the `WardrobeItemCard.tsx` stroke literal. Section by section; verify **pixel-identical vs the T004 baseline** after each batch.
+- [x] T006 [US1] **Lane A (behavior-preserving)** `frontend`: replace the 222 exact-token-match raw whites with `--glass-*`/`--btn-*`/`--input-*`/`--card-*`/`--color-text-*` tokens (**not** `--text-*` — that `@theme` namespace is font sizes), the 32 exact radius dupes with `var(--radius-*)`, the 2 exact overlay blacks with `--color-overlay-*`, and the raw hex with `--color-*`; sweep the `WardrobeItemCard.tsx` stroke literal. Section by section; verify **pixel-identical vs the T004 baseline** after each batch.
 - [ ] T007 [US1] **Lane B (ratified consolidation)** `frontend`: apply the T005 mapping table — 152 off-token whites → ramp tokens; 13 off-scale radii → ratified targets; remaining black shadows/overlays and error tints → the newly minted tokens. `design-review` approves before/after screenshots per batch.
 - [ ] T008 [US1] Ratchet `--max-warnings` down as each batch lands (`npm run lint:css` → set the new lower number in `app/package.json`).
 - [ ] T009 [US1] After each batch: `ui-ux-designer` runs `design-review` live pass (Lane A: confirm no visual diff; Lane B: confirm the delta matches the ratified row).
