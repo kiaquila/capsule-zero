@@ -6,11 +6,14 @@
 ## Summary
 
 Capsule Zero is `complete-but-inconsistent`: a strong Tailwind-v4 token foundation
-(`app/src/styles/tokens.css`) undermined by ~374 raw `rgba(255,255,255,α)` + raw hex and
-off-scale radii inside one ~6534-line `globals.css`. This plan reconciles it by (1)
-enforcing token adherence + CI guardrails, (2) resolving canonical decisions within the
-editorial constraints and hitting WCAG AA, (3) completing screen states/affordance, and
-(4) modularizing the stylesheet. Execution uses the global design kit: `ui-ux-designer` ↔
+(`app/src/styles/tokens.css`, 20 distinct white alphas across ~30 tokens) undermined by
+374 raw `rgba(255,255,255,α)` (222 exact-token matches / 152 off-token across 38 alphas),
+25 raw black `rgba`, 8 raw error tints, 4 raw hex, and 45 radius literals (32 token dupes
+/ 13 off-scale) inside one ~6534-line `globals.css`. This plan reconciles it by (1)
+enforcing token adherence in two lanes (exact-match no-diff; designer-ratified
+consolidation) + extending the existing stylelint guardrail, (2) resolving canonical
+decisions within the editorial constraints and hitting WCAG AA, (3) completing screen
+states/affordance, and (4) modularizing the stylesheet with cascade-order preservation. Execution uses the global design kit: `ui-ux-designer` ↔
 `frontend` roles with the `design-system` / `design-handoff` / `design-review` skills. The
 Step-0 audit is recorded in [`.specify/memory/design-system-state.md`](../../memory/design-system-state.md).
 
@@ -31,28 +34,29 @@ Step-0 audit is recorded in [`.specify/memory/design-system-state.md`](../../mem
 _GATE: passes before Phase 0; re-check after design._
 
 - **§III Design Principles / Editorial Aesthetics — PASS (explicit).** The editorial identity is intentional. This feature **preserves** thin headings, glassmorphism, `wall.png`, achromatic palette, and the yellow error; it reconciles *readability* (scrim/opacity) rather than removing them. Out-of-scope guard in spec.md prevents scope creep into a redesign.
-- **§VI Quality Gates — addressed.** "Min 3 states", "micro-interactions for all elements", "WCAG AA preserving aesthetics", adaptive breakpoints, zero console/FOUC, Lighthouse targets → covered by US2/US3 + the Verification table.
+- **§VI Quality Gates — partially verified here, explicitly.** "Min 3 states", "micro-interactions", "WCAG AA preserving aesthetics" → covered by US2/US3 with bound evidence rows. "Zero console errors" → asserted in the Playwright suite (AC-007). Lighthouse 90+/95+ and FOUC → one linked run on the PR head (AC-007); they are measured, not gated, in this spec.
 - **§VII Test-First Verification — applied per slice (no blanket waiver; changes are partly user-visible):**
   - **US2 (contrast/AA) and US3 (states/affordance)** are user-visible → **TDD**: a failing Playwright/axe test is committed *before* the product code.
-  - **US1 token swap** and **US4 modularization** are **behavior-preserving refactors** → evidence is **visual-regression no-diff** (screens must look identical), not a new behavioral test.
-  - **The stylelint guardrail** is delivery tooling → evidence is config validation + a **seeded-violation** run that fails CI (the negative scenario), recorded in the Verification table.
-- **§VIII Simplicity — PASS.** No new abstractions; component extraction *reduces* complexity; the guardrail is configuration.
+  - **US1 Lane A** and **US4 modularization** are **behavior-preserving refactors** → evidence is **visual-regression no-diff** (screens must look identical), not a new behavioral test.
+  - **US1 Lane B** is an **intentional, designer-ratified visual change** → evidence is the ratified mapping table + `design-review` before/after screenshots (not TDD, not no-diff).
+  - **The stylelint guardrail** is delivery tooling → evidence is config validation + a **seeded-violation** run that fails the required `baseline-checks` check (the negative scenario), recorded in the Verification table.
 - **§VII Process Memory — committed** in `tasks.md` `## Process Memory` before completion.
 
 ## Verification _(mandatory — required by SENAR)_
 
 | Acceptance criterion | Evidence |
 | -------------------- | -------- |
-| AC-001 (US1) 0 raw `rgba(255,255,255…` + 0 raw hex outside `tokens.css` | `grep -rE "rgba\(255, ?255, ?255" app/src --include='*.css' \| grep -v tokens.css \| wc -l` → `0`; same for hex |
-| AC-002 (US1) all radii are token vars / on-scale | grep of `border-radius:` shows only `var(--radius-*)`/on-scale values; no `999/2/11/5/4/18/10px` |
-| AC-003 (US1) guardrail blocks new off-token values | stylelint config in repo; `pnpm run preflight` green on clean tree; **seeded violation** (`border-radius:7px`) makes `preflight`/CI `test`+lint fail (paste run link) |
-| AC-004 (US2) WCAG AA preserved-aesthetic | Playwright + axe pass on landing/dashboard/Outfits; `design-review` live-pass screenshots (desktop+mobile) attached; decisions in `design-system.md` |
-| AC-005 (US3) states + tab affordance | Playwright e2e: tabs keyboard/role-interactive; Outfits/dashboard render loading/empty/error + first-run (test names + run link) |
-| AC-006 (US4) no monolith stylesheet | file listing shows per-component styles; visual-regression no-diff run |
+| AC-001 (US1 Lane A) exact-match swaps are no-diff | `grep -rE "rgba\(255, ?255, ?255" app/src --include='*.css' \| grep -v tokens.css \| wc -l` → `0` (same for hex/black/error tints once both lanes land); visual-regression **no-diff** run vs the T004 baseline for Lane A batches |
+| AC-002 (US1 Lane B) consolidation applied exactly as ratified | mapping table in `design-system.md`; every row traceable in the diff; `design-review` before/after screenshots approved; no `999/2/11/5/4/18/10px` radii remain |
+| AC-003 (US1) guardrail blocks new off-token values | extended `app/stylelint.config.mjs` in repo; `npm run preflight` green on clean tree; **seeded violation** (`border-radius:7px`) makes `lint:css` exit non-zero → required **`baseline-checks`** check red (paste run link) |
+| AC-004 (US2) WCAG AA preserved-aesthetic | Playwright + axe: **0 serious/critical violations** on landing/dashboard/capsule-result; **measured contrast ratios** for secondary/placeholder/error text over the shipped scrim documented in `design-system.md` (axe cannot compute contrast through `backdrop-filter`/images — manual measurement is the binding evidence); `design-review` live-pass screenshots (desktop+mobile) |
+| AC-005 (US3) states + tab affordance | Playwright e2e: capsule-result tabs expose `tablist`/`tab`/`aria-selected` + arrow-key nav + visible hover/focus-visible; dashboard loading/empty/error + first-run (test names + run link) |
+| AC-006 (US4) no monolith stylesheet | file listing: per-component styles ≤ ~300 lines (soft gate); dedupe-before-split evidence; visual-regression no-diff run; stylelint duplicate rules at `error` with no `--max-warnings` budget |
+| AC-007 (§VI gates) console/Lighthouse/FOUC | zero-console-error assertion in the Playwright suite on primary screens; one Lighthouse run linked on the PR head (target Perf 90+ / A11y 95+); FOUC covered by the no-diff baseline + manual check |
 
 Negative scenario evidence:
 
-- Seeded off-token value (`rgba(255,255,255,0.3)` / `border-radius: 7px`) → stylelint fails `preflight` and the required CI lint/`test` check goes red (link the failing run). Proves the guardrail independently of the cleanup.
+- Seeded off-token value (`rgba(255,255,255,0.3)` / `border-radius: 7px`) → stylelint fails `preflight` locally and the required **`baseline-checks`** CI check goes red (link the failing run). The `test` check does not run stylelint — do not collect the evidence there. Proves the guardrail independently of the cleanup.
 
 ## Project Structure
 
@@ -80,8 +84,8 @@ tests/**                      # Playwright e2e + axe + visual-regression (per co
 ## Phased approach (maps to the kit loop)
 
 0. **Audit (done)** — `design-system` Step 0 → state recorded in `design-system-state.md`.
-1. **Lock the canon** — `ui-ux-designer` ratifies canonical values; record in `design-system.md`.
-2. **Guardrails first** — add stylelint (warn), so cleanup can't regress; flip to error at end of US1.
+1. **Lock the canon** — `ui-ux-designer` ratifies canonical values (incl. the alpha-ramp mapping table); record in `design-system.md`.
+2. **Guardrails first** — **extend the existing** `app/stylelint.config.mjs` (warn) and raise the `--max-warnings` budget to the measured total so `baseline-checks` stays green; ratchet the budget down per cleanup batch; flip token rules to error at end of US1.
 3. **Reconcile by blast radius** — screen/component fixes → token fixes (live `design-review` after each) → extract components.
 4. **Per-screen loop** — `design-handoff` spec → `frontend` implements states → `design-review` live.
 5. **Keep green** — guardrails in CI; weekly dedupe (`ui-ux-designer` owns, `frontend` executes).
