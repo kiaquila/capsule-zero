@@ -42,7 +42,7 @@ edge bind-mounts `/etc/letsencrypt` and `/var/www/certbot` when the
 
 Object storage and email leave the droplet:
 
-- **DigitalOcean Spaces** for user/avatar/catalog assets and Postgres backups.
+- **Hetzner Object Storage** for user/avatar/catalog assets and encrypted Postgres backups.
 - **Resend** for transactional email (Kratos verification, password recovery, security notifications).
 
 ## Files
@@ -81,7 +81,8 @@ Later-phase keys — **not** required for the v0.1 bootstrap, listed so the temp
 complete when their slices land:
 
 - `CF_DNS_API_TOKEN` — Stage 2 only: certbot DNS-01 against Cloudflare once the deferred front-door activates (founder decision 2026-07-02); until then certbot uses HTTP-01 directly
-- `SPACES_ACCESS_KEY`, `SPACES_SECRET_KEY`, `SPACES_BUCKET`, `SPACES_REGION`, `SPACES_CDN_BASE` — Phase 4 (Spaces storage slice)
+- `OBJECT_STORAGE_ENDPOINT`, `OBJECT_STORAGE_REGION`, `OBJECT_STORAGE_ACCESS_KEY_ID`, `OBJECT_STORAGE_SECRET_ACCESS_KEY`, `OBJECT_STORAGE_PRIVATE_BUCKET`, `OBJECT_STORAGE_PUBLIC_BUCKET`, `OBJECT_STORAGE_PUBLIC_BASE_URL` — Phase 4 (Hetzner Object Storage slice)
+- `BACKUP_S3_ENDPOINT`, `BACKUP_S3_REGION`, `BACKUP_S3_BUCKET`, `BACKUP_S3_ACCESS_KEY_ID`, `BACKUP_S3_SECRET_ACCESS_KEY` — Phase 5 encrypted Postgres backups
 - `RESEND_API_KEY`, `RESEND_FROM` — Phase 4 (real Resend courier lands with the recovery/verification slice)
 - `MOBILE_DEEP_LINK_SCHEME` — React Native slice
 
@@ -125,7 +126,7 @@ The Go API `/api/health` reports:
 - Postgres reachability (direct `postgres:16` connection)
 - Redis reachability
 - Kratos public API reachability
-- Spaces bucket reachability (HEAD probe)
+- Hetzner Object Storage bucket reachability (HEAD probe)
 - Resend reachability (lightweight metadata call)
 
 Per-service probes:
@@ -160,13 +161,19 @@ Database backup (nightly cron — shipped with spec 024):
 
 ```bash
 docker compose exec postgres pg_dump -U capsule_zero -d capsule_zero --format=custom | \
-  aws --endpoint-url "https://${SPACES_REGION}.digitaloceanspaces.com" \
-      s3 cp - "s3://${SPACES_BUCKET}/backups/capsule-zero-$(date -u +%Y-%m-%dT%H-%M-%SZ).dump"
+  age -r "${BACKUP_AGE_RECIPIENT}" | \
+  aws --endpoint-url "${BACKUP_S3_ENDPOINT}" \
+      s3 cp - "s3://${BACKUP_S3_BUCKET}/postgres/capsule-zero-$(date -u +%Y-%m-%dT%H-%M-%SZ).dump.age"
 ```
 
-Retention: 14 days, enforced by a lifecycle policy on the `backups/` prefix.
+Retention: at least 14 days, enforced by lifecycle policy and/or Object Lock on
+the backup bucket. Object Lock must be enabled when the bucket is created; it
+cannot be switched on later.
 
-Object storage durability is provided by DigitalOcean Spaces; no extra backup of Spaces objects is required for v0.1. Restore plans must be exercised on staging at least once per quarter.
+Object storage durability is provided by Hetzner Object Storage, but it is not a
+complete backup strategy by itself. Database restores must be exercised on a
+temporary database at least once per quarter; cross-location asset replication is
+a later resilience task after deletion/privacy semantics are defined.
 
 ## Upgrades
 

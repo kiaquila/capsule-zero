@@ -138,7 +138,7 @@ The platform guides the user through methodology without imposing. It suggests, 
 - **Auth:** Ory Kratos (email/password and Google sign-in in v0.1 — spec 037, native-flow OIDC; Apple Sign-In in Stage 2)
 - **Database:** PostgreSQL 16 with Postgres FTS in v0.1; pgvector and PgBouncer are deferred by ADR-007 until the semantic-search and connection-pressure triggers fire
 - **Cache / queue:** Redis 7 (cache, sessions, Redis-based job queue)
-- **File storage:** DigitalOcean Spaces (S3-compatible with built-in CDN)
+- **File storage:** Hetzner Object Storage (S3-compatible; no built-in CDN in v0.1, CDN/front-door deferred to Stage 2)
 - **Email:** Resend for transactional email (verification, password reset, security alerts)
 - **Image processing:** Self-hosted Capsule Zero model behind a worker (deferred to Stage 2)
 - **DNS / front-door:** Spaceship registrar; Cloudflare proxy for DDoS protection and CDN is deferred to Stage 2 (founder decision 2026-07-02) — v0.1 pre-launch runs direct DNS to the host nginx edge

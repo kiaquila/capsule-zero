@@ -17,7 +17,7 @@ internal/
   catalog/                      ← FTS-first catalog search; pgvector deferred by ADR-007
   billing/                      ← Lava.top stub, invoice + webhook handlers, coin ledger
   moderation/                   ← admin moderation queue
-  storage/                      ← Spaces client wrapper (S3 SDK)
+  storage/                      ← S3-compatible Object Storage client wrapper
   email/                        ← Resend client wrapper
   eventbus/                     ← Redis-backed job enqueue / consume
   httpapi/                      ← chi router, OpenAPI-typed handlers, middleware

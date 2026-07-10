@@ -49,11 +49,12 @@
   (`CAPSULE_PROVIDER_MODE=api`, no `SUPABASE_*`). Deleting them removes the last
   committed `SUPABASE_*` drift outside the frozen provider and its sanctioned
   rollback artifact (`docker-compose.legacy-supabase.yml`), per AGENTS §8.
-- **2026-07-09:** Legal subprocessor row updated to the real stack (Hetzner
-  Cloud compute/DB + DigitalOcean Spaces storage/CDN; self-hosted Kratos auth)
-  instead of the stale "Supabase, Vercel". Kept minimal — only the one factually
-  wrong row; the other subprocessor rows (payment, email, analytics, etc.) are
-  unchanged.
+- **2026-07-09:** Legal subprocessor row updated to the then-current real stack
+  (Hetzner Cloud compute/DB + DigitalOcean Spaces storage/CDN; self-hosted
+  Kratos auth) instead of the stale "Supabase, Vercel". Kept minimal — only the
+  one factually wrong row; the other subprocessor rows (payment, email,
+  analytics, etc.) are unchanged. Superseded 2026-07-10 by spec 039, which moves
+  storage to Hetzner Object Storage and removes the CDN claim.
 
 - **2026-07-09 (Codex P2 on PR #75):** retiring Supabase auth in the shared web
   image broke the documented legacy rollback —
