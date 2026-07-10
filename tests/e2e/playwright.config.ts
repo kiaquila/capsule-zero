@@ -22,6 +22,15 @@ const runOriginGuard =
 const ORIGIN_GUARD_SPEC = /\.standalone\.spec\.ts$/;
 const originGuardBaseURL = `http://127.0.0.1:${ORIGIN_GUARD_PORT}`;
 
+// Visual baseline (spec 039 T004): opt-in via E2E_VISUAL=1, excluded from the
+// CI `test` job. Playwright snapshots are platform-specific (macOS local vs
+// ubuntu CI), so the no-diff evidence for behavior-preserving CSS refactors is
+// a SAME-MACHINE before/after run — generate baselines with
+// `--update-snapshots`, re-run plain after the refactor. CI drift protection
+// is the stylelint token guardrail, not these screenshots.
+const VISUAL_SPEC = /\.visual\.spec\.ts$/;
+const runVisual = process.env.E2E_VISUAL === "1";
+
 // Build an isolated standalone bundle (NEXT_DIST_DIR keeps it off the dev
 // server's `.next`) with NEXT_PUBLIC_APP_URL baked to the canary, then serve it
 // via `node server.js` bound to HOSTNAME=0.0.0.0 — the exact prod shape.
@@ -63,7 +72,14 @@ export default defineConfig({
     ["html", { outputFolder: "playwright-report", open: "never" }],
   ],
   timeout: 30_000,
-  expect: { timeout: 5_000 },
+  expect: {
+    timeout: 5_000,
+    toHaveScreenshot: {
+      animations: "disabled",
+      caret: "hide",
+      scale: "css",
+    },
+  },
   outputDir: "test-results",
   use: {
     baseURL,
@@ -76,13 +92,14 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-      // The standalone origin guard owns its own project + server (port 3100).
-      testIgnore: ORIGIN_GUARD_SPEC,
+      // The standalone origin guard and the visual baseline own their own
+      // opt-in projects.
+      testIgnore: [ORIGIN_GUARD_SPEC, VISUAL_SPEC],
     },
     {
       name: "webkit-iphone",
       use: { ...devices["iPhone 14"] },
-      testIgnore: ORIGIN_GUARD_SPEC,
+      testIgnore: [ORIGIN_GUARD_SPEC, VISUAL_SPEC],
     },
     ...(runOriginGuard
       ? [
@@ -92,6 +109,30 @@ export default defineConfig({
             // Request-level assertions against the standalone prod server; a
             // single browser engine is enough (no rendering involved).
             use: { ...devices["Desktop Chrome"], baseURL: originGuardBaseURL },
+          },
+        ]
+      : []),
+    ...(runVisual
+      ? [
+          {
+            name: "visual-desktop",
+            testMatch: VISUAL_SPEC,
+            use: { ...devices["Desktop Chrome"] },
+          },
+          {
+            // Mobile-first product: chromium mobile emulation at the iPhone 14
+            // spec viewport. Chromium (not webkit) on purpose — one engine,
+            // least snapshot flake; webkit coverage stays in the functional
+            // suite.
+            name: "visual-mobile",
+            testMatch: VISUAL_SPEC,
+            use: {
+              ...devices["Desktop Chrome"],
+              viewport: { width: 375, height: 812 },
+              deviceScaleFactor: 2,
+              isMobile: true,
+              hasTouch: true,
+            },
           },
         ]
       : []),
