@@ -30,7 +30,7 @@ description: "Task list for 039-design-system-consistency"
   - **shadow/overlay/error-tint tokens**: 16 raw black shadows use geometries beyond the 4 `--shadow-*` tokens; 6 non-token black overlays; 8 `rgba(255,214,0,…)` error tints (the audit's documented follow-up) — mint the minimal set, in the `--color-*`/`--shadow-*` namespaces only;
   - **minimum readable weight** for body/labels/dense UI (keep 300 for hero/marketing only);
   - **WCAG-AA approach** for secondary/placeholder text + `#FFD600` error over `wall.png` (scrim/overlay/opacity), preserving editorial aesthetics — `#FFD600` itself **stays** (constitution §III);
-  - confirm **spacing fate**: warn-only ratchet in 039, mass grid-snap deferred to a follow-up spec;
+  - confirm **spacing fate**: no spacing lint in 039 (single-severity constraint); rule + mass grid-snap land together in a follow-up spec;
   - map each drift-register row to its fix **level** (screen/component/token).
 
 ## Phase 3: US1 — Token adherence + guardrails (P1)
@@ -39,7 +39,7 @@ description: "Task list for 039-design-system-consistency"
 - [ ] T007 [US1] **Lane B (ratified consolidation)** `frontend`: apply the T005 mapping table — 152 off-token whites → ramp tokens; 13 off-scale radii → ratified targets; remaining black shadows/overlays and error tints → the newly minted tokens. `design-review` approves before/after screenshots per batch.
 - [ ] T008 [US1] Ratchet `--max-warnings` down as each batch lands (`npm run lint:css` → set the new lower number in `app/package.json`).
 - [ ] T009 [US1] After each batch: `ui-ux-designer` runs `design-review` live pass (Lane A: confirm no visual diff; Lane B: confirm the delta matches the ratified row).
-- [ ] T010 [US1] Flip the **token rules** (raw rgba/hex/off-scale radius) to **error** severity; keep `--max-warnings` only for the remaining duplicate-selector debt (drops in US4). The spacing rule stays warn-only. No new CI wiring needed — `lint:css` already runs in `baseline-checks` and `preflight`.
+- [ ] T010 [US1] Flip the **token rules** (raw rgba/hex/off-scale radius) to **error** severity; keep `--max-warnings` only for the remaining duplicate-selector debt (drops in US4). No new CI wiring needed — `lint:css` already runs in `baseline-checks` and `preflight`.
 - [ ] T011 [US1] **Negative-scenario** guard evidence: a fixture with `border-radius: 7px` / raw white `rgba` makes `lint:css` exit non-zero locally, and a scratch commit shows the required **`baseline-checks`** check red (link the run). Evidence for AC-003 — do not collect it from the `test` check; it never runs stylelint.
 - **Gate (AC-001/002/003):** grep raw `rgba(`/hex outside `tokens.css` = 0 in `app/src` CSS; no off-scale radii; seeded violation fails `baseline-checks`.
 
@@ -78,7 +78,7 @@ description: "Task list for 039-design-system-consistency"
 - **Stylelint already existed** (2026-07 audit) with a `--max-warnings 102` budget wired into `baseline-checks`/`preflight`/lint-staged. 039 **extends** that config and owns the budget ratchet; adding warn rules without bumping the budget would have broken `baseline-checks` on the first commit.
 - **Guardrail CI home is `baseline-checks`** (ci.yml runs `lint:css`); the `test` check never runs stylelint.
 - **Visual baseline is same-machine before/after evidence**, not a CI gate — Playwright snapshots are platform-specific (macOS local vs ubuntu CI); CI drift protection is the stylelint guardrail.
-- **Spacing stays warn-only in 039:** ~286 off-4px-grid margin/padding/gap literals; snapping is a visible layout change — deferred to a follow-up spec.
+- **No spacing lint in 039:** a stylelint rule instance has a single severity — a warn-only spacing pattern inside the colour/radius rules would block their `error` flip at T010. The spacing rule + the ~286-literal snap land together in a follow-up spec.
 - Guardrails go in **before** mass cleanup (warn → error) so the refactor cannot regress and future drift is blocked at the source.
 - Token changes are **proposed by `frontend`, ratified by `ui-ux-designer`** (tokens = the visual system the designer owns).
 - Reconcile **by blast radius**: screen/component first, tokens last, live-review after each token change.

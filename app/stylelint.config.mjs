@@ -1,19 +1,39 @@
 // Focused stylelint config for the Capsule Zero web frontend.
 //
-// It targets the two bug classes surfaced by the 2026-07 frontend quality audit
-// (docs_capsule_zero/project/frontend/frontend-quality-audit-2026-07.md):
-//   1. duplicate/overriding selectors in the single global stylesheet — the
-//      root cause of the shipped invisible-auth-error bug;
-//   2. the error colour hardcoded past its design-system token.
+// Two generations of guardrails live here:
 //
-// Rules are WARNINGS-first on purpose: the legacy `globals.css` still carries
-// ~196 duplicate selectors, so making these `error` today would wall off CI.
-// Regression protection comes from the `--max-warnings` baseline pinned in the
-// `lint:css` script: any app CSS change triggers a lint of the whole CSS tree
-// (pre-commit via lint-staged, and the required `baseline-checks` CI job), and
-// warnings past the baseline fail the run. Ratchet the severity to `error` and
-// drop the baseline once the CSS is split into layered per-feature files (see
-// the audit report).
+// 1. 2026-07 frontend quality audit (docs_capsule_zero/project/frontend/
+//    frontend-quality-audit-2026-07.md): duplicate/overriding selectors — the
+//    root cause of the shipped invisible-auth-error bug — and duplicate
+//    properties. Still WARNINGS: the legacy `globals.css` carries ~196
+//    duplicate selectors until the spec-039 US4 split; the ratchet completes
+//    there (flip to `error`, drop the `--max-warnings` baseline).
+//
+// 2. Spec 039 token-adherence guardrails (.specify/specs/
+//    039-design-system-consistency/): raw colour literals (`rgba(`, hex) and
+//    off-scale `border-radius` values are forbidden outside
+//    `src/styles/tokens.css` — the single allowed home for raw values.
+//    WARNINGS during the US1 cleanup; they flip to `error` at the end of US1
+//    (tasks T010). Off-grid spacing is NOT linted here by design: a stylelint
+//    rule instance has a single severity, so bundling spacing into the colour
+//    rule would block the error flip — the spacing rule lands with its own
+//    remediation in a follow-up spec.
+//
+// Regression protection while rules are warnings comes from the
+// `--max-warnings` baseline pinned in the `lint:css` script (pre-commit via
+// lint-staged, and the required `baseline-checks` CI job): warnings past the
+// baseline fail the run. Every cleanup batch must ratchet the number DOWN.
+//
+// Genuine one-off values require a documented, reviewed
+// `stylelint-disable-next-line` with a reason — never a silent literal.
+
+// The token radius scale (src/styles/tokens.css): xs 6 / sm 8 / md 14 / lg 20
+// / pill 50px / circle 50%. Allowed: radius tokens, 0, inherit, and
+// shorthands composed of those (e.g. `var(--radius-sm) var(--radius-sm) 0 0`).
+const RADIUS_TOKEN = String.raw`var\(--radius-(?:xs|sm|md|lg|pill|circle)\)`;
+const RADIUS_VALUE = `(?:${RADIUS_TOKEN}|0|inherit)`;
+const RADIUS_ALLOWED = new RegExp(`^${RADIUS_VALUE}(?:\\s+${RADIUS_VALUE})*$`);
+
 const config = {
   rules: {
     // Catches the exact class of the shipped bug. `disallowInList` is what
@@ -27,14 +47,24 @@ const config = {
       true,
       { severity: "warning" },
     ],
-    // The solid error colour must come from the token, never a raw hex literal.
-    // (rgba(255,214,0,a) error tints still need dedicated alpha tokens — tracked
-    // as a follow-up in the audit report — so they are not enforced here yet.)
+    // Raw colour literals bypass the design tokens (spec 039 US1). This
+    // subsumes the earlier #FFD600-specific rule: any raw hex — including the
+    // error colour — must come from a token (var(--color-error) for #FFD600).
     "declaration-property-value-disallowed-list": [
-      { "/^(color|background|border)/": [/#ffd600/i] },
+      { "/.*/": [/rgba\(/, /#[0-9a-fA-F]{3,8}\b/] },
       {
         message:
-          "Use var(--color-error) instead of the raw #FFD600 error colour (design-system token).",
+          "Raw colour literals live only in src/styles/tokens.css — use the design token (var(--color-*), var(--glass-*), var(--btn-*), …; var(--color-error) for #FFD600).",
+        severity: "warning",
+      },
+    ],
+    // Radii must come from the token scale (spec 039 US1, drift #3 — the
+    // mechanism behind the square-vs-rounded button drift).
+    "declaration-property-value-allowed-list": [
+      { "/^border(-[a-z]+)*-radius$|^border-radius$/": [RADIUS_ALLOWED] },
+      {
+        message:
+          "border-radius must come from the token scale: var(--radius-xs|sm|md|lg|pill|circle), 0 or inherit (src/styles/tokens.css).",
         severity: "warning",
       },
     ],

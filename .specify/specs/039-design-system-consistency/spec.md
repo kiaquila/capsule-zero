@@ -13,7 +13,7 @@
 
 ## Goal _(mandatory)_
 
-After this ships, Capsule Zero's UI CSS draws **every colour and radius value from its design tokens**, CI **blocks any new off-token colour/radius value**, and the primary screens meet the constitution's state + contrast gates — so the interface reads as one deliberate editorial system, not an inconsistent one. (Spacing-grid adherence ships **warn-only** with a ratchet; mass spacing snapping is a follow-up spec — see Out of scope.)
+After this ships, Capsule Zero's UI CSS draws **every colour and radius value from its design tokens**, CI **blocks any new off-token colour/radius value**, and the primary screens meet the constitution's state + contrast gates — so the interface reads as one deliberate editorial system, not an inconsistent one. (Spacing-grid adherence is **not linted in 039** — the spacing rule lands together with its remediation in a follow-up spec; see Out of scope.)
 
 ## Scope _(mandatory)_
 
@@ -23,7 +23,7 @@ In scope:
 - **Token adherence — two lanes** (measured on this branch: 374 raw white `rgba` = **222 exact-token matches + 152 occurrences across 38 off-token alphas**; 25 raw black `rgba`; 8 raw `rgba(255,214,0,…)` error tints; 4 raw hex; 32 radius literals duplicating tokens + 13 off-scale):
   - **Lane A (behavior-preserving):** replace every literal whose value exactly equals an existing token — verified pixel-identical against the visual baseline.
   - **Lane B (designer-ratified consolidation):** off-token white alphas, off-scale radii, shadow/overlay blacks, and error tints map onto a canonical ramp ratified in the foundational phase (new tokens minted only there); small visual deltas are expected and approved via `design-review`.
-- **Guardrails:** **extend the existing** `app/stylelint.config.mjs` (already wired into `lint:css` → the required `baseline-checks` CI check, root `preflight`, and lint-staged since the 2026-07 frontend-quality audit) with rules forbidding raw `rgba(`/raw hex outside `tokens.css` and off-scale `border-radius` literals; manage the `--max-warnings` budget so `baseline-checks` never goes red mid-refactor. Spacing literals stay **warn-only** in 039.
+- **Guardrails:** **extend the existing** `app/stylelint.config.mjs` (already wired into `lint:css` → the required `baseline-checks` CI check, root `preflight`, and lint-staged since the 2026-07 frontend-quality audit) with rules forbidding raw `rgba(`/raw hex outside `tokens.css` and off-scale `border-radius` literals; manage the `--max-warnings` budget so `baseline-checks` never goes red mid-refactor. No spacing rule in 039 — a stylelint rule instance has a single severity, so bundling spacing into the colour/radius rules would block their `error` flip; the spacing rule ships with its remediation in a follow-up spec.
 - **Canonical token decisions** (ratified by `ui-ux-designer`): the white **alpha-ramp mapping table** for the 38 off-token alphas; one button radius; off-scale radius mapping; shadow/overlay/error-tint token additions; minimum readable weight for dense UI; WCAG-AA contrast for secondary/placeholder text and the yellow error over `wall.png` — via scrim/opacity, **preserving editorial aesthetics**.
 - **Screen states + affordance** on the primary screens — real routes: `/[locale]` (landing), `/[locale]/dashboard`, `/[locale]/capsule-result` (tabs `items | outfits | gaps | shopping`; "Missing" = `gaps`), `/[locale]/profile`. Proper tab semantics (tablist/tab roles, `aria-selected`, hover/focus-visible, arrow keys) via **one shared tab treatment** that also normalizes `.journey-tab-*` and `.favorites-tab-*`; dashboard panel empty states; app-level `loading.tsx`/`error.tsx`; first-run.
 - **Modularize** `globals.css` (≈6534 lines) into per-component stylesheets (mechanism and cascade-order preservation: US4).
@@ -32,7 +32,7 @@ In scope:
 Out of scope:
 
 - **Abandoning the editorial identity.** Thin wide headings, glassmorphism, `wall.png`, achromatic palette, and `#FFD600` error are constitution §III identity — we reconcile *readability*, we do not remove them.
-- **Mass spacing-grid remediation.** ~286 off-4px-grid `margin`/`padding`/`gap` literals exist; snapping them is a visible layout change. 039 ships the spacing rule warn-only with a documented ratchet; the snap is a follow-up spec.
+- **Spacing-grid lint + remediation.** ~286 off-4px-grid `margin`/`padding`/`gap` literals exist; snapping them is a visible layout change. Both the spacing stylelint rule and the snap land together in a follow-up spec (a rule instance has one severity — it cannot ride along warn-only inside the colour/radius rules that flip to `error` in this spec).
 - **Outfit-generation product logic.** `buildOutfits()` renders at most 3 synthetic cards while the count line shows the independently computed `outfitCount` — a product-logic inconsistency recorded as a known issue, not a styling fix.
 - **Garment-colour hex data** in TS modules (the 51-colour methodology in `guided-journey-data.ts` etc.) — data, not UI styling; colour comes from the user's items by design.
 - New features/screens, backend/API, auth flows (spec 038 owns auth), the React Native app.
