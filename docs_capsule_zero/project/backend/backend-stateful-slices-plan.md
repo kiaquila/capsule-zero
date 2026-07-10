@@ -4,11 +4,11 @@
 
 ## Purpose
 
-Map every user-visible mutation in the approved HTML prototypes to a backend slice in the Go modular monolith. Each slice becomes its own spec under `.specify/specs/<id>-…/` with tests written before implementation. There is no Stage 1 mock-first layer — every slice ships against real Postgres / Kratos / Spaces from the first PR (see ADR-006).
+Map every user-visible mutation in the approved HTML prototypes to a backend slice in the Go modular monolith. Each slice becomes its own spec under `.specify/specs/<id>-…/` with tests written before implementation. There is no Stage 1 mock-first layer — every slice ships against real Postgres / Kratos / Hetzner Object Storage from the first PR (see ADR-006).
 
 ## Prerequisite
 
-Slices below depend on `.specify/specs/024-production-stack-runtime/` shipping first. That spec brings up the Go monolith, Kratos, Postgres, Redis, nginx, Spaces, and Resend in docker-compose on the production server (a Hetzner CX23 since 2026-07-02, spec 033; the Cloudflare front-door is deferred to Stage 2 — v0.1 runs direct DNS). The `/app` frontend stays; its Supabase provider is replaced domain by domain with a real `api` provider as each slice lands.
+Slices below depend on `.specify/specs/024-production-stack-runtime/` shipping first. That spec brings up the Go monolith, Kratos, Postgres, Redis, nginx, Hetzner Object Storage, and Resend in docker-compose on the production server (a Hetzner CX23 since 2026-07-02, spec 033; the Cloudflare front-door/CDN is deferred to Stage 2 — v0.1 runs direct DNS). The `/app` frontend stays; its Supabase provider is replaced domain by domain with a real `api` provider as each slice lands.
 
 ## Bounded Contexts In The Monolith
 
@@ -24,7 +24,7 @@ Slice work modifies packages inside `/api/internal/`:
 - `catalog` — FTS-first search and public reads; pgvector upgrades in slice 11
 - `billing` — Lava.top stub, invoice + webhook handlers, coin ledger (v0.2 wiring)
 - `moderation` — admin moderation queue
-- `storage` — Spaces client wrapper
+- `storage` — S3-compatible Object Storage client wrapper
 - `email` — Resend client wrapper
 - `eventbus` — Redis-backed job enqueue / consume
 
@@ -55,12 +55,12 @@ Implementation:
 
 Spec: `.specify/specs/024-profile-avatar-storage/`
 
-Goal: upload/replace/delete avatar against Spaces, persist `profiles.avatar_asset_id`.
+Goal: upload/replace/delete avatar against Hetzner Object Storage, persist `profiles.avatar_asset_id`.
 
 Tests first:
 
 - JPEG/PNG/WebP accepted, oversize/MIME-invalid rejected.
-- `POST /api/uploads/photo/init` with `purpose=avatar` returns a signed PUT URL targeting the `avatars/` prefix.
+- `POST /api/uploads/photo/init` with `purpose=avatar` returns a signed PUT URL targeting the private asset bucket's `avatars/` prefix.
 - `POST /api/uploads/photo/complete` writes `item_assets` with `variant=avatar` and the originating user owns it.
 - `POST /api/profile/avatar` attaches an `assetId` to the profile.
 - `DELETE /api/profile/avatar` detaches and (optionally) deletes the storage object.
@@ -85,7 +85,7 @@ Tests first:
 
 Spec: `.specify/specs/026-item-photo-upload-storage/`
 
-Goal: photo uploads from Guided Journey and wardrobe detail screens persist to Spaces and attach to items.
+Goal: photo uploads from Guided Journey and wardrobe detail screens persist to Hetzner Object Storage and attach to items.
 
 Tests first:
 

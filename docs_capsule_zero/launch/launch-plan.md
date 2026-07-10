@@ -1,6 +1,6 @@
 # Launch Plan — Capsule Zero v0.1
 
-> Original source: Capsule Zero Launch Plan RU.pdf (February 2026). Updated in June 2026 for the production-stack pivot (Go modular monolith + nginx + Ory Kratos + PostgreSQL + Redis + DigitalOcean Spaces + Cloudflare + Resend) and React Native mobile apps; current path to first commercial sales is 13-14 weeks.
+> Original source: Capsule Zero Launch Plan RU.pdf (February 2026). Updated in June 2026 for the production-stack pivot (Go modular monolith + nginx + Ory Kratos + PostgreSQL + Redis + object storage + Cloudflare + Resend) and React Native mobile apps; storage aligned to Hetzner Object Storage on 2026-07-10; current path to first commercial sales is 13-14 weeks.
 
 ## Overview
 
@@ -73,7 +73,7 @@
 
 | Task              | Days | Description                                                                                                                                                                          | Result         |
 | ----------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------- |
-| Stack selection   | D1-2 | Web (Next.js/React), mobile (React Native), Go backend, plain Postgres in v0.1 (pgvector deferred), DigitalOcean Spaces, Cloudflare front-door, Lava.top payments (stubbed in v0.1). | ADR            |
+| Stack selection   | D1-2 | Web (Next.js/React), mobile (React Native), Go backend, plain Postgres in v0.1 (pgvector deferred), Hetzner Object Storage, Cloudflare front-door/CDN deferred to Stage 2, Lava.top payments (stubbed in v0.1). | ADR            |
 | Repository        | D2-3 | Mono/multi-repo. Linting, formatting, commit hooks, folder structure.                                                                                                                | Clean repo     |
 | CI/CD             | D3-4 | Auto-tests, build, deploy. Staging. Preview deployments.                                                                                                                             | CI/CD pipeline |
 | API design        | D4-5 | Shared web/mobile backend contract, REST/RPC endpoints, schemas, authentication, Lava.top webhook contract.                                                                          | API spec       |
@@ -182,7 +182,7 @@
 | ----------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
 | Claude.ai (Opus/Sonnet) | Product AI, Marketing, UX/UI Researcher, UX/UI Designer (specs), Tech Architect, AI Stylist-Consultant | Strategy, research, specifications, styling expertise |
 | Claude Code             | Programmer AI, QA AI, DevOps                                                                           | Code, testing, CI/CD, deploy, optimization            |
-| External APIs           | DigitalOcean Spaces, Resend, Cloudflare, Lava.top (stubbed in v0.1)                                    | Specialized services                                  |
+| External APIs           | Hetzner Object Storage, Resend, Cloudflare (Stage 2), Lava.top (stubbed in v0.1)                        | Specialized services                                  |
 
 ### Artifact Handoff Protocol
 

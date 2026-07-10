@@ -39,8 +39,9 @@ of spec 024).
   imports in `app/src`). `@supabase/supabase-js` stays — the provider's read
   domains still use it.
 - `app/src/lib/legal-content.ts`: correct the stale "Supabase, Vercel"
-  subprocessor row to the real stack (Hetzner Cloud + DigitalOcean Spaces;
-  self-hosted authentication).
+  subprocessor row to the then-current real stack (Hetzner Cloud +
+  DigitalOcean Spaces; self-hosted authentication). Superseded 2026-07-10 by
+  spec 039, which moves storage to Hetzner Object Storage.
 - `deploy/prod.env.example` + `deploy/stage.env.example`: delete. They declared
   `CAPSULE_PROVIDER_MODE=supabase` + a full `SUPABASE_*` contract for stage/prod
   VMs that no longer exist; the canonical prod env template is

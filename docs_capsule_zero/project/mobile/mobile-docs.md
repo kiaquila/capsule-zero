@@ -21,12 +21,12 @@ Capsule Zero v0.1 ships native mobile apps for iOS and Android built with React 
 | Backend client   | Generated TypeScript client from `docs_capsule_zero/adr/openapi.yaml` over HTTPS to the Go API        |
 | Auth             | Ory Kratos self-service flows rendered in the app; session cookie/JWT exchanged with the Go API       |
 | Secure storage   | `expo-secure-store` for session material                                                              |
-| Image input      | `expo-image-picker` for camera/gallery; uploads through signed PUT URLs to DigitalOcean Spaces        |
+| Image input      | `expo-image-picker` for camera/gallery; uploads through signed PUT URLs to Hetzner Object Storage     |
 | Payments         | Read-only coin balance in v0.1; purchases happen on web through Lava.top (v0.2 integration)           |
 | i18n             | `expo-localization` + `react-intl` (or `i18next`) for EN + RU; ES-AR deferred to v0.2                 |
 | Deep links       | `expo-linking` + universal links / app links                                                          |
 
-The React Native app shares the same Go API contract as the web. It never talks to Kratos or Spaces directly through a back channel — auth flows go through the Go API via nginx `auth_request` into Kratos, and uploads go through signed URLs issued by the API.
+The React Native app shares the same Go API contract as the web. It never talks to Kratos or object storage directly through a back channel — auth flows go through the Go API via nginx `auth_request` into Kratos, and uploads go through signed URLs issued by the API.
 
 ## Architecture
 
@@ -34,7 +34,7 @@ The mobile app uses the same backend as web:
 
 - Ory Kratos for identity (rendered by the app, validated by the API)
 - PostgreSQL via the Go monolith for user data
-- DigitalOcean Spaces for photos and processed assets, via signed URLs from the Go API
+- Hetzner Object Storage for photos and processed assets, via signed URLs from the Go API
 - Redis-backed background jobs (image processing in Stage 2, embedding generation, marketplace parse)
 - Lava.top webhook fulfillment into the Postgres coin ledger for web purchases (Stage 2)
 

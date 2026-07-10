@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (rewritten 2026-06-27 for the production-stack pivot; API-gateway row updated 2026-06-28 from Traefik to nginx; v0.1 slim-runtime rows aligned with ADR-007 on 2026-07-01).
+Accepted (rewritten 2026-06-27 for the production-stack pivot; API-gateway row updated 2026-06-28 from Traefik to nginx; v0.1 slim-runtime rows aligned with ADR-007 on 2026-07-01; storage row revised 2026-07-10 from DigitalOcean Spaces to Hetzner Object Storage).
 
 ## Context
 
@@ -17,9 +17,9 @@ Capsule Zero is targeting production-grade v0.1 directly. There is no Stage 1 mo
 - a shared item database for public marketplace imports
 - EN and RU from v0.1 day 1, with ES-AR globally deferred to v0.2
 - coins-only monetization through Lava.top one-time purchases — coins and image enhancement are in the v0.2 backlog; v0.1 ships with a Lava.top stub
-- a single DigitalOcean droplet running docker-compose with every service declared explicitly (hosting migrated to a Hetzner CX23 on 2026-07-02, spec 033 — the single-server docker-compose shape is unchanged)
+- a single Hetzner Cloud server running docker-compose with every service declared explicitly (migrated from DigitalOcean on 2026-07-02, spec 033 — the single-server docker-compose shape is unchanged)
 - self-hosted observability under tight RAM budget (no Sentry/Prometheus in v0.1)
-- a Cloudflare front-door for DDoS protection and CDN (activation deferred to Stage 2 — founder decision 2026-07-02; see the accepted-stack table)
+- a Cloudflare front-door for DDoS protection and CDN (activation deferred to Stage 2 — founder decision 2026-07-02; v0.1 object storage does not assume a CDN)
 
 The previous Phase 4 stack (Supabase / Vercel / Flutter / Photoroom / mock-first Stage 1) is dropped before any product code derived from it lands in production. `/app` remains the canonical provider-abstracted Next.js frontend; the retired Supabase provider inside it is removed domain by domain as the Go API absorbs each bounded context.
 
@@ -37,7 +37,7 @@ Adopt the following production stack:
 | Database                 | PostgreSQL 16 with Postgres FTS in v0.1; pgvector and PgBouncer are deferred by ADR-007 until semantic-search and connection-pressure triggers fire               |
 | Cache / sessions / queue | Redis 7 with a Redis-based job queue (River or asynq) — Kafka is deferred until services split                                                                    |
 | Auth                     | Ory Kratos email/password in v0.1; Google OAuth and Apple Sign-In in Stage 2                                                                                      |
-| File storage             | DigitalOcean Spaces (S3-compatible) with the built-in Spaces CDN                                                                                                  |
+| File storage             | Hetzner Object Storage (S3-compatible); private assets via signed URLs, public catalog via native object URL until Stage-2 CDN/front-door activation              |
 | Image processing         | Self-hosted Capsule Zero model behind a Go worker, deferred to Stage 2                                                                                            |
 | Email                    | Resend for transactional email (verification, password reset, security notifications), MailHog for local dev                                                      |
 | DNS / anti-DDoS          | Spaceship registrar; Cloudflare nameservers + proxy on `capsulezero.app` are **deferred to Stage 2** (founder decision 2026-07-02, spec 033) — v0.1 pre-launch runs direct DNS A records to the host nginx edge |
@@ -62,9 +62,31 @@ Go gives small static binaries (~15 MB images), low memory footprint (essential 
 
 The previous Phase 4 chose Flutter. The pivot replaces it with React Native: shared TypeScript ecosystem with the web frontend, easier hiring overlap with web engineers, and a faster path to publishing the iOS/Android shell once the core wardrobe API is up. The cost is some platform-specific glue we previously did not need; the benefit is one less language in the stack and a much smaller mental tax for engineers moving between web and mobile.
 
-### Why DigitalOcean Spaces and not Cloudflare R2
+### Why Hetzner Object Storage and not local disk, Volumes, or Spaces/R2
 
-The original rationale was same-provider convenience: hosting was on DigitalOcean, so Spaces shipped in one bill with one set of credentials. That argument retired with the 2026-07-02 Hetzner migration (spec 033) — the topology is now cross-provider by construction — but Spaces stays preferred for v0.1 on its remaining merits: a mature S3-compatible API behind the storage port (ADR-003, no code or contract change), a built-in CDN with no fronting setup, and no new provider relationship. R2 would couple object storage to Cloudflare **before** the Stage-2 front-door activation (deferred, founder decision 2026-07-02), adding the very dependency v0.1 deliberately runs without. Object traffic is predominantly user ↔ CDN rather than server ↔ bucket, so cross-provider egress/latency between the Hetzner box and an EU Spaces region is not load-bearing at v0.1 scale. Natural re-evaluation point: the Stage-2 Cloudflare activation (R2 becomes same-provider with the edge), or storage cost becoming a real line item — whichever comes first.
+The 2026-07-02 hosting migration moved production compute to Hetzner, and the
+2026-07-10 founder clarification moved object storage there too. The storage
+decision now follows the runtime provider: Hetzner Object Storage is
+S3-compatible, available in European locations (`fsn1`, `nbg1`, `hel1`), and
+works behind the same Go `internal/storage` adapter boundary planned for S3-compatible object storage.
+
+The server root disk and a one-node MinIO are rejected for canonical user photos:
+the current CX23 has enough free space for OS, Docker, Postgres, and logs, but
+not for unbounded wardrobe media growth. Hetzner Cloud Volumes are block storage
+for mounted server files and bounded scratch/model cache; they are not the
+browser/mobile signed-upload boundary and are attachable to only one server at a
+time. DigitalOcean Spaces is superseded because it would keep storage in the old
+provider after compute moved away. Cloudflare R2 remains a Stage-2 candidate if
+the Cloudflare front-door becomes the primary edge, but adopting it now would
+pull storage into a provider that v0.1 deliberately keeps deferred.
+
+Two Hetzner constraints shape implementation: Object Storage has no built-in CDN,
+so v0.1 public catalog assets use native object URLs until Stage 2; and there is
+no default data-at-rest encryption, so database backups are encrypted client-side
+and personal-photo storage requires an explicit privacy/security acceptance or a
+later SSE-C/API-proxy design. While Hetzner's current high-traffic advisory
+recommends HEL for new buckets, provisioning must re-check status and run a real
+signed-upload smoke before creating production buckets.
 
 ### Why no Kafka in v0.1
 
@@ -117,7 +139,8 @@ Tradeoffs:
 - **Python/FastAPI backend:** keep on the table for ML inference services only.
 - **Microservices from Day 1 with Kafka and API Gateway routing across services:** real overhead for one engineer team with no scaling justification. Rejected; the monolith stays modular so extraction is cheap later.
 - **Vercel + serverless:** fast preview deployments, but ties prod to a vendor and complicates background workers and pgvector tuning.
-- **Cloudflare R2 + AWS SES + Mailgun:** equivalent feature set, but adds two extra billing relationships compared with Spaces + Resend.
+- **DigitalOcean Spaces:** previously accepted, but superseded when storage was moved into Hetzner with compute on 2026-07-10.
+- **Cloudflare R2 + AWS SES + Mailgun:** equivalent feature set, but adds extra provider coupling before the Stage-2 Cloudflare front-door is active.
 - **Flutter mobile (previous Phase 4 choice):** great DX, dropped to align languages with the web team.
 - **Stripe Checkout for payments:** previously accepted, then superseded by the Lava.top constraint.
 
@@ -128,7 +151,10 @@ Tradeoffs:
 - certbot (Let's Encrypt client): https://eff-certbot.readthedocs.io/
 - Ory Kratos: https://www.ory.sh/docs/kratos/
 - PostgreSQL pgvector: https://github.com/pgvector/pgvector
-- DigitalOcean Spaces: https://www.digitalocean.com/products/spaces
+- Hetzner Object Storage overview: https://docs.hetzner.com/storage/object-storage/overview/
+- Hetzner Object Storage general FAQ: https://docs.hetzner.com/storage/object-storage/faq/general/
+- Hetzner Object Storage supported actions: https://docs.hetzner.com/storage/object-storage/supported-actions/
+- Hetzner Object Storage high-traffic status advisory: https://status.hetzner.com/incident/ebd62173-d902-4e75-939a-265c0b3f1ddb
 - Cloudflare proxy & DDoS: https://developers.cloudflare.com/ddos-protection/
 - Resend: https://resend.com/docs
 - Lava.top developer API: https://developers.lava.top/en

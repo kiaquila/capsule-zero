@@ -3,7 +3,7 @@
 > Phase 1 of `.specify/specs/024-production-stack-runtime/` ships the minimum
 > stack that can serve the existing Next.js landing on
 > `https://capsulezero.app` behind nginx with a Let's Encrypt certificate.
-> Everything else (Postgres, Kratos, Go API, worker, Spaces/imgproxy, Grafana)
+> Everything else (Postgres, Kratos, Go API, worker, Object Storage/imgproxy, Grafana)
 > arrives in later iterations.
 
 ## Why nginx
