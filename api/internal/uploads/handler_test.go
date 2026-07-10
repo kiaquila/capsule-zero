@@ -125,6 +125,7 @@ func TestInitValidatesPhotoMetadata(t *testing.T) {
 		{name: "unsupported mime", body: `{"fileName":"look.gif","contentType":"image/gif","sizeBytes":10}`},
 		{name: "empty file", body: `{"fileName":"look.jpg","contentType":"image/jpeg","sizeBytes":0}`},
 		{name: "over ten megabytes", body: `{"fileName":"look.jpg","contentType":"image/jpeg","sizeBytes":10485761}`},
+		{name: "trailing JSON", body: `{"fileName":"look.jpg","contentType":"image/jpeg","sizeBytes":10} {}`},
 	}
 
 	for _, tt := range tests {
@@ -291,6 +292,24 @@ func TestCompleteHidesCrossUserJobs(t *testing.T) {
 	}
 	if objects.headCalls != 0 || jobs.completeCalls != 0 {
 		t.Fatalf("cross-user side effects: head=%d complete=%d", objects.headCalls, jobs.completeCalls)
+	}
+}
+
+func TestCompleteRejectsMalformedUUIDsBeforeRepositoryAccess(t *testing.T) {
+	jobs, objects := &fakeJobs{}, &fakeObjects{}
+	handler := testHandler(jobs, objects)
+	recorder := httptest.NewRecorder()
+
+	handler.Complete(recorder, httptest.NewRequest(
+		http.MethodPost, "/api/uploads/photo/complete",
+		strings.NewReader(`{"jobId":"not-a-uuid","assetId":"also-not-a-uuid"}`),
+	))
+
+	if recorder.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want 400", recorder.Code)
+	}
+	if jobs.findCalls != 0 || objects.headCalls != 0 || jobs.completeCalls != 0 {
+		t.Fatalf("malformed UUID side effects: find=%d head=%d complete=%d", jobs.findCalls, objects.headCalls, jobs.completeCalls)
 	}
 }
 
