@@ -58,6 +58,27 @@ Negative scenario evidence:
 
 - Seeded off-token value (`rgba(255,255,255,0.3)` / `border-radius: 7px`) → stylelint fails `preflight` locally and the required **`baseline-checks`** CI check goes red (link the failing run). The `test` check does not run stylelint — do not collect the evidence there. Proves the guardrail independently of the cleanup.
 
+### Evidence recorded — US1 slice (2026-07-10, this branch)
+
+- **AC-001 (Lane A no-diff):** value-resolution equivalence vs pre-refactor HEAD — exactly 9
+  resolved diffs, all whitelisted §9.3 clamping snaps (999/11/2px → `--radius-pill`, elements
+  ≤42px); every other declaration resolves byte-identical. Visual suite 14/14 no-diff vs the
+  T004 baseline before any Lane B change. Commit `aca22d4`.
+- **AC-002 (Lane B as ratified):** every §9.2/§9.3/§9.4/§9.10 row applied and traceable in
+  diffs `0c1c354` / `9f8262d`; `design-review` (T009): landing pill diff APPROVED, capsule-result
+  preview REJECTED → fixed (scrim moved to the background-image layer above the inline item
+  colour) → re-run sub-threshold; §9.10 ⚑⚑ avatar-edit verified as the only changed element on
+  the profile diff. Residual raw values: 2 documented in-file disables (§9.8 data-URI,
+  T013 focus retune). grep raw `rgba(`/hex/px-radius in app CSS = 0 outside those two lines.
+- **AC-003 (guardrail):** token rules at severity **error** (T010). Local negative run: seeded
+  `border-radius: 7px` + `rgba(255,255,255,0.3)` fixture → 2 errors, `lint:css` exit 2; removed
+  → exit 0. `--max-warnings 101` covers only the remaining duplicate-selector debt (drops in
+  US4). CI red-run link on `baseline-checks`: to be attached from the scratch commit on the PR.
+- Warning-budget ratchet trail: 102 → 559 (rules added) → 298 (Lane A) → 114 (Lane B) → 101
+  (§9.10); colour+radius = 0 warnings, then flipped to error.
+- Deflake note: Next dev overlay (`<nextjs-portal>`, "N Issues") raced screenshots — hidden via
+  `expect.toHaveScreenshot.stylePath`; 14/14 green three consecutive runs.
+
 ## Project Structure
 
 ### Documentation (this feature)

@@ -39,7 +39,7 @@ description: "Task list for 039-design-system-consistency"
 - [x] T007 [US1] **Lane B (ratified consolidation)** `frontend`: apply the T005 mapping table — 152 off-token whites → ramp tokens; 13 off-scale radii → ratified targets; remaining black shadows/overlays and error tints → the newly minted tokens. `design-review` approves before/after screenshots per batch.
 - [x] T008 [US1] Ratchet `--max-warnings` down as each batch lands (`npm run lint:css` → set the new lower number in `app/package.json`).
 - [x] T009 [US1] After each batch: `ui-ux-designer` runs `design-review` live pass (Lane A: confirm no visual diff; Lane B: confirm the delta matches the ratified row).
-- [ ] T010 [US1] Flip the **token rules** (raw rgba/hex/off-scale radius) to **error** severity; keep `--max-warnings` only for the remaining duplicate-selector debt (drops in US4). No new CI wiring needed — `lint:css` already runs in `baseline-checks` and `preflight`.
+- [x] T010 [US1] Flip the **token rules** (raw rgba/hex/off-scale radius) to **error** severity; keep `--max-warnings` only for the remaining duplicate-selector debt (drops in US4). No new CI wiring needed — `lint:css` already runs in `baseline-checks` and `preflight`.
 - [ ] T011 [US1] **Negative-scenario** guard evidence: a fixture with `border-radius: 7px` / raw white `rgba` makes `lint:css` exit non-zero locally, and a scratch commit shows the required **`baseline-checks`** check red (link the run). Evidence for AC-003 — do not collect it from the `test` check; it never runs stylelint.
 - **Gate (AC-001/002/003):** grep raw `rgba(`/hex outside `tokens.css` = 0 in `app/src` CSS; no off-scale radii; seeded violation fails `baseline-checks`.
 
@@ -83,6 +83,21 @@ description: "Task list for 039-design-system-consistency"
 - Token changes are **proposed by `frontend`, ratified by `ui-ux-designer`** (tokens = the visual system the designer owns).
 - Reconcile **by blast radius**: screen/component first, tokens last, live-review after each token change.
 - New colour tokens go in the `--color-*` `@theme` namespace only — `--text-*` is font sizes in Tailwind v4; a colour there generates broken utilities.
+
+### Dead ends
+- **The audit's colour classes (white/black/yellow/hex) missed a fifth family** — 15 dark-grey
+  chrome values; surfaced only because the stylelint rule counts refused to reconcile. Ratified
+  post-hoc as §9.10. Lesson: derive cleanup scope from the guardrail's own counts, not from
+  hand-picked grep classes.
+- **Class-level scrim vs inline style:** `.capsule-result-preview-fallback` scrim was silently
+  defeated by the component's inline `backgroundColor` — caught by design-review, fixed by
+  painting the scrim in the `background-image` layer. Token swaps are NOT automatically safe
+  where inline styles compose with classes.
+- **Token normalization can collapse state pairs:** raising CTA rest .26 → `--btn-primary-bg`
+  (.36) made rest == hover; the minted `--btn-primary-hover-bg` had to be applied in the same
+  slice. Watch for rest/hover/active pairs whenever two drifted values consolidate onto one token.
+- **Next dev overlay races screenshots** (`<nextjs-portal>` "N Issues") — the profile/mobile
+  flake; excluded via `toHaveScreenshot.stylePath`, not by retries.
 
 ### Dead ends
 - **"Snap everything to existing tokens with no visual diff"** — dead on arrival: 38 of 59 unique white alphas have no exact token (152 occurrences, hot spots `.16`×16, `.14`×12, `.06`×12). Nearest-token snapping without ratification would visibly shift high-count clusters.

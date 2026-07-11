@@ -13,8 +13,10 @@
 //    039-design-system-consistency/): raw colour literals (`rgba(`, hex) and
 //    off-scale `border-radius` values are forbidden outside
 //    `src/styles/tokens.css` — the single allowed home for raw values.
-//    WARNINGS during the US1 cleanup; they flip to `error` at the end of US1
-//    (tasks T010). Off-grid spacing is NOT linted here by design: a stylelint
+//    ERRORS since the US1 cleanup completed (T010) — any new raw colour or
+//    off-scale radius fails the run outright, no budget involved. The two
+//    documented in-file disables (§9.8 data-URI, T013 focus retune) are the
+//    only pass-throughs. Off-grid spacing is NOT linted here by design: a stylelint
 //    rule instance has a single severity, so bundling spacing into the colour
 //    rule would block the error flip — the spacing rule lands with its own
 //    remediation in a follow-up spec.
@@ -55,7 +57,7 @@ const config = {
       {
         message:
           "Raw colour literals live only in src/styles/tokens.css — use the design token (var(--color-*), var(--glass-*), var(--btn-*), …; var(--color-error) for #FFD600).",
-        severity: "warning",
+        severity: "error",
       },
     ],
     // Radii must come from the token scale (spec 039 US1, drift #3 — the
@@ -65,7 +67,7 @@ const config = {
       {
         message:
           "border-radius must come from the token scale: var(--radius-xs|sm|md|lg|pill|circle), 0 or inherit (src/styles/tokens.css).",
-        severity: "warning",
+        severity: "error",
       },
     ],
   },
