@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyAllUsersButBackupKey",
+      "Effect": "Deny",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::capsulezero-prod-backups",
+        "arn:aws:s3:::capsulezero-prod-backups/*"
+      ],
+      "NotPrincipal": {
+        "AWS": "arn:aws:iam:::user/p15296835:__BACKUP_ACCESS_KEY_ID__"
+      }
+    }
+  ]
+}

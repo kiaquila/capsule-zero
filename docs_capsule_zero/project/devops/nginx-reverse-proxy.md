@@ -204,6 +204,15 @@ docker compose --env-file deploy/compose.dev.env \
 # open https://capsulezero.local
 ```
 
+The committed dev env uses non-secret, disabled Object Storage placeholders so
+Compose interpolation succeeds without distributing credentials. This is
+deliberately fail-closed: `/api/health` reports `storage=error` and the upload
+routes return `503 FEATURE_UNAVAILABLE`. To exercise storage locally, copy it
+to the gitignored `deploy/compose.dev.local.env`, replace only the
+`OBJECT_STORAGE_*` placeholders with dedicated non-production Hetzner
+credentials, and pass that file to `--env-file`. Never use production storage
+credentials on a developer machine.
+
 Smoke check:
 
 ```bash

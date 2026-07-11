@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyAllUsersButRuntimeKey",
+      "Effect": "Deny",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::capsulezero-prod-private-assets",
+        "arn:aws:s3:::capsulezero-prod-private-assets/*"
+      ],
+      "NotPrincipal": {
+        "AWS": "arn:aws:iam:::user/p15203114:__RUNTIME_ACCESS_KEY_ID__"
+      }
+    }
+  ]
+}

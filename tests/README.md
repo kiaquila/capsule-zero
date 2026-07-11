@@ -7,11 +7,13 @@
 ```
 tests/
 ├── e2e/         Playwright (TypeScript) — web user-visible flows. Currently target: /app (Next.js).
-├── unit/        go test — Go API package tests. Stub today; populated when the Go monolith lands.
+├── unit/        Reserved home for future cross-package Go fixtures/suites.
 └── mobile/      Detox — React Native e2e. Stub today; populated when the RN app lands.
 ```
 
-Each subfolder is a standalone workspace with its own dependencies and run commands. They do **not** share `node_modules` with `/app`.
+Web/mobile folders are standalone workspaces and do **not** share
+`node_modules` with `/app`. Go unit tests are co-located with the packages they
+exercise under `api/**` and run from the `/api` module.
 
 ## TDD is mandatory for every spec ≥ 025
 
@@ -50,9 +52,12 @@ PR reviewers (human and AI) reject PRs for specs `025` and onward that introduce
   ```
 - **Run in CI**: job `test` in `.github/workflows/test.yml` runs e2e lint, e2e typecheck, `/app` build, and Playwright. Required check on `main`.
 
-### `tests/unit/` — Go unit tests (stub)
+### Go API unit tests — co-located under `api/**`
 
-`go test ./tests/unit/...` will be the entry once Go API code lands. Per-package table-driven tests; helpers live in `tests/unit/internal/`. See `tests/unit/README.md`.
+Run `cd api && go test ./...` (and `go vet ./...`) to execute the Go suite.
+Tests stay beside their package so unexported helpers and boundaries can be
+tested without creating a parallel module. `tests/unit/` is reserved for a
+future cross-package suite only; see `tests/unit/README.md`.
 
 ### `tests/mobile/` — Detox tests (stub)
 

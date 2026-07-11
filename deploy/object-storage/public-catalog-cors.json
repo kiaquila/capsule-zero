@@ -1,0 +1,11 @@
+{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["https://capsulezero.app"],
+      "AllowedMethods": ["GET", "HEAD"],
+      "AllowedHeaders": [],
+      "ExposeHeaders": ["ETag"],
+      "MaxAgeSeconds": 300
+    }
+  ]
+}

@@ -29,7 +29,7 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
 | 2. Product Definition         | COMPLETE — `.specify/specs/001-capsule-zero-mvp/spec.md`, `docs_capsule_zero/project/methodology/`, `docs_capsule_zero/ux/emotion-map.md`, `docs_capsule_zero/ux/ux-validation.md` |
 | 3. UX/UI Design               | COMPLETE — all 16 v0.1 logical screens designed and implemented in the `/app` frontend                                                                                             |
 | **4. Technical Architecture** | **PIVOTED TO PRODUCTION STACK** — Go modular monolith + nginx + Ory Kratos + Postgres + Redis + Hetzner Object Storage + Cloudflare Stage 2 + Resend; React Native replaces Flutter                     |
-| 5. Development Sprint         | IN PROGRESS — `.specify/specs/024-production-stack-runtime/`: Phases 1–2 landed (nginx + web; Postgres + Kratos + Go API + `api` provider, PR #57); every merge to `main` deploys to `https://capsulezero.app` via prod CD (spec 033)  |
+| 5. Development Sprint         | IN PROGRESS — runtime Phases 1–2 landed (nginx + web; Postgres + Kratos + Go API + `api` provider, PR #57); current storage slice is `.specify/specs/040-object-storage-upload-foundation/`; every merge to `main` deploys to `https://capsulezero.app` via prod CD (spec 033) |
 | 6. QA & Soft Launch           | Upcoming                                                                                                                                                                           |
 | 7. Commercial Launch          | Upcoming                                                                                                                                                                           |
 
@@ -37,9 +37,11 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
 
 **Production-stack pivot decision, 2026-06-27:** Phase 4 architecture was rewritten from a Supabase BaaS posture to a production-grade self-hosted stack. The mock-first Stage 1 posture (previously ADR-006) is dropped entirely — implementation goes straight to real services behind production-shape contracts.
 
-**Frontend / provider decision, 2026-06-30 (spec 024 follow-up — PR #57):** `/app` **stays** as the canonical, provider-abstracted Next.js frontend — there is no `/app` → `/web` rename, and `/app` is **not** slated for deletion. Current `/app` provider modes are `mock` and `supabase`; the Supabase provider is frozen and removed **domain by domain** as the future Go API absorbs each bounded context. Do not document an `api` provider mode as available until the `/app` API provider actually lands. Postgres ships as plain `postgres:16`; pgvector is deferred (ADR-007).
+**Frontend / provider decision, 2026-06-30 (spec 024 follow-up — PR #57):** `/app` **stays** as the canonical, provider-abstracted Next.js frontend — there is no `/app` → `/web` rename, and `/app` is **not** slated for deletion. Current `/app` modes are `api` (production Go/Kratos backend), `mock` (local/CI fixtures), and the frozen `supabase` legacy mode. Supabase auth/profile ports are retired; the remaining legacy domains are removed **domain by domain** as the Go API absorbs each bounded context. Postgres ships as plain `postgres:16`; pgvector is deferred (ADR-007).
 
 **Storage provider decision, 2026-07-10 (spec 039):** DigitalOcean Spaces is superseded by **Hetzner Object Storage**. v0.1 storage uses S3-compatible Hetzner buckets, not the server root disk, a one-node MinIO, or a Cloud Volume. There is no built-in object-storage CDN in v0.1; public catalog assets use native object URLs until the Stage-2 CDN/front-door work. Hetzner Object Storage has no default data-at-rest encryption, so encrypted database backups are mandatory and personal-photo storage needs the explicit ADR-003 security posture.
+
+**Storage implementation decision, 2026-07-10 (spec 040):** direct presigned PUT/GET for private personal-photo originals is founder-accepted with the ADR-003 controls. Asset buckets are provisioned in HEL under Hetzner project `15203114`; the Object-Locked backup bucket is isolated in FSN under project `15296835`. Policy readback confirms the runtime key is allowlisted on the current private-assets bucket and denied on public catalog, while the isolated backup key is allowlisted on the current backup bucket; backup CORS is absent, exact-origin/attacker-origin probes passed, and the redacted signed 10 MiB PUT/HEAD/GET/checksum/delete smoke passed. Hetzner same-project keys retain `s3:*` on an allowlisted bucket and default access to future project buckets, so dedicated key-only projects plus cross-project per-action allowlists are an activation gate. Upload routes remain production-disabled by default (`OBJECT_STORAGE_UPLOADS_ENABLED=false`) until that key hardening, owner quota, orphan cleanup, and wardrobe attachment land. Credential and presigned-URL values must never enter repo/chat/evidence.
 
 ## Where to Find Specifications
 
@@ -56,6 +58,10 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
     024-production-stack-runtime/
       spec.md            ← Production runtime delivery spec (next implementation iteration)
       plan.md            ← Verification table for the runtime delivery
+      tasks.md           ← Process Memory
+    040-object-storage-upload-foundation/
+      spec.md            ← Go S3 adapter + authenticated original-photo upload foundation
+      plan.md            ← TDD, contract, provisioning, and signed-smoke verification
       tasks.md           ← Process Memory
 ```
 
@@ -193,7 +199,7 @@ When assigned to implement a specific feature, read in this order:
 ## Repository Layout
 
 ```
-/app/             ← Next.js App Router web frontend — canonical, provider-abstracted (mock / supabase today; api provider lands later)
+/app/             ← Next.js App Router web frontend — canonical, provider-abstracted (`api` prod; `mock` local/CI; frozen `supabase` legacy domains)
 /api/             ← Go modular monolith (bounded contexts: auth, wardrobe, capsule, search, billing)
 /worker/          ← Go background worker (Redis-queue consumer for image jobs, embeddings, webhooks)
 /mobile/          ← React Native iOS + Android app
@@ -228,10 +234,12 @@ When assigned to implement a specific feature, read in this order:
 
 ## Tests
 
-All automated tests live under `tests/` at the repo root:
+User-flow suites live under `tests/`; Go package tests are co-located under
+`api/**`:
 
 - `tests/e2e/` — Playwright web e2e (TypeScript). Targets the `/app` frontend. Gated by the required GitHub check **`test`** (`.github/workflows/test.yml`).
-- `tests/unit/` — `go test` for the Go API. Stub today; populated once spec-024 lands product code.
+- `api/**/*_test.go` — Go API unit/package tests; run `cd api && go vet ./... && go test ./...`.
+- `tests/unit/` — reserved for a future genuine cross-package Go integration suite; do not duplicate package tests here.
 - `tests/mobile/` — Detox e2e for the React Native app. Stub today; populated once `/mobile/` ships its first build.
 
 When adding or changing a test, read [`tests/README.md`](tests/README.md) — it owns the TDD loop, POM/selector rules, and run commands. **TDD is mandatory for every spec ≥ 025, but only for application code** (web UI, React Native, Go API behaviors): write the failing test first, commit it, then make it pass. Infrastructure and delivery wiring (CI/CD workflows, Dockerfiles, `docker-compose`, nginx config, deploy scripts), docs, and other support changes are out of scope for the failing-test-first loop — verify them with config validation and smoke/health checks recorded in the `## Verification` table instead.
@@ -311,8 +319,8 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 - ~~DigitalOcean droplet upgrade to at least 4 GB RAM / 2 vCPU / 80 GB disk~~ — resolved 2026-07-02 by migrating to a Hetzner CX23 (2 vCPU / 4 GB / 40 GB; capacity budget verified in spec 033).
 - ~~Spaceship DNS pointed at Cloudflare; Cloudflare proxy enabled for `capsulezero.app`~~ — deferred to Stage 2 (founder decision 2026-07-02); v0.1 pre-launch runs direct DNS → host nginx, and the realip/CF-ranges edge config stays inert until activation.
 - ~~Resend account created and SPF/DKIM published on `capsulezero.app`~~ — done 2026-07-03: domain verified in Resend (eu-west-1), SPF/DKIM/DMARC live at Spaceship DNS, sending key installed on the prod host (`KRATOS_SMTP_CONNECTION_URI`, port 2465 — Hetzner blocks outbound 25/465).
-- Hetzner Object Storage buckets created with exact CORS for `https://capsulezero.app`, after re-checking current Hetzner status and recording the ADR-003 security posture.
-- Ship `.specify/specs/024-production-stack-runtime/` to bring the stack up in docker-compose on the server, with every service health-checked end-to-end. (Phases 1–2 landed and deploy via prod CD, spec 033; Redis / Object Storage / observability phases remain.)
+- Hetzner Object Storage buckets, current-bucket policy boundaries, exact `https://capsulezero.app` asset CORS, absent backup CORS, protected env, and the redacted signed 10 MiB upload/read/cleanup smoke are complete (assets: project `15203114` / HEL; Object-Locked backups: project `15296835` / FSN). Upload and backup activation stay blocked until dedicated key-only projects with cross-project per-action allows land; uploads also wait for quota/cleanup/wardrobe attachment.
+- Ship the remaining `.specify/specs/024-production-stack-runtime/` phases. Phases 1–2 deploy via prod CD (spec 033), and spec 040 advances the Object Storage subset; Redis, imgproxy, backup automation, and observability remain.
 - Retire the Supabase provider domain by domain as the Go API absorbs each bounded context — no wholesale `/app` deletion.
 
 ### Provider integration gates before real-provider QA/staging/launch
@@ -320,7 +328,9 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 - Google OAuth client configured per `docs_capsule_zero/project/devops/google-oauth-setup.md` before enabling Google sign-in in prod (spec 037; ships off by default). Apple Sign-In stays a Stage 2 gate.
 - Configure Lava.top products/API key/webhook before real web purchases are tested.
 - Self-hosted image processing model: training/inference spike against the < 5 sec latency gate before enabling real image processing.
-- Production credentials must be stored only in the droplet's encrypted env file or production dashboards and must not be shared with agents.
+- Production credentials must be stored only in the protected plaintext
+  `/opt/capsule-zero/.env` (`root:root`, mode `600`) or production dashboards
+  and must not be shared with agents. Filesystem encryption is not proven.
 
 ### Phase 4 quality gate (from launch-plan.md)
 

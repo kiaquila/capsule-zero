@@ -1,0 +1,24 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowPublicCatalogReads",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::capsulezero-prod-public-catalog/*"
+    },
+    {
+      "Sid": "DenyRuntimeKey",
+      "Effect": "Deny",
+      "Principal": {
+        "AWS": "arn:aws:iam:::user/p15203114:__RUNTIME_ACCESS_KEY_ID__"
+      },
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::capsulezero-prod-public-catalog",
+        "arn:aws:s3:::capsulezero-prod-public-catalog/*"
+      ]
+    }
+  ]
+}

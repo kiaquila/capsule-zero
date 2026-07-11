@@ -13,8 +13,14 @@ Phase 1 delivers the host `nginx + web` runtime that replaces the host Caddy + l
 - (Stage 2 — the Cloudflare front-door is deferred, founder decision 2026-07-02.) Cloudflare account with the `capsulezero.app` zone; not needed for the v0.1 bring-up.
 - (Stage 2, with the Cloudflare proxy.) Cloudflare API token with Zone Read + DNS Edit on `capsulezero.app`, stored as `CF_DNS_API_TOKEN` in the server `.env` for ACME DNS-01. Until the proxy is on, nginx + certbot use HTTP-01 with port 80 directly.
 - Spaceship registrar account with a direct `A` record for `capsulezero.app` pointing at the server IP (the Cloudflare nameserver cut-over is deferred to Stage 2).
-- Resend account with API key and `no-reply@capsulezero.app` verified.
-- Hetzner Object Storage buckets configured per ADR-003, with production CORS allowing exactly `https://capsulezero.app`; re-check Hetzner Object Storage status before choosing the primary region.
+- Resend domain/SPF/DKIM and the production Kratos SMTP courier are provisioned.
+- Hetzner Object Storage topology from ADR-003: the private/public asset
+  buckets are provisioned in project `15203114` / HEL; the Object-Locked backup
+  bucket and separate key are in project `15296835` / FSN. Policy readback has
+  verified the runtime key is allowed on the current private bucket and denied
+  on the current public bucket, the backup key is allowed on the current
+  isolated backup bucket, backup CORS is absent, and production asset CORS allows
+  exactly `https://capsulezero.app`; the redacted 10 MiB signed smoke passed.
 
 Local tools on the operator machine: Node/npm, Go, Docker (for running the local stack), `gh` CLI.
 
@@ -40,6 +46,45 @@ Until these gates open, the corresponding API surface exists as stubs (Lava.top)
 
 ## Bring-Up Steps
 
+### Object Storage policy artifacts
+
+Canonical production policy/CORS inputs live under
+`deploy/object-storage/`:
+
+- `private-assets-cors.json` — exact production origin, signed PUT/read methods,
+  `Content-Type`, and `ETag`;
+- `public-catalog-cors.json` — exact-origin read methods only;
+- `private-assets-policy.template.json` — deny every principal except the
+  rendered runtime access-key principal on the current private bucket;
+- `public-catalog-policy.template.json` — public object reads while explicitly
+  denying the runtime key;
+- `backups-policy.template.json` — deny every principal except the rendered
+  backup key on the current bucket in its isolated project.
+
+Render key placeholders only into a protected temporary file on the operator
+host/server; never replace them in the committed templates. Readback on
+2026-07-10 matched these policies. The backup bucket has Object Lock enabled
+and no CORS. Allowed `https://capsulezero.app` and attacker-origin preflight
+probes and the signed 10 MiB PUT/HEAD/GET/checksum/delete smoke passed with
+cleanup. Production upload activation remains default-off until quota,
+abandoned-upload cleanup, wardrobe attachment, and per-action credential
+hardening land.
+
+These templates implement Hetzner's same-project `DenyAllUsersButOne` pattern.
+They prove a practical boundary for the buckets that exist today, but the
+allowlisted key keeps `s3:*` control-plane access on its bucket and Hetzner
+grants it default access to future buckets in the same project. Before upload
+or backup activation, create data-plane keys in dedicated key-only projects,
+grant only the required actions cross-project, and retain separate operator
+keys in the bucket projects for policy changes.
+
+Treat every presigned URL as a short-lived bearer capability. Its host, path,
+and query necessarily reveal the bucket, object key, and access-key ID; never
+copy it into logs, chat, screenshots, or evidence. Before PUT expiry, a holder
+can replay the request and overwrite the same final object, potentially making
+the completed asset's stored ETag stale. This is an accepted bounded residual
+for the original-only foundation, not a guarantee to extend to broader assets.
+
 ### 1. DNS
 
 - v0.1 (current): at the Spaceship registrar, point a direct `A` record for `capsulezero.app` at the server IP. TLS is Let's Encrypt on host nginx (HTTP-01). Add `grafana.capsulezero.app` only after ADR-007 promotes Grafana.
@@ -51,21 +96,23 @@ Until these gates open, the corresponding API surface exists as stubs (Lava.top)
 - Configure `ufw` to allow `22/tcp`, `80/tcp`, `443/tcp` only.
 - Create a `capsule-zero` user; disable root password login.
 - Install Docker Engine + docker-compose plugin from the official Docker apt repository.
-- Prepare the encrypted `.env`; after cloning the repo, install it under `/srv/capsule-zero/repo/.env` with mode `600` so Compose loads it from the project directory.
+- Prepare the protected plaintext env file at the canonical
+  `/opt/capsule-zero/.env` path. It is root-owned with mode `600`; encryption at
+  rest has not been established, so do not describe the file as encrypted.
 
 ### 3. Pull repo and start the stack
 
 ```bash
 git clone git@github.com:kiaquila/capsule-zero.git /opt/capsule-zero
 cd /opt/capsule-zero
-install -m 600 /path/to/encrypted/.env ./.env
+sudo install -o root -g root -m 600 /path/to/protected.env /opt/capsule-zero/.env
 docker compose --env-file ./.env up -d
 docker compose --env-file ./.env logs web --tail=50
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-The root compose file keeps the rollback `nginx` service behind the `docker-edge` profile. Do not enable that profile during the normal production bootstrap while host nginx owns ports 80/443. The default compose command brings up Kratos, Postgres, Redis, the Go API, the in-process queue worker, the Next.js web container, and imgproxy once every v0.1 phase of spec 024 has shipped. PgBouncer, Grafana, and the standalone worker container are promoted only when ADR-007 triggers open. In earlier phases only the services delivered so far come up. The embedded SQL migrator runs at API boot from Phase 2 onward (the Go API ships with the Phase 2 auth slice). Kratos runs its own migrations through its init container from Phase 2 onward.
+The root compose file keeps the rollback `nginx` service behind the `docker-edge` profile. Do not enable that profile during the normal production bootstrap while host nginx owns ports 80/443. The current default stack brings up Kratos, Postgres, the Go API, and the Next.js web container; Object Storage and Resend are external providers. Redis, an in-process queue consumer, imgproxy, and backup automation have not landed. PgBouncer, Grafana, and the standalone worker container are promoted only when ADR-007 triggers open. The embedded SQL migrator runs at API boot, and Kratos runs its own migrations through its init container.
 
 Use the compose edge only as an explicit rollback path after stopping host nginx:
 
@@ -85,26 +132,36 @@ sudo journalctl -u nginx -n 50 --no-pager
 
 Expected `/api/health` response includes:
 
-- `api: "ok"`
+- `ok: true` plus non-empty `commit` and `builtAt`
 - `postgres: "ok"`
-- `redis: "ok"`
 - `kratos: "ok"`
 - `storage: "ok"`
-- `email: "ok"`
 
-If any reports `pending` or `error`, fix the env file or the service config and rerun.
+If a dependency reports `error`, the endpoint returns 503. Fix the env file,
+credential policy, bucket, or service config and rerun. Redis and email fields
+are not part of the current probe and must not be invented in evidence.
 
 ### 5. Smoke flows
 
 - Open `https://capsulezero.app` and register a test user with a real inbox.
 - Confirm the verification email arrives via Resend.
 - Sign in, update profile, sign out.
-- Upload a wardrobe photo via the Journey flow; confirm the file lands in Hetzner Object Storage under the correct prefix and anonymous reads stay blocked for private assets.
+- Use an authenticated call to `/api/uploads/photo/init`, send the exact
+  returned headers with the signed PUT, then call `/api/uploads/photo/complete`
+  with both the issued `jobId` and `assetId`.
+  Confirm the object metadata matches and anonymous reads stay blocked. Spec
+  040 intentionally has no Journey/frontend upload wiring, so a UI smoke is
+  not evidence for this slice.
 - Confirm syslog files are present and rotated on the host; Grafana smoke checks start only after ADR-007 promotes the dashboard service.
 
-### 6. Backups
+### 6. Backups (deferred)
 
-The nightly `pg_dump` cron is shipped with spec 024. Verify the first night's client-side encrypted backup landed in the Hetzner backup bucket under `postgres/` and that retention is active for at least 14 days.
+The Object-Locked bucket and its current-project key are provisioned, but nightly
+`pg_dump`, client-side encryption, scheduling, lifecycle/retention, and restore
+verification remain spec-024 Phase 5 work. Do not upload plaintext database
+data or mark backups complete based on bucket creation alone. Once Phase 5
+lands, verify the first encrypted object under `postgres/`, at least 14 day
+retention, and a restore drill.
 
 ## Stage 2 Integration Gates
 
@@ -179,11 +236,16 @@ Kratos / Resend
 
 Hetzner Object Storage
 
-- Bucket reachable: pass/fail
+- Private/public asset buckets (`15203114` / HEL): pass/fail
+- Object-Locked backup bucket + separate key (`15296835` / FSN): pass/fail
+- Runtime key allowlisted private / denied public: pass/fail
+- Backup key allowlisted / backup CORS absent: pass/fail
+- Private bucket reachable from API health: pass/fail
 - Signed PUT round-trip: pass/fail
-- CORS verified: pass/fail
+- Exact `https://capsulezero.app` CORS allowed: pass/fail
+- localhost/attacker CORS denied: pass/fail
 
-Backups
+Backups (Phase 5; currently deferred)
 
 - Nightly encrypted pg_dump landed in the backup bucket: pass/fail
 - Lifecycle/Object Lock posture active (>=14 day): pass/fail

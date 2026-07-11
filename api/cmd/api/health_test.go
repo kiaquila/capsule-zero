@@ -31,6 +31,15 @@ func (s *countingReady) Ready(context.Context) error {
 	return nil
 }
 
+type contextReady struct {
+	calls int
+}
+
+func (s *contextReady) Ready(ctx context.Context) error {
+	s.calls++
+	return ctx.Err()
+}
+
 // The deploy verifier reads the running commit back from /api/health to confirm
 // the server actually rolled to the SHA CD just shipped (spec 036 acceptance 1).
 // The handler must therefore surface the link-time build metadata alongside the
@@ -95,7 +104,7 @@ func TestHealthHandlerBuildInfoWhenUninjectedAndDegraded(t *testing.T) {
 	}
 }
 
-func TestHealthHandlerCachesDependencyProbes(t *testing.T) {
+func TestHealthHandlerCachesOnlyObjectStorageProbes(t *testing.T) {
 	postgres := &countingPinger{}
 	kratos := &countingReady{}
 	objects := &countingReady{}
@@ -108,8 +117,53 @@ func TestHealthHandlerCachesDependencyProbes(t *testing.T) {
 			t.Fatalf("health status = %d, want 200", recorder.Code)
 		}
 	}
-	if postgres.calls != 1 || kratos.calls != 1 || objects.calls != 1 {
-		t.Fatalf("dependency probes: postgres=%d kratos=%d storage=%d, want one each",
+	if postgres.calls != 2 || kratos.calls != 2 || objects.calls != 1 {
+		t.Fatalf("dependency probes: postgres=%d kratos=%d storage=%d, want 2/2/1",
 			postgres.calls, kratos.calls, objects.calls)
+	}
+}
+
+func TestHealthHandlerDoesNotCachePostgresSuccess(t *testing.T) {
+	postgres := &stubPinger{}
+	objects := &countingReady{}
+	handler := healthHandler(postgres, stubReady{}, objects)
+
+	first := httptest.NewRecorder()
+	handler(first, httptest.NewRequest(http.MethodGet, "/api/health", nil))
+	if first.Code != http.StatusOK {
+		t.Fatalf("initial health status = %d, want 200", first.Code)
+	}
+
+	postgres.err = errors.New("database unavailable")
+	second := httptest.NewRecorder()
+	handler(second, httptest.NewRequest(http.MethodGet, "/api/health", nil))
+	if second.Code != http.StatusServiceUnavailable {
+		t.Fatalf("degraded health status = %d, want 503", second.Code)
+	}
+	var body map[string]any
+	if err := json.Unmarshal(second.Body.Bytes(), &body); err != nil {
+		t.Fatalf("decode degraded health body: %v", err)
+	}
+	if body["postgres"] != "error" || objects.calls != 1 {
+		t.Fatalf("degraded health body=%v storage probes=%d, want fresh postgres error and one storage probe", body, objects.calls)
+	}
+}
+
+func TestHealthStorageRefreshIgnoresCanceledPublicRequestContext(t *testing.T) {
+	objects := &contextReady{}
+	handler := healthHandler(stubPinger{}, stubReady{}, objects)
+
+	canceledCtx, cancel := context.WithCancel(context.Background())
+	cancel()
+	first := httptest.NewRecorder()
+	handler(first, httptest.NewRequest(http.MethodGet, "/api/health", nil).WithContext(canceledCtx))
+	if first.Code != http.StatusOK {
+		t.Fatalf("canceled-caller health status = %d, want independently refreshed 200", first.Code)
+	}
+
+	second := httptest.NewRecorder()
+	handler(second, httptest.NewRequest(http.MethodGet, "/api/health", nil))
+	if second.Code != http.StatusOK || objects.calls != 1 {
+		t.Fatalf("cached health status=%d storage probes=%d, want 200/1", second.Code, objects.calls)
 	}
 }

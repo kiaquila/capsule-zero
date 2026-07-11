@@ -32,6 +32,14 @@ type ctxKey int
 
 const sessionTokenKey ctxKey = iota
 
+// UserID returns the authenticated application profile ID stored by
+// RequireSession. Other bounded contexts use this accessor instead of sharing
+// auth's private context key.
+func UserID(ctx context.Context) (string, bool) {
+	userID, ok := ctx.Value(sessionTokenKey).(string)
+	return userID, ok && userID != ""
+}
+
 type identityClient interface {
 	Register(context.Context, string, string, string, string) (*kratos.Session, error)
 	Login(context.Context, string, string) (*kratos.Session, error)
@@ -432,7 +440,7 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 
 // GetProfile: GET /api/profile (requires session middleware).
 func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
-	userID, _ := r.Context().Value(sessionTokenKey).(string)
+	userID, _ := UserID(r.Context())
 	profile, err := h.Profiles.GetByUserID(r.Context(), userID)
 	if err != nil {
 		writeProfileError(w, err)
@@ -443,7 +451,7 @@ func (h *Handler) GetProfile(w http.ResponseWriter, r *http.Request) {
 
 // PatchProfile: PATCH /api/profile (requires session middleware).
 func (h *Handler) PatchProfile(w http.ResponseWriter, r *http.Request) {
-	userID, _ := r.Context().Value(sessionTokenKey).(string)
+	userID, _ := UserID(r.Context())
 
 	var in struct {
 		DisplayName *string `json:"displayName"`

@@ -21,6 +21,8 @@ type fakeBackend struct {
 	headKey        string
 	headResult     ObjectMetadata
 	headErr        error
+	deleteKey      string
+	deleteErr      error
 }
 
 func (f *fakeBackend) HeadBucket(_ context.Context, bucket string) error {
@@ -43,6 +45,11 @@ func (f *fakeBackend) PresignGet(_ context.Context, bucket, key string, ttl time
 func (f *fakeBackend) HeadObject(_ context.Context, bucket, key string) (ObjectMetadata, error) {
 	f.headKey = bucket + "/" + key
 	return f.headResult, f.headErr
+}
+
+func (f *fakeBackend) DeleteObject(_ context.Context, bucket, key string) error {
+	f.deleteKey = bucket + "/" + key
+	return f.deleteErr
 }
 
 func TestClientReadyProbesConfiguredPrivateBucket(t *testing.T) {
@@ -142,5 +149,17 @@ func TestClientReadsObjectMetadataFromPrivateBucket(t *testing.T) {
 	}
 	if metadata.ContentType != "image/webp" || metadata.SizeBytes != 2048 || metadata.ETag != "etag-1" {
 		t.Fatalf("metadata = %+v", metadata)
+	}
+}
+
+func TestClientDeletesFromPrivateBucket(t *testing.T) {
+	backend := &fakeBackend{}
+	client := newClient("capsulezero-prod-private-assets", backend)
+
+	if err := client.Delete(context.Background(), "item-originals/user-1/asset-1.webp"); err != nil {
+		t.Fatalf("Delete() error = %v", err)
+	}
+	if backend.deleteKey != "capsulezero-prod-private-assets/item-originals/user-1/asset-1.webp" {
+		t.Fatalf("delete target = %q", backend.deleteKey)
 	}
 }

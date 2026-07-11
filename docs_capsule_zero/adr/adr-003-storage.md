@@ -42,12 +42,49 @@ The app does not create buckets at runtime. Operators create buckets,
 credentials, CORS, lifecycle, and Object Lock through Hetzner Console plus
 S3-compatible tooling before enabling the storage slice.
 
+### Provisioned production topology (2026-07-10)
+
+- `capsulezero-prod-private-assets` and
+  `capsulezero-prod-public-catalog` exist in **HEL** under Hetzner project
+  `15203114`.
+- The application runtime credential is stored only in the protected
+  production env file. Policy readback confirms that it is allowlisted on the
+  current private-assets bucket and explicitly denied on the public-catalog
+  bucket.
+- `capsulezero-prod-backups` exists in **FSN** under isolated Hetzner project
+  `15296835`, with Object Lock enabled at bucket creation and a separate
+  credential that policy readback allowlists on that bucket. Backup CORS is
+  absent. The bucket must remain free of plaintext database data; its
+  creation does not complete backup encryption, scheduling, retention, or
+  restore verification.
+
+This is a **current-bucket practical boundary**, not final per-action least
+privilege. Hetzner credentials are project-wide by default: an allowlisted key
+retains `s3:*` control-plane access on that bucket and receives default access
+to future buckets in its key project. Before upload activation or backup
+automation, create data-plane credentials in dedicated key-only projects and
+replace the same-project policies with cross-project explicit per-action
+allows. Keep a separate operator credential in each bucket-owning project for
+policy rotation. The default-off upload gate is part of this activation
+boundary.
+
+Production CORS is intentionally narrow. The private bucket allows only the
+`https://capsulezero.app` origin for signed `PUT`, `GET`, and `HEAD` requests,
+only the signed `Content-Type` request header, exposes `ETag`, and uses a short
+preflight cache. The public-catalog bucket allows the same exact origin for
+read methods only. No wildcard, localhost, preview, or attacker origin belongs
+in either production policy. Policy/CORS readback plus allowed-origin and
+attacker-origin preflight probes passed on 2026-07-10. The redacted signed
+10 MiB PUT/HEAD/GET/checksum/delete smoke also passed with verified cleanup; a
+Console screenshot alone would not have been sufficient.
+
 ### Image processing
 
 Background removal is performed by the self-hosted Capsule Zero model running as a separate Go (or Python-inference) worker container. Until that worker ships:
 
 - v0.1 stores the original photo only;
-- `item_assets` records the original variant and the processed variant slot stays empty;
+- `item_assets` records only the `original` variant; no processed-variant row
+  or slot exists in the spec-040 schema;
 - the wardrobe UI shows the original photo;
 - the 5 second processing gate is not asserted until Stage 2.
 
@@ -58,12 +95,23 @@ Background removal is performed by the self-hosted Capsule Zero model running as
 - Use **signed GET URLs** (TTL ≤ 15 min) for private image reads, served by the Go API.
 - Use **public object URLs** only for approved shared catalog images copied to the public catalog bucket after moderation. A CDN/front-door is Stage 2.
 - Use **signed PUT URLs** (TTL ≤ 5 min) for direct browser/mobile uploads, with size and content-type bounds verified by the Go API before issue.
-- Server-side credentials live only in the droplet's encrypted `.env`.
+- Server-side credentials live only in the protected plaintext
+  `/opt/capsule-zero/.env`, owned by `root:root` with mode `600`, or provider
+  dashboards. Filesystem encryption has not been established.
 - Enforce upload constraints before storage: JPEG, PNG, WebP; max 10 MB.
 - Normalize processed display images to WebP where quality permits.
 - CORS on production asset buckets allows `https://capsulezero.app` only; local origins belong to separate dev/test buckets.
-- Nightly `pg_dump` of Postgres uploads to the backup bucket with client-side encryption, Object Lock enabled at bucket creation if retention locking is used, and at least 14 day retention.
-- Hetzner Object Storage has no default data-at-rest encryption. Backups must be encrypted before upload. Direct signed PUT/GET for personal photos is accepted only with an explicit privacy/security decision; otherwise the storage slice must use an SSE-C/API-proxy design.
+- Nightly `pg_dump` automation is deferred to spec-024 Phase 5. When it lands,
+  it uploads only client-side-encrypted data to the already Object-Locked
+  backup bucket and enforces at least 14 day retention.
+- Hetzner Object Storage has no default data-at-rest encryption. Backups must be encrypted before upload. On 2026-07-10 the founder explicitly accepted direct signed PUT/GET for the bounded v0.1 personal-photo-original foundation, with private storage, short TTLs, exact-origin CORS, owner-bound API operations, opaque random object keys, and no credential/presigned-URL logging. A presigned URL itself is not opaque: its host, path, and signature query necessarily expose the bucket, object key, and access-key ID. Treat it as a short-lived bearer capability. Image-byte inspection, orphan cleanup, and an SSE-C/API-proxy alternative remain follow-ups before broader storage use.
+- A holder can replay a signed PUT before its five-minute expiry and overwrite
+  the same final object with bytes that satisfy the signed size/content-type
+  constraints. A replay after completion can therefore make the persisted ETag
+  stale because idempotent completion does not re-read the object. The founder
+  accepts this bounded residual for the original-only foundation; staging keys,
+  conditional writes, or an API proxy must be reconsidered before expanding
+  the flow to broader asset classes.
 - Do not rely on object notifications; the client must call `/api/uploads/photo/complete`, and that endpoint must be idempotent.
 - Do not design critical flows around `CopyObject`; Hetzner documents that it may fail even when buckets are in the same location.
 - Browser uploads, API `HeadObject`, signed reads, and cleanup jobs must retry transient 5xx/timeouts with exponential backoff while reusing the same random object key.
@@ -71,12 +119,16 @@ Background removal is performed by the self-hosted Capsule Zero model running as
 ### Upload flow
 
 1. Client requests an upload target from the Go API (`POST /api/uploads/photo/init`).
-2. The API validates metadata and returns a signed PUT URL plus an `upload_jobs` row id.
+2. The API validates metadata and returns a signed PUT URL plus the public
+   `jobId` and `assetId` identifiers.
 3. The client uploads directly to Hetzner Object Storage.
-4. The client calls `POST /api/uploads/photo/complete` with the job id.
-5. The API checks the object exists, records `item_assets`, and (when Stage 2 ships) enqueues a background-removal job in Redis.
-6. The image worker writes the processed variant to the processed prefix and updates `item_assets`.
-7. The item preview shows the processed variant if available; otherwise it falls back to the original and exposes retry.
+4. The client calls `POST /api/uploads/photo/complete` with both `jobId` and
+   `assetId`.
+5. The API checks the exact size/content type, records one `original`
+   `item_assets` row, and moves the `photo_upload` job from `queued` to
+   `completed`. No Redis work is enqueued by the current slice.
+6. When Stage 2 ships, the image worker may write a processed variant and the
+   UI may prefer it; neither behavior is present in the spec-040 foundation.
 
 ## Consequences
 
@@ -95,8 +147,10 @@ Tradeoffs:
 - There is no default data-at-rest encryption. Backups are encrypted client-side; personal-image storage needs an explicit acceptance or SSE-C/API-proxy follow-up.
 - Hetzner does not provide built-in cross-location bucket replication; cross-region asset replication is a later resilience task after deletion/privacy semantics are defined.
 - We own the image model. Until it ships, background removal is unavailable and the 5 second gate is dormant.
-- Backups and lifecycle policies are our responsibility — we ship the cron with the production runtime spec.
-- Signed URL leakage handling is on us: short TTLs and audit logs in the Go API.
+- Backups and lifecycle policies are our responsibility; automation remains
+  deferred to spec-024 Phase 5 even though the isolated bucket/key are ready.
+- Signed URL leakage and replay handling are on us: short TTLs bound exposure,
+  but cannot revoke or prevent same-key replay before expiry.
 
 ## References
 

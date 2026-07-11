@@ -8,6 +8,7 @@ import (
 
 	"github.com/kiaquila/capsule-zero/api/internal/auth"
 	"github.com/kiaquila/capsule-zero/api/internal/ratelimit"
+	"github.com/kiaquila/capsule-zero/api/internal/uploads"
 )
 
 // Session-validation endpoints (whoami/logout/profile) must be throttled by their
@@ -75,6 +76,44 @@ func TestAuthAndSessionBucketsIndependent(t *testing.T) {
 	// by that: login throttles, whoami stays throttled only by its own bucket.
 	if code := doRequest(t, mux, http.MethodPost, "/api/auth/login", "not-json"); code != http.StatusTooManyRequests {
 		t.Fatalf("login past burst = %d, want 429", code)
+	}
+}
+
+func TestUploadRoutesRequireSessionAndUseSessionLimiter(t *testing.T) {
+	authHandler := &auth.Handler{}
+	mux := newMux(authHandler, ratelimit.New(10, 10), ratelimit.New(120, 2))
+	registerUploadRoutes(mux, authHandler, &uploads.Handler{Enabled: true}, ratelimit.New(120, 2))
+
+	for _, path := range []string{
+		"/api/uploads/photo/init",
+		"/api/uploads/photo/complete",
+	} {
+		if code := doRequest(t, mux, http.MethodPost, path, "{}"); code != http.StatusUnauthorized {
+			t.Fatalf("POST %s without session = %d, want 401", path, code)
+		}
+	}
+
+	if code := doRequest(t, mux, http.MethodPost, "/api/uploads/photo/init", "{}"); code != http.StatusTooManyRequests {
+		t.Fatalf("upload request past burst = %d, want 429", code)
+	}
+}
+
+func TestDisabledUploadRoutesShortCircuitBeforeSessionResolution(t *testing.T) {
+	authHandler := &auth.Handler{}
+	mux := newMux(authHandler, ratelimit.New(10, 10), ratelimit.New(120, 10))
+	registerUploadRoutes(mux, authHandler, &uploads.Handler{}, ratelimit.New(120, 10))
+
+	for _, path := range []string{
+		"/api/uploads/photo/init",
+		"/api/uploads/photo/complete",
+	} {
+		recorder := httptest.NewRecorder()
+		request := newClientRequest(http.MethodPost, path, "{}")
+		request.Header.Set("Authorization", "Bearer would-panic-if-auth-ran")
+		mux.ServeHTTP(recorder, request)
+		if recorder.Code != http.StatusServiceUnavailable {
+			t.Fatalf("POST %s while disabled = %d, want 503", path, recorder.Code)
+		}
 	}
 }
 

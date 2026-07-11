@@ -157,7 +157,7 @@ func TestInitValidatesPhotoMetadata(t *testing.T) {
 	}
 }
 
-func TestInitReturnsOpaqueSignedUploadWithoutPrivatePath(t *testing.T) {
+func TestInitReturnsSignedUploadWithoutSeparateStoragePath(t *testing.T) {
 	jobs, objects := &fakeJobs{}, &fakeObjects{}
 	handler := testHandler(jobs, objects)
 	recorder := httptest.NewRecorder()

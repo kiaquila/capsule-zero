@@ -42,7 +42,7 @@ func TestRepoCompleteIsConcurrentAndIdempotent(t *testing.T) {
 	repo := NewRepo(pool)
 	job, err := repo.Create(ctx, NewJob{
 		ID: randomUUID(), AssetID: randomUUID(), UserID: userID,
-		ObjectKey: "item-originals/" + userID + "/original.jpg",
+		ObjectKey:   "item-originals/" + userID + "/original.jpg",
 		ContentType: "image/jpeg", SizeBytes: 4096,
 	})
 	if err != nil {

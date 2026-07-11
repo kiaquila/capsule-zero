@@ -29,20 +29,20 @@ not evidence.
 
 | # | Acceptance criterion | Required evidence | Evidence |
 |---|---|---|---|
-| 1 | Failing tests precede implementation | Git history shows the red-test commit before implementation; captured failing `go test` result | PENDING |
-| 2 | Strict env and explicit S3 client | Config/storage unit tests for missing/invalid values, endpoint/credential selection, TTLs, timeout/retry bounds, and secret-safe errors | PENDING |
-| 3 | Storage-gated health | Health handler tests for storage healthy/error plus a rendered/live health probe | PENDING |
-| 4 | Init validates and returns a safe signed contract | Handler/service tests for happy path, auth, MIME/size/JSON validation, hostile filename, signing failure, and response non-disclosure | PENDING |
-| 5 | Complete validates object and fails closed | Tests for missing object, wrong size/type, outage, cross-user access, and no asset/status mutation on failure | PENDING |
-| 6 | Complete is idempotent/concurrency-safe | Repeat/concurrent completion test plus migration uniqueness/transaction evidence | PENDING |
-| 7 | Database schema is durable and owner-bound | Migration test or clean Postgres migration; schema/constraint inspection for `upload_jobs` and unattached original `item_assets` | PENDING |
-| 8 | API contract and generated client are synchronized | `node scripts/check-api-contract.mjs` and API client generation check | PENDING |
-| 9 | Go quality gates pass | `cd api && go vet ./... && go test ./...` | PENDING |
-| 10 | Compose/env wiring is valid and has no retired coupling | `docker compose --env-file deploy/compose.env.example config --quiet` plus targeted `rg`/diff review | PENDING |
-| 11 | ADR-003 bucket/key/CORS topology is live | Hetzner/CLI evidence naming bucket, project/region, visibility, key scope, and redacted CORS policy; no credential values | PENDING |
-| 12 | Production env is installed safely | `ssh cz` evidence of required variable names/presence and protected file ownership/mode only; values stay redacted | PENDING |
-| 13 | Real signed object-store smoke passes | Redacted result for 10 MB signed PUT, metadata/read, allowed-origin preflight, disallowed-origin negative, and object deletion | PENDING |
-| 14 | Full repository/SENAR gates pass at PR head | Required GitHub checks, `git diff --check`, feature-memory guard, no unresolved blocking review, PR Done Gate | PENDING |
+| 1 | Failing tests precede implementation | Git history shows the red-test commit before implementation; captured failing `go test` result | `7f25927`, `85b7eaa`, and `f7577c2` are test-only commits before the implementation commit. Captured red runs: `cd api && go test ./...` (undefined config/storage/uploads symbols); `go test ./internal/httpx ./internal/uploads` (trailing JSON accepted, malformed UUID not 400); `go test ./internal/config ./internal/uploads ./cmd/api` (missing feature gate and health-probe cache). |
+| 2 | Strict env and explicit S3 client | Config/storage unit tests for missing/invalid values, endpoint/credential selection, TTLs, timeout/retry bounds, and secret-safe errors | `cd api && go test ./internal/config ./internal/storage` passes. `object_storage_test.go` covers required env, exact HTTPS Hetzner region endpoint, and default-off activation; `aws_test.go` covers exact Put/Get inputs and TTLs, signed headers, metadata/404 mapping, required fields, and network bounds. `aws.go` constructs only a static credential provider and explicit `BaseEndpoint`. |
+| 3 | Storage-gated health | Health handler tests for storage healthy/error plus a rendered/live health probe | `cd api && go test ./cmd/api -run Health` passes healthy/degraded storage and proves Postgres/Kratos stay fresh while only the serialized Object Storage probe is cached for five seconds. Production `storage-ready=ok` from the live client confirms the configured private bucket; upload init performs a separate fresh probe. |
+| 4 | Init validates and returns a safe signed contract | Handler/service tests for happy path, auth, MIME/size/JSON validation, hostile filename, signing failure, and response non-disclosure | `cd api && go test ./internal/httpx ./internal/uploads ./cmd/api` passes: MIME/size/basename/trailing-JSON/auth/storage failures have no job/URL side effect; the enabled happy path returns IDs, signed headers, and expiry. The route test proves default-disabled requests return 503 before limiter/session resolution or any provider/database call. |
+| 5 | Complete validates object and fails closed | Tests for missing object, wrong size/type, outage, cross-user access, and no asset/status mutation on failure | `cd api && go test ./internal/uploads -run 'TestComplete'` passes missing/mismatch/outage/cross-owner/idempotent cases plus malformed UUID rejection before repository access. |
+| 6 | Complete is idempotent/concurrency-safe | Repeat/concurrent completion test plus migration uniqueness/transaction evidence | Against fresh `postgres:16`, `TEST_DATABASE_URL=<local ephemeral> go test -tags=integration -race -run TestRepoCompleteIsConcurrentAndIdempotent ./internal/uploads` passed: two simultaneous completions returned one asset and one completed job. Repository SQL uses `FOR UPDATE`; migration enforces unique asset/key and owner-bound composite FK constraints. |
+| 7 | Database schema is durable and owner-bound | Migration test or clean Postgres migration; schema/constraint inspection for `upload_jobs` and unattached original `item_assets` | All three migrations applied to fresh ephemeral `postgres:16`; inspection returned `migrations=3`, `upload-constraints=11`, `asset-constraints=9`. A wrong-owner asset insert failed (`owner-fk-negative=pass`); the valid transition produced `asset-count=1`, `job-status=completed`. |
+| 8 | API contract and generated client are synchronized | `node scripts/check-api-contract.mjs` and API client generation check | `npm run check:api-contract` passes: `55 route-methods verified, 17 Go route registrations covered`, then `Verified API clients for 55 operations`; `npm --prefix app run typecheck` passes. |
+| 9 | Go quality gates pass | `cd api && go vet ./... && go test ./...` | `cd api && go vet ./...`, `go test ./...`, and `go test -race ./internal/storage ./internal/uploads ./internal/httpx ./cmd/api` all pass. |
+| 10 | Compose/env wiring is valid and has no retired coupling | `docker compose --env-file deploy/compose.env.example config --quiet` plus targeted `rg`/diff review | Production and `-f docker-compose.yml -f docker-compose.dev.yml` dev config both pass `docker compose ... config --quiet`; dev uses non-secret disabled placeholders. `npm run check:repo`, feature-memory guard, and targeted diff review pass; no new Supabase coupling is introduced. |
+| 11 | ADR-003 bucket/key/CORS topology is live | Hetzner/CLI evidence naming bucket, project/region, visibility, current-bucket key boundary, and redacted CORS policy; no credential values | [Official status](https://status.hetzner.com/incident/ebd62173-d902-4e75-939a-265c0b3f1ddb) was re-checked on 2026-07-10 and HEL retained as the advised new-bucket region. Project `15203114`: `capsulezero-prod-private-assets` (HEL/private) and `capsulezero-prod-public-catalog` (HEL/public). Isolated project `15296835`: `capsulezero-prod-backups` (FSN/private/Object Lock enabled). Redacted live audit: `bucket-policy-readback=pass`, `runtime-private-data-plane=pass`, `runtime-public-deny=pass`, `backup-private-object-lock=pass`, and `cors-exact-origin=pass`. Same-project keys retain `s3:*` on the allowlisted bucket and default future-project-bucket access; dedicated key-only projects plus cross-project per-action allows are an explicit activation gate. |
+| 12 | Production env is installed safely | `ssh cz` evidence of required variable names/presence and protected file ownership/mode only; values stay redacted | Safe `ssh cz` readback: `/opt/capsule-zero/.env` is `root:root` mode `600`; every canonical `OBJECT_STORAGE_*` and `BACKUP_S3_*` key appears exactly once; access-id/secret lengths are redacted as 20/40; legacy `BACKUP_OBJECT_STORAGE_*` names are absent; `OBJECT_STORAGE_UPLOADS_ENABLED=false`. |
+| 13 | Real signed object-store smoke passes | Redacted result for 10 MB signed PUT, metadata/read, allowed-origin preflight, disallowed-origin negative, and object deletion | Production-endpoint `cmd/storage-smoke` output: `storage-ready=ok`; `signed-put=ok bytes=10485760`; `head-object=ok`; `signed-get=ok checksum-match`; `cleanup=ok` (delete followed by not-found verification). CORS probes separately passed allowed exact origin and attacker-origin denial for both asset buckets. No URL/key/credential was printed. |
+| 14 | Full repository/SENAR gates pass at PR head | Required GitHub checks, `git diff --check`, feature-memory guard, no unresolved blocking review, PR Done Gate | **Not yet satisfied:** local gates and independent security/DB/docs reviews are resolved; link the draft PR checks and fill the PR Done Gate after the final implementation commit is pushed. Do not declare merge-ready before this row is replaced with current-head evidence. |
 
 ## Risks and mitigations
 
@@ -59,7 +59,18 @@ not evidence.
   cleanup remain explicit follow-ups.
 - **Unattached assets can become orphans.** This slice deliberately lacks the
   wardrobe relationship. Random owner-bound keys and durable job state make a
-  later cleanup/attachment slice possible; no UI exposes this foundation yet.
+  later cleanup/attachment slice possible. Production upload routes stay
+  default-off until per-action key hardening, quota, cleanup, and attachment
+  controls deliberately land.
 - **Hetzner has no default at-rest encryption.** The founder accepted the
   private-photo residual for this bounded foundation; backup contents remain
   forbidden until client-side encryption automation exists.
+- **Current keys are bucket-principal scoped, not action scoped.** Hetzner's
+  same-project default leaves the allowlisted key with bucket control-plane
+  access and access to future project buckets. Production stays disabled;
+  dedicated key-only projects with cross-project exact-action allows are
+  required before uploads or backup automation start.
+- **Public health traffic can amplify provider probes.** The handler keeps
+  Postgres/Kratos probes fresh but serializes and caches the external Object
+  Storage result for five seconds, so a burst cannot fan out into one S3
+  request per caller. Init performs its own fresh probe before signing.

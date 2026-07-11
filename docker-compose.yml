@@ -1,9 +1,9 @@
-# Capsule Zero production-shape stack — Phase 1.
+# Capsule Zero production-shape stack.
 #
-# Phase 1 scope: just enough to serve the existing Next.js landing on
-# https://capsulezero.app behind nginx + Let's Encrypt. Postgres, Kratos, the
-# Go API, the worker, Object Storage/imgproxy, and Grafana arrive in later PRs of
-# `.specify/specs/024-production-stack-runtime/`.
+# Runtime phases 1–2 provide host-nginx/web plus Postgres, Kratos, and the Go
+# API; spec 040 adds the private Hetzner Object Storage dependency and upload
+# foundation. Redis/imgproxy, backup automation, and deferred observability
+# arrive in later slices of `.specify/specs/024-production-stack-runtime/`.
 #
 # Operator runbook: docs_capsule_zero/project/devops/nginx-reverse-proxy.md
 # The previous Supabase-based stack is preserved at
@@ -133,9 +133,9 @@ services:
       retries: 5
       start_period: 20s
 
-  # Go modular monolith — Phase 2 serves the auth/profile bounded context plus
-  # GET /api/health. The browser reaches it only through nginx (/api/* -> api).
-  # Published on loopback so the host (systemd) nginx edge can proxy to it.
+  # Go modular monolith — auth/profile plus the spec-040 private object-storage
+  # upload foundation. The browser reaches it only through nginx (/api/* ->
+  # api). Published on loopback so the host (systemd) nginx edge can proxy to it.
   api:
     image: ${CAPSULE_API_IMAGE:-capsule-zero-api:local}
     build:
@@ -157,6 +157,21 @@ services:
       # Mirrors KRATOS_OIDC_ENABLED: gates /api/auth/google/* and the
       # provider-availability probe the web button reads (spec 037).
       AUTH_GOOGLE_ENABLED: ${AUTH_GOOGLE_ENABLED:-false}
+      # Explicit allowlist: the API uses static, server-only credentials for
+      # presigning and readiness. It never falls back to ambient AWS metadata.
+      OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT:?set OBJECT_STORAGE_ENDPOINT in the env file}
+      OBJECT_STORAGE_REGION: ${OBJECT_STORAGE_REGION:?set OBJECT_STORAGE_REGION in the env file}
+      OBJECT_STORAGE_ACCESS_KEY_ID: ${OBJECT_STORAGE_ACCESS_KEY_ID:?set OBJECT_STORAGE_ACCESS_KEY_ID in the env file}
+      OBJECT_STORAGE_SECRET_ACCESS_KEY: ${OBJECT_STORAGE_SECRET_ACCESS_KEY:?set OBJECT_STORAGE_SECRET_ACCESS_KEY in the env file}
+      OBJECT_STORAGE_PRIVATE_BUCKET: ${OBJECT_STORAGE_PRIVATE_BUCKET:?set OBJECT_STORAGE_PRIVATE_BUCKET in the env file}
+      # Keep unaffiliated direct-upload endpoints closed until per-action key
+      # hardening and the wardrobe attachment/quota slice deliberately activate
+      # them.
+      OBJECT_STORAGE_UPLOADS_ENABLED: ${OBJECT_STORAGE_UPLOADS_ENABLED:-false}
+      # Provisioned policy boundaries for future catalog delivery; spec 040
+      # does not activate public-catalog application behavior.
+      OBJECT_STORAGE_PUBLIC_BUCKET: ${OBJECT_STORAGE_PUBLIC_BUCKET:-capsulezero-prod-public-catalog}
+      OBJECT_STORAGE_PUBLIC_BASE_URL: ${OBJECT_STORAGE_PUBLIC_BASE_URL:-https://capsulezero-prod-public-catalog.hel1.your-objectstorage.com}
     expose:
       - "8080"
     ports:

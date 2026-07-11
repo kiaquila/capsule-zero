@@ -8,7 +8,14 @@ Map every user-visible mutation in the approved HTML prototypes to a backend sli
 
 ## Prerequisite
 
-Slices below depend on `.specify/specs/024-production-stack-runtime/` shipping first. That spec brings up the Go monolith, Kratos, Postgres, Redis, nginx, Hetzner Object Storage, and Resend in docker-compose on the production server (a Hetzner CX23 since 2026-07-02, spec 033; the Cloudflare front-door/CDN is deferred to Stage 2 — v0.1 runs direct DNS). The `/app` frontend stays; its Supabase provider is replaced domain by domain with a real `api` provider as each slice lands.
+Spec 024 phases 1–2 brought up nginx, the Go monolith, Kratos, and Postgres;
+spec 040 adds the private Hetzner Object Storage adapter, health dependency,
+and unattached original-photo upload foundation. Redis, item attachment,
+public-catalog behavior, backups, and the remaining product domains continue
+in their own slices. The production server is a Hetzner CX23 (spec 033), and
+the Cloudflare front-door/CDN remains deferred to Stage 2. The `/app` frontend
+stays; its frozen Supabase provider is replaced domain by domain with the real
+`api` provider.
 
 ## Bounded Contexts In The Monolith
 
@@ -51,17 +58,36 @@ Implementation:
 - Kratos courier configured against Resend SMTP; verification + recovery templates ship with the slice.
 - Web frontend renders Kratos self-service flows in `app/src/app/[locale]/auth/...`.
 
+## Storage Foundation — Original Photo Upload
+
+Spec: `.specify/specs/040-object-storage-upload-foundation/`
+
+Goal: establish the provider-neutral S3 adapter, storage-gated health,
+owner-bound upload job/original-asset schema, and authenticated init/complete
+flow before any profile or wardrobe relation exists.
+
+Delivered boundary:
+
+- private-bucket readiness plus signed PUT/GET and metadata primitives;
+- strict `OBJECT_STORAGE_*` configuration with explicit credentials;
+- server-keyed original-photo init with a sensitive short-lived presigned URL,
+  plus fail-closed completion;
+- one unattached original asset returned idempotently for repeated completion;
+- no frontend wiring, item/avatar attachment, processing, or public delivery.
+
 ## Slice 02 — Profile Avatar Upload
 
-Spec: `.specify/specs/024-profile-avatar-storage/`
+Spec: TBD follow-up to spec 040 (do not reuse an occupied numeric id).
 
 Goal: upload/replace/delete avatar against Hetzner Object Storage, persist `profiles.avatar_asset_id`.
 
 Tests first:
 
 - JPEG/PNG/WebP accepted, oversize/MIME-invalid rejected.
-- `POST /api/uploads/photo/init` with `purpose=avatar` returns a signed PUT URL targeting the private asset bucket's `avatars/` prefix.
-- `POST /api/uploads/photo/complete` writes `item_assets` with `variant=avatar` and the originating user owns it.
+- Extend the spec-040 init contract with a validated `purpose=avatar` mode
+  targeting the private bucket's `avatars/` prefix.
+- Extend the existing asset model for the avatar variant; do not duplicate the
+  upload job, signing, ownership, or completion abstractions.
 - `POST /api/profile/avatar` attaches an `assetId` to the profile.
 - `DELETE /api/profile/avatar` detaches and (optionally) deletes the storage object.
 - Cross-user avatar reads return signed URLs only for owner.
@@ -81,16 +107,17 @@ Tests first:
 - `PATCH /api/items/{id}/status` cycles between `active|uncapsulated|for_sale|for_repair`.
 - Moving an item to `for_sale`/`for_repair` removes capsule membership and triggers OPR/outfit recompute.
 
-## Slice 04 — Clothing Photo Upload And Item Asset Storage
+## Slice 04 — Clothing Photo Attachment
 
-Spec: `.specify/specs/026-item-photo-upload-storage/`
+Spec: TBD follow-up to spec 040 (do not reuse an occupied numeric id).
 
-Goal: photo uploads from Guided Journey and wardrobe detail screens persist to Hetzner Object Storage and attach to items.
+Goal: reuse spec 040's persisted originals from Guided Journey and wardrobe
+detail screens, then attach/replace them on the real wardrobe-item schema.
 
 Tests first:
 
-- Signed PUT URL flow works under the size/MIME bounds.
-- `item_assets` records the original variant.
+- Existing signed PUT/init/complete contracts are reused rather than reimplemented.
+- An unattached owned original asset can be attached to exactly one permitted wardrobe item.
 - Attach/replace asset on a wardrobe item is idempotent.
 - Cross-user signed-URL reuse returns 403.
 - Background-removal job is not enqueued in v0.1 (the worker code stays dormant until Stage 2).
