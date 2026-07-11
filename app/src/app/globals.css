@@ -105,13 +105,13 @@
   justify-content: center;
   border: 1.5px solid var(--tab-active-border);
   border-radius: var(--radius-circle);
-  background: rgba(82, 82, 82, 0.92);
+  background: var(--color-chrome-deep);
   color: var(--color-text-primary);
   cursor: pointer;
 }
 
 .profile-avatar-edit:hover {
-  background: rgba(60, 60, 60, 0.95);
+  background: var(--color-chrome);
   transform: scale(1.06);
 }
 
@@ -3563,7 +3563,7 @@ textarea {
     align-items: center;
     justify-content: space-around;
     border-top: 1px solid var(--color-white-a32);
-    background: rgba(36, 36, 36, 0.98);
+    background: var(--color-chrome);
     box-shadow:
       inset 0 1px 0 var(--color-white-a24),
       var(--shadow-modal-up);
@@ -3638,7 +3638,7 @@ textarea {
 
     bottom: var(--dashboard-more-sheet-bottom);
     border-top-color: var(--glass-highlight);
-    background: rgba(14, 14, 14, 0.96);
+    background: var(--color-chrome-deep);
     box-shadow:
       inset 0 1px 0 var(--color-white-a44),
       var(--shadow-modal-up);
@@ -4484,7 +4484,7 @@ textarea {
   place-items: center;
   border: 1px solid var(--color-white-a24);
   border-radius: var(--radius-circle);
-  background: rgba(18, 18, 18, 0.48);
+  background: var(--color-chrome-glass);
   color: var(--color-text-secondary);
   cursor: pointer;
   backdrop-filter: blur(20px);
@@ -4511,7 +4511,7 @@ textarea {
   overflow: hidden;
   border: 1px solid var(--color-white-a32);
   border-radius: var(--radius-sm);
-  background: rgba(28, 28, 28, 0.92);
+  background: var(--color-chrome);
   box-shadow: var(--shadow-modal);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
@@ -5001,7 +5001,7 @@ textarea {
   width: min(520px, 100%);
   border: 1px solid var(--btn-primary-border);
   border-radius: var(--radius-md);
-  background: rgba(28, 28, 28, 0.9);
+  background: var(--color-chrome);
   box-shadow:
     inset 0 1px 0 var(--color-white-a44),
     var(--shadow-modal);
@@ -5181,7 +5181,7 @@ textarea {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     border-top: 1px solid var(--card-border);
-    background: rgba(36, 36, 36, 0.94);
+    background: var(--color-chrome);
     padding-bottom: max(6px, env(safe-area-inset-bottom));
     backdrop-filter: blur(44px);
     -webkit-backdrop-filter: blur(44px);
@@ -5718,8 +5718,8 @@ textarea {
   flex-direction: column;
   border-left: 1px solid var(--card-border);
   background:
-    linear-gradient(180deg, rgba(24, 24, 24, 0.98), rgba(8, 8, 8, 0.98)),
-    rgba(10, 10, 10, 0.98);
+    linear-gradient(180deg, var(--color-chrome), var(--color-chrome-deep)),
+    var(--color-chrome-deep);
   box-shadow: var(--shadow-drawer);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -5925,7 +5925,7 @@ textarea {
   justify-content: center;
   border: 1px solid var(--color-white-a24);
   border-radius: var(--radius-circle);
-  background: rgba(12, 12, 12, 0.92);
+  background: var(--color-chrome-deep);
   color: var(--color-white);
   cursor: pointer;
 }
@@ -5995,7 +5995,7 @@ textarea {
   flex-wrap: wrap;
   gap: 9px;
   border-top: 1px solid var(--card-bg);
-  background: rgba(10, 10, 10, 0.98);
+  background: var(--color-chrome-deep);
   padding: 16px 24px 24px;
   z-index: 1;
 }
@@ -6037,7 +6037,7 @@ textarea {
 .my-items-toast {
   border: 1px solid var(--glass-nav-border);
   border-radius: var(--radius-sm);
-  background: rgba(22, 22, 22, 0.94);
+  background: var(--color-chrome);
   color: var(--color-text-primary);
   font-size: 13px;
   line-height: 1.45;
@@ -6147,7 +6147,7 @@ textarea {
       var(--color-white-a16),
       var(--input-bg)
     ),
-    rgba(18, 18, 18, 0.54);
+    var(--color-chrome-glass);
   box-shadow: var(--shadow-modal);
   backdrop-filter: blur(44px);
   -webkit-backdrop-filter: blur(44px);

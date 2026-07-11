@@ -78,6 +78,9 @@ export default defineConfig({
       animations: "disabled",
       caret: "hide",
       scale: "css",
+      // The Next dev overlay ("N Issues") mounts asynchronously and races the
+      // screenshot — hide dev-only chrome from baselines.
+      stylePath: "./specs/visual/hide-dev-overlay.css",
     },
   },
   outputDir: "test-results",
