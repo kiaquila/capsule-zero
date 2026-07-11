@@ -40,7 +40,7 @@ description: "Task list for 039-design-system-consistency"
 - [x] T008 [US1] Ratchet `--max-warnings` down as each batch lands (`npm run lint:css` → set the new lower number in `app/package.json`).
 - [x] T009 [US1] After each batch: `ui-ux-designer` runs `design-review` live pass (Lane A: confirm no visual diff; Lane B: confirm the delta matches the ratified row).
 - [x] T010 [US1] Flip the **token rules** (raw rgba/hex/off-scale radius) to **error** severity; keep `--max-warnings` only for the remaining duplicate-selector debt (drops in US4). No new CI wiring needed — `lint:css` already runs in `baseline-checks` and `preflight`.
-- [ ] T011 [US1] **Negative-scenario** guard evidence: a fixture with `border-radius: 7px` / raw white `rgba` makes `lint:css` exit non-zero locally, and a scratch commit shows the required **`baseline-checks`** check red (link the run). Evidence for AC-003 — do not collect it from the `test` check; it never runs stylelint.
+- [x] T011 [US1] **Negative-scenario** guard evidence: a fixture with `border-radius: 7px` / raw white `rgba` makes `lint:css` exit non-zero locally, and a scratch commit shows the required **`baseline-checks`** check red (link the run). Evidence for AC-003 — do not collect it from the `test` check; it never runs stylelint.
 - **Gate (AC-001/002/003):** grep raw `rgba(`/hex outside `tokens.css` = 0 in `app/src` CSS; no off-scale radii; seeded violation fails `baseline-checks`.
 
 ## Phase 4: US2 — Canonical + WCAG-AA (P2)  *(test-first)*
