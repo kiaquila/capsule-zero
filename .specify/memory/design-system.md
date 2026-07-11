@@ -178,7 +178,7 @@ existing component family (e.g. `--btn-*`). Where a mapping reuses an existing s
 cross-component, the row says so ("alias-debt") — re-layering semantics over primitives is
 post-039 refactor debt, not license to invent new one-offs.
 
-### 9.1 New tokens minted (22)
+### 9.1 New tokens minted (25)
 
 **White primitives — `--color-white-aNN` ramp (7):**
 
@@ -238,6 +238,9 @@ post-039 refactor debt, not license to invent new one-offs.
 | `--shadow-modal` | `0 20px 60px rgba(0,0,0,.32)` | Floating layer above panels: language menu (0 22px 70px .26), picker (0 22px 70px .38), uncapsulated modal (0 20px 58px .34), capsule-result empty (0 18px 60px .22), item context menu (0 14px 34px .28 — folded in, slightly larger halo, flagged) |
 | `--shadow-modal-up` | `0 -18px 60px rgba(0,0,0,.32)` | Heavy bottom-sheet elevation (journey create-sheet .34/.30) — deliberately heavier than `--shadow-glass-up` |
 | `--shadow-drawer` | `-18px 0 44px rgba(0,0,0,.26)` | Side drawer (my-items detail panel); recurring pattern for future detail panels |
+
+**Dark-chrome surfaces (3) — addendum, full ratification and mapping in §9.10:**
+`--color-chrome-glass` `rgba(18,18,18,.50)` · `--color-chrome` `rgba(28,28,28,.92)` · `--color-chrome-deep` `rgba(10,10,10,.97)`.
 
 ### 9.2 White alpha-ramp mapping table — all 38 off-token alphas (152 occurrences)
 
@@ -419,7 +422,8 @@ component level (scrim application), not by re-tinting identity tokens.
    componentized, switch to an inline-SVG mask and delete the exception.
 
 No other exceptions. All 38 alphas, all 13 off-scale radii, all 16 shadow geometries, all 6
-overlays and all 8 error tints have a token target above.
+overlays, all 8 error tints and all 15 dark-grey chrome values (§9.10) have a token target
+above.
 
 ### 9.9 Fix-level map (change-at-the-right-level)
 
@@ -431,7 +435,59 @@ overlays and all 8 error tints have a token target above.
 | Manifesto body 17px → weight 400; h2 audit | **screen** (landing / per-screen audit) |
 | Meter family (`a16`/`a32`/`a65` fills) | **component** (meter) |
 | Backdrop unification | **component** (modal/sheet family) |
+| Dark-chrome family (§9.10): 3 tokens; edit-chip + bottom-nav unifications | **token** (chrome ramp) + **component** (chip/nav/sheet families) |
 
 Sequencing per the `design-system` skill: screen/component rows first, token retunes
 (`--color-text-secondary`, `--input-focus-border`) last, each with a live `design-review` pass and
 a one-line rollback (revert the token line).
+
+### 9.10 Addendum — dark-chrome surface family (ratified 2026-07-10, same session)
+
+The colour audit's white/black/yellow/hex classes missed a **dark-grey rgba family**: 15 values
+across 13 declaration sites in `globals.css`, all read in context before this ruling.
+
+**(a) Is dark-chrome legitimate under "never opaque containers"? — YES, ratified.** These are
+not opaque containers: 13 of the 15 values sit under `backdrop-filter: blur(16–64px)` — they are
+**dark glass**, the low-luminance counterpart of `--glass-*`; the two blur-less values are ≤26px
+circular chips over user photography. The family exists precisely where light glass fails: over
+user photos of unknown brightness (menus, drawers, edit chips — where a white surface would also
+contaminate colour perception of the garment) and as fixed mobile chrome over arbitrary scrolled
+content. Same rationale as the §9.1 scrims, one step heavier. **Usage constraints (normative):**
+dark-chrome is permitted only for (1) floating layers — menus, dialogs, pickers, toasts; (2)
+fixed mobile chrome — bottom navs, sheets, drawers and their anchored footers; (3) small controls
+over user photography. Surfaces larger than ~40px must keep backdrop blur. Primary content
+panels stay **light** glass — dark-chrome is never a substitute for `--glass-*` on content.
+Achromatic greys only (constitution §III).
+
+**(b) Tokens minted (3, `--color-*` namespace; counted in the §9.1 total of 25):**
+
+| Token | Value | Role |
+|---|---|---|
+| `--color-chrome-glass` | `rgba(18,18,18,.50)` | Translucent dark glass — chips/underlays that must show content through (blur required) |
+| `--color-chrome` | `rgba(28,28,28,.92)` | Standard floating chrome — menus, dialogs, pickers, toasts, mobile bottom navs (the family mode: 28/.92 is the item-menu value) |
+| `--color-chrome-deep` | `rgba(10,10,10,.97)` | Deepest anchored chrome — drawer base/footers, bottom sheet, edit chips |
+
+**Mapping — all 15 values (Δ grey / Δ alpha; ⚑ = design-review-gated):**
+
+| Value (line, selector) | Target | Δ | Note |
+|---|---|---|---|
+| `rgba(82,82,82,.92)` — L108 `.profile-avatar-edit` (26px chip on avatar) | `--color-chrome-deep` | grey −72, α +.05 **⚑⚑** | Largest deliberate unification: the only mid-grey in the system, reads muddy next to the near-black chrome everywhere else; unifies with the parallel `.my-items-edit-color` chip (same role: circular edit control over user imagery). Rollback = re-pin the two literals |
+| `rgba(60,60,60,.95)` — L114 `.profile-avatar-edit:hover` | `--color-chrome` | grey −32, α −.03 **⚑⚑** | Hover state inverts: with a deep base, hover lightens (deep → chrome) instead of darkening |
+| `rgba(36,36,36,.98)` — L3566 `.dashboard-bottom-nav` (mobile) | `--color-chrome` | grey −8, α −.06 ⚑ | Both mobile bottom-navs unify on one value (today they disagree: .98 vs .94 — intra-family drift); heavy blur(64) keeps depth |
+| `rgba(14,14,14,.96)` — L3641 `.dashboard-more-sheet` (mobile) | `--color-chrome-deep` | grey −4, α +.01 | Imperceptible; sheet remains darker than nav — today's visual ordering preserved |
+| `rgba(18,18,18,.48)` — L4487 `.capsule-result-icon-button` | `--color-chrome-glass` | α +.02 | Exact base grey; the token's namesake |
+| `rgba(28,28,28,.92)` — L4514 `.capsule-result-item-menu` | `--color-chrome` | 0 | Exact — family mode |
+| `rgba(28,28,28,.9)` — L5004 `.capsule-result-dialog`, `.capsule-result-picker` | `--color-chrome` | α +.02 | |
+| `rgba(36,36,36,.94)` — L5184 `.capsule-result-bottom-nav` (mobile) | `--color-chrome` | grey −8, α −.02 ⚑ | Pairs with the dashboard nav row above |
+| `rgba(24,24,24,.98)` — L5721 `.my-items-detail-panel` gradient start | `--color-chrome` | grey +4, α −.06 ⚑ | Gradient becomes `chrome → chrome-deep` — slope (depth cue) preserved with zero extra tokens |
+| `rgba(8,8,8,.98)` — L5721 gradient end | `--color-chrome-deep` | grey +2, α −.01 | |
+| `rgba(10,10,10,.98)` — L5722 drawer solid fallback | `--color-chrome-deep` | α −.01 | |
+| `rgba(12,12,12,.92)` — L5928 `.my-items-edit-color button` (18px chip) | `--color-chrome-deep` | grey −2, α +.05 ⚑ | Mild; chip slightly more solid over a colour swatch |
+| `rgba(10,10,10,.98)` — L5998 `.my-items-detail-actions` (sticky footer) | `--color-chrome-deep` | α −.01 | |
+| `rgba(22,22,22,.94)` — L6040 `.my-items-toast` | `--color-chrome` | grey +6, α −.02 | Imperceptible at near-opaque alpha |
+| `rgba(18,18,18,.54)` — L6150 `.uncapsulated-capsule-modal` dark underlay (beneath its white-glass gradient) | `--color-chrome-glass` | α −.04 ⚑ | Modal underlay marginally more translucent; blur(44) unchanged |
+
+Zero exceptions; §9.8's completeness statement updated accordingly. Fix levels in §9.9.
+Note for T007: at these near-opaque alphas (.90–.98) a base-grey delta of ±8 is below the
+perceptibility of the alpha deltas already accepted in §9.2 — the review-critical rows are the
+two `.profile-avatar-edit` unifications and the two bottom-nav rows.

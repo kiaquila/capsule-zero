@@ -37,7 +37,10 @@ Fix level per `design-system` skill: **screen / component / token**. Order by bl
 | 8 | Tab affordance (verified 2026-07-10): capsule-result has **4** tabs (`items\|outfits\|gaps\|shopping`) as `aria-pressed` buttons with **no hover/focus-visible styles and no tablist/tab roles**; journey + favorites tabs have `role="tab"` + hover but no focus-visible; none have arrow keys — **three divergent implementations**. Dashboard first-run hero exists but panels render headed with blank bodies; **no `loading.tsx`/`error.tsx` app-wide**; nested/empty cards on Outfits *(designer live-app observations — Vanya, refined by code audit)* | One shared tab treatment across all three families (`--tab-active-*` tokens; states per canonical list — behavior spec lands via `design-handoff` in T015); panel empty states + app-level loading/error; flatten nested cards; modal backdrops unify on new `--color-backdrop` (§9.4) | component + screen |
 
 > **Canonical decisions ratified 2026-07-10** (T005): full tables in [`design-system.md` §9](./design-system.md) —
-> 22 new tokens (7 white primitives, 3 text/control-state, 3 scrims/backdrop, 2 dot-rings, 3 error tints, 4 shadows — §9.1),
+> 25 new tokens (7 white primitives, 3 text/control-state, 3 scrims/backdrop, 2 dot-rings, 3 error tints, 4 shadows — §9.1 —
+> plus 3 dark-chrome surfaces, §9.10 addendum: a 15-value dark-grey rgba family the audit's white/black/yellow/hex classes
+> missed; ratified as legitimate dark *glass* — 13 of 15 values sit under backdrop blur — for floating layers, mobile chrome
+> and small controls over user photos, never for primary content panels),
 > 2 retunes (`--color-text-secondary`, `--input-focus-border`), 1 documented exception. Doc follow-up for T022:
 > `docs_capsule_zero/project/frontend/styling.md` still quotes the stale "12px buttons / 24px panels" radii —
 > actualize together with the §9 outcomes in the same change (AGENTS §9 no-doc-drift).
