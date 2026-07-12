@@ -4,7 +4,11 @@
 
 Bring up Capsule Zero's v0.1 production runtime on the production server (a Hetzner CX23 since 2026-07-02, spec 033; originally a DigitalOcean droplet) via docker-compose so that `https://capsulezero.app` serves a healthy stack with every active v0.1 service declared, configured, and health-checked. After the spec ships in full, every subsequent feature slice runs against real Kratos / direct Postgres / Redis / Hetzner Object Storage / Resend from the first PR with no mock-first layer (see ADR-006, ADR-007, and spec 039).
 
-This spec delivers the **runtime**. It does not implement product features beyond what is required to prove that each service is wired correctly — the Go API ships with `GET /api/health` and the auth/profile bounded contexts wired only enough for the health probe and a smoke sign-up. Product features ship in later stateful slices (see `docs_capsule_zero/project/backend/backend-stateful-slices-plan.md`).
+This spec delivers the **runtime** and advances incrementally through stateful
+slices. The Go API now ships `GET /api/health`, the auth/profile bounded
+contexts, and the spec-040 private-upload foundation; wardrobe attachment,
+capsules, catalog search, and the remaining product behavior ship in later
+slices (see `docs_capsule_zero/project/backend/backend-stateful-slices-plan.md`).
 
 ## Phased delivery
 
@@ -13,10 +17,10 @@ The spec ships in incremental PRs against the same feature folder. Each phase ke
 | Phase | Scope | Status |
 | ----- | ----- | ------ |
 | Phase 1 — nginx + web | Replace the host Caddy + legacy Supabase compose with `nginx + web` in `docker-compose.yml`. `https://capsulezero.app/en` keeps serving the existing Next.js landing. | **Shipped** |
-| Phase 2 — Auth vertical slice (Postgres + Kratos + Go API auth + `api` provider) | Add `postgres` (plain `postgres:16`) and `kratos` to compose; scaffold the Go `api` with the auth/profile bounded context (`GET /api/health`, Kratos session validation, `profiles` mapping); nginx routes `/api/*`; add the `api` provider mode in `/app` implementing `AuthPort` + `ProfileRepository` against the Go API. Registration/login work end-to-end on the existing `/app` UI. | **This PR** (verified local; droplet rollout pending) |
+| Phase 2 — Auth vertical slice (Postgres + Kratos + Go API auth + `api` provider) | Add `postgres` (plain `postgres:16`) and `kratos` to compose; scaffold the Go `api` with the auth/profile bounded context (`GET /api/health`, Kratos session validation, `profiles` mapping); nginx routes `/api/*`; add the `api` provider mode in `/app` implementing `AuthPort` + `ProfileRepository` against the Go API. Registration/login work end-to-end on the existing `/app` UI. | **Shipped** |
 | Phase 3 — Redis + remaining `/api/*` surface | Add `redis` and the Redis queue consumer goroutines inside `api`; widen `/api/*` coverage as the next domain slices land. | Pending |
-| Phase 4 — Storage + email + imgproxy | Hetzner Object Storage buckets with CORS for `https://capsulezero.app`. Resend domain verified with SPF + DKIM. `imgproxy` deployed for on-the-fly derivatives. | Pending |
-| Phase 5 — Observability + backups | syslog rotation, OTLP trace exporter, and nightly encrypted `pg_dump` cron with 14-day object-retention policy. Grafana remains deferred by ADR-007. | Pending |
+| Phase 4 — Storage + email + imgproxy | Hetzner Object Storage buckets with CORS for `https://capsulezero.app`. Resend domain verified with SPF + DKIM. `imgproxy` deployed for on-the-fly derivatives. | **Partial** — Resend and the spec-040 default-off storage foundation are complete: buckets, dedicated bucketless runtime/backup key projects, cross-project action policies, exact asset CORS/negative probes, absent backup CORS, protected-env credential rotation, old-key/operator revocation, and the post-revocation signed 10 MiB smoke. `imgproxy` remains. |
+| Phase 5 — Observability + backups | syslog rotation, OTLP trace exporter, and nightly encrypted `pg_dump` cron with 14-day object-retention policy. Backup activation must reject Object Lock headers on `PutObject` and explicitly accept or close Hetzner's remaining write-time retention/hold residual. Grafana remains deferred by ADR-007. | Pending |
 | Phase 6 — Supabase provider retirement | `/app` **stays** (it is the real frontend). Once every domain is on the `api` provider, remove the Supabase provider and `@supabase/*`, drop the unused `/web` placeholder, and retire `docker-compose.legacy-supabase.yml` + the Supabase env keys. No `/app` → `/web` rename. | Pending |
 
 Each phase ships as its own PR with feature-memory updates against this folder. The `## Verification` table in `plan.md` records acceptance criteria for each phase separately.
@@ -39,16 +43,24 @@ Each phase ships as its own PR with feature-memory updates against this folder. 
   - `infra/postgres/` — init scripts: provision the Kratos database + role and the app database (Phase 2). pgvector is deferred by ADR-007 to the semantic catalog-search slice.
 - `api/migrations/` — SQL migrations applied at boot by the embedded migrator. The auth slice ships `0001_initial_auth.sql` (`profiles`); the wardrobe/capsule/catalog schema plus methodology seed (`color_catalog`, `category_catalog`, `compatibility_rules`) arrive with their domain slices.
 - ~~Cloudflare configuration walkthrough (DNS, proxy on, SSL/TLS Full strict, Bot Fight Mode)~~ — the Cloudflare front-door is **deferred to Stage 2** (founder decision 2026-07-02, spec 033); v0.1 runs direct DNS → host nginx
-- Hetzner Object Storage buckets for private uploads, public catalog assets, and encrypted backups, with CORS limited to `https://capsulezero.app` where browser upload/download flows require it (Phase 4)
+- Hetzner Object Storage buckets for private uploads, public catalog assets,
+  and encrypted backups; bucketless key-only projects for runtime/backup
+  credentials with cross-project prefix/action policies; CORS limited to
+  `https://capsulezero.app` where browser upload/download flows require it
+  (Phase 4)
 - Resend account verified for `no-reply@capsulezero.app` with SPF/DKIM published (Phase 4)
 - Nightly cron uploading an age-encrypted `pg_dump` to the backup object-storage bucket with a 14 day retention rule (Phase 5)
 - syslog rotation plus OpenTelemetry trace exporter wiring (Phase 5); Grafana dashboard provisioning is deferred by ADR-007
 - Operator runbook updates per phase. `docs_capsule_zero/project/devops/nginx-reverse-proxy.md` covers Phase 1; `sprint-0-runtime-provisioning.md` and `docker-compose-deploy.md` are updated as services arrive.
-- Encrypted `.env` file shipped via the operator's machine to `/opt/capsule-zero/.env` with mode `600` (kept up to date per phase)
+- Protected plaintext `.env` installed at `/opt/capsule-zero/.env`, owned by
+  `root:root` with mode `600` (kept up to date per phase; filesystem encryption
+  is not established)
 
 ### Out of scope
 
-- Product features beyond `/api/health` and an end-to-end sign-up/sign-in on the existing `/app` UI (e.g. the wardrobe domain, capsule engine, catalog search — those are later stateful slices)
+- Product features beyond the landed auth/profile and unattached private-upload
+  foundations (for example wardrobe attachment, the capsule engine, and catalog
+  search — those are later stateful slices)
 - **Password recovery and email-verification completion.** The Kratos recovery/verification flows are disabled and the auth UI exposes no recovery affordance in this slice, because there is no flow-aware completion UI (the auth page does not read the Kratos `flow`/`code` params) and no Go settings/verification endpoints yet. Shipping a recovery/verification email that dead-ends on a UI that cannot complete it is worse than deferring; the completion UI + endpoints land in a dedicated follow-up slice. Recovery action/schema/provider/Go-endpoint plumbing is kept dormant for it.
 - Lava.top live integration (v0.2 — Lava.top remains stubbed)
 - Self-hosted Capsule Zero image-processing model (Stage 2)
@@ -67,16 +79,18 @@ The runtime must survive the following without silently degrading. Each is cover
 | - | -------- | ----------------- |
 | 1 | **nginx starts before the Let's Encrypt cert exists.** First boot must not crash silently; the runbook's bootstrap step requires `certbot certonly --standalone` to land the cert before `docker compose up`. | Phase 1 |
 | 2 | **Web container is unhealthy (Next.js exits or fails its `/en` probe).** nginx must surface a `502 Bad Gateway` page rather than serving a stale 200; `docker compose ps` must show `web` as `(unhealthy)` inside its `start_period`. | Phase 1 |
-| 3 | **Postgres unreachable from the Go API.** `GET /api/health` must return HTTP 503 with `postgres: "error"`, not HTTP 200 with stale cached data. | Phase 2 |
+| 3 | **Postgres unreachable from the Go API.** `GET /api/health` probes Postgres on every request and must return HTTP 503 with `postgres: "error"`, not HTTP 200 from the five-second cache used only for the external Object Storage probe. | Phase 2 |
 | 4 | **Resend rejects an email send.** Kratos verification flow must surface a safe inline error on the web UI; the API must log the failure to syslog with a correlation id; no half-created identity is left orphaned. | Phase 4 |
-| 5 | **Object Storage credentials invalid or bucket misconfigured CORS.** Signed PUT round-trip must fail closed; the API health probe must report `storage: "error"`; the web upload UI must show a safe inline error. | Phase 4 |
+| 5 | **Object Storage credentials invalid or bucket misconfigured CORS.** The API health probe reports `storage: "error"`, init returns no URL when storage is unavailable, and allowed/disallowed production origins are verified by preflight. Frontend error UI is deferred because spec 040 deliberately has no web wiring. | Phase 4 |
 | 6 | **`docker compose up` on a droplet that already has data volumes.** Migrations must be idempotent — the embedded SQL migrator must not double-apply, Kratos migrations must respect their tracking table. A repeated `docker compose up -d` on a healthy stack must be a no-op. | Phase 2 |
 
 ## Constraints
 
 - Production server ≥ 2 vCPU / 4 GB RAM (current: Hetzner CX23 — 2 vCPU / 4 GB / 40 GB, Ubuntu 26.04; superseded the DigitalOcean droplet requirement 2026-07-02, spec 033). The runtime fails closed if memory pressure drives any service into OOM during the first-start smoke.
 - DNS: `capsulezero.app` A records point directly at the production server; the Cloudflare cut-over (Spaceship nameservers → Cloudflare proxy → nginx) is **deferred to Stage 2** (founder decision 2026-07-02, spec 033). No third-party CDN is active in v0.1; public catalog assets use native Hetzner Object Storage object URLs until the Stage-2 CDN/front-door decision.
-- All secrets live only in the droplet's encrypted `.env` and provider dashboards. Never in git, never in chat with agents.
+- All secrets live only in protected plaintext `/opt/capsule-zero/.env`
+  (`root:root`, mode `600`) and provider dashboards. Filesystem encryption is
+  not established. Never in git, never in chat with agents.
 - Every deployed v0.1 container in `docker-compose.yml` is its own `services:` block. The one explicit exception is the Redis queue consumer, which runs as goroutines inside `api` until ADR-007 promotes the standalone worker.
 - syslog files rotate daily with 7 day retention (Phase 5).
 - Backups are not optional: the nightly `pg_dump` cron lands in Phase 5, not in a follow-up.

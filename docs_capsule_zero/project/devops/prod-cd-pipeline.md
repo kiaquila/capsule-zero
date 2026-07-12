@@ -25,6 +25,7 @@ Internet → host nginx :80/:443 (TLS: capsulezero.app)
 
 compose project `capsule-zero` (root docker-compose.yml):
    web → api:8080 → kratos:4433/4434 + postgres:5432   (internal network only)
+                  ↘ Hetzner private Object Storage via HTTPS (external)
 ```
 
 Host nginx vhosts are version-controlled in `infra/nginx-host/` and synced by the deploy
@@ -80,7 +81,7 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
 - **From a browser / GitHub:** the repo home → **Environments → production**, or the
   **Deployments** page — the Active deployment is the verified live commit.
 - **From one `curl`:** `curl -s https://capsulezero.app/api/health` returns
-  `{"ok":true,"commit":"<gitsha>","builtAt":"<rfc3339>","postgres":"ok","kratos":"ok"}`.
+  `{"ok":true,"commit":"<gitsha>","builtAt":"<rfc3339>","postgres":"ok","kratos":"ok","storage":"ok"}`.
   Compare `commit` to `git rev-parse origin/main` to see whether the latest merge landed.
 - **On the host:** `ssh cz "docker ps --format '{{.Names}}\t{{.Image}}'"` (image tag) or
   `docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}'
@@ -147,6 +148,43 @@ Note: `KRATOS_SMTP_CONNECTION_URI` carries the real Resend sending key since 202
 (`smtps://resend:<key>@smtp.resend.com:2465/`). Port 2465, NOT 465 — Hetzner Cloud blocks
 outbound 25/465 platform-wide; 587/2465/2587 are open (SMTP AUTH verified from the host).
 The recovery/verification code emails depend on it (spec 035).
+
+Spec 040 also requires the canonical `OBJECT_STORAGE_*` variables from
+`deploy/compose.env.example`. They are installed only in this protected env
+file. The runtime credential belongs to bucketless key-only project `15302873`;
+the private HEL bucket policy grants `s3:ListBucket` plus object
+put/get/delete only under `item-originals/*` and `smoke/spec-040/*`, while the
+public bucket explicitly denies that principal `s3:*`. The FSN backup writer
+belongs to bucketless key-only project `15302925`. Its hybrid policy allows
+normal `s3:PutObject` under `postgres/*`; live probes confirmed explicit denies
+for object/version reads, ACL get/put, retention/legal-hold get/put,
+object/version deletes, governance bypass, bucket/version/multipart listing,
+and policy/CORS/Object-Lock-configuration reads. Put header conditions also
+reject dangerous canned ACLs and AllUsers grant-read. The backup credential
+remains in canonical `BACKUP_S3_*` variables and is not passed to the API.
+
+Hetzner/RGW still accepts `PutObject` with Object Lock mode, retain-until, or
+legal-hold headers despite the corresponding action denies. This cannot read
+or delete existing data, but can create newly locked objects and amplify
+storage cost/denial of service. Backup automation remains disabled until its
+uploader forbids/sanitizes those headers and the residual is explicitly
+accepted or fixed by the provider.
+
+Policy/CORS readback, the runtime audit, the caveated backup hybrid-policy
+audit, proof that both key projects are bucketless, and atomic env rotation
+passed on 2026-07-11. The env
+remained `root:root` mode `600`, and
+`OBJECT_STORAGE_UPLOADS_ENABLED=false` keeps init/complete closed until the
+quota/cleanup/wardrobe-attachment rollout lands. The superseded same-project
+runtime/backup keys and both temporary policy operators were deleted in the
+Hetzner Console; only the new cross-project keys remain. The post-revocation
+standalone Go smoke passed readiness, signed PUT of exactly `10485760` bytes,
+HEAD, signed GET checksum match, and cleanup. Private/public exact-origin CORS
+probes returned `200` with their exact headers and max-age `300`; attacker
+origins and backup preflight returned `403` without
+`Access-Control-Allow-Origin`. Backup automation remains deferred until the
+header/risk gate above plus client-side encryption, scheduling, retention, and
+restore verification land.
 
 ### 4. TLS certificate + host nginx
 

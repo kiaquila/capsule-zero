@@ -10,6 +10,12 @@ Hosting and front-door revised 2026-07-02 (spec 033): the DigitalOcean droplet i
 
 Storage revised 2026-07-10 (spec 039): DigitalOcean Spaces in DI-004 is superseded by **Hetzner Object Storage**. The dated DI-004 row keeps its 2026-06-27 wording as history; current storage posture lives in ADR-003 and uses provider-neutral `OBJECT_STORAGE_*` / `BACKUP_S3_*` env keys.
 
+Storage implementation advanced 2026-07-10 (spec 040): the `internal/storage`
+and `internal/uploads` packages, authenticated original-photo init/complete
+routes, and the `0003_object_storage_uploads.sql` migration landed. The API is
+still a standard-library `net/http` router with a textual OpenAPI guard; Redis,
+processed variants, and backup automation remain deferred.
+
 ## Purpose
 
 This document records the Architectura-style decision pass that produced the v0.1 production architecture. The durable source of truth remains the Capsule Zero ADRs (`docs_capsule_zero/adr/`); this council document captures the reasoning and quorum behind them.
@@ -88,7 +94,14 @@ Capsule Zero is a mobile-first product with two clients over one self-hosted bac
 - **Web** — Next.js App Router served by the `web` container.
 - **Mobile** — React Native iOS/Android app distributed through TestFlight and Google Play internal testing.
 
-A **Go modular monolith** behind **nginx** owns identity (via Kratos), relational data, signed-URL issuance, background jobs, and search. Postgres handles structured data and FTS in v0.1; pgvector is deferred until the semantic-search slice. Redis handles cache, sessions, and the job queue. Hetzner Object Storage handles private uploads, public catalog assets, and encrypted backups. Resend handles transactional email. Cloudflare absorbs the noisy traffic floor from its Stage-2 activation on (deferred 2026-07-02, spec 033 — v0.1 runs direct DNS to the host nginx edge).
+A **Go modular monolith** behind **nginx** owns identity (via Kratos), relational data, and signed-URL issuance; later slices add the remaining search and background-job surface. Postgres handles the currently landed auth/profile and original-upload schema; FTS domain tables arrive with their slice, while pgvector is deferred. Redis is the accepted future cache/queue choice but is not in the active compose stack yet. Hetzner Object Storage asset and Object-Locked backup buckets are provisioned, but encrypted database-backup automation remains Phase 5 work. Resend is provisioned as the Kratos SMTP courier. Cloudflare absorbs the noisy traffic floor from its Stage-2 activation on (deferred 2026-07-02, spec 033 — v0.1 runs direct DNS to the host nginx edge).
+
+Direct presigned URLs are intentionally short-lived bearer capabilities, not
+opaque handles: their host/path/query reveal the bucket, object key, and
+access-key ID. The founder accepts the bounded original-only residual that an
+unexpired PUT URL can be replayed to overwrite the final object and make the
+persisted ETag stale after completion. Broader storage use must revisit staging
+keys, conditional writes, or an API proxy.
 
 Custom Go services can be extracted out of the monolith later — the first natural extraction is the image-processing worker when the self-hosted Capsule Zero model lands.
 
@@ -97,8 +110,8 @@ Custom Go services can be extracted out of the monolith later — the first natu
 - Founder approval on the rewritten ADRs (`adr-001-stack.md`, `adr-002-auth.md`, `adr-003-storage.md`, `adr-006-mock-first-mvp-stage-one.md`).
 - DigitalOcean droplet upgrade to at least 4 GB / 2 vCPU / 80 GB. (Resolved 2026-07-02 by migrating to a Hetzner CX23 instead — spec 033.)
 - Spaceship DNS pointed at Cloudflare nameservers; Cloudflare proxy enabled on `capsulezero.app`. (Deferred to Stage 2 — 2026-07-02.)
-- Resend account created and SPF/DKIM published.
-- Hetzner Object Storage buckets created with CORS for `capsulezero.app` where browser upload/download flows require it.
+- ~~Resend account created and SPF/DKIM published.~~ Completed 2026-07-03.
+- ~~Hetzner Object Storage buckets created with CORS for `capsulezero.app` where browser upload/download flows require it.~~ Buckets, scoped policies, exact-origin asset CORS, absent backup CORS, protected server env, and the redacted signed 10 MiB smoke completed 2026-07-10. Upload activation remains default-off pending quota/cleanup/attachment.
 - Ship `.specify/specs/024-production-stack-runtime/`.
 - Retire the Supabase provider inside `/app` domain by domain as Go API bounded contexts land; do not introduce a `/web` frontend.
 - Configure linting and local commit hooks before the first product-code PR.
@@ -112,4 +125,4 @@ Custom Go services can be extracted out of the monolith later — the first natu
 | Brief coverage         | Ready    | Covers backend, DB, auth, storage, image processing, hosting, web, React Native mobile, state, API, forms, i18n, coins, catalog search, gateway, queue, email, DNS, observability. |
 | Consistency            | Ready    | Decisions align with v0.1 scope, prototypes, and existing devops docs.                                                                                                             |
 | Implementation realism | Advisory | The 4 GB droplet is tight; image model and observability expansion are gated on either workload growth or a droplet upgrade.                                                       |
-| Risk visibility        | Ready    | Main risks are droplet memory ceiling, self-hosted image model build cost, marketplace parser fragility, and operational ownership of Kratos/Postgres/Object Storage backups.       |
+| Risk visibility        | Ready    | Main risks are droplet memory ceiling, the accepted presigned-PUT replay/stale-ETag residual, self-hosted image model build cost, marketplace parser fragility, and deferred backup automation. |

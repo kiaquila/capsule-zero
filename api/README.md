@@ -1,29 +1,41 @@
-# /api — Go modular monolith (scaffold)
+# /api — Go modular monolith
 
-Implementation in [`.specify/specs/024-production-stack-runtime/`](../.specify/specs/024-production-stack-runtime/).
+The implemented API covers auth/profile plus the spec-040 private original-photo
+upload foundation. Runtime delivery is tracked in
+[spec 024](../.specify/specs/024-production-stack-runtime/) and the current
+storage slice in
+[spec 040](../.specify/specs/040-object-storage-upload-foundation/).
 
-Target structure (from `docs_capsule_zero/project/backend/backend-docs.md`):
+Current layout:
 
-```
-cmd/api/                        ← main.go: wiring + HTTP server
+```text
+cmd/
+  api/                           <- wiring, net/http ServeMux, health probe
+  storage-smoke/                 <- redacted signed upload/read/cleanup probe
 internal/
-  auth/                         ← Kratos session validation, user resolution
-  profile/                      ← profiles, language, avatar metadata
-  wardrobe/                     ← items, wardrobe_entries, favorites, statuses
-  capsule/                      ← capsules, palette, members, outputs
-  methodology/                  ← color compatibility, OPR, gap analysis (pure logic)
-  upload/                       ← signed PUT URLs, upload_jobs, asset attach
-  marketplace/                  ← link parser adapters, import jobs
-  catalog/                      ← FTS-first catalog search; pgvector deferred by ADR-007
-  billing/                      ← Lava.top stub, invoice + webhook handlers, coin ledger
-  moderation/                   ← admin moderation queue
-  storage/                      ← S3-compatible Object Storage client wrapper
-  email/                        ← Resend client wrapper
-  eventbus/                     ← Redis-backed job enqueue / consume
-  httpapi/                      ← chi router, OpenAPI-typed handlers, middleware
-  obs/                          ← logger, tracer, syslog sink
-migrations/                     ← versioned SQL files
-Dockerfile                      ← multi-stage Go build → distroless runtime
+  auth/                          <- Kratos session and auth flows
+  config/                        <- fail-closed runtime configuration
+  db/                            <- pgx pool and embedded migration runner
+  httpx/                         <- JSON request/response helpers
+  kratos/                        <- Kratos client
+  profiles/                      <- profile repository and handlers
+  ratelimit/                     <- in-process request throttling
+  storage/                       <- S3-compatible private Object Storage adapter
+  uploads/                       <- authenticated photo init/complete lifecycle
+migrations/
+  0001_initial_auth.sql
+  0002_profiles_email_unique.sql
+  0003_object_storage_uploads.sql
+Dockerfile                       <- multi-stage Go build to distroless runtime
 ```
 
-Until spec 024 lands, this directory is a placeholder. `docker compose up` is not expected to succeed.
+The runtime router is the standard-library `net/http` `ServeMux`; it is not an
+OpenAPI-generated router. `docs_capsule_zero/adr/openapi.yaml` remains the
+client contract, while `scripts/check-api-contract.mjs` is a textual guard that
+keeps the OpenAPI operations aligned with `api-spec.md`. Go route and handler
+behavior is verified by package tests.
+
+The current upload schema supports only `photo_upload` jobs transitioning from
+`queued` to `completed`, plus unattached `original` item assets. Redis queue
+consumers, processed variants, backup automation, and the remaining product
+bounded contexts are deferred to later slices.

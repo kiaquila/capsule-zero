@@ -124,6 +124,18 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
+    TooManyRequests:
+      description: The per-client request budget is exhausted temporarily.
+      headers:
+        Retry-After:
+          description: Seconds until the client should retry.
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
     SemanticValidation:
       description: Domain rule validation failed.
       content:
@@ -138,6 +150,12 @@ components:
             $ref: "#/components/schemas/ErrorResponse"
     BadGateway:
       description: Upstream identity service is temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ServiceUnavailable:
+      description: The feature is disabled or a required runtime dependency is unavailable.
       content:
         application/json:
           schema:
@@ -157,6 +175,10 @@ components:
         - INSUFFICIENT_BALANCE
         - WEBHOOK_AUTH_FAILED
         - RATE_LIMITED
+        - FEATURE_UNAVAILABLE
+        - STORAGE_UNAVAILABLE
+        - UPLOAD_INCOMPLETE
+        - UPLOAD_MISMATCH
         - INTERNAL_ERROR
     ErrorResponse:
       type: object
@@ -783,21 +805,24 @@ components:
       properties:
         fileName:
           type: string
+          minLength: 1
+          maxLength: 255
+          pattern: "^(?!\\.\\.?$)[^/\\\\]+$"
+          description: Original basename for validation/audit only; never used as the object key.
         contentType:
           type: string
           enum: [image/jpeg, image/png, image/webp]
         sizeBytes:
           type: integer
+          minimum: 1
           maximum: 10485760
-        exifOrientation:
-          type: [integer, "null"]
-          description: Mobile EXIF orientation value to normalize before processing.
-        checksum:
-          type: [string, "null"]
-          description: Client image hash used to deduplicate paid processing.
     PhotoUploadInitResponse:
       type: object
-      required: [jobId, assetId, uploadUrl, storagePath]
+      description: >-
+        Direct-upload contract. Clients must send every returned upload header.
+        The presigned URL is sensitive and may reveal provider routing details,
+        the bucket name, and the server-generated object key; never log it.
+      required: [jobId, assetId, uploadUrl, uploadHeaders, expiresAt]
       properties:
         jobId:
           type: string
@@ -807,8 +832,15 @@ components:
           format: uuid
         uploadUrl:
           type: string
-        storagePath:
+          format: uri
+        uploadHeaders:
+          type: object
+          additionalProperties:
+            type: string
+          description: Exact request headers signed into the PUT URL, including Content-Type.
+        expiresAt:
           type: string
+          format: date-time
     PhotoUploadCompleteRequest:
       type: object
       required: [jobId, assetId]
@@ -819,6 +851,24 @@ components:
         assetId:
           type: string
           format: uuid
+    PhotoUploadCompleteResponse:
+      type: object
+      required: [id, assetId, jobType, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Upload job id.
+        assetId:
+          type: string
+          format: uuid
+          description: Stable original asset id returned by init and idempotent completion.
+        jobType:
+          type: string
+          enum: [photo_upload]
+        status:
+          type: string
+          enum: [completed]
     BackgroundRemovalRequest:
       type: object
       properties:
@@ -1038,7 +1088,7 @@ components:
         Deployment health probe with build identity. `commit` and `builtAt`
         are stamped at link time (`-ldflags -X`, see api/Dockerfile); a build
         without injection reports "unknown", never an empty string.
-      required: [ok, commit, builtAt, postgres, kratos]
+      required: [ok, commit, builtAt, postgres, kratos, storage]
       properties:
         ok:
           type: boolean
@@ -1052,6 +1102,9 @@ components:
           type: string
           enum: [ok, error]
         kratos:
+          type: string
+          enum: [ok, error]
+        storage:
           type: string
           enum: [ok, error]
     IdResponse:
@@ -1925,7 +1978,12 @@ paths:
       tags: [Uploads]
       operationId: initPhotoUpload
       x-auth: user
-      summary: Validate metadata and return signed upload target.
+      summary: Validate metadata and return a presigned upload target.
+      description: >-
+        The default-off feature gate runs before session resolution and returns
+        503 FEATURE_UNAVAILABLE while uploads are disabled. When enabled,
+        signing/readiness can return 503 STORAGE_UNAVAILABLE and session
+        resolution can return 502 when the identity service is unavailable.
       requestBody:
         required: true
         content:
@@ -1941,14 +1999,27 @@ paths:
                 $ref: "#/components/schemas/PhotoUploadInitResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
-        "409":
-          $ref: "#/components/responses/Conflict"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /api/uploads/photo/complete:
     post:
       tags: [Uploads]
       operationId: completePhotoUpload
       x-auth: user
-      summary: Create item asset metadata after upload.
+      summary: Verify and complete an initialized photo upload.
+      description: >-
+        The default-off feature gate runs before session resolution and returns
+        503 FEATURE_UNAVAILABLE while uploads are disabled. When enabled,
+        object verification can return 503 STORAGE_UNAVAILABLE and session
+        resolution can return 502 when the identity service is unavailable.
       requestBody:
         required: true
         content:
@@ -1961,9 +2032,23 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UploadJob"
+                $ref: "#/components/schemas/PhotoUploadCompleteResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /api/uploads/{jobId}/background-removal:
     parameters:
       - $ref: "#/components/parameters/jobId"
@@ -2322,5 +2407,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /livez:
+    get:
+      tags: [Health]
+      operationId: getLiveness
+      x-auth: public
+      x-client-availability: server
+      x-internal: true
+      security: []
+      summary: Dependency-free container liveness probe.
+      responses:
+        "204":
+          description: The API HTTP process is serving.
         "400":
           $ref: "#/components/responses/BadRequest"

@@ -29,7 +29,7 @@ When you change an architecture or implementation decision, actualize **all** af
 
 - **Reuse before you add — check before you write.** Before creating any new module / function / component / service / adapter / schema / helper, search for an existing one that already owns the responsibility and extend it. If you still add a new unit, state in the PR — in one line — which existing unit you checked and why it didn't fit. Full contract: **AGENTS.md §7 (Engineering Reuse Rule & Module-Size Discipline)**.
 - **Module-size soft gate** (a signal to split, not a hard CI failure): functions ≤ ~60 lines; files ≤ ~300 (TS/React) / ~500 (Go); cyclomatic complexity ≤ 15. Wired as **warnings** in `app/eslint.config.mjs` and opt-in `api/.golangci.yml` — they never fail CI; the Go file-size row is review-only (no file-length linter wired). Exceeding a threshold needs a one-line justification in the PR. Details: AGENTS.md §7.
-- **No Supabase / legacy-backend recoupling** (NON-NEGOTIABLE): `/app` is the canonical provider-abstracted frontend; current provider modes are `mock` and `supabase`, and the frozen Supabase provider is retired **domain by domain** only as real Go API contexts land. Never re-introduce `SUPABASE_*` env or Supabase clients into any new spec, `docker-compose*.yml`, workflow, infra config, or doc. Full rule + the PR-#53 regression: AGENTS.md §8.
+- **No Supabase / legacy-backend recoupling** (NON-NEGOTIABLE): `/app` is the canonical provider-abstracted frontend; `api` is the production Go/Kratos mode, `mock` is local/CI only, and frozen `supabase` legacy domains are retired **domain by domain** as real Go API contexts land. Never re-introduce `SUPABASE_*` env or Supabase clients into any new spec, `docker-compose*.yml`, workflow, infra config, or doc. Full rule + the PR-#53 regression: AGENTS.md §8.
 
 ## Design Principles (NON-NEGOTIABLE)
 
@@ -53,7 +53,7 @@ When you change an architecture or implementation decision, actualize **all** af
 
 ## Current Phase
 
-**Phase 5 — Development Sprint, in progress** against `.specify/specs/024-production-stack-runtime/`. Phases 1–2 have landed (nginx + web; Postgres + Kratos + Go API + the `api` provider, PR #57). Every merge to `main` auto-deploys the full stack to `https://capsulezero.app` via `.github/workflows/cd-prod.yml` (spec 033) — there is no separate dev environment. Postgres is plain `postgres:16` (pgvector deferred, ADR-007). Full status and decisions: AGENTS.md → "Current Phase & Status" and "Phase 4 — Technical Architecture".
+**Phase 5 — Development Sprint, in progress.** Runtime Phases 1–2 have landed (nginx + web; Postgres + Kratos + Go API + the `api` provider, PR #57); the current application slice is `.specify/specs/040-object-storage-upload-foundation/`. Asset buckets exist in project `15203114` / HEL and the Object-Locked backup bucket in project `15296835` / FSN. Runtime and backup-writer credentials live in bucketless key-only projects `15302873` and `15302925`, with cross-project policies. The runtime audit passed; the backup hybrid-policy audit proved normal puts plus read/delete/control/list/ACL denies and dangerous ACL header guards, but Hetzner/RGW still accepts Object Lock mode/retain-until/legal-hold headers on `PutObject`. That bounded write-time storage-DoS/cost residual does not expose or delete existing data and keeps backup automation gated on header sanitization plus explicit acceptance/provider fix alongside the Phase-5 backup controls. Policy/CORS readback, absent backup CORS, protected env rotation, superseded-key revocation, and the post-revocation signed 10 MiB PUT/HEAD/GET/checksum/delete smoke passed. Upload routes remain production-disabled by default until quota/cleanup and wardrobe attachment land. Every merge to `main` auto-deploys to `https://capsulezero.app` through `.github/workflows/cd-prod.yml` (spec 033) — there is no separate dev environment. Postgres is plain `postgres:16` (pgvector deferred, ADR-007). Full status and decisions: AGENTS.md → "Current Phase & Status" and "Phase 4 — Technical Architecture".
 
 ## Build & Dev Commands
 
@@ -81,7 +81,11 @@ This project uses spec-kit (`.specify/`). Read the relevant spec folder under `.
 
 ## Tests
 
-All tests live under `tests/` (`tests/e2e/` Playwright → `/app`; `tests/unit/` Go; `tests/mobile/` Detox stub). Required GitHub check: **`test`**. Follow [`tests/README.md`](tests/README.md) for the TDD loop, POM/selector rules, and run commands.
+Web/mobile suites live under `tests/`; Go package tests are co-located as
+`api/**/*_test.go` and run with `cd api && go vet ./... && go test ./...`.
+`tests/unit/` is reserved for a future cross-package suite. Required GitHub
+check: **`test`**. Follow [`tests/README.md`](tests/README.md) for the TDD loop,
+POM/selector rules, and run commands.
 
 ## Delivery
 

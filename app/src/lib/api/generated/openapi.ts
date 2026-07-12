@@ -388,6 +388,13 @@ export const API_OPERATIONS = [
     "operationId": "handleMobileAuthCallback",
     "auth": "public",
     "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "GET",
+    "path": "/livez",
+    "operationId": "getLiveness",
+    "auth": "public",
+    "clientAvailability": "server"
   }
 ] as const;
 
@@ -408,12 +415,16 @@ export const API_ERROR_CODES = [
   "INSUFFICIENT_BALANCE",
   "WEBHOOK_AUTH_FAILED",
   "RATE_LIMITED",
+  "FEATURE_UNAVAILABLE",
+  "STORAGE_UNAVAILABLE",
+  "UPLOAD_INCOMPLETE",
+  "UPLOAD_MISMATCH",
   "INTERNAL_ERROR"
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
-export type ErrorCode = "VALIDATION_ERROR" | "INVALID_CODE" | "INVALID_CURRENT_PASSWORD" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "IDEMPOTENCY_CONFLICT" | "SEMANTIC_VALIDATION_FAILED" | "INSUFFICIENT_BALANCE" | "WEBHOOK_AUTH_FAILED" | "RATE_LIMITED" | "INTERNAL_ERROR";
+export type ErrorCode = "VALIDATION_ERROR" | "INVALID_CODE" | "INVALID_CURRENT_PASSWORD" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "IDEMPOTENCY_CONFLICT" | "SEMANTIC_VALIDATION_FAILED" | "INSUFFICIENT_BALANCE" | "WEBHOOK_AUTH_FAILED" | "RATE_LIMITED" | "FEATURE_UNAVAILABLE" | "STORAGE_UNAVAILABLE" | "UPLOAD_INCOMPLETE" | "UPLOAD_MISMATCH" | "INTERNAL_ERROR";
 
 export type ErrorResponse = {
   error: {
@@ -697,20 +708,26 @@ export type PhotoUploadInitRequest = {
   fileName: string;
   contentType: "image/jpeg" | "image/png" | "image/webp";
   sizeBytes: number;
-  exifOrientation?: number | null;
-  checksum?: string | null;
 };
 
 export type PhotoUploadInitResponse = {
   jobId: string;
   assetId: string;
   uploadUrl: string;
-  storagePath: string;
+  uploadHeaders: Record<string, string>;
+  expiresAt: string;
 };
 
 export type PhotoUploadCompleteRequest = {
   jobId: string;
   assetId: string;
+};
+
+export type PhotoUploadCompleteResponse = {
+  id: string;
+  assetId: string;
+  jobType: "photo_upload";
+  status: "completed";
 };
 
 export type BackgroundRemovalRequest = {
@@ -812,6 +829,7 @@ export type HealthResponse = {
   builtAt: string;
   postgres: "ok" | "error";
   kratos: "ok" | "error";
+  storage: "ok" | "error";
 };
 
 export type IdResponse = {
@@ -1258,6 +1276,14 @@ export interface ApiOperationPayloads {
     request: HandleMobileAuthCallbackRequestBody;
     response: HandleMobileAuthCallbackResponseBody;
   };
+  getLiveness: {
+    path: GetLivenessPathParams;
+    query: GetLivenessQueryParams;
+    header: GetLivenessHeaderParams;
+    cookie: GetLivenessCookieParams;
+    request: GetLivenessRequestBody;
+    response: GetLivenessResponseBody;
+  };
 }
 
 export type ListModerationItemsPathParams = Record<string, never>;
@@ -1686,7 +1712,7 @@ export type CompletePhotoUploadQueryParams = Record<string, never>;
 export type CompletePhotoUploadHeaderParams = Record<string, never>;
 export type CompletePhotoUploadCookieParams = Record<string, never>;
 export type CompletePhotoUploadRequestBody = PhotoUploadCompleteRequest;
-export type CompletePhotoUploadResponseBody = UploadJob;
+export type CompletePhotoUploadResponseBody = PhotoUploadCompleteResponse;
 
 export type InitPhotoUploadPathParams = Record<string, never>;
 export type InitPhotoUploadQueryParams = Record<string, never>;
@@ -1716,6 +1742,13 @@ export type HandleMobileAuthCallbackCookieParams = Record<string, never>;
 export type HandleMobileAuthCallbackRequestBody = never;
 export type HandleMobileAuthCallbackResponseBody = void;
 
+export type GetLivenessPathParams = Record<string, never>;
+export type GetLivenessQueryParams = Record<string, never>;
+export type GetLivenessHeaderParams = Record<string, never>;
+export type GetLivenessCookieParams = Record<string, never>;
+export type GetLivenessRequestBody = never;
+export type GetLivenessResponseBody = void;
+
 export type ApiPathParams<T extends ApiOperationId> =
   ApiOperationPayloads[T]["path"];
 export type ApiQueryParams<T extends ApiOperationId> =
@@ -1744,6 +1777,10 @@ export const API_SCHEMAS = {
       "INSUFFICIENT_BALANCE",
       "WEBHOOK_AUTH_FAILED",
       "RATE_LIMITED",
+      "FEATURE_UNAVAILABLE",
+      "STORAGE_UNAVAILABLE",
+      "UPLOAD_INCOMPLETE",
+      "UPLOAD_MISMATCH",
       "INTERNAL_ERROR"
     ]
   },
@@ -2800,7 +2837,11 @@ export const API_SCHEMAS = {
     ],
     "properties": {
       "fileName": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 255,
+        "pattern": "^(?!\\.\\.?$)[^/\\\\]+$",
+        "description": "Original basename for validation/audit only; never used as the object key."
       },
       "contentType": {
         "type": "string",
@@ -2812,31 +2853,20 @@ export const API_SCHEMAS = {
       },
       "sizeBytes": {
         "type": "integer",
+        "minimum": 1,
         "maximum": 10485760
-      },
-      "exifOrientation": {
-        "type": [
-          "integer",
-          "null"
-        ],
-        "description": "Mobile EXIF orientation value to normalize before processing."
-      },
-      "checksum": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "description": "Client image hash used to deduplicate paid processing."
       }
     }
   },
   "PhotoUploadInitResponse": {
     "type": "object",
+    "description": "Direct-upload contract. Clients must send every returned upload header. The presigned URL is sensitive and may reveal provider routing details, the bucket name, and the server-generated object key; never log it.",
     "required": [
       "jobId",
       "assetId",
       "uploadUrl",
-      "storagePath"
+      "uploadHeaders",
+      "expiresAt"
     ],
     "properties": {
       "jobId": {
@@ -2848,10 +2878,19 @@ export const API_SCHEMAS = {
         "format": "uuid"
       },
       "uploadUrl": {
-        "type": "string"
+        "type": "string",
+        "format": "uri"
       },
-      "storagePath": {
-        "type": "string"
+      "uploadHeaders": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "Exact request headers signed into the PUT URL, including Content-Type."
+      },
+      "expiresAt": {
+        "type": "string",
+        "format": "date-time"
       }
     }
   },
@@ -2869,6 +2908,39 @@ export const API_SCHEMAS = {
       "assetId": {
         "type": "string",
         "format": "uuid"
+      }
+    }
+  },
+  "PhotoUploadCompleteResponse": {
+    "type": "object",
+    "required": [
+      "id",
+      "assetId",
+      "jobType",
+      "status"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Upload job id."
+      },
+      "assetId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Stable original asset id returned by init and idempotent completion."
+      },
+      "jobType": {
+        "type": "string",
+        "enum": [
+          "photo_upload"
+        ]
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "completed"
+        ]
       }
     }
   },
@@ -3278,7 +3350,8 @@ export const API_SCHEMAS = {
       "commit",
       "builtAt",
       "postgres",
-      "kratos"
+      "kratos",
+      "storage"
     ],
     "properties": {
       "ok": {
@@ -3300,6 +3373,13 @@ export const API_SCHEMAS = {
         ]
       },
       "kratos": {
+        "type": "string",
+        "enum": [
+          "ok",
+          "error"
+        ]
+      },
+      "storage": {
         "type": "string",
         "enum": [
           "ok",
@@ -4500,7 +4580,7 @@ export const API_OPERATION_PAYLOADS = {
     ],
     "requestSchema": "PhotoUploadCompleteRequest",
     "responseSchemas": [
-      "UploadJob"
+      "PhotoUploadCompleteResponse"
     ],
     "pathParameters": [],
     "queryParameters": [],
@@ -4551,6 +4631,18 @@ export const API_OPERATION_PAYLOADS = {
     "requestRequired": false,
     "successStatusCodes": [
       "302"
+    ],
+    "requestSchema": null,
+    "responseSchemas": [],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "getLiveness": {
+    "requestRequired": false,
+    "successStatusCodes": [
+      "204"
     ],
     "requestSchema": null,
     "responseSchemas": [],

@@ -1,15 +1,16 @@
-# Unit tests (Go API)
+# Unit tests (reserved cross-package area)
 
-Stub folder. Populated when the Go modular monolith from `.specify/specs/024-production-stack-runtime/` lands its first product code.
+The Go API has landed, and its unit tests are intentionally co-located with
+the packages under `api/**`. The canonical local/CI entry is:
 
-## When the first Go code arrives
+```bash
+cd api
+go vet ./...
+go test ./...
+```
 
-- Use `go test ./tests/unit/...` as the entry from CI.
-- Per-package, table-driven tests (`TestXxx(t *testing.T)` with `tests := []struct{ name string; … }{...}`).
-- Test data and fixture builders live in `tests/unit/internal/` so they are not exported.
-- A failing unit test MUST be committed BEFORE the production code that makes it pass — see `tests/README.md` TDD section.
-
-Until that lands, this folder exists so:
-
-- Future agents know exactly where backend unit tests go.
-- `git grep` for "tests/unit" finds the canonical location, not a guess.
+Keep package-specific table-driven tests beside their code. Use this folder
+only if a future spec introduces a genuine repository-level integration suite
+that cannot live inside the `api` module; do not create duplicate test helpers
+or a second Go module here. The failing-test-first contract for application
+code remains in `tests/README.md`.

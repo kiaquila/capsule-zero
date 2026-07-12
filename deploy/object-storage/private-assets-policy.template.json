@@ -1,0 +1,30 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowRuntimeBucketReadiness",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam:::user/p15302873:__RUNTIME_ACCESS_KEY_ID__"
+      },
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::capsulezero-prod-private-assets"
+    },
+    {
+      "Sid": "AllowRuntimeOriginalAndSmokeObjects",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam:::user/p15302873:__RUNTIME_ACCESS_KEY_ID__"
+      },
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::capsulezero-prod-private-assets/item-originals/*",
+        "arn:aws:s3:::capsulezero-prod-private-assets/smoke/spec-040/*"
+      ]
+    }
+  ]
+}

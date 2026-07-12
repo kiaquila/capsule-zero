@@ -3,9 +3,23 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
+	"strings"
 )
+
+// ObjectStorageConfig contains the production S3-compatible object-storage
+// connection. Credentials deliberately have no defaults: a partially wired
+// deployment must fail before it starts accepting traffic.
+type ObjectStorageConfig struct {
+	Endpoint        string
+	Region          string
+	AccessKeyID     string
+	SecretAccessKey string
+	PrivateBucket   string
+	UploadsEnabled  bool
+}
 
 // Config is the resolved API runtime configuration.
 type Config struct {
@@ -22,11 +36,12 @@ type Config struct {
 	// GoogleSignInEnabled mirrors the Kratos-side OIDC switch (spec 037):
 	// off by default so a deploy without operator prep hides Google cleanly.
 	GoogleSignInEnabled bool
+	ObjectStorage       ObjectStorageConfig
 }
 
 // Load reads configuration from the environment, applying defaults that match
-// the docker-compose service names. It returns an error when a required value
-// (the database URL) is missing so the API fails fast at boot.
+// the docker-compose service names. It returns an error when the database or
+// private Object Storage contract is incomplete so the API fails fast at boot.
 func Load() (Config, error) {
 	authRate, err := getenvInt("API_AUTH_RATE_PER_MINUTE", 10)
 	if err != nil {
@@ -42,6 +57,11 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 
+	objectStorage, err := LoadObjectStorage()
+	if err != nil {
+		return Config{}, err
+	}
+
 	cfg := Config{
 		Port:                getenv("API_PORT", "8080"),
 		DatabaseURL:         os.Getenv("DATABASE_URL"),
@@ -50,6 +70,7 @@ func Load() (Config, error) {
 		AuthRatePerMinute:   authRate,
 		AuthRateBurst:       authBurst,
 		GoogleSignInEnabled: googleEnabled,
+		ObjectStorage:       objectStorage,
 	}
 
 	if cfg.DatabaseURL == "" {
@@ -57,6 +78,71 @@ func Load() (Config, error) {
 	}
 
 	return cfg, nil
+}
+
+// LoadObjectStorage reads only the Object Storage contract. Standalone
+// storage tooling uses it without inheriting unrelated API requirements such
+// as DATABASE_URL.
+func LoadObjectStorage() (ObjectStorageConfig, error) {
+	endpoint, err := requireEnv("OBJECT_STORAGE_ENDPOINT")
+	if err != nil {
+		return ObjectStorageConfig{}, err
+	}
+	region, err := requireEnv("OBJECT_STORAGE_REGION")
+	if err != nil {
+		return ObjectStorageConfig{}, err
+	}
+	accessKeyID, err := requireEnv("OBJECT_STORAGE_ACCESS_KEY_ID")
+	if err != nil {
+		return ObjectStorageConfig{}, err
+	}
+	secretAccessKey, err := requireEnv("OBJECT_STORAGE_SECRET_ACCESS_KEY")
+	if err != nil {
+		return ObjectStorageConfig{}, err
+	}
+	privateBucket, err := requireEnv("OBJECT_STORAGE_PRIVATE_BUCKET")
+	if err != nil {
+		return ObjectStorageConfig{}, err
+	}
+	uploadsEnabled, err := getenvBool("OBJECT_STORAGE_UPLOADS_ENABLED", false)
+	if err != nil {
+		return ObjectStorageConfig{}, err
+	}
+
+	if err := validateObjectStorageEndpoint(endpoint, region); err != nil {
+		return ObjectStorageConfig{}, err
+	}
+
+	return ObjectStorageConfig{
+		Endpoint:        endpoint,
+		Region:          region,
+		AccessKeyID:     accessKeyID,
+		SecretAccessKey: secretAccessKey,
+		PrivateBucket:   privateBucket,
+		UploadsEnabled:  uploadsEnabled,
+	}, nil
+}
+
+func requireEnv(key string) (string, error) {
+	value := os.Getenv(key)
+	if strings.TrimSpace(value) == "" {
+		return "", fmt.Errorf("%s is required", key)
+	}
+	return value, nil
+}
+
+func validateObjectStorageEndpoint(endpoint, region string) error {
+	parsed, err := url.Parse(endpoint)
+	expectedHost := region + ".your-objectstorage.com"
+	if err != nil || parsed.Scheme != "https" || parsed.Host != expectedHost ||
+		parsed.User != nil || parsed.Path != "" || parsed.RawQuery != "" ||
+		parsed.ForceQuery || parsed.Fragment != "" || parsed.Opaque != "" {
+		return fmt.Errorf(
+			"OBJECT_STORAGE_ENDPOINT must be https://%s with no credentials, port, path, query, or fragment",
+			expectedHost,
+		)
+	}
+	return nil
 }
 
 func getenvInt(key string, fallback int) (int, error) {

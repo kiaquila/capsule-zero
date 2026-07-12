@@ -58,7 +58,9 @@ v0.1 screens must not expose active Google or Apple buttons. The current standal
 ### Credential policy
 
 - Local development credentials live in `.env.local` files ignored by git.
-- Production credentials live only in the droplet's encrypted env file and provider dashboards.
+- Production credentials live only in the protected plaintext
+  `/opt/capsule-zero/.env` (`root:root`, mode `600`) and provider dashboards;
+  host-level encryption has not been established.
 - Production keys are never shared with agents or pasted into chat.
 - Committed `.env.example` files contain placeholders only.
 

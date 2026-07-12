@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted for v0.1 planning. Before Stage 1 feature implementation, Sprint 0 must finalize the implementation OpenAPI contract at `docs_capsule_zero/adr/openapi.yaml`. Every feature slice must preserve the resource boundaries and auth rules below.
+Accepted implementation contract for v0.1. The authoritative machine-readable
+surface is `docs_capsule_zero/adr/openapi.yaml`; every feature slice updates it,
+the generated client, and contract checks together.
 
 ## API Principles
 
@@ -10,7 +12,7 @@ Accepted for v0.1 planning. Before Stage 1 feature implementation, Sprint 0 must
 - The Go modular monolith exposes the REST API at `/api/*`; the Next.js web app and React Native mobile app both consume the same OpenAPI contract through generated clients.
 - Next.js Server Actions may wrap calls to the Go API for in-app mutations; they never embed admin credentials.
 - The Go monolith owns database-heavy operations: compatibility validation, outfit regeneration, OPR, gap analysis, and catalog search. Catalog search is Postgres FTS-first in v0.1; hybrid FTS + pgvector ranking ships later with the semantic-search slice per ADR-007.
-- All request payloads are validated against the OpenAPI schema in Go (via a typed router such as `oapi-codegen`) and mirrored on the web with Zod where useful for inline form validation.
+- Go handlers validate request payloads explicitly against the OpenAPI contract; the current `net/http` router is manual and `scripts/check-api-contract.mjs` provides route/operation drift detection. Web forms mirror relevant constraints with Zod where useful for inline validation.
 - All mutating routes require an authenticated user unless explicitly marked as webhook.
 - Authorization is enforced in Go on every request — there is no Postgres RLS.
 
@@ -124,9 +126,16 @@ Every REST operation returns the common `ErrorResponse` shape for failures. The 
 |  403 | `FORBIDDEN`                  | User is authenticated but cannot access the resource or webhook key is invalid                             |
 |  404 | `NOT_FOUND`                  | Resource does not exist or is intentionally hidden by ownership rules                                      |
 |  409 | `IDEMPOTENCY_CONFLICT`       | Idempotency key, invoice, webhook replay, or optimistic version conflict                                   |
+|  409 | `UPLOAD_INCOMPLETE`          | Upload completion ran before the initialized object exists                                                  |
+|  409 | `UPLOAD_MISMATCH`            | Stored object size or content type does not match the initialized metadata                                  |
 |  422 | `SEMANTIC_VALIDATION_FAILED` | Capsule methodology, palette compatibility, basicity, target correlation, or status-transition rule failed |
+|  429 | `RATE_LIMITED`               | Per-client request budget is exhausted; the response includes `Retry-After`                                 |
+|  500 | `INTERNAL_ERROR`             | Unexpected application/database failure                                                                     |
+|  502 | `INTERNAL_ERROR`             | Upstream identity service is temporarily unavailable during authenticated session resolution                |
+|  503 | `FEATURE_UNAVAILABLE`        | Photo uploads are disabled until the operator explicitly enables the rollout                               |
+|  503 | `STORAGE_UNAVAILABLE`        | Object Storage is unreachable or signing/readiness failed; no upload target or partial completion is returned |
 
-Server logs may include provider/raw details, but client responses must keep messages safe for end users and never expose service-role credentials, Lava.top secrets, or private storage paths.
+Server logs may include safe provider error classifications, but must never include credentials, presigned URLs, or secret-bearing raw payloads. Client responses keep messages safe for end users; the only provider target returned by this slice is the explicit short-lived presigned URL capability.
 
 ## Auth
 
@@ -197,10 +206,35 @@ as Stage 2 boundaries for Google OAuth and Apple Sign-In.
 
 | Route                                    | Method | Auth | Purpose                                                                  |
 | ---------------------------------------- | -----: | ---- | ------------------------------------------------------------------------ |
-| `/api/uploads/photo/init`                |   POST | User | Validate metadata and return storage target/signed upload data if needed |
-| `/api/uploads/photo/complete`            |   POST | User | Create item asset metadata after upload                                  |
+| `/api/uploads/photo/init`                |   POST | User | Validate original-photo metadata and return a presigned PUT contract      |
+| `/api/uploads/photo/complete`            |   POST | User | Verify the stored object and idempotently complete one original asset     |
 | `/api/uploads/:jobId/background-removal` |   POST | User | Start or retry background removal                                        |
 | `/api/uploads/:jobId`                    |    GET | User | Read processing status                                                   |
+
+Spec 040 implements only unattached original wardrobe-photo assets. Init
+accepts a basename plus `image/jpeg`, `image/png`, or `image/webp` metadata and
+`sizeBytes` from 1 through 10 MiB. The server creates the private object key;
+clients cannot choose a path. Its response contains `jobId`, `assetId`, a PUT
+`uploadUrl`, the exact `uploadHeaders` to send, and `expiresAt`. The presigned
+URL is sensitive and may reveal provider routing details, the bucket name, and
+the server-generated object key, so clients and operators must never log it.
+
+Complete is authenticated and owner-bound. It reads the initialized job,
+checks the object by `HeadObject`, requires the stored size and content type to
+match, then returns the same completed job/asset identity on retries. A missing
+object returns `409 UPLOAD_INCOMPLETE`; a size/type mismatch returns
+`409 UPLOAD_MISMATCH`; storage unavailability returns
+`503 STORAGE_UNAVAILABLE`; another user's identifiers resolve as not found.
+The default-off route gate runs before session resolution, so both endpoints
+return `503 FEATURE_UNAVAILABLE` without calling Kratos or Postgres while
+`OBJECT_STORAGE_UPLOADS_ENABLED` is false. When enabled, they return
+`401 UNAUTHENTICATED` without a valid session, `429 RATE_LIMITED` after the
+shared session budget is exhausted, and `502 INTERNAL_ERROR` when Kratos is
+temporarily unavailable. Init has no conflict response. Database failures
+remain 500.
+Attaching the resulting asset
+to a wardrobe item, frontend wiring, byte decoding/scanning, processing, and
+orphan cleanup are later slices.
 
 ## Marketplace Imports
 
@@ -235,7 +269,8 @@ Mobile apps must not expose a Lava.top purchase CTA, external payment link, or i
 | ------------------------------------- | -----: | ------ | ------------------------------------------ |
 | `/api/admin/moderation/items`         |    GET | Admin  | List marketplace items awaiting moderation |
 | `/api/admin/moderation/items/:itemId` |  PATCH | Admin  | Approve/reject catalog visibility          |
-| `/api/health`                         |    GET | Public | Basic deployment health check              |
+| `/api/health`                         |    GET | Public | Build identity plus Postgres, Kratos, and private-storage readiness |
+| `/livez`                              |    GET | Public | Dependency-free container liveness (server operations only) |
 
 ## Domain RPC Functions
 

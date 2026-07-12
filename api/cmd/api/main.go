@@ -1,5 +1,5 @@
-// Command api is the Capsule Zero Go modular monolith. For the Phase 2 auth
-// slice it serves the auth/profile bounded context plus a health probe.
+// Command api is the Capsule Zero Go modular monolith. It currently serves the
+// auth/profile and private-upload foundations plus the dependency health probe.
 package main
 
 import (
@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -19,6 +20,8 @@ import (
 	"github.com/kiaquila/capsule-zero/api/internal/kratos"
 	"github.com/kiaquila/capsule-zero/api/internal/profiles"
 	"github.com/kiaquila/capsule-zero/api/internal/ratelimit"
+	"github.com/kiaquila/capsule-zero/api/internal/storage"
+	"github.com/kiaquila/capsule-zero/api/internal/uploads"
 	"github.com/kiaquila/capsule-zero/api/migrations"
 )
 
@@ -60,16 +63,15 @@ func main() {
 }
 
 // healthcheck is the container liveness probe (distroless has no shell). It
-// confirms the HTTP server is serving — any response is "alive". Readiness of
-// Postgres/Kratos is reported in the /api/health response body, not here, so a
-// dependency outage does not restart-loop the API container.
+// calls the internal dependency-free route so a slow readiness provider cannot
+// restart-loop the API container or block services that wait for it to start.
 func healthcheck() int {
 	port := os.Getenv("API_PORT")
 	if port == "" {
 		port = "8080"
 	}
 	client := &http.Client{Timeout: 3 * time.Second}
-	resp, err := client.Get("http://127.0.0.1:" + port + "/api/health")
+	resp, err := client.Get("http://127.0.0.1:" + port + "/livez")
 	if err != nil {
 		return 1
 	}
@@ -96,10 +98,26 @@ func run() error {
 	log.Printf("api: migrations applied")
 
 	kratosClient := kratos.New(cfg.KratosPublicURL, cfg.KratosAdminURL)
-	handler := &auth.Handler{
+	authHandler := &auth.Handler{
 		Kratos:              kratosClient,
 		Profiles:            profiles.New(pool),
 		GoogleSignInEnabled: cfg.GoogleSignInEnabled,
+	}
+	storageClient, err := storage.New(ctx, storage.Config{
+		Endpoint:        cfg.ObjectStorage.Endpoint,
+		Region:          cfg.ObjectStorage.Region,
+		AccessKeyID:     cfg.ObjectStorage.AccessKeyID,
+		SecretAccessKey: cfg.ObjectStorage.SecretAccessKey,
+		PrivateBucket:   cfg.ObjectStorage.PrivateBucket,
+	})
+	if err != nil {
+		return err
+	}
+	uploadHandler := &uploads.Handler{
+		Enabled: cfg.ObjectStorage.UploadsEnabled,
+		Jobs:    uploads.NewRepo(pool),
+		Objects: storageClient,
+		UserID:  auth.UserID,
 	}
 
 	authLimiter := ratelimit.New(float64(cfg.AuthRatePerMinute), cfg.AuthRateBurst)
@@ -108,8 +126,9 @@ func run() error {
 	defer stopCleanup()
 	go runLimiterCleanup(cleanupCtx, authLimiter, sessionLimiter)
 
-	mux := newMux(handler, authLimiter, sessionLimiter)
-	mux.HandleFunc("GET /api/health", healthHandler(pool, kratosClient))
+	mux := newMux(authHandler, authLimiter, sessionLimiter)
+	registerUploadRoutes(mux, authHandler, uploadHandler, sessionLimiter)
+	mux.HandleFunc("GET /api/health", healthHandler(pool, kratosClient, storageClient))
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,
@@ -137,6 +156,9 @@ func run() error {
 // surface shares one independent, roomier bucket (spec 034 acceptance 1).
 func newMux(handler *auth.Handler, authLimiter, sessionLimiter *ratelimit.Limiter) *http.ServeMux {
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /livez", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
 	mux.HandleFunc("POST /api/auth/registration", authLimiter.Middleware(handler.Registration))
 	mux.HandleFunc("POST /api/auth/login", authLimiter.Middleware(handler.Login))
 	mux.HandleFunc("POST /api/auth/recovery", authLimiter.Middleware(handler.Recovery))
@@ -157,6 +179,22 @@ func newMux(handler *auth.Handler, authLimiter, sessionLimiter *ratelimit.Limite
 	mux.HandleFunc("GET /api/profile", sessionLimiter.Middleware(handler.RequireSession(handler.GetProfile)))
 	mux.HandleFunc("PATCH /api/profile", sessionLimiter.Middleware(handler.RequireSession(handler.PatchProfile)))
 	return mux
+}
+
+func registerUploadRoutes(
+	mux *http.ServeMux,
+	authHandler *auth.Handler,
+	uploadHandler *uploads.Handler,
+	sessionLimiter *ratelimit.Limiter,
+) {
+	mux.HandleFunc(
+		"POST /api/uploads/photo/init",
+		uploadHandler.RequireEnabled(sessionLimiter.Middleware(authHandler.RequireSession(uploadHandler.Init))),
+	)
+	mux.HandleFunc(
+		"POST /api/uploads/photo/complete",
+		uploadHandler.RequireEnabled(sessionLimiter.Middleware(authHandler.RequireSession(uploadHandler.Complete))),
+	)
 }
 
 // runLimiterCleanup periodically evicts idle rate-limit buckets so the in-memory
@@ -182,39 +220,81 @@ func waitForSignal() <-chan os.Signal {
 	return ch
 }
 
-// healthHandler probes Postgres and Kratos. Any failure is a 503 with the
-// failing dependency marked "error" (negative scenario 3 — never a stale 200).
+// healthHandler probes Postgres and Kratos on every request. Private Object
+// Storage readiness is serialized and cached for at most five seconds to bound
+// external provider traffic; upload init still performs its own fresh probe.
 func healthHandler(pool interface {
 	Ping(context.Context) error
 }, kratosClient interface {
 	Ready(context.Context) error
+}, storageClient interface {
+	Ready(context.Context) error
 }) http.HandlerFunc {
+	const storageCacheTTL = 5 * time.Second
+	var storageCache struct {
+		sync.Mutex
+		at  time.Time
+		err error
+	}
+	cachedStorage := readyFunc(func(context.Context) error {
+		storageCache.Lock()
+		defer storageCache.Unlock()
+		if storageCache.at.IsZero() || time.Since(storageCache.at) >= storageCacheTTL {
+			// A public caller disconnecting must not poison the shared readiness
+			// result. Refresh against an independent, bounded provider context.
+			probeCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			storageCache.err = storageClient.Ready(probeCtx)
+			cancel()
+			storageCache.at = time.Now()
+		}
+		return storageCache.err
+	})
+
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
-		defer cancel()
-
-		result := map[string]string{"postgres": "ok", "kratos": "ok"}
-		status := http.StatusOK
-
-		if err := pool.Ping(ctx); err != nil {
-			result["postgres"] = "error"
-			status = http.StatusServiceUnavailable
-		}
-		if err := kratosClient.Ready(ctx); err != nil {
-			result["kratos"] = "error"
-			status = http.StatusServiceUnavailable
-		}
-
-		body := map[string]any{
-			"ok":      status == http.StatusOK,
-			"commit":  orUnknown(commit),
-			"builtAt": orUnknown(buildTime),
-		}
-		for k, v := range result {
-			body[k] = v
-		}
+		status, body := probeHealth(r.Context(), pool, kratosClient, cachedStorage)
 		httpx.WriteJSON(w, status, body)
 	}
+}
+
+type readyFunc func(context.Context) error
+
+func (fn readyFunc) Ready(ctx context.Context) error { return fn(ctx) }
+
+func probeHealth(ctx context.Context, pool interface {
+	Ping(context.Context) error
+}, kratosClient interface {
+	Ready(context.Context) error
+}, storageClient interface {
+	Ready(context.Context) error
+}) (int, map[string]any) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	result := map[string]string{"postgres": "ok", "kratos": "ok", "storage": "ok"}
+	status := http.StatusOK
+
+	if err := pool.Ping(ctx); err != nil {
+		result["postgres"] = "error"
+		status = http.StatusServiceUnavailable
+	}
+	if err := kratosClient.Ready(ctx); err != nil {
+		result["kratos"] = "error"
+		status = http.StatusServiceUnavailable
+	}
+	if err := storageClient.Ready(ctx); err != nil {
+		result["storage"] = "error"
+		status = http.StatusServiceUnavailable
+	}
+
+	body := map[string]any{
+		"ok":      status == http.StatusOK,
+		"commit":  orUnknown(commit),
+		"builtAt": orUnknown(buildTime),
+	}
+	for key, value := range result {
+		body[key] = value
+	}
+	return status, body
 }
 
 // orUnknown guards the deploy verifier from a blank build field: an un-set var
