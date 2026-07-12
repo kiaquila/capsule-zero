@@ -164,9 +164,8 @@ services:
       OBJECT_STORAGE_ACCESS_KEY_ID: ${OBJECT_STORAGE_ACCESS_KEY_ID:?set OBJECT_STORAGE_ACCESS_KEY_ID in the env file}
       OBJECT_STORAGE_SECRET_ACCESS_KEY: ${OBJECT_STORAGE_SECRET_ACCESS_KEY:?set OBJECT_STORAGE_SECRET_ACCESS_KEY in the env file}
       OBJECT_STORAGE_PRIVATE_BUCKET: ${OBJECT_STORAGE_PRIVATE_BUCKET:?set OBJECT_STORAGE_PRIVATE_BUCKET in the env file}
-      # Keep unaffiliated direct-upload endpoints closed until per-action key
-      # hardening and the wardrobe attachment/quota slice deliberately activate
-      # them.
+      # Keep unaffiliated direct-upload endpoints closed until owner quota,
+      # orphan cleanup, and wardrobe attachment deliberately activate them.
       OBJECT_STORAGE_UPLOADS_ENABLED: ${OBJECT_STORAGE_UPLOADS_ENABLED:-false}
       # Provisioned policy boundaries for future catalog delivery; spec 040
       # does not activate public-catalog application behavior.

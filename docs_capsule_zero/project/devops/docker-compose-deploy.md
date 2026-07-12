@@ -35,7 +35,7 @@ Deferred runtime elements stay out of the active compose topology until ADR-007 
 | `pgvector`          | Plain `postgres:16` ships first; semantic-search migrations add vectors later.        |
 | `redis`             | Pending spec-024 phase; there is no Redis service or queue consumer in the current stack. |
 | `imgproxy`          | Pending derivative-image phase; spec 040 stores originals only.                       |
-| Backup automation  | Bucket/key are provisioned; encryption, scheduling, retention, and restores are Phase 5. |
+| Backup automation  | Bucket/key are provisioned; Object Lock header sanitization/risk acceptance, encryption, scheduling, retention, and restores are Phase 5. |
 | Standalone `worker` | Deferred by ADR-007; no in-process Redis consumer has landed either.                  |
 | `grafana`           | syslog files + traces are the v0.1 observability surface; dashboards come back later. |
 
@@ -173,10 +173,11 @@ docker compose up -d
 
 ## Backups (deferred Phase 5)
 
-The isolated Object-Locked bucket and its current-project credentials are provisioned,
-but the nightly job, client-side encryption, retention enforcement, and restore
-drills have not landed. The following pipeline is the Phase-5 target, not a
-currently scheduled command:
+The isolated Object-Locked bucket and its writer credential from bucketless
+key-only project `15302925` are provisioned, but the nightly job, client-side
+encryption, Object Lock header sanitization/risk acceptance, retention
+enforcement, and restore drills have not landed. The following pipeline is the
+Phase-5 target, not a currently scheduled command:
 
 ```bash
 docker compose exec postgres pg_dump -U capsule_zero -d capsule_zero --format=custom | \
@@ -190,10 +191,24 @@ the backup bucket. Object Lock must be enabled when the bucket is created; it
 cannot be switched on later.
 
 The production backup bucket is `capsulezero-prod-backups` in FSN under
-isolated Hetzner project `15296835`; Object Lock was enabled at creation and it
-uses a key separate from the HEL application-asset project (`15203114`). These
-provisioning facts do not authorize plaintext uploads: backup automation must
-encrypt with age before the first database object is stored.
+isolated Hetzner project `15296835`; Object Lock was enabled at creation. Its
+writer belongs to bucketless key-only project `15302925`, separate from the HEL
+application-asset project (`15203114`) and bucketless runtime-key project
+(`15302873`). The hybrid cross-project policy allows normal `s3:PutObject`
+under `postgres/*`. Its explicit denies were live-proven for object/version
+reads, ACL get/put, retention/legal-hold get/put, object/version deletes,
+governance bypass, bucket/version/multipart listing, and
+policy/CORS/Object-Lock-configuration reads. Header conditions reject dangerous
+canned ACLs and AllUsers grant-read.
+
+Hetzner/RGW nevertheless accepts `PutObject` carrying Object Lock mode,
+retain-until, or legal-hold headers. This does not expose or permit deletion of
+existing objects, but it can create newly locked objects, producing a bounded
+storage-DoS/cost-amplification risk. The Phase-5 uploader must forbid/sanitize
+those headers and receive explicit residual-risk acceptance or wait for a
+provider fix. These provisioning facts also do not authorize plaintext
+uploads: backup automation must encrypt with age before the first database
+object is stored.
 
 Object storage durability is provided by Hetzner Object Storage, but it is not a
 complete backup strategy by itself. Database restores must be exercised on a
@@ -232,16 +247,25 @@ The Cloudflare proxy (edge TLS offload, DDoS protection, Bot Fight Mode, CDN) jo
 - All server secrets live in the protected plaintext
   `/opt/capsule-zero/.env` (`root:root`, mode `600`) or provider dashboards;
   never in repo or chat. Do not claim filesystem encryption without evidence.
-- Bucket-policy readback confirms the application Object Storage credential is
-  allowlisted on the current private-assets bucket and denied on public
-  catalog. The backup credential is allowlisted on the current bucket in its
-  isolated project, which has no CORS. These practical current-bucket policies
-  do not remove `s3:*` control-plane access or Hetzner's default access to
-  future same-project buckets. Move data-plane keys to dedicated key-only
-  projects and use cross-project per-action allows before enabling uploads or
-  backup automation.
-  The redacted signed 10 MiB PUT/HEAD/GET/checksum/delete smoke passed with
-  cleanup before storage-gated health was prepared for deployment.
+- The application Object Storage credential belongs to bucketless key-only
+  project `15302873`. Its cross-project private policy permits bucket listing
+  plus put/get/delete only under `item-originals/*` and `smoke/spec-040/*`; the
+  public bucket explicitly denies it `s3:*`. The backup writer belongs to
+  bucketless key-only project `15302925` and uses the caveated hybrid policy
+  described above; backup CORS is absent. It cannot read/delete existing data,
+  but Put-time Object Lock headers remain a bounded storage-DoS/cost residual
+  and block backup automation pending header sanitization plus explicit
+  acceptance/provider fix.
+- Policy/CORS readback, the runtime audit, the backup hybrid-policy audit with
+  its recorded Object Lock header exception, bucketless-project checks, and the
+  protected env rotation passed. `/opt/capsule-zero/.env`
+  remained `root:root` mode `600`, with uploads disabled. The superseded
+  runtime/backup keys and both temporary policy operators were deleted; only the new
+  cross-project keys remain. The post-revocation standalone Go smoke passed
+  readiness, signed PUT of `10485760` bytes, HEAD, signed GET checksum match,
+  and cleanup. Exact-origin private/public CORS probes returned `200` with the
+  expected headers/max-age `300`; attacker probes and backup preflight returned
+  `403` without `Access-Control-Allow-Origin`.
 - A presigned URL is a short-lived bearer capability whose host/path/query
   reveal the bucket, key, and access-key ID; never log or retain it as evidence.
   Completion requires both `jobId` and `assetId`. Until PUT expiry, replay can

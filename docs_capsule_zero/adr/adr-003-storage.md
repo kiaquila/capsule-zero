@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted (rewritten 2026-06-27 for the production-stack pivot; revised 2026-07-10 to supersede DigitalOcean Spaces with Hetzner Object Storage).
+Accepted (rewritten 2026-06-27 for the production-stack pivot; revised
+2026-07-10 to supersede DigitalOcean Spaces with Hetzner Object Storage;
+least-privilege credential topology hardened 2026-07-11).
 
 ## Context
 
@@ -42,41 +44,66 @@ The app does not create buckets at runtime. Operators create buckets,
 credentials, CORS, lifecycle, and Object Lock through Hetzner Console plus
 S3-compatible tooling before enabling the storage slice.
 
-### Provisioned production topology (2026-07-10)
+### Provisioned production topology (2026-07-11)
 
 - `capsulezero-prod-private-assets` and
   `capsulezero-prod-public-catalog` exist in **HEL** under Hetzner project
   `15203114`.
-- The application runtime credential is stored only in the protected
-  production env file. Policy readback confirms that it is allowlisted on the
-  current private-assets bucket and explicitly denied on the public-catalog
-  bucket.
+- The application runtime credential belongs to dedicated key-only project
+  `15302873`, which has no buckets. Its cross-project private-assets policy
+  allows `s3:ListBucket` on the bucket plus `s3:PutObject`, `s3:GetObject`, and
+  `s3:DeleteObject` only on `item-originals/*` and `smoke/spec-040/*`. The
+  public-catalog policy keeps anonymous `s3:GetObject` and explicitly denies
+  this runtime principal `s3:*`.
 - `capsulezero-prod-backups` exists in **FSN** under isolated Hetzner project
-  `15296835`, with Object Lock enabled at bucket creation and a separate
-  credential that policy readback allowlists on that bucket. Backup CORS is
-  absent. The bucket must remain free of plaintext database data; its
-  creation does not complete backup encryption, scheduling, retention, or
-  restore verification.
+  `15296835`, with Object Lock enabled at bucket creation. Its writer
+  credential belongs to dedicated key-only project `15302925`, which also has
+  no buckets. Its cross-project policy is deliberately hybrid: normal
+  `s3:PutObject` under `postgres/*` is allowed, while explicit denies were
+  live-proven for object/version reads, ACL get/put, retention and legal-hold
+  get/put, object/version deletes, governance bypass, bucket/version/multipart
+  listing, and policy/CORS/Object-Lock-configuration reads. Header conditions
+  also deny dangerous canned ACLs and AllUsers grant-read on `PutObject`.
+  Backup CORS is absent.
 
-This is a **current-bucket practical boundary**, not final per-action least
-privilege. Hetzner credentials are project-wide by default: an allowlisted key
-retains `s3:*` control-plane access on that bucket and receives default access
-to future buckets in its key project. Before upload activation or backup
-automation, create data-plane credentials in dedicated key-only projects and
-replace the same-project policies with cross-project explicit per-action
-allows. Keep a separate operator credential in each bucket-owning project for
-policy rotation. The default-off upload gate is part of this activation
-boundary.
+  Hetzner/RGW still accepts `PutObject` requests carrying Object Lock mode,
+  retain-until, or legal-hold headers despite the explicit retention/legal-hold
+  action denies. This does not grant the writer read or delete access to
+  existing data, but it permits creation of newly locked objects and therefore
+  leaves a bounded write-time storage-DoS/cost-amplification residual. Backup
+  automation must sanitize and forbid these headers and obtain explicit risk
+  acceptance or a provider fix before activation. The bucket must remain free
+  of plaintext database data; its creation does not complete backup encryption,
+  scheduling, retention, or restore verification.
+
+The data-plane credentials are stored only in the protected production env
+file; neither key-only project owns a bucket, so the credentials do not gain
+default access to future buckets in the bucket-owning projects. Bucket-policy
+administration remains separate from runtime data-plane access. On 2026-07-11
+policy readback, the runtime matrix, the backup hybrid-policy audit with the
+Object Lock header exception above, both key-only projects' bucketless state,
+and an atomic env rotation passed. The env remained
+`root:root` mode `600`, and `OBJECT_STORAGE_UPLOADS_ENABLED=false` remained
+unchanged. The superseded same-project runtime and backup keys plus both
+temporary policy-operator keys were then deleted in the Hetzner Console;
+only the new cross-project data-plane keys remain.
 
 Production CORS is intentionally narrow. The private bucket allows only the
 `https://capsulezero.app` origin for signed `PUT`, `GET`, and `HEAD` requests,
 only the signed `Content-Type` request header, exposes `ETag`, and uses a short
 preflight cache. The public-catalog bucket allows the same exact origin for
 read methods only. No wildcard, localhost, preview, or attacker origin belongs
-in either production policy. Policy/CORS readback plus allowed-origin and
-attacker-origin preflight probes passed on 2026-07-10. The redacted signed
-10 MiB PUT/HEAD/GET/checksum/delete smoke also passed with verified cleanup; a
-Console screenshot alone would not have been sufficient.
+in either production policy. Post-hardening live probes passed on 2026-07-11:
+private exact-origin PUT preflight with `Content-Type` returned `200` with the
+exact allow-origin/method/header values and max-age `300`, while the attacker
+origin returned `403` without `Access-Control-Allow-Origin`; public exact-origin
+GET preflight without request headers returned `200` with the exact
+allow-origin, GET method, and max-age `300`, while the attacker origin returned
+`403` without an allow-origin header;
+backup preflight returned `403` without an allow-origin header. After old-key
+revocation, the standalone Go smoke passed readiness, signed PUT of exactly
+10 MiB (`10485760` bytes), `HeadObject`, signed GET with matching checksum, and
+cleanup. A Console screenshot alone is not sufficient.
 
 ### Image processing
 
@@ -103,7 +130,10 @@ Background removal is performed by the self-hosted Capsule Zero model running as
 - CORS on production asset buckets allows `https://capsulezero.app` only; local origins belong to separate dev/test buckets.
 - Nightly `pg_dump` automation is deferred to spec-024 Phase 5. When it lands,
   it uploads only client-side-encrypted data to the already Object-Locked
-  backup bucket and enforces at least 14 day retention.
+  backup bucket and enforces at least 14 day retention. Activation additionally
+  requires the uploader to sanitize/forbid Object Lock mode, retain-until, and
+  legal-hold headers plus explicit acceptance of the remaining provider risk or
+  a provider fix.
 - Hetzner Object Storage has no default data-at-rest encryption. Backups must be encrypted before upload. On 2026-07-10 the founder explicitly accepted direct signed PUT/GET for the bounded v0.1 personal-photo-original foundation, with private storage, short TTLs, exact-origin CORS, owner-bound API operations, opaque random object keys, and no credential/presigned-URL logging. A presigned URL itself is not opaque: its host, path, and signature query necessarily expose the bucket, object key, and access-key ID. Treat it as a short-lived bearer capability. Image-byte inspection, orphan cleanup, and an SSE-C/API-proxy alternative remain follow-ups before broader storage use.
 - A holder can replay a signed PUT before its five-minute expiry and overwrite
   the same final object with bytes that satisfy the signed size/content-type

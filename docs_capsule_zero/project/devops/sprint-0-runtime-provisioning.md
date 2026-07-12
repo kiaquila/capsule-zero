@@ -16,11 +16,14 @@ Phase 1 delivers the host `nginx + web` runtime that replaces the host Caddy + l
 - Resend domain/SPF/DKIM and the production Kratos SMTP courier are provisioned.
 - Hetzner Object Storage topology from ADR-003: the private/public asset
   buckets are provisioned in project `15203114` / HEL; the Object-Locked backup
-  bucket and separate key are in project `15296835` / FSN. Policy readback has
-  verified the runtime key is allowed on the current private bucket and denied
-  on the current public bucket, the backup key is allowed on the current
-  isolated backup bucket, backup CORS is absent, and production asset CORS allows
-  exactly `https://capsulezero.app`; the redacted 10 MiB signed smoke passed.
+  bucket is in project `15296835` / FSN. Runtime and backup-writer credentials
+  live in bucketless key-only projects `15302873` and `15302925`, respectively.
+  Policy readback and live audits verified the runtime boundary and the
+  caveated backup hybrid policy described below; backup CORS is absent, and
+  production asset CORS allows exactly `https://capsulezero.app`. The
+  superseded runtime/backup keys and both temporary policy operators were
+  deleted; the post-revocation signed 10 MiB PUT/HEAD/GET/checksum/delete smoke
+  passed with verified cleanup.
 
 Local tools on the operator machine: Node/npm, Go, Docker (for running the local stack), `gh` CLI.
 
@@ -54,29 +57,53 @@ Canonical production policy/CORS inputs live under
 - `private-assets-cors.json` — exact production origin, signed PUT/read methods,
   `Content-Type`, and `ETag`;
 - `public-catalog-cors.json` — exact-origin read methods only;
-- `private-assets-policy.template.json` — deny every principal except the
-  rendered runtime access-key principal on the current private bucket;
+- `private-assets-policy.template.json` — grant the rendered runtime principal
+  from key-only project `15302873` `s3:ListBucket` on the bucket plus
+  `s3:PutObject`, `s3:GetObject`, and `s3:DeleteObject` only under
+  `item-originals/*` and `smoke/spec-040/*`;
 - `public-catalog-policy.template.json` — public object reads while explicitly
-  denying the runtime key;
-- `backups-policy.template.json` — deny every principal except the rendered
-  backup key on the current bucket in its isolated project.
+  denying the runtime principal `s3:*`;
+- `backups-policy.template.json` — grant the rendered writer principal from
+  key-only project `15302925` normal `s3:PutObject` under `postgres/*`; deny
+  object/version and control reads, ACL/retention/legal-hold mutation, deletes,
+  governance bypass, and bucket/version/multipart listing; reject dangerous
+  canned ACLs and AllUsers grant-read through Put header conditions.
 
 Render key placeholders only into a protected temporary file on the operator
-host/server; never replace them in the committed templates. Readback on
-2026-07-10 matched these policies. The backup bucket has Object Lock enabled
-and no CORS. Allowed `https://capsulezero.app` and attacker-origin preflight
-probes and the signed 10 MiB PUT/HEAD/GET/checksum/delete smoke passed with
-cleanup. Production upload activation remains default-off until quota,
-abandoned-upload cleanup, wardrobe attachment, and per-action credential
-hardening land.
+host/server; never replace them in the committed templates. Readback and live
+audits passed on 2026-07-11, including proof that both key projects contain no
+buckets. For the backup writer, normal `PutObject` under `postgres/*` passed;
+explicit denies were live-proven for object/version reads, ACL get/put,
+retention/legal-hold get/put, object/version deletes, governance bypass,
+bucket/version/multipart listing, and policy/CORS/Object-Lock-configuration
+reads. Dangerous canned ACL and AllUsers grant-read Put requests were denied
+by header conditions.
 
-These templates implement Hetzner's same-project `DenyAllUsersButOne` pattern.
-They prove a practical boundary for the buckets that exist today, but the
-allowlisted key keeps `s3:*` control-plane access on its bucket and Hetzner
-grants it default access to future buckets in the same project. Before upload
-or backup activation, create data-plane keys in dedicated key-only projects,
-grant only the required actions cross-project, and retain separate operator
-keys in the bucket projects for policy changes.
+The backup audit also recorded a provider exception: Hetzner/RGW accepts
+`PutObject` carrying Object Lock mode, retain-until, or legal-hold headers even
+though the separate retention/legal-hold actions are denied. It does not grant
+read/delete access to existing data, but enables newly locked objects and a
+bounded write-time storage-DoS/cost-amplification risk. Do not activate backup
+automation until its uploader sanitizes/forbids these headers and the residual
+has explicit acceptance or a provider fix. The server env was atomically
+rotated while retaining `root:root` mode `600` and
+`OBJECT_STORAGE_UPLOADS_ENABLED=false`. The backup bucket has Object Lock
+enabled and no CORS. Allowed `https://capsulezero.app` and
+attacker-origin probes passed with exact headers: private PUT preflight returned
+`200` with the exact origin/method/`Content-Type` and max-age `300`, while the
+public GET preflight without request headers returned `200` with the exact
+origin/GET/max-age `300`; attacker probes and backup preflight returned `403`
+without `Access-Control-Allow-Origin`.
+After the old runtime/backup keys and both temporary policy operators were deleted, the
+standalone Go smoke passed readiness, a signed `10485760`-byte PUT, HEAD,
+signed GET checksum match, and cleanup.
+Production upload activation remains default-off until quota,
+abandoned-upload cleanup, and wardrobe attachment land.
+
+Bucket-policy administration is separate from these data-plane credentials;
+do not install a bucket-owner operator credential in the runtime env. The
+bucketless key-only projects prevent the data-plane credentials from gaining
+default access to future buckets in projects `15203114` and `15296835`.
 
 Treat every presigned URL as a short-lived bearer capability. Its host, path,
 and query necessarily reveal the bucket, object key, and access-key ID; never
@@ -156,12 +183,14 @@ are not part of the current probe and must not be invented in evidence.
 
 ### 6. Backups (deferred)
 
-The Object-Locked bucket and its current-project key are provisioned, but nightly
-`pg_dump`, client-side encryption, scheduling, lifecycle/retention, and restore
-verification remain spec-024 Phase 5 work. Do not upload plaintext database
-data or mark backups complete based on bucket creation alone. Once Phase 5
-lands, verify the first encrypted object under `postgres/`, at least 14 day
-retention, and a restore drill.
+The Object-Locked bucket and the writer from bucketless key-only project
+`15302925` are provisioned, but nightly `pg_dump`, client-side encryption,
+Object Lock header sanitization/risk acceptance, scheduling,
+lifecycle/retention, and restore verification remain spec-024 Phase 5 work. Do
+not upload plaintext database data or mark backups complete based on bucket/key
+provisioning alone. Once Phase 5 lands, verify forbidden Object Lock headers,
+the first encrypted object under `postgres/`, at least 14 day retention, and a
+restore drill.
 
 ## Stage 2 Integration Gates
 
@@ -237,11 +266,17 @@ Kratos / Resend
 Hetzner Object Storage
 
 - Private/public asset buckets (`15203114` / HEL): pass/fail
-- Object-Locked backup bucket + separate key (`15296835` / FSN): pass/fail
-- Runtime key allowlisted private / denied public: pass/fail
-- Backup key allowlisted / backup CORS absent: pass/fail
+- Object-Locked backup bucket (`15296835` / FSN): pass/fail
+- Bucketless runtime key project (`15302873`): pass/fail
+- Bucketless backup-writer key project (`15302925`): pass/fail
+- Runtime cross-project action matrix / public `s3:*` deny: pass/fail
+- Backup normal Put + explicit read/control/delete/list/ACL denies: pass/fail
+- Dangerous canned ACL / AllUsers grant-read Put headers denied: pass/fail
+- Object Lock Put headers sanitized and residual accepted/provider-fixed: pass/fail
+- Backup CORS absent: pass/fail
 - Private bucket reachable from API health: pass/fail
-- Signed PUT round-trip: pass/fail
+- Signed 10 MiB PUT/HEAD/GET/checksum/delete round-trip after rotation: pass/fail
+- Superseded same-project keys deleted: pass/fail
 - Exact `https://capsulezero.app` CORS allowed: pass/fail
 - localhost/attacker CORS denied: pass/fail
 

@@ -151,17 +151,40 @@ The recovery/verification code emails depend on it (spec 035).
 
 Spec 040 also requires the canonical `OBJECT_STORAGE_*` variables from
 `deploy/compose.env.example`. They are installed only in this protected env
-file: the runtime key is allowlisted on the private HEL asset bucket and
-explicitly denied on the public bucket. The separate FSN backup key remains in
-the canonical `BACKUP_S3_*` variables and is not passed to the API. Policy/CORS
-readback and allowed/attacker-origin probes passed before the storage-gated
-health deploy; the redacted signed 10 MiB PUT/HEAD/GET/checksum/delete round-trip
-passed with cleanup. `OBJECT_STORAGE_UPLOADS_ENABLED=false` keeps init/complete
-closed until per-action keys are moved to dedicated key-only projects and the
-quota/cleanup/wardrobe-attachment rollout lands. Backup automation is likewise
-blocked on its dedicated key-only/per-action replacement. The installed same-project
-credentials establish only the current-bucket boundary; they retain bucket
-control-plane access and default access to future project buckets.
+file. The runtime credential belongs to bucketless key-only project `15302873`;
+the private HEL bucket policy grants `s3:ListBucket` plus object
+put/get/delete only under `item-originals/*` and `smoke/spec-040/*`, while the
+public bucket explicitly denies that principal `s3:*`. The FSN backup writer
+belongs to bucketless key-only project `15302925`. Its hybrid policy allows
+normal `s3:PutObject` under `postgres/*`; live probes confirmed explicit denies
+for object/version reads, ACL get/put, retention/legal-hold get/put,
+object/version deletes, governance bypass, bucket/version/multipart listing,
+and policy/CORS/Object-Lock-configuration reads. Put header conditions also
+reject dangerous canned ACLs and AllUsers grant-read. The backup credential
+remains in canonical `BACKUP_S3_*` variables and is not passed to the API.
+
+Hetzner/RGW still accepts `PutObject` with Object Lock mode, retain-until, or
+legal-hold headers despite the corresponding action denies. This cannot read
+or delete existing data, but can create newly locked objects and amplify
+storage cost/denial of service. Backup automation remains disabled until its
+uploader forbids/sanitizes those headers and the residual is explicitly
+accepted or fixed by the provider.
+
+Policy/CORS readback, the runtime audit, the caveated backup hybrid-policy
+audit, proof that both key projects are bucketless, and atomic env rotation
+passed on 2026-07-11. The env
+remained `root:root` mode `600`, and
+`OBJECT_STORAGE_UPLOADS_ENABLED=false` keeps init/complete closed until the
+quota/cleanup/wardrobe-attachment rollout lands. The superseded same-project
+runtime/backup keys and both temporary policy operators were deleted in the
+Hetzner Console; only the new cross-project keys remain. The post-revocation
+standalone Go smoke passed readiness, signed PUT of exactly `10485760` bytes,
+HEAD, signed GET checksum match, and cleanup. Private/public exact-origin CORS
+probes returned `200` with their exact headers and max-age `300`; attacker
+origins and backup preflight returned `403` without
+`Access-Control-Allow-Origin`. Backup automation remains deferred until the
+header/risk gate above plus client-side encryption, scheduling, retention, and
+restore verification land.
 
 ### 4. TLS certificate + host nginx
 

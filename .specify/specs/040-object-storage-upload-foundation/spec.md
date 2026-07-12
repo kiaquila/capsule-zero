@@ -41,8 +41,9 @@ complete, or make the API health endpoint report ready.
 - OpenAPI, generated client, compose/env wiring, backend/architecture docs,
   and the relevant spec-024 verification/process-memory references.
 - Production provisioning from the ADR-003 topology: asset buckets in the
-  currently recommended primary region, backup bucket/key isolated in its
-  own Hetzner project, practical current-bucket credential boundaries,
+  currently recommended primary region, backup bucket isolated in its own
+  Hetzner project, runtime and backup credentials isolated in dedicated
+  bucketless key-only projects with cross-project action policies,
   exact-origin CORS,
   server secrets in `/opt/capsule-zero/.env`, and a real signed-upload smoke
   with cleanup.
@@ -64,19 +65,18 @@ complete, or make the API health endpoint report ready.
 - Owner storage quotas, abandoned-upload cleanup, and wardrobe attachment.
   Until that protection/ownership slice lands, production keeps both upload
   endpoints fail-closed behind `OBJECT_STORAGE_UPLOADS_ENABLED=false` even
-  though their implementation and contract ship here. Dedicated key-only
-  projects with cross-project per-action allows are also required before
-  uploads or backup automation are activated.
+  though their implementation and contract ship here.
 
 ## Security and privacy decision
 
 **2026-07-10 (founder/user acceptance):** proceed with direct, presigned
 PUT/GET for private personal-photo originals on Hetzner Object Storage despite
 Hetzner having no default data-at-rest encryption. For this v0.1 foundation,
-the accepted controls are a private bucket, current-bucket policy boundaries,
-exact production-origin CORS, server-generated unguessable object keys, PUT TTL of
-at most five minutes, GET TTL of at most fifteen minutes, authenticated and
-owner-bound API operations, and no logging of credentials or presigned URLs.
+the accepted controls are a private bucket, dedicated bucketless runtime keys
+with cross-project prefix/action boundaries, exact production-origin CORS,
+server-generated unguessable object keys, PUT TTL of at most five minutes, GET
+TTL of at most fifteen minutes, authenticated and owner-bound API operations,
+and no logging of credentials or presigned URLs.
 Backups still require client-side encryption before any backup data is stored.
 
 The accepted residual risk is that original photo bytes are not encrypted by
@@ -90,12 +90,35 @@ object metadata at completion, but actual image decoding, malware/content
 inspection, orphan cleanup, and SSE-C/API-proxy alternatives remain follow-ups
 before broader storage use.
 
-The provisioned same-project credentials are not final per-action least
-privilege. They retain `s3:*` control-plane access on the allowlisted bucket and
-Hetzner grants default access to future buckets in the same project. The
-default-off feature gate therefore also blocks activation until data-plane
-credentials move to dedicated key-only projects with explicit cross-project
-action allows and bucket-project operator keys remain available for rotation.
+**2026-07-11 hardening:** runtime credentials now live in bucketless key-only
+project `15302873`, while backup credentials live in bucketless key-only
+project `15302925`; both return zero buckets to `ListBuckets`. Cross-project
+policies in the bucket-owning projects grant the runtime principal
+`ListBucket` only on the private bucket and `PutObject`/`GetObject`/
+`DeleteObject` only under `item-originals/*` and `smoke/spec-040/*`. The public
+bucket keeps anonymous `GetObject` and explicitly denies that runtime principal
+`s3:*` on the bucket and its objects. The backup principal can put only under
+`postgres/*`; explicit principal denies block object/version reads, ACL reads
+and mutation, retention/legal-hold reads and mutation, object/version deletes,
+governance bypass, and bucket/version listing. Put-time conditions also reject
+dangerous canned ACLs and explicit grantee ACL headers. Those controls are
+required because a live Hetzner probe showed that a cross-project `PutObject`
+allow by itself also permitted `HeadObject`/`GetObject`. Live probes passed for
+the normal write and every listed denial, including `public-read` and AllUsers
+grant attempts. Hetzner/RGW nevertheless accepts Object Lock mode,
+retain-until, and legal-hold headers supplied on the original `PutObject`
+request despite the direct Object Lock action denies. That capability cannot
+read, modify, or delete existing data, but can create retained/held versions
+and therefore remains a bounded write-time storage-DoS/cost-amplification risk.
+Backup automation stays disabled until it strips/rejects those headers and the
+residual is explicitly accepted or closed by the provider. The protected
+production env was rotated to the dedicated credentials and remains mode
+`600`, `root:root`, with uploads disabled. The superseded same-project runtime/
+backup credentials and both temporary policy-operator credentials were
+deleted; only the new cross-project data-plane credentials remain. A
+post-revocation 10 MiB signed PUT/HEAD/GET/checksum/delete smoke with the rotated
+runtime key passed with cleanup, together with exact-origin/attacker-origin
+asset CORS probes and the negative backup-CORS probe.
 
 ## Acceptance Criteria
 
@@ -130,23 +153,26 @@ action allows and bucket-project operator keys remain available for rotation.
 8. OpenAPI, route guards, generated client, compose/env examples, and active
    backend/storage documentation describe the implemented contract; no
    Supabase or provider-specific legacy coupling is added.
-9. The three ADR-003 production buckets and practical current-bucket key
-   boundaries are provisioned; production CORS permits only
-   `https://capsulezero.app` and the required methods/headers; app credentials
-   are installed only in the protected server env file. Upload and backup
-   activation still require dedicated key-only projects with cross-project
-   per-action allows.
+9. The three ADR-003 production buckets and dedicated bucketless runtime/
+   backup key projects are provisioned. Cross-project policies grant only the
+   required private prefixes/actions and explicitly deny the runtime principal
+   on public catalog plus backup read/list/delete, ACL, and direct Object Lock
+   control operations. Backup Put-time ACL conditions reject public/grantee
+   ACLs; the provider's remaining Put-time Object Lock header behavior is
+   documented as a backup-automation activation gate. Production CORS permits
+   only `https://capsulezero.app` and the required methods/headers; rotated app
+   credentials are installed only in the protected server env file.
+   Superseded same-project credentials are revoked before completion.
 10. A real production-endpoint smoke proves signed PUT of a 10 MB object,
     metadata/read access, expected CORS preflight behavior, and cleanup. No
     secret or presigned URL appears in repository files, CI output, PR text, or
     captured verification evidence.
 11. Upload routes are implemented but default to `503 FEATURE_UNAVAILABLE`
     unless the operator explicitly enables `OBJECT_STORAGE_UPLOADS_ENABLED`.
-    Production remains disabled until dedicated key-only projects with
-    cross-project per-action allows, owner quota, orphan cleanup, and wardrobe
-    attachment controls are delivered. The route-level gate runs before
-    session resolution, so disabled requests perform no Kratos,
-    profile-database, Object Storage, or upload-job/asset repository operation.
+    Production remains disabled until owner quota, orphan cleanup, and wardrobe
+    attachment controls are delivered. The route-level gate runs before session
+    resolution, so disabled requests perform no Kratos, profile-database,
+    Object Storage, or upload-job/asset repository operation.
 
 ## Negative scenarios (SENAR)
 

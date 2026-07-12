@@ -30,7 +30,10 @@ The goal is a **working** end-to-end auth flow on the existing `/app` UI, not in
 
 ### Phase 4 — Storage + email + imgproxy
 
-16. Hetzner Object Storage buckets for private uploads, public catalog assets, and encrypted backups, with CORS limited to `https://capsulezero.app` where browser flows require it.
+16. Hetzner Object Storage buckets for private uploads, public catalog assets,
+    and encrypted backups; dedicated bucketless runtime/backup key projects
+    with cross-project prefix/action policies; CORS limited to
+    `https://capsulezero.app` where browser flows require it.
 17. Resend domain verified on `capsulezero.app` (SPF + DKIM published).
 18. Add `imgproxy` to compose with the object-storage bucket as its origin.
 
@@ -38,7 +41,7 @@ The goal is a **working** end-to-end auth flow on the existing `/app` UI, not in
 
 19. Configure syslog rotation on the droplet (daily, 7-day retention).
 20. Wire the OpenTelemetry trace exporter target used by the Go API.
-21. Nightly `pg_dump` cron (`ofelia`-style sidecar or host cron) encrypting with age and uploading to the backup object-storage bucket. Retention/Object Lock policy for 14-day recovery.
+21. Nightly `pg_dump` cron (`ofelia`-style sidecar or host cron) encrypting with age and uploading to the backup object-storage bucket. Retention/Object Lock policy for 14-day recovery. The uploader rejects Object Lock headers on `PutObject`; activation explicitly accepts the remaining provider residual or waits for a provider fix.
 
 ### Phase 6 — Supabase provider retirement
 
@@ -90,7 +93,7 @@ Every acceptance criterion below is verifiable by a command, screenshot, or link
 | 11 | 2 | `GET /api/health` returns 200 with `postgres` and `kratos` `"ok"` (redis added in Phase 3); web in `api` mode reaches it via the provider | ✅ `curl /api/health` → `{"kratos":"ok","ok":true,"postgres":"ok"}`; web `/api/health` → `providerMode:"api"`, `status:"ok"`, integrations `configured` |
 | 12 | 2 | Negative scenario 3 (`docker compose stop postgres`) → `/api/health` returns 503 with `postgres: "error"` | ✅ `http=503`, body `{"kratos":"error","ok":false,"postgres":"error"}` |
 | 13 | 2 | Negative scenario 6: repeat `docker compose up -d` is a no-op on a healthy stack (no migration replay) | ✅ repeat `up -d` no-op; filtering `docker logs api` for `migrations applied` returns count 1 |
-| 14 | 4 | Spec 040 wires strict private Object Storage config, storage-gated health, signed init/complete, and the production topology: asset buckets in project `15203114` / HEL plus the Object-Locked backup bucket in project `15296835` / FSN. Runtime-key current private/public and backup-key current isolated-bucket policy readback passed; exact-origin asset CORS/negative probes passed; backup CORS is absent; the signed 10 MiB PUT/HEAD/GET/checksum/delete smoke passed with cleanup. Same-project `s3:*`/future-bucket access is recorded as an activation blocker pending key-only projects and cross-project per-action allows. | `.specify/specs/040-object-storage-upload-foundation/plan.md` verification rows 2–13; `deploy/object-storage/` policy/CORS templates; redacted readback/probe and signed-smoke evidence |
+| 14 | 4 | Spec 040 wires strict private Object Storage config, storage-gated health, signed init/complete, and the production topology: asset buckets in project `15203114` / HEL; Object-Locked backup bucket in project `15296835` / FSN; bucketless runtime-key project `15302873` and backup-key project `15302925` (`list-buckets=0`). Cross-project readback/matrix proves runtime `ListBucket` plus prefix-bounded Put/Get/Delete, a public runtime-principal `s3:*` deny, and a normal backup prefix-bounded Put plus explicit read/ACL/direct Object Lock/delete/list denies and Put-time ACL conditions. Hetzner still accepts Object Lock headers on the original `PutObject`; this bounded write-time storage-DoS/cost residual remains a Phase-5 backup-automation activation gate. Protected env rotation passed as `root:root` mode `600` with uploads false. The superseded runtime/backup keys and both temporary policy operators were deleted; the post-revocation rotated-key 10 MiB PUT/HEAD/GET/checksum/delete smoke passed with cleanup. Exact-origin private/public CORS, attacker-origin denial, and absent backup CORS were reconfirmed. | `.specify/specs/040-object-storage-upload-foundation/plan.md` verification rows 2–13; `deploy/object-storage/` policy/CORS templates; redacted policy/readback/matrix, protected-env, key-revocation, CORS, and signed-smoke evidence |
 | 15 | 4 | Resend domain verified: SPF + DKIM published; verification email passes DKIM | DNS dig output + Resend dashboard screenshot |
 | 16 | 4 | Negative scenario 4 (forced Resend 5xx) surfaces as inline error in web UI, no orphan identity | test script output + Kratos admin list proving no identity created |
 | 17 | 4 | Negative scenario 5 fails closed at the implemented boundary: invalid credentials/bucket make `/api/health` report `storage: "error"` and init return no URL; localhost/attacker CORS preflight receives no allow-origin grant. Frontend inline-error coverage waits for the upload UI slice. | Go health/init tests + redacted allowed/disallowed-origin preflight output |

@@ -12,7 +12,7 @@
       "Sid": "DenyRuntimeKey",
       "Effect": "Deny",
       "Principal": {
-        "AWS": "arn:aws:iam:::user/p15203114:__RUNTIME_ACCESS_KEY_ID__"
+        "AWS": "arn:aws:iam:::user/p15302873:__RUNTIME_ACCESS_KEY_ID__"
       },
       "Action": "s3:*",
       "Resource": [

@@ -154,7 +154,9 @@ access is mediated by the Go storage adapter:
   and the completion endpoint is idempotent;
 - nightly Postgres backup automation is deferred to spec-024 Phase 5; when it
   lands it must encrypt client-side before writing to the isolated backup
-  bucket and enforce at least 14 day retention.
+  bucket, forbid Object Lock control headers, carry explicit acceptance of the
+  remaining provider risk or wait for a provider fix, and enforce at least
+  14 day retention.
 
 Spec 040 provides the private-bucket adapter and unattached original-photo
 metadata only. It requires explicit static credentials, probes the private
@@ -167,12 +169,32 @@ job/asset identifiers; it has no separate `storagePath` field. A presigned URL
 is nevertheless not opaque: its host, path, and signature query necessarily
 reveal the bucket, object key, and access-key ID. It is a short-lived bearer
 capability and must never enter logs, chat, screenshots, or committed evidence.
-Policy readback confirms the application key is allowlisted on the current
-private-assets bucket and explicitly denied on the public catalog; the backup
-key is allowlisted on the current bucket in its isolated project. These
-same-project keys still retain bucket control-plane access and default access
-to future project buckets. Dedicated key-only projects plus cross-project
-per-action allows are required before uploads or backup automation are enabled.
+The runtime key lives in bucketless key-only project `15302873`. Its
+cross-project policy grants `s3:ListBucket` on the private bucket and
+`s3:PutObject`, `s3:GetObject`, and `s3:DeleteObject` only under
+`item-originals/*` and `smoke/spec-040/*`; the public-catalog bucket explicitly
+denies that principal `s3:*` while retaining anonymous `s3:GetObject`. The
+backup writer lives in bucketless key-only project `15302925`. Its hybrid
+policy allows normal `s3:PutObject` under `postgres/*`. Live probes confirmed
+explicit denies for object/version reads, ACL get/put, retention/legal-hold
+get/put, object/version deletes, governance bypass, bucket/version/multipart
+listing, and policy/CORS/Object-Lock-configuration reads. Put header conditions
+also reject dangerous canned ACLs and AllUsers grant-read.
+
+The same audit found a bounded provider exception: Hetzner/RGW accepts
+`PutObject` with Object Lock mode, retain-until, or legal-hold headers despite
+the dedicated action denies. It does not let the writer read or delete existing
+data, but it can create newly locked objects and amplify storage cost or denial
+of service. Backup automation stays disabled until its uploader
+sanitizes/forbids those headers and the residual receives explicit acceptance
+or a provider fix, in addition to encryption, scheduling, retention, and
+restore verification. Policy readback and the caveated live audits passed
+before the server env was atomically rotated, preserving `root:root` mode `600`
+and `OBJECT_STORAGE_UPLOADS_ENABLED=false`. The superseded runtime and backup
+keys plus both temporary policy-operator keys were revoked; only the new
+cross-project keys remain. A post-revocation standalone Go smoke then passed
+readiness, signed PUT of `10485760` bytes, HEAD, signed GET with matching
+checksum, and cleanup.
 
 Anyone holding an unexpired PUT URL can replay it and overwrite the same final
 object with bytes that satisfy the signed size/content-type constraints. If
@@ -186,9 +208,9 @@ broader storage use.
 before session resolution, so implemented init/complete routes return
 `503 FEATURE_UNAVAILABLE` without a Kratos, profile-database, Object Storage, or
 upload-job/asset repository operation. The handlers repeat the same check for
-defense in depth. Activation waits for owner quota, abandoned-upload cleanup,
-wardrobe attachment, and data-plane credentials in dedicated key-only projects
-with cross-project per-action allows.
+defense in depth. The dedicated key-only policy hardening is complete;
+activation still waits for owner quota, abandoned-upload cleanup, and wardrobe
+attachment.
 
 Hetzner Object Storage has no default data-at-rest encryption. Backups must be encrypted before upload; personal-photo storage follows the ADR-003 direct-upload security posture unless a later SSE-C/API-proxy design supersedes it.
 
@@ -246,17 +268,17 @@ later-slice work.
 | `AUTH_GOOGLE_ENABLED`         | server        | Gates `/api/auth/google/*` + the provider probe (spec 037); mirrors the Kratos OIDC env switch        |
 | `OBJECT_STORAGE_ENDPOINT`     | server        | Hetzner Object Storage S3 endpoint (for example `https://hel1.your-objectstorage.com`)                 |
 | `OBJECT_STORAGE_REGION`       | server        | Application Object Storage region (`hel1` in the provisioned production topology)                       |
-| `OBJECT_STORAGE_ACCESS_KEY_ID` | server        | Application Object Storage access key id                                                              |
-| `OBJECT_STORAGE_SECRET_ACCESS_KEY` | server   | Application Object Storage secret key                                                                 |
+| `OBJECT_STORAGE_ACCESS_KEY_ID` | server        | Runtime key from bucketless key-only project `15302873`; access is granted cross-project by bucket policy |
+| `OBJECT_STORAGE_SECRET_ACCESS_KEY` | server   | Runtime key secret from bucketless key-only project `15302873`                                         |
 | `OBJECT_STORAGE_PRIVATE_BUCKET` | server      | Private assets bucket (avatars, item originals, processed variants, marketplace imports)               |
-| `OBJECT_STORAGE_UPLOADS_ENABLED` | server      | Default-off activation gate; enable only after per-action key hardening plus quota/cleanup/attachment     |
+| `OBJECT_STORAGE_UPLOADS_ENABLED` | server      | Default-off activation gate; key hardening is complete, but quota/cleanup/attachment still block enablement |
 | `OBJECT_STORAGE_PUBLIC_BUCKET` | server       | Public catalog bucket, introduced when moderated catalog imagery is served                             |
 | `OBJECT_STORAGE_PUBLIC_BASE_URL` | server     | Native public object URL base until Stage-2 CDN/front-door activation                                  |
 | `BACKUP_S3_ENDPOINT`          | later phase   | Provisioned isolated endpoint (`https://fsn1.your-objectstorage.com` in production)                    |
 | `BACKUP_S3_REGION`            | later phase   | Provisioned backup bucket region (`fsn1` in production)                                               |
 | `BACKUP_S3_BUCKET`            | later phase   | Provisioned Object-Locked bucket; backup automation is still deferred                                 |
-| `BACKUP_S3_ACCESS_KEY_ID`     | later phase   | Provisioned key id for the isolated backup project; per-action key required before automation         |
-| `BACKUP_S3_SECRET_ACCESS_KEY` | later phase   | Provisioned key secret for the isolated backup project; never passed to the API                       |
+| `BACKUP_S3_ACCESS_KEY_ID`     | later phase   | Writer key from bucketless key-only project `15302925`; never passed to the API                        |
+| `BACKUP_S3_SECRET_ACCESS_KEY` | later phase   | Writer key secret from bucketless key-only project `15302925`; never passed to the API                 |
 | `KRATOS_SMTP_CONNECTION_URI`  | server        | Active Resend SMTP courier connection for Kratos                                                      |
 | `RESEND_API_KEY`              | later phase   | Future direct transactional-email client; Kratos currently uses SMTP                                  |
 | `RESEND_FROM`                 | later phase   | Future direct-client sender (for example `no-reply@capsulezero.app`)                                  |
@@ -297,17 +319,24 @@ The auth/profile and object-storage foundations have delivered:
 - nginx config with TLS, rate-limit, and Kratos `auth_request` middleware;
 - API health checks for Postgres, Kratos, and private Object Storage;
 - ~~Cloudflare proxy active on `capsulezero.app`~~ — deferred to Stage 2 (founder decision 2026-07-02, spec 033);
-- Hetzner Object Storage asset/backup buckets, current-bucket policies, and exact-origin
-  asset CORS; the redacted signed 10 MiB PUT/HEAD/GET/checksum/delete smoke
-  passed with cleanup. Upload/backup activation stays blocked until dedicated
-  key-only projects and cross-project per-action allows land; uploads also wait
-  for owner quota, orphan cleanup, and wardrobe attachment.
+- Hetzner Object Storage asset/backup buckets, bucketless runtime/backup key
+  projects, cross-project policies, and exact-origin asset CORS;
+  policy readback, the runtime audit, the caveated backup hybrid-policy audit,
+  and protected env rotation passed. The backup writer cannot read/delete
+  existing data, but Put-time Object Lock headers remain a bounded
+  storage-DoS/cost risk that blocks backup automation pending header
+  sanitization and explicit acceptance/provider fix. The old same-project
+  runtime/backup keys and both temporary policy operators were revoked, and the
+  post-revocation signed 10 MiB
+  PUT/HEAD/GET/checksum/delete smoke passed with checksum verification and
+  cleanup. Exact-origin private/public probes succeeded, attacker origins and
+  backup preflight failed closed without an allow-origin header. Uploads still
+  wait for owner quota, orphan cleanup, and wardrobe attachment.
 
 Redis, async queue consumers, imgproxy, and encrypted database-backup automation
-remain later spec-024 phases. The isolated backup bucket and key being
-provisioned does not mean backup scheduling, encryption, retention, or restore
-verification has landed, and the current same-project key must not drive that
-automation before the per-action credential replacement.
+remain later spec-024 phases. The isolated backup bucket and hybrid writer key
+being provisioned does not mean backup header controls, risk acceptance,
+scheduling, encryption, retention, or restore verification has landed.
 
 Feature PRs after that must not introduce ad-hoc schema changes outside migrations.
 
