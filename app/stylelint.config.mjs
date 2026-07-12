@@ -57,9 +57,10 @@ const config = {
         // Every CSS colour-function family, not just rgba(): a raw
         // `rgb(255 255 255 / .7)` or `hsl(…)` would otherwise bypass the
         // guardrail (Codex P2 on PR #78). `var(--color-*)` is safe — the
-        // pattern requires the function's opening paren.
+        // pattern requires the function's opening paren. CSS function names
+        // are ASCII case-insensitive, so the guard must be too.
         "/.*/": [
-          /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color-mix|color)\(/,
+          /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color-mix|color)\(/i,
           /#[0-9a-fA-F]{3,8}\b/,
         ],
       },

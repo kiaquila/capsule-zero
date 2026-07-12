@@ -72,7 +72,7 @@ Negative scenario evidence:
 - **AC-003 (guardrail):** token rules at severity **error** (T010). Local negative run: seeded
   `border-radius: 7px` + `rgba(255,255,255,0.3)` fixture → 2 errors, `lint:css` exit 2; removed
   → exit 0. `--max-warnings 101` covers only the remaining duplicate-selector debt (drops in
-  US4). CI red-run link: seeded commit `e5e51bc` (reverted in `5b4704e`) dispatched on a scratch branch → `baseline-checks` **failure** — https://github.com/kiaquila/capsule-zero/actions/runs/29155591541.
+  US4). CI red-run link: seeded commit `e5e51bc` (reverted in `5b4704e`) dispatched on a scratch branch → `baseline-checks` **failure** — https://github.com/kiaquila/capsule-zero/actions/runs/29155591541. Follow-up P2 on PR #78 closed the uppercase-function bypass: `RGB(255 255 255 / .7)` now fails the same rule (the regexp has the required `i` flag).
 - Warning-budget ratchet trail: 102 → 559 (rules added) → 298 (Lane A) → 114 (Lane B) → 101
   (§9.10); colour+radius = 0 warnings, then flipped to error.
 - Deflake note: Next dev overlay (`<nextjs-portal>`, "N Issues") raced screenshots — hidden via
