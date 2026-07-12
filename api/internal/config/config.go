@@ -57,7 +57,7 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 
-	objectStorage, err := loadObjectStorageConfig()
+	objectStorage, err := LoadObjectStorage()
 	if err != nil {
 		return Config{}, err
 	}
@@ -80,7 +80,10 @@ func Load() (Config, error) {
 	return cfg, nil
 }
 
-func loadObjectStorageConfig() (ObjectStorageConfig, error) {
+// LoadObjectStorage reads only the Object Storage contract. Standalone
+// storage tooling uses it without inheriting unrelated API requirements such
+// as DATABASE_URL.
+func LoadObjectStorage() (ObjectStorageConfig, error) {
 	endpoint, err := requireEnv("OBJECT_STORAGE_ENDPOINT")
 	if err != nil {
 		return ObjectStorageConfig{}, err

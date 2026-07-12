@@ -118,9 +118,11 @@
   for `GET`; the deliberately empty public `AllowedHeaders` correctly denied
   it. The valid exact-origin GET preflight was repeated without that header and
   passed.
-- The first standalone storage smoke exported `DATABASE_URL`, but the server
-  env canonically stores `API_DATABASE_URL` for Compose interpolation. The
-  smoke maps that value only for `config.Load`; no database connection is made.
+- The first standalone storage smoke used the full API `config.Load`, but the
+  server env canonically stores `API_DATABASE_URL` for Compose interpolation.
+  Codex Review caught that hidden dependency; the smoke now uses the reusable
+  Object-Storage-only loader, with a regression test proving `DATABASE_URL` is
+  unnecessary.
 - A combined `NotAction` deny policy was accepted by Hetzner, but a live
   negative probe showed the same-project runtime key could still update the
   bucket policy. It was rejected as unproven action scoping; the canonical

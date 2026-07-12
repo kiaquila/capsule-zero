@@ -35,16 +35,16 @@ func main() {
 }
 
 func run(ctx context.Context, out io.Writer) (failedStep string) {
-	cfg, err := config.Load()
+	cfg, err := config.LoadObjectStorage()
 	if err != nil {
 		return "config"
 	}
 	client, err := storage.New(ctx, storage.Config{
-		Endpoint:        cfg.ObjectStorage.Endpoint,
-		Region:          cfg.ObjectStorage.Region,
-		AccessKeyID:     cfg.ObjectStorage.AccessKeyID,
-		SecretAccessKey: cfg.ObjectStorage.SecretAccessKey,
-		PrivateBucket:   cfg.ObjectStorage.PrivateBucket,
+		Endpoint:        cfg.Endpoint,
+		Region:          cfg.Region,
+		AccessKeyID:     cfg.AccessKeyID,
+		SecretAccessKey: cfg.SecretAccessKey,
+		PrivateBucket:   cfg.PrivateBucket,
 	})
 	if err != nil {
 		return "config"
