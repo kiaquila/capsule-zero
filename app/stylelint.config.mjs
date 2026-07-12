@@ -53,7 +53,16 @@ const config = {
     // subsumes the earlier #FFD600-specific rule: any raw hex — including the
     // error colour — must come from a token (var(--color-error) for #FFD600).
     "declaration-property-value-disallowed-list": [
-      { "/.*/": [/rgba\(/, /#[0-9a-fA-F]{3,8}\b/] },
+      {
+        // Every CSS colour-function family, not just rgba(): a raw
+        // `rgb(255 255 255 / .7)` or `hsl(…)` would otherwise bypass the
+        // guardrail (Codex P2 on PR #78). `var(--color-*)` is safe — the
+        // pattern requires the function's opening paren.
+        "/.*/": [
+          /\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color-mix|color)\(/,
+          /#[0-9a-fA-F]{3,8}\b/,
+        ],
+      },
       {
         message:
           "Raw colour literals live only in src/styles/tokens.css — use the design token (var(--color-*), var(--glass-*), var(--btn-*), …; var(--color-error) for #FFD600).",

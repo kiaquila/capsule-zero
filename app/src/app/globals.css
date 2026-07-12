@@ -756,7 +756,8 @@ textarea {
 .landing-manifesto p {
   max-width: 600px;
   margin: 0 auto;
-  color: var(--color-text-secondary);
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- 039 US2/T013: approved at .78; becomes var(--color-text-secondary) when the .78 retune lands test-first (§9.2, Codex P2) */
+  color: rgba(255, 255, 255, 0.78);
   font-size: 17px;
   font-weight: 300;
   line-height: 1.65;
@@ -1587,7 +1588,8 @@ textarea {
 
 .legal-article p,
 .legal-article li {
-  color: var(--color-text-secondary);
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- 039 US2/T013: approved at .78; becomes var(--color-text-secondary) when the .78 retune lands test-first (§9.2, Codex P2) */
+  color: rgba(255, 255, 255, 0.78);
   font-size: 14px;
   line-height: 1.78;
 }
@@ -4321,7 +4323,8 @@ textarea {
 }
 
 .capsule-result-opr strong {
-  color: var(--color-text-secondary);
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- 039 US2/T013: approved at .78; becomes var(--color-text-secondary) when the .78 retune lands test-first (§9.2, Codex P2) */
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .capsule-result-tabs {

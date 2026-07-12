@@ -96,6 +96,8 @@ description: "Task list for 039-design-system-consistency"
 - **Token normalization can collapse state pairs:** raising CTA rest .26 → `--btn-primary-bg`
   (.36) made rest == hover; the minted `--btn-primary-hover-bg` had to be applied in the same
   slice. Watch for rest/hover/active pairs whenever two drifted values consolidate onto one token.
+- **Mapping .78 copy onto a .70 token dims approved text** — Codex P2 (PR #78): the §9.2 ".78 → secondary, exact after retune" rows must NOT be applied before the retune itself; held as literals + disables until T013. Same lesson as the CTA rest/hover collapse: consolidation rows that depend on a future token value are sequencing hazards.
+- **Guardrail regex only covered rgba()/hex** — Codex P2 (PR #78): raw `rgb(255 255 255 / .7)` / `hsl()` would have passed; the disallowed-list now covers every CSS colour-function family.
 - **Next dev overlay races screenshots** (`<nextjs-portal>` "N Issues") — the profile/mobile
   flake; excluded via `toHaveScreenshot.stylePath`, not by retries.
 

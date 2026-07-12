@@ -68,8 +68,7 @@ Negative scenario evidence:
   diffs `0c1c354` / `9f8262d`; `design-review` (T009): landing pill diff APPROVED, capsule-result
   preview REJECTED → fixed (scrim moved to the background-image layer above the inline item
   colour) → re-run sub-threshold; §9.10 ⚑⚑ avatar-edit verified as the only changed element on
-  the profile diff. Residual raw values: 2 documented in-file disables (§9.8 data-URI,
-  T013 focus retune). grep raw `rgba(`/hex/px-radius in app CSS = 0 outside those two lines.
+  the profile diff. Residual raw values: 5 documented in-file disables (§9.8 data-URI; T013 focus retune; 3× approved-.78 copy held at its literal until the T013 secondary retune — Codex P2 on PR #78). grep raw `rgba(`/hex/px-radius in app CSS = 0 outside those two lines.
 - **AC-003 (guardrail):** token rules at severity **error** (T010). Local negative run: seeded
   `border-radius: 7px` + `rgba(255,255,255,0.3)` fixture → 2 errors, `lint:css` exit 2; removed
   → exit 0. `--max-warnings 101` covers only the remaining duplicate-selector debt (drops in
