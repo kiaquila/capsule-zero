@@ -12,6 +12,8 @@ export class DashboardPage extends BasePage {
   readonly signOutButton: Locator;
   readonly mobileMoreToggle: Locator;
   readonly mobileSignOutButton: Locator;
+  /** Stats row below the hero — readiness signal for visual snapshots (CSS class — no testid yet). */
+  readonly statsRow: Locator;
 
   constructor(page: Page, locale: Locale = "en") {
     super(page);
@@ -19,6 +21,7 @@ export class DashboardPage extends BasePage {
     this.signOutButton = page.getByTestId("nav-sign-out");
     this.mobileMoreToggle = page.getByTestId("nav-more-toggle");
     this.mobileSignOutButton = page.getByTestId("nav-sign-out-mobile");
+    this.statsRow = page.locator(".dashboard-stats-row");
   }
 
   /**

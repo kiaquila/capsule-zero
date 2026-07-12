@@ -90,6 +90,25 @@ future cross-package suite only; see `tests/unit/README.md`.
 - `fixtures/base.ts` exports the project's `test` (custom-extended Playwright `test`) and `expect`. Specs import from there, not from `@playwright/test`.
 - Add a new fixture only when at least two specs need it. Premature fixtures hurt readability.
 
+### Visual baseline (`*.visual.spec.ts`, spec 039)
+
+Opt-in screenshot suite (`specs/visual/`) — the no-diff reference for
+behavior-preserving CSS refactors (spec 039 US1 Lane A / US4). **Not part of
+the CI `test` job**: Playwright snapshots are platform-specific (macOS local vs
+ubuntu CI), so the evidence is a **same-machine before/after run** attached to
+the PR; CI drift protection is the stylelint token guardrail.
+
+```bash
+# generate/update baselines (before the refactor):
+E2E_VISUAL=1 npm --prefix tests/e2e run test -- --project visual-desktop --project visual-mobile --update-snapshots
+# compare (after the refactor) — must be green:
+E2E_VISUAL=1 npm --prefix tests/e2e run test -- --project visual-desktop --project visual-mobile
+```
+
+Projects: `visual-desktop` (Desktop Chrome) and `visual-mobile` (chromium
+mobile emulation, 375×812 — one engine on purpose, least snapshot flake).
+Animations are disabled via the shared `toHaveScreenshot` config.
+
 ### Standalone origin guard (`*.standalone.spec.ts`)
 
 Most specs run against the `next dev` server on `localhost:3000` (projects

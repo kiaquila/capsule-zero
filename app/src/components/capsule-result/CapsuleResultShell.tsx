@@ -350,6 +350,7 @@ export function CapsuleResultShell({ snapshot }: CapsuleResultShellProps) {
               <section
                 className="capsule-result-tabs"
                 aria-label={t("tabs.label")}
+                data-testid="capsule-result-tabs"
               >
                 {(
                   ["items", "outfits", "gaps", "shopping"] as CapsuleResultTab[]
@@ -360,6 +361,7 @@ export function CapsuleResultShell({ snapshot }: CapsuleResultShellProps) {
                       "capsule-result-tab",
                       activeTab === tab && "capsule-result-tab-active",
                     )}
+                    data-testid={`capsule-result-tab-${tab}`}
                     key={tab}
                     onClick={() => selectTab(tab)}
                     type="button"
