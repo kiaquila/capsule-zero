@@ -1,5 +1,5 @@
 # Capsule Zero Go API — multi-stage build.
-ARG GO_VERSION=1.25.11
+ARG GO_VERSION=1.25.12
 
 FROM golang:${GO_VERSION}-bookworm AS builder
 WORKDIR /src

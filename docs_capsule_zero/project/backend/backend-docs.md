@@ -12,7 +12,7 @@ Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a
 | Auth                     | Ory Kratos email/password + Google sign-in (spec 037, native-flow OIDC); Apple Sign-In in Stage 2                                      |
 | Database                 | PostgreSQL 16 with Postgres FTS; API connects directly in v0.1 as the least-privilege `capsule_app` role (spec 034), PgBouncer and pgvector are deferred by ADR-007 |
 | Cache / sessions / queue | Redis 7 (cache, idempotency keys, River/asynq job queue)                                                            |
-| Object storage           | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                   |
+| Object storage           | Hetzner Object Storage (S3-compatible; no built-in CDN in v0.1)                                                      |
 | Email                    | Resend (SMTP courier for Kratos; transactional sends from `internal/email`)                                         |
 | Front-door               | Direct DNS → host nginx in v0.1; the Cloudflare proxy (DDoS, bot fight, CDN) is deferred to Stage 2 (2026-07-02)    |
 | Observability            | syslog file logs + OpenTelemetry trace export; Grafana dashboards deferred by ADR-007 (Sentry/Prometheus → Stage 2) |
@@ -36,7 +36,7 @@ The Go monolith owns all business logic; the database has no RLS. Authorization 
     catalog/                      ← FTS-first catalog search, public reads
     billing/                      ← Lava.top stub, invoice + webhook handlers, coin ledger
     moderation/                   ← admin moderation queue
-    storage/                      ← Spaces client wrapper (S3 SDK)
+    storage/                      ← S3-compatible Object Storage client wrapper
     email/                        ← Resend client wrapper
     eventbus/                     ← Redis-backed job enqueue / consume
     httpapi/                      ← chi router, OpenAPI-typed handlers, middleware
@@ -127,12 +127,15 @@ There is no Postgres RLS. Authorization is enforced in Go on every request:
 
 ## Storage
 
-Object storage is DigitalOcean Spaces, with logical buckets implemented as path prefixes inside one `capsulezero` bucket (see ADR-003 for the prefix table). All access is mediated by the Go storage adapter:
+Object storage is Hetzner Object Storage (see ADR-003 for bucket topology and the current HEL-vs-NBG provisioning gate). All access is mediated by the Go storage adapter:
 
 - private reads use **signed GET URLs** with TTL ≤ 15 min;
-- public catalog images are served by the Spaces CDN through the `catalog-public` prefix;
+- public catalog images are served from the public catalog bucket's native object URL until a Stage-2 CDN/front-door is wired;
 - uploads use **signed PUT URLs** with TTL ≤ 5 min, issued by the Go API after metadata validation;
-- nightly Postgres backups go to the `backups/` prefix with 14 day retention.
+- browser/mobile uploads require explicit `/api/uploads/photo/complete`; the API verifies the object by `HeadObject` and the completion endpoint is idempotent;
+- nightly Postgres backups go to a separate Hetzner backup bucket with client-side encryption and at least 14 day retention.
+
+Hetzner Object Storage has no default data-at-rest encryption. Backups must be encrypted before upload; personal-photo storage follows the ADR-003 direct-upload security posture unless a later SSE-C/API-proxy design supersedes it.
 
 ## Background Jobs
 
@@ -175,11 +178,18 @@ For v0.1 the runtime ships with **`pgbouncer`, `grafana`, and the standalone `wo
 | `KRATOS_PUBLIC_URL`           | server        | Kratos public API base URL                                                                            |
 | `KRATOS_ADMIN_URL`            | server        | Kratos admin API base URL                                                                             |
 | `AUTH_GOOGLE_ENABLED`         | server        | Gates `/api/auth/google/*` + the provider probe (spec 037); mirrors the Kratos OIDC env switch        |
-| `SPACES_ACCESS_KEY`           | server        | DigitalOcean Spaces access key                                                                        |
-| `SPACES_SECRET_KEY`           | server        | DigitalOcean Spaces secret key                                                                        |
-| `SPACES_BUCKET`               | server        | Bucket name (single bucket, prefixes inside)                                                          |
-| `SPACES_REGION`               | server        | Spaces region (e.g. `fra1`)                                                                           |
-| `SPACES_CDN_BASE`             | server        | Public CDN base URL for `catalog-public` reads                                                        |
+| `OBJECT_STORAGE_ENDPOINT`     | server        | Hetzner Object Storage S3 endpoint (for example `https://hel1.your-objectstorage.com`)                 |
+| `OBJECT_STORAGE_REGION`       | server        | Hetzner Object Storage region (`hel1`, `nbg1`, or `fsn1`; see ADR-003 provisioning gate)               |
+| `OBJECT_STORAGE_ACCESS_KEY_ID` | server        | Application Object Storage access key id                                                              |
+| `OBJECT_STORAGE_SECRET_ACCESS_KEY` | server   | Application Object Storage secret key                                                                 |
+| `OBJECT_STORAGE_PRIVATE_BUCKET` | server      | Private assets bucket (avatars, item originals, processed variants, marketplace imports)               |
+| `OBJECT_STORAGE_PUBLIC_BUCKET` | server       | Public catalog bucket, introduced when moderated catalog imagery is served                             |
+| `OBJECT_STORAGE_PUBLIC_BASE_URL` | server     | Native public object URL base until Stage-2 CDN/front-door activation                                  |
+| `BACKUP_S3_ENDPOINT`          | server        | Backup bucket endpoint, preferably in a separate Hetzner location/project                              |
+| `BACKUP_S3_REGION`            | server        | Backup bucket region                                                                                  |
+| `BACKUP_S3_BUCKET`            | server        | Client-side encrypted Postgres backup bucket                                                          |
+| `BACKUP_S3_ACCESS_KEY_ID`     | server        | Backup-only Object Storage key id                                                                     |
+| `BACKUP_S3_SECRET_ACCESS_KEY` | server        | Backup-only Object Storage secret key                                                                 |
 | `RESEND_API_KEY`              | server        | Resend API key for transactional email                                                                |
 | `RESEND_FROM`                 | server        | Verified sender (e.g. `no-reply@capsulezero.app`)                                                     |
 | `LAVA_API_KEY`                | server        | Lava.top API key (v0.2 — stubbed in v0.1)                                                             |
@@ -213,7 +223,7 @@ Before the first feature slice (slice 01 — auth/session/profile), the producti
 - nginx config with TLS, rate-limit, and Kratos `auth_request` middleware;
 - Health-check on every service plus a smoke script that walks the stack end-to-end;
 - ~~Cloudflare proxy active on `capsulezero.app`~~ — deferred to Stage 2 (founder decision 2026-07-02, spec 033);
-- DigitalOcean Spaces bucket with CORS configured;
+- Hetzner Object Storage buckets with exact production CORS configured and signed upload smoke verified;
 - Resend account with SPF/DKIM published.
 
 Feature PRs after that must not introduce ad-hoc schema changes outside migrations.

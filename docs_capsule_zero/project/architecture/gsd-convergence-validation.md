@@ -4,11 +4,11 @@
 
 Rerun complete (2026-06-27). Convergence pass concluded with the **production-stack pivot**: Go modular monolith + nginx + Ory Kratos + PostgreSQL + Redis + DigitalOcean Spaces + Cloudflare + Resend + React Native. The previous Supabase + Vercel + Flutter + Photoroom direction is dropped before any code derived from it lands in production. The original Traefik and `/web` follow-up assumptions were superseded by the 2026-06-28 nginx revision and the 2026-06-30 `/app` canonical frontend decision.
 
-> **Dated record — later revisions:** the API gateway was changed Traefik → nginx on 2026-06-28 (ADR-001 § "Why nginx and not Traefik or Caddy"); pgvector is deferred to the semantic-search slice (ADR-007). This document is the 2026-06-27 convergence snapshot and is not edited cell-by-cell — the live decisions are the ADRs and `phase-4-council.md`.
+> **Dated record — later revisions:** the API gateway was changed Traefik → nginx on 2026-06-28 (ADR-001 § "Why nginx and not Traefik or Caddy"); pgvector is deferred to the semantic-search slice (ADR-007); hosting moved to Hetzner and Cloudflare activation deferred on 2026-07-02 (spec 033); storage moved from DigitalOcean Spaces to Hetzner Object Storage on 2026-07-10 (spec 039 / ADR-003). This document is the 2026-06-27 convergence snapshot and is not edited cell-by-cell — the live decisions are the ADRs and `phase-4-council.md`.
 
 ## Goal
 
-Re-evaluate the Phase 4 architecture against the new founder constraints (single DO droplet, no BaaS lock-in, self-hosted observability under a tight RAM budget, React Native instead of Flutter, self-hosted image model deferred to Stage 2) and record the convergence outcome that produced the new ADRs.
+Re-evaluate the Phase 4 architecture against the new founder constraints as of 2026-06-27 (single DO droplet at the time, no BaaS lock-in, self-hosted observability under a tight RAM budget, React Native instead of Flutter, self-hosted image model deferred to Stage 2) and record the convergence outcome that produced the new ADRs.
 
 ## Source Inputs
 
@@ -58,7 +58,7 @@ The previous Phase 4 stack does not satisfy the new founder constraints. Three f
 | Backend                | Supabase BaaS              | Go modular monolith behind nginx                                              | Self-hosted, low memory footprint, no vendor lock-in                 |
 | Database               | Supabase Postgres + RLS    | Postgres 16 with FTS in v0.1; pgvector deferred; authorization enforced in Go | Same DB engine, no DSL for authz, easier portability                 |
 | Auth                   | Supabase Auth              | Ory Kratos behind nginx `auth_request`                                        | Open-source identity provider we can self-host                       |
-| File storage           | Supabase Storage           | DigitalOcean Spaces (S3-compatible, built-in CDN)                             | Same provider as compute; built-in CDN                               |
+| File storage           | Supabase Storage           | DigitalOcean Spaces (S3-compatible, built-in CDN) — superseded 2026-07-10 by Hetzner Object Storage | Original 2026-06-27 rationale was same-provider compute/storage; spec 039 realigns that after the Hetzner compute migration |
 | Image processing       | Photoroom + remove.bg      | Self-hosted Capsule Zero model (Stage 2; v0.1 stores originals)               | Vendor cost removal; brand-aligned quality                           |
 | Web                    | Next.js on Vercel          | Next.js in docker-compose behind nginx                                        | One runtime, one bill, no Vercel-specific code paths                 |
 | Mobile                 | Flutter + Dart             | React Native + TypeScript                                                     | Shared language with web; smaller cognitive surface                  |
@@ -85,7 +85,7 @@ These are integration gates for product features, not for the runtime itself. Th
 | ID      | Concern                                                                                                   | Disposition                                                                                                          |
 | ------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | ADV-001 | Single droplet leaves little headroom for spiky AI tagging traffic.                                       | Accept for v0.1; plan early extraction of the image worker or droplet upgrade if syslog/traces show memory pressure. |
-| ADV-002 | We own Kratos config, Postgres backups, and Spaces CORS — Supabase used to do these for us.               | Accept; the production runtime spec ships the runbook for each.                                                      |
+| ADV-002 | We own Kratos config, Postgres backups, and Object Storage CORS — Supabase used to do these for us.       | Accept; the production runtime spec ships the runbook for each.                                                      |
 | ADV-003 | Grafana, Sentry, and Prometheus are not in v0.1.                                                          | Accept; syslog + traces are the v0.1 observability surface. Stage 2/ADR-007 promotion expands it.                    |
 | ADV-004 | React Native may need bare-workflow eject if a Stage 2 feature requires a native module Expo cannot wrap. | Accept; the bare workflow remains available via EAS without losing the Expo Router routing.                          |
 | ADV-005 | The retired Supabase provider still exists in `/app` while Go API domains are migrated.                   | Accept; retire it domain by domain while keeping `/app` as the canonical frontend.                                   |
@@ -98,4 +98,4 @@ Recorded approval posture:
 
 > Founder confirms the Phase 4 production-stack pivot: Go modular monolith behind nginx, Ory Kratos for identity, PostgreSQL with FTS (pgvector deferred), Redis for cache/queue, DigitalOcean Spaces for object storage, Cloudflare proxy at the edge, Resend for transactional email, syslog + traces for v0.1 observability, React Native for mobile, Lava.top stubbed in v0.1 and integrated in v0.2, self-hosted image model deferred to Stage 2. Implementation goes straight to real services (no mock-first stage). Production credentials remain in the droplet's encrypted env and provider dashboards and are not shared with agents.
 
-The quote above is the dated 2026-06-27 record. Two elements were later revised by founder decisions on 2026-07-02 (spec 033): hosting migrated to a Hetzner CX23, and the Cloudflare proxy activation is deferred to Stage 2 — v0.1 runs direct DNS to the host nginx edge.
+The quote above is the dated 2026-06-27 record. Three elements were later revised: hosting migrated to a Hetzner CX23 and the Cloudflare proxy activation was deferred to Stage 2 on 2026-07-02 (spec 033), then storage moved from DigitalOcean Spaces to Hetzner Object Storage on 2026-07-10 (spec 039 / ADR-003).

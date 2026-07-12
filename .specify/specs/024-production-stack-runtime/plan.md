@@ -30,15 +30,15 @@ The goal is a **working** end-to-end auth flow on the existing `/app` UI, not in
 
 ### Phase 4 — Storage + email + imgproxy
 
-16. DigitalOcean Spaces bucket `capsulezero` with CORS for `https://capsulezero.app`.
+16. Hetzner Object Storage buckets for private uploads, public catalog assets, and encrypted backups, with CORS limited to `https://capsulezero.app` where browser flows require it.
 17. Resend domain verified on `capsulezero.app` (SPF + DKIM published).
-18. Add `imgproxy` to compose with the Spaces bucket as its origin.
+18. Add `imgproxy` to compose with the object-storage bucket as its origin.
 
 ### Phase 5 — Observability + backups
 
 19. Configure syslog rotation on the droplet (daily, 7-day retention).
 20. Wire the OpenTelemetry trace exporter target used by the Go API.
-21. Nightly `pg_dump` cron (`ofelia`-style sidecar or host cron) uploading to `s3://capsulezero/backups/`. Spaces lifecycle rule for 14-day retention.
+21. Nightly `pg_dump` cron (`ofelia`-style sidecar or host cron) encrypting with age and uploading to the backup object-storage bucket. Retention/Object Lock policy for 14-day recovery.
 
 ### Phase 6 — Supabase provider retirement
 
@@ -90,11 +90,11 @@ Every acceptance criterion below is verifiable by a command, screenshot, or link
 | 11 | 2 | `GET /api/health` returns 200 with `postgres` and `kratos` `"ok"` (redis added in Phase 3); web in `api` mode reaches it via the provider | ✅ `curl /api/health` → `{"kratos":"ok","ok":true,"postgres":"ok"}`; web `/api/health` → `providerMode:"api"`, `status:"ok"`, integrations `configured` |
 | 12 | 2 | Negative scenario 3 (`docker compose stop postgres`) → `/api/health` returns 503 with `postgres: "error"` | ✅ `http=503`, body `{"kratos":"error","ok":false,"postgres":"error"}` |
 | 13 | 2 | Negative scenario 6: repeat `docker compose up -d` is a no-op on a healthy stack (no migration replay) | ✅ repeat `up -d` no-op; `docker logs api | grep -c "migrations applied"` = 1 |
-| 14 | 4 | DigitalOcean Spaces bucket `capsulezero` exists with CORS for `https://capsulezero.app`; signed PUT round-trip succeeds | `aws s3api get-bucket-cors` output + signed PUT smoke result |
+| 14 | 4 | Hetzner Object Storage buckets exist with CORS for `https://capsulezero.app` on browser-facing buckets only; signed PUT round-trip succeeds | `aws --endpoint-url "$OBJECT_STORAGE_ENDPOINT" s3api get-bucket-cors` output + signed PUT smoke result |
 | 15 | 4 | Resend domain verified: SPF + DKIM published; verification email passes DKIM | DNS dig output + Resend dashboard screenshot |
 | 16 | 4 | Negative scenario 4 (forced Resend 5xx) surfaces as inline error in web UI, no orphan identity | test script output + Kratos admin list proving no identity created |
-| 17 | 4 | Negative scenario 5 (invalid Spaces CORS) surfaces as inline upload error and `/api/health` reports `storage: "error"` | repro script + curl output |
-| 18 | 5 | Nightly `pg_dump` cron landed at `s3://capsulezero/backups/capsule-zero-*.dump` within 24 hours; 14-day lifecycle rule active | Spaces console screenshot + `aws s3api get-bucket-lifecycle-configuration` |
+| 17 | 4 | Negative scenario 5 (invalid Object Storage CORS) surfaces as inline upload error and `/api/health` reports `storage: "error"` | repro script + curl output |
+| 18 | 5 | Nightly age-encrypted `pg_dump` cron lands at `s3://$BACKUP_S3_BUCKET/postgres/capsule-zero-*.dump.age` within 24 hours; 14-day retention policy active | Hetzner Console screenshot + `aws --endpoint-url "$BACKUP_S3_ENDPOINT" s3api get-bucket-lifecycle-configuration` |
 | 19 | 5 | Syslog rotation is active and the Go API trace exporter resolves its configured OTLP endpoint; Grafana remains deferred by ADR-007 | `logrotate -d` output + API trace-export smoke |
 | 20 | 6 | Retired Supabase provider fully removed: `app/src/lib/providers/supabase/` and `@supabase/*` dependencies gone, `supabase` dropped from `ProviderMode`; `/app` stays canonical and keeps building the `web` service (no rename); the unused `/web` placeholder and `docker-compose.legacy-supabase.yml` are deleted | `git ls-tree -r HEAD -- web docker-compose.legacy-supabase.yml` returns nothing; `rg -n "@supabase" app` returns no matches; `docker compose config` still builds `web` from `app/Dockerfile` |
 
@@ -105,7 +105,7 @@ Every acceptance criterion below is verifiable by a command, screenshot, or link
 - **Memory pressure on 4 GB droplet** (returns as data services arrive). Mitigation: monitor syslog and `docker stats` for OOM kills during smoke; document droplet upgrade path if `kratos` + `postgres` + `api` together exceed 70% RAM under idle.
 - **Let's Encrypt rate limits.** Mitigation: first issue with staging endpoint when reproducing locally; production droplet issues directly because we have one apex domain and use case is small.
 - **Cloudflare DNS API token scope/rotation** (Phase 4 onwards). Mitigation: use a scoped Zone Read + DNS Edit token for `capsulezero.app`, store only in the droplet `.env`, and verify DNS-01 issuance if Cloudflare proxy is later enabled.
-- **Spaces CORS misconfiguration silently allowing wildcard origins.** Mitigation: verification step explicitly lists `AllowedOrigins` and rejects `*`.
+- **Object Storage CORS misconfiguration silently allowing wildcard origins.** Mitigation: verification step explicitly lists `AllowedOrigins` and rejects `*`.
 
 ## Rollback
 

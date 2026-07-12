@@ -8,6 +8,8 @@ API-gateway choice revised 2026-06-28: nginx 1.27 replaces Traefik v3 in DI-017.
 
 Hosting and front-door revised 2026-07-02 (spec 033): the DigitalOcean droplet in DI-006 is superseded by a Hetzner CX23 (2 vCPU / 4 GB / 40 GB), and the Cloudflare proxy in DI-006 / DI-020 is **deferred to Stage 2** — v0.1 pre-launch runs direct DNS to the host nginx edge. The dated DI-006 / DI-020 register rows keep their 2026-06-27 wording as history; the affected constraint and follow-up bullets carry inline deferral notes. Current state lives in AGENTS.md.
 
+Storage revised 2026-07-10 (spec 039): DigitalOcean Spaces in DI-004 is superseded by **Hetzner Object Storage**. The dated DI-004 row keeps its 2026-06-27 wording as history; current storage posture lives in ADR-003 and uses provider-neutral `OBJECT_STORAGE_*` / `BACKUP_S3_*` env keys.
+
 ## Purpose
 
 This document records the Architectura-style decision pass that produced the v0.1 production architecture. The durable source of truth remains the Capsule Zero ADRs (`docs_capsule_zero/adr/`); this council document captures the reasoning and quorum behind them.
@@ -22,7 +24,7 @@ The council was rerun after the founder accepted these new constraints:
 - Image processing moves to a self-hosted Capsule Zero model (deferred to Stage 2); Photoroom and remove.bg are dropped.
 - Observability stays self-hosted and lightweight in v0.1: syslog + traces. Grafana, Sentry, and Prometheus are deferred.
 - Auth provider is Ory Kratos (self-hosted) instead of Supabase Auth.
-- Object storage is DigitalOcean Spaces (S3-compatible, built-in CDN) instead of Supabase Storage.
+- Object storage was originally selected as DigitalOcean Spaces (S3-compatible, built-in CDN) instead of Supabase Storage. Superseded 2026-07-10 by Hetzner Object Storage after the compute migration.
 - API gateway is nginx 1.27 with `auth_request` into Kratos and `limit_req_zone` rate-limit (Traefik was the original pick on 2026-06-27; revised on 2026-06-28).
 - Email is Resend.
 - DNS is Spaceship; Cloudflare proxy fronts the server for DDoS and CDN (activation deferred to Stage 2 — 2026-07-02; v0.1 runs direct DNS).
@@ -59,7 +61,7 @@ The council was rerun after the founder accepted these new constraints:
 | DI-001 | Backend                  | Go modular monolith                                                                                                                  | 5/5 approve                                                      | Small static binary, low memory footprint on a 4 GB droplet, clean bounded contexts, easy extraction path when load justifies it.          |
 | DI-002 | Database                 | PostgreSQL 16 with Postgres FTS in v0.1; pgvector and PgBouncer deferred by ADR-007                                                  | 5/5 approve                                                      | Relational, ownership-sensitive, search-heavy; one DB covers structured data now and vector search once the semantic slice lands.          |
 | DI-003 | Auth                     | Ory Kratos email/password in v0.1; Google OAuth and Apple Sign-In in Stage 2                                                         | 5/5 approve                                                      | Self-hosted, headless, integrates with nginx `auth_request` and Resend SMTP.                                                               |
-| DI-004 | File storage             | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                                    | 5/5 approve                                                      | Same provider as compute; one billing line; CDN out of the box.                                                                            |
+| DI-004 | File storage             | DigitalOcean Spaces (S3-compatible, built-in CDN) — **superseded 2026-07-10 by Hetzner Object Storage**                               | 5/5 approve                                                      | Original rationale was same-provider billing/CDN while compute was DigitalOcean. After spec 033 moved compute to Hetzner, spec 039 moved object storage there too. |
 | DI-005 | Image processing         | Self-hosted Capsule Zero model behind a Go worker, deferred to Stage 2                                                               | 4/5 approve, 1 advisory                                          | Removes vendor cost and lock-in; v0.1 ships without background removal, originals only.                                                    |
 | DI-006 | Hosting                  | Single DigitalOcean droplet (≥ 4 GB / 2 vCPU / 80 GB) running docker-compose; Cloudflare proxy in front                              | 5/5 approve                                                      | Lowest operational burden compatible with the production-stack scope; CF absorbs DDoS for free.                                            |
 | DI-007 | API shape                | Go HTTP API behind nginx; OpenAPI is the contract source for web and mobile; React Native and Next.js both consume generated clients | 5/5 approve                                                      | One contract source, two clients. No Server Actions doing privileged DB work.                                                              |
@@ -86,7 +88,7 @@ Capsule Zero is a mobile-first product with two clients over one self-hosted bac
 - **Web** — Next.js App Router served by the `web` container.
 - **Mobile** — React Native iOS/Android app distributed through TestFlight and Google Play internal testing.
 
-A **Go modular monolith** behind **nginx** owns identity (via Kratos), relational data, signed-URL issuance, background jobs, and search. Postgres handles structured data and FTS in v0.1; pgvector is deferred until the semantic-search slice. Redis handles cache, sessions, and the job queue. DigitalOcean Spaces handles object storage with a built-in CDN. Resend handles transactional email. Cloudflare absorbs the noisy traffic floor from its Stage-2 activation on (deferred 2026-07-02, spec 033 — v0.1 runs direct DNS to the host nginx edge).
+A **Go modular monolith** behind **nginx** owns identity (via Kratos), relational data, signed-URL issuance, background jobs, and search. Postgres handles structured data and FTS in v0.1; pgvector is deferred until the semantic-search slice. Redis handles cache, sessions, and the job queue. Hetzner Object Storage handles private uploads, public catalog assets, and encrypted backups. Resend handles transactional email. Cloudflare absorbs the noisy traffic floor from its Stage-2 activation on (deferred 2026-07-02, spec 033 — v0.1 runs direct DNS to the host nginx edge).
 
 Custom Go services can be extracted out of the monolith later — the first natural extraction is the image-processing worker when the self-hosted Capsule Zero model lands.
 
@@ -96,7 +98,7 @@ Custom Go services can be extracted out of the monolith later — the first natu
 - DigitalOcean droplet upgrade to at least 4 GB / 2 vCPU / 80 GB. (Resolved 2026-07-02 by migrating to a Hetzner CX23 instead — spec 033.)
 - Spaceship DNS pointed at Cloudflare nameservers; Cloudflare proxy enabled on `capsulezero.app`. (Deferred to Stage 2 — 2026-07-02.)
 - Resend account created and SPF/DKIM published.
-- DigitalOcean Spaces bucket created with CORS for `capsulezero.app`.
+- Hetzner Object Storage buckets created with CORS for `capsulezero.app` where browser upload/download flows require it.
 - Ship `.specify/specs/024-production-stack-runtime/`.
 - Retire the Supabase provider inside `/app` domain by domain as Go API bounded contexts land; do not introduce a `/web` frontend.
 - Configure linting and local commit hooks before the first product-code PR.
@@ -110,4 +112,4 @@ Custom Go services can be extracted out of the monolith later — the first natu
 | Brief coverage         | Ready    | Covers backend, DB, auth, storage, image processing, hosting, web, React Native mobile, state, API, forms, i18n, coins, catalog search, gateway, queue, email, DNS, observability. |
 | Consistency            | Ready    | Decisions align with v0.1 scope, prototypes, and existing devops docs.                                                                                                             |
 | Implementation realism | Advisory | The 4 GB droplet is tight; image model and observability expansion are gated on either workload growth or a droplet upgrade.                                                       |
-| Risk visibility        | Ready    | Main risks are droplet memory ceiling, self-hosted image model build cost, marketplace parser fragility, and operational ownership of Kratos/Postgres/Spaces backups.              |
+| Risk visibility        | Ready    | Main risks are droplet memory ceiling, self-hosted image model build cost, marketplace parser fragility, and operational ownership of Kratos/Postgres/Object Storage backups.       |

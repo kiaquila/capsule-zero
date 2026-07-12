@@ -6,7 +6,7 @@
 
 **Capsule Zero** is a premium fashion-tech platform — "the Aesop of wardrobe apps". It helps affluent users (25–40 yo) build maximally productive capsule wardrobes using a proprietary color and wardrobe methodology. Core metric: **Outfit Productivity Ratio** (outfits / items).
 
-**Tech stack:** Next.js 14+ App Router web frontend (`/app`), React Native mobile app (iOS + Android), Go modular monolith backend, nginx 1.27 reverse proxy / API gateway, Ory Kratos auth, PostgreSQL 16 (plain `postgres:16` in v0.1 — pgvector deferred to the semantic-search slice, see ADR-007), Redis, DigitalOcean Spaces, Cloudflare front-door (deferred to Stage 2), all wired through docker-compose on a Hetzner Cloud server (migrated from DigitalOcean on 2026-07-02).
+**Tech stack:** Next.js 14+ App Router web frontend (`/app`), React Native mobile app (iOS + Android), Go modular monolith backend, nginx 1.27 reverse proxy / API gateway, Ory Kratos auth, PostgreSQL 16 (plain `postgres:16` in v0.1 — pgvector deferred to the semantic-search slice, see ADR-007), Redis, Hetzner Object Storage, Cloudflare front-door/CDN (deferred to Stage 2), all wired through docker-compose on a Hetzner Cloud server (migrated from DigitalOcean on 2026-07-02).
 **Languages:** EN (primary) and RU are active in v0.1 — i18n from Day 1. ES-AR is retained as reference copy and deferred to v0.2.
 **Target:** Buenos Aires-based startup, global premium segment.
 
@@ -28,7 +28,7 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
 | 1. Market Research            | COMPLETE — `docs_capsule_zero/marketing/go-to-market.md`                                                                                                                           |
 | 2. Product Definition         | COMPLETE — `.specify/specs/001-capsule-zero-mvp/spec.md`, `docs_capsule_zero/project/methodology/`, `docs_capsule_zero/ux/emotion-map.md`, `docs_capsule_zero/ux/ux-validation.md` |
 | 3. UX/UI Design               | COMPLETE — all 16 v0.1 logical screens designed and implemented in the `/app` frontend                                                                                             |
-| **4. Technical Architecture** | **PIVOTED TO PRODUCTION STACK** — Go modular monolith + nginx + Ory Kratos + Postgres + Redis + DO Spaces + Cloudflare + Resend; React Native replaces Flutter                     |
+| **4. Technical Architecture** | **PIVOTED TO PRODUCTION STACK** — Go modular monolith + nginx + Ory Kratos + Postgres + Redis + Hetzner Object Storage + Cloudflare Stage 2 + Resend; React Native replaces Flutter                     |
 | 5. Development Sprint         | IN PROGRESS — `.specify/specs/024-production-stack-runtime/`: Phases 1–2 landed (nginx + web; Postgres + Kratos + Go API + `api` provider, PR #57); every merge to `main` deploys to `https://capsulezero.app` via prod CD (spec 033)  |
 | 6. QA & Soft Launch           | Upcoming                                                                                                                                                                           |
 | 7. Commercial Launch          | Upcoming                                                                                                                                                                           |
@@ -38,6 +38,8 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
 **Production-stack pivot decision, 2026-06-27:** Phase 4 architecture was rewritten from a Supabase BaaS posture to a production-grade self-hosted stack. The mock-first Stage 1 posture (previously ADR-006) is dropped entirely — implementation goes straight to real services behind production-shape contracts.
 
 **Frontend / provider decision, 2026-06-30 (spec 024 follow-up — PR #57):** `/app` **stays** as the canonical, provider-abstracted Next.js frontend — there is no `/app` → `/web` rename, and `/app` is **not** slated for deletion. Current `/app` provider modes are `mock` and `supabase`; the Supabase provider is frozen and removed **domain by domain** as the future Go API absorbs each bounded context. Do not document an `api` provider mode as available until the `/app` API provider actually lands. Postgres ships as plain `postgres:16`; pgvector is deferred (ADR-007).
+
+**Storage provider decision, 2026-07-10 (spec 039):** DigitalOcean Spaces is superseded by **Hetzner Object Storage**. v0.1 storage uses S3-compatible Hetzner buckets, not the server root disk, a one-node MinIO, or a Cloud Volume. There is no built-in object-storage CDN in v0.1; public catalog assets use native object URLs until the Stage-2 CDN/front-door work. Hetzner Object Storage has no default data-at-rest encryption, so encrypted database backups are mandatory and personal-photo storage needs the explicit ADR-003 security posture.
 
 ## Where to Find Specifications
 
@@ -263,7 +265,7 @@ A task is **not complete** until the current PR head SHA has:
 
 ## Phase 4 — Technical Architecture (PIVOTED TO PRODUCTION STACK)
 
-Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-load production from Day 1, no BaaS lock-in, single DigitalOcean droplet running docker-compose, self-hosted observability, React Native instead of Flutter, and a self-hosted Capsule Zero image-processing model in place of external Photoroom/remove.bg. Phase 5 starts directly with the production runtime (no Stage 1 mock-first posture).
+Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-load production from Day 1, no BaaS lock-in, single server running docker-compose, self-hosted observability, React Native instead of Flutter, and a self-hosted Capsule Zero image-processing model in place of external Photoroom/remove.bg. Phase 5 starts directly with the production runtime (no Stage 1 mock-first posture). Hosting moved to Hetzner on 2026-07-02 (spec 033), and storage moved to Hetzner Object Storage on 2026-07-10 (spec 039).
 
 ### What's already done
 
@@ -289,7 +291,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 | **Database**            | PostgreSQL 16 — plain `postgres:16` in v0.1; pgvector (semantic), Postgres FTS (full-text) and PgBouncer pooling deferred (ADR-007) |
 | **Cache / queue**       | Redis 7 (cache, sessions, Redis-based job queue — Kafka deferred until multi-service split)                                         |
 | **Auth**                | Ory Kratos with email/password + Google sign-in in v0.1 (spec 037, native-flow OIDC); Apple Sign-In deferred to Stage 2             |
-| **File Storage**        | DigitalOcean Spaces (S3-compatible, built-in CDN)                                                                                   |
+| **File Storage**        | Hetzner Object Storage (S3-compatible; no built-in CDN in v0.1; public catalog CDN deferred to Stage 2)                              |
 | **Image processing**    | Self-hosted Capsule Zero model behind a worker (deferred — first ship core wardrobe flows with manual/placeholder behavior)         |
 | **API gateway**         | nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos                        |
 | **Hosting**             | Single Hetzner Cloud server (CX23: 2 vCPU / 4 GB / 40 GB, Ubuntu 26.04) running docker-compose — migrated from DigitalOcean 2026-07-02; Cloudflare front-door deferred to Stage 2 (founder decision 2026-07-02) |
@@ -309,8 +311,8 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 - ~~DigitalOcean droplet upgrade to at least 4 GB RAM / 2 vCPU / 80 GB disk~~ — resolved 2026-07-02 by migrating to a Hetzner CX23 (2 vCPU / 4 GB / 40 GB; capacity budget verified in spec 033).
 - ~~Spaceship DNS pointed at Cloudflare; Cloudflare proxy enabled for `capsulezero.app`~~ — deferred to Stage 2 (founder decision 2026-07-02); v0.1 pre-launch runs direct DNS → host nginx, and the realip/CF-ranges edge config stays inert until activation.
 - ~~Resend account created and SPF/DKIM published on `capsulezero.app`~~ — done 2026-07-03: domain verified in Resend (eu-west-1), SPF/DKIM/DMARC live at Spaceship DNS, sending key installed on the prod host (`KRATOS_SMTP_CONNECTION_URI`, port 2465 — Hetzner blocks outbound 25/465).
-- DigitalOcean Spaces bucket created with CORS configured for `capsulezero.app`.
-- Ship `.specify/specs/024-production-stack-runtime/` to bring the stack up in docker-compose on the server, with every service health-checked end-to-end. (Phases 1–2 landed and deploy via prod CD, spec 033; Redis / Spaces / observability phases remain.)
+- Hetzner Object Storage buckets created with exact CORS for `https://capsulezero.app`, after re-checking current Hetzner status and recording the ADR-003 security posture.
+- Ship `.specify/specs/024-production-stack-runtime/` to bring the stack up in docker-compose on the server, with every service health-checked end-to-end. (Phases 1–2 landed and deploy via prod CD, spec 033; Redis / Object Storage / observability phases remain.)
 - Retire the Supabase provider domain by domain as the Go API absorbs each bounded context — no wholesale `/app` deletion.
 
 ### Provider integration gates before real-provider QA/staging/launch

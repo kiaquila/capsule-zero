@@ -2,7 +2,7 @@
 #
 # Phase 1 scope: just enough to serve the existing Next.js landing on
 # https://capsulezero.app behind nginx + Let's Encrypt. Postgres, Kratos, the
-# Go API, the worker, Spaces/imgproxy, and Grafana arrive in later PRs of
+# Go API, the worker, Object Storage/imgproxy, and Grafana arrive in later PRs of
 # `.specify/specs/024-production-stack-runtime/`.
 #
 # Operator runbook: docs_capsule_zero/project/devops/nginx-reverse-proxy.md
@@ -142,7 +142,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
       args:
-        GO_VERSION: ${GO_VERSION_API:-1.25.11}
+        GO_VERSION: ${GO_VERSION_API:-1.25.12}
     restart: unless-stopped
     depends_on:
       postgres:

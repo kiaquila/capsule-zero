@@ -53,8 +53,9 @@
 - **2026-07-02 the 40 GB included disk is sufficient; no Hetzner volume purchased.**
   Measured on the old box: the entire workload is ≈ 1.35 GB (images 1.01 GB deduped,
   containers 10 MB, build cache 327 MB). Budget on CX23: ≈ 8–10 GB used, ~30 GB free.
-  Growth goes to object storage (Spaces), not local disk. A network volume would also be
-  slower for Postgres than local NVMe.
+  Growth goes to object storage, not local disk. A network volume would also be slower
+  for Postgres than local NVMe. The object-storage provider was later revised from
+  DigitalOcean Spaces to Hetzner Object Storage on 2026-07-10 (spec 039).
 - **2026-07-02 plain Ubuntu OS image over the Hetzner "Docker CE" app image.** Docker is
   installed from Ubuntu's own repos (`docker.io` + `docker-compose-v2` — same packages the
   old box ran); app images drift and carry pre-baked config that has to be reverse-engineered.
@@ -113,13 +114,14 @@
   cross-provider topology: Spaces stays on its remaining merits (mature S3 API behind
   the ADR-003 storage port, built-in CDN, no new provider relationship — R2 would couple
   storage to Cloudflare before the Stage-2 front-door), with the Stage-2 activation or a
-  real storage cost line item as the re-evaluation triggers.
+  real storage cost line item as the re-evaluation triggers. Superseded 2026-07-10 by
+  spec 039: storage follows compute into Hetzner Object Storage.
 - **2026-07-02 PR #65 Codex P2 (4d618b3 review — fifth pass):** the
   `docker-compose-deploy.md` First Start section listed `CF_DNS_API_TOKEN` (and other
   future-slice keys) under "Required keys at minimum", so a v0.1 operator would block
   bootstrap on a Stage-2 credential. The list is rewritten to state exactly the
   `${VAR:?…}`-guarded Phase-2 keys from `docker-compose.yml` as the minimum, with
-  CF/Spaces/Resend/mobile keys under an explicit "later-phase, not required for v0.1
+  CF/Object Storage/Resend/mobile keys under an explicit "later-phase, not required for v0.1
   bootstrap" block.
 - **2026-07-02 PR #65 Codex P2 (aba8f17 review — sixth pass):**
   `backend-stateful-slices-plan.md` still named Cloudflare "on the droplet" as the spec

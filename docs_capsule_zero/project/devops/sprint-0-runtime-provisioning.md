@@ -14,7 +14,7 @@ Phase 1 delivers the host `nginx + web` runtime that replaces the host Caddy + l
 - (Stage 2, with the Cloudflare proxy.) Cloudflare API token with Zone Read + DNS Edit on `capsulezero.app`, stored as `CF_DNS_API_TOKEN` in the server `.env` for ACME DNS-01. Until the proxy is on, nginx + certbot use HTTP-01 with port 80 directly.
 - Spaceship registrar account with a direct `A` record for `capsulezero.app` pointing at the server IP (the Cloudflare nameserver cut-over is deferred to Stage 2).
 - Resend account with API key and `no-reply@capsulezero.app` verified.
-- DigitalOcean Spaces bucket `capsulezero` with CORS for `https://capsulezero.app` (and the dev origin) configured.
+- Hetzner Object Storage buckets configured per ADR-003, with production CORS allowing exactly `https://capsulezero.app`; re-check Hetzner Object Storage status before choosing the primary region.
 
 Local tools on the operator machine: Node/npm, Go, Docker (for running the local stack), `gh` CLI.
 
@@ -28,7 +28,7 @@ Required keys at minimum: see `docs_capsule_zero/project/devops/docker-compose-d
 
 ## Production-First Posture
 
-There is no Stage 1 mock-first layer (see ADR-006). Every active service in the runtime comes up against real Postgres / real Kratos / real Spaces / real Resend from the first deploy (the Cloudflare front-door joins at Stage 2 — founder decision 2026-07-02). Local development uses the same stack with a `docker-compose.dev.yml` override that swaps Resend for MailHog and enables API hot-reload (the override is reintroduced in Phase 2 alongside Kratos).
+There is no Stage 1 mock-first layer (see ADR-006). Every active service in the runtime comes up against real Postgres / real Kratos / real Hetzner Object Storage / real Resend from the first deploy (the Cloudflare front-door/CDN joins at Stage 2 — founder decision 2026-07-02). Local development uses the same stack with a `docker-compose.dev.yml` override that swaps Resend for MailHog and enables API hot-reload (the override is reintroduced in Phase 2 alongside Kratos).
 
 Real provider integration gates that remain:
 
@@ -99,12 +99,12 @@ If any reports `pending` or `error`, fix the env file or the service config and 
 - Open `https://capsulezero.app` and register a test user with a real inbox.
 - Confirm the verification email arrives via Resend.
 - Sign in, update profile, sign out.
-- Upload a wardrobe photo via the Journey flow; confirm the file lands in Spaces under the correct prefix.
+- Upload a wardrobe photo via the Journey flow; confirm the file lands in Hetzner Object Storage under the correct prefix and anonymous reads stay blocked for private assets.
 - Confirm syslog files are present and rotated on the host; Grafana smoke checks start only after ADR-007 promotes the dashboard service.
 
 ### 6. Backups
 
-The nightly `pg_dump` cron is shipped with spec 024. Verify the first night's backup landed at `s3://capsulezero/backups/capsule-zero-YYYY-MM-DDTHH-MM-SSZ.dump` and that the lifecycle rule on the `backups/` prefix is active with 14 day retention.
+The nightly `pg_dump` cron is shipped with spec 024. Verify the first night's client-side encrypted backup landed in the Hetzner backup bucket under `postgres/` and that retention is active for at least 14 days.
 
 ## Stage 2 Integration Gates
 
@@ -177,7 +177,7 @@ Kratos / Resend
 - Verification email received: pass/fail
 - Password recovery email received: pass/fail
 
-Spaces
+Hetzner Object Storage
 
 - Bucket reachable: pass/fail
 - Signed PUT round-trip: pass/fail
@@ -185,8 +185,8 @@ Spaces
 
 Backups
 
-- Nightly pg_dump landed in s3://capsulezero/backups/: pass/fail
-- Lifecycle rule active (14 day): pass/fail
+- Nightly encrypted pg_dump landed in the backup bucket: pass/fail
+- Lifecycle/Object Lock posture active (>=14 day): pass/fail
 
 Remaining blockers:
 ```
@@ -197,7 +197,7 @@ Remaining blockers:
 - certbot docs: https://eff-certbot.readthedocs.io/
 - Ory Kratos: https://www.ory.sh/docs/kratos/
 - PostgreSQL pgvector: https://github.com/pgvector/pgvector
-- DigitalOcean Spaces: https://www.digitalocean.com/products/spaces
+- Hetzner Object Storage: https://docs.hetzner.com/storage/object-storage/overview/
 - Resend: https://resend.com/docs
 - Cloudflare DDoS protection: https://developers.cloudflare.com/ddos-protection/
 - Lava.top developer API: https://developers.lava.top/en

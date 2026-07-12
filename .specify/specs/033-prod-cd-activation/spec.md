@@ -58,7 +58,7 @@ environment is reintroduced.
 - Password recovery + email verification completion slice (Kratos flows stay disabled;
   `KRATOS_SMTP_CONNECTION_URI` holds a placeholder until Resend is configured — safe
   because the courier never sends while those flows are off).
-- Reintroducing a preview/dev environment; Cloudflare front-door; Redis / Spaces /
+- Reintroducing a preview/dev environment; Cloudflare front-door; Redis / Object Storage /
   observability phases of spec 024; wardrobe/capsule/catalog/billing domains on the Go API.
 - Decommissioning the old DigitalOcean droplet (operator decision once prod is verified).
 
