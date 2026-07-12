@@ -38,6 +38,19 @@ When you change an architecture or implementation decision, actualize **all** af
 - **8px grid** for spacing; the "screenshot test" (every screen worth screenshotting); "direct, not dictate" (guide, never impose).
 - Exact tokens: @.specify/memory/design-system.md and `docs_capsule_zero/project/frontend/styling.md`.
 
+## UI & Design work
+
+- For any UI/design task, run the two-role loop: `ui-ux-designer` (owns scenario, visual
+  system, states, consistency, live review) ↔ `frontend` (owns implementation,
+  reusable components, a11y, responsiveness, tech constraints).
+- Start every UI task with the `design-system` skill's Step 0 (classify this project's
+  system state) before designing or coding.
+- This project's design system is declared in: `.specify/memory/design-system.md`
+  (+ state/governance annex: `.specify/memory/design-system-state.md`).
+- Token changes are proposed by frontend, ratified by ui-ux-designer. Fix at the right
+  level (screen / component / token). No off-scale spacing, no stray hex.
+- Hand off with `design-handoff`; review the LIVE screen with `design-review` before done.
+
 ## Current Phase
 
 **Phase 5 — Development Sprint, in progress** against `.specify/specs/024-production-stack-runtime/`. Phases 1–2 have landed (nginx + web; Postgres + Kratos + Go API + the `api` provider, PR #57). Every merge to `main` auto-deploys the full stack to `https://capsulezero.app` via `.github/workflows/cd-prod.yml` (spec 033) — there is no separate dev environment. Postgres is plain `postgres:16` (pgvector deferred, ADR-007). Full status and decisions: AGENTS.md → "Current Phase & Status" and "Phase 4 — Technical Architecture".

@@ -1,0 +1,8 @@
+/* Injected into every toHaveScreenshot render (playwright.config.ts expect.stylePath).
+   The Next.js dev overlay ("N Issues" indicator, build toasts) mounts
+   asynchronously in a <nextjs-portal> and races the screenshot — dev-only
+   chrome, never part of the product surface, so it is excluded from visual
+   baselines. */
+nextjs-portal {
+  display: none !important;
+}

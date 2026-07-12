@@ -111,18 +111,19 @@ export function WardrobeItemCard({
 }
 
 export function WardrobeItemFallbackIcon({ colorHex }: { colorHex: string }) {
-  const stroke = isColorDark(colorHex) ? "rgba(255,255,255,.42)" : "rgba(0,0,0,.28)";
+  // Dot-ring contract (design-system.md §9.1): SVG presentation attributes
+  // cannot resolve var(), so the stroke is applied via style (inherited).
+  const stroke = isColorDark(colorHex) ? "var(--color-white-a44)" : "var(--color-dot-ring-dark)";
 
   return (
-    <svg aria-hidden fill="none" height="44" viewBox="0 0 44 44" width="44">
+    <svg aria-hidden fill="none" height="44" style={{ stroke }} viewBox="0 0 44 44" width="44">
       <path
         d="M22 8s-6.8 4.2-6.8 10.3L7 22.8V36h30V22.8l-8.2-4.5C28.8 12.2 22 8 22 8Z"
         fill={`${colorHex}22`}
-        stroke={stroke}
         strokeLinejoin="round"
         strokeWidth="1.8"
       />
-      <path d="M15.2 18.3h13.6" stroke={stroke} strokeLinecap="round" strokeWidth="1.6" />
+      <path d="M15.2 18.3h13.6" strokeLinecap="round" strokeWidth="1.6" />
     </svg>
   );
 }
