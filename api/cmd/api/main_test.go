@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -10,6 +11,36 @@ import (
 	"github.com/kiaquila/capsule-zero/api/internal/ratelimit"
 	"github.com/kiaquila/capsule-zero/api/internal/uploads"
 )
+
+func TestContainerHealthcheckUsesIndependentLivenessRoute(t *testing.T) {
+	paths := make(chan string, 1)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		paths <- r.URL.Path
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	t.Cleanup(server.Close)
+
+	endpoint, err := url.Parse(server.URL)
+	if err != nil {
+		t.Fatalf("parse test server URL: %v", err)
+	}
+	t.Setenv("API_PORT", endpoint.Port())
+
+	if code := healthcheck(); code != 0 {
+		t.Fatalf("healthcheck() = %d, want 0", code)
+	}
+	if path := <-paths; path != "/livez" {
+		t.Fatalf("healthcheck path = %q, want /livez", path)
+	}
+}
+
+func TestMuxExposesInternalLivenessWithoutDependencies(t *testing.T) {
+	mux := newMux(&auth.Handler{}, ratelimit.New(10, 10), ratelimit.New(120, 10))
+
+	if code := doRequest(t, mux, http.MethodGet, "/livez", ""); code != http.StatusNoContent {
+		t.Fatalf("GET /livez = %d, want 204", code)
+	}
+}
 
 // Session-validation endpoints (whoami/logout/profile) must be throttled by their
 // own, higher-rate bucket: without it a bot with any bearer string can drive
