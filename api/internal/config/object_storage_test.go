@@ -56,6 +56,19 @@ func TestLoadAcceptsStrictHetznerObjectStorageEndpoint(t *testing.T) {
 	}
 }
 
+func TestLoadObjectStorageDoesNotRequireDatabaseURL(t *testing.T) {
+	setValidObjectStorageEnv(t)
+	t.Setenv("DATABASE_URL", "")
+
+	cfg, err := LoadObjectStorage()
+	if err != nil {
+		t.Fatalf("LoadObjectStorage() error = %v", err)
+	}
+	if cfg.PrivateBucket != "capsulezero-prod-private-assets" {
+		t.Fatalf("PrivateBucket = %q, want capsulezero-prod-private-assets", cfg.PrivateBucket)
+	}
+}
+
 func TestLoadKeepsUploadEndpointsDisabledUnlessExplicitlyEnabled(t *testing.T) {
 	setValidObjectStorageEnv(t)
 	cfg, err := Load()
