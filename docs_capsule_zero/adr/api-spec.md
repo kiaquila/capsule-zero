@@ -270,6 +270,7 @@ Mobile apps must not expose a Lava.top purchase CTA, external payment link, or i
 | `/api/admin/moderation/items`         |    GET | Admin  | List marketplace items awaiting moderation |
 | `/api/admin/moderation/items/:itemId` |  PATCH | Admin  | Approve/reject catalog visibility          |
 | `/api/health`                         |    GET | Public | Build identity plus Postgres, Kratos, and private-storage readiness |
+| `/livez`                              |    GET | Public | Dependency-free container liveness (server operations only) |
 
 ## Domain RPC Functions
 

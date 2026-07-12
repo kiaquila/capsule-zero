@@ -55,7 +55,9 @@ authenticated upload routes:
 
 The broader target surface (full list in OpenAPI) remains:
 
-- `GET /api/health` — liveness + dependency probe
+- `GET /api/health` — public dependency readiness and build identity
+- `GET /livez` — internal dependency-free container liveness (documented as a
+  server-only operations route)
 - `GET /api/profile`, `PATCH /api/profile`, `POST/DELETE /api/profile/avatar`
 - `GET /api/journey/categories`, `POST /api/journey/custom-category/validate`, `POST /api/palette/validate`
 - `POST/GET/PATCH /api/capsules`, `/api/capsules/current`, `/api/capsules/{id}/items`, `/outfits`, `/gaps`, `/shopping-list`
@@ -160,8 +162,11 @@ access is mediated by the Go storage adapter:
 
 Spec 040 provides the private-bucket adapter and unattached original-photo
 metadata only. It requires explicit static credentials, probes the private
-bucket in `/api/health`, and fails startup/readiness when configuration or the
-bucket is unavailable. Postgres and Kratos are probed on every health request;
+bucket in `/api/health`, fails startup on invalid configuration, and reports
+readiness `503` when the bucket is unavailable. Dependency-free `/livez` owns
+container liveness so a slow external probe cannot restart-loop the API or
+block web startup; release verification still requires `/api/health` to pass.
+Postgres and Kratos are probed on every health request;
 only the serialized Object Storage result is cached for at most five seconds,
 preventing request bursts from amplifying into one S3 probe per caller. Upload
 init performs a fresh storage probe before issuing a URL. Init returns the URL/header/expiry capability and public

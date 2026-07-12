@@ -25,7 +25,9 @@ complete, or make the API health endpoint report ready.
   missing or invalid values stop API startup rather than selecting an implicit
   provider/default credential chain.
 - `/api/health`: report the storage dependency and return `503` while its
-  readiness probe fails.
+  readiness probe fails. Container liveness uses the internal dependency-free
+  `/livez` route so a slow provider cannot restart-loop the API or block web
+  startup; deployment verification still requires `/api/health` readiness.
 - Authenticated `POST /api/uploads/photo/init` for original wardrobe-item
   photos: validate JPEG/PNG/WebP metadata and the 10 MB limit, create a
   server-owned random object key plus queued upload job, and return a
@@ -133,7 +135,9 @@ asset CORS probes and the negative backup-CORS probe.
    request, while the serialized private-bucket result may be at most five
    seconds old to bound external provider traffic. A fresh failed storage probe
    is cached as an error and returns `503`; upload init always performs its own
-   fresh readiness probe before issuing a URL.
+   fresh readiness probe before issuing a URL. The container healthcheck uses
+   dependency-free `/livez`, while release verification remains gated by the
+   full `/api/health` response.
 4. An authenticated valid init request (JPEG/PNG/WebP, `1..10 MiB`) creates one
    owner-bound queued job with a server-generated random `item-originals/`
    key and returns job/asset identifiers, the signed PUT URL, required upload
@@ -176,9 +180,10 @@ asset CORS probes and the negative backup-CORS probe.
 
 ## Negative scenarios (SENAR)
 
-1. A required env value is missing, the endpoint is non-HTTPS/invalid, or the
-   private bucket is unavailable: startup/readiness fails and init returns no
-   signed target.
+1. A required env value is missing or the endpoint is non-HTTPS/invalid:
+   startup fails. If the private bucket is unavailable, readiness and release
+   verification fail while container liveness remains responsive; init returns
+   no signed target in every case.
 2. Init receives an unsupported MIME type, zero-byte payload, payload over
    10 MiB, malformed JSON, or an unauthenticated request: no job and no URL are
    created.

@@ -63,16 +63,15 @@ func main() {
 }
 
 // healthcheck is the container liveness probe (distroless has no shell). It
-// confirms the HTTP server is serving — any response is "alive". Readiness of
-// Postgres/Kratos is reported in the /api/health response body, not here, so a
-// dependency outage does not restart-loop the API container.
+// calls the internal dependency-free route so a slow readiness provider cannot
+// restart-loop the API container or block services that wait for it to start.
 func healthcheck() int {
 	port := os.Getenv("API_PORT")
 	if port == "" {
 		port = "8080"
 	}
 	client := &http.Client{Timeout: 3 * time.Second}
-	resp, err := client.Get("http://127.0.0.1:" + port + "/api/health")
+	resp, err := client.Get("http://127.0.0.1:" + port + "/livez")
 	if err != nil {
 		return 1
 	}
@@ -157,6 +156,9 @@ func run() error {
 // surface shares one independent, roomier bucket (spec 034 acceptance 1).
 func newMux(handler *auth.Handler, authLimiter, sessionLimiter *ratelimit.Limiter) *http.ServeMux {
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /livez", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
 	mux.HandleFunc("POST /api/auth/registration", authLimiter.Middleware(handler.Registration))
 	mux.HandleFunc("POST /api/auth/login", authLimiter.Middleware(handler.Login))
 	mux.HandleFunc("POST /api/auth/recovery", authLimiter.Middleware(handler.Recovery))

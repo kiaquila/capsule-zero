@@ -388,6 +388,13 @@ export const API_OPERATIONS = [
     "operationId": "handleMobileAuthCallback",
     "auth": "public",
     "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "GET",
+    "path": "/livez",
+    "operationId": "getLiveness",
+    "auth": "public",
+    "clientAvailability": "server"
   }
 ] as const;
 
@@ -1269,6 +1276,14 @@ export interface ApiOperationPayloads {
     request: HandleMobileAuthCallbackRequestBody;
     response: HandleMobileAuthCallbackResponseBody;
   };
+  getLiveness: {
+    path: GetLivenessPathParams;
+    query: GetLivenessQueryParams;
+    header: GetLivenessHeaderParams;
+    cookie: GetLivenessCookieParams;
+    request: GetLivenessRequestBody;
+    response: GetLivenessResponseBody;
+  };
 }
 
 export type ListModerationItemsPathParams = Record<string, never>;
@@ -1726,6 +1741,13 @@ export type HandleMobileAuthCallbackHeaderParams = Record<string, never>;
 export type HandleMobileAuthCallbackCookieParams = Record<string, never>;
 export type HandleMobileAuthCallbackRequestBody = never;
 export type HandleMobileAuthCallbackResponseBody = void;
+
+export type GetLivenessPathParams = Record<string, never>;
+export type GetLivenessQueryParams = Record<string, never>;
+export type GetLivenessHeaderParams = Record<string, never>;
+export type GetLivenessCookieParams = Record<string, never>;
+export type GetLivenessRequestBody = never;
+export type GetLivenessResponseBody = void;
 
 export type ApiPathParams<T extends ApiOperationId> =
   ApiOperationPayloads[T]["path"];
@@ -4609,6 +4631,18 @@ export const API_OPERATION_PAYLOADS = {
     "requestRequired": false,
     "successStatusCodes": [
       "302"
+    ],
+    "requestSchema": null,
+    "responseSchemas": [],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "getLiveness": {
+    "requestRequired": false,
+    "successStatusCodes": [
+      "204"
     ],
     "requestSchema": null,
     "responseSchemas": [],

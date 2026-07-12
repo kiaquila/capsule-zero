@@ -2409,3 +2409,17 @@ paths:
                 $ref: "#/components/schemas/HealthResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
+  /livez:
+    get:
+      tags: [Health]
+      operationId: getLiveness
+      x-auth: public
+      x-client-availability: server
+      x-internal: true
+      security: []
+      summary: Dependency-free container liveness probe.
+      responses:
+        "204":
+          description: The API HTTP process is serving.
+        "400":
+          $ref: "#/components/responses/BadRequest"

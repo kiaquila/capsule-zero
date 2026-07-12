@@ -75,6 +75,11 @@
   serializing/caching only the external Object Storage result for five seconds.
   Upload init still performs a fresh readiness call before signing, and public
   health bursts cannot become an unbounded S3 `HeadBucket` amplifier.
+- **2026-07-11 (Codex Review):** container liveness is isolated on internal
+  dependency-free `/livez`; `/api/health` remains the full readiness and release
+  verification surface. This prevents a slow Hetzner `HeadBucket` from
+  exhausting the liveness client timeout or blocking web startup while keeping
+  storage failures visible as readiness `503` and deploy failures.
 - **2026-07-10:** the first provisioning pass kept the runtime key in the asset
   project and the backup key beside the isolated backup bucket. That practical
   current-bucket boundary retained bucket control-plane and future-bucket

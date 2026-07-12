@@ -128,6 +128,11 @@ Schema migrations apply during API startup (the embedded SQL migrator runs again
 
 ## Health Checks
 
+The API container healthcheck calls internal `/livez`, which only proves the
+HTTP process is serving. It deliberately does not wait on Postgres, Kratos, or
+Object Storage, so a dependency stall cannot restart-loop the API or block web
+startup. Full release readiness remains fail-closed on the public probe below.
+
 Primary stack health:
 
 ```bash
