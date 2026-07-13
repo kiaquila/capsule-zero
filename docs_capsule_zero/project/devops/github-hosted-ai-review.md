@@ -31,8 +31,8 @@ credential is part of this flow.
 - The workflow token is read-only.
 - The workflow validates native output from `chatgpt-codex-connector[bot]`.
 - Comment-triggered runs accept only `@codex review` from an owner, member, or
-  collaborator, or an anchored Codex summary from the trusted bot; review-triggered
-  runs accept only submitted Codex reviews.
+  collaborator, or an anchored Codex summary from the trusted bot. Submitted review
+  events wake validation, but only trusted Codex evidence can satisfy the gate.
 - Reviewer evidence must identify the current PR head SHA.
 - After bootstrap, helper scripts are loaded from the trusted default branch so a PR
   cannot weaken its own required gate.
