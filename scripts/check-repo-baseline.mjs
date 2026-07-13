@@ -57,26 +57,15 @@ function requireFileContains(path, requiredText) {
   "package.json",
   ".specify/memory/constitution.md",
   ".specify/specs/001-capsule-zero-mvp/spec.md",
-  "docs_capsule_zero/adr/adr-004-ai-development-workflow.md",
-  "docs_capsule_zero/adr/adr-005-local-worker-orchestration.md",
   "docs_capsule_zero/project/frontend/frontend-docs.md",
   "docs_capsule_zero/project/backend/backend-docs.md",
-  "docs_capsule_zero/project/devops/ai-pr-workflow.md",
-  "docs_capsule_zero/project/devops/ai-orchestration-protocol.md",
-  "docs_capsule_zero/project/devops/ai-runner.md",
   "docs_capsule_zero/project/devops/github-ci-and-branch-protection.md",
-  "docs_capsule_zero/project/devops/review-contract.md",
-  "docs_capsule_zero/project/devops/codex-github-setup.md",
-  "docs_capsule_zero/project/devops/validation-matrix.md",
-  "scripts/ai-review-gate.mjs",
   "scripts/check-feature-memory.mjs",
   "scripts/check-repo-baseline.mjs",
-  "scripts/resolve-pr-context.mjs",
-  ".github/workflows/ai-command-policy.yml",
-  ".github/workflows/ai-review.yml",
   ".github/workflows/ci.yml",
   ".github/workflows/osv-scan.yml",
   ".github/workflows/pr-guard.yml",
+  ".github/workflows/test.yml",
   "app/package.json",
   "app/package-lock.json",
 ].forEach(requirePath);
@@ -84,11 +73,9 @@ function requireFileContains(path, requiredText) {
 requireFileContains(".github/workflows/ci.yml", "name: baseline-checks");
 requireFileContains(".github/workflows/pr-guard.yml", "name: guard");
 requireFileContains(".github/workflows/pr-guard.yml", "Checkout trusted gate scripts");
-requireFileContains(".github/workflows/ai-review.yml", "name: AI Review");
-requireFileContains(".github/workflows/ai-review.yml", "Checkout trusted gate scripts");
-requireFileContains(".github/workflows/ai-review.yml", "AI_REVIEW_HEAD_SHA");
 requireFileContains(".github/workflows/osv-scan.yml", "name: osv-scan");
 requireFileContains(".github/workflows/osv-scan.yml", "google/osv-scanner-action");
+requireFileContains(".github/workflows/test.yml", "name: test");
 
 if (missing.length === 0 && existsSync(fullPath("package.json"))) {
   const packageJson = readJson("package.json");
