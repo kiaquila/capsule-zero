@@ -10,11 +10,11 @@ This runbook owns Capsule Zero's required `AI Review` check.
 4. `.github/workflows/ai-review.yml` validates PR and submitted-review events. A
    PR-open/update run also polls for evidence.
 5. `.github/workflows/ai-review-wakeup.yml` handles the human command and anchored
-   Codex summary comments, then publishes the `AI Review` status on the resolved PR
-   head SHA rather than the default-branch event SHA.
+   Codex summary comments. If the PR-linked check has ended without success, it reruns
+   that same check on the resolved PR head SHA.
 6. Every validation runs on GitHub-hosted `ubuntu-latest`.
 7. The repository gate validates the reviewer, head SHA, and finding severities.
-8. Branch rules require the resulting `AI Review` check or commit status before merge.
+8. Branch rules require the single resulting `AI Review` check before merge.
 
 No local process, self-hosted runner, Claude CLI, Codex CLI, launch agent, or local
 credential is part of this flow.
@@ -32,8 +32,8 @@ credential is part of this flow.
 ## Security Model
 
 - The primary PR/review workflow token is read-only.
-- The comment wake-up token has only read permissions plus `statuses: write`; it checks
-  out trusted default-branch code only and never executes a PR copy of the gate.
+- The comment wake-up token has only read permissions plus `actions: write`; it checks
+  out trusted default-branch code only and can only rerun an existing PR-linked gate.
 - The workflow validates native output from `chatgpt-codex-connector[bot]`.
 - Comment-triggered runs accept only `@codex review` from an owner, member, or
   collaborator, or an anchored Codex summary from the trusted bot. Submitted review
@@ -60,7 +60,8 @@ The exact machine-readable rules live in
 2. Comment `@codex review` from the connected human account.
 3. Wait for Codex to review the new head SHA.
 4. A submitted Codex review starts a fresh PR-linked validation. An anchored summary
-   comment starts the trusted wake-up and publishes the result on the PR head SHA.
+   comment starts the trusted wake-up, which reruns a failed or timed-out PR-linked
+   check on the same head SHA.
 5. Manually dispatch `AI Review` only for first-install bootstrap or a failed GitHub
    event delivery.
 6. Merge only after all required checks are green and all blocking threads are resolved.

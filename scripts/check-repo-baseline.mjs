@@ -78,8 +78,8 @@ function requireFileExcludes(path, forbiddenText) {
   "scripts/check-feature-memory.mjs",
   "scripts/check-repo-baseline.mjs",
   "scripts/lib/github-fetch.mjs",
-  "scripts/lib/github-status.mjs",
-  "scripts/publish-ai-review-status.mjs",
+  "scripts/lib/github-actions.mjs",
+  "scripts/restart-ai-review.mjs",
   "scripts/resolve-pr-context.mjs",
   ".github/workflows/ai-review-wakeup.yml",
   ".github/workflows/ai-review.yml",
@@ -100,8 +100,8 @@ requireFileContains(".github/workflows/ai-review.yml", "pull_request_review:");
 requireFileContains(".github/workflows/ai-review.yml", "Checkout trusted gate scripts");
 requireFileContains(".github/workflows/ai-review.yml", "AI_REVIEW_HEAD_SHA");
 requireFileContains(".github/workflows/ai-review-wakeup.yml", "issue_comment:");
-requireFileContains(".github/workflows/ai-review-wakeup.yml", "statuses: write");
-requireFileContains(".github/workflows/ai-review-wakeup.yml", "AI_REVIEW_STATUS_STATE");
+requireFileContains(".github/workflows/ai-review-wakeup.yml", "actions: write");
+requireFileContains(".github/workflows/ai-review-wakeup.yml", "restart-ai-review.mjs");
 requireFileContains(
   ".github/workflows/ai-review-wakeup.yml",
   "ref: ${{ github.event.repository.default_branch }}",

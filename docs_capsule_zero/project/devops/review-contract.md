@@ -36,8 +36,8 @@ Codex may publish:
 
 The gate fails when reviewer evidence is missing, stale, malformed, authored by an
 untrusted account, or cannot be bound to the current head. Unresolved review threads
-remain independently enforced by the repository ruleset. Comment-event validation
-must publish its result on the resolved PR head SHA; the default-branch event SHA is
-never accepted as the required context. If the PR head changes between context
-resolution and validation, the run fails closed instead of transferring evidence
-between commits.
+remain independently enforced by the repository ruleset. A comment-event wake-up must
+target an existing PR-linked `AI Review` run for the resolved head SHA; it never uses
+the default-branch event SHA and never creates a second status context with the same
+name. If the PR head changes between context resolution and validation, the gate fails
+closed instead of transferring evidence between commits.
