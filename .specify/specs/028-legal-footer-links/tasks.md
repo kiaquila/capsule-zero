@@ -36,7 +36,7 @@
 - [x] T021 Run `node scripts/check-feature-memory.mjs origin/main HEAD`.
 - [ ] T022 Push the rebased branch and feature-memory commit to `fix/legal-footer-links`.
 - [ ] T023 Update PR #55 body so the SENAR Done Gate references `.specify/specs/028-legal-footer-links/`.
-- [ ] T024 Recheck PR #55 until `baseline-checks`, `guard`, `test`, and `osv-scan` are green.
+- [ ] T024 Recheck PR #55 until `baseline-checks`, `guard`, `AI Review`, and `test` are green; also confirm the non-required `osv-scan` signal.
 
 ## Process Memory _(mandatory - required by SENAR; written before declaring work complete)_
 

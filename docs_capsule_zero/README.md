@@ -21,4 +21,6 @@ Recommended reading order:
 8. `docs_capsule_zero/project/mobile/mobile-docs.md`
 9. `docs_capsule_zero/project/backend/backend-docs.md`
 10. `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md`
-11. `docs_capsule_zero/glossary.md`
+11. `docs_capsule_zero/project/devops/github-hosted-ai-review.md`
+12. `docs_capsule_zero/project/devops/review-contract.md`
+13. `docs_capsule_zero/glossary.md`

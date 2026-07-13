@@ -60,8 +60,13 @@ function requireFileContains(path, requiredText) {
   "docs_capsule_zero/project/frontend/frontend-docs.md",
   "docs_capsule_zero/project/backend/backend-docs.md",
   "docs_capsule_zero/project/devops/github-ci-and-branch-protection.md",
+  "docs_capsule_zero/project/devops/github-hosted-ai-review.md",
+  "docs_capsule_zero/project/devops/review-contract.md",
+  "scripts/ai-review-gate.mjs",
   "scripts/check-feature-memory.mjs",
   "scripts/check-repo-baseline.mjs",
+  "scripts/resolve-pr-context.mjs",
+  ".github/workflows/ai-review.yml",
   ".github/workflows/ci.yml",
   ".github/workflows/osv-scan.yml",
   ".github/workflows/pr-guard.yml",
@@ -73,6 +78,10 @@ function requireFileContains(path, requiredText) {
 requireFileContains(".github/workflows/ci.yml", "name: baseline-checks");
 requireFileContains(".github/workflows/pr-guard.yml", "name: guard");
 requireFileContains(".github/workflows/pr-guard.yml", "Checkout trusted gate scripts");
+requireFileContains(".github/workflows/ai-review.yml", "name: AI Review");
+requireFileContains(".github/workflows/ai-review.yml", "runs-on: ubuntu-latest");
+requireFileContains(".github/workflows/ai-review.yml", "Checkout trusted gate scripts");
+requireFileContains(".github/workflows/ai-review.yml", "AI_REVIEW_HEAD_SHA");
 requireFileContains(".github/workflows/osv-scan.yml", "name: osv-scan");
 requireFileContains(".github/workflows/osv-scan.yml", "google/osv-scanner-action");
 requireFileContains(".github/workflows/test.yml", "name: test");

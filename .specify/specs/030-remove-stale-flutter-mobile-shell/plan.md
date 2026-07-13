@@ -64,7 +64,7 @@ Supporting verification:
 
 - `node scripts/check-api-contract.mjs` passes, proving the OpenAPI contract remains valid.
 - `node --check scripts/generate-api-clients.mjs` passes after the generator target cleanup.
-- Required GitHub checks `baseline-checks`, `guard`, and `test` must pass on the final PR head SHA before merge.
+- Required GitHub checks `baseline-checks`, `guard`, `AI Review`, and `test` must pass on the final PR head SHA before merge.
 
 Negative scenario evidence:
 

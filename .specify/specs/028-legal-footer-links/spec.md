@@ -85,4 +85,4 @@ A visitor reviewing the standalone auth page or auth consent note can open the s
 - **SC-003**: `npm --prefix tests/e2e run test -- specs/landing/legal-links.spec.ts` passes.
 - **SC-004**: `npm --prefix app run lint` and `npm --prefix app run typecheck` pass after replacing the anchors with `Link`.
 - **SC-005**: `node scripts/check-feature-memory.mjs origin/main HEAD` passes with `.specify/specs/028-legal-footer-links/{spec,plan,tasks}.md`.
-- **SC-006**: GitHub PR checks `baseline-checks`, `guard`, `test`, and `osv-scan` are green on the final PR head SHA.
+- **SC-006**: Required GitHub PR checks `baseline-checks`, `guard`, `AI Review`, and `test` are green on the final PR head SHA; `osv-scan` is also green as the non-required security signal.

@@ -48,7 +48,7 @@ Replace the single-action landing cookie banner with a structured consent flow t
 | SC-001 local checks | Commands passed on 2026-06-26: `npm --prefix app run lint`; `npm --prefix app run typecheck`; `npm --prefix app run build`. Build output generated 30/30 static pages and kept `/en`, `/ru`, `/en/privacy-policy`, `/ru/privacy-policy`, `/en/terms-of-use`, and `/ru/terms-of-use`. |
 | SC-002 feature-memory guard | Commands passed on 2026-06-26: `node scripts/check-feature-memory.mjs --worktree`; `node scripts/check-feature-memory.mjs origin/main HEAD`, both output `Feature-memory gate passed via .specify/specs/023-cookie-consent-eprivacy/{spec,plan,tasks}.md`. |
 | SC-003 / SC-004 source safety checks | Commands passed on 2026-06-26: `git diff --check origin/main...HEAD` exited 0; `git diff origin/main...HEAD -- app/src/app/globals.css | rg -n "^\\+\\.legal|^\\+  \\.legal|blur\\(24px\\)"` returned no added legal CSS duplicates; source evidence above covers ES-AR and malformed-storage safety, including the Codex P2 case for empty `decidedAt`. |
-| SC-005 GitHub pipeline | Pending after push: `baseline-checks`, `guard`, and `test` on PR #44 head. |
+| SC-005 GitHub pipeline | Pending after push: `baseline-checks`, `guard`, `AI Review`, and `test` on PR #44 head. |
 
 ## Project Structure
 

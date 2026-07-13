@@ -91,4 +91,4 @@ An authenticated or unauthenticated user opens the language selector and sees a 
 - **SC-001**: Browser verification shows matching SVG markup and 18px rendered icon boxes for shared navigation labels across affected routes.
 - **SC-002**: Language menu computed styles show a light glass background, blur, elevated shadow, and border consistent with auth/cookie surfaces.
 - **SC-003**: Local checks pass: lint, typecheck, build, feature-memory guard, and whitespace diff check.
-- **SC-004**: GitHub PR checks for baseline, guard, and OSV complete successfully before merge readiness.
+- **SC-004**: GitHub PR checks `baseline-checks`, `guard`, `AI Review`, and `test` complete successfully before merge readiness; OSV remains a separate security signal.
