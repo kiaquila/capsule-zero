@@ -3,6 +3,7 @@
 import { appendFileSync, readFileSync } from "node:fs";
 
 import { pickLatestCodexSummaryComment } from "./lib/codex-summary.mjs";
+import { fetchWithRetry } from "./lib/github-fetch.mjs";
 
 const token = process.env.GITHUB_TOKEN;
 const repository = process.env.GITHUB_REPOSITORY;
@@ -64,7 +65,7 @@ const appendSummary = (lines) => {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const request = async (path, init = {}) => {
-  const response = await fetch(`https://api.github.com${path}`, {
+  const response = await fetchWithRetry(`https://api.github.com${path}`, {
     ...init,
     headers: {
       Accept: "application/vnd.github+json",
@@ -92,7 +93,7 @@ const listPaginated = async (path) => {
   let nextPath = path;
 
   while (nextPath) {
-    const response = await fetch(`https://api.github.com${nextPath}`, {
+    const response = await fetchWithRetry(`https://api.github.com${nextPath}`, {
       headers: {
         Accept: "application/vnd.github+json",
         Authorization: `Bearer ${token}`,

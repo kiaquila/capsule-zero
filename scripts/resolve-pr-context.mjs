@@ -2,6 +2,8 @@
 
 import { appendFileSync, readFileSync } from "node:fs";
 
+import { fetchWithRetry } from "./lib/github-fetch.mjs";
+
 const token = process.env.GITHUB_TOKEN;
 const repository = process.env.GITHUB_REPOSITORY;
 const eventPath = process.env.GITHUB_EVENT_PATH;
@@ -48,7 +50,7 @@ if (!token) {
   throw new Error("GITHUB_TOKEN is required to resolve pull request context");
 }
 
-const response = await fetch(
+const response = await fetchWithRetry(
   `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`,
   {
     headers: {

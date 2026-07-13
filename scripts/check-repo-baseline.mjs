@@ -65,6 +65,7 @@ function requireFileContains(path, requiredText) {
   "scripts/ai-review-gate.mjs",
   "scripts/check-feature-memory.mjs",
   "scripts/check-repo-baseline.mjs",
+  "scripts/lib/github-fetch.mjs",
   "scripts/resolve-pr-context.mjs",
   ".github/workflows/ai-review.yml",
   ".github/workflows/ci.yml",
