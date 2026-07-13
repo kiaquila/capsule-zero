@@ -118,4 +118,4 @@ A visitor with Global Privacy Control enabled sees the consent UI acknowledge th
 - **SC-002**: Feature-memory guard passes with `.specify/specs/023-cookie-consent-eprivacy/{spec,plan,tasks}.md` in the PR diff.
 - **SC-003**: Static inspection confirms no active ES-AR strings or routes are introduced by this cookie consent work.
 - **SC-004**: Source inspection confirms malformed / legacy consent storage cannot grant non-essential categories.
-- **SC-005**: GitHub `baseline-checks`, `guard`, `osv-scan`, and `AI Review` are green before merge readiness.
+- **SC-005**: GitHub `baseline-checks`, `guard`, and `test` are green before merge readiness.

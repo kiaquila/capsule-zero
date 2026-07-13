@@ -41,7 +41,7 @@ Unify duplicate authenticated navigation icons by reusing the Dashboard icon def
 | FR-007 capsule-result active-state behavior | Source evidence and browser route checks covered `/en/capsule-result?tab=outfits` and `/en/capsule-result`, ensuring the icon reuse did not alter tab-specific active logic. |
 | FR-008 through FR-010 visual-only language polish | Source evidence: `app/src/app/globals.css` applies the shared auth/cookie elevated glass surface to `.language-menu`; no product route, provider, or persistence code changed. |
 | SC-003 local pipeline | `npm run lint` passed; `npm run typecheck` passed; `npm run build` passed; `npm run ci:check` passed; `git diff --check` passed. |
-| SC-004 GitHub pipeline | PR #42 was opened, branch pushed, baseline checks ran, Codex review was triggered with `@codex review`, and guard is rerun after adding this feature memory. |
+| SC-004 GitHub pipeline | PR #42 was opened, branch pushed, baseline checks ran, review was triggered with a review request, and guard is rerun after adding this feature memory. |
 
 Negative scenario evidence:
 

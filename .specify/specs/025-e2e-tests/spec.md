@@ -31,7 +31,7 @@ Out of scope:
 - Adding the `test` check to GitHub branch-protection on `main` (admin UI action; documented as follow-up).
 - Writing Go unit tests or React Native (Detox) mobile tests — no Go/RN product code exists on this branch yet.
 - Migrating tests away from `/app`; `/app` remains the canonical web frontend after spec-024 Phase 2.
-- Modifying any other workflow (`ci.yml`, `pr-guard.yml`, `ai-review.yml`, `claude-*.yml`, `osv-scan.yml`).
+- Modifying any other workflow (`ci.yml`, `pr-guard.yml`, `osv-scan.yml`).
 - Modifying `AuthPanel.tsx`, `auth/schemas`, server actions, or Supabase wiring.
 - Adding the `test` check requirement to grandfathered specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, `003-sprint-0-foundation`.
 

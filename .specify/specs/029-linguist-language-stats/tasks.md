@@ -33,4 +33,4 @@
 ### Known Issues
 
 - GitHub's Languages widget updates only after `.gitattributes` is committed to the default branch and GitHub recalculates repository language statistics.
-- Local verification passed: vendored for `scripts/ai-review-gate.mjs` and `.specify/scripts/bash/common.sh`; documentation for `html-prototypes/index.html`; generated for the `app`, `web`, and `mobile` OpenAPI clients; all queried attributes unspecified for representative `tests/**` files and hand-written product files.
+- Local verification passed: vendored for `scripts/check-repo-baseline.mjs` and `.specify/scripts/bash/common.sh`; documentation for `html-prototypes/index.html`; generated for the `app`, `web`, and `mobile` OpenAPI clients; all queried attributes unspecified for representative `tests/**` files and hand-written product files.

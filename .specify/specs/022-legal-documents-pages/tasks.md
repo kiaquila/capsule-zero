@@ -31,8 +31,8 @@
 - [x] T019 Open PR #43.
 - [x] T020 Inspect failed GitHub guard log and identify missing feature-memory requirement.
 - [x] T021 Add this SENAR feature memory package.
-- [x] T022 Address Codex review feedback by replacing the legal document switcher hard-coded glass values with nav glass tokens.
-- [x] T023 Address Codex review feedback by replacing summary-like `plan.md` verification rows with concrete command, DOM JSON, source, build, and guard evidence artifacts.
+- [x] T022 Address review feedback by replacing the legal document switcher hard-coded glass values with nav glass tokens.
+- [x] T023 Address review feedback by replacing summary-like `plan.md` verification rows with concrete command, DOM JSON, source, build, and guard evidence artifacts.
 
 ## Process Memory
 
@@ -41,8 +41,8 @@
 - Port 3000 was occupied by an existing SSH-backed process and served stale output, so visual verification used a fresh local Next.js dev server on port 3001.
 - The current repository worktree contained many unrelated modified and untracked files, so the PR was created from a separate clean worktree instead of staging from the dirty tree.
 - The initial PR guard failed because product `app/` paths changed without a matching `.specify/specs/<feature-id>/spec.md`, `plan.md`, and `tasks.md` package.
-- AI Review later timed out waiting for review output on head `7b78644`, so the PR needed a fresh `@codex review` trigger after the feedback fix.
-- AI Review then blocked on summary-like SENAR verification rows in `plan.md`; replacing those rows with concrete artifacts was required before retriggering review.
+- Review later timed out on head `7b78644`, so the PR needed a fresh review request after the feedback fix.
+- Review then blocked on summary-like SENAR verification rows in `plan.md`; replacing those rows with concrete artifacts was required before retriggering review.
 
 ### Decisions
 

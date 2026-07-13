@@ -70,4 +70,4 @@ This spec is a stale scaffold/tooling/docs cleanup with no executable mobile beh
 
 - SC-001: The PR no longer carries Flutter/Dart mobile source or generated output.
 - SC-002: The API generator and runtime tooling checks reflect only active targets.
-- SC-003: Required GitHub checks pass after feature memory and AI Review are refreshed on the new head SHA.
+- SC-003: Required GitHub checks pass after feature memory and review are refreshed on the new head SHA.

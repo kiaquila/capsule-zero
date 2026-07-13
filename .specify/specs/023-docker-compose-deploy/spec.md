@@ -20,7 +20,7 @@ In scope:
 - Make Compose/web production runtime set `CAPSULE_PROVIDER_MODE=supabase` explicitly, keep unset local checkout mode on fixture-backed `mock`, and disable `mock` in production.
 - Keep external SaaS calls real but gated: Photoroom, Lava.top, marketplace import, Google OAuth, and Apple Sign-In must require real credentials instead of falling back to local mocks.
 - Add migration-backed runtime alignment for statuses, Lava invoices, auth profile creation, and public catalog seed data.
-- Harden real-runtime follow-ups from AI Review: signed and verified app sessions, Supabase token verification and refresh state, writable refresh-token persistence, proxy-level expired-token refresh before Server Component renders, proxy refresh network-failure fallback, read-only refresh avoidance, auth form error handling, profile sync preservation, atomic coin ledger mutations, atomic capsule creation, capsule item ownership validation, upload target storage paths, upload asset attachment/completion idempotency, background-removal timeout persistence, processed image polling, marketplace provider failure persistence, marketplace malformed-response persistence, marketplace confirmation foreign keys, catalog search filtering/no-match behavior, catalog contributor privacy, optional local runtime env files, render-safe session reads, marketplace external image preservation, category/color post-filter normalization, PostgREST JWKS validation for opaque keys, service-role-only billing RPC access, and redacted public health counts.
+- Harden real-runtime follow-ups from review: signed and verified app sessions, Supabase token verification and refresh state, writable refresh-token persistence, proxy-level expired-token refresh before Server Component renders, proxy refresh network-failure fallback, read-only refresh avoidance, auth form error handling, profile sync preservation, atomic coin ledger mutations, atomic capsule creation, capsule item ownership validation, upload target storage paths, upload asset attachment/completion idempotency, background-removal timeout persistence, processed image polling, marketplace provider failure persistence, marketplace malformed-response persistence, marketplace confirmation foreign keys, catalog search filtering/no-match behavior, catalog contributor privacy, optional local runtime env files, render-safe session reads, marketplace external image preservation, category/color post-filter normalization, PostgREST JWKS validation for opaque keys, service-role-only billing RPC access, and redacted public health counts.
 - Preserve operator-supplied external-provider secrets from optional runtime env files and refresh expired Supabase sessions in memory without mutating cookies during Server Component rendering.
 - Reject cross-user private Supabase Storage paths before any service-role asset upsert/signing path and keep Lava webhook invoice matching safe for non-UUID provider invoice IDs.
 - Document deploy startup as an ordered Compose sequence that explicitly recreates the one-shot `migrate` service before starting `web`, so migration-only releases cannot reuse a stale completed migration container.
@@ -186,26 +186,26 @@ Operators can see which real external integrations still need credentials, and t
 - **SC-006**: `/api/health` returns HTTP 200 with `providerMode: "supabase"`, Supabase/storage configured, and external providers pending until secrets exist.
 - **SC-007**: A Supabase Auth signup creates a real `public.profiles` row through the trigger.
 - **SC-008**: The in-app browser can load `/en` from the rebuilt web image with no console errors.
-- **SC-009**: GitHub PR #45 is ready for review, not draft, with green required checks and a fresh Codex review trigger on the final head.
-- **SC-010**: AI Review follow-up fixes for session trust, coin debits, and marketplace confirmation links pass local verification and a fresh Codex review cycle.
-- **SC-011**: AI Review follow-up fixes for upload asset attachment, purchase credit idempotency, and processed image polling pass local verification and a fresh Codex review cycle.
-- **SC-012**: AI Review follow-up fixes for verified protected-route sessions, profile preservation, and upload-completion idempotency pass local verification and a fresh Codex review cycle.
-- **SC-013**: AI Review follow-up fixes for session refresh state, inline auth errors, and catalog search filters/no-match behavior pass local verification and a fresh Codex review cycle.
-- **SC-014**: AI Review follow-up fixes for optional runtime env files, render-safe session reads, marketplace external image handling, and ID-based color post-filtering pass local verification and a fresh Codex review cycle.
-- **SC-015**: AI Review follow-up fixes for service-role-only billing RPC access and redacted public health counts pass local verification and a fresh Codex review cycle.
-- **SC-016**: AI Review follow-up fixes for Compose env precedence and render-safe Supabase token refresh pass local verification and a fresh Codex review cycle.
-- **SC-017**: Codex follow-up fixes for cross-user private storage path rejection and non-UUID Lava invoice IDs pass local verification and a fresh Codex review cycle.
-- **SC-018**: Codex follow-up fixes for writable refresh-token persistence, upload target storage paths, marketplace external image preservation, and category alias post-filtering pass local verification and a fresh Codex review cycle.
-- **SC-019**: Codex follow-up fixes for avoiding refresh-token rotation during read-only renders pass local verification and a fresh Codex review cycle.
-- **SC-020**: Codex follow-up fixes for proxy-level expired-session refresh and PostgREST JWKS validation pass local verification and a fresh Codex review cycle.
-- **SC-021**: Codex follow-up fixes for background-removal timeout persistence and marketplace import provider fetch failures pass local verification and a fresh Codex review cycle.
-- **SC-022**: Codex follow-up fixes for proxy refresh failure fallback pass local verification and a fresh Codex review cycle.
-- **SC-023**: Codex follow-up fixes for atomic capsule creation, capsule item ownership validation, and catalog contributor privacy pass local verification and a fresh Codex review cycle.
-- **SC-024**: Codex follow-up fixes for malformed marketplace import provider responses pass local verification and a fresh Codex review cycle.
-- **SC-025**: Codex follow-up fixes for explicit migration reruns in the documented deploy path pass local verification and a fresh Codex review cycle.
-- **SC-026**: Codex follow-up fixes for private migration tracking metadata pass local verification and a fresh Codex review cycle.
-- **SC-027**: Codex follow-up fixes for palette color ID resolution and unset local provider mode pass local verification and a fresh Codex review cycle.
-- **SC-028**: Critic/architect/OMX follow-up fixes for confirmation-required signups, Lava product ID gates, shared session signing, user-scoped service-role access, Edge Function auth defaults, strict healthchecks, and scripted Compose deploys pass local verification and a fresh Codex review cycle.
-- **SC-029**: Codex follow-up fixes for item-scoped marketplace external image assets pass local verification and a fresh Codex review cycle.
-- **SC-030**: Codex follow-up fixes for preserving paid Lava invoice status during replay pass local verification and a fresh Codex review cycle.
-- **SC-031**: Codex follow-up fixes for crediting paid Lava invoices whose coin pack was later deactivated pass local verification and a fresh Codex review cycle.
+- **SC-009**: GitHub PR #45 is ready for review, not draft, with green required checks and a fresh review trigger on the final head.
+- **SC-010**: review follow-up fixes for session trust, coin debits, and marketplace confirmation links pass local verification and a fresh review cycle.
+- **SC-011**: review follow-up fixes for upload asset attachment, purchase credit idempotency, and processed image polling pass local verification and a fresh review cycle.
+- **SC-012**: review follow-up fixes for verified protected-route sessions, profile preservation, and upload-completion idempotency pass local verification and a fresh review cycle.
+- **SC-013**: review follow-up fixes for session refresh state, inline auth errors, and catalog search filters/no-match behavior pass local verification and a fresh review cycle.
+- **SC-014**: review follow-up fixes for optional runtime env files, render-safe session reads, marketplace external image handling, and ID-based color post-filtering pass local verification and a fresh review cycle.
+- **SC-015**: review follow-up fixes for service-role-only billing RPC access and redacted public health counts pass local verification and a fresh review cycle.
+- **SC-016**: review follow-up fixes for Compose env precedence and render-safe Supabase token refresh pass local verification and a fresh review cycle.
+- **SC-017**: Codex follow-up fixes for cross-user private storage path rejection and non-UUID Lava invoice IDs pass local verification and a fresh review cycle.
+- **SC-018**: Codex follow-up fixes for writable refresh-token persistence, upload target storage paths, marketplace external image preservation, and category alias post-filtering pass local verification and a fresh review cycle.
+- **SC-019**: Codex follow-up fixes for avoiding refresh-token rotation during read-only renders pass local verification and a fresh review cycle.
+- **SC-020**: Codex follow-up fixes for proxy-level expired-session refresh and PostgREST JWKS validation pass local verification and a fresh review cycle.
+- **SC-021**: Codex follow-up fixes for background-removal timeout persistence and marketplace import provider fetch failures pass local verification and a fresh review cycle.
+- **SC-022**: Codex follow-up fixes for proxy refresh failure fallback pass local verification and a fresh review cycle.
+- **SC-023**: Codex follow-up fixes for atomic capsule creation, capsule item ownership validation, and catalog contributor privacy pass local verification and a fresh review cycle.
+- **SC-024**: Codex follow-up fixes for malformed marketplace import provider responses pass local verification and a fresh review cycle.
+- **SC-025**: Codex follow-up fixes for explicit migration reruns in the documented deploy path pass local verification and a fresh review cycle.
+- **SC-026**: Codex follow-up fixes for private migration tracking metadata pass local verification and a fresh review cycle.
+- **SC-027**: Codex follow-up fixes for palette color ID resolution and unset local provider mode pass local verification and a fresh review cycle.
+- **SC-028**: Critic/architect/OMX follow-up fixes for confirmation-required signups, Lava product ID gates, shared session signing, user-scoped service-role access, Edge Function auth defaults, strict healthchecks, and scripted Compose deploys pass local verification and a fresh review cycle.
+- **SC-029**: Codex follow-up fixes for item-scoped marketplace external image assets pass local verification and a fresh review cycle.
+- **SC-030**: Codex follow-up fixes for preserving paid Lava invoice status during replay pass local verification and a fresh review cycle.
+- **SC-031**: Codex follow-up fixes for crediting paid Lava invoices whose coin pack was later deactivated pass local verification and a fresh review cycle.

@@ -89,4 +89,4 @@ POM/selector rules, and run commands.
 
 ## Delivery
 
-Product code lands through pull requests only. Required checks: `baseline-checks`, `guard`, `test`, `AI Review`. Claude implements via `@claude ...`; review via `@claude review once`. Full workflow: AGENTS.md → "Delivery Workflow" and `docs_capsule_zero/project/devops/ai-pr-workflow.md`.
+Product code lands through pull requests only. Required checks: `baseline-checks`, `guard`, and `test`. A human remains the final review and merge authority. Full workflow: AGENTS.md → "Delivery Workflow" and `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md`.

@@ -47,7 +47,7 @@
 - [ ] T023 Run `npm run lint && npm run typecheck && npm run lint:e2e && npm run typecheck:e2e && npm run build` — confirm clean.
 - [ ] T024 Run `npm run test:e2e` locally — confirm GREEN.
 - [ ] T025 Confirm `grep -RnE "page\.(locator|getBy)" tests/e2e/specs/` returns empty.
-- [ ] T026 Open PR; fill SENAR Done Gate including the new TDD row; request `@codex review`.
+- [ ] T026 Open PR; fill SENAR Done Gate including the new TDD row; request review.
 
 ## Process Memory _(mandatory — required by SENAR; written before declaring work complete)_
 
@@ -58,11 +58,11 @@
 - Considered enforcing TDD purely as a doctrine in `AGENTS.md` without a CI check. Rejected because the user explicitly asked for a mandatory `test` gate; a doctrine without enforcement decays.
 - Considered making the TDD doctrine block in `AGENTS.md` and `CLAUDE.md` long and self-contained. Rejected on user direction: the two files only host short pointers to `tests/README.md`; full TDD doctrine and POM rules live in `tests/README.md` to avoid duplication.
 - Considered installing Playwright into `/app/package.json` so it lives next to the app it tests. Rejected because a standalone `tests/e2e/` workspace keeps the test gate independent of app package churn and lets the same pattern serve future mobile/unit surfaces.
-- Considered leaving e2e ESLint as a documented local command only. Rejected after Codex review on PR #52: the POM rule must run inside the required `test` gate before Playwright, otherwise raw `page.locator()` calls in specs could merge.
-- Considered keeping Playwright on `next start` with `.env.local.example`. Rejected after Codex review on PR #52: that env sets `CAPSULE_PROVIDER_MODE=mock`, and provider-backed code forbids mock mode in production. The workflow keeps `npm run build` as the production build smoke and runs e2e against `next dev` so the mock provider can support future tests.
+- Considered leaving e2e ESLint as a documented local command only. Rejected after review on PR #52: the POM rule must run inside the required `test` gate before Playwright, otherwise raw `page.locator()` calls in specs could merge.
+- Considered keeping Playwright on `next start` with `.env.local.example`. Rejected after review on PR #52: that env sets `CAPSULE_PROVIDER_MODE=mock`, and provider-backed code forbids mock mode in production. The workflow keeps `npm run build` as the production build smoke and runs e2e against `next dev` so the mock provider can support future tests.
 - Considered adding a product-side hydration marker for Playwright. Rejected because it would add app behavior only for tests; the POM instead owns a one-retry cookie accept action that handles the Next dev-server hydration window while still failing if the button remains broken.
-- Considered updating only `senar-mapping.md` for the new `test` required check. Rejected after Codex review on PR #52: canonical workflow and branch-protection docs must name the same required-check set so merge owners do not miss the gate.
-- Considered leaving new workflow actions on mutable `v4` tags. Rejected after Codex review on PR #52: required PR gates use SHA-pinned actions, so `actions/cache` and `actions/upload-artifact` are pinned to full tag SHAs in `test.yml`.
+- Considered updating only `senar-mapping.md` for the new `test` required check. Rejected after review on PR #52: canonical workflow and branch-protection docs must name the same required-check set so merge owners do not miss the gate.
+- Considered leaving new workflow actions on mutable `v4` tags. Rejected after review on PR #52: required PR gates use SHA-pinned actions, so `actions/cache` and `actions/upload-artifact` are pinned to full tag SHAs in `test.yml`.
 
 ### Decisions
 

@@ -8,7 +8,7 @@
 - [x] T002 Inspect PR #44 metadata, comments, checks, and current head branch from GitHub.
 - [x] T003 Confirm the primary repository worktree was not on PR #44 and create a separate clean worktree at `/Users/kristina.kurashova/projects/capsule-zero-pr44`.
 - [x] T004 Check PR review threads and confirm no unresolved review comments existed before this iteration.
-- [x] T005 Inspect failing GitHub check logs for `guard` and `AI Review`.
+- [x] T005 Inspect the failing `guard` check logs and review output.
 
 ## Phase 2: Implementation
 
@@ -28,12 +28,12 @@
 - [x] T016 Run `node scripts/check-feature-memory.mjs origin/main HEAD`.
 - [x] T017 Run `git diff --check origin/main...HEAD`.
 - [x] T018 Commit and push the first PR branch iteration.
-- [x] T019 Trigger Codex review with a top-level `@codex review` PR comment from the authenticated `kiaquila` GitHub account.
-- [x] T020 Recheck GitHub PR #44 checks and review output after the pushed iteration; AI Review blocked on Codex P2 feedback.
+- [x] T019 Request review through a top-level PR comment from the authenticated `kiaquila` GitHub account.
+- [x] T020 Recheck GitHub PR #44 checks and review output after the pushed iteration; review blocked on Codex P2 feedback.
 - [x] T021 Address Codex P2 feedback by treating parseable consent objects with empty or invalid `decidedAt` as undecided safe defaults.
 - [x] T022 Rerun local verification after the P2 fix.
 - [ ] T023 Commit and push the P2 fix.
-- [ ] T024 Trigger Codex review again after the P2 fix.
+- [ ] T024 Trigger review again after the P2 fix.
 - [ ] T025 Recheck GitHub PR #44 checks and review output after the P2 fix.
 
 ## Process Memory
@@ -43,9 +43,9 @@
 - The starting local checkout was `codex/sidebar-language-fixes` with many unrelated modified and untracked files, so working there would have risked mixing PR #44 with another branch's work.
 - The first CI inspection command used `python`, but only `python3` is available in this shell.
 - PR #44's `guard` failure was not a runtime failure; it was the repository feature-memory gate requiring `spec.md`, `plan.md`, and `tasks.md` for product `app/` changes.
-- The previous `AI Review` run timed out waiting for Codex review output at head `28ee9a7`, so the updated head needs a fresh `@codex review` trigger.
+- The previous review timed out at head `28ee9a7`, so the updated head needs a fresh review request.
 - Merging `origin/main` brought in legal page styles and created a duplicate legacy legal CSS block; removing the duplicate was necessary before verification.
-- Codex review caught that a parseable object with `decidedAt: ""` could still expose non-essential category booleans through `hasConsent()` while `decided` was false.
+- Review caught that a parseable object with `decidedAt: ""` could still expose non-essential category booleans through `hasConsent()` while `decided` was false.
 
 ### Decisions
 

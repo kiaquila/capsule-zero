@@ -12,7 +12,7 @@
 4. Add Flutter as a shell only, with env-driven Supabase init and placeholders
    for routing, deep links, and localization.
 5. Wire linting and local hooks into the existing GitHub baseline checks without
-   changing the trusted AI review gates.
+   changing the existing merge gates.
 6. Add a runtime provisioning layer that keeps secrets out of git while making
    Supabase, OAuth, Lava.top, mobile, and Photoroom validation repeatable when
    their integration gates open.

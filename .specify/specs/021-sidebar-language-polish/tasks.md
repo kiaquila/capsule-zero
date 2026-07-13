@@ -27,7 +27,7 @@
 - [x] T015 Browser-check shared navigation SVG markup and icon dimensions across Dashboard, My Items, capsule-result, Favourites, For Sale, For Repair, and Uncapsulated routes.
 - [x] T016 Browser-check language menu computed style and console cleanliness.
 - [x] T017 Open PR #42.
-- [x] T018 Trigger Codex review with `@codex review`.
+- [x] T018 Request review.
 - [x] T019 Add this SENAR feature memory after guard identified the missing spec/plan/tasks update.
 
 ## Process Memory

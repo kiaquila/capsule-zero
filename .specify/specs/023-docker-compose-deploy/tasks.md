@@ -43,89 +43,89 @@
 - [x] T031 Stage the intended files and commit with Codex co-author trailer.
 - [x] T032 Push branch `codex/docker-compose-prod-stage`.
 - [x] T033 Mark PR #45 ready for review and update its description.
-- [x] T034 Trigger Codex review with a top-level `@codex review` comment.
+- [x] T034 Request review through a top-level PR comment.
 - [ ] T035 Watch GitHub checks and fix any failing iteration until merge-ready.
-- [x] T036 Address Codex AI Review findings for signed sessions, atomic coin debits, and marketplace confirmation foreign keys.
+- [x] T036 Address review findings for signed sessions, atomic coin debits, and marketplace confirmation foreign keys.
 - [x] T037 Apply `0004_atomic_coin_spend.sql` through the Compose `migrate` service.
-- [x] T038 Rerun local preflight and whitespace checks after the AI Review fixes.
-- [x] T039 Commit and push the AI Review fix iteration.
-- [x] T040 Trigger a fresh `@codex review` comment on the pushed fix iterations.
-- [x] T041 Address second Codex AI Review findings for upload asset attach, Lava purchase credits, and processed image polling.
+- [x] T038 Rerun local preflight and whitespace checks after the review fixes.
+- [x] T039 Commit and push the review fix iteration.
+- [x] T040 Trigger a fresh review request comment on the pushed fix iterations.
+- [x] T041 Address second review findings for upload asset attach, Lava purchase credits, and processed image polling.
 - [x] T042 Apply `0005_atomic_coin_credit.sql` through the Compose `migrate` service.
 - [x] T043 Verify `credit_coins_atomic` idempotency through PostgREST RPC smoke.
-- [x] T044 Address third Codex AI Review findings for verified protected-route sessions, preserved profile sync fields, and idempotent upload completion.
-- [x] T045 Rerun local preflight and Docker build after third AI Review fixes.
-- [x] T046 Address fourth Codex AI Review findings for refreshable sessions, inline auth errors, catalog filters, and no-match search behavior.
+- [x] T044 Address third review findings for verified protected-route sessions, preserved profile sync fields, and idempotent upload completion.
+- [x] T045 Rerun local preflight and Docker build after third review fixes.
+- [x] T046 Address fourth review findings for refreshable sessions, inline auth errors, catalog filters, and no-match search behavior.
 - [x] T047 Apply `0006_catalog_search_filters.sql` through the Compose `migrate` service and smoke SQL filter/no-match results.
-- [x] T048 Rerun local preflight and Docker build after fourth AI Review fixes.
-- [x] T049 Address fifth Codex AI Review findings for optional runtime env files, refreshed session persistence, marketplace external image paths, and ID-based color post-filtering.
-- [x] T050 Rerun local preflight, Compose config, whitespace, and Docker image checks after fifth AI Review fixes.
-- [x] T051 Commit and push the fifth AI Review fix iteration.
-- [x] T052 Trigger a fresh `@codex review` comment on the pushed fifth fix iteration.
-- [x] T053 Address sixth Codex AI Review findings for service-role-only billing RPC grants, render-safe session reads, and public health count redaction.
-- [x] T054 Rerun local preflight, whitespace, and focused migration grant checks after sixth AI Review fixes.
-- [x] T055 Address seventh Codex AI Review findings for Compose env precedence and render-safe Supabase token refresh.
-- [x] T056 Rerun local preflight, Compose config, whitespace, and Docker image checks after seventh AI Review fixes.
-- [x] T057 Commit and push the seventh AI Review fix iteration.
-- [x] T058 Trigger a fresh `@codex review` comment on the pushed seventh fix iteration.
-- [x] T059 Address eighth Codex Review findings for cross-user private storage paths and non-UUID Lava invoice IDs.
+- [x] T048 Rerun local preflight and Docker build after fourth review fixes.
+- [x] T049 Address fifth review findings for optional runtime env files, refreshed session persistence, marketplace external image paths, and ID-based color post-filtering.
+- [x] T050 Rerun local preflight, Compose config, whitespace, and Docker image checks after fifth review fixes.
+- [x] T051 Commit and push the fifth review fix iteration.
+- [x] T052 Trigger a fresh review request comment on the pushed fifth fix iteration.
+- [x] T053 Address sixth review findings for service-role-only billing RPC grants, render-safe session reads, and public health count redaction.
+- [x] T054 Rerun local preflight, whitespace, and focused migration grant checks after sixth review fixes.
+- [x] T055 Address seventh review findings for Compose env precedence and render-safe Supabase token refresh.
+- [x] T056 Rerun local preflight, Compose config, whitespace, and Docker image checks after seventh review fixes.
+- [x] T057 Commit and push the seventh review fix iteration.
+- [x] T058 Trigger a fresh review request comment on the pushed seventh fix iteration.
+- [x] T059 Address eighth Review findings for cross-user private storage paths and non-UUID Lava invoice IDs.
 - [x] T060 Rerun local preflight, whitespace, focused code checks, and Docker image checks after eighth Codex fixes.
 - [x] T061 Commit and push the eighth Codex fix iteration.
 - [x] T062 Trigger fresh Codex and selected-gate review comments on the pushed eighth fix iteration.
-- [x] T063 Address ninth Codex Review findings for writable refreshed-token persistence, upload target storage paths, marketplace external images, and category alias post-filtering.
+- [x] T063 Address ninth Review findings for writable refreshed-token persistence, upload target storage paths, marketplace external images, and category alias post-filtering.
 - [x] T064 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after ninth Codex fixes.
 - [x] T065 Commit and push the ninth Codex fix iteration.
-- [x] T066 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed ninth fix iteration.
-- [x] T067 Address tenth Codex Review finding for avoiding refresh-token rotation during read-only Server Component renders.
+- [x] T066 Trigger a fresh review request comment and rerun/watch the review on the pushed ninth fix iteration.
+- [x] T067 Address tenth Review finding for avoiding refresh-token rotation during read-only Server Component renders.
 - [x] T068 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after tenth Codex fix.
 - [x] T069 Commit and push the tenth Codex fix iteration.
-- [x] T070 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed tenth fix iteration.
-- [x] T071 Address eleventh Codex Review findings for proxy-level expired-session refresh and PostgREST JWKS validation.
+- [x] T070 Trigger a fresh review request comment and rerun/watch the review on the pushed tenth fix iteration.
+- [x] T071 Address eleventh Review findings for proxy-level expired-session refresh and PostgREST JWKS validation.
 - [x] T072 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after eleventh Codex fixes.
 - [x] T073 Commit and push the eleventh Codex fix iteration.
-- [x] T074 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed eleventh fix iteration.
-- [x] T075 Address twelfth Codex Review findings for background-removal timeout persistence and marketplace provider fetch failure handling.
+- [x] T074 Trigger a fresh review request comment and rerun/watch the review on the pushed eleventh fix iteration.
+- [x] T075 Address twelfth Review findings for background-removal timeout persistence and marketplace provider fetch failure handling.
 - [x] T076 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after twelfth Codex fixes.
 - [x] T077 Commit and push the twelfth Codex fix iteration.
-- [x] T078 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed twelfth fix iteration.
-- [x] T079 Address thirteenth Codex Review finding for best-effort proxy refresh failure handling.
+- [x] T078 Trigger a fresh review request comment and rerun/watch the review on the pushed twelfth fix iteration.
+- [x] T079 Address thirteenth Review finding for best-effort proxy refresh failure handling.
 - [x] T080 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after thirteenth Codex fix.
 - [x] T081 Commit and push the thirteenth Codex fix iteration.
-- [x] T082 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed thirteenth fix iteration.
-- [x] T083 Address fourteenth Codex Review findings for atomic capsule creation, capsule item ownership validation, and catalog contributor privacy.
+- [x] T082 Trigger a fresh review request comment and rerun/watch the review on the pushed thirteenth fix iteration.
+- [x] T083 Address fourteenth Review findings for atomic capsule creation, capsule item ownership validation, and catalog contributor privacy.
 - [x] T084 Rerun local preflight, whitespace, focused code checks, Compose config, Compose migration, and Docker image checks after fourteenth Codex fixes.
 - [x] T085 Commit and push the fourteenth Codex fix iteration.
-- [x] T086 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed fourteenth fix iteration.
-- [x] T087 Address fifteenth Codex Review finding for malformed marketplace provider response failure persistence.
+- [x] T086 Trigger a fresh review request comment and rerun/watch the review on the pushed fourteenth fix iteration.
+- [x] T087 Address fifteenth Review finding for malformed marketplace provider response failure persistence.
 - [x] T088 Rerun local preflight, whitespace, focused code checks, Compose config, and Docker image checks after fifteenth Codex fix.
 - [x] T089 Commit and push the fifteenth Codex fix iteration.
-- [x] T090 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed fifteenth fix iteration.
-- [x] T091 Address sixteenth Codex Review finding for explicit migration reruns in the documented deploy path.
+- [x] T090 Trigger a fresh review request comment and rerun/watch the review on the pushed fifteenth fix iteration.
+- [x] T091 Address sixteenth Review finding for explicit migration reruns in the documented deploy path.
 - [x] T092 Rerun local preflight, whitespace, focused doc checks, Compose config, and Docker image checks after sixteenth Codex fix.
 - [x] T093 Commit and push the sixteenth Codex fix iteration.
-- [x] T094 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed sixteenth fix iteration.
-- [x] T095 Address seventeenth Codex Review finding for private migration tracking metadata.
+- [x] T094 Trigger a fresh review request comment and rerun/watch the review on the pushed sixteenth fix iteration.
+- [x] T095 Address seventeenth Review finding for private migration tracking metadata.
 - [x] T096 Rerun local preflight, whitespace, focused migration-ledger checks, Compose config, and Docker image checks after seventeenth Codex fix.
 - [x] T097 Commit and push the seventeenth Codex fix iteration.
-- [x] T098 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed seventeenth fix iteration.
-- [x] T099 Address eighteenth Codex Review findings for palette color ID resolution and unset local provider mode.
+- [x] T098 Trigger a fresh review request comment and rerun/watch the review on the pushed seventeenth fix iteration.
+- [x] T099 Address eighteenth Review findings for palette color ID resolution and unset local provider mode.
 - [x] T100 Rerun local preflight, Compose config, focused code checks, whitespace, and Docker image checks after eighteenth Codex fixes.
 - [x] T101 Address critic, architect, and OMX reviewer findings for confirmation-required signups, Lava product ID gates, shared session signing, user-scoped service-role access, function auth defaults, strict healthchecks, and scripted Compose deploys.
 - [x] T102 Rerun local lint/typecheck/build, Compose config, runtime env checks, repo/API checks, feature-memory guard, and whitespace checks after critic/architect/OMX fixes.
 - [x] T103 Commit and push the critic/architect/OMX fix iteration.
-- [x] T104 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed critic/architect/OMX fix iteration.
-- [x] T105 Address nineteenth Codex Review finding for item-scoped marketplace external image asset paths.
+- [x] T104 Trigger a fresh review request comment and rerun/watch the review on the pushed critic/architect/OMX fix iteration.
+- [x] T105 Address nineteenth Review finding for item-scoped marketplace external image asset paths.
 - [x] T106 Rerun local lint/typecheck/build, Compose config, and whitespace checks after nineteenth Codex fix.
 - [x] T107 Commit and push the nineteenth Codex fix iteration.
-- [x] T108 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed nineteenth fix iteration.
-- [x] T109 Address twentieth Codex Review finding for preserving `paid` Lava invoice status during delayed non-paid webhook replay.
+- [x] T108 Trigger a fresh review request comment and rerun/watch the review on the pushed nineteenth fix iteration.
+- [x] T109 Address twentieth Review finding for preserving `paid` Lava invoice status during delayed non-paid webhook replay.
 - [x] T110 Rerun local lint/typecheck/build, Compose config, feature-memory, and whitespace checks after twentieth Codex fix.
 - [x] T111 Commit and push the twentieth Codex fix iteration.
-- [x] T112 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed twentieth fix iteration.
-- [x] T113 Address twenty-first Codex Review finding for crediting paid Lava invoices whose coin pack later becomes inactive.
+- [x] T112 Trigger a fresh review request comment and rerun/watch the review on the pushed twentieth fix iteration.
+- [x] T113 Address twenty-first Review finding for crediting paid Lava invoices whose coin pack later becomes inactive.
 - [x] T114 Rerun local lint/typecheck/build, Compose config, feature-memory, and whitespace checks after twenty-first Codex fix.
 - [x] T115 Commit and push the twenty-first Codex fix iteration.
-- [x] T116 Trigger a fresh `@codex review` comment and rerun/watch the selected AI Review gate on the pushed twenty-first fix iteration.
+- [x] T116 Trigger a fresh review request comment and rerun/watch the review on the pushed twenty-first fix iteration.
 
 ## Process Memory
 

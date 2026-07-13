@@ -35,5 +35,5 @@
 
 ## Review Notes
 
-- AI review considerations:
+- Review considerations:
 - Follow-up work:

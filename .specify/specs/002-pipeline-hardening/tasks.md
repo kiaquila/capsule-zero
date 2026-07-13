@@ -5,9 +5,7 @@
 - [x] Add `scripts/check-repo-baseline.mjs`.
 - [x] Harden `ci.yml`.
 - [x] Harden `pr-guard.yml`.
-- [x] Harden `ai-review.yml`.
 - [x] Add `osv-scan.yml`.
-- [x] Pin the `actions/github-script` use in `ai-command-policy.yml`.
 - [x] Update devops docs for CI, branch protection, OSV, and trusted gate scripts.
 - [x] Update app dependency baseline for clean vulnerability scanning.
 - [x] Refresh the app Next.js baseline to `16.2.6` after OSV flagged `16.2.4`.

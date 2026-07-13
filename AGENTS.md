@@ -215,22 +215,10 @@ When assigned to implement a specific feature, read in this order:
 ## Delivery Workflow
 
 - Product code lands through pull requests only.
-- Required GitHub checks are `baseline-checks`, `guard`, `test`, and `AI Review`.
+- Required GitHub checks are `baseline-checks`, `guard`, and `test`.
 - Durable workflow docs live under `docs_capsule_zero/project/devops/`.
-- The canonical orchestration contract is documented in `docs_capsule_zero/project/devops/ai-orchestration-protocol.md`.
-- Cloud AI integration and review-gate requirements are documented in `docs_capsule_zero/project/devops/ai-runner.md`.
-- Agent selection is policy-driven through repository variables:
-  - `AI_IMPLEMENTATION_AGENT`
-  - `AI_REVIEW_AGENT`
-- Canonical execution uses the selected vendor's native remote surface:
-  - `@claude ...` for Claude implementation
-  - Codex app or Codex web task for Codex-owned implementation PRs
-  - `@claude review once` on a top-level PR comment
-  - `@codex review` on a top-level PR comment
-- Only trusted repository actors may trigger AI workflows.
-- Trusted actors are `OWNER`, `MEMBER`, and `COLLABORATOR`.
-- Native review normalization is documented in `docs_capsule_zero/project/devops/review-contract.md`.
-- Local PowerShell and worktree orchestration scripts are no longer part of the repository.
+- CI and branch-protection requirements are documented in `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md`.
+- A human remains the final review and merge authority.
 
 ## Tests
 
@@ -255,19 +243,9 @@ A task is **not complete** until the current PR head SHA has:
 - At least one negative scenario covered, or an explicit one-line waiver in `spec.md`.
 - `## Process Memory` (Dead Ends / Decisions / Known Issues) updated in `tasks.md` _before_ declaring the work complete.
 - The SENAR Done Gate checklist filled in the PR description.
-- The standard merge-ready conditions: green `baseline-checks` / `guard` / `test` / `AI Review`, no blocking review findings, no merge conflicts.
+- The standard merge-ready conditions: green `baseline-checks` / `guard` / `test`, no blocking review findings, no merge conflicts.
 
 **Scope of application:** SENAR fields are required for every spec authored after the SENAR layer shipped (i.e. starting with `005-…`). Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered and keep their original shape; do not retrofit them.
-
-## Review guidelines
-
-- Codex review uses native GitHub PR review output plus `P0-P3` inline severity badges.
-- Claude review uses a top-level `claude[bot]` comment with marker lines, not a formal GitHub PR review.
-- When a Claude review request includes `AI_REVIEW_AGENT`, `AI_REVIEW_SHA`, and `AI_REVIEW_OUTCOME`, preserve those lines exactly at the start of the final top-level Claude comment.
-- `AI_REVIEW_OUTCOME=pass` means no material findings.
-- `AI_REVIEW_OUTCOME=advisory` means advisory-only findings that should not block merge.
-- `AI_REVIEW_OUTCOME=block` means at least one finding should block merge.
-- Treat low-severity-only findings as advisory and non-blocking.
 
 ---
 
@@ -282,7 +260,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 | Frontend framework           | ✅ Next.js 14+ App Router, React, TypeScript      | `/app` (canonical, provider-abstracted frontend)                       |
 | Styling                      | ✅ Tailwind CSS v4 with custom @theme tokens      | `app/src/styles/tokens.css`                                            |
 | Design tokens                | ✅ Glass tokens, colors, typography               | `docs_capsule_zero/project/frontend/styling.md`                        |
-| Production-stack ADR refresh | ✅ Rewritten in-place                             | `docs_capsule_zero/adr/adr-001-stack.md` through `adr-006-…`           |
+| Production-stack ADR refresh | ✅ Rewritten in-place                             | `docs_capsule_zero/adr/adr-001-stack.md`–`adr-003-storage.md`, `adr-006-…`, `adr-007-…` |
 | Architecture council         | ✅ Decisions + validation (updated for the pivot) | `docs_capsule_zero/project/architecture/phase-4-council.md`            |
 | Phase 5 entrance checklist   | ✅ Updated for production runtime gate            | `docs_capsule_zero/project/architecture/phase-5-entrance-checklist.md` |
 | API spec                     | ✅ Product contract                               | `docs_capsule_zero/adr/api-spec.md`                                    |

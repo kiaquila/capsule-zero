@@ -47,7 +47,6 @@ The council was rerun after the founder accepted these new constraints:
 - `html-prototypes/`
 - `docs_capsule_zero/project/methodology/`
 - `docs_capsule_zero/project/frontend/styling.md`
-- `docs_capsule_zero/project/devops/ai-orchestration-protocol.md`
 - `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md`
 
 ## Council Roles
