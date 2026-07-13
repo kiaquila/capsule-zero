@@ -1,0 +1,91 @@
+name: AI Review
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  pull_request_review:
+    types:
+      - submitted
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to validate
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+concurrency:
+  group: ai-review-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.pr_number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ai-review:
+    name: AI Review
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
+      github.event_name == 'pull_request_review'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout PR content
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 1
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Checkout trusted gate scripts
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: .gate-trusted
+          fetch-depth: 1
+
+      - name: Resolve gate script root
+        id: gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          trusted_root="$GITHUB_WORKSPACE/.gate-trusted"
+          bootstrap_root="$GITHUB_WORKSPACE"
+
+          if [ -f "$trusted_root/scripts/resolve-pr-context.mjs" ] &&
+             [ -f "$trusted_root/scripts/ai-review-gate.mjs" ]; then
+            gate_root="$trusted_root"
+          elif [ -f "$bootstrap_root/scripts/resolve-pr-context.mjs" ] &&
+               [ -f "$bootstrap_root/scripts/ai-review-gate.mjs" ]; then
+            echo "::warning::Trusted AI Review scripts are not on the default branch yet; using the PR copies for first-install bootstrap."
+            gate_root="$bootstrap_root"
+          else
+            echo "::error::AI Review gate scripts are missing."
+            exit 1
+          fi
+
+          echo "root=$gate_root" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve PR context
+        id: pr
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AI_REVIEW_PR_NUMBER: ${{ inputs.pr_number }}
+        run: node "${{ steps.gate.outputs.root }}/scripts/resolve-pr-context.mjs"
+
+      - name: Validate native Codex review
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AI_REVIEW_AGENT: codex
+          AI_REVIEW_PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          AI_REVIEW_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          AI_REVIEW_TRIGGER_MODE: skip
+          AI_REVIEW_WAIT_MS: "1200000"
+          AI_REVIEW_POLL_MS: "15000"
+        run: node "${{ steps.gate.outputs.root }}/scripts/ai-review-gate.mjs"

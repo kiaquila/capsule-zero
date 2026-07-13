@@ -15,15 +15,11 @@ export const extractCodexReviewedCommit = (body) => {
   return match[1].toLowerCase();
 };
 
-const isFreshComment = (comment, triggerTime) =>
-  new Date(comment.created_at || 0).getTime() >= triggerTime;
-
 const defaultValidateReviewedCommitAnchor = async () => false;
 
 export const pickLatestCodexSummaryComment = async ({
   comments,
   codexReviewerLogins,
-  triggerTime,
   headSha,
   validateReviewedCommitAnchor = defaultValidateReviewedCommitAnchor,
 }) => {
@@ -48,17 +44,10 @@ export const pickLatestCodexSummaryComment = async ({
         continue;
       }
 
-      if (
-        isFreshComment(comment, triggerTime) ||
-        (await validateReviewedCommitAnchor(reviewedCommit, normalizedHeadSha))
-      ) {
+      if (await validateReviewedCommitAnchor(reviewedCommit, normalizedHeadSha)) {
         matchingComments.push(comment);
       }
       continue;
-    }
-
-    if (isFreshComment(comment, triggerTime)) {
-      matchingComments.push(comment);
     }
   }
 

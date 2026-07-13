@@ -58,7 +58,7 @@ As a developer, I want leftover `/web` scaffolding and codegen references remove
 ## Negative Scenarios
 
 - NS-001: Do not add `SUPABASE_*` env, Supabase clients, or any retired Supabase coupling while updating agent instructions.
-- NS-002: Do not make module-size warnings block the required `lint`, `baseline-checks`, `guard`, or `test` checks.
+- NS-002: Do not make module-size warnings block `lint` or the required `baseline-checks`, `guard`, `AI Review`, and `test` checks.
 - NS-003: Do not remove active `/app`, `/api`, `/mobile`, `/infra`, `docs_capsule_zero`, or `.specify` source-of-truth paths while deleting the obsolete `/web` leftovers.
 - NS-004: Do not claim application behavior changed; this is documentation and support-tooling cleanup only.
 
