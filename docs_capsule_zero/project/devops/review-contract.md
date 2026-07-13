@@ -12,7 +12,7 @@ The gate accepts Codex output only from `chatgpt-codex-connector[bot]`.
 Reviewer evidence must target the current pull-request head SHA. A no-findings
 summary must include a `**Reviewed commit:**` value that is either the exact
 40-character SHA or an unambiguous abbreviation of the current head. Evidence for a
-different commit is rejected.
+different commit, or an anchorless summary, is rejected.
 
 ## Accepted Native Output
 

@@ -549,7 +549,6 @@ while (Date.now() < deadline) {
     const summaryComment = await pickLatestCodexSummaryComment({
       comments: issueComments,
       codexReviewerLogins,
-      triggerTime,
       headSha,
       validateReviewedCommitAnchor: validateCodexReviewedCommitAnchor,
     });

@@ -81,6 +81,8 @@ requireFileContains(".github/workflows/pr-guard.yml", "name: guard");
 requireFileContains(".github/workflows/pr-guard.yml", "Checkout trusted gate scripts");
 requireFileContains(".github/workflows/ai-review.yml", "name: AI Review");
 requireFileContains(".github/workflows/ai-review.yml", "runs-on: ubuntu-latest");
+requireFileContains(".github/workflows/ai-review.yml", "issue_comment:");
+requireFileContains(".github/workflows/ai-review.yml", "pull_request_review:");
 requireFileContains(".github/workflows/ai-review.yml", "Checkout trusted gate scripts");
 requireFileContains(".github/workflows/ai-review.yml", "AI_REVIEW_HEAD_SHA");
 requireFileContains(".github/workflows/osv-scan.yml", "name: osv-scan");

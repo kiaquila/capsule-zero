@@ -7,9 +7,11 @@ This runbook owns Capsule Zero's required `AI Review` check.
 1. A pull request is opened or updated.
 2. A connected human account comments `@codex review` on the final head.
 3. OpenAI's native GitHub integration publishes a Codex review for that commit.
-4. `.github/workflows/ai-review.yml` runs on GitHub-hosted `ubuntu-latest`.
-5. The repository gate validates the reviewer, head SHA, and finding severities.
-6. Branch rules require the resulting `AI Review` check before merge.
+4. The human command and the submitted Codex review both wake
+   `.github/workflows/ai-review.yml`; a PR-open/update run also polls for evidence.
+5. Every validation runs on GitHub-hosted `ubuntu-latest`.
+6. The repository gate validates the reviewer, head SHA, and finding severities.
+7. Branch rules require the resulting `AI Review` check before merge.
 
 No local process, self-hosted runner, Claude CLI, Codex CLI, launch agent, or local
 credential is part of this flow.
@@ -28,6 +30,9 @@ credential is part of this flow.
 
 - The workflow token is read-only.
 - The workflow validates native output from `chatgpt-codex-connector[bot]`.
+- Comment-triggered runs accept only `@codex review` from an owner, member, or
+  collaborator, or an anchored Codex summary from the trusted bot; review-triggered
+  runs accept only submitted Codex reviews.
 - Reviewer evidence must identify the current PR head SHA.
 - After bootstrap, helper scripts are loaded from the trusted default branch so a PR
   cannot weaken its own required gate.
@@ -49,5 +54,8 @@ The exact machine-readable rules live in
 1. Push the final fix commit.
 2. Comment `@codex review` from the connected human account.
 3. Wait for Codex to review the new head SHA.
-4. Re-run `AI Review` only if GitHub did not automatically start a fresh run.
-5. Merge only after all required checks are green and all blocking threads are resolved.
+4. The submitted Codex review automatically starts a fresh validation if the polling
+   run has already ended.
+5. Manually dispatch `AI Review` only for first-install bootstrap or a failed GitHub
+   event delivery.
+6. Merge only after all required checks are green and all blocking threads are resolved.
