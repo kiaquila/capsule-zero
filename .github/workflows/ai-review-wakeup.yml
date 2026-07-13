@@ -1,0 +1,75 @@
+name: AI Review Wake-up
+
+on:
+  issue_comment:
+    types:
+      - created
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  statuses: write
+
+concurrency:
+  group: ai-review-wakeup-${{ github.event.issue.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  wake-up:
+    if: >
+      github.event.issue.pull_request &&
+      ((contains(github.event.comment.body, '@codex review') &&
+        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
+        (github.event.comment.user.login == 'chatgpt-codex-connector[bot]' &&
+          contains(github.event.comment.body, 'Codex Review:')))
+    name: AI Review wake-up
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout trusted gate scripts
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 1
+
+      - name: Resolve PR context
+        id: pr
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/resolve-pr-context.mjs
+
+      - name: Publish pending AI Review status on PR head
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AI_REVIEW_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          AI_REVIEW_STATUS_STATE: pending
+          AI_REVIEW_STATUS_DESCRIPTION: Waiting for native Codex evidence
+        run: node scripts/publish-ai-review-status.mjs
+
+      - name: Validate native Codex review
+        id: validate
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AI_REVIEW_AGENT: codex
+          AI_REVIEW_PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          AI_REVIEW_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          AI_REVIEW_TRIGGER_MODE: skip
+          AI_REVIEW_WAIT_MS: "1200000"
+          AI_REVIEW_POLL_MS: "15000"
+        run: node scripts/ai-review-gate.mjs
+
+      - name: Publish final AI Review status on PR head
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          AI_REVIEW_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          AI_REVIEW_STATUS_STATE: ${{ steps.validate.outcome == 'success' && 'success' || 'failure' }}
+          AI_REVIEW_STATUS_DESCRIPTION: ${{ steps.validate.outcome == 'success' && 'Native Codex review passed' || 'Native Codex review failed' }}
+        run: node scripts/publish-ai-review-status.mjs
+
+      - name: Enforce validation result
+        if: steps.validate.outcome != 'success'
+        run: exit 1

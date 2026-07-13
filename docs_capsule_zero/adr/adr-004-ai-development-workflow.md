@@ -17,8 +17,9 @@ requirement.
 - `AI Review` runs as a GitHub Actions job on `ubuntu-latest`; it never depends on
   a local machine or self-hosted runner.
 - A connected human account triggers native Codex review with `@codex review`.
-- PR updates, trusted review commands, and submitted Codex reviews wake the GitHub-hosted
-  validation; late review evidence therefore starts a fresh gate run.
+- PR updates and submitted Codex reviews run the primary check. Trusted comment events
+  use a separate default-branch-only wake-up that publishes the same required context
+  directly on the resolved PR head SHA.
 - The repository-owned gate validates Codex output against the current PR head SHA.
 - Codex P0, P1, and P2 findings fail the gate; P3-only or no-findings reviews pass.
 - Missing, stale, or unverifiable reviewer evidence fails closed.

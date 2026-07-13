@@ -51,6 +51,18 @@ function requireFileContains(path, requiredText) {
   }
 }
 
+function requireFileExcludes(path, forbiddenText) {
+  if (!existsSync(fullPath(path))) {
+    missing.push(path);
+    return;
+  }
+
+  const contents = readFileSync(fullPath(path), "utf8");
+  if (contents.includes(forbiddenText)) {
+    errors.push(`${path} must not include ${JSON.stringify(forbiddenText)}.`);
+  }
+}
+
 [
   "AGENTS.md",
   "CLAUDE.md",
@@ -66,7 +78,10 @@ function requireFileContains(path, requiredText) {
   "scripts/check-feature-memory.mjs",
   "scripts/check-repo-baseline.mjs",
   "scripts/lib/github-fetch.mjs",
+  "scripts/lib/github-status.mjs",
+  "scripts/publish-ai-review-status.mjs",
   "scripts/resolve-pr-context.mjs",
+  ".github/workflows/ai-review-wakeup.yml",
   ".github/workflows/ai-review.yml",
   ".github/workflows/ci.yml",
   ".github/workflows/osv-scan.yml",
@@ -81,10 +96,17 @@ requireFileContains(".github/workflows/pr-guard.yml", "name: guard");
 requireFileContains(".github/workflows/pr-guard.yml", "Checkout trusted gate scripts");
 requireFileContains(".github/workflows/ai-review.yml", "name: AI Review");
 requireFileContains(".github/workflows/ai-review.yml", "runs-on: ubuntu-latest");
-requireFileContains(".github/workflows/ai-review.yml", "issue_comment:");
 requireFileContains(".github/workflows/ai-review.yml", "pull_request_review:");
 requireFileContains(".github/workflows/ai-review.yml", "Checkout trusted gate scripts");
 requireFileContains(".github/workflows/ai-review.yml", "AI_REVIEW_HEAD_SHA");
+requireFileContains(".github/workflows/ai-review-wakeup.yml", "issue_comment:");
+requireFileContains(".github/workflows/ai-review-wakeup.yml", "statuses: write");
+requireFileContains(".github/workflows/ai-review-wakeup.yml", "AI_REVIEW_STATUS_STATE");
+requireFileContains(
+  ".github/workflows/ai-review-wakeup.yml",
+  "ref: ${{ github.event.repository.default_branch }}",
+);
+requireFileExcludes(".github/workflows/ai-review-wakeup.yml", "bootstrap_root");
 requireFileContains(".github/workflows/osv-scan.yml", "name: osv-scan");
 requireFileContains(".github/workflows/osv-scan.yml", "google/osv-scanner-action");
 requireFileContains(".github/workflows/test.yml", "name: test");

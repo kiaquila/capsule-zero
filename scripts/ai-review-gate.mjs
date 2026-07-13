@@ -10,6 +10,7 @@ const repository = process.env.GITHUB_REPOSITORY;
 const eventPath = process.env.GITHUB_EVENT_PATH;
 const selectedAgent = (process.env.AI_REVIEW_AGENT || "codex").trim().toLowerCase();
 const explicitPrNumber = process.env.AI_REVIEW_PR_NUMBER;
+const expectedHeadSha = (process.env.AI_REVIEW_HEAD_SHA || "").trim().toLowerCase();
 const maxWaitMs = Number(process.env.AI_REVIEW_WAIT_MS || 900000);
 const pollIntervalMs = Number(process.env.AI_REVIEW_POLL_MS || 15000);
 const triggerMode = (process.env.AI_REVIEW_TRIGGER_MODE || "comment").trim().toLowerCase();
@@ -128,7 +129,13 @@ if (!prNumber) {
 }
 
 const pull = await request(`/repos/${owner}/${repo}/pulls/${prNumber}`);
-const headSha = pull.head.sha;
+const headSha = pull.head.sha.toLowerCase();
+
+if (expectedHeadSha && expectedHeadSha !== headSha) {
+  throw new Error(
+    `PR head changed while AI Review was starting: expected ${expectedHeadSha}, current ${headSha}`,
+  );
+}
 const markerAgentLine = `AI_REVIEW_AGENT: ${selectedAgent}`;
 const markerShaLine = `AI_REVIEW_SHA: ${headSha}`;
 const metadataMarker = `<!-- ai-review-gate:agent=${selectedAgent};sha=${headSha} -->`;
