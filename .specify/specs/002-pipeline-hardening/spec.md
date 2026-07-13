@@ -2,7 +2,7 @@
 
 ## Goal
 
-Bring Capsule Zero CI and pull-request gates closer to the Unicorn Hub reference while preserving the current Claude/Codex operating model.
+Bring Capsule Zero CI and pull-request gates closer to the Unicorn Hub reference while preserving the PR-only delivery model.
 
 ## Scope
 
@@ -17,6 +17,5 @@ Bring Capsule Zero CI and pull-request gates closer to the Unicorn Hub reference
 
 - `npm run preflight` succeeds locally.
 - `guard` passes for infrastructure-only changes and blocks `app/` product changes without `.specify/specs/<feature-id>/{spec,plan,tasks}.md`.
-- `AI Review` validates the selected native reviewer while loading gate logic from trusted default-branch code.
 - `osv-scan` is present and configured for pull requests, `main`, weekly schedule, and manual dispatch.
 - `osv-scan` reports no known Next.js vulnerabilities for the committed app lockfile.

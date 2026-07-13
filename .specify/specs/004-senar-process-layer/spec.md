@@ -16,12 +16,12 @@ In scope:
 - Two new engineering-process principles in `.specify/memory/constitution.md` (Supervised Verification, Process Memory).
 - Augmented `.specify/templates/spec-template.md`, `plan-template.md`, and `tasks-template.md` with SENAR fields.
 - A SENAR Done Gate checklist in `.github/pull_request_template.md`.
-- SENAR completion expectations added to `AGENTS.md`, `CLAUDE.md`, and `docs_capsule_zero/project/devops/ai-pr-workflow.md`.
+- SENAR completion expectations added to `AGENTS.md`, `CLAUDE.md`, and `docs_capsule_zero/project/devops/senar-mapping.md`.
 - This `.specify/specs/004-senar-process-layer/` folder dogfooding the new shape.
 
 Out of scope:
 
-- Changing `pr-guard.yml`, `ai-review.yml`, `ci.yml`, `ai-command-policy.yml`, or `osv-scan` workflow logic.
+- Changing `pr-guard.yml`, `ci.yml`, or `osv-scan.yml` workflow logic.
 - Changing branch-protection required checks or approvals.
 - Retrofitting `.specify/specs/001-capsule-zero-mvp`, `002-pipeline-hardening`, or `003-sprint-0-foundation` to the new shape. SENAR applies to specs created after this PR merges.
 - Adding any new runtime dependency, npm script, or Node module.
@@ -30,7 +30,7 @@ Out of scope:
 
 ### User Story 1 — Verifiable Feature Memory (Priority: P1)
 
-As an implementation agent (Claude or Codex), I want every new feature spec to ask explicitly for goal, scope (in/out), acceptance criteria, and negative scenarios, so that I implement against documented behavior instead of inferred intent.
+As an implementation contributor, I want every new feature spec to ask explicitly for goal, scope (in/out), acceptance criteria, and negative scenarios, so that I implement against documented behavior instead of inferred intent.
 
 **Why this priority**: Today our spec template only asks for User Stories + Edge Cases. "Edge cases" are not the same as a negative scenario, and there is no explicit Goal/Scope split. This is the smallest change with the highest signal-to-noise improvement on every future spec.
 
@@ -42,7 +42,7 @@ As an implementation agent (Claude or Codex), I want every new feature spec to a
 
 ### User Story 2 — Verification Evidence In Plan (Priority: P1)
 
-As a reviewer (human or Codex), I want each `plan.md` to carry an explicit table mapping every acceptance criterion to evidence, so that "AI says it works" cannot stand in for a check, command, test, screenshot, or diff link.
+As a reviewer, I want each `plan.md` to carry an explicit table mapping every acceptance criterion to evidence, so that a summary cannot stand in for a check, command, test, screenshot, or diff link.
 
 **Why this priority**: This is the SENAR rule that prevents AI-summary-as-evidence drift. Without it, reviewers and the human merge owner cannot quickly tell which AC is verified and how.
 
@@ -83,9 +83,9 @@ As the human merge owner, I want a SENAR Done Gate checklist visible directly in
 
 ## Negative Scenarios
 
-- **Done Gate bypass via mass N/A**: a PR author marks every SENAR Done Gate checkpoint as N/A without justification. Detection: the review agent flags any PR where more than one checkpoint is N/A without a one-line reason. Resolution: the human merge owner blocks the merge until the PR description carries explicit reasons or actual evidence.
+- **Done Gate bypass via mass N/A**: a PR author marks every SENAR Done Gate checkpoint as N/A without justification. Detection: the reviewer flags any PR where more than one checkpoint is N/A without a one-line reason. Resolution: the human merge owner blocks the merge until the PR description carries explicit reasons or actual evidence.
 - **Templates drift back to pre-SENAR shape**: an unrelated refactor PR removes `## Goal`, `## Scope`, `## Negative Scenarios`, `## Verification`, or `## Process Memory` headers from `.specify/templates/*`. Detection: SC-002 verification over post-SENAR `.specify/specs/0*/spec.md` (with grandfathered 001/002/003 excluded) starts returning paths once the first post-SENAR spec is authored against the broken template. Resolution: revert the template change and require a SENAR-amendment PR before re-introducing it.
-- **Process Memory filled with AI-generated boilerplate**: an agent fills `## Process Memory` with plausible but content-free text (e.g. "considered alternatives, picked the simpler one") that does not name concrete artifacts, decisions, or rejected approaches. Detection: the review agent flags entries that lack any of file path, command, link, or named tradeoff. Resolution: request a rewrite before approving.
+- **Process Memory filled with boilerplate**: a contributor fills `## Process Memory` with plausible but content-free text (e.g. "considered alternatives, picked the simpler one") that does not name concrete artifacts, decisions, or rejected approaches. Detection: the reviewer flags entries that lack any of file path, command, link, or named tradeoff. Resolution: request a rewrite before approving.
 
 ## Requirements
 
@@ -97,13 +97,13 @@ As the human merge owner, I want a SENAR Done Gate checklist visible directly in
 - **FR-004**: `.specify/templates/plan-template.md` MUST include a `## Verification` section with an AC → Evidence table and a Negative scenario evidence line.
 - **FR-005**: `.specify/templates/tasks-template.md` MUST include a `## Process Memory` section with Dead Ends, Decisions, and Known Issues subsections.
 - **FR-006**: `.github/pull_request_template.md` MUST include a SENAR Done Gate block with the five checkpoints from the SENAR mapping.
-- **FR-007**: `AGENTS.md`, `CLAUDE.md`, and `docs_capsule_zero/project/devops/ai-pr-workflow.md` MUST reflect the SENAR completion contract so any agent operating in this repo finds the rules at the canonical entry points.
+- **FR-007**: `AGENTS.md`, `CLAUDE.md`, and `docs_capsule_zero/project/devops/senar-mapping.md` MUST reflect the SENAR completion contract so any contributor operating in this repo finds the rules at the canonical entry points.
 - **FR-008**: This change MUST NOT modify any `.github/workflows/*.yml` file or any script under `scripts/`.
 
 ## Success Criteria
 
 ### Measurable Outcomes
 
-- **SC-001**: After merge, `npm run preflight` passes locally and required GitHub checks (`baseline-checks`, `guard`, `AI Review`) all pass on the PR.
+- **SC-001**: After merge, `npm run preflight` passes locally and required GitHub checks (`baseline-checks`, `guard`, `test`) all pass on the PR.
 - **SC-002**: Every spec in `.specify/specs/` created after this PR merges contains an explicit `## Negative Scenarios` section, verifiable via `git grep -L '## Negative Scenarios' -- '.specify/specs/0*/spec.md' ':!.specify/specs/001-capsule-zero-mvp/spec.md' ':!.specify/specs/002-pipeline-hardening/spec.md' ':!.specify/specs/003-sprint-0-foundation/spec.md'` returning empty. Grandfathered specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are excluded via pathspec.
 - **SC-003**: This PR itself dogfoods the new shape: `.specify/specs/004-senar-process-layer/{spec,plan,tasks}.md` contains every required SENAR field and serves as the reference example for the next spec author.

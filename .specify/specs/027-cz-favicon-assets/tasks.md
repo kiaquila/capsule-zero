@@ -32,8 +32,8 @@
 - [x] T024 Run `test -f app/src/app/favicon.ico && test -f app/src/app/icon.svg && test ! -e app/src/app/icon.png`.
 - [ ] T014 Push the feature-memory update to `feat/favicon-theme-adaptive-svg`.
 - [ ] T015 Update PR #59 body so the SENAR Done Gate references this feature-memory package.
-- [ ] T016 Trigger or await a fresh Codex review after the final pushed head SHA is available.
-- [ ] T017 Recheck PR #59 checks until `guard`, `baseline-checks`, `test`, `AI Review`, and `osv-scan` are green.
+- [ ] T016 Trigger or await a fresh review after the final pushed head SHA is available.
+- [ ] T017 Recheck PR #59 checks until `guard`, `baseline-checks`, `test`, and `osv-scan` are green.
 
 ## Process Memory _(mandatory - required by SENAR; written before declaring work complete)_
 
@@ -41,7 +41,7 @@
 
 - The original PR body treated the change as asset-only with no spec. That documented the practical scope correctly, but the repository `guard` workflow still requires complete feature memory whenever a product root under `app/` changes.
 - Considered leaving this as a PR-body-only SENAR waiver. Rejected because the machine gate only accepts a changed `.specify/specs/<feature-id>/{spec,plan,tasks}.md` package.
-- The first favicon asset PR shipped a transparent PNG app icon, but Codex review on PR #59 confirmed the follow-up must also update feature memory because replacing that product-root asset with SVG still changes `app/`.
+- The first favicon asset PR shipped a transparent PNG app icon, but review on PR #59 confirmed the follow-up must also update feature memory because replacing that product-root asset with SVG still changes `app/`.
 
 ### Decisions
 

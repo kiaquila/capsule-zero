@@ -15,7 +15,7 @@ Add SENAR as a documented verification and memory layer across Capsule Zero docs
   - `.specify/specs/004-senar-process-layer/{spec,plan,tasks}.md` (this folder)
   - `.github/pull_request_template.md`
   - `docs_capsule_zero/project/devops/senar-mapping.md` (new)
-  - `docs_capsule_zero/project/devops/ai-pr-workflow.md`
+  - `docs_capsule_zero/project/devops/senar-mapping.md`
   - `AGENTS.md`
   - `CLAUDE.md`
 - **Untouched (explicit)**: `.github/workflows/`, `scripts/`, `app/`, `mobile/`, `supabase/`.
@@ -24,7 +24,7 @@ Add SENAR as a documented verification and memory layer across Capsule Zero docs
 ## Scope Boundaries
 
 - **In scope**: documentation, markdown templates, constitution principles, PR checklist, dogfood feature folder.
-- **Out of scope**: workflow logic, AI review parsing, branch protection defaults, retrofitting prior specs.
+- **Out of scope**: workflow logic, review parsing, branch protection defaults, retrofitting prior specs.
 
 ## Constitution Check
 
@@ -49,9 +49,9 @@ This change adds two new constitution principles. The change itself complies wit
 | US4 / FR-006         | `git grep "SENAR Done Gate" .github/pull_request_template.md` matches; the block contains the five SENAR checkpoints.                                                                                                                                                                                                                                       |
 | FR-001               | `docs_capsule_zero/project/devops/senar-mapping.md` exists and contains the SENAR ↔ artifact mapping table plus a Completion Signal section.                                                                                                                                                                                                                |
 | FR-002               | `.specify/memory/constitution.md` contains two new principle sections: Supervised Verification and Process Memory.                                                                                                                                                                                                                                          |
-| FR-007               | `git grep -i "SENAR\|process memory" AGENTS.md CLAUDE.md docs_capsule_zero/project/devops/ai-pr-workflow.md` returns matches in all three files.                                                                                                                                                                                                            |
+| FR-007               | `git grep -i "SENAR\|process memory" AGENTS.md CLAUDE.md docs_capsule_zero/project/devops/senar-mapping.md` returns matches in all three files.                                                                                                                                                                                                                |
 | FR-008               | `git diff --name-only origin/main...HEAD` contains zero entries under `.github/workflows/` or `scripts/`.                                                                                                                                                                                                                                                   |
-| SC-001               | `npm run preflight` exits 0; `baseline-checks`, `guard`, and `AI Review` are green on the PR head SHA.                                                                                                                                                                                                                                                      |
+| SC-001               | `npm run preflight` exits 0; `baseline-checks`, `guard`, and `test` are green on the PR head SHA.                                                                                                                                                                                                                                                        |
 | SC-002               | `git grep -L '## Negative Scenarios' -- '.specify/specs/0*/spec.md' ':!.specify/specs/001-capsule-zero-mvp/spec.md' ':!.specify/specs/002-pipeline-hardening/spec.md' ':!.specify/specs/003-sprint-0-foundation/spec.md'` returns empty after merge (grandfathered specs 001/002/003 are excluded via pathspec; every post-SENAR spec carries the section). |
 | SC-003               | `.specify/specs/004-senar-process-layer/{spec,plan,tasks}.md` exist and pass the same `git grep` checks above against their own bodies.                                                                                                                                                                                                                     |
 
@@ -82,8 +82,7 @@ Negative scenario evidence:
 docs_capsule_zero/
 └── project/
     └── devops/
-        ├── senar-mapping.md     # NEW
-        └── ai-pr-workflow.md    # + SENAR Done Gate section
+        └── senar-mapping.md     # NEW
 
 AGENTS.md                         # + SENAR completion contract
 CLAUDE.md                         # + SENAR rules pointer

@@ -6,7 +6,7 @@ Use `docs_capsule_zero/` for:
 - product direction
 - stable architecture and stack decisions
 - ADRs
-- AI workflow and operational guidance
+- operational guidance
 
 Use `.specify/` for feature-specific requirements, plans, tasks, and implementation state.
 
@@ -20,6 +20,5 @@ Recommended reading order:
 7. `docs_capsule_zero/project/frontend/components.md`
 8. `docs_capsule_zero/project/mobile/mobile-docs.md`
 9. `docs_capsule_zero/project/backend/backend-docs.md`
-10. `docs_capsule_zero/project/devops/ai-pr-workflow.md`
-11. `docs_capsule_zero/project/devops/ai-runner.md`
-12. `docs_capsule_zero/glossary.md`
+10. `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md`
+11. `docs_capsule_zero/glossary.md`

@@ -24,5 +24,5 @@ Use `kiaquila/pallete-maker` `main` as the external source of truth for the pale
 
 - Local preflight passes.
 - PR is opened from `codex/palette-alignment`.
-- Top-level `@codex review` comment is posted by the authenticated GitHub user.
+- A top-level review request is posted by the authenticated GitHub user.
 - Required GitHub checks are green or any failure is diagnosed and fixed.

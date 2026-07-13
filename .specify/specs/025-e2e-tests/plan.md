@@ -26,7 +26,7 @@ Stand up a Playwright e2e harness under `tests/e2e/` (POM, OOP, ESLint with `esl
 - Modified: `app/src/components/landing/CookieBanner.tsx`, `app/src/components/landing/LandingPage.tsx` (data-testid only)
 - Modified: `AGENTS.md`, `CLAUDE.md`, `.specify/memory/constitution.md`, `docs_capsule_zero/project/devops/senar-mapping.md`, `.github/pull_request_template.md`, `package.json`
 
-**Untouched (explicit)**: `.github/workflows/{ci,pr-guard,ai-review,claude-agent,claude-review,ai-command-policy,osv-scan}.yml`, `scripts/`, `api/`, `mobile/`, `worker/`, `web/`, `infra/`, `supabase/`, `html-prototypes/`.
+**Untouched (explicit)**: `.github/workflows/{ci,pr-guard,osv-scan}.yml`, `scripts/`, `api/`, `mobile/`, `worker/`, `web/`, `infra/`, `supabase/`, `html-prototypes/`.
 
 ## Scope Boundaries
 

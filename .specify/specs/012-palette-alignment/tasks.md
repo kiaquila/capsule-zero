@@ -5,13 +5,13 @@
 - [x] T003 Update HTML prototypes to the current 51-color palette and group compatibility.
 - [x] T004 Update Stage 1 mock fixture colors and mock validation behavior.
 - [x] T005 Run local verification.
-- [x] T006 Commit, push, open PR, trigger `@codex review`, and monitor checks.
+- [x] T006 Commit, push, open PR, trigger a review request, and monitor checks.
 
 ## Process Memory
 
 ### Dead Ends
 
-- AI Review correctly found that the API contract still capped palette validation at 8 colors. Fixed by updating `docs_capsule_zero/adr/openapi.yaml` to 15 and regenerating TypeScript/Dart clients.
+- Review correctly found that the API contract still capped palette validation at 8 colors. Fixed by updating `docs_capsule_zero/adr/openapi.yaml` to 15 and regenerating TypeScript/Dart clients.
 - The only sequencing wrinkle is that the PR checks URL cannot be recorded until after the first PR creation creates a PR number.
 
 ### Decisions

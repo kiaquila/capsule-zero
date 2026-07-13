@@ -14,7 +14,7 @@
 - [x] Remove stale Flutter/mobile runtime checks and retired mobile env validation from local tooling.
 - [x] Correct `docs_capsule_zero/project/mobile/mobile-docs.md` to acknowledge the removed Sprint 0 shell.
 - [x] Defer the documented mobile generated-client artifact in `docs_capsule_zero/adr/api-spec.md` and the Phase 5 entrance checklist until the React Native scaffold defines its path.
-- [x] Add this feature memory package after `guard` and Codex Review identified the missing SENAR artifacts.
+- [x] Add this feature memory package after `guard` and Review identified the missing SENAR artifacts.
 - [x] Restore the `plan.md` verification table after PR #60 merge/review exposed unescaped grep alternation pipes.
 
 ## Verification
@@ -28,7 +28,7 @@
 
 ### Dead Ends
 
-- Treating this PR as "no product behavior change, no feature memory needed" was rejected by both `guard` and Codex Review because `mobile/` is a product root.
+- Treating this PR as "no product behavior change, no feature memory needed" was rejected by both `guard` and Review because `mobile/` is a product root.
 - Changing `scripts/check-feature-memory.mjs` to exempt deletion-only mobile diffs was rejected; that would weaken the product-root policy for a one-off cleanup.
 - Rewriting grandfathered Sprint 0 specs was rejected because those files accurately record historical work and should not be edited to hide a stale scaffold.
 
@@ -47,5 +47,5 @@
 - The React Native scaffold is still future work and must arrive in its own later spec.
 - The future React Native scaffold must define its own env surface; this cleanup intentionally does not preserve legacy mobile Supabase env validation.
 - The future React Native scaffold must also restore mobile TypeScript client generation when it defines the source layout.
-- GitHub AI Review must be refreshed after each fix commit because review findings attach to a specific PR head SHA.
+- GitHub review must be refreshed after each fix commit because review findings attach to a specific PR head SHA.
 - PR #61 may have a small mechanical overlap with a separate generator/docs cleanup PR if that PR merges first.

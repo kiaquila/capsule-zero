@@ -85,7 +85,7 @@ Negative scenario evidence:
 - NS-002: ESLint rules are configured as `warn`, and `api/.golangci.yml` is not invoked by required CI.
 - NS-003: `git diff --name-only origin/main...HEAD` shows only obsolete `web/**` deletions and support/onboarding files; active `/app`, `/api`, `/mobile`, `/infra`, `docs_capsule_zero`, and existing `.specify` roots remain.
 - NS-004: No UI, API handler, schema migration, provider, or runtime business-logic file is changed.
-- AI Review P2: The stale `/web` source-of-truth documentation thread is addressed by updating `docs_capsule_zero`, `.specify`, and test docs to the `/app` canonical path.
+- Review P2: The stale `/web` source-of-truth documentation thread is addressed by updating `docs_capsule_zero`, `.specify`, and test docs to the `/app` canonical path.
 
 ## Risks
 

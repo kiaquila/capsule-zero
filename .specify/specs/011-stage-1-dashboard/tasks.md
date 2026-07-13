@@ -88,16 +88,16 @@
 - Mobile Browser check confirmed the open More sheet background computes to `rgba(14, 14, 14, 0.96)`, all bottom-nav items remain visible, the sheet bottom sits above the bottom-nav top, Settings remains clickable, and the More trigger still closes the sheet on the second tap.
 - Browser DOM audit confirmed the active capsule pin icon uses the prototype `0 -1 14 15` SVG with rect, ellipse, and polygon shapes.
 - Mobile Browser check confirmed bottom nav background computes to `rgba(36, 36, 36, 0.98)`, More sheet remains darker at `rgba(14, 14, 14, 0.96)`, Settings stays above the nav, and the second More tap still closes the sheet.
-- AI Review follow-up removed demo-fixture fallback from dashboard data loading so wardrobe/capsule data remains scoped to `session.userId`.
-- AI Review follow-up converted `/guided-journey` primary dashboard CTAs into disabled controls while the route is not implemented.
-- `npm run preflight` passed after the AI Review fixes.
-- `git diff --check` passed after the AI Review fixes.
+- Review follow-up removed demo-fixture fallback from dashboard data loading so wardrobe/capsule data remains scoped to `session.userId`.
+- Review follow-up converted `/guided-journey` primary dashboard CTAs into disabled controls while the route is not implemented.
+- `npm run preflight` passed after the review fixes.
+- `git diff --check` passed after the review fixes.
 - Mobile Browser DOM check confirmed no `/guided-journey` anchors are exposed, the primary Add Item control is a disabled button, the More sheet opens and closes on repeated taps, bottom nav background remains `rgba(36, 36, 36, 0.98)`, More sheet remains `rgba(14, 14, 14, 0.96)`, and Settings stays above the bottom nav.
-- Second AI Review follow-up converted active-capsule Open Capsule / Outfits CTAs into disabled controls while `/capsule-result` is not implemented.
-- `npm run preflight` and `git diff --check` passed after the second AI Review fix.
+- Second review follow-up converted active-capsule Open Capsule / Outfits CTAs into disabled controls while `/capsule-result` is not implemented.
+- `npm run preflight` and `git diff --check` passed after the second review fix.
 - Mobile Browser DOM check confirmed Open Capsule / Outfits render as disabled buttons without `href`, no primary `/capsule-result` or `/guided-journey` CTA links remain, and Shopping List still links to `/en/dashboard#shopping-list`.
-- Third AI Review follow-up changed recent-item labels to derive from each item's `updatedAt` calendar date instead of the item's list position.
-- Fourth AI Review follow-up changed the recent-item reference date from `Date.now()` to the maximum item `updatedAt`, keeping mock fixture labels deterministic over time while still deriving each label from item dates.
+- Third review follow-up changed recent-item labels to derive from each item's `updatedAt` calendar date instead of the item's list position.
+- Fourth review follow-up changed the recent-item reference date from `Date.now()` to the maximum item `updatedAt`, keeping mock fixture labels deterministic over time while still deriving each label from item dates.
 - Browser DOM check confirmed seeded recent items render deterministic fixture-relative `Today` labels after replacing `Date.now()`.
-- Fifth AI Review follow-up added a constrained `/{locale}/{future}` redirect route for known future dashboard destinations (`my-items`, `capsule-result`, `favorites`, `uncapsulated`, `for-sale`, `for-repair`, `profile`) so visible navigation no longer produces 404 pages before those slices are built.
+- Fifth review follow-up added a constrained `/{locale}/{future}` redirect route for known future dashboard destinations (`my-items`, `capsule-result`, `favorites`, `uncapsulated`, `for-sale`, `for-repair`, `profile`) so visible navigation no longer produces 404 pages before those slices are built.
 - Route audit confirmed `/en/my-items` returns `307` to `/en/dashboard`, while unknown `/en/not-a-dashboard-section` still returns `404`.

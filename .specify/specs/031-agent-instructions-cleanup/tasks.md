@@ -16,19 +16,19 @@
 - [x] Remove the obsolete `/web` directory and generated-client target.
 - [x] Remove `web/**` from the dev CD deploy-relevant path filter.
 - [x] Add complete feature memory for this support-tooling PR.
-- [x] Address the AI Review P2 by actualizing stale `/web`, Traefik, and migration-tool references across source docs/specs/tests.
-- [x] Address the fresh AI Review P2s for golangci-lint v2 schema, malformed SENAR verification tables, and deferred pgvector Phase 2 evidence.
-- [x] Address the fresh AI Review P2s for premature Phase 2 landed status and unsupported `api` provider-mode guidance.
-- [x] Address the fresh AI Review P2s for stale PgBouncer/pgvector/Grafana active-runtime language in ADR/runbook docs.
-- [x] Address the fresh AI Review P2 for stale canonical-frontend deletion guidance in spec-024 process memory.
-- [x] Address the fresh AI Review P2 for stale `web/**` deploy-relevant guidance in the dev CD runbook/spec.
-- [x] Address the fresh AI Review P2 for deferred pgvector/PgBouncer drift in read-first source docs.
-- [x] Address the fresh AI Review P2 for SENAR grandfathering drift in `CLAUDE.md`.
+- [x] Address the review P2 by actualizing stale `/web`, Traefik, and migration-tool references across source docs/specs/tests.
+- [x] Address the fresh review P2s for golangci-lint v2 schema, malformed SENAR verification tables, and deferred pgvector Phase 2 evidence.
+- [x] Address the fresh review P2s for premature Phase 2 landed status and unsupported `api` provider-mode guidance.
+- [x] Address the fresh review P2s for stale PgBouncer/pgvector/Grafana active-runtime language in ADR/runbook docs.
+- [x] Address the fresh review P2 for stale canonical-frontend deletion guidance in spec-024 process memory.
+- [x] Address the fresh review P2 for stale `web/**` deploy-relevant guidance in the dev CD runbook/spec.
+- [x] Address the fresh review P2 for deferred pgvector/PgBouncer drift in read-first source docs.
+- [x] Address the fresh review P2 for SENAR grandfathering drift in `CLAUDE.md`.
 - [x] Resolve the `origin/main` merge conflict after the Flutter/Dart mobile shell removal landed.
-- [x] Address the fresh AI Review P2s for spec-024 Phase 1 status and stale `api/`/`infra/` scaffold guidance.
-- [x] Address the fresh AI Review P2/P3 for profiled nginx bootstrap commands and stale `/app` removal wording in e2e process memory.
-- [x] Address the fresh AI Review P2 for profile-gated compose nginx in the steady-state Docker Compose runbook.
-- [x] Address the fresh AI Review P2 for enabling rollback compose nginx in the normal production bootstrap runbook.
+- [x] Address the fresh review P2s for spec-024 Phase 1 status and stale `api/`/`infra/` scaffold guidance.
+- [x] Address the fresh review P2/P3 for profiled nginx bootstrap commands and stale `/app` removal wording in e2e process memory.
+- [x] Address the fresh review P2 for profile-gated compose nginx in the steady-state Docker Compose runbook.
+- [x] Address the fresh review P2 for enabling rollback compose nginx in the normal production bootstrap runbook.
 
 ## Verification
 
@@ -47,7 +47,7 @@
 
 - Treating the PR as docs-only was insufficient because the diff also touches product-root support files under `app/`, `api/`, and `web/`; the guard correctly required complete feature memory.
 - Relaxing or bypassing the guard was rejected. The safer fix is to add the missing spec/plan/tasks evidence for the support-tooling scope.
-- Updating only `AGENTS.md` was insufficient after AI Review found older source docs still pointing agents toward `/web`; the fix expanded to the affected docs/spec/test guidance instead of narrowing the review comment away.
+- Updating only `AGENTS.md` was insufficient after review found older source docs still pointing agents toward `/web`; the fix expanded to the affected docs/spec/test guidance instead of narrowing the review comment away.
 - Running `golangci-lint run` is not meaningful until `/api` has a Go module; the config is still validated against golangci-lint v2 so the optional future soft gate will not fail at schema load.
 
 ### Decisions
@@ -73,12 +73,12 @@
 ### Known Issues
 
 - GitHub checks must be re-run on the pushed commit before the PR can be considered merge ready.
-- The prior AI Review P2 about stale `/web` source docs and the fresh P2s on golangci-lint, SENAR tables, pgvector evidence, Phase 2 status, provider-mode guidance, deferred runtime wording, stale canonical-frontend deletion wording, dev CD runbook filtering, read-first pgvector drift, and SENAR grandfathering drift are addressed locally; a fresh AI Review must run on the new pushed SHA.
+- The prior review P2 about stale `/web` source docs and the fresh P2s on golangci-lint, SENAR tables, pgvector evidence, Phase 2 status, provider-mode guidance, deferred runtime wording, stale canonical-frontend deletion wording, dev CD runbook filtering, read-first pgvector drift, and SENAR grandfathering drift are addressed locally; a fresh review must run on the new pushed SHA.
 - The `origin/main` merge conflict is resolved locally; PR checks must be re-run on the merge commit.
-- The post-merge AI Review P2s about spec-024 Phase 1 status and stale scaffold docs are addressed locally; PR checks must be re-run on the new pushed SHA.
+- The post-merge review P2s about spec-024 Phase 1 status and stale scaffold docs are addressed locally; PR checks must be re-run on the new pushed SHA.
 - The post-review P2/P3 about profiled nginx bootstrap commands and stale `/app` deletion wording is addressed locally; PR checks must be re-run on the new pushed SHA.
-- The follow-up AI Review P2 about compose nginx being documented as default-active in `docker-compose-deploy.md` is addressed locally; PR checks must be re-run on the new pushed SHA.
-- The follow-up AI Review P2 about enabling rollback compose nginx in the normal production bootstrap is addressed locally; PR checks must be re-run on the new pushed SHA.
+- The follow-up review P2 about compose nginx being documented as default-active in `docker-compose-deploy.md` is addressed locally; PR checks must be re-run on the new pushed SHA.
+- The follow-up review P2 about enabling rollback compose nginx in the normal production bootstrap is addressed locally; PR checks must be re-run on the new pushed SHA.
 - Local `npm run lint` passes with 73 module-size/complexity warnings and 0 errors, matching the warning-only scope of this PR.
-- The 2026-07-01 review-iteration fixes (Phase 1 smoke row rewritten to host-nginx evidence in `024/plan.md`, Go file-size row documented as review-only in AGENTS.md/CLAUDE.md, host-edge update note in `024/tasks.md`, list-indentation repair in `dev-cd-pipeline.md`, rollback-profile clarification in `024/plan.md` Phase 1) are addressed locally; a fresh AI Review must run on the new pushed SHA.
-- The 2026-07-01 iteration-2 AI Review P2s (compose `nginx` listed as active v0.1 service in `backend-docs.md` runtime table; rollback-edge command in `docker-compose-deploy.md` without a `systemctl stop nginx` precondition) are addressed locally; a fresh AI Review must run on the new pushed SHA.
+- The 2026-07-01 review-iteration fixes (Phase 1 smoke row rewritten to host-nginx evidence in `024/plan.md`, Go file-size row documented as review-only in AGENTS.md/CLAUDE.md, host-edge update note in `024/tasks.md`, list-indentation repair in `dev-cd-pipeline.md`, rollback-profile clarification in `024/plan.md` Phase 1) are addressed locally; a fresh review must run on the new pushed SHA.
+- The 2026-07-01 iteration-2 review P2s (compose `nginx` listed as active v0.1 service in `backend-docs.md` runtime table; rollback-edge command in `docker-compose-deploy.md` without a `systemctl stop nginx` precondition) are addressed locally; a fresh review must run on the new pushed SHA.

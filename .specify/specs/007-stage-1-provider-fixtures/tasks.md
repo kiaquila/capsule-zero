@@ -5,7 +5,6 @@
 ## Phase 1: Setup
 
 - [x] T001 Refresh GitHub state and confirm open PR / CI status before planning the next step.
-- [x] T002 Resolve stale local conflict markers in `docs_capsule_zero/project/devops/codex-implementation-validation.md`.
 - [x] T003 Create branch `codex/stage-1-provider-fixtures` from `origin/main`.
 - [x] T004 Fetch current Next.js App Router docs through Context7 before adding route/server boundary code.
 
