@@ -2,7 +2,7 @@
 
 **Feature Branch**: `codex/telegram-link-preview`  
 **Created**: 2026-07-14  
-**Status**: In progress  
+**Status**: Ready for review
 **Input**: Prepare a polished social preview from a screenshot of the Capsule Zero homepage before updating the Telegram post.
 
 ## Goal _(mandatory)_
@@ -80,3 +80,9 @@ As a person who encounters a Capsule Zero link in Telegram or another social cli
 - **SC-004**: The static image request returns HTTP 200 with `image/png`.
 - **SC-005**: `npm run preflight` and all required GitHub checks pass on the PR head.
 - **SC-006**: Visual inspection confirms the screenshot preserves the approved achromatic editorial landing page without temporary overlays.
+
+## Implementation Evidence
+
+- The focused Playwright scenario passes in Chromium and the configured WebKit iPhone project.
+- The committed PNG is 1200x630, has no alpha channel, and is 260 KB after lossless compression.
+- The production build completes with the shared metadata contract in both root layouts.

@@ -33,6 +33,14 @@ The web frontend talks to the Go API monolith through nginx; there is no Vercel 
 - Local sandboxed builds may fail without external network access when fetching Google Fonts.
 - If offline builds become mandatory, migrate typography to local font assets.
 
+## Social Link Previews
+
+- `app/src/lib/site-metadata.ts` is the single metadata contract shared by the redirect and localized root layouts.
+- Open Graph and Twitter Card image URLs are resolved against `https://capsulezero.app`; crawler-facing metadata must never inherit a localhost or request-specific origin.
+- The canonical preview image is `app/public/social/capsule-zero-homepage.png`, a 1200x630 screenshot of the production English landing page without consent, auth, browser, or development overlays.
+- Open Graph declares the image dimensions and alt text. Twitter uses the same asset with `summary_large_image` so clients do not drift visually.
+- Refresh the screenshot and its e2e expectations whenever the landing hero materially changes. Keep the asset below the platform image-size ceiling and do not replace it with generated brand artwork unless the product decision changes.
+
 ## Routing
 
 Recommended route groups:

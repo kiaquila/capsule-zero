@@ -15,22 +15,22 @@
 - [x] T006 Add spec 041 feature memory before product-root changes.
 - [x] T007 Add a Playwright scenario for Open Graph, Twitter Card, and the static image response.
 - [x] T008 Run the focused scenario and record the expected missing `og:image` failure.
-- [ ] T009 Commit the failing test before implementation.
+- [x] T009 Commit the failing test before implementation (`f9c4d4e`).
 
 ## Phase 3: Implementation
 
-- [ ] T010 Add the screenshot under `app/public/social/`.
-- [ ] T011 Consolidate layout metadata into a shared Next.js metadata module.
-- [ ] T012 Add Open Graph and Twitter large-image metadata.
-- [ ] T013 Update frontend documentation with the social-preview contract.
-- [ ] T014 Run the focused scenario until green.
+- [x] T010 Add the screenshot under `app/public/social/`.
+- [x] T011 Consolidate layout metadata into a shared Next.js metadata module.
+- [x] T012 Add Open Graph and Twitter large-image metadata.
+- [x] T013 Update frontend documentation with the social-preview contract.
+- [x] T014 Run the focused scenario until green in Chromium and WebKit iPhone.
 
 ## Phase 4: Verification and Delivery
 
-- [ ] T015 Inspect PNG dimensions and size.
-- [ ] T016 Run feature-memory, lint, typecheck, build, and e2e verification.
-- [ ] T017 Update Verification evidence and Process Memory before declaring completion.
-- [ ] T018 Commit the implementation with Codex co-author attribution.
+- [x] T015 Inspect PNG dimensions, format, alpha channel, checksum, and size.
+- [x] T016 Run feature-memory, lint, typecheck, build, and e2e verification; rerun the one observed WebKit flake and complete a green full preflight.
+- [x] T017 Update Verification evidence and Process Memory before declaring completion.
+- [x] T018 Commit the implementation with Codex co-author attribution.
 - [ ] T019 Push the branch and open a ready-for-review PR.
 - [ ] T020 Comment `@codex review` from the owner account.
 - [ ] T021 Monitor required checks and review evidence on the final head SHA.

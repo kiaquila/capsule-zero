@@ -34,18 +34,18 @@ Capture the production English landing page at the standard 1200x630 Open Graph 
 
 ## Verification _(mandatory - required by SENAR)_
 
-| Acceptance criterion     | Evidence                                                                                                                                       |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR-001 / FR-002 / SC-002 | `npm --prefix tests/e2e run test -- specs/landing/social-preview.spec.ts` asserts the absolute Open Graph URL, dimensions, and alt text.       |
-| FR-003 / SC-002          | The same Playwright scenario asserts `summary_large_image` and the matching absolute Twitter image URL.                                        |
-| FR-004 / SC-006          | Visual inspection of `app/public/social/capsule-zero-homepage.png`, captured from production `/en` with consent pre-seeded.                    |
-| FR-005                   | `rg -n "siteMetadata" 'app/src/app/(redirect)/layout.tsx' 'app/src/app/[locale]/layout.tsx'` shows both layouts importing the shared contract. |
-| FR-006 / SC-004          | The Playwright scenario requests the local image path and asserts HTTP 200 plus `image/png`.                                                   |
-| FR-007                   | `git diff origin/main...HEAD -- app/src/components/landing app/src/app/globals.css messages` is empty.                                         |
-| FR-008                   | PR history shows a failing-test commit before the implementation commit.                                                                       |
-| SC-001                   | The focused scenario passes for Chromium and WebKit iPhone projects.                                                                           |
-| SC-003                   | `sips -g pixelWidth -g pixelHeight app/public/social/capsule-zero-homepage.png` reports 1200x630.                                              |
-| SC-005                   | `npm run preflight` plus the required GitHub checks pass on the PR head.                                                                       |
+| Acceptance criterion     | Evidence                                                                                                                                                                   |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-001 / FR-002 / SC-002 | `npm --prefix tests/e2e run test -- specs/landing/social-preview.spec.ts` passed in Chromium and WebKit; it asserts the absolute Open Graph URL, dimensions, and alt text. |
+| FR-003 / SC-002          | The same Playwright scenario asserts `summary_large_image` and the matching absolute Twitter image URL.                                                                    |
+| FR-004 / SC-006          | Visual inspection of `app/public/social/capsule-zero-homepage.png`, captured from production `/en` with consent pre-seeded.                                                |
+| FR-005                   | `rg -n "siteMetadata" 'app/src/app/(redirect)/layout.tsx' 'app/src/app/[locale]/layout.tsx'` shows both layouts importing the shared contract.                             |
+| FR-006 / SC-004          | The Playwright scenario requests the local image path and asserts HTTP 200 plus `image/png`.                                                                               |
+| FR-007                   | `git diff origin/main...HEAD -- app/src/components/landing app/src/app/globals.css messages` is empty.                                                                     |
+| FR-008                   | PR history shows a failing-test commit before the implementation commit.                                                                                                   |
+| SC-001                   | The focused scenario passed: 2 tests across Chromium and WebKit iPhone.                                                                                                    |
+| SC-003                   | `sips -g pixelWidth -g pixelHeight -g format -g hasAlpha app/public/social/capsule-zero-homepage.png` reports PNG, 1200x630, no alpha; `ls -lh` reports 260 KB.            |
+| SC-005                   | Local `npm run preflight` passed (36 Playwright tests passed, 8 full-stack tests skipped as configured); required GitHub checks remain PR evidence.                        |
 
 Negative scenario evidence:
 
@@ -81,3 +81,7 @@ No constitution violation. The new shared module removes the existing duplicated
 - **Telegram may retain an older cached card after deployment.** Mitigation: update the existing post only after production metadata is live, using a full HTTPS URL and a cache-busting query only if the client keeps the stale card.
 - **The screenshot can become stale after a landing redesign.** Mitigation: frontend docs identify the asset as a deliberate homepage capture that must be refreshed when the hero materially changes.
 - **Absolute production metadata is rendered during local tests.** Mitigation: the e2e scenario maps the advertised pathname back to the local server before verifying the static response.
+
+## Verification Notes
+
+- The first full preflight hit a timeout in the pre-existing WebKit profile-password scenario. The isolated rerun passed in 2.3 seconds, and the complete preflight rerun passed without changes to that test or application area.
