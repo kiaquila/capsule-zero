@@ -1,22 +1,12 @@
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { routing } from "@/i18n/routing";
+import { siteMetadata } from "@/lib/site-metadata";
 import "../globals.css";
 
-export const metadata: Metadata = {
-  title: "Capsule Zero",
-  description:
-    "A premium wardrobe management platform for capsule wardrobes, slow fashion, and outfit productivity.",
-  keywords: ["capsule wardrobe", "capsule zero", "wardrobe", "capsule", "style"],
-  openGraph: {
-    title: "Capsule Zero",
-    description: "A premium wardrobe management platform.",
-    type: "website",
-  },
-};
+export const metadata = siteMetadata;
 
 interface LocaleLayoutProps {
   children: ReactNode;

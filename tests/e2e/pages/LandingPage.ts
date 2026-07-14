@@ -18,6 +18,12 @@ export class LandingPage extends BasePage {
   readonly footerTermsLink: Locator;
   readonly footerPrivacyLink: Locator;
   readonly auth: AuthPopup;
+  private readonly openGraphImage: Locator;
+  private readonly openGraphImageWidth: Locator;
+  private readonly openGraphImageHeight: Locator;
+  private readonly openGraphImageAlt: Locator;
+  private readonly twitterCard: Locator;
+  private readonly twitterImage: Locator;
 
   constructor(page: Page, locale: Locale = "en") {
     super(page);
@@ -30,6 +36,14 @@ export class LandingPage extends BasePage {
     this.footerTermsLink = page.getByTestId("footer-terms-link");
     this.footerPrivacyLink = page.getByTestId("footer-privacy-link");
     this.auth = new AuthPopup(page);
+    this.openGraphImage = page.locator('meta[property="og:image"]');
+    this.openGraphImageWidth = page.locator('meta[property="og:image:width"]');
+    this.openGraphImageHeight = page.locator(
+      'meta[property="og:image:height"]',
+    );
+    this.openGraphImageAlt = page.locator('meta[property="og:image:alt"]');
+    this.twitterCard = page.locator('meta[name="twitter:card"]');
+    this.twitterImage = page.locator('meta[name="twitter:image"]');
   }
 
   /**
@@ -68,5 +82,34 @@ export class LandingPage extends BasePage {
     if (await this.cookieBanner.isVisible()) {
       await this.acceptAllCookies();
     }
+  }
+
+  async socialPreviewMetadata() {
+    return {
+      openGraphImage: await this.openGraphImage.getAttribute("content", {
+        timeout: 5_000,
+      }),
+      openGraphImageWidth: await this.openGraphImageWidth.getAttribute(
+        "content",
+        {
+          timeout: 5_000,
+        },
+      ),
+      openGraphImageHeight: await this.openGraphImageHeight.getAttribute(
+        "content",
+        {
+          timeout: 5_000,
+        },
+      ),
+      openGraphImageAlt: await this.openGraphImageAlt.getAttribute("content", {
+        timeout: 5_000,
+      }),
+      twitterCard: await this.twitterCard.getAttribute("content", {
+        timeout: 5_000,
+      }),
+      twitterImage: await this.twitterImage.getAttribute("content", {
+        timeout: 5_000,
+      }),
+    };
   }
 }
