@@ -106,7 +106,7 @@ As the merge owner, I want the planning PR to satisfy SENAR so Stage 0 completio
 
 ## TDD Evidence
 
-Planning, OpenAPI, generated types, guards, env, and deprecation comments are support artifacts outside the application TDD loop. Updating `app/src/lib/legal-content.ts` changes user-visible web behavior, so AC-011 follows the mandatory red/green history: commit `fc374201b2d70c420ae02c36af2fb2d115af6dd0` adds the Playwright scenario and fails because the current Terms/Privacy lack the hold and expose retired claims; the subsequent implementation commit updates legal content and makes the same scenario pass. SENAR, generation/contract/env checks, and required CI remain mandatory.
+Planning, OpenAPI, generated types, guards, env, and deprecation comments are support artifacts outside the application TDD loop. Updating `app/src/lib/legal-content.ts` changes user-visible web behavior, so AC-011 follows mandatory red/green history twice: commit `fc374201b2d70c420ae02c36af2fb2d115af6dd0` adds the initial Playwright scenario and fails because Terms/Privacy lack the hold and expose retired claims; its implementation commit makes that scenario pass. Follow-up red commit `d04fd42acc8723eff692a0aac0c20c2b9524f346` strengthens the scenario and fails because Privacy falsely denies the stored dormant balance; the subsequent implementation commit discloses it and makes the same scenario pass. SENAR, generation/contract/env checks, and required CI remain mandatory.
 
 ## Requirements
 

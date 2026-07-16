@@ -511,7 +511,11 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
           },
           {
             type: "paragraph",
-            text: "Capsule Zero does not currently collect billing, coin, invoice, or payment-provider data because no monetization or payment flow is active.",
+            text: "Capsule Zero does not currently collect billing, invoice, or payment-provider data because no monetization or payment flow is active.",
+          },
+          {
+            type: "paragraph",
+            text: "Existing production profiles may still contain a dormant legacy coin-balance field initialized by our account system. It cannot be purchased, spent, or used to unlock features, and no coin transaction ledger is created while the hold remains active.",
           },
           {
             type: "paragraph",
@@ -546,6 +550,10 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
               [
                 "Marketplace and catalog data",
                 "Marketplace URLs you submit, parsed item candidates, source-site metadata, semantic-search queries, and your interactions with the public catalog.",
+              ],
+              [
+                "Dormant legacy profile data",
+                "A coin-balance value initialized with the production profile for backward compatibility. No purchase, spend, invoice, refund, payment-method, payment-provider, or transaction-ledger data is created for it while monetization is on hold.",
               ],
               [
                 "Device and usage data",
@@ -609,6 +617,11 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
                 "Operate wardrobe, capsule, upload, semantic search, and recommendation features",
                 "Wardrobe content, photos, item metadata, color data, preferences, search data",
                 "Performance of contract; legitimate interests in improving recommendations",
+              ],
+              [
+                "Maintain backward compatibility while the legacy profile field is retired",
+                "Dormant legacy balance and account ID",
+                "Legitimate interests in safe migration and deprecation; the value is not used for purchases, feature access, recommendations, or automated decisions",
               ],
               [
                 "Provide customer support",
@@ -781,6 +794,10 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
               [
                 "Account and profile data",
                 "For the life of your account. After account closure, we delete or anonymize active records within 30 days, subject to encrypted backup rotation that completes within an additional 90 days.",
+              ],
+              [
+                "Dormant legacy profile balance",
+                "Stored with the production profile until the field is removed or replaced, and deleted or anonymized on the same schedule as account and profile data. It is not retained as a financial transaction record.",
               ],
               [
                 "Wardrobe photos and item data",

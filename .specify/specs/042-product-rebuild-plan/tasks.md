@@ -17,7 +17,7 @@
 - [x] T013 Commit a failing Playwright scenario proving live Terms/Privacy still expose the retired coin/Lava model.
 - [x] T014 Update live Terms/Privacy to the current free/no-payment posture and make the scenario pass.
 - [x] T015 Commit a failing extension proving Privacy does not yet distinguish the dormant production profile balance from inactive transactional data.
-- [ ] T016 Disclose the dormant balance and make the extended scenario pass without changing the frozen runtime/schema.
+- [x] T016 Disclose the dormant balance and make the extended scenario pass without changing the frozen runtime/schema.
 
 ## Verification and review
 
