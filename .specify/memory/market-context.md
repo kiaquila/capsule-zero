@@ -9,7 +9,7 @@
 |---|---|---|---|
 | **TAM** | $2.6B–$8.4B (styling app market 2023–2030) | $15B+ (fashion digital advertising sub-segment) | $17–$23B |
 | **SAM** | $400M–$600M (premium segment, 15–20% of TAM) | $500M–$1B (fashion analytics, intent data for 1K–10K brands) | $900M–$1.6B |
-| **SOM** | $150K–$500K (1K–5K paying users via coin purchases, avg $10–20/user/yr) | $50K–$200K (pilot brand commission revenue in Product v2.0) | $200K–$700K |
+| **SOM** | Under rework in `PRODUCT-PLAN.md` Stage 4; no active B2C monetization model | $50K–$200K (pilot brand commission revenue in Product v2.0) | Recalculate after Stage 4 selects the B2C model |
 
 - Wardrobe app market: ~$242M in 2025, projected 8–13% CAGR through 2032
 - Broader styling app market: $2.6B in 2023, CAGR 31%
@@ -92,7 +92,7 @@ No existing player combines premium editorial aesthetics, methodology-driven cap
 |---|---|---|---|---|
 | Design quality | Premium editorial (Zara/COS level) | Functional, dated | Good, modern | Clean, minimal |
 | Capsule methodology | Group harmony + achromatic connectors + warm/cool metadata | Pre-built templates | None | None |
-| Photo enhancement | Editorial transformation (coin-based) | Basic bg removal | Auto bg removal | Auto bg removal |
+| Photo enhancement | Editorial transformation backlog; monetization undecided | Basic bg removal | Auto bg removal | Auto bg removal |
 | B2B brand platform | Separate commission-based platform (v2.0) | None | Marketplace (curated) | Resale marketplace |
 | Gap analysis | Automated + shopping list + brand bridge | Shopping suggestions (generic) | None | Stylist suggestions |
 | Multilingual | EN + RU in v0.1; ES-AR planned for v0.2 | EN only | EN (+ limited) | EN only |

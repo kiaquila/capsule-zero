@@ -29,7 +29,9 @@ export type MarketplaceImportStatus =
   | "parsed"
   | "failed"
   | "confirmed";
+/** @deprecated Superseded by PRODUCT-PLAN.md D2; retained only for legacy provider cleanup in Stage 4. */
 export type InvoiceStatus = "pending" | "paid" | "expired" | "failed";
+/** @deprecated Superseded by PRODUCT-PLAN.md D2; retained only for legacy provider cleanup in Stage 4. */
 export type CoinSpendReason = "extra_capsule" | "photo_enhancement";
 
 export interface Session {
@@ -126,6 +128,7 @@ export interface Profile {
   country?: string;
   city?: string;
   avatarUrl?: string;
+  /** @deprecated Not part of the authoritative OpenAPI after PRODUCT-PLAN.md D2. */
   coinBalance: number;
   createdAt: string;
   updatedAt: string;
@@ -300,6 +303,10 @@ export interface CatalogSearchPort {
   addCatalogItem(userId: string, itemId: string): Promise<WardrobeEntry>;
 }
 
+/**
+ * @deprecated The complete billing contract is frozen under PRODUCT-PLAN.md D2.
+ * Do not call or extend these legacy provider shapes; Stage 4 removes or replaces them.
+ */
 export interface CoinPack {
   id: string;
   coins: number;
@@ -339,6 +346,7 @@ export interface LavaWebhookReplay {
   status: InvoiceStatus;
 }
 
+/** @deprecated Superseded by PRODUCT-PLAN.md D2; not an active product or API contract. */
 export interface BillingPort {
   listCoinPacks(): Promise<CoinPack[]>;
   createLavaInvoice(userId: string, coinPackId: string): Promise<LavaInvoice>;
