@@ -12,7 +12,9 @@
 
 **Value:** Fewer items — more style. Optimal number of favorite items → maximum outfits per person.
 
-**Business model (v0.1):** Freemium + coins. No subscription. Free tier includes all basic features + 1 capsule. Revenue streams: (1) coins — each additional capsule (2+) costs coins, editorial photo enhancement costs coins; (2) brand commission from a separate brand platform in Product v2.0. Coins are architecturally planned from Day 1.
+**Business model (v0.1): UNDER REVIEW — amended 2026-07-16 by [`PRODUCT-PLAN.md`](../../PRODUCT-PLAN.md) D2.** Coins are **cancelled** as the monetization hypothesis; the model and its unit economics are reworked from scratch in plan Stage 4. Until Stage 4 decides, no feature, spec, schema, or API may be designed around coins, and the "1 free capsule, more for coins" limit is not implemented. The free tier keeping full core value (wardrobe, outfits, OPR) is unchanged. B2B brand commission in Product v2.0 is unaffected by this review.
+
+*Superseded text (kept for context until Stage 4 rewrites this section):* "Freemium + coins. No subscription. Free tier includes all basic features + 1 capsule. Revenue streams: (1) coins — each additional capsule (2+) costs coins, editorial photo enhancement costs coins; (2) brand commission from a separate brand platform in Product v2.0. Coins are architecturally planned from Day 1."
 
 **Psychotype:** "New money mindset meets old money taste" — affluent but rational. Not luxury for show, but comfort and aesthetics. Slow fashion, sustainability as natural outcome.
 
@@ -62,6 +64,11 @@ Every item must have: name, category, color palette (color dots). Auto-tagging i
 ### Visual Identity
 
 - **Achromatic interface** — black / white / grey. Color comes ONLY from the user's own items.
+  > **Pending amendment (PRODUCT-PLAN D3 / open question Q4, raised 2026-07-16).** The plan introduces a
+  > yellow-gold CTA fill (`#EFBF04 → #FFDD00`), which is a direct exception to this rule, and proposes reusing
+  > that same colour for errors — which would make one colour mean both "act" and "something is wrong".
+  > **This principle stands as written until the founder rules on Q4.** Whoever lands the yellow CTA must amend
+  > this bullet and `§ Error color` in the same change — do not ship the exception against an unamended principle.
 - **Glassmorphism UI language** — frosted glass surfaces, backdrop blur, translucent layers, subtle borders on glass elements.
   - Glass panels: `rgba(255,255,255,0.22)` + `backdrop-filter: blur(40px)` (main panels) / `blur(44px)` (nav, bottom sheets)
   - Border: `1px solid rgba(255,255,255,.58)` + highlight `inset 0 1px 0 rgba(255,255,255,.72)`
@@ -79,7 +86,7 @@ Every item must have: name, category, color palette (color dots). Auto-tagging i
 - Manifesto headline as brand statement
 - Interface must be worthy of standing next to Aesop / ZARA / COS
 - Photo enhancement target standard: ZARA / Farfetch / COS editorial photography
-- Monetization reference: Canva credit model — users buy coin packs for premium features (not subscription)
+- ~~Monetization reference: Canva credit model — users buy coin packs for premium features (not subscription)~~ — WITHDRAWN 2026-07-16 with the coins cancellation (§I, PRODUCT-PLAN D2). No monetization reference stands until plan Stage 4.
 
 ### Red Lines — Do Not Ship If:
 
@@ -197,4 +204,9 @@ Every spec ≥ 025 must follow test-driven development **for application code**.
 
 These principles apply to every spec authored after the SENAR layer shipped. Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered and keep their original shape.
 
-**Version**: 1.3 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-07-06
+**Version**: 1.4 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-07-16
+
+> **v1.4 (2026-07-16)** — product rebuild ([`PRODUCT-PLAN.md`](../../PRODUCT-PLAN.md), canonical for product decisions until MVP):
+> §I business model moved to UNDER REVIEW (coins cancelled, model reworked in plan Stage 4); the Canva
+> credit-model reference in §III withdrawn; §III achromatic principle flagged with a pending amendment (plan Q4).
+> Product principles I–VI are otherwise unchanged, and §VII engineering process is untouched.

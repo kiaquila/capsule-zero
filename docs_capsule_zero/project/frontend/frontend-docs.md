@@ -1,5 +1,10 @@
 # Web Frontend Docs
 
+> **Monetization freeze (2026-07-16):** Every coin, balance, Lava.top, billing, payment-product,
+> pricing, or purchase-flow statement below is superseded historical context under `PRODUCT-PLAN.md`
+> D2. Do not implement, provision, expose, test as a release gate, or use it for a new contract or
+> code generation. Stage 4 will delete or replace the retained legacy after choosing a model.
+
 ## Stack
 
 - Next.js App Router

@@ -104,27 +104,6 @@ export const API_OPERATIONS = [
   },
   {
     "method": "POST",
-    "path": "/api/billing/coins/spend",
-    "operationId": "spendCoins",
-    "auth": "user",
-    "clientAvailability": "web-mobile"
-  },
-  {
-    "method": "POST",
-    "path": "/api/billing/lava/invoice",
-    "operationId": "createLavaInvoice",
-    "auth": "user",
-    "clientAvailability": "web"
-  },
-  {
-    "method": "GET",
-    "path": "/api/billing/lava/status/{invoiceId}",
-    "operationId": "getLavaInvoiceStatus",
-    "auth": "user",
-    "clientAvailability": "web-mobile"
-  },
-  {
-    "method": "POST",
     "path": "/api/capsules",
     "operationId": "createCapsule",
     "auth": "user",
@@ -369,13 +348,6 @@ export const API_OPERATIONS = [
     "clientAvailability": "web-mobile"
   },
   {
-    "method": "POST",
-    "path": "/api/webhooks/lava",
-    "operationId": "handleLavaWebhook",
-    "auth": "webhook",
-    "clientAvailability": "server"
-  },
-  {
     "method": "GET",
     "path": "/auth/callback",
     "operationId": "handleAuthCallback",
@@ -412,8 +384,6 @@ export const API_ERROR_CODES = [
   "NOT_FOUND",
   "IDEMPOTENCY_CONFLICT",
   "SEMANTIC_VALIDATION_FAILED",
-  "INSUFFICIENT_BALANCE",
-  "WEBHOOK_AUTH_FAILED",
   "RATE_LIMITED",
   "FEATURE_UNAVAILABLE",
   "STORAGE_UNAVAILABLE",
@@ -424,7 +394,7 @@ export const API_ERROR_CODES = [
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
-export type ErrorCode = "VALIDATION_ERROR" | "INVALID_CODE" | "INVALID_CURRENT_PASSWORD" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "IDEMPOTENCY_CONFLICT" | "SEMANTIC_VALIDATION_FAILED" | "INSUFFICIENT_BALANCE" | "WEBHOOK_AUTH_FAILED" | "RATE_LIMITED" | "FEATURE_UNAVAILABLE" | "STORAGE_UNAVAILABLE" | "UPLOAD_INCOMPLETE" | "UPLOAD_MISMATCH" | "INTERNAL_ERROR";
+export type ErrorCode = "VALIDATION_ERROR" | "INVALID_CODE" | "INVALID_CURRENT_PASSWORD" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "IDEMPOTENCY_CONFLICT" | "SEMANTIC_VALIDATION_FAILED" | "RATE_LIMITED" | "FEATURE_UNAVAILABLE" | "STORAGE_UNAVAILABLE" | "UPLOAD_INCOMPLETE" | "UPLOAD_MISMATCH" | "INTERNAL_ERROR";
 
 export type ErrorResponse = {
   error: {
@@ -573,7 +543,6 @@ export type Profile = {
   locale: Locale;
   country?: string;
   city?: string;
-  coinBalance: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -775,45 +744,6 @@ export type CatalogSearchResponse = {
   items: Array<Item>;
 };
 
-export type LavaInvoiceRequest = {
-  coinPackId: "coins_5" | "coins_15" | "coins_30";
-  idempotencyKey: string;
-};
-
-export type LavaInvoiceResponse = {
-  invoiceId: string;
-  paymentUrl: string;
-};
-
-export type LavaStatusResponse = {
-  invoiceId: string;
-  status: "pending" | "paid" | "failed" | "expired" | "refunded";
-  coinDelta?: number | null;
-};
-
-export type CoinSpendRequest = {
-  reason: "extra_capsule" | "photo_enhancement";
-  targetId?: string | null;
-  idempotencyKey: string;
-};
-
-export type CoinSpendResponse = {
-  ledgerEntryId: string;
-  coinBalance: number;
-  coinDelta: number;
-  reason: "extra_capsule" | "photo_enhancement";
-};
-
-export type LavaWebhookPayload = {
-  eventId: string;
-  eventType: "payment.success" | "payment.failed" | "payment.refunded";
-  invoiceId: string;
-  status: string;
-  coinPackId: "coins_5" | "coins_15" | "coins_30";
-  userId?: string | null;
-  payload?: Record<string, unknown>;
-};
-
 export type AdminModerationRequest = {
   decision: "approved" | "rejected";
   reason?: string | null;
@@ -947,30 +877,6 @@ export interface ApiOperationPayloads {
     cookie: GetCurrentSessionCookieParams;
     request: GetCurrentSessionRequestBody;
     response: GetCurrentSessionResponseBody;
-  };
-  spendCoins: {
-    path: SpendCoinsPathParams;
-    query: SpendCoinsQueryParams;
-    header: SpendCoinsHeaderParams;
-    cookie: SpendCoinsCookieParams;
-    request: SpendCoinsRequestBody;
-    response: SpendCoinsResponseBody;
-  };
-  createLavaInvoice: {
-    path: CreateLavaInvoicePathParams;
-    query: CreateLavaInvoiceQueryParams;
-    header: CreateLavaInvoiceHeaderParams;
-    cookie: CreateLavaInvoiceCookieParams;
-    request: CreateLavaInvoiceRequestBody;
-    response: CreateLavaInvoiceResponseBody;
-  };
-  getLavaInvoiceStatus: {
-    path: GetLavaInvoiceStatusPathParams;
-    query: GetLavaInvoiceStatusQueryParams;
-    header: GetLavaInvoiceStatusHeaderParams;
-    cookie: GetLavaInvoiceStatusCookieParams;
-    request: GetLavaInvoiceStatusRequestBody;
-    response: GetLavaInvoiceStatusResponseBody;
   };
   createCapsule: {
     path: CreateCapsulePathParams;
@@ -1252,14 +1158,6 @@ export interface ApiOperationPayloads {
     request: InitPhotoUploadRequestBody;
     response: InitPhotoUploadResponseBody;
   };
-  handleLavaWebhook: {
-    path: HandleLavaWebhookPathParams;
-    query: HandleLavaWebhookQueryParams;
-    header: HandleLavaWebhookHeaderParams;
-    cookie: HandleLavaWebhookCookieParams;
-    request: HandleLavaWebhookRequestBody;
-    response: HandleLavaWebhookResponseBody;
-  };
   handleAuthCallback: {
     path: HandleAuthCallbackPathParams;
     query: HandleAuthCallbackQueryParams;
@@ -1387,29 +1285,6 @@ export type GetCurrentSessionHeaderParams = Record<string, never>;
 export type GetCurrentSessionCookieParams = Record<string, never>;
 export type GetCurrentSessionRequestBody = never;
 export type GetCurrentSessionResponseBody = AuthResponse;
-
-export type SpendCoinsPathParams = Record<string, never>;
-export type SpendCoinsQueryParams = Record<string, never>;
-export type SpendCoinsHeaderParams = Record<string, never>;
-export type SpendCoinsCookieParams = Record<string, never>;
-export type SpendCoinsRequestBody = CoinSpendRequest;
-export type SpendCoinsResponseBody = CoinSpendResponse;
-
-export type CreateLavaInvoicePathParams = Record<string, never>;
-export type CreateLavaInvoiceQueryParams = Record<string, never>;
-export type CreateLavaInvoiceHeaderParams = Record<string, never>;
-export type CreateLavaInvoiceCookieParams = Record<string, never>;
-export type CreateLavaInvoiceRequestBody = LavaInvoiceRequest;
-export type CreateLavaInvoiceResponseBody = LavaInvoiceResponse;
-
-export type GetLavaInvoiceStatusPathParams = {
-  invoiceId: string;
-};
-export type GetLavaInvoiceStatusQueryParams = Record<string, never>;
-export type GetLavaInvoiceStatusHeaderParams = Record<string, never>;
-export type GetLavaInvoiceStatusCookieParams = Record<string, never>;
-export type GetLavaInvoiceStatusRequestBody = never;
-export type GetLavaInvoiceStatusResponseBody = LavaStatusResponse;
 
 export type CreateCapsulePathParams = Record<string, never>;
 export type CreateCapsuleQueryParams = Record<string, never>;
@@ -1721,13 +1596,6 @@ export type InitPhotoUploadCookieParams = Record<string, never>;
 export type InitPhotoUploadRequestBody = PhotoUploadInitRequest;
 export type InitPhotoUploadResponseBody = PhotoUploadInitResponse;
 
-export type HandleLavaWebhookPathParams = Record<string, never>;
-export type HandleLavaWebhookQueryParams = Record<string, never>;
-export type HandleLavaWebhookHeaderParams = Record<string, never>;
-export type HandleLavaWebhookCookieParams = Record<string, never>;
-export type HandleLavaWebhookRequestBody = LavaWebhookPayload;
-export type HandleLavaWebhookResponseBody = MessageResponse;
-
 export type HandleAuthCallbackPathParams = Record<string, never>;
 export type HandleAuthCallbackQueryParams = Record<string, never>;
 export type HandleAuthCallbackHeaderParams = Record<string, never>;
@@ -1774,8 +1642,6 @@ export const API_SCHEMAS = {
       "NOT_FOUND",
       "IDEMPOTENCY_CONFLICT",
       "SEMANTIC_VALIDATION_FAILED",
-      "INSUFFICIENT_BALANCE",
-      "WEBHOOK_AUTH_FAILED",
       "RATE_LIMITED",
       "FEATURE_UNAVAILABLE",
       "STORAGE_UNAVAILABLE",
@@ -2280,7 +2146,6 @@ export const API_SCHEMAS = {
       "email",
       "displayName",
       "locale",
-      "coinBalance",
       "createdAt",
       "updatedAt"
     ],
@@ -2307,10 +2172,6 @@ export const API_SCHEMAS = {
       },
       "city": {
         "type": "string"
-      },
-      "coinBalance": {
-        "type": "integer",
-        "minimum": 0
       },
       "createdAt": {
         "type": "string",
@@ -3137,179 +2998,6 @@ export const API_SCHEMAS = {
       }
     }
   },
-  "LavaInvoiceRequest": {
-    "type": "object",
-    "required": [
-      "coinPackId",
-      "idempotencyKey"
-    ],
-    "properties": {
-      "coinPackId": {
-        "type": "string",
-        "enum": [
-          "coins_5",
-          "coins_15",
-          "coins_30"
-        ]
-      },
-      "idempotencyKey": {
-        "type": "string",
-        "minLength": 12,
-        "maxLength": 128
-      }
-    }
-  },
-  "LavaInvoiceResponse": {
-    "type": "object",
-    "required": [
-      "invoiceId",
-      "paymentUrl"
-    ],
-    "properties": {
-      "invoiceId": {
-        "type": "string"
-      },
-      "paymentUrl": {
-        "type": "string",
-        "format": "uri"
-      }
-    }
-  },
-  "LavaStatusResponse": {
-    "type": "object",
-    "required": [
-      "invoiceId",
-      "status"
-    ],
-    "properties": {
-      "invoiceId": {
-        "type": "string"
-      },
-      "status": {
-        "type": "string",
-        "enum": [
-          "pending",
-          "paid",
-          "failed",
-          "expired",
-          "refunded"
-        ]
-      },
-      "coinDelta": {
-        "type": [
-          "integer",
-          "null"
-        ]
-      }
-    }
-  },
-  "CoinSpendRequest": {
-    "type": "object",
-    "required": [
-      "reason",
-      "idempotencyKey"
-    ],
-    "properties": {
-      "reason": {
-        "type": "string",
-        "enum": [
-          "extra_capsule",
-          "photo_enhancement"
-        ]
-      },
-      "targetId": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "format": "uuid",
-        "description": "reason=extra_capsule requires the capsule UUID that receives the extra slot. reason=photo_enhancement requires the item UUID or upload job UUID being enhanced. Null is rejected for both v0.1 reasons unless a future server-owned reason explicitly allows it.\n"
-      },
-      "idempotencyKey": {
-        "type": "string",
-        "minLength": 12,
-        "maxLength": 128
-      }
-    }
-  },
-  "CoinSpendResponse": {
-    "type": "object",
-    "required": [
-      "ledgerEntryId",
-      "coinBalance",
-      "coinDelta",
-      "reason"
-    ],
-    "properties": {
-      "ledgerEntryId": {
-        "type": "string",
-        "format": "uuid"
-      },
-      "coinBalance": {
-        "type": "integer",
-        "minimum": 0
-      },
-      "coinDelta": {
-        "type": "integer",
-        "maximum": -1
-      },
-      "reason": {
-        "type": "string",
-        "enum": [
-          "extra_capsule",
-          "photo_enhancement"
-        ]
-      }
-    }
-  },
-  "LavaWebhookPayload": {
-    "type": "object",
-    "required": [
-      "eventId",
-      "eventType",
-      "invoiceId",
-      "status",
-      "coinPackId"
-    ],
-    "properties": {
-      "eventId": {
-        "type": "string"
-      },
-      "eventType": {
-        "type": "string",
-        "enum": [
-          "payment.success",
-          "payment.failed",
-          "payment.refunded"
-        ]
-      },
-      "invoiceId": {
-        "type": "string"
-      },
-      "status": {
-        "type": "string"
-      },
-      "coinPackId": {
-        "type": "string",
-        "enum": [
-          "coins_5",
-          "coins_15",
-          "coins_30"
-        ]
-      },
-      "userId": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "format": "uuid"
-      },
-      "payload": {
-        "type": "object",
-        "additionalProperties": true
-      }
-    }
-  },
   "AdminModerationRequest": {
     "type": "object",
     "required": [
@@ -3623,59 +3311,6 @@ export const API_OPERATION_PAYLOADS = {
       "AuthResponse"
     ],
     "pathParameters": [],
-    "queryParameters": [],
-    "headerParameters": [],
-    "cookieParameters": []
-  },
-  "spendCoins": {
-    "requestRequired": true,
-    "successStatusCodes": [
-      "200"
-    ],
-    "requestSchema": "CoinSpendRequest",
-    "responseSchemas": [
-      "CoinSpendResponse"
-    ],
-    "pathParameters": [],
-    "queryParameters": [],
-    "headerParameters": [],
-    "cookieParameters": []
-  },
-  "createLavaInvoice": {
-    "requestRequired": true,
-    "successStatusCodes": [
-      "200"
-    ],
-    "requestSchema": "LavaInvoiceRequest",
-    "responseSchemas": [
-      "LavaInvoiceResponse"
-    ],
-    "pathParameters": [],
-    "queryParameters": [],
-    "headerParameters": [],
-    "cookieParameters": []
-  },
-  "getLavaInvoiceStatus": {
-    "requestRequired": false,
-    "successStatusCodes": [
-      "200"
-    ],
-    "requestSchema": null,
-    "responseSchemas": [
-      "LavaStatusResponse"
-    ],
-    "pathParameters": [
-      {
-        "name": "invoiceId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        },
-        "style": null,
-        "explode": null
-      }
-    ],
     "queryParameters": [],
     "headerParameters": [],
     "cookieParameters": []
@@ -4595,20 +4230,6 @@ export const API_OPERATION_PAYLOADS = {
     "requestSchema": "PhotoUploadInitRequest",
     "responseSchemas": [
       "PhotoUploadInitResponse"
-    ],
-    "pathParameters": [],
-    "queryParameters": [],
-    "headerParameters": [],
-    "cookieParameters": []
-  },
-  "handleLavaWebhook": {
-    "requestRequired": true,
-    "successStatusCodes": [
-      "200"
-    ],
-    "requestSchema": "LavaWebhookPayload",
-    "responseSchemas": [
-      "MessageResponse"
     ],
     "pathParameters": [],
     "queryParameters": [],

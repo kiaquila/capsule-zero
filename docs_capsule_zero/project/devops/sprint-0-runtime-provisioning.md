@@ -1,5 +1,9 @@
 # Sprint 0 Runtime Provisioning
 
+> **Monetization freeze (2026-07-16):** `PRODUCT-PLAN.md` D2 supersedes all coin/Lava provisioning
+> below and removes that surface from the authoritative OpenAPI. Do not create payment products,
+> configure keys/webhooks, run purchase smokes, or add payment env until Stage 4 chooses a new model.
+
 ## Purpose
 
 This runbook describes how to bring up the production-shape Capsule Zero stack on the production server across the phased rollout in `.specify/specs/024-production-stack-runtime/`. It is the operational companion to that spec and does not store secrets in git. (Since 2026-07-02 the server is a Hetzner Cloud CX23; day-to-day deploys are automated by `prod-cd-pipeline.md`, and that runbook also owns the current one-time provisioning sequence.)
@@ -42,10 +46,9 @@ There is no Stage 1 mock-first layer (see ADR-006). Every active service in the 
 Real provider integration gates that remain:
 
 - **Google / Apple OAuth in Kratos** — Stage 2.
-- **Lava.top live integration** — Stage 2.
 - **Self-hosted Capsule Zero image model** — Stage 2.
 
-Until these gates open, the corresponding API surface exists as stubs (Lava.top) or is absent (image processing).
+Until these gates open, the corresponding API surface is absent.
 
 ## Bring-Up Steps
 
@@ -204,20 +207,6 @@ Run these only when the corresponding product slice opens.
   - `https://capsulezero.app/self-service/methods/oidc/callback/apple`
 - Add mobile deep-link callback URLs once React Native auth integrates.
 - Restart Kratos: `docker compose up -d kratos`.
-
-### Lava.top
-
-- Create coin products in Lava.top and map their provider IDs into env:
-
-| Coin pack | Env variable               |
-| --------- | -------------------------- |
-| 5 coins   | `LAVA_COINS_5_PRODUCT_ID`  |
-| 15 coins  | `LAVA_COINS_15_PRODUCT_ID` |
-| 30 coins  | `LAVA_COINS_30_PRODUCT_ID` |
-
-- Set `LAVA_API_KEY` (outbound) and `LAVA_WEBHOOK_API_KEY` (inbound).
-- Configure the webhook URL `https://capsulezero.app/api/webhooks/lava` for `Payment result` events.
-- Verify a real test purchase end-to-end on staging before enabling on production.
 
 ### Self-hosted image model
 

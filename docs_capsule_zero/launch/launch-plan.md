@@ -1,5 +1,10 @@
 # Launch Plan — Capsule Zero v0.1
 
+> **Monetization freeze (2026-07-16):** Every coin, balance, Lava.top, billing, payment-product,
+> pricing, or purchase-flow statement below is superseded historical context under `PRODUCT-PLAN.md`
+> D2. Do not implement, provision, expose, test as a release gate, or use it for a new contract or
+> code generation. Stage 4 will delete or replace the retained legacy after choosing a model.
+
 > Original source: Capsule Zero Launch Plan RU.pdf (February 2026). Updated in June 2026 for the production-stack pivot (Go modular monolith + nginx + Ory Kratos + PostgreSQL + Redis + object storage + Cloudflare + Resend) and React Native mobile apps; storage aligned to Hetzner Object Storage on 2026-07-10; current path to first commercial sales is 13-14 weeks.
 
 ## Overview

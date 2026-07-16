@@ -6,6 +6,12 @@ Accepted implementation contract for v0.1. The authoritative machine-readable
 surface is `docs_capsule_zero/adr/openapi.yaml`; every feature slice updates it,
 the generated client, and contract checks together.
 
+> **Monetization freeze (2026-07-16):** `PRODUCT-PLAN.md` D2 supersedes the previous coin/Lava
+> contract. The authoritative OpenAPI and generated client intentionally expose no coin balance,
+> billing, purchase, payment-status, or payment-webhook surface. Retained provider/runtime types are
+> unsupported legacy: do not implement, call, provision, test as a release gate, or restore them to
+> code generation until Stage 4 chooses and specifies a new model.
+
 ## API Principles
 
 - Ory Kratos owns identity and session state. nginx runs an `auth_request` subrequest against Kratos in front of protected routes; the Go API re-validates the Kratos session on every authenticated request.
@@ -31,8 +37,6 @@ Sprint 0 must create and verify these artifacts before Stage 1 product feature w
 Endpoint names may change only with the OpenAPI contract, generated clients, and contract tests updated in the same PR.
 
 The generator writes the canonical web client to `app/src/lib/api/generated/openapi.ts`. Do not regenerate a `/web` client target. The stale Flutter scaffold and mobile generated outputs were removed on 2026-07-01; mobile TypeScript generation is intentionally deferred until the React Native scaffold lands and defines its source layout in the same PR.
-
-OpenAPI operations marked `x-client-availability: web` must not be wired into mobile purchase UI. Mobile generation may include low-level types for status reads, but mobile v0.1 must not expose invoice creation as a user action.
 
 ## Common Schemas
 
@@ -92,26 +96,6 @@ OpenAPI operations marked `x-client-availability: web` must not be wired into mo
 }
 ```
 
-### Coin Spend
-
-Clients request paid app actions through a server endpoint instead of writing to the ledger directly:
-
-```json
-{
-  "reason": "extra_capsule|photo_enhancement",
-  "targetId": "uuid|null",
-  "idempotencyKey": "client-generated-string"
-}
-```
-
-The server derives the coin amount from the reason, verifies the user's balance, validates the target resource, applies idempotency, and writes the negative `coin_ledger` row.
-
-`targetId` is reason-specific and must be enforced by the server:
-
-- `reason=extra_capsule` requires the capsule UUID receiving the paid expansion.
-- `reason=photo_enhancement` requires the item UUID or upload job UUID being enhanced.
-- `targetId=null` is invalid for both v0.1 spend reasons unless a future server-owned reason explicitly documents that null target.
-
 ## Error Contract
 
 Every REST operation returns the common `ErrorResponse` shape for failures. The OpenAPI contract is authoritative for operation-specific status codes, but the v0.1 taxonomy is:
@@ -122,8 +106,7 @@ Every REST operation returns the common `ErrorResponse` shape for failures. The 
 |  400 | `INVALID_CODE`               | Recovery/verification one-time code is wrong, expired, or already used (spec 035)                          |
 |  400 | `INVALID_CURRENT_PASSWORD`   | Password change rejected because the presented current password is wrong (spec 035)                        |
 |  401 | `UNAUTHENTICATED`            | Kratos session is missing, expired, or invalid                                                             |
-|  402 | `INSUFFICIENT_BALANCE`       | Coin balance is too low for a paid action                                                                  |
-|  403 | `FORBIDDEN`                  | User is authenticated but cannot access the resource or webhook key is invalid                             |
+|  403 | `FORBIDDEN`                  | Authenticated user cannot access the requested resource                                                     |
 |  404 | `NOT_FOUND`                  | Resource does not exist or is intentionally hidden by ownership rules                                      |
 |  409 | `IDEMPOTENCY_CONFLICT`       | Idempotency key, invoice, webhook replay, or optimistic version conflict                                   |
 |  409 | `UPLOAD_INCOMPLETE`          | Upload completion ran before the initialized object exists                                                  |
@@ -251,17 +234,6 @@ orphan cleanup are later slices.
 | `/api/catalog/search`            |    GET | User | FTS-first search over public catalog items         |
 | `/api/catalog/items/:itemId`     |    GET | User | Read public catalog item                           |
 | `/api/catalog/items/:itemId/add` |   POST | User | Add public catalog item to user's wardrobe/capsule |
-
-## Billing
-
-| Route                                 | Method | Auth                     | Purpose                                                                                        |
-| ------------------------------------- | -----: | ------------------------ | ---------------------------------------------------------------------------------------------- |
-| `/api/billing/lava/invoice`           |   POST | User, web only for v0.1  | Create Lava.top invoice/payment link for a coin pack                                           |
-| `/api/billing/lava/status/:invoiceId` |    GET | User                     | Check a Lava.top invoice/payment status                                                        |
-| `/api/billing/coins/spend`            |   POST | User                     | Spend coins for `extra_capsule` or `photo_enhancement` through a server-validated ledger write |
-| `/api/webhooks/lava`                  |   POST | `X-Api-Key` webhook auth | Fulfill `payment.success` events into `coin_ledger` and record failures                        |
-
-Mobile apps must not expose a Lava.top purchase CTA, external payment link, or in-app purchase prompt in v0.1. Mobile may read coin balance and invoice/payment status that originated from web purchases after webhook-backed fulfillment.
 
 ## Admin/Internal
 

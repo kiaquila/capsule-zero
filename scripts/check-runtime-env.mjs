@@ -13,19 +13,6 @@ const groups = {
     { name: "SUPABASE_SERVICE_ROLE_KEY", kind: "secret", serverOnly: true },
     { name: "SESSION_SIGNING_SECRET", kind: "secret", serverOnly: true },
   ],
-  billing: [
-    { name: "LAVA_API_URL", kind: "url" },
-    { name: "LAVA_API_KEY", kind: "secret", serverOnly: true },
-    {
-      name: "LAVA_WEBHOOK_API_KEY",
-      kind: "secret",
-      serverOnly: true,
-      maxLength: 80,
-    },
-    { name: "LAVA_COINS_5_PRODUCT_ID", kind: "id", serverOnly: true },
-    { name: "LAVA_COINS_15_PRODUCT_ID", kind: "id", serverOnly: true },
-    { name: "LAVA_COINS_30_PRODUCT_ID", kind: "id", serverOnly: true },
-  ],
   image: [
     { name: "PHOTOROOM_API_KEY", kind: "secret", serverOnly: true },
     {
@@ -86,7 +73,7 @@ function parseArgs(argv = process.argv.slice(2)) {
 
 function printHelp() {
   console.log(`Usage:
-  node scripts/check-runtime-env.mjs [--env path] [--surface web,billing] [--allow-placeholders]
+  node scripts/check-runtime-env.mjs [--env path] [--surface web,image] [--allow-placeholders]
 
 Examples:
   node scripts/check-runtime-env.mjs --env app/.env.local

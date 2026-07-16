@@ -1,5 +1,10 @@
 # Phase 4 Architecture Council
 
+> **Monetization freeze (2026-07-16):** Every coin, balance, Lava.top, billing, payment-product,
+> pricing, or purchase-flow statement below is superseded historical context under `PRODUCT-PLAN.md`
+> D2. Do not implement, provision, expose, test as a release gate, or use it for a new contract or
+> code generation. Stage 4 will delete or replace the retained legacy after choosing a model.
+
 ## Status
 
 Rerun complete (2026-06-27). Production-stack pivot accepted: Go modular monolith + nginx + Ory Kratos + Postgres + Redis + DigitalOcean Spaces + Cloudflare + Resend + React Native. ADR-007 later slimmed v0.1 to plain Postgres/syslog+traces and deferred pgvector, PgBouncer, Grafana, and the standalone worker until promotion triggers fire. Phase 5 starts with `.specify/specs/024-production-stack-runtime/`.

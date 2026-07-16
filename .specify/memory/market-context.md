@@ -9,7 +9,7 @@
 |---|---|---|---|
 | **TAM** | $2.6B–$8.4B (styling app market 2023–2030) | $15B+ (fashion digital advertising sub-segment) | $17–$23B |
 | **SAM** | $400M–$600M (premium segment, 15–20% of TAM) | $500M–$1B (fashion analytics, intent data for 1K–10K brands) | $900M–$1.6B |
-| **SOM** | $150K–$500K (1K–5K paying users via coin purchases, avg $10–20/user/yr) | $50K–$200K (pilot brand commission revenue in Product v2.0) | $200K–$700K |
+| **SOM** | Under rework in `PRODUCT-PLAN.md` Stage 4; no active B2C monetization model | $50K–$200K (pilot brand commission revenue in Product v2.0) | Recalculate after Stage 4 selects the B2C model |
 
 - Wardrobe app market: ~$242M in 2025, projected 8–13% CAGR through 2032
 - Broader styling app market: $2.6B in 2023, CAGR 31%
@@ -92,18 +92,31 @@ No existing player combines premium editorial aesthetics, methodology-driven cap
 |---|---|---|---|---|
 | Design quality | Premium editorial (Zara/COS level) | Functional, dated | Good, modern | Clean, minimal |
 | Capsule methodology | Group harmony + achromatic connectors + warm/cool metadata | Pre-built templates | None | None |
-| Photo enhancement | Editorial transformation (coin-based) | Basic bg removal | Auto bg removal | Auto bg removal |
+| Photo enhancement | Editorial transformation backlog; monetization undecided | Basic bg removal | Auto bg removal | Auto bg removal |
 | B2B brand platform | Separate commission-based platform (v2.0) | None | Marketplace (curated) | Resale marketplace |
 | Gap analysis | Automated + shopping list + brand bridge | Shopping suggestions (generic) | None | Stylist suggestions |
 | Multilingual | EN + RU in v0.1; ES-AR planned for v0.2 | EN only | EN (+ limited) | EN only |
 
-## 6. Pricing Hypothesis
+## 6. Pricing Hypothesis — WITHDRAWN, under rework
+
+**Superseded 2026-07-16 by [`PRODUCT-PLAN.md`](../../PRODUCT-PLAN.md) D2.** Coins are cancelled as the
+monetization hypothesis; pricing and unit economics are reworked from scratch in plan Stage 4, informed by
+real loop numbers rather than assumption. **Nothing below is a live pricing decision** — do not plan, spec,
+or build against it.
+
+Inputs Stage 4 starts from:
+
+- Realistic B2C freemium corridor: **2–5% free→paid** (not the 8% B2B blended median — see `PRODUCT-RESEARCH.md` §2.3).
+- Niche price benchmarks (2026): Nouva Plus £6.99/mo · Cladwell £10.99/mo · Indyx Insider ~$19/mo + human styling $150+ · Acloset £2.99/mo.
+- Free tier keeping full core value (wardrobe, outfits, OPR) is a standing constraint, not a variable.
+
+*Withdrawn hypothesis, kept for context:*
 
 | Tier | Price | Includes |
 |---|---|---|
-| Free | $0 | Full access to all features + 1 capsule (no item limit) |
-| Coins | $2.99 (5) / $7.99 (15) / $14.99 (30) | 1 coin = 1 additional capsule OR 1 editorial photo transformation |
-| Brand Platform (v2.0) | Commission-based | Separate platform monetizing brand-side conversions and demand. |
+| ~~Free~~ | ~~$0~~ | ~~Full access to all features + 1 capsule (no item limit)~~ |
+| ~~Coins~~ | ~~$2.99 (5) / $7.99 (15) / $14.99 (30)~~ | ~~1 coin = 1 additional capsule OR 1 editorial photo transformation~~ |
+| Brand Platform (v2.0) | Commission-based | Separate platform monetizing brand-side conversions and demand — **not** part of the coins cancellation, unaffected. |
 
 ## 7. Strategic Risks
 
@@ -112,4 +125,4 @@ No existing player combines premium editorial aesthetics, methodology-driven cap
 | Naming conflict with CAPSULE (ApS) | Medium | "Capsule Zero" is distinct. Monitor trademark. |
 | Low initial user base for B2B | High | Build B2C first (1K–5K active users minimum). |
 | Wardrobe upload friction | High | 3-step guided journey + 3 upload methods + semantic search |
-| Coin conversion sensitivity | Medium | Free tier provides real value. Coin pricing stays low-friction. |
+| Monetization-model uncertainty | High | Do not optimize coins, pricing, balances, or a provider before `PRODUCT-PLAN.md` Stage 4 compares models against real loop metrics and selects the model and rail. |

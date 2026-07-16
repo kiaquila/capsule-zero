@@ -33,3 +33,20 @@ export const authCopy = {
     close: "Закрыть",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
+
+// The live legal documents are currently shared across EN/RU routes. Keep
+// unavoidable legal-copy assertions here so policy edits have one test source.
+export const legalCopy = {
+  termsMonetizationHold:
+    "Capsule Zero does not currently sell subscriptions, coins, credits, or other paid digital features, and no payment provider is active for the Service.",
+  privacyMonetizationHold:
+    "Capsule Zero does not currently collect billing, invoice, or payment-provider data because no monetization or payment flow is active.",
+  privacyDormantLegacyBalance:
+    "Existing production profiles may still contain a dormant legacy coin-balance field initialized by our account system. It cannot be purchased, spent, or used to unlock features, and no coin transaction ledger is created while the hold remains active.",
+  retiredMonetizationClaims: [
+    "Lava.top",
+    "purchasing coins",
+    "coin economy",
+    "paid coin features",
+  ],
+} as const;

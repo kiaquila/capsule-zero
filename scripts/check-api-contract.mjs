@@ -18,13 +18,11 @@ const requiredErrorCodes = [
   "NOT_FOUND",
   "IDEMPOTENCY_CONFLICT",
   "SEMANTIC_VALIDATION_FAILED",
-  "INSUFFICIENT_BALANCE",
 ];
 
 const standardErrorResponses = new Set([
   "400",
   "401",
-  "402",
   "403",
   "404",
   "409",
@@ -177,18 +175,6 @@ for (const property of [
   }
 }
 
-const coinTargetDescription =
-  openApi.components?.schemas?.CoinSpendRequest?.properties?.targetId
-    ?.description || "";
-if (
-  !coinTargetDescription.includes("reason=extra_capsule") ||
-  !coinTargetDescription.includes("reason=photo_enhancement")
-) {
-  errors.push(
-    "CoinSpendRequest.targetId must document reason-specific target correlation.",
-  );
-}
-
 const catalogSearchParameters = new Set(
   (paths["/api/catalog/search"]?.get?.parameters || []).map(
     (parameter) => parameter.name,
@@ -205,8 +191,8 @@ for (const parameter of ["q", "categoryId", "colorIds", "limit"]) {
 // spec 034: every route the Go binary actually registers must exist in the
 // OpenAPI contract with the same method + path, so an endpoint can never ship
 // undocumented. The reverse direction stays loose on purpose — the contract is
-// authored ahead of the domain-by-domain Go migration (wardrobe/capsule/billing
-// routes have no handlers yet).
+// authored ahead of the domain-by-domain Go migration (wardrobe/capsule routes
+// have no handlers yet).
 function collectGoRoutes(apiRoot) {
   const routes = [];
 

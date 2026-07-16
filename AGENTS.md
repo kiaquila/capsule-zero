@@ -29,9 +29,11 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
 | 2. Product Definition         | COMPLETE — `.specify/specs/001-capsule-zero-mvp/spec.md`, `docs_capsule_zero/project/methodology/`, `docs_capsule_zero/ux/emotion-map.md`, `docs_capsule_zero/ux/ux-validation.md` |
 | 3. UX/UI Design               | COMPLETE — all 16 v0.1 logical screens designed and implemented in the `/app` frontend                                                                                             |
 | **4. Technical Architecture** | **PIVOTED TO PRODUCTION STACK** — Go modular monolith + nginx + Ory Kratos + Postgres + Redis + Hetzner Object Storage + Cloudflare Stage 2 + Resend; React Native replaces Flutter                     |
-| 5. Development Sprint         | IN PROGRESS — runtime Phases 1–2 landed (nginx + web; Postgres + Kratos + Go API + `api` provider, PR #57); current storage slice is `.specify/specs/040-object-storage-upload-foundation/`; every merge to `main` deploys to `https://capsulezero.app` via prod CD (spec 033) |
+| 5. Development Sprint         | IN PROGRESS — **product work now follows [`PRODUCT-PLAN.md`](PRODUCT-PLAN.md) until MVP is done**; runtime Phases 1–2 landed (nginx + web; Postgres + Kratos + Go API + `api` provider, PR #57); storage slice `.specify/specs/040-object-storage-upload-foundation/`; every merge to `main` deploys to `https://capsulezero.app` via prod CD (spec 033) |
 | 6. QA & Soft Launch           | Upcoming                                                                                                                                                                           |
 | 7. Commercial Launch          | Upcoming                                                                                                                                                                           |
+
+**Product rebuild decision, 2026-07-16 ([`PRODUCT-PLAN.md`](PRODUCT-PLAN.md)):** product work is simplified around the outfit-combination algorithm (OPR) and re-sequenced into four stages: (1) selling landing + free pre-signup loop, (2) algorithm incl. garment cut/basicity, (3) simplification of the post-registration product, (4) unit economics and monetization. **Until MVP is done, `PRODUCT-PLAN.md` is canonical for product decisions** — where it and any other doc disagree on a product decision, the plan wins and the drift is fixed in the same change. Three consequences bind immediately: **first value is delivered before registration** (Duolingo pattern — guest onboarding, then a save-your-progress gate); **coins are cancelled as the monetization hypothesis** — do not design features, specs, schemas, API, codegen, env, provisioning, or UI around coins until Stage 4 decides the model; the active coin/Lava OpenAPI, generated-client, env, and provisioning surface was removed in Stage 0, while retained provider/runtime references are explicitly superseded legacy for Stage-4 deletion or replacement; **the algorithm must account for garment cut, not only colour** — the `basicity` score already defined in `capsule-methodology.md` §6 is currently unimplemented and must become a real algorithm input in Stage 2. The plan does not change the engineering contract (spec-kit, SENAR, TDD, PR gates), the stack, or AGENTS §8. Open founder decisions gating Stage 1 are listed in the plan §4.
 
 **Locale scope decision, 2026-06-07:** Spanish / ES-AR is removed from active v0.1 scope and moved globally to v0.2. Keep Spanish source copy as future reference only; do not expose ES-AR in active routing, language switchers, profile language persistence, OpenAPI enums, generated clients, or launch acceptance criteria until v0.2 locale scope is reopened.
 
@@ -143,6 +145,8 @@ When you change an architecture or implementation decision, actualize **all** af
 
 | Document                                                               | Content                                                                                                        |
 | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **`PRODUCT-PLAN.md`**                                                  | **Canonical product plan until MVP** — accepted decisions, open founder questions, four delivery stages, doc-debt table |
+| `PRODUCT-RESEARCH.md`                                                  | Evidence base behind the plan — competitor/landing reference gallery, PLG conversion data, algorithm grounding |
 | `.specify/specs/001-capsule-zero-mvp/spec.md`                          | 25 user stories (24 MUST + 1 NICE), user flow, screen inventory                                                |
 | `docs_capsule_zero/project/methodology/capsule-methodology.md`         | Capsule methodology, compatibility rules, palette logic, limits                                                |
 | `docs_capsule_zero/project/methodology/colors.md`                      | 51-color system, HEX values, compatibility matrix                                                              |
@@ -288,9 +292,9 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 | **API Client**          | Next.js Server Components/Actions and Route Handlers call the Go API through nginx (typed fetch + TanStack Query)                   |
 | **Forms**               | React Hook Form + Zod                                                                                                               |
 | **i18n**                | next-intl                                                                                                                           |
-| **Payments**            | Lava.top web purchases — stubbed in v0.1, integrated after the core wardrobe and capsule flows ship                                 |
+| **Payments**            | ON HOLD — neither a monetization model nor a payment rail is accepted. Stage 4 decides both; Lava.top is research input only, not an integration target |
 | **Mobile App**          | React Native (iOS + Android) sharing the Go API contract                                                                            |
-| **Coins/image enhance** | Backlog — deferred until after v0.1 launch                                                                                          |
+| **Coins/image enhance** | **Coins CANCELLED** as the monetization hypothesis (PRODUCT-PLAN D2, 2026-07-16) — model reworked in plan Stage 4. Image enhance stays backlog |
 
 ### Required Sprint 0 follow-ups before Phase 5 production-stack runtime work
 
@@ -305,7 +309,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 ### Provider integration gates before real-provider QA/staging/launch
 
 - Google OAuth client configured per `docs_capsule_zero/project/devops/google-oauth-setup.md` before enabling Google sign-in in prod (spec 037; ships off by default). Apple Sign-In stays a Stage 2 gate.
-- Configure Lava.top products/API key/webhook before real web purchases are tested.
+- Payment-provider provisioning and purchase QA are suspended until plan Stage 4 selects both the monetization model and payment rail. Do not create provider products, keys, webhooks, or purchase flows before that decision.
 - Self-hosted image processing model: training/inference spike against the < 5 sec latency gate before enabling real image processing.
 - Production credentials must be stored only in the protected plaintext
   `/opt/capsule-zero/.env` (`root:root`, mode `600`) or production dashboards
@@ -321,11 +325,11 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 
 ### Key constraints for architecture decisions
 
-- **No subscription model** — coins only (Lava.top one-time purchases), and coins are in v0.2 backlog
+- **Monetization is UNDECIDED** — superseded 2026-07-16 by [`PRODUCT-PLAN.md`](PRODUCT-PLAN.md) D2: coins are cancelled as the working hypothesis and the model is reworked from scratch in plan Stage 4. Do not design features, specs, schemas, or API around coins (or any other model) until Stage 4 decides. Previously: "no subscription model — coins only (Lava.top one-time purchases), coins in v0.2 backlog"
 - **3 upload methods:** photo upload · marketplace link import · semantic search (shared DB)
 - **Background removal < 5 sec** per quality gate (gated by self-hosted model delivery in Stage 2)
 - **Multilingual from Day 1:** EN and RU in v0.1 — use `next-intl`; ES-AR is globally deferred to v0.2
 - **i18n strings:** `docs_capsule_zero/i18n/ui-texts.md`
 - **Mobile-first:** phone UX first on web and React Native; iPhone 14+ (375px), Android small/standard, iPad/tablet (768px), Desktop 1280px+
 - **Native mobile app:** React Native iOS + Android consumes the same Go API contract through nginx
-- **Mobile payments:** Lava.top is canonical for web purchases; iOS/Android v0.1 must not expose purchase CTAs or external payment links, only balance/status
+- **Mobile payments:** ON HOLD with the rest of monetization. Do not assume a balance, purchase CTA, external payment link, or provider contract on iOS/Android until plan Stage 4 defines the model, rail, and platform-compliance path.
