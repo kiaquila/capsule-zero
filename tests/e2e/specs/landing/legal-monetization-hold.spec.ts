@@ -4,26 +4,31 @@ import { LegalPage, type LegalSlug } from "../../pages/LegalPage";
 
 const documents: ReadonlyArray<{
   slug: LegalSlug;
-  holdCopy: string;
+  requiredCopy: readonly string[];
 }> = [
   {
     slug: "terms-of-use",
-    holdCopy: legalCopy.termsMonetizationHold,
+    requiredCopy: [legalCopy.termsMonetizationHold],
   },
   {
     slug: "privacy-policy",
-    holdCopy: legalCopy.privacyMonetizationHold,
+    requiredCopy: [
+      legalCopy.privacyMonetizationHold,
+      legalCopy.privacyDormantLegacyBalance,
+    ],
   },
 ];
 
 test("live legal documents disclose the monetization hold without retired claims", async ({
   page,
 }) => {
-  for (const { slug, holdCopy } of documents) {
+  for (const { slug, requiredCopy } of documents) {
     const legal = new LegalPage(page, slug);
     await legal.goto();
 
-    await expect(legal.root).toContainText(holdCopy);
+    for (const copy of requiredCopy) {
+      await expect(legal.root).toContainText(copy);
+    }
 
     // Negative scenario: public legal copy must not bind users to the retired
     // coin/Lava model while monetization is on hold.

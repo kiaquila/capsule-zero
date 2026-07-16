@@ -16,16 +16,18 @@
 - [x] T012 Remove the residual billing group from the runtime-env validator and the balance/webhook-only error taxonomy from OpenAPI and its guard.
 - [x] T013 Commit a failing Playwright scenario proving live Terms/Privacy still expose the retired coin/Lava model.
 - [x] T014 Update live Terms/Privacy to the current free/no-payment posture and make the scenario pass.
+- [x] T015 Commit a failing extension proving Privacy does not yet distinguish the dormant production profile balance from inactive transactional data.
+- [ ] T016 Disclose the dormant balance and make the extended scenario pass without changing the frozen runtime/schema.
 
 ## Verification and review
 
-- [x] T015 Run generated-client, API-contract, and runtime-env checks.
-- [x] T016 Run `git diff --check`.
-- [x] T017 Run `node scripts/check-feature-memory.mjs`.
-- [x] T018 Run `node scripts/check-repo-baseline.mjs`.
-- [x] T019 Inspect thread-aware Codex review comments and resolve addressed threads with commit evidence.
-- [ ] T020 Push the final iteration and trigger `@codex review` from the PR owner.
-- [ ] T021 Confirm the final head has no unresolved blocking review threads and all required GitHub checks pass.
+- [x] T017 Run generated-client, API-contract, and runtime-env checks.
+- [x] T018 Run `git diff --check`.
+- [x] T019 Run `node scripts/check-feature-memory.mjs`.
+- [x] T020 Run `node scripts/check-repo-baseline.mjs`.
+- [x] T021 Inspect thread-aware Codex review comments and resolve addressed threads with commit evidence.
+- [ ] T022 Push the final iteration and trigger `@codex review` from the PR owner.
+- [ ] T023 Confirm the final head has no unresolved blocking review threads and all required GitHub checks pass.
 
 ## Process Memory
 
@@ -40,6 +42,7 @@
 - Removing billing env values without removing the validator group left the documented env check failing and kept billing active by default; retirement must include validators and their help text.
 - Removing billing operations without their coin-only error enum/402 response left an authoritative balance contract and a dangling response reference; surface removal must include shared taxonomy and guards.
 - Treating live Terms/Privacy as Stage-4 historical debt leaves users accepting a cancelled commercial contract; public legal copy is application behavior and must be corrected now with a red/green test history.
+- Saying no coin data exists is also inaccurate while production profiles initialize a dormant `coin_balance`; legal copy must separate that frozen field from nonexistent purchase, ledger, invoice, and provider processing.
 
 ### Decisions
 
@@ -48,9 +51,11 @@
 - Remove coin/Lava from OpenAPI, generated output, env, and provisioning now; keep only explicitly frozen downstream legacy until Stage 4 chooses a model, and do not let a manual seed list substitute for repo-wide reconciliation.
 - Present Core OPR and Expanded OPR as the two consistent Q1 options; do not choose between them in this PR, and do not publish hero/ranking numbers before the founder does.
 - Treat live legal copy as application behavior: preserve a committed failing Playwright scenario before changing it, then make that same scenario pass.
+- Disclose the dormant balance rather than deleting the frozen profile field/schema in Stage 0; runtime removal or replacement remains a Stage-4 decision.
 
 ### Known Issues
 
 - Founder questions Q1–Q4 and Q6 still gate Stage 1, and Q5 gates Stage 2; this PR intentionally records rather than decides them.
 - Existing provider/runtime coin shapes remain deprecated legacy until Stage 4; they are absent from authoritative codegen/provisioning and cannot be extended or treated as a future contract.
+- The dormant Go/Postgres profile balance remains stored and serialized until Stage 4 removes or replaces it; it has no purchase, spend, ledger, or entitlement behavior during the hold.
 - Merge readiness still depends on a fresh Codex review and required checks for the final pushed head.

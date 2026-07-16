@@ -88,7 +88,7 @@ As the merge owner, I want the planning PR to satisfy SENAR so Stage 0 completio
 2. **Given** Stage 1 has no independent color signal, **When** multiple compatible colors tie on Δcore, **Then** the plan rejects arbitrary color-specific ranking and exposes only category-level or equivalent tied recommendations.
 3. **Given** an optional layer is added, **When** OPR is evaluated, **Then** the plan rejects the hybrid that increments the denominator while assigning the layer zero numerator contribution.
 4. **Given** this planning PR retires a contract surface, **When** its scope is inspected, **Then** it must not add runtime or UI behavior beyond AC-011's bounded legal-copy correction, deployment wiring, schema, infrastructure, or Supabase coupling.
-5. **Given** no monetization/payment flow is active, **When** Terms and Privacy render, **Then** they must not claim that users can purchase coins, that Lava.top processes payments, or that billing/coin data is currently collected.
+5. **Given** no monetization/payment flow is active but production profiles still carry a dormant legacy coin-balance field, **When** Terms and Privacy render, **Then** they must not claim an active coin product, Lava.top processing, billing/invoice/payment-provider collection, or a transaction ledger, and Privacy must disclose the dormant field accurately.
 
 ## Acceptance Criteria
 
@@ -102,7 +102,7 @@ As the merge owner, I want the planning PR to satisfy SENAR so Stage 0 completio
 - **AC-008**: Outside contract retirement, generated output, env cleanup, deprecation comments, and AC-011's bounded live legal-copy correction, this PR changes no application behavior, deployment workflow, compose file, nginx config, schema, or provider implementation.
 - **AC-009**: Q1 presents only internally consistent Core and Expanded OPR models, explicitly rejects core/all-items hybrid accounting, and gates hero/ranking numbers until one model is chosen.
 - **AC-010**: Every decision-carrying downstream document with retained coin/Lava guidance marks it superseded and non-actionable now rather than deferring its authority to Stage 4.
-- **AC-011**: Live Terms and Privacy state the current monetization hold, remove active coin/Lava/payment-processing and data-collection claims, and are covered by a committed failing-then-passing Playwright scenario.
+- **AC-011**: Live Terms and Privacy state the current monetization hold, remove active coin/Lava/payment-processing and transactional-data claims, disclose the dormant production profile balance, and are covered by committed failing-then-passing Playwright scenarios.
 
 ## TDD Evidence
 
@@ -121,7 +121,7 @@ Planning, OpenAPI, generated types, guards, env, and deprecation comments are su
 - **FR-007**: Documentation changes MUST preserve the production-stack, no-Supabase, locale, TDD, and PR-gate contracts.
 - **FR-008**: The authoritative API and code generation MUST NOT expose the cancelled coin/Lava contract before Stage 4 selects a replacement.
 - **FR-009**: OPR MUST use a numerator and denominator that treat optional-layer contribution consistently; the core/all-items hybrid is forbidden.
-- **FR-010**: Public legal documents MUST describe the current free/no-payment posture and MUST NOT assert active coins, Lava.top processing, billing collection, or purchase/refund flows before Stage 4.
+- **FR-010**: Public legal documents MUST describe the current free/no-payment posture, MUST NOT assert an active coin product, Lava.top processing, billing/invoice/payment-provider collection, a coin ledger, or purchase/refund flows before Stage 4, and MUST disclose the dormant legacy profile balance while it remains stored.
 
 ## Success Criteria
 

@@ -40,7 +40,9 @@ export const legalCopy = {
   termsMonetizationHold:
     "Capsule Zero does not currently sell subscriptions, coins, credits, or other paid digital features, and no payment provider is active for the Service.",
   privacyMonetizationHold:
-    "Capsule Zero does not currently collect billing, coin, invoice, or payment-provider data because no monetization or payment flow is active.",
+    "Capsule Zero does not currently collect billing, invoice, or payment-provider data because no monetization or payment flow is active.",
+  privacyDormantLegacyBalance:
+    "Existing production profiles may still contain a dormant legacy coin-balance field initialized by our account system. It cannot be purchased, spent, or used to unlock features, and no coin transaction ledger is created while the hold remains active.",
   retiredMonetizationClaims: [
     "Lava.top",
     "purchasing coins",
