@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Landing V2 — V1 Gold on Glass</title>
+<style>
+  :root {
+    /* inherited canon (design-system.md §1, §9) */
+    --glass-bg: rgba(255,255,255,.22);
+    --glass-border: rgba(255,255,255,.58);
+    --glass-hi: inset 0 1px 0 rgba(255,255,255,.72);
+    --text-p: rgba(255,255,255,.95);
+    --text-s: rgba(255,255,255,.78);
+    --text-m: rgba(255,255,255,.50);
+    --scrim: rgba(0,0,0,.35);
+    --radius-lg: 20px;
+    --radius-pill: 50px;
+    /* NEW in this direction: gold accent family (D3 / Nouva) */
+    --gold-500: #EFBF04;
+    --gold-450: #FFDD00;
+    --cta-grad: linear-gradient(to right, #EFBF04 0%, #FFDD00 100%);
+    --cta-text: #0A0A0A;
+    --error: #FFD600; /* kept, but ALWAYS on scrim chip (§9.7 pattern) */
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text-p);
+    background: #111;
+    overflow-x: hidden;
+  }
+  .wallpaper { position: fixed; inset: 0; background: url('../wall.png') center/cover no-repeat; filter: grayscale(1); z-index: 0; }
+  .overlay { position: fixed; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.58), rgba(0,0,0,.40) 50%, rgba(0,0,0,.68)); z-index: 1; }
+  .page { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── Header ── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 32px;
+  }
+  .logo { color: var(--text-p); font-size: 15px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; }
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .lang { background: none; border: 0; color: var(--text-p); font: inherit; font-size: 12px; font-weight: 600; letter-spacing: .04em; cursor: pointer; text-transform: uppercase; opacity: .85; }
+  .lang:hover { opacity: 1; }
+  /* Login demoted: ghost, smaller (36px vs old 44px) */
+  .login {
+    min-height: 34px; padding: 0 16px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.24);
+    border-radius: var(--radius-pill);
+    color: var(--text-p); font: inherit; font-size: 12px; font-weight: 600;
+    letter-spacing: .04em; text-transform: uppercase; cursor: pointer;
+  }
+  .login:hover { background: rgba(255,255,255,.10); }
+
+  /* ── Hero ── */
+  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 24px; }
+  .hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 56px; align-items: center; max-width: 1040px; }
+  .hero-copy { text-align: left; }
+  .eyebrow {
+    display: inline-block; margin-bottom: 20px;
+    color: var(--gold-500); font-size: 12px; font-weight: 600;
+    letter-spacing: .18em; text-transform: uppercase;
+  }
+  h1 {
+    margin-bottom: 20px;
+    font-size: clamp(30px, 4.6vw, 46px); font-weight: 200; line-height: 1.14;
+    letter-spacing: .04em; text-transform: uppercase;
+    color: var(--text-p);
+  }
+  .sub {
+    max-width: 520px; margin-bottom: 32px;
+    color: var(--text-s); font-size: 17px; font-weight: 400; line-height: 1.65; /* §9.6: <20px → ≥400 */
+  }
+  .cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    min-height: 52px; padding: 0 34px;
+    background: var(--cta-grad);
+    border: 1px solid rgba(255,255,255,.20);
+    border-radius: var(--radius-pill);
+    color: var(--cta-text); font: inherit; font-size: 15px; font-weight: 600;
+    letter-spacing: .02em; cursor: pointer;
+    box-shadow: 0 8px 28px rgba(239,191,4,.28);
+    transition: filter .2s ease, transform .2s ease;
+  }
+  .cta:hover { filter: brightness(1.06); transform: translateY(-1px); }
+  .cta:focus-visible { outline: 2px solid rgba(255,255,255,.85); outline-offset: 3px; }
+  .cta .arrow { font-size: 17px; line-height: 1; }
+  .micro { margin-top: 14px; color: var(--text-m); font-size: 13px; letter-spacing: .02em; }
+
+  /* ── Hero demo cluster: the product speaks (color only from items) ── */
+  .demo {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(40px); backdrop-filter: blur(40px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 32px rgba(0,0,0,.22), var(--glass-hi);
+    padding: 24px;
+  }
+  .demo-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .demo-head span { color: var(--text-s); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; }
+  .badge { padding: 3px 10px; border: 1px solid rgba(255,255,255,.24); border-radius: var(--radius-pill); color: var(--text-m); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+  .items { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+  .item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border: 1px solid rgba(255,255,255,.16);
+    border-radius: 8px; background: rgba(255,255,255,.06);
+    font-size: 13px; color: var(--text-p); font-weight: 400;
+  }
+  .dots { display: flex; gap: 5px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,.26); }
+  .demo-result { display: flex; align-items: baseline; gap: 10px; border-top: 1px solid rgba(255,255,255,.16); padding-top: 16px; }
+  .demo-result .num { font-size: 44px; font-weight: 200; letter-spacing: .02em; color: var(--text-p); }
+  .demo-result .label { color: var(--text-s); font-size: 14px; }
+  .demo-note { margin-top: 8px; color: var(--text-m); font-size: 11px; line-height: 1.5; }
+
+  /* ── Specimen strip (prototype-only) ── */
+  .specimen {
+    margin: 0 32px 32px; padding: 24px;
+    border: 1px dashed rgba(255,255,255,.30); border-radius: var(--radius-lg);
+  }
+  .specimen-title { margin-bottom: 18px; color: var(--text-m); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+  .specimen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+  .spec-block h3 { margin-bottom: 12px; color: var(--text-s); font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+  .field label { display: block; margin-bottom: 6px; color: var(--text-s); font-size: 13px; }
+  .field input {
+    width: 100%; min-height: 44px; padding: 0 14px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,214,0,.78); border-radius: 14px;
+    color: var(--text-p); font: inherit; font-size: 15px;
+  }
+  .field input:focus-visible { outline: 2px solid rgba(255,255,255,.82); outline-offset: 2px; }
+  /* error text: yellow kept, ALWAYS on scrim chip (§9.7) */
+  .error-chip {
+    display: inline-block; margin-top: 8px; padding: 5px 10px;
+    background: var(--scrim); border-radius: 8px;
+    color: var(--error); font-size: 13px; font-weight: 500;
+  }
+  .notice {
+    padding: 12px 14px; background: rgba(255,214,0,.10);
+    border: 1px solid rgba(255,214,0,.44); border-radius: 14px;
+    color: var(--text-p); font-size: 13px; line-height: 1.5;
+  }
+  .notice strong { color: var(--error); background: var(--scrim); padding: 1px 6px; border-radius: 6px; font-weight: 600; }
+  .ramp p { line-height: 1.5; }
+  .ramp .r1 { color: var(--text-p); font-size: 17px; font-weight: 400; }
+  .ramp .r2 { color: var(--text-s); font-size: 15px; font-weight: 400; }
+  .ramp .r3 { color: var(--text-m); font-size: 13px; font-weight: 400; }
+  .ramp .cap { color: var(--text-m); font-size: 11px; margin-top: 6px; }
+
+  footer {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px;
+    padding: 20px 24px 24px;
+    color: rgba(255,255,255,.58); font-size: 11px; text-transform: uppercase;
+  }
+  footer a { color: inherit; text-decoration: none; }
+  footer a:hover { color: var(--text-p); }
+
+  /* ── Proto chrome (not part of the design) ── */
+  .proto {
+    position: fixed; z-index: 50; left: 16px; bottom: 16px;
+    display: flex; gap: 6px; align-items: center;
+    background: rgba(28,28,28,.92); border: 1px solid rgba(255,255,255,.16);
+    border-radius: var(--radius-pill); padding: 6px 10px;
+  }
+  .proto button {
+    background: transparent; border: 1px solid rgba(255,255,255,.24); border-radius: var(--radius-pill);
+    color: rgba(255,255,255,.78); font-size: 11px; font-weight: 600; padding: 4px 10px; cursor: pointer;
+  }
+  .proto button.on { background: rgba(255,255,255,.9); color: #111; }
+  .proto .sep { width: 1px; height: 16px; background: rgba(255,255,255,.2); }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; gap: 36px; }
+    .hero-copy { text-align: center; }
+    .sub { margin-left: auto; margin-right: auto; }
+    header { padding: 16px 20px; }
+    .specimen { margin: 0 20px 24px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wallpaper"></div>
+  <div class="overlay"></div>
+  <div class="page">
+    <header>
+      <a class="logo" href="#">Capsule Zero</a>
+      <div class="header-actions">
+        <button class="lang" id="langBtn" type="button">EN ▾</button>
+        <button class="login" id="loginBtn" type="button">Log in</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow" id="eyebrow"></span>
+          <h1 id="h1"></h1>
+          <p class="sub" id="sub"></p>
+          <button class="cta" type="button"><span id="cta"></span><span class="arrow">→</span></button>
+          <p class="micro" id="micro"></p>
+        </div>
+        <aside class="demo" aria-label="Product demo">
+          <div class="demo-head"><span id="demoTitle">Your five pieces</span><span class="badge" id="demoBadge">Example</span></div>
+          <div class="items">
+            <div class="item"><span id="i1">Wool blazer</span><span class="dots"><span class="dot" style="background:#1C1C1C"></span></span></div>
+            <div class="item"><span id="i2">White tee</span><span class="dots"><span class="dot" style="background:#FFFFFF"></span></span></div>
+            <div class="item"><span id="i3">Straight jeans</span><span class="dots"><span class="dot" style="background:#31456A"></span></span></div>
+            <div class="item"><span id="i4">Leather loafers</span><span class="dots"><span class="dot" style="background:#4A3728"></span></span></div>
+            <div class="item"><span id="i5">Camel coat</span><span class="dots"><span class="dot" style="background:#B98A5A"></span></span></div>
+          </div>
+          <div class="demo-result"><span class="num">12</span><span class="label" id="demoLabel">wearable outfits</span></div>
+          <p class="demo-note" id="demoNote">Illustrative example — the exact counting model is pending decision Q1.</p>
+        </aside>
+      </section>
+    </main>
+
+    <section class="specimen">
+      <p class="specimen-title">Specimen — error, focus &amp; text ramp (prototype-only strip)</p>
+      <div class="specimen-grid">
+        <div class="spec-block">
+          <h3>Error state</h3>
+          <div class="field">
+            <label for="em">Email</label>
+            <input id="em" type="text" value="kris@" aria-invalid="true" />
+            <span class="error-chip">This doesn't look like a complete email address</span>
+          </div>
+        </div>
+        <div class="spec-block">
+          <h3>Warning notice</h3>
+          <p class="notice">Photo is larger than <strong>10 MB</strong> — compress it or pick a smaller file.</p>
+        </div>
+        <div class="spec-block ramp">
+          <h3>Text ramp</h3>
+          <p class="r1">Primary .95 / 17px / 400 — body on overlay</p>
+          <p class="r2">Secondary .78 / 15px / 400 — supporting</p>
+          <p class="r3">Muted .50 / 13px / 400 — metadata only</p>
+          <p class="cap">Helvetica Neue · headings 200 uppercase · body ≥400 below 20px (§9.6)</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <a href="#">Terms of Use</a><span>·</span><a href="#">Privacy Policy</a><span>·</span><a href="#">Cookie Settings</a><span>·</span><span>© 2026 Capsule Zero</span>
+    </footer>
+  </div>
+
+  <div class="proto" role="group" aria-label="Prototype controls">
+    <button data-c="c1" class="on">C1</button>
+    <button data-c="c2">C2</button>
+    <button data-c="c3">C3</button>
+    <button data-c="c4">C4</button>
+    <span class="sep"></span>
+    <button data-l="en" class="on">EN</button>
+    <button data-l="ru">RU</button>
+  </div>
+
+<script>
+const COPY = {
+  c1: {
+    en: { eyebrow: "Capsule Zero", h1: "How many outfits hide in your wardrobe?", sub: "Add five pieces you own — Capsule Zero counts the combinations and shows what one smart addition changes.", cta: "Count my outfits", micro: "No account · Free · About 2 minutes" },
+    ru: { eyebrow: "Capsule Zero", h1: "Сколько образов прячется в вашем гардеробе?", sub: "Добавьте пять любимых вещей — Capsule Zero покажет их сочетания и то, что изменит одна точная покупка.", cta: "Посчитать мои образы", micro: "Без аккаунта · Бесплатно · Около 2 минут" }
+  },
+  c2: {
+    en: { eyebrow: "The wardrobe method", h1: "A full closet. Nothing to wear.", sub: "Capsule Zero turns the clothes you already own into a system of outfits — built on color rules, not guesswork.", cta: "Build my mini-wardrobe", micro: "Free · No sign-up needed" },
+    ru: { eyebrow: "Метод гардероба", h1: "Полный шкаф — и нечего надеть.", sub: "Capsule Zero превращает вещи, которые у вас уже есть, в систему образов — по правилам цвета, а не наугад.", cta: "Собрать мини-гардероб", micro: "Бесплатно · Без регистрации" }
+  },
+  c3: {
+    en: { eyebrow: "When new money mindset meets old money taste", h1: "Fewer clothes. More outfits.", sub: "A wardrobe method built on a proprietary color system — see how far five pieces can go.", cta: "Start with five pieces", micro: "No account needed · Instant" },
+    ru: { eyebrow: "Когда тихая роскошь встречает осознанность минимализма", h1: "Меньше вещей. Больше образов.", sub: "Метод гардероба на собственной цветовой системе — узнайте, на что способны пять вещей.", cta: "Начать с пяти вещей", micro: "Без аккаунта · Мгновенно" }
+  },
+  c4: {
+    en: { eyebrow: "51 colors · One method", h1: "Your wardrobe, made to work.", sub: "Capsule Zero shows which outfits your clothes already make — before you buy anything new.", cta: "See my combinations", micro: "Runs in your browser — nothing is uploaded" },
+    ru: { eyebrow: "51 цвет · Один метод", h1: "Гардероб, который работает.", sub: "Capsule Zero показывает, какие образы уже есть в ваших вещах — до любых новых покупок.", cta: "Показать мои сочетания", micro: "Считается в браузере — ничего не загружается" }
+  }
+};
+const CHROME = {
+  en: { login: "Log in", lang: "EN ▾", demoTitle: "Your five pieces", demoBadge: "Example", demoLabel: "wearable outfits", demoNote: "Illustrative example — the exact counting model is pending decision Q1.", items: ["Wool blazer","White tee","Straight jeans","Leather loafers","Camel coat"] },
+  ru: { login: "Войти", lang: "RU ▾", demoTitle: "Ваши пять вещей", demoBadge: "Пример", demoLabel: "носибельных образов", demoNote: "Иллюстративный пример — модель подсчёта ждёт решения Q1.", items: ["Шерстяной блейзер","Белая футболка","Прямые джинсы","Кожаные лоферы","Пальто кэмел"] }
+};
+let cur = { c: "c1", l: "en" };
+function render() {
+  const t = COPY[cur.c][cur.l], ch = CHROME[cur.l];
+  eyebrow.textContent = t.eyebrow; h1.textContent = t.h1; sub.textContent = t.sub;
+  cta.textContent = t.cta; micro.textContent = t.micro;
+  loginBtn.textContent = ch.login; langBtn.textContent = ch.lang;
+  demoTitle.textContent = ch.demoTitle; demoBadge.textContent = ch.demoBadge;
+  demoLabel.textContent = ch.demoLabel; demoNote.textContent = ch.demoNote;
+  ch.items.forEach((n, i) => document.getElementById("i" + (i+1)).textContent = n);
+  document.querySelectorAll(".proto [data-c]").forEach(b => b.classList.toggle("on", b.dataset.c === cur.c));
+  document.querySelectorAll(".proto [data-l]").forEach(b => b.classList.toggle("on", b.dataset.l === cur.l));
+  document.documentElement.lang = cur.l;
+}
+document.querySelectorAll(".proto [data-c]").forEach(b => b.onclick = () => { cur.c = b.dataset.c; render(); });
+document.querySelectorAll(".proto [data-l]").forEach(b => b.onclick = () => { cur.l = b.dataset.l; render(); });
+langBtn.onclick = () => { cur.l = cur.l === "en" ? "ru" : "en"; render(); };
+render();
+</script>
+</body>
+</html>
