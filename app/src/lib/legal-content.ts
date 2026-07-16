@@ -37,8 +37,8 @@ export type LegalBlock =
       rows: string[][];
     };
 
-const lastUpdated = "June 24, 2026";
-const effectiveDate = "June 24, 2026";
+const lastUpdated = "July 16, 2026";
+const effectiveDate = "July 16, 2026";
 
 const operatingEntity = "Capsule Zero S.A.S.";
 const registeredOffice =
@@ -56,7 +56,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
     title: "Terms of Use",
     eyebrow: "Legal",
     summary:
-      "The binding contract between you and Capsule Zero S.A.S. governing accounts, wardrobe content, AI-assisted recommendations, marketplace import, semantic search, coins, paid digital features, mobile apps, and your statutory consumer rights.",
+      "The binding contract between you and Capsule Zero S.A.S. governing accounts, wardrobe content, AI-assisted recommendations, marketplace import, semantic search, mobile apps, current free access, and your statutory consumer rights.",
     lastUpdated,
     effectiveDate,
     relatedDocument: {
@@ -64,15 +64,15 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
       label: "Privacy Policy",
     },
     intro: [
-      `These Terms of Use ("Terms") form a binding contract between you and ${operatingEntity}, a company incorporated under the laws of the Argentine Republic with registered office in ${registeredOffice} ("Capsule Zero", "we", "us", "our"). They govern your access to and use of the Capsule Zero website at ${productDomain}, the Capsule Zero web application, our iOS and Android mobile applications, account features, wardrobe and capsule tools, photo upload and image-processing flows, marketplace import, semantic search, the shared item catalog, the coin economy, paid digital features, support, and any related services we provide (together, the "Service").`,
-      "By creating an account, signing in, uploading content, purchasing coins, or using any paid or free feature of the Service, you confirm that you have read these Terms, that you accept them, and that you have the legal capacity to enter into this contract. If you use the Service on behalf of another person, organization, or legal entity, you confirm that you have authority to accept these Terms on their behalf, and references to \"you\" include both you and that person or entity.",
-      "Capsule Zero is a commercial digital fashion-tech product. These Terms apply in addition to the separate Privacy Policy, any product-specific notices we surface in the Service (for example, pricing pages, coin purchase confirmations, refund notices, age-gates, or content moderation notices), and any mandatory consumer-protection rules that apply where you live.",
+      `These Terms of Use ("Terms") form a binding contract between you and ${operatingEntity}, a company incorporated under the laws of the Argentine Republic with registered office in ${registeredOffice} ("Capsule Zero", "we", "us", "our"). They govern your access to and use of the Capsule Zero website at ${productDomain}, the Capsule Zero web application, our iOS and Android mobile applications, account features, wardrobe and capsule tools, photo upload and image-processing flows, marketplace import, semantic search, the shared item catalog, support, and any related services we provide (together, the "Service").`,
+      "By creating an account, signing in, uploading content, or using the Service, you confirm that you have read these Terms, that you accept them, and that you have the legal capacity to enter into this contract. If you use the Service on behalf of another person, organization, or legal entity, you confirm that you have authority to accept these Terms on their behalf, and references to \"you\" include both you and that person or entity.",
+      "These Terms apply in addition to the separate Privacy Policy, any product-specific notices we surface in the Service (for example, age-gates or content-moderation notices), and any mandatory consumer-protection rules that apply where you live.",
     ],
     highlights: [
       "You keep ownership of your wardrobe photos and content; we receive a limited license needed to operate, secure, and improve the Service.",
       "Capsule Zero recommends; it does not dictate. AI-assisted output is advisory and is not a substitute for professional, medical, financial, or legal advice.",
-      "Coins are non-refundable digital credits with no cash value, sold for one-time use inside Capsule Zero in line with mandatory consumer law.",
-      "Consumers in the EEA, UK, and other jurisdictions keep their statutory rights, including any right of withdrawal that has not been validly waived for immediately delivered digital content.",
+      "Capsule Zero is currently free to use and has no active checkout or payment flow; we will publish updated terms before introducing monetization.",
+      "Consumers in the EEA, UK, and other jurisdictions keep their statutory rights; nothing in these Terms limits mandatory consumer protections.",
     ],
     sections: [
       {
@@ -81,7 +81,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: `${operatingEntity} operates the Service. Our registered office is ${registeredOffice}. For commercial, contractual, billing, and IP correspondence, contact ${legalEmail}. For day-to-day product questions, contact ${supportEmail}. For privacy requests, contact ${privacyEmail} (see the Privacy Policy for the full data-rights process).`,
+            text: `${operatingEntity} operates the Service. Our registered office is ${registeredOffice}. For commercial, contractual, and IP correspondence, contact ${legalEmail}. For day-to-day product questions, contact ${supportEmail}. For privacy requests, contact ${privacyEmail} (see the Privacy Policy for the full data-rights process).`,
           },
           {
             type: "paragraph",
@@ -101,14 +101,14 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
             type: "list",
             items: [
               "You must be at least 16 years old to create an account or otherwise use the Service. Where local law sets a higher digital-consent age (for example, certain EU Member States), that higher age applies.",
-              "You must be at least 18 years old (or the age of majority in your country, if higher) to purchase coins, make any payment, or accept these Terms on behalf of another person or organization.",
-              "If you are between 16 and the age of majority, you may use the free, non-paid features of the Service only if your parent or legal guardian has reviewed and accepted these Terms on your behalf.",
+              "You must be at least 18 years old (or the age of majority in your country, if higher) to accept these Terms on behalf of another person or organization.",
+              "If you are between 16 and the age of majority, you may use the Service only if your parent or legal guardian has reviewed and accepted these Terms on your behalf.",
               "We do not knowingly allow children under 16 to use the Service. If we learn that a child under the applicable minimum age has used the Service, we will close the account and delete the associated personal data, as further described in the Privacy Policy.",
             ],
           },
           {
             type: "paragraph",
-            text: "We may, at any time and without notice, require you to verify your age or identity, including in connection with payments, refund requests, or content moderation decisions. We may suspend or terminate your account if you cannot verify that you meet the eligibility requirements.",
+            text: "We may, at any time and without notice, require you to verify your age or identity, including in connection with account-security or content-moderation decisions. We may suspend or terminate your account if you cannot verify that you meet the eligibility requirements.",
           },
         ],
       },
@@ -123,7 +123,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
           {
             type: "list",
             items: [
-              "Provide accurate, current, and complete account, profile, billing, contact, and tax-residency information, and keep it up to date.",
+              "Provide accurate, current, and complete account, profile, and contact information, and keep it up to date.",
               "Keep your login credentials and any second-factor secrets confidential. You are responsible for all activity carried out under your account, except activity caused by our breach of these Terms or by applicable mandatory law.",
               "Do not share, transfer, sell, lease, or sublicense your account or access credentials. Each account is personal to a single human user.",
               "Notify us promptly at " + supportEmail + " if you suspect unauthorized access, credential compromise, or other security incident affecting your account.",
@@ -142,7 +142,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "Capsule Zero provides digital tools that help you build and manage capsule wardrobes. Core features include photo upload with automated background removal, marketplace link import, semantic search across a shared item catalog, color-compatibility analysis based on the Capsule Zero color methodology, category and palette guidance, outfit generation, gap analysis, the OPR metric, and a coin-based monetization model.",
+            text: "Capsule Zero provides digital tools that help you build and manage capsule wardrobes. Core features include photo upload with automated background removal, marketplace link import, semantic search across a shared item catalog, color-compatibility analysis based on the Capsule Zero color methodology, category and palette guidance, outfit generation, gap analysis, and the OPR metric.",
           },
           {
             type: "paragraph",
@@ -150,7 +150,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
           },
           {
             type: "paragraph",
-            text: "We may launch new features, retire old features, change pricing or coin economics, change the supported set of marketplaces, retire mobile platforms, change supported languages, change supported regions, and change how recommendations are produced. Where we make a material change that affects already-purchased paid features in a way that disadvantages you, we will give you reasonable notice and, where appropriate, a transitional refund or credit.",
+            text: "We may launch new features, retire old features, change the supported set of marketplaces, retire mobile platforms, change supported languages, change supported regions, and change how recommendations are produced. We will give reasonable notice of material changes where required by law. Any future monetization will require updated terms and consumer notices before a purchase is available.",
           },
         ],
       },
@@ -211,7 +211,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "The Service lets you import item information from third-party product URLs, view linked product pages, and discover items through semantic search results that may reference third-party stores or brands. Third-party stores, retailers, marketplaces, social networks, app stores, payment providers, and other third-party services (\"Third-Party Services\") are not controlled by Capsule Zero. Your use of any Third-Party Service is subject to that service's own terms, privacy policy, pricing, availability, tax, shipping, customs, return, repair, refund, and content moderation rules.",
+            text: "The Service lets you import item information from third-party product URLs, view linked product pages, and discover items through semantic search results that may reference third-party stores or brands. Third-party stores, retailers, marketplaces, social networks, app stores, and other third-party services (\"Third-Party Services\") are not controlled by Capsule Zero. Your use of any Third-Party Service is subject to that service's own terms, privacy policy, pricing, availability, tax, shipping, customs, return, repair, refund, and content moderation rules.",
           },
           {
             type: "paragraph",
@@ -243,65 +243,35 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
       },
       {
         id: "paid-features",
-        title: "9. Coins and Paid Digital Features",
+        title: "9. Current Free Access and Future Monetization",
         blocks: [
           {
             type: "paragraph",
-            text: "Capsule Zero does not currently offer a recurring subscription. Paid digital functionality is unlocked through one-time purchases of in-app credits called \"coins\". Coins may be redeemed for paid actions such as creating additional capsules beyond the free tier or applying editorial-grade photo enhancement to wardrobe items. Coin packs, prices, included features, taxes, and country availability are shown on the relevant purchase surface before you confirm a purchase.",
-          },
-          {
-            type: "list",
-            items: [
-              "Coins are digital in-app credits, not money, stored value, securities, cryptocurrency, e-money, prepaid cards, or gift cards.",
-              "Coins have no cash value, are non-transferable, are non-redeemable for cash, cannot be sold or assigned, and cannot be exchanged outside Capsule Zero.",
-              "Coins are credited to your account only after payment is confirmed by the relevant payment provider, or after an approved internal adjustment.",
-              "Coins are personal to your account. Coins cannot be combined across accounts.",
-              "Coin promotional credits, bonuses, refunds-as-credit, or compensatory grants may be subject to expiration as disclosed at the time of the grant.",
-              "Standard purchased coins do not expire while your account is active. If your account is closed, terminated, or remains inactive for more than 24 consecutive months, any unused coin balance may be forfeited to the extent permitted by law, after we send a reasonable inactivity notice to your registered email.",
-              "We may refuse, reverse, freeze, or claw back coin balances, transactions, or grants in cases of fraud, chargeback abuse, payment failure, sanctions, suspected money laundering, technical error, or violation of these Terms.",
-            ],
+            text: "Capsule Zero does not currently sell subscriptions, coins, credits, or other paid digital features, and no payment provider is active for the Service.",
           },
           {
             type: "paragraph",
-            text: "Web purchases are processed by our payment partner, currently Lava.top, and may involve sub-processors for card processing, fraud screening, billing, and tax remittance. We do not store full payment card numbers on our servers. Mobile applications display coin balance, coin ledger, and transaction status but do not currently sell coins through the app, do not expose external payment links, and do not use Apple or Google in-app purchases.",
+            text: "If Capsule Zero introduces a paid product, we will publish updated Terms, an updated Privacy Policy, pricing, purchase disclosures, and any required consumer notices before checkout becomes available. Your continued use of the current free Service does not accept or waive terms for a future purchase.",
           },
         ],
       },
       {
         id: "payments",
-        title: "10. Payments, Pricing, Taxes, and Invoices",
+        title: "10. No Current Payments, Pricing, Taxes, or Invoices",
         blocks: [
           {
             type: "paragraph",
-            text: "All prices are shown in the currency indicated on the relevant purchase surface. Prices may be displayed inclusive or exclusive of value-added tax (VAT), goods-and-services tax (GST), sales tax, or similar indirect taxes depending on your billing country, applicable law, and the payment partner's setup. Where required, we (or our payment partner) will issue an electronic invoice or tax receipt that you can download from your account or receive by email.",
-          },
-          {
-            type: "paragraph",
-            text: "You authorize Capsule Zero and our payment partner to charge your selected payment method for the amount shown at checkout, including any applicable taxes, currency-conversion fees imposed by your card issuer, and any chargeback or recovery fees that we are legally entitled to recover.",
-          },
-          {
-            type: "paragraph",
-            text: "You are responsible for any taxes, duties, customs, or fees that are not collected by us, including any taxes or duties owed by you on third-party marketplace purchases. We may, where required by law, collect, withhold, and remit indirect taxes to the competent authority on your purchase.",
+            text: "Capsule Zero has no active checkout, does not request a payment method, does not charge for the Service, and does not issue purchase invoices or tax receipts. Purchases you make directly from a third-party store or marketplace remain governed by that third party's terms, pricing, taxes, and consumer protections.",
           },
         ],
       },
       {
         id: "refunds",
-        title: "11. Refunds, Cancellations, and Right of Withdrawal",
+        title: "11. Future Purchases and Consumer Rights",
         blocks: [
           {
             type: "paragraph",
-            text: "Refund and cancellation rules for digital coins and digital services are set out below. Nothing in this section limits any mandatory consumer-protection right that applies where you live, including (without limitation) rights under Argentine consumer law (Ley 24.240), the EU Consumer Rights Directive 2011/83/EU, the UK Consumer Contracts Regulations 2013, and equivalent national implementations.",
-          },
-          {
-            type: "list",
-            items: [
-              "EU/EEA/UK right of withdrawal: If you are a consumer in the EEA or UK, you generally have a 14-day right of withdrawal from the conclusion of the contract for digital content not supplied on a tangible medium. Because coins and editorial photo enhancement are delivered to your account immediately on purchase, by completing the purchase and confirming that immediate performance should begin you expressly request immediate performance, acknowledge that the digital content has been supplied, and waive your right of withdrawal in respect of the consumed portion to the extent permitted by law.",
-              "Argentina (Ley 24.240 art. 34): Consumers have a 10-day right of revocation for distance contracts. Because coins and digital enhancements are supplied immediately and consumed on use, you accept that revocation does not apply to coins that have already been spent or to digital services that have already been fully performed at your request.",
-              "Duplicate or technical refunds: If you were charged twice in error, or if a technical failure exclusively attributable to Capsule Zero prevented delivery of the digital content, contact " + supportEmail + " and we will refund the affected amount through the original payment method within a reasonable period.",
-              "Discretionary refunds: We may, in our discretion, refund unused coin balances or unconsumed paid features outside the above cases, especially to resolve support issues quickly.",
-              "Chargebacks: If you believe a payment is incorrect, please contact " + supportEmail + " before initiating a chargeback. Unjustified chargebacks may result in account restriction, reversal of any coins credited from the disputed purchase, and recovery of amounts owed where permitted by law.",
-            ],
+            text: "Because Capsule Zero does not currently accept payments, there is no Capsule Zero purchase to cancel or refund. If we later introduce a paid product, the updated purchase terms will explain pricing, delivery, cancellation, refunds, and applicable rights of withdrawal before you buy. Nothing in these Terms limits mandatory consumer-protection rights that apply where you live.",
           },
         ],
       },
@@ -319,7 +289,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
               "The mobile applications are licensed, not sold, to you. The license is personal, non-transferable, and limited to use on Apple- or Google-branded devices that you own or control, in accordance with the applicable platform's usage rules.",
               "Apple and Google are not parties to these Terms and are not responsible for the mobile application or its content. To the extent permitted by law, Apple and Google are third-party beneficiaries of the platform-required provisions only.",
               "Maintenance and support obligations for the mobile application are owed by Capsule Zero, not by Apple or Google.",
-              "Mobile applications do not currently sell coins, do not contain external payment links, and do not unlock paid features through in-app purchase. Purchases are made on the web at " + productDomain + " and apply to your account across surfaces.",
+              "The mobile applications do not contain a Capsule Zero checkout, an external payment link, or an in-app purchase flow. Future monetization will require updated terms and platform-compliant purchase disclosures before it becomes available.",
               "If the mobile application fails to conform to any applicable warranty that cannot be disclaimed, you may notify Apple or Google for a refund of the purchase price (if any) of the app itself; any further claim relating to the app shall be governed by these Terms.",
             ],
           },
@@ -365,13 +335,13 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
               "upload malware, spyware, ransomware, phishing content, or scripts intended to harm any user, the Service, or any third party;",
               "upload misleading product information, counterfeit listings, illegal marketplace data, or content that impersonates another person, brand, or organization;",
               "use the Service to build, train, fine-tune, evaluate, benchmark, or improve any competing product, dataset, embedding store, model, or recommendation system, in whole or in part;",
-              "attempt to obtain unauthorized access to another account, another user's wardrobe, payment flows, provider accounts, internal moderation features, admin dashboards, or non-public APIs;",
+              "attempt to obtain unauthorized access to another account, another user's wardrobe, provider accounts, internal moderation features, admin dashboards, or non-public APIs;",
               "use the Service to harass, dox, defraud, or otherwise harm any person.",
             ],
           },
           {
             type: "paragraph",
-            text: "We operate the Service in line with the content-moderation principles of the EU Digital Services Act and similar regimes. We may apply content-moderation measures, including content removal, demotion, account restriction, monetization restriction, age-gating, or geographic restriction, where reasonably necessary to comply with law, protect users, or protect the integrity of the Service. We will explain content-moderation decisions to affected users where required by law and provide an internal complaint mechanism via " + supportEmail + ".",
+            text: "We operate the Service in line with the content-moderation principles of the EU Digital Services Act and similar regimes. We may apply content-moderation measures, including content removal, demotion, account restriction, age-gating, or geographic restriction, where reasonably necessary to comply with law, protect users, or protect the integrity of the Service. We will explain content-moderation decisions to affected users where required by law and provide an internal complaint mechanism via " + supportEmail + ".",
           },
         ],
       },
@@ -381,7 +351,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "We aim to keep the Service available and to ship improvements continuously. The Service is provided on an evolving basis. We may release updates, change features, change pricing, change supported regions or languages, change supported marketplaces, change supported payment providers, retire mobile platforms, change the supported set of social-login providers, or otherwise modify the Service.",
+            text: "We aim to keep the Service available and to ship improvements continuously. The Service is provided on an evolving basis. We may release updates, change features, change supported regions or languages, change supported marketplaces, retire mobile platforms, change the supported set of social-login providers, or otherwise modify the Service.",
           },
           {
             type: "paragraph",
@@ -389,7 +359,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
           },
           {
             type: "paragraph",
-            text: "If we permanently discontinue a paid feature in a way that materially deprives you of the value you already paid for, we will, where permitted by law, offer you either a coin refund proportional to the unused value or an equivalent replacement feature, at our reasonable discretion.",
+            text: "If we permanently discontinue a feature, we will give reasonable notice where practical and preserve any mandatory rights or remedies that apply under law.",
           },
         ],
       },
@@ -399,15 +369,15 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "We may suspend, restrict, or terminate your access to the Service, remove or disable Your Content, freeze your coin balance, reverse credits, refuse transactions, or rotate your credentials if we reasonably believe that (a) you violated these Terms or applicable law, (b) you created risk for other users, the Service, our providers, or us, (c) your payment failed verification or was reversed, (d) you abused refund, chargeback, or coin features, or (e) action is required by law, court order, sanctions, or a competent authority.",
+            text: "We may suspend, restrict, or terminate your access to the Service, remove or disable Your Content, or rotate your credentials if we reasonably believe that (a) you violated these Terms or applicable law, (b) you created risk for other users, the Service, our providers, or us, or (c) action is required by law, court order, sanctions, or a competent authority.",
           },
           {
             type: "paragraph",
-            text: "You may stop using the Service at any time, sign out, and request account closure through the Service or by writing to " + supportEmail + ". Account closure deletes your private wardrobe content and personal account data within 30 days of confirmation, subject to backup rotation, security log retention, billing-record retention required by tax and accounting law, sanctions screening, and dispute-resolution needs, as further described in the Privacy Policy.",
+            text: "You may stop using the Service at any time, sign out, and request account closure through the Service or by writing to " + supportEmail + ". Account closure deletes your private wardrobe content and personal account data within 30 days of confirmation, subject to backup rotation, security log retention, sanctions screening, and dispute-resolution needs, as further described in the Privacy Policy.",
           },
           {
             type: "paragraph",
-            text: "Sections that by their nature should survive termination will survive, including Sections 5 (ownership and license), 6 (AI disclaimers), 11 (refund limits), 13 (IP notices), 17 (disclaimers), 18 (liability), 19 (indemnity), 20 (governing law), and 22 (contact).",
+            text: "Sections that by their nature should survive termination will survive, including Sections 5 (ownership and license), 6 (AI disclaimers), 11 (consumer rights), 13 (IP notices), 17 (disclaimers), 18 (liability), 19 (indemnity), 20 (governing law), and 22 (contact).",
           },
         ],
       },
@@ -431,11 +401,11 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "To the maximum extent permitted by applicable law, Capsule Zero, its affiliates, officers, directors, employees, agents, contractors, and licensors will not be liable for any indirect, incidental, special, consequential, exemplary, or punitive damages; any loss of profit, revenue, data, business, goodwill, wardrobe value, item value, resale value, outfit opportunity, or business interruption; or any damage caused by third-party providers, third-party marketplaces, app stores, payment partners, or other third parties, even if we have been advised of the possibility of such damages.",
+            text: "To the maximum extent permitted by applicable law, Capsule Zero, its affiliates, officers, directors, employees, agents, contractors, and licensors will not be liable for any indirect, incidental, special, consequential, exemplary, or punitive damages; any loss of profit, revenue, data, business, goodwill, wardrobe value, item value, resale value, outfit opportunity, or business interruption; or any damage caused by third-party providers, third-party marketplaces, app stores, or other third parties, even if we have been advised of the possibility of such damages.",
           },
           {
             type: "paragraph",
-            text: "To the maximum extent permitted by applicable law, our total aggregate liability arising out of or in connection with these Terms or the Service will not exceed the greater of (a) the total amount you paid to Capsule Zero for the affected paid feature in the six (6) months preceding the event giving rise to the claim, or (b) one hundred U.S. dollars (USD 100). This cap is cumulative and applies across all claims, theories of liability, and causes of action.",
+            text: "To the maximum extent permitted by applicable law, our total aggregate liability arising out of or in connection with these Terms or the current free Service will not exceed one hundred U.S. dollars (USD 100). This cap is cumulative and applies across all claims, theories of liability, and causes of action.",
           },
           {
             type: "paragraph",
@@ -477,7 +447,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "We may update these Terms from time to time to reflect changes in the Service, in applicable law, in payment partners, in subprocessors, or in our business. If a change is material, we will give you advance notice through the Service, by email, or by another reasonable method, and we will update the \"Last updated\" and \"Effective\" dates above. Where required by law, material changes will take effect only after your continued use following the notice period, or after your explicit acceptance. If you do not accept the updated Terms, you may stop using the Service and close your account.",
+            text: "We may update these Terms from time to time to reflect changes in the Service, in applicable law, in subprocessors, or in our business. If a change is material, we will give you advance notice through the Service, by email, or by another reasonable method, and we will update the \"Last updated\" and \"Effective\" dates above. Where required by law, material changes will take effect only after your continued use following the notice period, or after your explicit acceptance. Future monetization will require updated purchase terms and disclosures before checkout is available. If you do not accept the updated Terms, you may stop using the Service and close your account.",
           },
         ],
       },
@@ -498,7 +468,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
     title: "Privacy Policy",
     eyebrow: "Privacy",
     summary:
-      "How Capsule Zero S.A.S. collects, uses, shares, stores, and protects personal data across the website, web app, mobile apps, wardrobe tools, uploads, marketplace import, AI-assisted recommendations, coins, support, and analytics — and how you can exercise your privacy rights.",
+      "How Capsule Zero S.A.S. collects, uses, shares, stores, and protects personal data across the website, web app, mobile apps, wardrobe tools, uploads, marketplace import, AI-assisted recommendations, support, and analytics — and how you can exercise your privacy rights.",
     lastUpdated,
     effectiveDate,
     relatedDocument: {
@@ -506,7 +476,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
       label: "Terms of Use",
     },
     intro: [
-      `This Privacy Policy ("Policy") explains how ${operatingEntity} ("Capsule Zero", "we", "us") processes personal data when you visit ${productDomain}, create an account, use our web or mobile applications, upload wardrobe content, import marketplace links, search the shared catalog, buy or spend coins, contact support, receive product communications, or otherwise interact with us.`,
+      `This Privacy Policy ("Policy") explains how ${operatingEntity} ("Capsule Zero", "we", "us") processes personal data when you visit ${productDomain}, create an account, use our web or mobile applications, upload wardrobe content, import marketplace links, search the shared catalog, contact support, receive product communications, or otherwise interact with us.`,
       "Capsule Zero is a premium digital fashion-tech product. We aim to process personal data in a privacy-conscious way: private wardrobe content is private by default, AI-Assisted Output should be explainable, and optional features collect only what they need.",
       `This Policy applies in addition to the Terms of Use. For questions about this Policy, or to exercise any of the rights described below, contact our Privacy team at ${privacyEmail}. Our Data Protection Officer can be reached at ${dpoEmail}.`,
     ],
@@ -537,11 +507,15 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "This Policy applies to the Capsule Zero website, the Capsule Zero web application, our iOS and Android mobile applications, account and authentication flows, wardrobe and capsule tools, photo upload and image-processing flows, marketplace import and semantic search, the shared catalog, paid coin features, support channels, analytics, and product communications.",
+            text: "This Policy applies to the Capsule Zero website, the Capsule Zero web application, our iOS and Android mobile applications, account and authentication flows, wardrobe and capsule tools, photo upload and image-processing flows, marketplace import and semantic search, the shared catalog, support channels, analytics, and product communications.",
           },
           {
             type: "paragraph",
-            text: "This Policy does not replace the privacy notices of third-party services that you access from Capsule Zero, including third-party stores, marketplaces, social-login providers, payment providers, app stores, analytics providers, customer-support providers, and image-processing providers. Each of those services has its own privacy notice that you should review.",
+            text: "Capsule Zero does not currently collect billing, coin, invoice, or payment-provider data because no monetization or payment flow is active.",
+          },
+          {
+            type: "paragraph",
+            text: "This Policy does not replace the privacy notices of third-party services that you access from Capsule Zero, including third-party stores, marketplaces, social-login providers, app stores, analytics providers, customer-support providers, and image-processing providers. Each of those services has its own privacy notice that you should review.",
           },
         ],
       },
@@ -572,10 +546,6 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
               [
                 "Marketplace and catalog data",
                 "Marketplace URLs you submit, parsed item candidates, source-site metadata, semantic-search queries, and your interactions with the public catalog.",
-              ],
-              [
-                "Billing and coin data",
-                "Coin balance, coin ledger, pack selection, invoice ID, payment status, refund or chargeback status, billing country, tax identifiers where required. Full payment-card numbers are processed by our payment partner and are not stored on Capsule Zero servers.",
               ],
               [
                 "Device and usage data",
@@ -614,9 +584,9 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
           {
             type: "list",
             items: [
-              "Directly from you, when you create an account, upload photos, fill in profile fields, import marketplace links, search the catalog, buy coins, or contact support.",
+              "Directly from you, when you create an account, upload photos, fill in profile fields, import marketplace links, search the catalog, or contact support.",
               "Automatically, from your browser, device, app, cookies, local storage, and our server-side logs.",
-              "From service providers, including payment providers, marketplace-parsing tools, authentication providers, app stores, image-processing providers, analytics providers, and customer-support providers.",
+              "From service providers, including marketplace-parsing tools, authentication providers, app stores, image-processing providers, analytics providers, and customer-support providers.",
               "From other users, only where they interact with you through shared features (for example, where a user submits an item to the shared catalog that you later interact with).",
             ],
           },
@@ -641,11 +611,6 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
                 "Performance of contract; legitimate interests in improving recommendations",
               ],
               [
-                "Process coins, invoices, refunds, fraud and anti-money-laundering checks",
-                "Billing, coin ledger, payment status, device and security data, tax identifiers",
-                "Performance of contract; legal obligations (tax, accounting, AML); legitimate interests in fraud prevention",
-              ],
-              [
                 "Provide customer support",
                 "Contact data, support messages, account status",
                 "Performance of contract; legitimate interests in service quality; consent where required",
@@ -662,7 +627,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
               ],
               [
                 "Comply with law, respond to lawful requests, and enforce our rights",
-                "Account, billing, logs, communications, content moderation records",
+                "Account, logs, communications, content moderation records",
                 "Legal obligations; legitimate interests; establishment, exercise, or defense of legal claims",
               ],
             ],
@@ -701,7 +666,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "We share personal data only as necessary to operate, secure, support, analyze, improve, and lawfully monetize the Service, or as required by law. The main categories of recipients are listed below. A current list of named subprocessors is available at " + productDomain + "/privacy-policy and can also be requested at " + privacyEmail + ".",
+            text: "We share personal data only as necessary to operate, secure, support, analyze, and improve the Service, or as required by law. The main categories of recipients are listed below. A current list of named subprocessors is available at " + productDomain + "/privacy-policy and can also be requested at " + privacyEmail + ".",
           },
           {
             type: "table",
@@ -711,11 +676,6 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
                 "Hosting, database, authentication, storage",
                 "Hetzner Cloud, Hetzner Object Storage",
                 "Application hosting and compute, PostgreSQL database, self-hosted authentication, object storage",
-              ],
-              [
-                "Payment, billing, fraud, tax",
-                "Lava.top and underlying card processors",
-                "Coin pack purchases, invoicing, fraud screening, tax remittance",
               ],
               [
                 "Image processing and AI",
@@ -812,7 +772,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "We keep personal data only as long as reasonably necessary to fulfill the purposes described in this Policy, unless a longer period is required or permitted by law (for example, accounting, tax, anti-money-laundering, fraud-prevention, or dispute-resolution obligations).",
+            text: "We keep personal data only as long as reasonably necessary to fulfill the purposes described in this Policy, unless a longer period is required or permitted by law (for example, security, fraud-prevention, legal-hold, or dispute-resolution obligations).",
           },
           {
             type: "table",
@@ -825,10 +785,6 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
               [
                 "Wardrobe photos and item data",
                 "Until you delete them or close your account. Soft-deleted assets are purged from active systems within 30 days.",
-              ],
-              [
-                "Coin ledger, invoices, tax, refund, and payment records",
-                "Up to 10 years from the relevant transaction, in line with Argentine accounting and tax requirements (Código Civil y Comercial, AFIP) and equivalent obligations in other jurisdictions.",
               ],
               [
                 "Security logs and technical logs",
@@ -967,7 +923,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "The Service contains links to marketplaces, brands, social networks, app stores, payment providers, support tools, and other third-party websites and services. We are not responsible for their privacy practices. Review their privacy notices before sharing personal data or making purchases.",
+            text: "The Service contains links to marketplaces, brands, social networks, app stores, support tools, and other third-party websites and services. We are not responsible for their privacy practices. Review their privacy notices before sharing personal data or making purchases.",
           },
         ],
       },

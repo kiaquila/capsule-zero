@@ -39,17 +39,17 @@ Land an evidence-backed product reset centered on OPR and value before registrat
 | AC-005 | `rg -n "Repo-wide sweep|ручной список не считается полным|generated artifacts|provider contracts/fixtures|миграции" PRODUCT-PLAN.md` returns the non-exhaustive repository-wide completion criterion. |
 | AC-006 | `test -s .specify/specs/042-product-rebuild-plan/spec.md && test -s .specify/specs/042-product-rebuild-plan/plan.md && test -s .specify/specs/042-product-rebuild-plan/tasks.md && node scripts/check-feature-memory.mjs` exits 0. |
 | AC-007 | `rg -n "Monetization-model uncertainty" .specify/memory/market-context.md && ! rg -n "Coin conversion sensitivity|Coin pricing stays" .specify/memory/market-context.md` exits 0. |
-| AC-008 | Path/diff review shows only documentation/memory, OpenAPI/generated output, env deletion, and provider-contract deprecation comments; `git diff --check`, `node scripts/check-api-contract.mjs`, and `node scripts/check-repo-baseline.mjs` exit 0. |
+| AC-008 | Path/diff review shows only documentation/memory, OpenAPI/generated output, env deletion, provider-contract deprecation comments, and AC-011's bounded legal-copy/test paths; `git diff --check`, `node scripts/check-api-contract.mjs`, and `node scripts/check-repo-baseline.mjs` exit 0. |
 | AC-009 | `rg -n "Core OPR|Expanded OPR|Запрещённый гибрид|core/all-items hybrid|core-образов / все вещи" PRODUCT-PLAN.md PRODUCT-RESEARCH.md .specify/specs/042-product-rebuild-plan/spec.md` returns both consistent models and the rejected hybrid. |
 | AC-010 | Every tracked decision-carrying downstream document returned by the focused coin/Lava inventory contains `Monetization freeze (2026-07-16)` or is the canonical plan/research/onboarding/feature memory itself. |
-| AC-011 | Red commit: `npm --prefix tests/e2e run test -- specs/landing/legal-monetization-hold.spec.ts --project=chromium` fails because hold copy is absent/retired claims render. Green commit: the same command passes after `app/src/lib/legal-content.ts` is updated; full e2e lint/typecheck and app build also pass. |
+| AC-011 | Red commit `fc374201b2d70c420ae02c36af2fb2d115af6dd0`: `npm --prefix tests/e2e run test -- specs/landing/legal-monetization-hold.spec.ts --project=chromium` fails because hold copy is absent/retired claims render. Green implementation: the same command passes after `app/src/lib/legal-content.ts` is updated; full e2e lint/typecheck and app lint/typecheck/build also pass. |
 
 Negative scenario evidence:
 
 - NS-001: AC-003 confirms code generation and operational templates contain no payment provisioning, balance, billing, or webhook surface.
 - NS-002: plan/research evidence for AC-004 confirms Stage 1 rejects arbitrary color ranking when compatible colors tie on Δcore.
 - NS-003: AC-009 confirms optional layers cannot lower OPR under the rejected hybrid accounting.
-- NS-004: AC-008 path evidence confirms no runtime behavior, UI behavior, schema, infrastructure, provider implementation, or Supabase coupling is added.
+- NS-004: AC-008 path evidence confirms no runtime behavior, UI behavior outside the bounded legal-copy correction, schema, infrastructure, provider implementation, or Supabase coupling is added.
 - NS-005: AC-011 asserts neither public legal route renders the retired Lava/coin claims while the hold is active.
 
 ## Project Structure

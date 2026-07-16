@@ -87,7 +87,7 @@ As the merge owner, I want the planning PR to satisfy SENAR so Stage 0 completio
 1. **Given** monetization remains undecided, **When** an agent attempts to generate or provision a payment product, API key, webhook, balance, purchase CTA, or coin-based contract, **Then** the authoritative contract and operational guidance contain no such surface and the retained legacy is explicitly non-actionable until Stage 4.
 2. **Given** Stage 1 has no independent color signal, **When** multiple compatible colors tie on Δcore, **Then** the plan rejects arbitrary color-specific ranking and exposes only category-level or equivalent tied recommendations.
 3. **Given** an optional layer is added, **When** OPR is evaluated, **Then** the plan rejects the hybrid that increments the denominator while assigning the layer zero numerator contribution.
-4. **Given** this planning PR retires a contract surface, **When** its scope is inspected, **Then** it must not add runtime behavior, UI behavior, deployment wiring, schema, infrastructure, or Supabase coupling.
+4. **Given** this planning PR retires a contract surface, **When** its scope is inspected, **Then** it must not add runtime or UI behavior beyond AC-011's bounded legal-copy correction, deployment wiring, schema, infrastructure, or Supabase coupling.
 5. **Given** no monetization/payment flow is active, **When** Terms and Privacy render, **Then** they must not claim that users can purchase coins, that Lava.top processes payments, or that billing/coin data is currently collected.
 
 ## Acceptance Criteria
@@ -99,14 +99,14 @@ As the merge owner, I want the planning PR to satisfy SENAR so Stage 0 completio
 - **AC-005**: The Stage 4 drift cleanup uses a repo-wide search and classification criterion that covers historical docs/specs, generated artifacts, provider contracts/fixtures, migrations, and runtime code rather than a fixed file count.
 - **AC-006**: `.specify/specs/042-product-rebuild-plan/` contains complete `spec.md`, `plan.md`, and `tasks.md` SENAR memory.
 - **AC-007**: The market-context strategic-risk register no longer presents coin pricing optimization as active guidance.
-- **AC-008**: Outside contract retirement, generated output, env cleanup, and deprecation comments, this PR changes no application behavior, deployment workflow, compose file, nginx config, schema, or provider implementation.
+- **AC-008**: Outside contract retirement, generated output, env cleanup, deprecation comments, and AC-011's bounded live legal-copy correction, this PR changes no application behavior, deployment workflow, compose file, nginx config, schema, or provider implementation.
 - **AC-009**: Q1 presents only internally consistent Core and Expanded OPR models, explicitly rejects core/all-items hybrid accounting, and gates hero/ranking numbers until one model is chosen.
 - **AC-010**: Every decision-carrying downstream document with retained coin/Lava guidance marks it superseded and non-actionable now rather than deferring its authority to Stage 4.
 - **AC-011**: Live Terms and Privacy state the current monetization hold, remove active coin/Lava/payment-processing and data-collection claims, and are covered by a committed failing-then-passing Playwright scenario.
 
 ## TDD Evidence
 
-Planning, OpenAPI, generated types, guards, env, and deprecation comments are support artifacts outside the application TDD loop. Updating `app/src/lib/legal-content.ts` changes user-visible web behavior, so AC-011 follows the mandatory red/green history: first commit the Playwright scenario and verify that it fails because the current Terms/Privacy lack the hold and expose retired claims; then update legal content in a later commit and verify the same scenario passes. SENAR, generation/contract/env checks, and required CI remain mandatory.
+Planning, OpenAPI, generated types, guards, env, and deprecation comments are support artifacts outside the application TDD loop. Updating `app/src/lib/legal-content.ts` changes user-visible web behavior, so AC-011 follows the mandatory red/green history: commit `fc374201b2d70c420ae02c36af2fb2d115af6dd0` adds the Playwright scenario and fails because the current Terms/Privacy lack the hold and expose retired claims; the subsequent implementation commit updates legal content and makes the same scenario pass. SENAR, generation/contract/env checks, and required CI remain mandatory.
 
 ## Requirements
 

@@ -15,7 +15,7 @@
 - [x] T011 Replace the inconsistent core/all-items OPR formula with two consistent Q1 options and forbid hero/ranking claims until Q1 chooses one.
 - [x] T012 Remove the residual billing group from the runtime-env validator and the balance/webhook-only error taxonomy from OpenAPI and its guard.
 - [x] T013 Commit a failing Playwright scenario proving live Terms/Privacy still expose the retired coin/Lava model.
-- [ ] T014 Update live Terms/Privacy to the current free/no-payment posture and make the scenario pass.
+- [x] T014 Update live Terms/Privacy to the current free/no-payment posture and make the scenario pass.
 
 ## Verification and review
 
