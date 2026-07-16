@@ -39,4 +39,42 @@ export abstract class BasePage {
   async readLocalStorage(key: string): Promise<string | null> {
     return this.page.evaluate((k) => window.localStorage.getItem(k), key);
   }
+
+  /**
+   * Resolve a design token (CSS custom property) as computed on the root
+   * element. Trimmed; empty string when the token is not defined.
+   */
+  async designToken(name: string): Promise<string> {
+    return this.page.evaluate(
+      (token) =>
+        getComputedStyle(document.documentElement)
+          .getPropertyValue(token)
+          .trim(),
+      name,
+    );
+  }
+
+  /**
+   * Resolve a color-valued design token to the browser's canonical
+   * `rgb()`/`rgba()` serialization by applying it to a probe element.
+   * Immune to build-time value normalization (hex case, rgba spacing).
+   * Empty string when the token is not defined: the probe is sampled with
+   * two different `var()` defaults — a defined token yields the same color
+   * both times, an undefined one yields the two defaults.
+   */
+  async resolvedTokenColor(name: string): Promise<string> {
+    return this.page.evaluate((token) => {
+      const sample = (defaultColor: string): string => {
+        const probe = document.createElement("span");
+        probe.style.color = `var(${token}, ${defaultColor})`;
+        document.body.append(probe);
+        const value = getComputedStyle(probe).color;
+        probe.remove();
+        return value;
+      };
+      const first = sample("rgb(1, 2, 3)");
+      const second = sample("rgb(3, 2, 1)");
+      return first === second ? first : "";
+    }, name);
+  }
 }
