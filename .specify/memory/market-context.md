@@ -97,13 +97,26 @@ No existing player combines premium editorial aesthetics, methodology-driven cap
 | Gap analysis | Automated + shopping list + brand bridge | Shopping suggestions (generic) | None | Stylist suggestions |
 | Multilingual | EN + RU in v0.1; ES-AR planned for v0.2 | EN only | EN (+ limited) | EN only |
 
-## 6. Pricing Hypothesis
+## 6. Pricing Hypothesis — WITHDRAWN, under rework
+
+**Superseded 2026-07-16 by [`PRODUCT-PLAN.md`](../../PRODUCT-PLAN.md) D2.** Coins are cancelled as the
+monetization hypothesis; pricing and unit economics are reworked from scratch in plan Stage 4, informed by
+real loop numbers rather than assumption. **Nothing below is a live pricing decision** — do not plan, spec,
+or build against it.
+
+Inputs Stage 4 starts from:
+
+- Realistic B2C freemium corridor: **2–5% free→paid** (not the 8% B2B blended median — see `PRODUCT-RESEARCH.md` §2.3).
+- Niche price benchmarks (2026): Nouva Plus £6.99/mo · Cladwell £10.99/mo · Indyx Insider ~$19/mo + human styling $150+ · Acloset £2.99/mo.
+- Free tier keeping full core value (wardrobe, outfits, OPR) is a standing constraint, not a variable.
+
+*Withdrawn hypothesis, kept for context:*
 
 | Tier | Price | Includes |
 |---|---|---|
-| Free | $0 | Full access to all features + 1 capsule (no item limit) |
-| Coins | $2.99 (5) / $7.99 (15) / $14.99 (30) | 1 coin = 1 additional capsule OR 1 editorial photo transformation |
-| Brand Platform (v2.0) | Commission-based | Separate platform monetizing brand-side conversions and demand. |
+| ~~Free~~ | ~~$0~~ | ~~Full access to all features + 1 capsule (no item limit)~~ |
+| ~~Coins~~ | ~~$2.99 (5) / $7.99 (15) / $14.99 (30)~~ | ~~1 coin = 1 additional capsule OR 1 editorial photo transformation~~ |
+| Brand Platform (v2.0) | Commission-based | Separate platform monetizing brand-side conversions and demand — **not** part of the coins cancellation, unaffected. |
 
 ## 7. Strategic Risks
 
