@@ -292,7 +292,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 | **API Client**          | Next.js Server Components/Actions and Route Handlers call the Go API through nginx (typed fetch + TanStack Query)                   |
 | **Forms**               | React Hook Form + Zod                                                                                                               |
 | **i18n**                | next-intl                                                                                                                           |
-| **Payments**            | ON HOLD — monetization model itself is undecided (PRODUCT-PLAN D2 / Stage 4). Lava.top stays the payment-rail candidate, not a committed decision |
+| **Payments**            | ON HOLD — neither a monetization model nor a payment rail is accepted. Stage 4 decides both; Lava.top is research input only, not an integration target |
 | **Mobile App**          | React Native (iOS + Android) sharing the Go API contract                                                                            |
 | **Coins/image enhance** | **Coins CANCELLED** as the monetization hypothesis (PRODUCT-PLAN D2, 2026-07-16) — model reworked in plan Stage 4. Image enhance stays backlog |
 
@@ -309,7 +309,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 ### Provider integration gates before real-provider QA/staging/launch
 
 - Google OAuth client configured per `docs_capsule_zero/project/devops/google-oauth-setup.md` before enabling Google sign-in in prod (spec 037; ships off by default). Apple Sign-In stays a Stage 2 gate.
-- Configure Lava.top products/API key/webhook before real web purchases are tested.
+- Payment-provider provisioning and purchase QA are suspended until plan Stage 4 selects both the monetization model and payment rail. Do not create provider products, keys, webhooks, or purchase flows before that decision.
 - Self-hosted image processing model: training/inference spike against the < 5 sec latency gate before enabling real image processing.
 - Production credentials must be stored only in the protected plaintext
   `/opt/capsule-zero/.env` (`root:root`, mode `600`) or production dashboards
@@ -332,4 +332,4 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 - **i18n strings:** `docs_capsule_zero/i18n/ui-texts.md`
 - **Mobile-first:** phone UX first on web and React Native; iPhone 14+ (375px), Android small/standard, iPad/tablet (768px), Desktop 1280px+
 - **Native mobile app:** React Native iOS + Android consumes the same Go API contract through nginx
-- **Mobile payments:** Lava.top is canonical for web purchases; iOS/Android v0.1 must not expose purchase CTAs or external payment links, only balance/status
+- **Mobile payments:** ON HOLD with the rest of monetization. Do not assume a balance, purchase CTA, external payment link, or provider contract on iOS/Android until plan Stage 4 defines the model, rail, and platform-compliance path.
