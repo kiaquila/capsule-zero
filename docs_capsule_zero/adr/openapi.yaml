@@ -159,8 +159,6 @@ components:
         - NOT_FOUND
         - IDEMPOTENCY_CONFLICT
         - SEMANTIC_VALIDATION_FAILED
-        - INSUFFICIENT_BALANCE
-        - WEBHOOK_AUTH_FAILED
         - RATE_LIMITED
         - FEATURE_UNAVAILABLE
         - STORAGE_UNAVAILABLE
@@ -1966,8 +1964,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UploadJob"
-        "402":
-          $ref: "#/components/responses/InsufficientBalance"
         "404":
           $ref: "#/components/responses/NotFound"
   /api/uploads/{jobId}:

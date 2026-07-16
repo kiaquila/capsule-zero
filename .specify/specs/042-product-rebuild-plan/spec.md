@@ -16,7 +16,7 @@ In scope:
 - add `PRODUCT-PLAN.md` as the canonical pre-MVP product plan and `PRODUCT-RESEARCH.md` as its evidence base
 - record the accepted pre-signup value, cancelled coins hypothesis, pending yellow-accent exception, and required garment-cut/basicity input
 - update decision-carrying onboarding, constitution, and market-context documents in the same change
-- remove the superseded coin/Lava surface from OpenAPI, its generated client, and the obsolete contract assertion; remove provisioning/env instructions; and mark retained provider shapes as deprecated legacy
+- remove the superseded coin/Lava surface from OpenAPI, its generated client, API/runtime-env guards, and operational templates; and mark retained provider shapes as deprecated legacy
 - define two internally consistent OPR models and forbid the core-numerator/all-items-denominator hybrid before Q1 is decided
 - define the four delivery stages, open founder decisions, and a repo-wide Stage 4 monetization-drift sweep
 - provide SENAR goal/scope, verification evidence, negative scenarios, and process memory for Stage 0
@@ -89,7 +89,7 @@ As the merge owner, I want the planning PR to satisfy SENAR so Stage 0 completio
 
 - **AC-001**: `PRODUCT-PLAN.md` is identified as canonical for product decisions until MVP in both cross-agent onboarding files.
 - **AC-002**: The plan records D1–D4, four delivery stages, and the founder questions gating Stage 1/2.
-- **AC-003**: The authoritative OpenAPI/generated client and operational templates expose no coin balance, billing/Lava operation, payment env, product, key, webhook, or purchase instruction before Stage 4.
+- **AC-003**: The authoritative OpenAPI/generated client, API/runtime-env guards, and operational templates expose no coin balance/error, billing/Lava operation, payment env, product, key, webhook, or purchase instruction before Stage 4.
 - **AC-004**: Stage 1 recommendation scope is category-only when Δcore cannot distinguish compatible colors; color-specific output requires a separate Stage 2 signal.
 - **AC-005**: The Stage 4 drift cleanup uses a repo-wide search and classification criterion that covers historical docs/specs, generated artifacts, provider contracts/fixtures, migrations, and runtime code rather than a fixed file count.
 - **AC-006**: `.specify/specs/042-product-rebuild-plan/` contains complete `spec.md`, `plan.md`, and `tasks.md` SENAR memory.
@@ -100,7 +100,7 @@ As the merge owner, I want the planning PR to satisfy SENAR so Stage 0 completio
 
 ## TDD Waiver
 
-This spec changes product-planning/source-of-truth documentation and retires a superseded API surface through OpenAPI, generated types, its obsolete contract assertion, an env template, and deprecation comments. It does not change web UI, React Native behavior, Go API behavior, or any other application behavior; infrastructure/docs/support changes are outside the failing-test-first loop under `tests/README.md`, so the TDD rule for specs ≥ 025 does not apply. SENAR is not waived: generation/contract checks, command evidence, and negative-scenario checks are recorded in `plan.md`, and Process Memory is recorded in `tasks.md`.
+This spec changes product-planning/source-of-truth documentation and retires a superseded API surface through OpenAPI, generated types, API/runtime-env guards, an env template, and deprecation comments. It does not change web UI, React Native behavior, Go API behavior, or any other application behavior; infrastructure/docs/support changes are outside the failing-test-first loop under `tests/README.md`, so the TDD rule for specs ≥ 025 does not apply. SENAR is not waived: generation/contract/env checks, command evidence, and negative-scenario checks are recorded in `plan.md`, and Process Memory is recorded in `tasks.md`.
 
 ## Requirements
 

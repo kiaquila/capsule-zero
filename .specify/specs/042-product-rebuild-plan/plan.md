@@ -17,7 +17,7 @@ Land an evidence-backed product reset centered on OPR and value before registrat
 **Project Type**: Product planning plus contract/support retirement; no application behavior
 **Performance Goals**: N/A
 **Constraints**: No application runtime behavior, provider implementation, schema, deploy, or Supabase changes; do not decide open founder questions
-**Scale/Scope**: Root plan/research, decision-carrying docs/memory, authoritative OpenAPI/generated output and contract guard, support templates/deprecation comments, and one SENAR feature-memory folder
+**Scale/Scope**: Root plan/research, decision-carrying docs/memory, authoritative OpenAPI/generated output and API/runtime-env guards, support templates/deprecation comments, and one SENAR feature-memory folder
 
 ## Constitution Check
 
@@ -34,7 +34,7 @@ Land an evidence-backed product reset centered on OPR and value before registrat
 |---|---|
 | AC-001 | `rg -n "PRODUCT-PLAN.md.*canonical|canonical.*PRODUCT-PLAN.md" AGENTS.md CLAUDE.md` returns the two onboarding pointers. |
 | AC-002 | `rg -n "^### D[1-4]|^### Этап [0-4]|^\| \*\*Q[1-6]" PRODUCT-PLAN.md` returns the accepted decisions, stages, and open questions. |
-| AC-003 | `! rg -n "coinBalance|/api/billing|/api/webhooks/lava|CoinSpend|LavaInvoice|LavaWebhook" docs_capsule_zero/adr/openapi.yaml app/src/lib/api/generated/openapi.ts` and `! rg -n "LAVA_|Create coin products|test purchase" app/.env.local.example docs_capsule_zero/project/devops/sprint-0-runtime-provisioning.md` both exit 0 after `npm run generate:api`. |
+| AC-003 | `! rg -n "coinBalance|INSUFFICIENT_BALANCE|WEBHOOK_AUTH_FAILED|/api/billing|/api/webhooks/lava|CoinSpend|LavaInvoice|LavaWebhook" docs_capsule_zero/adr/openapi.yaml app/src/lib/api/generated/openapi.ts scripts/check-api-contract.mjs` and `! rg -n "billing|LAVA_|Create coin products|test purchase" scripts/check-runtime-env.mjs app/.env.local.example docs_capsule_zero/project/devops/sprint-0-runtime-provisioning.md` both exit 0 after generation; the documented placeholder env check exits 0. |
 | AC-004 | `rg -n "рекомендацию \*\*категории\*\*|цвет v0 не рекомендует|Отдельный цветовой сигнал|argmax по \*\*категориям\*\*" PRODUCT-PLAN.md PRODUCT-RESEARCH.md` returns category-only v0 and the separate Stage 2 signal. |
 | AC-005 | `rg -n "Repo-wide sweep|ручной список не считается полным|generated artifacts|provider contracts/fixtures|миграции" PRODUCT-PLAN.md` returns the non-exhaustive repository-wide completion criterion. |
 | AC-006 | `test -s .specify/specs/042-product-rebuild-plan/spec.md && test -s .specify/specs/042-product-rebuild-plan/plan.md && test -s .specify/specs/042-product-rebuild-plan/tasks.md && node scripts/check-feature-memory.mjs` exits 0. |
@@ -61,6 +61,7 @@ app/.env.local.example
 app/src/lib/api/generated/openapi.ts
 app/src/lib/providers/contracts.ts
 scripts/check-api-contract.mjs
+scripts/check-runtime-env.mjs
 .specify/
 ├── memory/
 │   ├── constitution.md

@@ -18,13 +18,11 @@ const requiredErrorCodes = [
   "NOT_FOUND",
   "IDEMPOTENCY_CONFLICT",
   "SEMANTIC_VALIDATION_FAILED",
-  "INSUFFICIENT_BALANCE",
 ];
 
 const standardErrorResponses = new Set([
   "400",
   "401",
-  "402",
   "403",
   "404",
   "409",

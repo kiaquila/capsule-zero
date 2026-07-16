@@ -13,16 +13,17 @@
 - [x] T009 Remove coin balance and coin/Lava operations from authoritative OpenAPI, regenerate the client, remove the obsolete coin contract assertion, and remove payment env/provisioning instructions.
 - [x] T010 Mark retained decision-carrying coin/Lava sources and provider contract shapes as superseded legacy that cannot drive implementation or codegen.
 - [x] T011 Replace the inconsistent core/all-items OPR formula with two consistent Q1 options and forbid hero/ranking claims until Q1 chooses one.
+- [x] T012 Remove the residual billing group from the runtime-env validator and the balance/webhook-only error taxonomy from OpenAPI and its guard.
 
 ## Verification and review
 
-- [x] T012 Run generated-client and API-contract checks.
-- [x] T013 Run `git diff --check`.
-- [x] T014 Run `node scripts/check-feature-memory.mjs`.
-- [x] T015 Run `node scripts/check-repo-baseline.mjs`.
-- [x] T016 Inspect thread-aware Codex review comments and resolve addressed threads with commit evidence.
-- [ ] T017 Push the final iteration and trigger `@codex review` from the PR owner.
-- [ ] T018 Confirm the final head has no unresolved blocking review threads and all required GitHub checks pass.
+- [x] T013 Run generated-client, API-contract, and runtime-env checks.
+- [x] T014 Run `git diff --check`.
+- [x] T015 Run `node scripts/check-feature-memory.mjs`.
+- [x] T016 Run `node scripts/check-repo-baseline.mjs`.
+- [x] T017 Inspect thread-aware Codex review comments and resolve addressed threads with commit evidence.
+- [ ] T018 Push the final iteration and trigger `@codex review` from the PR owner.
+- [ ] T019 Confirm the final head has no unresolved blocking review threads and all required GitHub checks pass.
 
 ## Process Memory
 
@@ -34,6 +35,8 @@
 - Updating only the Phase 4 payments row did not suspend the older provider and mobile-payment instructions; all decision-carrying onboarding guidance must express the same hold.
 - Deferring the coin sweep to Stage 4 left active OpenAPI/codegen and provisioning surfaces able to create new work. The authoritative surface must be removed immediately; only clearly non-actionable legacy may wait for physical deletion.
 - Counting optional layers in the OPR denominator while assigning them zero numerator contribution makes useful garments lower the hero metric. Q1 must choose either core/core accounting or expanded/all-items accounting.
+- Removing billing env values without removing the validator group left the documented env check failing and kept billing active by default; retirement must include validators and their help text.
+- Removing billing operations without their coin-only error enum/402 response left an authoritative balance contract and a dangling response reference; surface removal must include shared taxonomy and guards.
 
 ### Decisions
 

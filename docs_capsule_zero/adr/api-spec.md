@@ -106,7 +106,7 @@ Every REST operation returns the common `ErrorResponse` shape for failures. The 
 |  400 | `INVALID_CODE`               | Recovery/verification one-time code is wrong, expired, or already used (spec 035)                          |
 |  400 | `INVALID_CURRENT_PASSWORD`   | Password change rejected because the presented current password is wrong (spec 035)                        |
 |  401 | `UNAUTHENTICATED`            | Kratos session is missing, expired, or invalid                                                             |
-|  403 | `FORBIDDEN`                  | User is authenticated but cannot access the resource or webhook key is invalid                             |
+|  403 | `FORBIDDEN`                  | Authenticated user cannot access the requested resource                                                     |
 |  404 | `NOT_FOUND`                  | Resource does not exist or is intentionally hidden by ownership rules                                      |
 |  409 | `IDEMPOTENCY_CONFLICT`       | Idempotency key, invoice, webhook replay, or optimistic version conflict                                   |
 |  409 | `UPLOAD_INCOMPLETE`          | Upload completion ran before the initialized object exists                                                  |
