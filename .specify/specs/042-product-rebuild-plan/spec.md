@@ -24,7 +24,7 @@ In scope:
 
 Out of scope:
 
-- implementing any Stage 1–4 product behavior or changing application runtime behavior
+- implementing any Stage 1–4 product behavior or changing application runtime behavior beyond the bounded live legal-copy correction
 - deciding the open founder questions Q1–Q6
 - choosing or provisioning a monetization model, payment rail, product, key, webhook, balance, or purchase flow
 - amending the achromatic-interface principle before Q4 is decided
@@ -72,7 +72,7 @@ As the merge owner, I want the planning PR to satisfy SENAR so Stage 0 completio
 **Acceptance Scenarios**:
 
 1. **Given** Stage 0 is marked complete, **When** a reviewer opens feature memory, **Then** Goal, Scope, verification evidence, negative scenarios, and Process Memory are present.
-2. **Given** the change alters planning plus contract/support artifacts but no application behavior, **When** TDD applicability is checked, **Then** the spec records a narrow behavior-level waiver without waiving SENAR.
+2. **Given** planning plus contract/support artifacts are outside the application TDD loop but live legal copy is user-visible behavior, **When** TDD applicability is checked, **Then** the spec records the support-artifact boundary and a committed red/green scenario for the legal correction without waiving SENAR.
 
 ### Edge Cases
 

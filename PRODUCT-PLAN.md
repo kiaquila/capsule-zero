@@ -159,7 +159,8 @@
 
 План, исследование, указатели в документации и SENAR-память
 `.specify/specs/042-product-rebuild-plan/`; активный coin/Lava OpenAPI/codegen/provisioning surface удалён.
-Продуктовое runtime/UI-поведение не меняется.
+Единственное изменение пользовательского поведения — публичные Terms/Privacy приведены к фактической
+паузе монетизации и защищены red/green Playwright-сценарием; остальное runtime/UI-поведение не меняется.
 
 ### Этап 1 — Продающая главная + бесплатная петля ← **следующий шаг**
 
@@ -253,7 +254,7 @@ Acloset £2.99/мес; **полный sweep coin-упоминаний** по в�
 
 | Этап | Обязательно актуализировать |
 |---|---|
-| **0** (этот PR) | `AGENTS.md` (Current Phase + decision-блок + индекс доков), `CLAUDE.md` (Current Phase), `.specify/memory/constitution.md` (§I бизнес-модель → под пересмотром; §III — пометка о Q4), `.specify/memory/market-context.md` (§6 pricing → под пересмотром; §7 coin-risk → снят), `docs_capsule_zero/adr/openapi.yaml` + generated client (coin/Lava surface removed), `docs_capsule_zero/adr/api-spec.md`, `app/.env.local.example`, provisioning runbook and decision-carrying downstream docs (explicit freeze), `.specify/specs/042-product-rebuild-plan/` (Goal/Scope, verification, negative scenario, Process Memory) |
+| **0** (этот PR) | `AGENTS.md` (Current Phase + decision-блок + индекс доков), `CLAUDE.md` (Current Phase), `.specify/memory/constitution.md` (§I бизнес-модель → под пересмотром; §III — пометка о Q4), `.specify/memory/market-context.md` (§6 pricing → под пересмотром; §7 coin-risk → снят), `docs_capsule_zero/adr/openapi.yaml` + generated client (coin/Lava surface removed), `docs_capsule_zero/adr/api-spec.md`, `app/.env.local.example`, provisioning runbook and decision-carrying downstream docs (explicit freeze), `app/src/lib/legal-content.ts` + red/green Playwright-сценарий (фактическая пауза монетизации), `.specify/specs/042-product-rebuild-plan/` (Goal/Scope, verification, negative scenario, Process Memory) |
 | **1** | При закрытии Q4: конституция §III (ахроматичность, error color), `.specify/memory/design-system.md`, `docs_capsule_zero/project/frontend/styling.md`, `app/src/styles/tokens.css`, `docs_capsule_zero/screens/screen-landing.md`, `docs_capsule_zero/features/f-001-landing.md`, `f-002-auth.md`, `screen-auth.md`, `components.md`, `docs_capsule_zero/i18n/ui-texts.md`. При закрытии Q1/Q3: `outfit-generation.md` (определение образа и OPR), `capsule-methodology.md` §7 (лимиты), `gap-analysis.md` (валидации). При закрытии Q6: `colors.md` **или** прототип — одна истина |
 | **2** | `capsule-methodology.md` §6 (basicity из «internal, не используется» → вход алгоритма), `outfit-generation.md` (правила комбинирования), `gap-analysis.md` (Rule 3 + приоритизация), `.specify/specs/001-capsule-zero-mvp/spec.md` (US по рекомендациям) |
 | **3** | `.specify/specs/001-capsule-zero-mvp/spec.md` + `prototype-map.md`, `docs_capsule_zero/screens/**`, `docs_capsule_zero/features/**`, `ux/emotion-map.md` |
