@@ -14,15 +14,15 @@ Land an evidence-backed product reset centered on OPR and value before registrat
 **Storage**: N/A
 **Testing**: API client generation/check, API contract check, `git diff --check`, feature-memory check, repository-baseline check, focused `rg` scans, GitHub required checks
 **Target Platform**: GitHub repository documentation, agent onboarding, and production-shape API contract
-**Project Type**: Product planning plus contract/support retirement; no application behavior
+**Project Type**: Product planning plus contract/support retirement and a bounded live legal-copy correction
 **Performance Goals**: N/A
-**Constraints**: No application runtime behavior, provider implementation, schema, deploy, or Supabase changes; do not decide open founder questions
-**Scale/Scope**: Root plan/research, decision-carrying docs/memory, authoritative OpenAPI/generated output and API/runtime-env guards, support templates/deprecation comments, and one SENAR feature-memory folder
+**Constraints**: No application behavior beyond live legal copy, provider implementation, schema, deploy, or Supabase changes; do not decide open founder questions or future monetization terms
+**Scale/Scope**: Root plan/research, decision-carrying docs/memory, authoritative OpenAPI/generated output and API/runtime-env guards, support templates/deprecation comments, live legal content + one Playwright scenario, and one SENAR feature-memory folder
 
 ## Constitution Check
 
 - Spec-first/SENAR: this folder records Goal, Scope, verification, negative scenarios, and Process Memory before Stage 0 is declared merge-ready.
-- Test-first: narrow waiver applies because the contract/support retirement changes no application behavior; generation, contract, command, and diff evidence replace a failing-test-first loop.
+- Test-first: contract/support retirement keeps the narrow waiver, while the live legal-copy correction uses a committed failing Playwright scenario before the implementation commit.
 - Single source of truth: `PRODUCT-PLAN.md` is canonical until MVP, and changed decision-carrying docs are actualized in the same change.
 - Direct, not dictate: open founder decisions remain open; the plan records options and gates without fabricating approval.
 - No Supabase recoupling: the env deletion and generated-client retirement add no Supabase env, client, workflow, compose, nginx, schema, or provider implementation.
@@ -42,6 +42,7 @@ Land an evidence-backed product reset centered on OPR and value before registrat
 | AC-008 | Path/diff review shows only documentation/memory, OpenAPI/generated output, env deletion, and provider-contract deprecation comments; `git diff --check`, `node scripts/check-api-contract.mjs`, and `node scripts/check-repo-baseline.mjs` exit 0. |
 | AC-009 | `rg -n "Core OPR|Expanded OPR|Запрещённый гибрид|core/all-items hybrid|core-образов / все вещи" PRODUCT-PLAN.md PRODUCT-RESEARCH.md .specify/specs/042-product-rebuild-plan/spec.md` returns both consistent models and the rejected hybrid. |
 | AC-010 | Every tracked decision-carrying downstream document returned by the focused coin/Lava inventory contains `Monetization freeze (2026-07-16)` or is the canonical plan/research/onboarding/feature memory itself. |
+| AC-011 | Red commit: `npm --prefix tests/e2e run test -- specs/landing/legal-monetization-hold.spec.ts --project=chromium` fails because hold copy is absent/retired claims render. Green commit: the same command passes after `app/src/lib/legal-content.ts` is updated; full e2e lint/typecheck and app build also pass. |
 
 Negative scenario evidence:
 
@@ -49,6 +50,7 @@ Negative scenario evidence:
 - NS-002: plan/research evidence for AC-004 confirms Stage 1 rejects arbitrary color ranking when compatible colors tie on Δcore.
 - NS-003: AC-009 confirms optional layers cannot lower OPR under the rejected hybrid accounting.
 - NS-004: AC-008 path evidence confirms no runtime behavior, UI behavior, schema, infrastructure, provider implementation, or Supabase coupling is added.
+- NS-005: AC-011 asserts neither public legal route renders the retired Lava/coin claims while the hold is active.
 
 ## Project Structure
 
@@ -60,8 +62,11 @@ CLAUDE.md
 app/.env.local.example
 app/src/lib/api/generated/openapi.ts
 app/src/lib/providers/contracts.ts
+app/src/lib/legal-content.ts
 scripts/check-api-contract.mjs
 scripts/check-runtime-env.mjs
+tests/e2e/fixtures/locales.ts
+tests/e2e/specs/landing/legal-monetization-hold.spec.ts
 .specify/
 ├── memory/
 │   ├── constitution.md

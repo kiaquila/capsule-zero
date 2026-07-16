@@ -17,6 +17,7 @@ In scope:
 - record the accepted pre-signup value, cancelled coins hypothesis, pending yellow-accent exception, and required garment-cut/basicity input
 - update decision-carrying onboarding, constitution, and market-context documents in the same change
 - remove the superseded coin/Lava surface from OpenAPI, its generated client, API/runtime-env guards, and operational templates; and mark retained provider shapes as deprecated legacy
+- update the live Terms of Use and Privacy Policy so users are not asked to accept the cancelled coin/Lava model while monetization is on hold
 - define two internally consistent OPR models and forbid the core-numerator/all-items-denominator hybrid before Q1 is decided
 - define the four delivery stages, open founder decisions, and a repo-wide Stage 4 monetization-drift sweep
 - provide SENAR goal/scope, verification evidence, negative scenarios, and process memory for Stage 0
@@ -28,6 +29,7 @@ Out of scope:
 - choosing or provisioning a monetization model, payment rail, product, key, webhook, balance, or purchase flow
 - amending the achromatic-interface principle before Q4 is decided
 - deleting every retained legacy provider, fixture, migration, historical spec, and runtime field before Stage 4 selects a model
+- choosing legal/payment terms for a future monetization model before Stage 4 decides it
 
 ## User Scenarios & Testing
 
@@ -57,6 +59,7 @@ As a reviewer, I want cancelled or undecided assumptions clearly bounded so agen
 1. **Given** monetization is undecided, **When** an agent reads the authoritative API or provisioning guidance, **Then** no coin balance, billing operation, payment key/product, or payment webhook is exposed or instructed before Stage 4.
 2. **Given** compatible colors within one garment category produce equal Δcore, **When** Stage 1 presents a recommendation, **Then** it recommends a category or equivalent tied categories, not an unjustified concrete color.
 3. **Given** optional garments exist, **When** OPR and recommendation deltas are defined, **Then** the same chosen model counts their contribution and denominator consistently rather than lowering OPR by construction.
+4. **Given** public legal routes are live, **When** a user opens Terms or Privacy during Stages 1–3, **Then** the documents disclose that monetization/payment is inactive and do not bind the user to coins or Lava.top.
 
 ### User Story 3 - Preserve auditable completion memory (Priority: P1)
 
@@ -76,6 +79,7 @@ As the merge owner, I want the planning PR to satisfy SENAR so Stage 0 completio
 - Existing downstream coin references remain discoverable before Stage 4; active OpenAPI/codegen/provisioning surfaces must be removed now, while every retained source is explicitly frozen and a repo-wide search remains required for final deletion/replacement.
 - A concrete color may be named later only if Stage 2 adds a separate color-gap/preference signal; Δcore alone cannot break the tie.
 - Optional layers cannot use zero numerator contribution while remaining in the OPR denominator; Q1 must choose Core OPR with a core-only denominator or Expanded OPR with optional-layer contributions.
+- Public legal copy cannot be treated as historical doc debt because users accept it now; it must describe the current hold while preserving future consumer rights conditionally.
 - The pending yellow CTA remains a founder decision because it conflicts with the current achromatic constitution and error semantics.
 
 ## Negative Scenarios
@@ -84,6 +88,7 @@ As the merge owner, I want the planning PR to satisfy SENAR so Stage 0 completio
 2. **Given** Stage 1 has no independent color signal, **When** multiple compatible colors tie on Δcore, **Then** the plan rejects arbitrary color-specific ranking and exposes only category-level or equivalent tied recommendations.
 3. **Given** an optional layer is added, **When** OPR is evaluated, **Then** the plan rejects the hybrid that increments the denominator while assigning the layer zero numerator contribution.
 4. **Given** this planning PR retires a contract surface, **When** its scope is inspected, **Then** it must not add runtime behavior, UI behavior, deployment wiring, schema, infrastructure, or Supabase coupling.
+5. **Given** no monetization/payment flow is active, **When** Terms and Privacy render, **Then** they must not claim that users can purchase coins, that Lava.top processes payments, or that billing/coin data is currently collected.
 
 ## Acceptance Criteria
 
@@ -97,10 +102,11 @@ As the merge owner, I want the planning PR to satisfy SENAR so Stage 0 completio
 - **AC-008**: Outside contract retirement, generated output, env cleanup, and deprecation comments, this PR changes no application behavior, deployment workflow, compose file, nginx config, schema, or provider implementation.
 - **AC-009**: Q1 presents only internally consistent Core and Expanded OPR models, explicitly rejects core/all-items hybrid accounting, and gates hero/ranking numbers until one model is chosen.
 - **AC-010**: Every decision-carrying downstream document with retained coin/Lava guidance marks it superseded and non-actionable now rather than deferring its authority to Stage 4.
+- **AC-011**: Live Terms and Privacy state the current monetization hold, remove active coin/Lava/payment-processing and data-collection claims, and are covered by a committed failing-then-passing Playwright scenario.
 
-## TDD Waiver
+## TDD Evidence
 
-This spec changes product-planning/source-of-truth documentation and retires a superseded API surface through OpenAPI, generated types, API/runtime-env guards, an env template, and deprecation comments. It does not change web UI, React Native behavior, Go API behavior, or any other application behavior; infrastructure/docs/support changes are outside the failing-test-first loop under `tests/README.md`, so the TDD rule for specs ≥ 025 does not apply. SENAR is not waived: generation/contract/env checks, command evidence, and negative-scenario checks are recorded in `plan.md`, and Process Memory is recorded in `tasks.md`.
+Planning, OpenAPI, generated types, guards, env, and deprecation comments are support artifacts outside the application TDD loop. Updating `app/src/lib/legal-content.ts` changes user-visible web behavior, so AC-011 follows the mandatory red/green history: first commit the Playwright scenario and verify that it fails because the current Terms/Privacy lack the hold and expose retired claims; then update legal content in a later commit and verify the same scenario passes. SENAR, generation/contract/env checks, and required CI remain mandatory.
 
 ## Requirements
 
@@ -115,11 +121,12 @@ This spec changes product-planning/source-of-truth documentation and retires a s
 - **FR-007**: Documentation changes MUST preserve the production-stack, no-Supabase, locale, TDD, and PR-gate contracts.
 - **FR-008**: The authoritative API and code generation MUST NOT expose the cancelled coin/Lava contract before Stage 4 selects a replacement.
 - **FR-009**: OPR MUST use a numerator and denominator that treat optional-layer contribution consistently; the core/all-items hybrid is forbidden.
+- **FR-010**: Public legal documents MUST describe the current free/no-payment posture and MUST NOT assert active coins, Lava.top processing, billing collection, or purchase/refund flows before Stage 4.
 
 ## Success Criteria
 
 ### Measurable Outcomes
 
-- **SC-001**: All ten acceptance criteria have command or diff evidence in `plan.md`.
+- **SC-001**: All eleven acceptance criteria have command or diff evidence in `plan.md`.
 - **SC-002**: The feature-memory and repository-baseline checks exit 0 on the final commit.
 - **SC-003**: The final PR head has no unresolved blocking Codex review threads and all required GitHub checks pass.
