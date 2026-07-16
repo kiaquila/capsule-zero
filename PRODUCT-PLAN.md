@@ -153,7 +153,8 @@
 
 ### Этап 0 — Фиксация плана ✅ (этот PR)
 
-План, исследование, указатели в документации. Кода нет.
+План, исследование, указатели в документации и SENAR-память
+`.specify/specs/042-product-rebuild-plan/`. Кода нет.
 
 ### Этап 1 — Продающая главная + бесплатная петля ← **следующий шаг**
 
@@ -242,11 +243,17 @@ Acloset £2.99/мес; **полный sweep coin-упоминаний** по в�
 
 | Этап | Обязательно актуализировать |
 |---|---|
-| **0** (этот PR) | `AGENTS.md` (Current Phase + decision-блок + индекс доков), `CLAUDE.md` (Current Phase), `.specify/memory/constitution.md` (§I бизнес-модель → под пересмотром; §III — пометка о Q4), `.specify/memory/market-context.md` (§6 pricing → под пересмотром) |
+| **0** (этот PR) | `AGENTS.md` (Current Phase + decision-блок + индекс доков), `CLAUDE.md` (Current Phase), `.specify/memory/constitution.md` (§I бизнес-модель → под пересмотром; §III — пометка о Q4), `.specify/memory/market-context.md` (§6 pricing → под пересмотром; §7 coin-risk → снят), `.specify/specs/042-product-rebuild-plan/` (Goal/Scope, verification, negative scenario, Process Memory) |
 | **1** | При закрытии Q4: конституция §III (ахроматичность, error color), `.specify/memory/design-system.md`, `docs_capsule_zero/project/frontend/styling.md`, `app/src/styles/tokens.css`, `docs_capsule_zero/screens/screen-landing.md`, `docs_capsule_zero/features/f-001-landing.md`, `f-002-auth.md`, `screen-auth.md`, `components.md`, `docs_capsule_zero/i18n/ui-texts.md`. При закрытии Q1/Q3: `outfit-generation.md` (определение образа и OPR), `capsule-methodology.md` §7 (лимиты), `gap-analysis.md` (валидации). При закрытии Q6: `colors.md` **или** прототип — одна истина |
 | **2** | `capsule-methodology.md` §6 (basicity из «internal, не используется» → вход алгоритма), `outfit-generation.md` (правила комбинирования), `gap-analysis.md` (Rule 3 + приоритизация), `.specify/specs/001-capsule-zero-mvp/spec.md` (US по рекомендациям) |
 | **3** | `.specify/specs/001-capsule-zero-mvp/spec.md` + `prototype-map.md`, `docs_capsule_zero/screens/**`, `docs_capsule_zero/features/**`, `ux/emotion-map.md` |
-| **4** | **Sweep всех coin-упоминаний** (на 2026-07-16 — 16 файлов): конституция §I и §III (Canva credit model), `market-context.md` §6, `AGENTS.md` (Key constraints, Phase-4 таблица), `docs_capsule_zero/adr/api-spec.md`, `adr-001-stack.md`, `adr-002-auth.md`, `launch/launch-plan.md`, `project/backend/backend-docs.md`, `project/frontend/frontend-docs.md`, `project/mobile/mobile-docs.md`, `project/methodology/capsule-methodology.md` §7, `i18n/ui-texts.md`, `marketing/go-to-market.md`, `project/architecture/phase-4-council.md`, `phase-5-entrance-checklist.md`, `project/devops/sprint-0-runtime-provisioning.md`, `mobile/README.md` |
+| **4** | **Repo-wide sweep всех coin-контрактов и упоминаний — ручной список не считается полным.** На старте этапа запустить обязательную inventory-команду ниже по tracked docs, OpenAPI, generated clients, fixtures и runtime-коду; каждое совпадение удалить либо актуализировать под выбранную в Stage 4 модель и явно классифицировать сохранённую историю как superseded. В текущий seed-инвентарь помимо основных ADR/доков входят `docs_capsule_zero/project/backend/backend-stateful-slices-plan.md`, `docs_capsule_zero/adr/adr-006-mock-first-mvp-stage-one.md`, `docs_capsule_zero/adr/openapi.yaml`, generated OpenAPI client, provider contracts/fixtures и legal copy. Если coins не приняты заново, после sweep не остаётся ни одного активного coin-сценария, схемы, API-контракта или инструкции; если приняты — все сохранённые контракты должны быть переписаны и проверены как новое решение, а не унаследованы молча. |
+
+Обязательная Stage-4 inventory-команда (фиксированный список файлов её не заменяет):
+
+```bash
+git ls-files -z | xargs -0 rg -l -i -- '\bcoins?\b|коин'
+```
 
 ---
 

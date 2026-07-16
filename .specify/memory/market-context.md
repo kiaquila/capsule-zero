@@ -125,4 +125,4 @@ Inputs Stage 4 starts from:
 | Naming conflict with CAPSULE (ApS) | Medium | "Capsule Zero" is distinct. Monitor trademark. |
 | Low initial user base for B2B | High | Build B2C first (1K–5K active users minimum). |
 | Wardrobe upload friction | High | 3-step guided journey + 3 upload methods + semantic search |
-| Coin conversion sensitivity | Medium | Free tier provides real value. Coin pricing stays low-friction. |
+| Monetization-model uncertainty | High | Do not optimize coins, pricing, balances, or a provider before `PRODUCT-PLAN.md` Stage 4 compares models against real loop metrics and selects the model and rail. |
