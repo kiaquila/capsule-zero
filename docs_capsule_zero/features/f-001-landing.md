@@ -34,6 +34,7 @@
 4. Language switcher (EN/RU in v0.1) visible next to Log In
 5. Page load < 2 seconds on 4G; passes the "screenshot test"
 6. Responsive: iPhone 14+ (375px), iPad (768px), Desktop 1280px+
+7. Decorative scroll-cue does not animate when `prefers-reduced-motion: reduce`
 
 ## Key Components
 - **LandingPage** — fold (header + hero) + slides stub + footer; reuses `AuthPanel` (popup, `initialMode`), `LanguageSwitcher`, `CookieBanner`

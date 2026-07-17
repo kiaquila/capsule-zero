@@ -1,11 +1,12 @@
 # 044 — Tasks
 
-- [ ] T001 Спека 044 (spec/plan/tasks) — фиксация фаундерских решений слайса
-- [ ] T002 Red: POM-расширение `LandingPage.ts` + `specs/landing/hero.spec.ts`, red-прогон, коммит
-- [ ] T003 Green: `LandingPage.tsx` (+ `LandingSlidesStub`) + `landing-*` CSS + messages; gold/CTA-семья остаётся в `@theme static`
-- [ ] T004 Живой design-review (desktop 1280 / mobile 375, RU+EN) + code review, фиксы
-- [ ] T005 Доки тем же изменением: screen-landing, f-001-landing, ui-texts, PRODUCT-PLAN, §9.11(d)
-- [ ] T006 Verification-таблица + Process Memory + PR c SENAR Done Gate
+- [x] T001 Спека 044 (spec/plan/tasks) — фиксация фаундерских решений слайса
+- [x] T002 Red: POM-расширение `LandingPage.ts` + `specs/landing/hero.spec.ts`, red-прогон, коммит
+- [x] T003 Green: `LandingPage.tsx` (+ `LandingSlidesStub`) + `landing-*` CSS + messages; gold/CTA-семья остаётся в `@theme static`
+- [x] T004 Живой design-review (desktop 1280 / mobile 375, RU+EN) + code review, фиксы
+- [x] T005 Доки тем же изменением: screen-landing, f-001-landing, ui-texts, PRODUCT-PLAN, §9.11(d)
+- [x] T006 Verification-таблица + Process Memory + PR c SENAR Done Gate
+- [x] T007 Native Codex P2: reduced-motion red (`5e355a5`) → green (`5eba941`), полный повторный прогон и refresh PR evidence
 
 ## Process Memory
 
@@ -31,8 +32,9 @@
   origin/main: hero потребляет `--color-gold-500` и `--btn-cta-*` через `var()` из static-блока
   (эмитится всегда), а `--color-gold-450` без `var()`-потребителя нельзя держать в обычном `@theme`
   (вырежется). Комментарий static-блока актуализирован.
-- **`LandingPage()` 86 строк > soft-gate 60** (по code-review P2): заглушка вынесена в
-  `LandingSlidesStub` (101→86), дальше не дробим — это корень страницы, связно композящий
+- **`LandingPage()` 90 строк по lint-счётчику > soft-gate 60** (по code-review P2): заглушка
+  вынесена в `LandingSlidesStub` (101→86; затем +4 строки стабильного `scroll-cue` testid для
+  reduced-motion POM), дальше не дробим — это корень страницы, связно композящий
   header/hero/footer/auth-popover; дробление ради счётчика ухудшило бы читаемость. Обоснование по
   §7 — в теле PR. Warning, не CI-фейл.
 - **Header-паддинг ограничен лендингом** (по code-review P2): `.landing-header`/`.landing-logo`
@@ -43,6 +45,10 @@
   (точное совпадение); фон заглушки `.05` → `--color-white-a04` (+.01, имперцептно); dashed-бордер
   заглушки `.28` → `--color-white-a24` (−.04, заглушка post-MVP — не прецедент); футер `.58` —
   текущий футер уже сидит на `--glass-border` (.58, точное совпадение), сохраняем.
+- **Reduced motion (native Codex P2, 2026-07-17):** бесконечная декоративная анимация
+  `landing-cue` отключается при `prefers-reduced-motion: reduce`. Исправление доставлено новым
+  TDD-циклом: красный контракт `5e355a5` (`landing-cue` вместо `none`) → green `5eba941`; один
+  и тот же тест прошёл в Chromium и WebKit/iPhone, полный landing-suite — 32/32.
 
 ### Dead Ends
 
@@ -57,7 +63,8 @@
   (б) при 5 параллельных chromium-воркерах на этой машине клики уходят в ещё-не-гидрированный HTML
   (кнопка получает фокус, React-обработчик молчит — cookie-баннер не отцепляется), и ~12-секундных
   окон POM не хватает. Ручной клик работает; одиночные спеки зелёные; webkit зелёный.
-  **Контрольный прогон в форме CI — `--workers=2`, свежий бут: 30/30 passed за 20 с.**
+  **Финальный контрольный прогон в форме CI — `--workers=2`, свежий production build:
+  32/32 passed за 12.2 с.**
   Не гонять локально полный набор дефолтными 5 воркерами как критерий истины; `next build`
   параллельно с dev-сервером на общем `.next` не запускать вообще (ломает сьют).
 - **`… | tail -N; echo EXIT:$?` маскирует код выхода** — пайп возвращает код `tail`. Для

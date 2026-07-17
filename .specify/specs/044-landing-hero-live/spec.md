@@ -19,7 +19,8 @@ PRODUCT-PLAN §4) CTA «Попробовать бесплатно» **време
   `data-testid="auth-trigger"` и режим входа); центрированный hero — H1 Helvetica 200 uppercase
   `clamp(32px, 5.4vw, 60px)` в две строки по два слова, sub 18px/400, CTA-pill 56px на
   `--btn-cta-*` (`data-testid="hero-cta"`, открывает `AuthPanel` popup с `initialMode="signUp"`),
-  scroll-cue; заглушка «Как это работает» строго под фолдом; футер прежний (testid'ы сохранены);
+  scroll-cue (без анимации при `prefers-reduced-motion: reduce`); заглушка «Как это работает»
+  строго под фолдом; футер прежний (testid'ы сохранены);
   `CookieBanner`/`LanguageSwitcher`/`AuthPanel` переиспользуются без изменений.
 - `app/src/app/globals.css` — `landing-*` правила переписаны на токены (ghost-логин на
   `--btn-ghost-*`; заглушка/футер на ступени alpha-ramp'а; sub — литерал `.78` по
@@ -31,7 +32,7 @@ PRODUCT-PLAN §4) CTA «Попробовать бесплатно» **време
 - `app/src/messages/en.json` / `ru.json` — hero-копия по утверждённому прототипу (RU на «ты»),
   копирайт `© 2026`.
 - `tests/e2e/` — расширение POM `LandingPage.ts` + новый `specs/landing/hero.spec.ts`
-  (TDD red→green; негативы внутри).
+  (TDD red→green; негативы sign-in/stub/reduced-motion внутри).
 - Доки тем же изменением: `docs_capsule_zero/screens/screen-landing.md`,
   `docs_capsule_zero/features/f-001-landing.md`, `docs_capsule_zero/i18n/ui-texts.md`,
   PRODUCT-PLAN.md (interim-CTA решение), `design-system.md` §9.11(d) (отметка о реализации).
@@ -58,9 +59,12 @@ PRODUCT-PLAN §4) CTA «Попробовать бесплатно» **време
   (негатив) на десктопе (chromium Desktop Chrome) и мобайле (webkit iPhone 14).
 - **AC-004:** футер, куки-баннер и переключатель языка сохранены: существующие лендинг-спеки
   (`cookie-banner`, `legal-links`, `design-tokens`, `social-preview`) зелёные без правок.
+- **AC-005:** при системной/браузерной настройке `prefers-reduced-motion: reduce` декоративный
+  scroll-cue статичен (`animation-name: none`); бесконечное вертикальное движение отсутствует.
 
 ## Negative scenario
 
-Покрыт AC-002 (signIn-форма отсутствует в попапе, открытом из hero-CTA) и AC-003 (заглушка
-слайдов не видна в первом вьюпорте). Регрессия любого из них роняет `hero.spec.ts` и блокирует
-merge через required-check `test`.
+Покрыт AC-002 (signIn-форма отсутствует в попапе, открытом из hero-CTA), AC-003 (заглушка
+слайдов не видна в первом вьюпорте) и AC-005 (декоративная стрелка не продолжает бесконечную
+анимацию при reduced motion). Регрессия любого из них роняет `hero.spec.ts` и блокирует merge
+через required-check `test`.

@@ -533,7 +533,8 @@ the error family.
 uppercase `clamp(32px, 5.4vw, 60px)`, forced to two words per line on desktop; sub 18px/400 at
 secondary `.78`; CTA pill 56px on `--btn-cta-*`, label «Попробовать бесплатно» / "Try for free",
 no arrow, no micro-line under the button; ghost login 34px top-right; first screen = exactly one
-viewport (the "How it works" slides stub sits strictly below the fold). RU copy: «Создай свою /
+viewport (the "How it works" slides stub sits strictly below the fold); the decorative scroll cue
+must stop animating under `prefers-reduced-motion: reduce`. RU copy: «Создай свою /
 гардеробную капсулу» + «Загрузи несколько фото любимых вещей — и узнай, что добавить, чтобы
 образов на каждый день стало больше». **Implemented live in `/app` by spec 044 (2026-07-17)** —
 `LandingPage.tsx` + `LandingSlidesStub.tsx` + `landing-*` rules consuming the `--btn-cta-*`/gold

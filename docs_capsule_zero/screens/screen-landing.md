@@ -44,7 +44,7 @@ Prototype: `html-prototypes/landing-v2/v1c-final.html` (утверждён фа�
 - **Primary CTA:** gold pill 56px на `--btn-cta-*` («Попробовать бесплатно» / "Try for free"), без стрелки и микро-подписи; `data-testid="hero-cta"`
 - **Ghost login:** «Войти», 34px min-height, прозрачный с hover `--btn-ghost-bg`; `data-testid="auth-trigger"`
 - **Language Switcher:** существующий компонент (EN/RU в v0.1; ES-AR отложен на v0.2), рядом с «Войти»
-- **Scroll cue:** «▾» с мягкой анимацией, aria-hidden
+- **Scroll cue:** «▾» с мягкой анимацией, aria-hidden; статичен при `prefers-reduced-motion: reduce`
 - **Slides stub:** секция-заглушка «Как это работает» (контент — post-MVP), строго под фолдом; `data-testid="slides-stub"`
 - **Footer:** Условия · Конфиденциальность · Настройки cookie · © 2026 (testid'ы сохранены)
 - **Cookie Banner:** существующий glass-компонент
