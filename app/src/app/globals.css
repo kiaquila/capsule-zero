@@ -234,6 +234,7 @@
 .profile-field-error {
   /* §9.7 скрим-чип (043): контраст --color-error-text посчитан на --color-scrim */
   display: inline-block;
+  width: fit-content;
   padding: 3px 8px;
   border-radius: var(--radius-sm);
   background: var(--color-scrim);
@@ -1047,6 +1048,7 @@ textarea {
 .auth-field-message-error {
   /* §9.7 скрим-чип (043) */
   display: inline-block;
+  width: fit-content;
   padding: 3px 8px;
   border-radius: var(--radius-sm);
   background: var(--color-scrim);
@@ -1136,6 +1138,7 @@ textarea {
 .auth-server-message-error {
   /* §9.7 скрим-чип (043) */
   display: inline-block;
+  width: fit-content;
   padding: 3px 8px;
   border-radius: var(--radius-sm);
   background: var(--color-scrim);
@@ -1254,6 +1257,7 @@ textarea {
    нейтральными; красный + §9.7 скрим-чип — только для ошибок */
 .verify-email-status-error {
   display: inline-block;
+  width: fit-content;
   padding: 3px 8px;
   border-radius: var(--radius-sm);
   background: var(--color-scrim);
@@ -2879,6 +2883,7 @@ textarea {
   /* §9.7 скрим-чип (043); .journey-field-note несёт только warning-контент
      (incompatible-color, upload/link errors) */
   display: inline-block;
+  width: fit-content;
   padding: 3px 8px;
   border-radius: var(--radius-sm);
   background: var(--color-scrim);
@@ -5162,6 +5167,7 @@ textarea {
 .capsule-result-picker-blocked {
   /* §9.7 скрим-чип (043) */
   display: inline-block;
+  width: fit-content;
   margin-top: 8px;
   padding: 3px 8px;
   border-radius: var(--radius-sm);
@@ -5904,6 +5910,7 @@ textarea {
 .my-items-field small {
   /* §9.7 скрим-чип (043) */
   display: inline-block;
+  width: fit-content;
   padding: 3px 8px;
   border-radius: var(--radius-sm);
   background: var(--color-scrim);

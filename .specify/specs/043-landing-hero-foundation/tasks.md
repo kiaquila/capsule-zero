@@ -57,6 +57,10 @@
   journey-validation-warn/journey-field-note, capsule-result-picker-blocked, my-items-field
   small). Тонированные панели (`.profile-warning`) и подложки (`.my-items-photo-error`) не
   тронуты — у них уже есть фон; полная компонентная развёртка скрим-паттерна остаётся за 039 T007.
+- **P2 (третий раунд, flex-stretch):** в flex-колонках (`.profile-field` и т.п.) `align-items:
+  stretch` растягивал inline-block-чип на всю ширину — во все 7 чип-правил добавлен
+  `width: fit-content`. Повторный auth-finding Codex на этом раунде — устаревший (фон уже влит в
+  то же правило); отвечено фактом в тред.
 - **P2 (второй раунд, verify-email):** `.verify-email-status` рендерил и info-статус («письмо
   отправлено»), и ошибку одним классом — error-стайлинг вынесен в вариант
   `.verify-email-status-error` (условный класс по той же предикате, что и существующие
