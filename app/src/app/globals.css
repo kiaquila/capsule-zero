@@ -232,7 +232,7 @@
 }
 
 .profile-field-error {
-  color: var(--color-error);
+  color: var(--color-error-text);
   font-size: 11px;
   line-height: 1.35;
 }
@@ -403,7 +403,7 @@
   border: 1px solid var(--color-error-border-soft);
   border-radius: var(--radius-sm);
   background: var(--color-error-bg);
-  color: var(--color-error);
+  color: var(--color-error-text);
   font-size: 11.5px;
   line-height: 1.45;
   padding: 7px 10px;
@@ -1040,7 +1040,7 @@ textarea {
 }
 
 .auth-field-message-error {
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 
 .auth-forgot-row {
@@ -1124,7 +1124,7 @@ textarea {
 
 /* Error variant of the server message — overrides the neutral colour above. */
 .auth-server-message-error {
-  color: var(--color-error);
+  color: var(--color-error-text);
   font-weight: 600;
 }
 
@@ -1231,7 +1231,7 @@ textarea {
 
 .verify-email-status {
   margin: 0;
-  color: var(--color-error);
+  color: var(--color-error-text);
   font-size: 13px;
 }
 
@@ -2851,7 +2851,7 @@ textarea {
 
 .journey-validation-warn,
 .journey-field-note {
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 
 .journey-category-panel {
@@ -5130,7 +5130,7 @@ textarea {
 
 .capsule-result-picker-blocked {
   margin-top: 8px;
-  color: var(--color-error);
+  color: var(--color-error-text);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -5816,7 +5816,7 @@ textarea {
   max-width: calc(100% - 24px);
   border-radius: var(--radius-pill);
   background: var(--color-backdrop);
-  color: var(--color-error);
+  color: var(--color-error-text);
   font-size: 11px;
   line-height: 1.35;
   padding: 5px 9px;
@@ -5866,7 +5866,7 @@ textarea {
 }
 
 .my-items-field small {
-  color: var(--color-error);
+  color: var(--color-error-text);
   font-size: 11px;
   line-height: 1.35;
 }
@@ -6113,7 +6113,7 @@ textarea {
 .for-repair-delete-button {
   border-color: var(--color-error-border-soft);
   background: var(--color-error-bg);
-  color: var(--color-error);
+  color: var(--color-error-text);
 }
 
 .dashboard-more-item-active {
