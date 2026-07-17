@@ -44,7 +44,12 @@ The web frontend talks to the Go API monolith through nginx; there is no Vercel 
 - Open Graph and Twitter Card image URLs are resolved against `https://capsulezero.app`; crawler-facing metadata must never inherit a localhost or request-specific origin.
 - The canonical preview image is `app/public/social/capsule-zero-homepage.png`, a 1200x630 screenshot of the production English landing page without consent, auth, browser, or development overlays.
 - Open Graph declares the image dimensions and alt text. Twitter uses the same asset with `summary_large_image` so clients do not drift visually.
-- Refresh the screenshot and its e2e expectations whenever the landing hero materially changes. Keep the asset below the platform image-size ceiling and do not replace it with generated brand artwork unless the product decision changes.
+- `social-preview.spec.ts` pins the committed PNG's SHA-256 so a stale or accidental replacement
+  cannot pass on URL/content-type alone.
+- Refresh the screenshot and its digest expectation whenever the landing hero materially changes.
+  Keep the asset below the platform image-size ceiling and do not replace it with generated brand
+  artwork unless the product decision changes. The spec-044 hero refresh was captured from its
+  production build on 2026-07-17.
 
 ## Routing
 

@@ -2,8 +2,14 @@
 
 **Feature Branch**: `codex/stage-1-landing-auth`
 **Created**: 2026-06-07
-**Status**: Draft
+**Status**: Implemented — historical delivery record
 **Input**: User description: "Implement the next plan step: landing + email/password auth in mock-first mode, include docs cleanup, open locally in Chrome for review before preparing the PR."
+
+> **Superseded scope note (2026-07-17):** this spec records the original June Stage-1 delivery.
+> Its landing visual/behavior contract is superseded by the founder-approved specs 043/044 and
+> `html-prototypes/landing-v2/v1c-final.html`. Its mock-first/runtime and pre-OIDC auth statements
+> are superseded by spec 024, spec 037, and the current AGENTS.md production-stack contract. Do not
+> use this file to reintroduce the retired landing or backend posture.
 
 ## Goal
 
@@ -13,7 +19,8 @@ Stage 1 visitors can experience the approved premium landing page, switch langua
 
 In scope:
 
-- Implement locale-aware landing route using `html-prototypes/index.html`, `app/public/wall.png`, and `docs_capsule_zero/i18n/ui-texts.md`.
+- Original delivery used `html-prototypes/index.html`; current landing authority is spec 044,
+  `html-prototypes/landing-v2/v1c-final.html`, and `docs_capsule_zero/i18n/ui-texts.md`.
 - Implement standalone auth route and landing auth popup using `html-prototypes/auth.html`.
 - Add minimal `next-intl` routing and messages for active MVP v1 locales `en` and `ru`.
 - Keep the app dependency lockfile valid for CI clean installs after adding `next-intl`.
@@ -38,11 +45,13 @@ As a new visitor, I want to see the approved editorial landing page with a langu
 
 **Why this priority**: Landing is the first user-facing Phase 5 screen and the entry point for Stage 1 auth.
 
-**Independent Test**: Open `/en` and `/ru` locally in Chrome and verify the wallpaper, manifesto, language switcher, auth CTA, footer, and cookie banner render without layout overlap.
+**Independent Test**: Historical verification covered `/en` and `/ru`; current landing acceptance
+and automated evidence live in spec 044.
 
 **Acceptance Scenarios**:
 
-1. **Given** a visitor opens the landing route, **When** the page loads, **Then** the approved wallpaper background, manifesto headline/subtitle, language switcher, auth CTA, footer, and cookie banner are visible.
+1. **Given** a visitor opens the current landing route, **When** the page loads, **Then** the spec-044
+   product-value hero, language switcher, gold CTA, ghost login, footer, and cookie banner are visible.
 2. **Given** a visitor changes language, **When** they select EN or RU, **Then** landing/auth UI text changes through locale routing without a full browser reload.
 
 ### User Story 2 - Stage 1 Email Auth (Priority: P2)

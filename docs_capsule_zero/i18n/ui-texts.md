@@ -75,14 +75,21 @@
 
 ## Landing Page
 
+> Hero-копия утверждена фаундером в спеке 043 (прототип `landing-v2/v1c-final.html`) и реализована
+> в живом `/app` спекой 044. RU-тон лендинга — «ты» (решение 2026-07-17); остальной продукт — «вы».
+> Прежний манифест «When new money mindset…» отставлен вместе с постерным лендингом.
+
 | Element | EN | ES-AR | RU |
 |---------|-----|-------|-----|
-| Hero headline | When new money mindset meets old money taste | Cuando la mentalidad new money se encuentra con el gusto old money | Когда мышление new money встречает вкус old money |
-| Hero subtitle | For those who find their way to Capsule Zero — a wardrobe management platform for slow fashion devotees and connoisseurs of aesthetics. | Para quienes encuentran su camino a Capsule Zero — una plataforma de gestión de guardarropa para devotos del slow fashion y connoisseurs de la estética. | Для тех, кто находит свой путь к Capsule Zero — платформе управления гардеробом для поклонников осознанной моды и ценителей эстетики. |
-| Auth CTA (header) | Log In | Iniciar sesión | Войти |
+| Hero headline (2 строки) | Create your / capsule wardrobe | Creá tu / armario cápsula | Создай свою / гардеробную капсулу |
+| Hero subtitle | Upload a few photos of the clothes you love — and see what to add for more everyday outfits | Subí unas fotos de tu ropa favorita — y descubrí qué agregar para tener más outfits de todos los días | Загрузи несколько фото любимых вещей — и узнай, что добавить, чтобы образов на каждый день стало больше |
+| Primary CTA (hero, gold) | Try for free | Probá gratis | Попробовать бесплатно |
+| Auth CTA (header, ghost) | Log In | Iniciar sesión | Войти |
+| How it works (stub head) | How it works — slides will land here | Cómo funciona — los slides van a aparecer acá | Как это работает — слайды появятся здесь |
+| Stub card | Reserved: step {n} | Reservado: paso {n} | Зарезервировано: шаг {n} |
 | Footer: Terms | Terms of Use | Términos de Uso | Условия использования |
 | Footer: Privacy | Privacy Policy | Política de Privacidad | Политика конфиденциальности |
-| Footer: Copyright | © 2025 Capsule Zero | © 2025 Capsule Zero | © 2025 Capsule Zero |
+| Footer: Copyright | © 2026 Capsule Zero | © 2026 Capsule Zero | © 2026 Capsule Zero |
 | Cookie banner | We use cookies to improve your experience. By continuing you accept our Cookie Policy. | Usamos cookies para mejorar tu experiencia. Al continuar, aceptás nuestra Política de Cookies. | Мы используем куки для улучшения работы сервиса. Продолжая использование, вы принимаете нашу Политику куки. |
 | Cookie: Accept | Accept | Aceptar | Принять |
 | Cookie: Settings | Settings | Configuración | Настройки |

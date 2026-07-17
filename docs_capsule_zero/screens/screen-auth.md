@@ -2,7 +2,8 @@
 
 URL: /auth (standalone) or popup on landing
 Feature: features/f-002-auth.md
-Prototype: `html-prototypes/auth.html`, `html-prototypes/index.html` (popup)
+Prototype: `html-prototypes/auth.html`; popup host: live `LandingPage` + reusable `AuthPanel`
+(spec 044). `html-prototypes/index.html` is historical.
 
 ## Desktop Layout — Registration
 

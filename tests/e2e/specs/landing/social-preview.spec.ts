@@ -1,8 +1,12 @@
+import { createHash } from "node:crypto";
+
 import { expect, test } from "../../fixtures/base";
 
 const productionOrigin = "https://capsulezero.app";
 const previewPath = "/social/capsule-zero-homepage.png";
 const previewUrl = `${productionOrigin}${previewPath}`;
+const previewSha256 =
+  "7dec0fb0ee8e660806518e9d25ee1769ad2f7954af7e888cd4c83c79da566418";
 
 test.describe("Landing — social link preview", () => {
   test("publishes a production-ready large image card", async ({
@@ -31,5 +35,8 @@ test.describe("Landing — social link preview", () => {
     const image = await request.get(previewPath);
     expect(image.ok()).toBeTruthy();
     expect(image.headers()["content-type"]).toContain("image/png");
+    expect(createHash("sha256").update(await image.body()).digest("hex")).toBe(
+      previewSha256,
+    );
   });
 });

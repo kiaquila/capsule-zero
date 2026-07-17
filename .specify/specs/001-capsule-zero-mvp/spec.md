@@ -5,6 +5,12 @@
 **Status**: Ready for Development
 **Source Documents**: FVD v1.2, User Stories v1.4, Styling Guide v1.3, Emotion Map v1.0, UX Validation v1.0
 
+> **Product authority update (2026-07-17):** `PRODUCT-PLAN.md` is canonical until MVP. US-001
+> and its prototype mapping below incorporate the founder-approved landing contract from specs
+> 043/044. The former poster-style landing is retained only in `html-prototypes/index.html` as a
+> historical artifact. The old mock-first runtime decision is superseded by the production-stack
+> contract in AGENTS.md and spec 024.
+
 ## Overview
 
 25 user stories (24 MUST-HAVE + 1 NICE-TO-HAVE). Persona: Intentional Curator, 25–40, upper-middle income.
@@ -19,41 +25,54 @@
 - Item addition/replacement validated against palette compatibility
 - 1 free capsule per user (additional in v0.2)
 - Killer features: marketplace link import + semantic search from shared DB
-- Stage 1 implementation is mock-first for external services; Google OAuth and Apple Sign-In are deferred to MVP Stage 2
+- Production uses the Go/Kratos `api` provider; `mock` remains for local/CI fixtures, and the frozen
+  Supabase provider must not be extended. Google sign-in is available when enabled (spec 037);
+  Apple Sign-In is deferred to Stage 2
 
 ## User Scenarios & Testing
 
 ### US-001 — Landing Page (Priority: P1)
 
-As a new user, I want to see a premium landing page with B&W editorial hero so I immediately understand the product positioning and want to register.
+As a new user, I want to see a premium editorial landing page with a clear product-value hero so I
+immediately understand what Capsule Zero does and can start from one primary CTA.
 
 **Emotional target:** ATTRACTION — "This is not another clothes app — this is something else"
 
-**Prototype:** `html-prototypes/index.html`
+**Prototype:** `html-prototypes/landing-v2/v1c-final.html` (founder-approved); live contract and
+verification: `.specify/specs/044-landing-hero-live/`
 
 **Acceptance Scenarios:**
 
-1. **Given** a new visitor, **When** the page loads, **Then** full-screen B&W photo with manifesto headline is centered, registration button in top-right corner
-2. **Given** any visitor, **When** they view the page, **Then** language switcher (EN/RU in MVP v1) is visible next to registration
-3. **Given** any device, **When** page loads on 4G, **Then** load time < 2 seconds
-4. **Given** iPhone 14+, iPad, or desktop 1280px+, **Then** layout is responsive and adaptive
-5. **Given** the page, **When** user evaluates it, **Then** it passes the "screenshot test"
+1. **Given** a new visitor, **When** the page loads, **Then** the one-viewport B&W wallpaper hero shows
+   the gold logo, a two-line product-value headline, supporting copy, and one gold primary CTA
+2. **Given** any visitor, **When** they view the header, **Then** the EN/RU language switcher and a
+   secondary ghost Log In action are visible without competing with the primary CTA
+3. **Given** the guest tool is not yet shipped, **When** the visitor selects the hero CTA, **Then** the
+   existing auth popup opens in sign-up mode as the explicitly temporary spec-044 route
+4. **Given** the first viewport, **When** the page renders, **Then** below-fold content does not intersect
+   the hero and decorative motion stops when `prefers-reduced-motion: reduce`
+5. **Given** any device, **When** page loads on 4G, **Then** load time < 2 seconds
+6. **Given** iPhone 14+, iPad, or desktop 1280px+, **Then** layout is responsive and adaptive
+7. **Given** the page, **When** user evaluates it, **Then** it passes the "screenshot test"
 
 ---
 
 ### US-002 — Registration (Priority: P1)
 
-As a new user, I want to register via email and password so I can quickly create an account in MVP Stage 1.
+As a new user, I want to register via email/password or enabled Google sign-in so I can quickly
+create an account.
 
-Google OAuth and Apple Sign-In are MVP Stage 2 scope.
+Google sign-in is active when the deployment enables it (spec 037); Apple Sign-In is Stage 2 scope.
 
 **Emotional target:** TRUST — "Fast, beautiful, they respect my time"
 
-**Prototype:** `html-prototypes/auth.html`, `html-prototypes/index.html` (popup)
+**Prototype:** `html-prototypes/auth.html`; live landing popup: `LandingPage` + reusable `AuthPanel`
+(`html-prototypes/index.html` is historical)
 
 **Acceptance Scenarios:**
 
-1. **Given** the Stage 1 auth form, **When** displayed, **Then** it uses glassmorphic styling with email+password registration and no active Google/Apple buttons
+1. **Given** the auth form, **When** displayed, **Then** it uses glassmorphic styling with
+   email/password registration and conditionally shows Google sign-in only when enabled; Apple is absent
 2. **Given** form fields, **When** user types, **Then** real-time inline validation occurs
 3. **Given** optional location field (country/city), **When** skipped, **Then** registration is not blocked
 4. **Given** successful registration, **When** complete, **Then** redirect to Dashboard
@@ -64,11 +83,13 @@ Google OAuth and Apple Sign-In are MVP Stage 2 scope.
 
 ### US-003 — Authorization (Priority: P1)
 
-As an existing user, I want to log in using email and password in MVP Stage 1 to continue working with my capsule.
+As an existing user, I want to log in using email/password or enabled Google sign-in to continue
+working with my capsule.
 
-Google OAuth and Apple Sign-In login are MVP Stage 2 scope.
+Google sign-in is active when the deployment enables it (spec 037); Apple Sign-In is Stage 2 scope.
 
-**Prototype:** `html-prototypes/auth.html`, `html-prototypes/index.html` (popup)
+**Prototype:** `html-prototypes/auth.html`; live landing popup: `LandingPage` + reusable `AuthPanel`
+(`html-prototypes/index.html` is historical)
 
 **Acceptance Scenarios:**
 

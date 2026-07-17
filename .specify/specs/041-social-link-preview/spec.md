@@ -61,7 +61,9 @@ As a person who encounters a Capsule Zero link in Telegram or another social cli
 - **FR-001**: The app MUST publish an Open Graph image using an absolute `https://capsulezero.app` URL.
 - **FR-002**: The Open Graph image metadata MUST declare width `1200`, height `630`, and descriptive alt text.
 - **FR-003**: The app MUST publish Twitter Card metadata using `summary_large_image` and the same screenshot.
-- **FR-004**: The preview asset MUST be a current screenshot of `https://capsulezero.app/en` captured without the cookie banner or auth popup.
+- **FR-004**: The preview asset MUST be a current screenshot of the production-release English
+  `/en` landing captured without the cookie banner or auth popup. Before a hero PR merges, capture
+  its production build so the image and page deploy together.
 - **FR-005**: The redirect and localized layouts MUST reuse one metadata definition.
 - **FR-006**: The preview asset MUST be served by the Next.js app as `image/png` without a new runtime dependency.
 - **FR-007**: The landing-page UI and copy MUST remain unchanged.
@@ -84,5 +86,6 @@ As a person who encounters a Capsule Zero link in Telegram or another social cli
 ## Implementation Evidence
 
 - The focused Playwright scenario passes in Chromium and the configured WebKit iPhone project.
-- The committed PNG is 1200x630, has no alpha channel, and is 260 KB after lossless compression.
+- The spec-044 refresh is 1200x630, RGB with no alpha channel, 429 KB, and has SHA-256
+  `7dec0fb0ee8e660806518e9d25ee1769ad2f7954af7e888cd4c83c79da566418`.
 - The production build completes with the shared metadata contract in both root layouts.

@@ -38,13 +38,13 @@ Capture the production English landing page at the standard 1200x630 Open Graph 
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | FR-001 / FR-002 / SC-002 | `npm --prefix tests/e2e run test -- specs/landing/social-preview.spec.ts` passed in Chromium and WebKit; it asserts the absolute Open Graph URL, dimensions, and alt text. |
 | FR-003 / SC-002          | The same Playwright scenario asserts `summary_large_image` and the matching absolute Twitter image URL.                                                                    |
-| FR-004 / SC-006          | Visual inspection of `app/public/social/capsule-zero-homepage.png`, captured from production `/en` with consent pre-seeded.                                                |
+| FR-004 / SC-006          | Visual inspection of `app/public/social/capsule-zero-homepage.png`, refreshed from the spec-044 production build at 1200x630 with consent pre-seeded and reduced motion.   |
 | FR-005                   | `rg -n "siteMetadata" 'app/src/app/(redirect)/layout.tsx' 'app/src/app/[locale]/layout.tsx'` shows both layouts importing the shared contract.                             |
 | FR-006 / SC-004          | The Playwright scenario requests the local image path and asserts HTTP 200 plus `image/png`.                                                                               |
 | FR-007                   | `git diff origin/main...HEAD -- app/src/components/landing app/src/app/globals.css messages` is empty.                                                                     |
 | FR-008                   | PR history shows a failing-test commit before the implementation commit.                                                                                                   |
 | SC-001                   | The focused scenario passed: 2 tests across Chromium and WebKit iPhone.                                                                                                    |
-| SC-003                   | `sips -g pixelWidth -g pixelHeight -g format -g hasAlpha app/public/social/capsule-zero-homepage.png` reports PNG, 1200x630, no alpha; `ls -lh` reports 260 KB.            |
+| SC-003                   | `sips -g pixelWidth -g pixelHeight -g format -g hasAlpha app/public/social/capsule-zero-homepage.png` reports PNG, 1200x630, no alpha; `ls -lh` reports 429 KB; SHA-256 is `7dec0fb0ee8e660806518e9d25ee1769ad2f7954af7e888cd4c83c79da566418`. |
 | SC-005                   | Local `npm run preflight` passed (36 Playwright tests passed, 8 full-stack tests skipped as configured); required GitHub checks remain PR evidence.                        |
 
 Negative scenario evidence:
