@@ -54,7 +54,7 @@
 - [x] T036 Rebuild `app/src/app/favicon.ico` (16/32/48, transparent, light-theme gold-500) from the flat-fill SVG variant — MSVG ignores class-based CSS fills, same precedent as T029.
 - [x] T037 Rerun SC-001…SC-008 evidence: `xmllint` valid; `rg` finds both gold steps + adaptive rule and none of `FFD600|FDC104|#1C1C1C|#EDEDED`; `magick identify` shows 16/32/48; file-set check passes; pixel-fidelity vs the gallery `<text>` = AE 2999/262144 ≈ 1.1% (1px edge AA only).
 - [x] T038 Founder confirmation on the built mark — reviewed the light/dark gallery render (`V5-bold-final.png`) and the pixel-fidelity proof vs the gallery `<text>` (`fidelity.png`), and authorized opening the PR directly (chose "open PR now" over a separate docker preview), 2026-07-17.
-- [x] T039 Open the PR (`feat/favicon-cz-gold`) with the SENAR Done Gate after founder confirmation — PR number recorded below once created.
+- [x] T039 Open the PR (`feat/favicon-cz-gold`) with the SENAR Done Gate after founder confirmation — PR #87, opened 2026-07-17.
 
 ## Process Memory _(mandatory - required by SENAR; written before declaring work complete)_
 
