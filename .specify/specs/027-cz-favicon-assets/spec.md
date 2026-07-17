@@ -14,7 +14,7 @@ Maintain transparent "CZ" gold-monogram favicon assets that render cleanly throu
 
 In scope:
 
-- `app/src/app/favicon.ico` regenerated as a transparent multi-size ICO for browser tabs.
+- `app/src/app/favicon.ico` regenerated as a transparent multi-size **32-bit RGBA** ICO for browser tabs, retaining per-pixel alpha at antialiased edges.
 - `app/src/app/icon.svg` provided as the modern app icon through the Next.js `icon` metadata file convention.
 - The SVG "CZ" monogram is all-gold and steps within the ratified gold family with `prefers-color-scheme`: gold-500 `#EFBF04` on light chrome → gold-450 `#FFDD00` on dark chrome — the same two-step inversion the landing logo uses, so the mark stays legible on either chrome.
 - The mark is baked to **path data** (Helvetica Neue Bold C+Z outlines extracted from the font, not `<text>` elements) so it renders identically on non-Apple devices that lack Helvetica Neue.
@@ -40,7 +40,7 @@ As a visitor, I want the browser tab and saved-page icon to use the Capsule Zero
 
 1. **Given** the app is built by Next.js, **When** metadata file conventions are resolved, **Then** `favicon.ico` and `icon.svg` are available from `app/src/app/`.
 2. **Given** the icon assets are inspected, **When** the SVG style block is checked, **Then** the "CZ" paths carry the default gold-500 `#EFBF04` fill with a `prefers-color-scheme: dark` override to gold-450 `#FFDD00`, and no achromatic or off-token fill is present.
-3. **Given** browsers without SVG favicon support request the legacy fallback, **When** `favicon.ico` is inspected, **Then** the ICO fallback remains present with the gold mark baked at light-theme gold-500.
+3. **Given** browsers without SVG favicon support request the legacy fallback, **When** `favicon.ico` is inspected, **Then** the ICO fallback remains present with the gold mark baked at light-theme gold-500 as 32-bit RGBA frames with intermediate alpha coverage.
 
 ## Negative Scenarios _(mandatory - required by SENAR; waive explicitly if none apply)_
 
@@ -48,13 +48,14 @@ As a visitor, I want the browser tab and saved-page icon to use the Capsule Zero
 2. **Given** browser tabs request small favicon sizes, **When** the ICO is inspected, **Then** the file must include the expected 16x16, 32x32, and 48x48 entries instead of only a single large PNG.
 3. **Given** a user has dark browser chrome, **When** the browser selects the modern app icon, **Then** the gold mark must not stay at light-theme gold-500 — it must step to gold-450 under `prefers-color-scheme: dark`.
 4. **Given** a browser does not support SVG favicons, **When** it requests the fallback, **Then** `favicon.ico` must still be available.
+5. **Given** the two-letter mark is rasterized at 16x16 for the legacy ICO fallback, **When** edge pixels are inspected, **Then** the frame must preserve intermediate alpha levels instead of collapsing to a 1-bit transparency mask that makes the letters jagged or merged.
 
 ## Requirements _(mandatory)_
 
 ### Functional Requirements
 
 - **FR-001**: `app/src/app/icon.svg` MUST define the "CZ" monogram as SVG path data (Helvetica Neue **Bold** C and Z outlines extracted from the font via fontTools, not `<text>` elements) with a transparent canvas. Layout MUST reproduce the founder-selected gallery V5 type spec — `font-size 300`, `letter-spacing -6`, advance-based horizontal centering (`text-anchor middle`), and the `dominant-baseline central` baseline math already used by the prior mark.
-- **FR-002**: `app/src/app/favicon.ico` MUST contain 16x16, 32x32, and 48x48 favicon entries.
+- **FR-002**: `app/src/app/favicon.ico` MUST contain 16x16, 32x32, and 48x48 **32-bit RGBA** favicon entries with per-pixel alpha and more than two alpha levels per frame so antialiased edge coverage survives the ICO encoding.
 - **FR-003**: The PR MUST NOT modify app runtime code, routing, layout, copy, styling, auth, or i18n behavior.
 - **FR-004**: The PR MUST include SENAR feature memory because `app/` product-root assets changed.
 - **FR-005**: The PR MUST include an explicit TDD waiver because the change has no executable product behavior to test first.
@@ -70,7 +71,7 @@ As a visitor, I want the browser tab and saved-page icon to use the Capsule Zero
 
 - **SC-001**: `xmllint --noout app/src/app/icon.svg` validates the SVG document.
 - **SC-002**: `rg -n "prefers-color-scheme: dark|#EFBF04|#FFDD00" app/src/app/icon.svg` finds the adaptive rule and both ratified gold steps; `rg -n "FFD600|FDC104|#1C1C1C|#EDEDED" app/src/app/icon.svg` finds nothing (no retired yellow, no off-token gold, no achromatic ink).
-- **SC-003**: `magick identify app/src/app/favicon.ico` reports 16x16, 32x32, and 48x48 ICO entries.
+- **SC-003**: `magick identify app/src/app/favicon.ico` reports 16x16, 32x32, and 48x48 ICO entries; `file app/src/app/favicon.ico` reports 32 bits/pixel; alpha extraction reports more than two unique levels for every frame.
 - **SC-004**: `git diff --name-status origin/main...HEAD -- app/src/app` shows only `M app/src/app/favicon.ico` and `M app/src/app/icon.svg` (CZ gold iteration).
 - **SC-005**: `node scripts/check-feature-memory.mjs origin/main HEAD` passes for `.specify/specs/027-cz-favicon-assets/{spec,plan,tasks}.md`.
 - **SC-006**: TDD is explicitly waived as static-asset-only work with no runtime behavior.

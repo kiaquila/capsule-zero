@@ -55,6 +55,10 @@
 - [x] T037 Rerun SC-001…SC-008 evidence: `xmllint` valid; `rg` finds both gold steps + adaptive rule and none of `FFD600|FDC104|#1C1C1C|#EDEDED`; `magick identify` shows 16/32/48; file-set check passes; pixel-fidelity vs the gallery `<text>` = AE 2999/262144 ≈ 1.1% (1px edge AA only).
 - [x] T038 Founder confirmation on the built mark — reviewed the light/dark gallery render (`V5-bold-final.png`) and the pixel-fidelity proof vs the gallery `<text>` (`fidelity.png`), and authorized opening the PR directly (chose "open PR now" over a separate docker preview), 2026-07-17.
 - [x] T039 Open the PR (`feat/favicon-cz-gold`) with the SENAR Done Gate after founder confirmation — PR #87, opened 2026-07-17.
+- [x] T040 Sync PR #87 with `origin/main` after PR #86 merged, then rerun the repository baseline, API-contract checks, lint, typecheck, production build, Docker runner build, Go vet/tests, and the full Playwright suite (51 passed, 8 expected skips, 0 failed).
+- [x] T041 Inspect Codex review on head `be94867`: the ICO fallback had been emitted as indexed 8-bit DIB frames with binary transparency, dropping edge antialiasing at 16x16.
+- [x] T042 Regenerate `favicon.ico` from high-quality 16/32/48 RGBA rasters and force `TrueColorAlpha` ICO encoding; `file` now reports 32 bits/pixel and per-frame alpha extraction reports 62/111/137 unique levels.
+- [x] T043 Rerun SC-001…SC-008 and the focused ICO format/alpha checks on the corrected asset before pushing a fresh review head.
 
 ## Process Memory _(mandatory - required by SENAR; written before declaring work complete)_
 
@@ -65,6 +69,7 @@
 - The first favicon asset PR shipped a transparent PNG app icon, but review on PR #59 confirmed the follow-up must also update feature memory because replacing that product-root asset with SVG still changes `app/`.
 - **(V5) Re-deriving the mark from memory diverged from the selection.** The first V5 attempt guessed Helvetica Neue **Medium** and a hand-picked letter gap; it rendered visibly thinner than the gallery and the founder caught it immediately. Lesson: for an approved visual, recover the *exact* source (here, from the session transcript), do not reconstruct from description. The gallery's stated "Weight 500" applied to V1/V6 — V5's own `<text>` was `font-weight="700"`.
 - **(V5) The local gallery server was dead.** `curl` to `127.0.0.1:8788` returned nothing and the browser tab showed an error page on re-fetch; a live-DOM scrape was not possible. The transcript-persisted `gallery.html` was the reliable source.
+- **(PR #87 review) ImageMagick's default ICO writer silently chose indexed 8-bit DIB frames.** The files were transparent and had the right dimensions, so the original metadata check passed, but their alpha channel had only two levels. At 16x16 that threshold discarded edge coverage and made the already-dense monogram jagged. The corrected pipeline forces `TrueColorAlpha` and verifies alpha cardinality after ICO round-trip.
 
 ### Decisions
 
@@ -78,9 +83,10 @@
 - **Bold (700), not Medium.** V5's gallery `<text>` was weight 700; Bold is also the closer echo of the header logo (`.landing-logo` is weight 600) and survives 16px better than Medium.
 - **All-gold is within the palette.** Constitution §III v1.5 reserves gold for "the primary CTA and the logo accent"; the favicon is the logo surface and this mark mirrors the already-ratified all-gold `.landing-logo` wordmark. The two-step gold inversion (`#EFBF04`→`#FFDD00`) is the only adaptation an all-gold mark can carry, and it matches the landing logo's own gold family.
 - **ICO uses light-theme gold-500 fills**. Reason: ICO cannot theme-adapt; light chrome is the majority default, and dark-chrome clients that honor SVG favicons get `icon.svg` (gold-450) anyway.
+- **ICO bit depth and alpha cardinality are acceptance evidence, not an implementation detail.** Every frame is 32-bit RGBA, and the post-encoding alpha channel must contain more than two distinct levels; size-only inspection cannot detect the 1-bit-mask regression caught in PR #87 review.
 
 ### Known Issues
 
-- **Two-letter density at 16px.** "CZ" is wider and shorter than the single "C.", so at the 16px browser-tab size the two letters compress into a tight gold cluster — legible but denser than the single-letter mark. This is inherent to the founder-selected monogram and matches how V5 rendered at 16px in the gallery. Larger sizes (32/48/SVG) are crisp.
+- **Two-letter density at 16px.** "CZ" is wider and shorter than the single "C.", so at the 16px browser-tab size the two letters remain tighter than the single-letter mark. The corrected 32-bit RGBA fallback preserves antialiased edge separation instead of the prior jagged 1-bit mask; larger sizes (32/48/SVG) are crisp. The residual density is inherent to the founder-selected monogram and matches V5 in the gallery.
 - **Gold-on-white contrast.** On a pure-white tab, gold-500 is lower contrast than the old achromatic C. The SVG steps to the brighter gold-450 on dark chrome; the ICO fallback bakes gold-500. Accepted with the V5 selection as a deliberate brand choice (the mark equals the header logo).
 - The local `main` in some worktrees was stale versus `origin/main`; this iteration branched a fresh worktree from `origin/main` and uses it plus the PR head for all checks.

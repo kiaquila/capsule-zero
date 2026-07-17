@@ -11,7 +11,7 @@ Ship transparent favicon assets through the existing Next.js App Router file con
 **Language/Version**: Static image assets under the legacy Next.js App Router app
 **Primary Dependencies**: Next.js metadata file conventions; local SVG/XML inspection tools; fontTools (glyph extraction); ImageMagick (ICO render)
 **Storage**: none
-**Testing**: asset inspection, pixel-fidelity comparison, and repository feature-memory guard
+**Testing**: asset inspection (including ICO bit depth and alpha-level coverage), pixel-fidelity comparison, and repository feature-memory guard
 **Target Platform**: web browsers consuming `favicon.ico` and `icon.svg`
 **Project Type**: static asset change inside `/app`
 **Constraints**: no runtime code changes; transparent background required; constitution §III palette only (the mark is entirely the ratified gold logo accent); TDD waived because no executable product behavior changes
@@ -42,7 +42,7 @@ Ship transparent favicon assets through the existing Next.js App Router file con
 | -------------------- | -------- |
 | FR-001 / SC-001 | `xmllint --noout app/src/app/icon.svg` validates the SVG document; the two `<path>` elements carry Helvetica Neue Bold C/Z outlines at `scale(0.3,-0.3)` with the V5 centering transforms. |
 | FR-006 / SC-002 | `rg -n "prefers-color-scheme: dark|#EFBF04|#FFDD00" app/src/app/icon.svg` finds the adaptive rule and both gold steps; `rg -n "FFD600|FDC104|#1C1C1C|#EDEDED" app/src/app/icon.svg` exits non-zero (no retired yellow, no off-token gold, no achromatic ink). |
-| FR-002 / SC-003 | `magick identify app/src/app/favicon.ico` reports ICO entries at `16x16`, `32x32`, and `48x48`. |
+| FR-002 / SC-003 | `magick identify app/src/app/favicon.ico` reports ICO entries at `16x16`, `32x32`, and `48x48`; `file app/src/app/favicon.ico` reports 32 bits/pixel; `for frame in 0 1 2; do magick "app/src/app/favicon.ico[$frame]" -alpha extract -format "%k\n" info:; done` reports `62`, `111`, and `137` unique alpha levels (all >2), proving the RGBA fallback retains antialiased edge coverage rather than a 1-bit transparency mask. |
 | FR-002 / SC-007 | `test -f app/src/app/favicon.ico && test -f app/src/app/icon.svg && test ! -e app/src/app/icon.png` confirms the ICO fallback remains while the PNG source is removed. |
 | FR-003 / SC-004 | `git diff --name-status origin/main...HEAD -- app/src/app` shows only `M app/src/app/favicon.ico` and `M app/src/app/icon.svg`. |
 | FR-004 / SC-005 | `node scripts/check-feature-memory.mjs origin/main HEAD` passes via `.specify/specs/027-cz-favicon-assets/{spec,plan,tasks}.md`. |
@@ -54,7 +54,7 @@ Negative scenario evidence:
 
 - The opaque-background risk is covered by the SVG root having no background element and by `xmllint --noout app/src/app/icon.svg`.
 - The dark-chrome visibility risk is covered by `rg` evidence for the `prefers-color-scheme: dark` gold-450 override.
-- The unsupported-SVG fallback risk is covered by `magick identify app/src/app/favicon.ico` and the file-set check proving `favicon.ico` remains present.
+- The unsupported-SVG fallback risk is covered by `magick identify`, `file`, the per-frame alpha-level check, and the file-set check proving `favicon.ico` remains present as an antialiased 32-bit RGBA fallback.
 
 ## Project Structure
 
@@ -76,5 +76,5 @@ No new abstraction and no code path changes. The only product-root changes are t
 ## Risks
 
 - **Risk**: A browser may prefer a non-adaptive PNG if both modern icon sources exist. **Mitigation**: keep only `icon.svg` plus `favicon.ico`; `icon.png` stays removed.
-- **Risk**: Some browsers may not support SVG favicons. **Mitigation**: retain `favicon.ico` as the legacy fallback (light-theme gold-500 baked, since ICO cannot theme-adapt).
+- **Risk**: Some browsers may not support SVG favicons. **Mitigation**: retain `favicon.ico` as the legacy fallback (light-theme gold-500 baked, since ICO cannot theme-adapt) and encode all three frames as 32-bit RGBA with intermediate alpha coverage so small-size edges remain antialiased.
 - **Risk (known trade-off)**: a two-letter "CZ" is denser at 16px than the single-letter "C." was, and gold-500 on a pure-white tab is lower contrast than the achromatic C. This is inherent to the founder-selected all-gold monogram; the SVG adapts to gold-450 on dark chrome, and the ICO fallback covers legacy clients. Accepted with the V5 selection.
