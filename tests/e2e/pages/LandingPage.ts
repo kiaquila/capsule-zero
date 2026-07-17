@@ -22,6 +22,8 @@ export class LandingPage extends BasePage {
   readonly heroCta: Locator;
   /** "How it works" placeholder section — must sit strictly below the fold. */
   readonly slidesStub: Locator;
+  /** Decorative scroll cue — static when reduced motion is requested. */
+  readonly scrollCue: Locator;
   readonly footerTermsLink: Locator;
   readonly footerPrivacyLink: Locator;
   readonly auth: AuthPopup;
@@ -44,6 +46,7 @@ export class LandingPage extends BasePage {
     this.heroSubtitle = page.getByTestId("hero-subtitle");
     this.heroCta = page.getByTestId("hero-cta");
     this.slidesStub = page.getByTestId("slides-stub");
+    this.scrollCue = page.getByTestId("scroll-cue");
     this.footerTermsLink = page.getByTestId("footer-terms-link");
     this.footerPrivacyLink = page.getByTestId("footer-privacy-link");
     this.auth = new AuthPopup(page);
@@ -94,6 +97,22 @@ export class LandingPage extends BasePage {
       return false;
     }
     return box.y >= viewport.height;
+  }
+
+  /**
+   * Emulate the visitor's OS/browser reduced-motion preference.
+   */
+  async emulateReducedMotion(): Promise<void> {
+    await this.page.emulateMedia({ reducedMotion: "reduce" });
+  }
+
+  /**
+   * Computed animation name for the decorative scroll cue.
+   */
+  async scrollCueAnimationName(): Promise<string> {
+    return this.scrollCue.evaluate(
+      (element) => getComputedStyle(element).animationName,
+    );
   }
 
   /**

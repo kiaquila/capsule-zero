@@ -50,4 +50,16 @@ test.describe("Landing — hero", () => {
       .poll(() => landing.isSlidesStubBelowFirstViewport())
       .toBe(true);
   });
+
+  test("scroll cue stops animating when reduced motion is requested", async ({
+    landing,
+  }) => {
+    await landing.emulateReducedMotion();
+
+    // Negative: the decorative cue must not keep translating indefinitely
+    // for visitors who explicitly request reduced motion.
+    await expect
+      .poll(() => landing.scrollCueAnimationName())
+      .toBe("none");
+  });
 });

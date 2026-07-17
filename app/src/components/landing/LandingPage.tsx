@@ -60,7 +60,11 @@ export function LandingPage() {
             >
               {t("heroCta")}
             </button>
-            <span className="landing-scroll-cue" aria-hidden="true">
+            <span
+              className="landing-scroll-cue"
+              aria-hidden="true"
+              data-testid="scroll-cue"
+            >
               ▾
             </span>
           </section>
