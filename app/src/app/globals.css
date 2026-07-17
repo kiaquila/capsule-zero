@@ -232,6 +232,11 @@
 }
 
 .profile-field-error {
+  /* §9.7 скрим-чип (043): контраст --color-error-text посчитан на --color-scrim */
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-scrim);
   color: var(--color-error-text);
   font-size: 11px;
   line-height: 1.35;
@@ -1040,6 +1045,11 @@ textarea {
 }
 
 .auth-field-message-error {
+  /* §9.7 скрим-чип (043) */
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-scrim);
   color: var(--color-error-text);
 }
 
@@ -1124,6 +1134,11 @@ textarea {
 
 /* Error variant of the server message — overrides the neutral colour above. */
 .auth-server-message-error {
+  /* §9.7 скрим-чип (043) */
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-scrim);
   color: var(--color-error-text);
   font-weight: 600;
 }
@@ -1231,8 +1246,18 @@ textarea {
 
 .verify-email-status {
   margin: 0;
-  color: var(--color-error-text);
+  color: var(--color-text-secondary);
   font-size: 13px;
+}
+
+/* Error variant (Codex P2, 043): info-статусы («письмо отправлено») остаются
+   нейтральными; красный + §9.7 скрим-чип — только для ошибок */
+.verify-email-status-error {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-scrim);
+  color: var(--color-error-text);
 }
 
 /* Profile change-password form (spec 035). */
@@ -2851,6 +2876,12 @@ textarea {
 
 .journey-validation-warn,
 .journey-field-note {
+  /* §9.7 скрим-чип (043); .journey-field-note несёт только warning-контент
+     (incompatible-color, upload/link errors) */
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-scrim);
   color: var(--color-error-text);
 }
 
@@ -5129,7 +5160,12 @@ textarea {
 }
 
 .capsule-result-picker-blocked {
+  /* §9.7 скрим-чип (043) */
+  display: inline-block;
   margin-top: 8px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-scrim);
   color: var(--color-error-text);
   font-size: 10px;
   font-weight: 800;
@@ -5866,6 +5902,11 @@ textarea {
 }
 
 .my-items-field small {
+  /* §9.7 скрим-чип (043) */
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-scrim);
   color: var(--color-error-text);
   font-size: 11px;
   line-height: 1.35;
@@ -6542,24 +6583,4 @@ textarea {
   .uncapsulated-capsule-modal footer .my-items-secondary-button {
     width: 100%;
   }
-}
-
-/* §9.7/§9.11 (spec 043, Codex P2) — обязательный скрим-чип под голым текстом
-   ошибки на стекле: контраст --color-error-text (#FF7A70 ≈ 5.1:1) посчитан на
-   --color-scrim; без подложки на светлых участках wall.png текст падает ниже AA.
-   Тонированные панели (.profile-warning — error-bg) и подложки
-   (.my-items-photo-error — backdrop) уже несут собственный фон и остаются как
-   есть; полная компонентная развёртка скрим-паттерна — 039 T007. */
-.profile-field-error,
-.auth-field-message-error,
-.auth-server-message-error,
-.verify-email-status,
-.journey-validation-warn,
-.journey-field-note,
-.capsule-result-picker-blocked,
-.my-items-field small {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
-  background: var(--color-scrim);
 }

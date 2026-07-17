@@ -50,13 +50,19 @@
 
 - **P1:** спек переведён на общую фикстуру `tests/e2e/fixtures/base` (`landing`-фикстур вместо
   ручного `new LandingPage(page)`) — правило `tests/README.md`, respects `appLocale`-override.
-- **P2:** голые error-текст-раны получили обязательный скрим-чип §9.7 одним групповым правилом в
-  конце `globals.css` (7 селекторов: profile-field-error, auth-field-message-error,
-  auth-server-message-error, verify-email-status, journey-validation-warn, journey-field-note,
-  capsule-result-picker-blocked, my-items-field small). Тонированные панели (`.profile-warning`)
-  и подложки (`.my-items-photo-error`) не тронуты — у них уже есть фон; полная компонентная
-  развёртка скрим-паттерна остаётся за 039 T007. Групповое правило сознательно нарушает
-  per-screen-колокацию `globals.css`: это политика §9.7, одно место = один контракт.
+- **P2:** голые error-текст-раны получили обязательный скрим-чип §9.7. Первая попытка — одно
+  групповое правило в конце `globals.css` — уронила stylelint-рэтчет baseline-checks
+  (`no-duplicate-selectors`: 109 > 101); чип-пропсы влиты в исходные правила по месту (7 семей:
+  profile-field-error, auth-field-message-error, auth-server-message-error, verify-email,
+  journey-validation-warn/journey-field-note, capsule-result-picker-blocked, my-items-field
+  small). Тонированные панели (`.profile-warning`) и подложки (`.my-items-photo-error`) не
+  тронуты — у них уже есть фон; полная компонентная развёртка скрим-паттерна остаётся за 039 T007.
+- **P2 (второй раунд, verify-email):** `.verify-email-status` рендерил и info-статус («письмо
+  отправлено»), и ошибку одним классом — error-стайлинг вынесен в вариант
+  `.verify-email-status-error` (условный класс по той же предикате, что и существующие
+  `data-testid`/`role`); info-статусы теперь нейтральные (`--color-text-secondary`). Проверка
+  `journey-field-note` показала, что он несёт только warning-контент (incompatible-color,
+  upload/link errors) — вариант не нужен.
 
 ### Known Issues
 
