@@ -1,13 +1,16 @@
 # Prototype Map — Capsule Zero MVP v0.1
 
 > Maps each HTML prototype to its corresponding spec sections, user stories, and screens.
+>
+> Landing authority was updated on 2026-07-17 by specs 043/044. The original
+> `html-prototypes/index.html` remains historical and is not the active landing contract.
 
 ## Screen Inventory
 
 | #   | Screen                       | HTML Prototype                                                     | User Stories                   | States                                    | Emotional Phase    |
 | --- | ---------------------------- | ------------------------------------------------------------------ | ------------------------------ | ----------------------------------------- | ------------------ |
-| 1   | Landing Page                 | `html-prototypes/index.html`                                       | US-001                         | Default, Loading                          | ATTRACTION         |
-| 2   | Registration / Login         | `html-prototypes/auth.html` + `html-prototypes/index.html` (popup) | US-002, US-003                 | Default, Loading, Error, Success          | TRUST              |
+| 1   | Landing Page                 | `html-prototypes/landing-v2/v1c-final.html`                        | US-001                         | Hero, Auth sign-up/sign-in, Below fold    | ATTRACTION         |
+| 2   | Registration / Login         | `html-prototypes/auth.html` + live `LandingPage`/`AuthPanel` popup | US-002, US-003                 | Default, Loading, Error, Success          | TRUST              |
 | 3   | Dashboard (Personal Cabinet) | `html-prototypes/dashboard.html`                                   | US-004, US-023                 | Active capsule, Summary, Quick access     | TRUST → CREATIVITY |
 | 4   | My Items (Grid)              | `html-prototypes/my-items.html`                                    | US-006, US-007                 | Empty, Filled, Filter active              | SATISFACTION       |
 | 5   | Item Detail Card             | `html-prototypes/my-items.html` (modal/detail)                     | US-007                         | View, Edit                                | SATISFACTION       |
@@ -27,11 +30,15 @@
 
 ## Prototype Details
 
-### `html-prototypes/index.html` — Landing Page
+### `html-prototypes/landing-v2/v1c-final.html` — Landing Page
 
 - **Spec sections:** US-001 (Landing), US-002/US-003 (Auth popup)
-- **Content:** Full-screen B&W editorial hero photo, manifesto headline centered, auth popup toggle (top-right), language switcher (EN/RU in MVP v1; ES-AR deferred to MVP v2), footer (Terms, Privacy, Instagram)
-- **Key interactions:** "Log In" button toggles auth popup, Sign Up / Log In switcher in popup
+- **Content:** One-viewport B&W wallpaper hero with gold logo, two-line product-value headline,
+  supporting copy, one gold CTA, secondary ghost Log In, EN/RU switcher, scroll cue, and footer
+- **Key interactions:** hero CTA temporarily opens the live `AuthPanel` in sign-up mode (spec 044)
+  until guest onboarding ships; ghost Log In opens the same panel in sign-in mode
+- **Historical artifact:** `html-prototypes/index.html` documents the retired poster/manifesto
+  direction and is not an implementation source
 
 ### `html-prototypes/auth.html` — Standalone Authentication
 

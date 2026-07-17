@@ -14,9 +14,11 @@ hero (green) → живой design-review (desktop + mobile, RU/EN) → доки
 | AC-004 | Полный лендинг-набор `specs/landing/` против свежего production build в форме CI (`--workers=2`): **32/32 passed за 12.2 с**; существующие спеки не менялись (POM расширен аддитивно). Отдельный screenshot/geometry probe на 1280×800 и 375×844 подтвердил `fold.height === viewport.height` и `stub.y === viewport.height`; desktop/mobile изображения просмотрены локально | ✅ |
 | AC-005 | Native Codex P2 воспроизведён test-first: коммит `5e355a5` — reduced-motion тест failed (`expected "none", received "landing-cue"`); коммит `5eba941` — `@media (prefers-reduced-motion: reduce)` выключает animation; hero-suite **8/8 passed** на chromium + webkit-iphone против production build | ✅ red→green |
 | Negative | Покрыты внутри AC-002 (signIn-форма отсутствует), AC-003 (стаб не пересекает первый вьюпорт) и AC-005 (scroll-cue не анимируется при reduced motion); все green, каждый контракт наблюдался красным до реализации | ✅ |
+| Doc consistency | Native Codex P1 выявил старый manifesto/register контракт в активных источниках. MVP spec/prototype map, constitution, spec 010 (явное supersession), emotion-map, ux-validation и auth entry docs синхронизированы со specs 043/044; PRODUCT-PLAN актуализирован, research/старый HTML явно помечены историческими. `rg`-аудит не оставляет старую формулировку как действующее требование | ✅ |
 
-Локальный пайплайн на финальном HEAD: `npm --prefix app run lint` (0 errors; 91 pre-existing
-module-size warnings в замороженном supabase-легаси), `npm --prefix app run typecheck` (чисто),
+Локальный пайплайн на финальном HEAD: `npm --prefix app run lint` (0 errors; 91 warnings total,
+включая обоснованный soft-gate warning для 90-строчного `LandingPage` и существующие legacy warnings),
+`npm --prefix app run typecheck` (чисто),
 `npm --prefix app run build` (успех, 33 страницы), `npm run lint:e2e` (0 errors; 3 pre-existing
 `.skip`-warnings во fullstack-спеках), `npm run typecheck:e2e` (чисто),
 `node scripts/check-repo-baseline.mjs` (passed), `node scripts/check-feature-memory.mjs --worktree`

@@ -35,7 +35,10 @@ PRODUCT-PLAN §4) CTA «Попробовать бесплатно» **време
   (TDD red→green; негативы sign-in/stub/reduced-motion внутри).
 - Доки тем же изменением: `docs_capsule_zero/screens/screen-landing.md`,
   `docs_capsule_zero/features/f-001-landing.md`, `docs_capsule_zero/i18n/ui-texts.md`,
-  PRODUCT-PLAN.md (interim-CTA решение), `design-system.md` §9.11(d) (отметка о реализации).
+  PRODUCT-PLAN.md (interim-CTA решение), `design-system.md` §9.11(d) (отметка о реализации), а
+  также все обнаруженные активные landing-источники (`001` spec/prototype map, `010` supersession,
+  constitution, emotion-map, ux-validation, auth entry docs); исследовательские/HTML-артефакты
+  явно помечаются историческими.
 
 **Out:**
 

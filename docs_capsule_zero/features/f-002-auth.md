@@ -1,12 +1,14 @@
 # Feature: Registration & Authorization
 
-> Source: US-002, US-003 (spec.md). Prototype: `html-prototypes/auth.html`, `html-prototypes/index.html` (popup)
+> Source: US-002, US-003 (spec.md). Prototype: `html-prototypes/auth.html`; live landing popup:
+> reusable `AuthPanel` from `LandingPage` (spec 044). `html-prototypes/index.html` is historical.
 
 ## Overview
 
 - **Purpose:** Account creation and login with minimal friction
 - **User:** New or returning visitor
-- **Entry point:** Register button on landing, `/auth` standalone page
+- **Entry point:** gold hero CTA (temporary sign-up mode) or ghost Log In on landing; `/auth`
+  standalone page
 - **Emotional target:** TRUST — "Fast, beautiful, they respect my time"
 - **Stage 1 scope:** Email/password registration, login, recovery, and session persistence
 - **v0.1 addition (spec 037):** Google sign-in — native-flow OIDC via Kratos, button hidden unless the deployment enables the provider
@@ -14,7 +16,7 @@
 
 ## User Flow — Registration
 
-1. User clicks Register (from landing or direct URL)
+1. User selects the hero CTA (temporary route from landing) or opens the direct auth URL
 2. Glassmorphic auth form displayed with email+password fields
 3. Optional location field (country/city) — skippable, does not block registration
 4. Real-time inline validation as user types

@@ -7,6 +7,8 @@
 - [x] T005 Доки тем же изменением: screen-landing, f-001-landing, ui-texts, PRODUCT-PLAN, §9.11(d)
 - [x] T006 Verification-таблица + Process Memory + PR c SENAR Done Gate
 - [x] T007 Native Codex P2: reduced-motion red (`5e355a5`) → green (`5eba941`), полный повторный прогон и refresh PR evidence
+- [x] T008 Native Codex P1: reconciled landing authority across MVP spec/prototype map,
+  constitution, spec 010, UX/auth docs, PRODUCT-PLAN and historical research/prototypes
 
 ## Process Memory
 
@@ -49,6 +51,11 @@
   `landing-cue` отключается при `prefers-reduced-motion: reduce`. Исправление доставлено новым
   TDD-циклом: красный контракт `5e355a5` (`landing-cue` вместо `none`) → green `5eba941`; один
   и тот же тест прошёл в Chromium и WebKit/iPhone, полный landing-suite — 32/32.
+- **Landing authority reconciliation (native Codex P1, 2026-07-17):** `f-001-landing.md`
+  корректно ссылался на US-001, но upstream US-001 и несколько UX/constitution источников всё ещё
+  предписывали старый manifesto/register hero. Действующий контракт теперь единообразно указывает
+  на `landing-v2/v1c-final.html` + specs 043/044; старые spec 010, research и HTML-прототип явно
+  маркированы как исторические/superseded, чтобы сохранить процессную память без ложной нормы.
 
 ### Dead Ends
 
