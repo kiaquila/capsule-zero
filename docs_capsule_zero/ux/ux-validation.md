@@ -130,7 +130,10 @@ Analysis of first 30 seconds of each competitor's user experience.
 | Acloset | Cluttered. Social feed and marketplace prominent. Feels "junky" with other people's items mixed in. Ads intrusive on free tier. | "Too much happening" | Fail |
 | CAPSULE | Women-focused, social-first. Community wardrobe sharing. Cute, approachable. Limited styling logic. | "Social media for clothes" | Maybe |
 
-> **CZ target first impression:** Full-screen B&W editorial fashion photo. Manifesto headline. Neumorphic register button. Emotional response: "This is different. This is beautiful. I want to be part of this." Screenshot test: Confident yes.
+> **CZ target first impression (updated by specs 043/044):** One-viewport B&W editorial wallpaper,
+> gold logo, a concise product-value headline with supporting copy, and one gold primary CTA; Log In
+> remains a secondary ghost action. Emotional response: "This is different. This is beautiful. I
+> understand what it does." Screenshot test: Confident yes.
 
 ## 7. Recommendations
 

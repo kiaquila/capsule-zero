@@ -84,8 +84,9 @@ Every item must have: name, category, color palette (color dots). Auto-tagging i
 ### Editorial Aesthetics
 
 - References: Zara.com, COS, Massimo Dutti — editorial minimalism, typography as hero
-- Full-screen B&W editorial photography on landing
-- Manifesto headline as brand statement
+- B&W editorial wallpaper and generous negative space on the landing hero
+- A concise product-value headline, supporting copy, and one gold primary CTA; the retired
+  poster/manifesto direction is historical, not a current landing requirement (specs 043/044)
 - Interface must be worthy of standing next to Aesop / ZARA / COS
 - Photo enhancement target standard: ZARA / Farfetch / COS editorial photography
 - ~~Monetization reference: Canva credit model — users buy coin packs for premium features (not subscription)~~ — WITHDRAWN 2026-07-16 with the coins cancellation (§I, PRODUCT-PLAN D2). No monetization reference stands until plan Stage 4.
@@ -102,6 +103,7 @@ Every item must have: name, category, color palette (color dots). Auto-tagging i
 - Transitions — instant. Completion — quiet and elegant (checkmark, soft glow).
 - Zero "dead zones" — every user action gets visual feedback.
 - Soft animation, highlight, quiet checkmark.
+- Decorative motion MUST stop when the user requests reduced motion.
 
 ### Tone of Voice
 
