@@ -19,9 +19,14 @@ test.describe("Landing — hero", () => {
     await expect(landing.heroSubtitle).toBeVisible();
     await expect(landing.heroCta).toBeVisible();
 
-    const background = await landing.heroCtaBackgroundImage();
-    expect(background).toContain("linear-gradient");
-    expect(background).toContain("rgb(239, 191, 4)");
+    // Polled: the dev server may apply the compiled stylesheet a beat after
+    // first paint on a cold start; the contract itself is unchanged.
+    await expect
+      .poll(() => landing.heroCtaBackgroundImage())
+      .toContain("linear-gradient");
+    expect(await landing.heroCtaBackgroundImage()).toContain(
+      "rgb(239, 191, 4)",
+    );
   });
 
   test("hero CTA opens the auth popup in sign-up mode", async ({ landing }) => {
@@ -41,7 +46,9 @@ test.describe("Landing — hero", () => {
   }) => {
     await expect(landing.slidesStub).toHaveCount(1);
     // Negative: the stub must not intersect the first viewport (§9.11(d):
-    // the first screen is exactly one viewport).
-    expect(await landing.isSlidesStubBelowFirstViewport()).toBe(true);
+    // the first screen is exactly one viewport). Polled for cold-start CSS.
+    await expect
+      .poll(() => landing.isSlidesStubBelowFirstViewport())
+      .toBe(true);
   });
 });
