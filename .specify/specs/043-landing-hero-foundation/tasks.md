@@ -46,6 +46,18 @@
   в архивных страницах и v1b, в финале v1c удалён по решению фаундера (значения зафиксированы в
   §9.11 и токенах).
 
+### Decisions (Codex review round, PR #84)
+
+- **P1:** спек переведён на общую фикстуру `tests/e2e/fixtures/base` (`landing`-фикстур вместо
+  ручного `new LandingPage(page)`) — правило `tests/README.md`, respects `appLocale`-override.
+- **P2:** голые error-текст-раны получили обязательный скрим-чип §9.7 одним групповым правилом в
+  конце `globals.css` (7 селекторов: profile-field-error, auth-field-message-error,
+  auth-server-message-error, verify-email-status, journey-validation-warn, journey-field-note,
+  capsule-result-picker-blocked, my-items-field small). Тонированные панели (`.profile-warning`)
+  и подложки (`.my-items-photo-error`) не тронуты — у них уже есть фон; полная компонентная
+  развёртка скрим-паттерна остаётся за 039 T007. Групповое правило сознательно нарушает
+  per-screen-колокацию `globals.css`: это политика §9.7, одно место = один контракт.
+
 ### Known Issues
 
 - `screen-landing.md`, `f-001-landing.md`, `ui-texts.md` ещё описывают постер-лендинг с «Log In

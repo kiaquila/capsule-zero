@@ -1,5 +1,4 @@
-import { expect, test } from "@playwright/test";
-import { LandingPage } from "../../pages/LandingPage";
+import { expect, test } from "../../fixtures/base";
 
 // Spec 043 (Q4 closed 2026-07-16): gold (#EFBF04 → #FFDD00) is the single
 // signal accent reserved for the primary CTA and logo accent; errors move to
@@ -18,9 +17,8 @@ const ERROR_FAMILY_TOKENS = [
 
 test.describe("design tokens — Q4 accent decisions", () => {
   test("error family is signal red and the gold accent family is minted", async ({
-    page,
+    landing,
   }) => {
-    const landing = new LandingPage(page);
     await landing.goto();
 
     expect(await landing.resolvedTokenColor("--color-error")).toBe(
@@ -54,9 +52,8 @@ test.describe("design tokens — Q4 accent decisions", () => {
   });
 
   test("negative: the retired yellow is absent from every error-family token", async ({
-    page,
+    landing,
   }) => {
-    const landing = new LandingPage(page);
     await landing.goto();
 
     for (const token of ERROR_FAMILY_TOKENS) {
