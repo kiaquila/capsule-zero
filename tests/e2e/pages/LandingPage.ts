@@ -15,6 +15,13 @@ export class LandingPage extends BasePage {
   readonly cookieRejectAll: Locator;
   readonly authTrigger: Locator;
   readonly authPopover: Locator;
+  /** Hero H1 of the approved v1c hero (spec 044). */
+  readonly heroTitle: Locator;
+  readonly heroSubtitle: Locator;
+  /** Gold primary CTA — opens the auth popup in sign-up mode (interim, spec 044). */
+  readonly heroCta: Locator;
+  /** "How it works" placeholder section — must sit strictly below the fold. */
+  readonly slidesStub: Locator;
   readonly footerTermsLink: Locator;
   readonly footerPrivacyLink: Locator;
   readonly auth: AuthPopup;
@@ -33,6 +40,10 @@ export class LandingPage extends BasePage {
     this.cookieRejectAll = page.getByTestId("cookie-reject-all");
     this.authTrigger = page.getByTestId("auth-trigger");
     this.authPopover = page.getByTestId("auth-popover");
+    this.heroTitle = page.getByTestId("hero-title");
+    this.heroSubtitle = page.getByTestId("hero-subtitle");
+    this.heroCta = page.getByTestId("hero-cta");
+    this.slidesStub = page.getByTestId("slides-stub");
     this.footerTermsLink = page.getByTestId("footer-terms-link");
     this.footerPrivacyLink = page.getByTestId("footer-privacy-link");
     this.auth = new AuthPopup(page);
@@ -51,6 +62,38 @@ export class LandingPage extends BasePage {
    */
   async openAuth(): Promise<void> {
     await this.authTrigger.click();
+  }
+
+  /**
+   * Open the auth popup in sign-up mode by clicking the hero CTA (spec 044).
+   */
+  async openHeroCta(): Promise<void> {
+    await this.heroCta.click();
+  }
+
+  /**
+   * Computed `background-image` of the hero CTA — the gold gradient contract
+   * (`--btn-cta-bg`) serialized by the browser as `linear-gradient(... rgb())`.
+   */
+  async heroCtaBackgroundImage(): Promise<string> {
+    return this.heroCta.evaluate(
+      (element) => getComputedStyle(element).backgroundImage,
+    );
+  }
+
+  /**
+   * True when the slides stub starts strictly below the first viewport with
+   * the page scrolled to the top — the "first screen is exactly one viewport"
+   * contract of design-system.md §9.11(d).
+   */
+  async isSlidesStubBelowFirstViewport(): Promise<boolean> {
+    await this.page.evaluate(() => window.scrollTo(0, 0));
+    const viewport = this.page.viewportSize();
+    const box = await this.slidesStub.boundingBox();
+    if (!viewport || !box) {
+      return false;
+    }
+    return box.y >= viewport.height;
   }
 
   /**
