@@ -24,8 +24,10 @@ PRODUCT-PLAN §4) CTA «Попробовать бесплатно» **време
 - `app/src/app/globals.css` — `landing-*` правила переписаны на токены (ghost-логин на
   `--btn-ghost-*`; заглушка/футер на ступени alpha-ramp'а; sub — литерал `.78` по
   задокументированному 039-паттерну stylelint-исключения до ретюна `--color-text-secondary`).
-- `app/src/styles/tokens.css` — gold/CTA-токены возвращаются из `@theme static` в обычный
-  `@theme`: появились потребители (Process Memory 043, Dead End «Tailwind v4 strips unused»).
+- `app/src/styles/tokens.css` — комментарий блока `@theme static` актуализирован: у gold/CTA-семьи
+  появились потребители (лендинг-hero), но семья **остаётся** в `@theme static` — `--color-gold-450`
+  не имеет `var()`-потребителя (только литерал внутри `--btn-cta-bg`), и обычный `@theme` вырезал бы
+  его, уронив гвард `design-tokens.spec.ts` (Process Memory 043, Dead End «Tailwind v4 strips unused»).
 - `app/src/messages/en.json` / `ru.json` — hero-копия по утверждённому прототипу (RU на «ты»),
   копирайт `© 2026`.
 - `tests/e2e/` — расширение POM `LandingPage.ts` + новый `specs/landing/hero.spec.ts`

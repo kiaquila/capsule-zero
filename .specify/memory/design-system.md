@@ -288,7 +288,7 @@ Lane B changes requiring `design-review` before/after evidence.
 | .68 ×1 (border) | `.capsule-result-picker-card-disabled` border-top | `--color-white-a65` | −.03 ⚑ | divider, not text |
 | .75 ×1 | `.capsule-result-add-card` colour | `--color-text-secondary` | +.03 | |
 | .76 ×1 | `.legal-table-wrap td` | `--color-text-secondary` | +.02 | |
-| .78 ×3 | `.landing-manifesto p`, `.legal-article li`, `.capsule-result-opr strong` | `--color-text-secondary` | 0 | exact after the .78 retune — the manifesto body already sits at the new secondary value |
+| .78 ×3 | `.landing-manifesto p` (→ renamed `.landing-hero-subtitle`, spec 044), `.legal-article li`, `.capsule-result-opr strong` | `--color-text-secondary` | 0 | exact after the .78 retune — the hero subtitle already sits at the new secondary value |
 | .82 ×2 (text) | `.capsule-result-icon-button`, `.capsule-result-item-menu button` glyph colour | `--color-text-secondary` | −.04 ⚑ | interactive glyphs join the text ramp |
 | .82 ×1 (focus) | `.auth-input:focus` border | `--input-focus-border` (retuned .82) | 0 | the literal that revealed the two-focus-treatments drift |
 | .82 ×1 (selected) | `.journey-type-card-selected` border | `--color-border-selected` (.85) | +.03 ⚑ | |
@@ -366,13 +366,14 @@ sheets, toasts `--radius-lg` · toggles, badges, meter bars `--radius-pill`.
 ### 9.6 Typography — minimum readable weight (checkable rule)
 
 Measured reality: weight 200 appears at 28–64px (display numerals, hero manifesto), weight 300 at
-24–32px (working-UI titles) **and once at 17px** (`.landing-manifesto p`).
+24–32px (working-UI titles) **and once at 17px** (`.landing-manifesto p` — since spec 044 the live
+landing subtitle is `.landing-hero-subtitle` at 16–18px/**400**, so this 17px/300 case is resolved).
 
 **The rule (checkable per element: computed font-size × computed font-weight):**
 
 | Computed size | Minimum weight | Covers today |
 |---|---|---|
-| `< 20px` | **≥ 400** | all body, labels, buttons, captions, dense UI — no exceptions. Flips `.landing-manifesto p` (17px/300 → 400) ⚑; thin *headings* stay editorial, thin *body* does not |
+| `< 20px` | **≥ 400** | all body, labels, buttons, captions, dense UI — no exceptions. Flips `.landing-manifesto p` (17px/300 → 400) ⚑ — done as `.landing-hero-subtitle` 16–18px/400 in spec 044; thin *headings* stay editorial, thin *body* does not |
 | `20–27px` | **≥ 300** | working-UI titles: greeting/topbar/section titles at 24–25px/300 all remain |
 | `≥ 28px` | **≥ 200** | display numerals & hero only: OPR 52/64px, stats 30px, journey-size 28px, manifesto h1 42px |
 
@@ -535,7 +536,11 @@ no arrow, no micro-line under the button; ghost login 34px top-right; first scre
 viewport (the "How it works" slides stub sits strictly below the fold). RU copy: «Создай свою /
 гардеробную капсулу» + «Загрузи несколько фото любимых вещей — и узнай, что добавить, чтобы
 образов на каждый день стало больше». **Implemented live in `/app` by spec 044 (2026-07-17)** —
-`LandingPage.tsx` + `landing-*` rules on the `--btn-cta-*`/gold tokens (moved out of
-`@theme static` now that consumers exist); RU hero copy stays «ты» (founder decision, spec 044);
-interim CTA route = auth popup in sign-up mode until the guest tool ships (PRODUCT-PLAN Этап 1
-п.5). §9.5/§9.6/§9.7 rules apply to it unchanged.
+`LandingPage.tsx` + `LandingSlidesStub.tsx` + `landing-*` rules consuming the `--btn-cta-*`/gold
+tokens (the gold/CTA family stays in `@theme static` — `--color-gold-450` has no `var()` consumer
+and a plain `@theme` would tree-shake it, breaking the `design-tokens.spec.ts` guard); the gold
+logo (`--color-gold-500`) applies to every screen sharing `.landing-logo` (§9.11(a), auth/legal
+included), while the v1c header rhythm is scoped to `.landing-fold .landing-header` so auth/legal
+keep the shared base; RU hero copy stays «ты» (founder decision, spec 044); interim CTA route =
+auth popup in sign-up mode until the guest tool ships (PRODUCT-PLAN Этап 1 п.5). §9.5/§9.6/§9.7
+rules apply to it unchanged.

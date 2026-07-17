@@ -694,6 +694,11 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  padding: 24px;
+}
+
+/* Landing-only header rhythm (v1c contract); auth/legal keep the shared base */
+.landing-fold .landing-header {
   padding: 16px 20px;
 }
 
@@ -3616,6 +3621,10 @@ textarea {
 
 @media (min-width: 768px) {
   .landing-header {
+    padding: 36px 48px;
+  }
+
+  .landing-fold .landing-header {
     padding: 22px 32px;
   }
 

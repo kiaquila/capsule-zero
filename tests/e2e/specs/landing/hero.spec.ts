@@ -20,13 +20,12 @@ test.describe("Landing — hero", () => {
     await expect(landing.heroCta).toBeVisible();
 
     // Polled: the dev server may apply the compiled stylesheet a beat after
-    // first paint on a cold start; the contract itself is unchanged.
+    // first paint on a cold start; the contract itself is unchanged. Both the
+    // gradient function and its gold base are asserted in one poll so the
+    // stylesheet is sampled atomically.
     await expect
       .poll(() => landing.heroCtaBackgroundImage())
-      .toContain("linear-gradient");
-    expect(await landing.heroCtaBackgroundImage()).toContain(
-      "rgb(239, 191, 4)",
-    );
+      .toMatch(/linear-gradient.*rgb\(239, 191, 4\)/);
   });
 
   test("hero CTA opens the auth popup in sign-up mode", async ({ landing }) => {

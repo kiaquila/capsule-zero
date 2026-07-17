@@ -7,10 +7,9 @@ import { AuthPanel } from "@/components/auth/AuthPanel";
 import { openCookieSettings } from "@/lib/cookie-consent";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { CookieBanner } from "./CookieBanner";
+import { LandingSlidesStub } from "./LandingSlidesStub";
 
 type LandingAuthMode = "signIn" | "signUp";
-
-const STUB_STEPS = [1, 2, 3] as const;
 
 export function LandingPage() {
   const t = useTranslations("landing");
@@ -33,7 +32,7 @@ export function LandingPage() {
             <button
               className="landing-auth-button"
               onClick={() =>
-                setAuthMode((value) => (value === null ? "signIn" : null))
+                setAuthMode((value) => (value === "signIn" ? null : "signIn"))
               }
               type="button"
               data-testid="auth-trigger"
@@ -68,22 +67,7 @@ export function LandingPage() {
         </main>
       </div>
 
-      {/* Reserved: "How it works" slides land here post-MVP (PRODUCT-PLAN). */}
-      <section className="landing-slides-stub" data-testid="slides-stub">
-        <div className="landing-stub-head">
-          <h2>{t("howItWorksTitle")}</h2>
-        </div>
-        <div className="landing-stub-grid">
-          {STUB_STEPS.map((step) => (
-            <article className="landing-stub-card" key={step}>
-              <span className="landing-stub-number">
-                {String(step).padStart(2, "0")}
-              </span>
-              <p>{t("stubReserved", { step })}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      <LandingSlidesStub />
 
       <footer className="landing-footer">
         <Link href="/terms-of-use" data-testid="footer-terms-link">

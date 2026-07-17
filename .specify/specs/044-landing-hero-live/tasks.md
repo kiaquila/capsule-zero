@@ -2,7 +2,7 @@
 
 - [ ] T001 Спека 044 (spec/plan/tasks) — фиксация фаундерских решений слайса
 - [ ] T002 Red: POM-расширение `LandingPage.ts` + `specs/landing/hero.spec.ts`, red-прогон, коммит
-- [ ] T003 Green: `LandingPage.tsx` + `landing-*` CSS + messages + возврат CTA-токенов в `@theme`
+- [ ] T003 Green: `LandingPage.tsx` (+ `LandingSlidesStub`) + `landing-*` CSS + messages; gold/CTA-семья остаётся в `@theme static`
 - [ ] T004 Живой design-review (desktop 1280 / mobile 375, RU+EN) + code review, фиксы
 - [ ] T005 Доки тем же изменением: screen-landing, f-001-landing, ui-texts, PRODUCT-PLAN, §9.11(d)
 - [ ] T006 Verification-таблица + Process Memory + PR c SENAR Done Gate
@@ -23,8 +23,22 @@
   («opens with sign-in mode active») остаётся зелёным без правок; у hero-CTA свой
   `data-testid="hero-cta"`.
 - **Sub-текст `.78` — литерал по 039-паттерну:** `--color-text-secondary` всё ещё `.70` (ретюн —
-  последний шаг 039); повторяем задокументированное stylelint-исключение из
-  `.landing-manifesto p`, чтобы значение схлопнулось в токен, когда ретюн приземлится.
+  последний шаг 039); повторяем задокументированное stylelint-исключение (прежде жившее на
+  `.landing-manifesto p`, удалённом этим слайсом; теперь на `.landing-hero-subtitle`), чтобы
+  значение схлопнулось в токен, когда ретюн приземлится.
+- **Gold/CTA-токены остаются в `@theme static`** (по code-review P1): первая попытка «перенесла» их
+  в обычный `@theme`, не удалив копию в static, — получился дубль + ложный комментарий. Откат к
+  origin/main: hero потребляет `--color-gold-500` и `--btn-cta-*` через `var()` из static-блока
+  (эмитится всегда), а `--color-gold-450` без `var()`-потребителя нельзя держать в обычном `@theme`
+  (вырежется). Комментарий static-блока актуализирован.
+- **`LandingPage()` 86 строк > soft-gate 60** (по code-review P2): заглушка вынесена в
+  `LandingSlidesStub` (101→86), дальше не дробим — это корень страницы, связно композящий
+  header/hero/footer/auth-popover; дробление ради счётчика ухудшило бы читаемость. Обоснование по
+  §7 — в теле PR. Warning, не CI-фейл.
+- **Header-паддинг ограничен лендингом** (по code-review P2): `.landing-header`/`.landing-logo`
+  делят auth и legal. Gold-логотип оставлен общим (намеренно, §9.11(a) — фикс: на main логотип был
+  белым). Паддинг же (v1c-ритм) перенесён на `.landing-fold .landing-header`, общий базовый
+  `.landing-header` возвращён к значениям origin/main — auth/legal пиксельно как на main.
 - **Маппинг без-токенных литералов прототипа:** hover ghost-логина `.10` → `--btn-ghost-bg`
   (точное совпадение); фон заглушки `.05` → `--color-white-a04` (+.01, имперцептно); dashed-бордер
   заглушки `.28` → `--color-white-a24` (−.04, заглушка post-MVP — не прецедент); футер `.58` —
