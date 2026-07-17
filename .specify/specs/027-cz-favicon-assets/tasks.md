@@ -35,15 +35,30 @@
 - [x] T016 Trigger or await a fresh review after the final pushed head SHA is available.
 - [x] T017 Recheck PR #59 checks until `guard`, `baseline-checks`, `test`, and `osv-scan` are green.
 
-## Phase 4: "C." Iteration (2026-07-17, `feat/favicon-cz-monogram`)
+## Phase 4: "C." Iteration (2026-07-17, `feat/favicon-cz-monogram`, shipped as PR #85)
 
 - [x] T025 Build and docker-preview the first candidate — a "CZ" monogram vectorized from the founder's PNG (colour-separated masks → potrace). Founder reviewed it live and rejected it.
 - [x] T026 Produce a six-variant typographic gallery (light/dark chrome, 96/48/32/16 + tab mocks) in brand typography and palette; founder selected V3 — the editorial "C." mark.
 - [x] T027 Vectorize "C.": extract the C outline from Helvetica Neue Medium (face 10 of `HelveticaNeue.ttc`) via fontTools `SVGPathPen` — exact glyph vector, no raster tracing; gold period `r=48` baseline-set per the approved gallery geometry (browser `dominant-baseline: central` math: baseline = 256 + 0.4×(975−217)/2 ≈ 407.6).
 - [x] T028 Colour onto ratified tokens with preserved inversion: C `#1C1C1C`→`#EDEDED`, dot `#EFBF04`→`#FFDD00` (gold-500 → gold-450, design-system §9.11).
-- [x] T029 Rebuild `app/src/app/favicon.ico` (16/32/48, transparent, light-theme fills) from the flat-fill SVG variant — not the CSS-styled SVG, because ImageMagick's internal MSVG renderer ignores class-based CSS fills. Update feature memory in the same change (AGENTS §9) and rerun SC-001…SC-007 evidence.
-- [x] T030 Local docker preview (`docker compose --env-file deploy/compose.dev.env -f docker-compose.yml -f docker-compose.dev.yml`) and founder visual approval on light + dark chrome before opening the PR — approved 2026-07-17: the founder reviewed the docker-served `/icon.svg` in both colour schemes and the landing tab, then instructed to open the PR.
-- [x] T031 Open the PR with the SENAR Done Gate after founder approval — PR #85 (`feat/favicon-cz-monogram`), opened 2026-07-17.
+- [x] T029 Rebuild `app/src/app/favicon.ico` (16/32/48, transparent, light-theme fills) from the flat-fill SVG variant — not the CSS-styled SVG, because ImageMagick's internal MSVG renderer ignores class-based CSS fills.
+- [x] T030 Local docker preview and founder visual approval on light + dark chrome — approved 2026-07-17.
+- [x] T031 Open PR #85 (`feat/favicon-cz-monogram`) with the SENAR Done Gate; merged to `main` as `d7f1f29`.
+
+## Phase 5: "CZ" Gold Iteration (2026-07-17, `feat/favicon-cz-gold`)
+
+- [x] T032 Founder ran the shipped "C." mark in production and judged gallery variant **V5 — the gold "CZ" monogram** the better mark; asked to adopt it with the light/dark inversion preserved.
+- [x] T033 Recover the **exact** V5 source rather than re-derive it. First re-derivation guessed Helvetica Neue Medium and visibly differed from the gallery; the founder flagged the mismatch and pointed to the still-open gallery. The dead local preview server (`127.0.0.1:8788`) could not be re-fetched, so the original `gallery.html` was recovered from the session transcript. V5 spec: Helvetica Neue **Bold (700)**, `font-size 300`, `letter-spacing -6`, `text-anchor middle`, `dominant-baseline central`, `class="gold"` → `#EFBF04` light / `#FFDD00` dark.
+- [x] T034 Vectorize "CZ": extract C and Z outlines from Helvetica Neue **Bold** (face 1 of `HelveticaNeue.ttc`) via fontTools `SVGPathPen`; reproduce the browser's text layout exactly — advance-based centering (`text-anchor middle`) with `letter-spacing -6`, and the same `dominant-baseline central` baseline math the "C." mark used (baseline = 256 + 0.3×(975−217)/2 ≈ 369.7 at scale 0.3). Bake to two `<path>` elements so the mark is font-independent (FR-001).
+- [x] T035 Colour both paths onto the ratified gold tokens with the two-step inversion: `.cz-mark { fill: #EFBF04 }` → `#FFDD00` under `@media (prefers-color-scheme: dark)`. No achromatic ink remains (all-gold V5).
+- [x] T036 Rebuild `app/src/app/favicon.ico` (16/32/48, transparent, light-theme gold-500) from the flat-fill SVG variant — MSVG ignores class-based CSS fills, same precedent as T029.
+- [x] T037 Rerun SC-001…SC-008 evidence: `xmllint` valid; `rg` finds both gold steps + adaptive rule and none of `FFD600|FDC104|#1C1C1C|#EDEDED`; `magick identify` shows 16/32/48; file-set check passes; pixel-fidelity vs the gallery `<text>` = AE 2999/262144 ≈ 1.1% (1px edge AA only).
+- [x] T038 Founder confirmation on the built mark — reviewed the light/dark gallery render (`V5-bold-final.png`) and the pixel-fidelity proof vs the gallery `<text>` (`fidelity.png`), and authorized opening the PR directly (chose "open PR now" over a separate docker preview), 2026-07-17.
+- [x] T039 Open the PR (`feat/favicon-cz-gold`) with the SENAR Done Gate after founder confirmation — PR #87, opened 2026-07-17.
+- [x] T040 Sync PR #87 with `origin/main` after PR #86 merged, then rerun the repository baseline, API-contract checks, lint, typecheck, production build, Docker runner build, Go vet/tests, and the full Playwright suite (51 passed, 8 expected skips, 0 failed).
+- [x] T041 Inspect Codex review on head `be94867`: the ICO fallback had been emitted as indexed 8-bit DIB frames with binary transparency, dropping edge antialiasing at 16x16.
+- [x] T042 Regenerate `favicon.ico` from high-quality 16/32/48 RGBA rasters and force `TrueColorAlpha` ICO encoding; `file` now reports 32 bits/pixel and per-frame alpha extraction reports 62/111/137 unique levels.
+- [x] T043 Rerun SC-001…SC-008 and the focused ICO format/alpha checks on the corrected asset before pushing a fresh review head.
 
 ## Process Memory _(mandatory - required by SENAR; written before declaring work complete)_
 
@@ -52,23 +67,26 @@
 - The original PR body treated the change as asset-only with no spec. That documented the practical scope correctly, but the repository `guard` workflow still requires complete feature memory whenever a product root under `app/` changes.
 - Considered leaving this as a PR-body-only SENAR waiver. Rejected because the machine gate only accepts a changed `.specify/specs/<feature-id>/{spec,plan,tasks}.md` package.
 - The first favicon asset PR shipped a transparent PNG app icon, but review on PR #59 confirmed the follow-up must also update feature memory because replacing that product-root asset with SVG still changes `app/`.
+- **(V5) Re-deriving the mark from memory diverged from the selection.** The first V5 attempt guessed Helvetica Neue **Medium** and a hand-picked letter gap; it rendered visibly thinner than the gallery and the founder caught it immediately. Lesson: for an approved visual, recover the *exact* source (here, from the session transcript), do not reconstruct from description. The gallery's stated "Weight 500" applied to V1/V6 — V5's own `<text>` was `font-weight="700"`.
+- **(V5) The local gallery server was dead.** `curl` to `127.0.0.1:8788` returned nothing and the browser tab showed an error page on re-fetch; a live-DOM scrape was not possible. The transcript-persisted `gallery.html` was the reliable source.
+- **(PR #87 review) ImageMagick's default ICO writer silently chose indexed 8-bit DIB frames.** The files were transparent and had the right dimensions, so the original metadata check passed, but their alpha channel had only two levels. At 16x16 that threshold discarded edge coverage and made the already-dense monogram jagged. The corrected pipeline forces `TrueColorAlpha` and verifies alpha cardinality after ICO round-trip.
 
 ### Decisions
 
 - **Feature folder is `027-cz-favicon-assets`**. Reason: `origin/main` currently has specs through `025`, and the parallel `feat/026-dev-cd-pipeline` branch already owns `026-dev-cd-pipeline`.
 - **No app code change**. Reason: Next.js already discovers `favicon.ico` and `icon.svg` by file convention.
 - **TDD waiver is explicit**. Reason: the repository requires TDD for product behavior in specs >= 025; this PR changes static binary assets only, so executable behavior tests would be noise.
-- **Verification uses image metadata commands**. Reason: binary assets cannot be reviewed with meaningful line diffs.
-- **Theme-adaptive follow-up stays in feature folder `027-cz-favicon-assets`**. Reason: this is the same favicon asset surface, not a new product feature.
-- **Use `icon.svg` instead of parallel PNG and SVG assets**. Reason: Next.js supports SVG under the `icon` convention, and a single modern source prevents browsers from selecting the stale non-adaptive PNG.
-- **Keep `favicon.ico` unchanged as fallback**. Reason: some clients may not support SVG favicons, and the existing ICO already covers legacy browser requests.
-- **"C." iteration stays in feature folder `027-cz-favicon-assets`** (2026-07-17). Reason: same favicon asset surface, same precedent as the theme-adaptive follow-up above.
-- **"C." selected over the CZ monogram** (founder decision, 2026-07-17). The founder's own CZ-monogram PNG was vectorized, docker-previewed, and rejected on sight; a six-variant gallery in brand typography followed (CZ grotesque pair / capsule-zero pill / "C." / thin-C+Z overlap / gold CZ echoing the landing logo / "C0"), and the founder chose the editorial "C." — one Helvetica Neue Medium C plus a gold period, the Aesop-style sign-off.
-- **C outline comes from the font, not from tracing**. Reason: fontTools `SVGPathPen` on `HelveticaNeue.ttc` face 10 yields the exact Medium glyph vector — crisper than potrace on a raster and byte-light (~1.3 KB SVG).
-- **Gold uses ratified tokens with a two-step inversion**. Reason: the founder required the light/dark inversion preserved; C flips `#1C1C1C`→`#EDEDED`, the period steps `#EFBF04`→`#FFDD00` — all four values inside the constitution §III / §9.11 palette, so the "one signal accent" rule holds.
-- **ICO uses light-theme fills**. Reason: ICO cannot theme-adapt; light chrome is the majority default, and dark-chrome clients that honor SVG favicons get `icon.svg` anyway.
+- **Verification uses image metadata + pixel-fidelity commands**. Reason: binary assets cannot be reviewed with meaningful line diffs.
+- **Each favicon iteration stays in feature folder `027-cz-favicon-assets`**. Reason: same favicon asset surface, not a new product feature.
+- **"CZ" gold (V5) selected over the shipped "C." (founder decision, 2026-07-17).** After living with the "C." mark in production the founder preferred V5 — the gold "CZ" monogram that echoes the header wordmark one-to-one. This supersedes the earlier "C." selection for the favicon; the "C." mark is retired.
+- **CZ outlines come from the font, not tracing** — fontTools `SVGPathPen` on `HelveticaNeue.ttc` face 1 (Bold) yields exact Bold glyph vectors; baked to `<path>` so the mark renders identically on devices without Helvetica Neue (FR-001), byte-light (~1.5 KB SVG).
+- **Bold (700), not Medium.** V5's gallery `<text>` was weight 700; Bold is also the closer echo of the header logo (`.landing-logo` is weight 600) and survives 16px better than Medium.
+- **All-gold is within the palette.** Constitution §III v1.5 reserves gold for "the primary CTA and the logo accent"; the favicon is the logo surface and this mark mirrors the already-ratified all-gold `.landing-logo` wordmark. The two-step gold inversion (`#EFBF04`→`#FFDD00`) is the only adaptation an all-gold mark can carry, and it matches the landing logo's own gold family.
+- **ICO uses light-theme gold-500 fills**. Reason: ICO cannot theme-adapt; light chrome is the majority default, and dark-chrome clients that honor SVG favicons get `icon.svg` (gold-450) anyway.
+- **ICO bit depth and alpha cardinality are acceptance evidence, not an implementation detail.** Every frame is 32-bit RGBA, and the post-encoding alpha channel must contain more than two distinct levels; size-only inspection cannot detect the 1-bit-mask regression caught in PR #87 review.
 
 ### Known Issues
 
-- The transparent black wordmark can be faint on dark browser tab backgrounds if a client ignores the SVG dark-mode media query. `favicon.ico` remains the legacy fallback; the modern `icon.svg` covers browsers that honor SVG media queries.
-- The local `main` branch in an existing worktree was stale versus `origin/main`; all PR readiness checks here use fresh `origin/main` and the PR head instead.
+- **Two-letter density at 16px.** "CZ" is wider and shorter than the single "C.", so at the 16px browser-tab size the two letters remain tighter than the single-letter mark. The corrected 32-bit RGBA fallback preserves antialiased edge separation instead of the prior jagged 1-bit mask; larger sizes (32/48/SVG) are crisp. The residual density is inherent to the founder-selected monogram and matches V5 in the gallery.
+- **Gold-on-white contrast.** On a pure-white tab, gold-500 is lower contrast than the old achromatic C. The SVG steps to the brighter gold-450 on dark chrome; the ICO fallback bakes gold-500. Accepted with the V5 selection as a deliberate brand choice (the mark equals the header logo).
+- The local `main` in some worktrees was stale versus `origin/main`; this iteration branched a fresh worktree from `origin/main` and uses it plus the PR head for all checks.
