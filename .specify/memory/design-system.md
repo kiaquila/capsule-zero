@@ -534,5 +534,8 @@ secondary `.78`; CTA pill 56px on `--btn-cta-*`, label «Попробовать 
 no arrow, no micro-line under the button; ghost login 34px top-right; first screen = exactly one
 viewport (the "How it works" slides stub sits strictly below the fold). RU copy: «Создай свою /
 гардеробную капсулу» + «Загрузи несколько фото любимых вещей — и узнай, что добавить, чтобы
-образов на каждый день стало больше». The live `/app` landing implementation rides the next
-slice; §9.5/§9.6/§9.7 rules apply to it unchanged.
+образов на каждый день стало больше». **Implemented live in `/app` by spec 044 (2026-07-17)** —
+`LandingPage.tsx` + `landing-*` rules on the `--btn-cta-*`/gold tokens (moved out of
+`@theme static` now that consumers exist); RU hero copy stays «ты» (founder decision, spec 044);
+interim CTA route = auth popup in sign-up mode until the guest tool ships (PRODUCT-PLAN Этап 1
+п.5). §9.5/§9.6/§9.7 rules apply to it unchanged.
