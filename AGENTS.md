@@ -80,9 +80,9 @@ The interface uses frosted glass surfaces. Two variants: main panels (blur 40px)
 
 ### 2. Achromatic Interface
 
-- UI colors: black / white / grey only
-- Color enters ONLY through user's garment photos and color dots
-- Error color: `#FFD600` (yellow), NOT red
+- UI colors: black / white / grey, plus ONE signal accent — the gold family `#EFBF04→#FFDD00`, reserved for the primary CTA and logo accent only (Q4 closed 2026-07-16, spec 043; constitution §III v1.5)
+- All other color enters ONLY through user's garment photos and color dots
+- Error color: `#FF5449` (signal red; text on scrim chips `#FF7A70`) — the former yellow `#FFD600` is retired so errors can never collide with the gold CTA
 
 ### 3. Capsule Methodology (Color Rules)
 

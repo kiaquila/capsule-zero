@@ -34,7 +34,7 @@ The interface is strictly achromatic. Color enters ONLY through the user's garme
 ### Functional Colors
 | Purpose | Value | Notes |
 |---|---|---|
-| Error/Warning | `#FFD600` | Yellow, not red |
+| Error/Warning | `#FF5449` | Signal red (Q4, 2026-07-16 — §9.11); text on scrim chips uses `--color-error-text` `#FF7A70`; yellow `#FFD600` retired |
 | Favorite active | `rgba(220,30,50,.90)` | Saturated opaque red |
 | Favorite border | `rgba(255,60,80,.70)` | — |
 
@@ -212,7 +212,7 @@ post-039 refactor debt, not license to invent new one-offs.
 | Token | Value | Rationale |
 |---|---|---|
 | `--color-scrim-soft` | `rgba(0,0,0,.20)` | Soft dark chip on photos/glass (fav chip .20, modal footer band .18, replaces the `inset 0 0 0 999px` spread-hack .22) |
-| `--color-scrim` | `rgba(0,0,0,.35)` | Text-contrast backing: behind `#FFD600` error text and behind text-dense panel areas that sample < 4.5:1 (§9.7). Value chosen by measurement: yellow over scrim ≈ 4.9:1 on the brightest glass, ≥ 6:1 median |
+| `--color-scrim` | `rgba(0,0,0,.35)` | Text-contrast backing: behind error text (`--color-error-text` since §9.11; measured at the then-current `#FFD600`) and behind text-dense panel areas that sample < 4.5:1 (§9.7). Measurement at ratification: yellow over scrim ≈ 4.9:1 on the brightest glass, ≥ 6:1 median |
 | `--color-backdrop` | `rgba(0,0,0,.56)` | ONE modal-backdrop dim level (today three: .46/.56/.60). Also home for the `.my-items-photo-error` .58 backing (−.02) |
 
 **Colour-dot rings (2):**
@@ -226,9 +226,9 @@ post-039 refactor debt, not license to invent new one-offs.
 
 | Token | Value | Rationale |
 |---|---|---|
-| `--color-error-border` | `rgba(255,214,0,.78)` | Invalid-input border (auth + profile input-error, both already .78) |
-| `--color-error-border-soft` | `rgba(255,214,0,.44)` | Warning-panel border (picker-notice .46, for-repair delete .42; profile-warning .28 snaps UP — deliberate: warning borders were inconsistently faint, flagged) |
-| `--color-error-bg` | `rgba(255,214,0,.10)` | Warning tint fill (.08/.10/.12 → one step) |
+| `--color-error-border` | `rgba(255,84,73,.78)` | Invalid-input border (auth + profile input-error, both already .78). Base re-seated `#FFD600→#FF5449` by §9.11 (2026-07-16); alpha step unchanged |
+| `--color-error-border-soft` | `rgba(255,84,73,.44)` | Warning-panel border (picker-notice .46, for-repair delete .42; profile-warning .28 snaps UP — deliberate: warning borders were inconsistently faint, flagged). Base re-seated by §9.11 |
+| `--color-error-bg` | `rgba(255,84,73,.10)` | Warning tint fill (.08/.10/.12 → one step). Base re-seated by §9.11 |
 
 **Shadows — elevation roles (4):**
 
@@ -381,24 +381,26 @@ rule must be audited in T013 — any h2 rendering below 20px gets an explicit �
 Enforcement: Playwright computed-style assertions on the primary screens (stylelint cannot pair
 size×weight) + `design-review` live pass.
 
-### 9.7 WCAG-AA approach — secondary text, placeholder, and #FFD600 over wall.png/glass
+### 9.7 WCAG-AA approach — secondary text, placeholder, and the error accent over wall.png/glass
 
 **Honest physical constraint (measured, not vibes):** over the brightest unshaded wall patches
 seen through a `.22` white glass panel, even *solid white* text tops out near ≈ 2.6:1 — no alpha
 raise alone can reach 4.5:1 there. Therefore the mechanism is **hybrid: raise alphas where that
 suffices + a local dark scrim where it cannot**, never removing wall.png, glass, thin display
-headings, or `#FFD600` (constitution §III).
+headings, or the error accent (constitution §III; `#FFD600` at measurement time, `#FF5449`/`#FF7A70` since §9.11).
 
 1. **Token retune:** `--color-text-secondary` `.70` → **`.78`**, and the drifted `.62–.68` text
    band snaps up into it (§9.2). Over the median overlay-weighted backdrop this puts secondary
    body text at ≈ 4.2–4.5:1 and comfortably over 3:1 for large text.
 2. **Local scrim (`--color-scrim`, black `.35`):** applied *inside* panels behind text-dense areas
    whose sampled contrast is < 4.5:1 (legal pages, auth form over bright wall regions) and as a
-   rounded backing chip behind **every `#FFD600` error/warning text run** (11 selectors use
-   `color: var(--color-error)` today). This generalizes an existing in-code pattern —
-   `.my-items-photo-error` already backs yellow with a dark layer. Measured: yellow on scrim over
-   the brightest glass ≈ 4.9:1, median ≥ 6:1; white `.78` on scrim ≈ 4.5:1 worst-case. `#FFD600`
-   itself is unchanged.
+   rounded backing chip behind **every error/warning text run** (the selectors using
+   `color: var(--color-error)`, now `--color-error-text` — §9.11). This generalizes an existing
+   in-code pattern — `.my-items-photo-error` already backs the error text with a dark layer.
+   Measured at ratification (then-current yellow): yellow on scrim over the brightest glass
+   ≈ 4.9:1, median ≥ 6:1; white `.78` on scrim ≈ 4.5:1 worst-case. The error base was unchanged
+   at ratification; Q4 later re-seated it to `#FF5449` with the dedicated on-scrim text step
+   `#FF7A70` ≈ 5.1:1 (§9.11) — the scrim-chip contract itself is unchanged and stays mandatory.
 3. **Focus visibility:** `--input-focus-border` `.36` → `.82` (≥ 3:1 non-text contrast for the
    focus indicator, one treatment app-wide).
 4. **Placeholder (`.38`) is kept as-is** — WCAG-exempt as incidental/decorative text. Usability
@@ -491,3 +493,46 @@ Zero exceptions; §9.8's completeness statement updated accordingly. Fix levels 
 Note for T007: at these near-opaque alphas (.90–.98) a base-grey delta of ±8 is below the
 perceptibility of the alpha deltas already accepted in §9.2 — the review-critical rows are the
 two `.profile-avatar-edit` unifications and the two bottom-nav rows.
+
+### 9.11 Addendum — gold CTA accent + error re-base (Q4 closed, ratified by founder 2026-07-16)
+
+PRODUCT-PLAN D3/Q4 resolution, landing-hero iteration (spec 043). The two collisions recorded in
+D3 are resolved by **separating the roles**: gold = "act", signal red = "something is wrong".
+Approved live on the final hero prototype `html-prototypes/landing-v2/v1c-final.html` (error shade
+picked from four live candidates E1–E4 rendered on the same page; E4 chosen).
+
+**(a) Achromatic principle amended (constitution §III, v1.5):** achromatic base + **one signal
+accent** — the gold family — reserved exclusively for the **primary CTA** and the **logo accent**.
+Never for statuses, errors, focus rings, or decoration. Color from the user's items stays the only
+other color source.
+
+**(b) Tokens minted / re-seated (`app/src/styles/tokens.css`):**
+
+| Token | Value | Role |
+|---|---|---|
+| `--color-gold-500` | `#EFBF04` | Gold base — gradient start, logo accent, eyebrow-grade accents |
+| `--color-gold-450` | `#FFDD00` | Gradient end |
+| `--btn-cta-bg` | `linear-gradient(to right, #EFBF04 0%, #FFDD00 100%)` | Primary CTA fill (Nouva-measured, D3); literal hexes = gold-500→gold-450 — Tailwind v4 `@theme` does not resolve `var()` references without inline mode |
+| `--btn-cta-text` | `#0A0A0A` | CTA label — near-black (= `--color-black`) on gold ≈ 12:1 |
+| `--btn-cta-border` | `rgba(255,255,255,.20)` | CTA hairline (D3 measurement) |
+| `--btn-cta-shadow` | `0 8px 28px rgba(239,191,4,.28)` | Gold glow — alpha step of gold-500 |
+| `--color-error` | `#FFD600` → **`#FF5449`** | Error base re-seated: borders, fills, icons |
+| `--color-error-text` | **`#FF7A70`** (new) | Error **text on scrim chips** — ≈ 5.1:1 on `--color-scrim` over dark glass; the base red is ≈ 4.1–4.7:1 there (borderline), hence the dedicated text step. The 10 `color: var(--color-error)` runs in `globals.css` moved to this token; `border-color` stays on the base |
+| `--color-error-border/-soft/-bg` | `rgba(255,84,73, .78/.44/.10)` | §9.1 alpha steps unchanged, base re-seated |
+| `--btn-danger-*` | re-seated onto `255,84,73` | Near-duplicate removal: the old `rgba(255,80,60,*)` danger family differed from the new error base by a sub-perceptual delta — one red family now |
+
+**(c) §9.7 scrim policy unchanged and mandatory:** every error/warning text run keeps the
+`--color-scrim` backing chip and uses `--color-error-text`; non-text error surfaces use the base
+and alpha steps. Yellow (`#FFD600`, `rgba(255,214,0,*)`) is retired from the palette — the e2e
+guard `tests/e2e/specs/landing/design-tokens.spec.ts` fails any regression re-introducing it into
+the error family.
+
+**(d) Landing hero component spec (approved copy + geometry)** — reference prototype
+`v1c-final.html`: gold logo 13px/600/no-tracking top-left; centered hero; H1 Helvetica 200
+uppercase `clamp(32px, 5.4vw, 60px)`, forced to two words per line on desktop; sub 18px/400 at
+secondary `.78`; CTA pill 56px on `--btn-cta-*`, label «Попробовать бесплатно» / "Try for free",
+no arrow, no micro-line under the button; ghost login 34px top-right; first screen = exactly one
+viewport (the "How it works" slides stub sits strictly below the fold). RU copy: «Создай свою /
+гардеробную капсулу» + «Загрузи несколько фото любимых вещей — и узнай, что добавить, чтобы
+образов на каждый день стало больше». The live `/app` landing implementation rides the next
+slice; §9.5/§9.6/§9.7 rules apply to it unchanged.

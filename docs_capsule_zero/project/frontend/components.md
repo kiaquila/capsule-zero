@@ -62,7 +62,8 @@ Interface colors are black, white, and grey only. Color appears only through:
 - garment photos
 - color dots from the 51-color wardrobe system
 - favorite heart active state
-- error/warning yellow `#FFD600`
+- error/warning signal red `#FF5449` (`--color-error`; text on scrim chips `--color-error-text` `#FF7A70`) — Q4, 2026-07-16
+- the gold accent family `#EFBF04→#FFDD00` (`--color-gold-*`, `--btn-cta-*`) — primary CTA and logo accent only, never statuses
 
 Do not introduce decorative purple/blue gradients, beige themes, colored cards, or opaque accent panels.
 
@@ -87,7 +88,7 @@ Push `use client` as low as possible. Route pages should stay server-rendered un
 - Use React Hook Form + Zod.
 - Validate in real time where prototypes require it.
 - Errors are inline, never alert popups.
-- Error color is `#FFD600`, not red.
+- Error color is `#FF5449` (signal red, `--color-error`; on-scrim text `--color-error-text`) — decided 2026-07-16 (Q4); never gold or yellow.
 - Required item fields: name, category, at least one color dot.
 
 ## Controls

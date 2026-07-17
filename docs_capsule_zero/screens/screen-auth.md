@@ -42,7 +42,7 @@ Prototype: `html-prototypes/auth.html`, `html-prototypes/index.html` (popup)
 - **Glass Panel:** Main glass panel variant, centered
 - **Inputs:** Glass input style
 - **Register Button:** Primary glass button
-- **Validation:** Inline, real-time, yellow (#FFD600) for errors
+- **Validation:** Inline, real-time, signal red (#FF5449, Q4 2026-07-16) for errors — text on scrim chips uses #FF7A70
 - **Google Button:** active since spec 037 when the deployment enables the provider — social glass surface, monochrome G glyph, below the primary CTA behind an "or" divider; hidden otherwise
 - **Apple Icon:** Stage 2 only; always black when implemented
 

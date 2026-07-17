@@ -63,12 +63,14 @@ Every item must have: name, category, color palette (color dots). Auto-tagging i
 
 ### Visual Identity
 
-- **Achromatic interface** — black / white / grey. Color comes ONLY from the user's own items.
-  > **Pending amendment (PRODUCT-PLAN D3 / open question Q4, raised 2026-07-16).** The plan introduces a
-  > yellow-gold CTA fill (`#EFBF04 → #FFDD00`), which is a direct exception to this rule, and proposes reusing
-  > that same colour for errors — which would make one colour mean both "act" and "something is wrong".
-  > **This principle stands as written until the founder rules on Q4.** Whoever lands the yellow CTA must amend
-  > this bullet and `§ Error color` in the same change — do not ship the exception against an unamended principle.
+- **Achromatic interface** — black / white / grey, plus **one signal accent**: the gold family
+  (`#EFBF04 → #FFDD00`), reserved exclusively for the primary CTA and the logo accent. All other
+  color comes ONLY from the user's own items.
+  > **Amended 2026-07-16 — Q4 closed (PRODUCT-PLAN D3, spec 043).** The founder ratified the gold-CTA
+  > exception and resolved the CTA/error semantic collision by separating the roles: gold means "act";
+  > errors move to signal red `#FF5449` (see § Error color below). Gold is never used for statuses,
+  > errors, focus rings, or decoration; errors are never gold or yellow. The achromatic base and
+  > "color from the user's items" stay binding for everything else.
 - **Glassmorphism UI language** — frosted glass surfaces, backdrop blur, translucent layers, subtle borders on glass elements.
   - Glass panels: `rgba(255,255,255,0.22)` + `backdrop-filter: blur(40px)` (main panels) / `blur(44px)` (nav, bottom sheets)
   - Border: `1px solid rgba(255,255,255,.58)` + highlight `inset 0 1px 0 rgba(255,255,255,.72)`
@@ -76,7 +78,7 @@ Every item must have: name, category, color palette (color dots). Auto-tagging i
 - **Background:** `wall.png` grayscale + gradient overlay
 - **8px grid** for all spacing
 - **Typography:** Helvetica Neue / Arial, thin wide headings, grotesque body
-- **Error color:** `#FFD600` (yellow, not red)
+- **Error color:** `#FF5449` (signal red; text runs on scrim chips use the lightened step `#FF7A70`) — decided 2026-07-16 with Q4. The former yellow `#FFD600` is retired so the error role cannot collide with the gold CTA accent.
 - **Favorite active:** `rgba(220,30,50,.90)` — saturated opaque red
 
 ### Editorial Aesthetics
@@ -204,7 +206,12 @@ Every spec ≥ 025 must follow test-driven development **for application code**.
 
 These principles apply to every spec authored after the SENAR layer shipped. Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered and keep their original shape.
 
-**Version**: 1.4 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-07-16
+**Version**: 1.5 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-07-16
+
+> **v1.5 (2026-07-16)** — Q4 closed (spec 043, landing-hero iteration): §III achromatic principle
+> amended to "achromatic base + one gold signal accent (primary CTA / logo accent only)"; §III error
+> color re-seated `#FFD600` → `#FF5449` signal red (`#FF7A70` for text on scrim chips) — the CTA/error
+> semantic collision recorded in PRODUCT-PLAN D3 is resolved by role separation. Everything else unchanged.
 
 > **v1.4 (2026-07-16)** — product rebuild ([`PRODUCT-PLAN.md`](../../PRODUCT-PLAN.md), canonical for product decisions until MVP):
 > §I business model moved to UNDER REVIEW (coins cancelled, model reworked in plan Stage 4); the Canva
