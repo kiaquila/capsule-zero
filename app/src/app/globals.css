@@ -853,6 +853,12 @@ textarea {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .landing-scroll-cue {
+    animation: none;
+  }
+}
+
 /* Reserved slides section — strictly below the fold (content post-MVP) */
 .landing-slides-stub {
   position: relative;
