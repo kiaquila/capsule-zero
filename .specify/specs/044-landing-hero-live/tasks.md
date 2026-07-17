@@ -9,6 +9,8 @@
 - [x] T007 Native Codex P2: reduced-motion red (`5e355a5`) → green (`5eba941`), полный повторный прогон и refresh PR evidence
 - [x] T008 Native Codex P1: reconciled landing authority across MVP spec/prototype map,
   constitution, spec 010, UX/auth docs, PRODUCT-PLAN and historical research/prototypes
+- [x] T009 Native Codex P1: refresh 1200×630 social screenshot from the production build and pin
+  its digest test-first (`620f6bc` red → refreshed asset/expectation green)
 
 ## Process Memory
 
@@ -56,6 +58,11 @@
   предписывали старый manifesto/register hero. Действующий контракт теперь единообразно указывает
   на `landing-v2/v1c-final.html` + specs 043/044; старые spec 010, research и HTML-прототип явно
   маркированы как исторические/superseded, чтобы сохранить процессную память без ложной нормы.
+- **Social preview refresh (native Codex P1, 2026-07-17):** предыдущий PNG всё ещё показывал
+  retired manifesto, белый logo/login и © 2025, а metadata-only e2e этого не видел. Добавлен
+  SHA-256 контракт: red-коммит `620f6bc` получил старый `84b23b…`; новый 1200×630 screenshot снят
+  с production build `/en` при pre-seeded consent и reduced motion, визуально проверен и закреплён
+  digest `7dec0fb0…`. Генеративный artwork не использован — сохранён контракт spec 041.
 
 ### Dead Ends
 
@@ -79,6 +86,4 @@
 
 ### Known Issues
 
-- `og:image` (`/social/capsule-zero-homepage.png`) после редизайна визуально устаревший —
-  перегенерировать follow-up'ом; `social-preview.spec.ts` проверяет URL/размеры, не содержимое.
 - Контент «Как это работает» — заглушка (post-MVP, PRODUCT-PLAN §5 Этап 1 п.1).

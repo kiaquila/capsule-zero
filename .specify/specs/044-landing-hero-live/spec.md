@@ -32,7 +32,10 @@ PRODUCT-PLAN §4) CTA «Попробовать бесплатно» **време
 - `app/src/messages/en.json` / `ru.json` — hero-копия по утверждённому прототипу (RU на «ты»),
   копирайт `© 2026`.
 - `tests/e2e/` — расширение POM `LandingPage.ts` + новый `specs/landing/hero.spec.ts`
-  (TDD red→green; негативы sign-in/stub/reduced-motion внутри).
+  (TDD red→green; негативы sign-in/stub/reduced-motion внутри) и digest-контракт в
+  `social-preview.spec.ts`, не позволяющий вернуть старый preview незаметно.
+- `app/public/social/capsule-zero-homepage.png` — 1200×630 screenshot текущего English hero из
+  production build без cookie/auth/dev overlays; заменяет устаревший manifesto/©2025 preview.
 - Доки тем же изменением: `docs_capsule_zero/screens/screen-landing.md`,
   `docs_capsule_zero/features/f-001-landing.md`, `docs_capsule_zero/i18n/ui-texts.md`,
   PRODUCT-PLAN.md (interim-CTA решение), `design-system.md` §9.11(d) (отметка о реализации), а
@@ -45,8 +48,6 @@ PRODUCT-PLAN §4) CTA «Попробовать бесплатно» **време
 - Гостевой инструмент и решения Q1/Q2/Q3/Q6 — CTA перенацеливается на него отдельным слайсом,
   когда он появится (interim-маршрут фиксируется как временный).
 - Контент «Как это работает» (post-MVP), OPR-демо, соцдоказательство.
-- Перегенерация `og:image` (`/social/capsule-zero-homepage.png`) — follow-up после мержа;
-  `social-preview.spec.ts` проверяет URL/размеры, не содержимое.
 - 039-ретюны токенов (`--color-text-secondary` → `.78`, `--input-focus-border` → `.82`) —
   остаются в последовательности спеки 039.
 
@@ -60,8 +61,9 @@ PRODUCT-PLAN §4) CTA «Попробовать бесплатно» **време
   входа — существующий `auth-popup.spec.ts` остаётся зелёным без правок.
 - **AC-003:** первый экран — ровно один вьюпорт: заглушка слайдов не пересекает первый вьюпорт
   (негатив) на десктопе (chromium Desktop Chrome) и мобайле (webkit iPhone 14).
-- **AC-004:** футер, куки-баннер и переключатель языка сохранены: существующие лендинг-спеки
-  (`cookie-banner`, `legal-links`, `design-tokens`, `social-preview`) зелёные без правок.
+- **AC-004:** футер, куки-баннер и переключатель языка сохранены; canonical social preview обновлён
+  скриншотом того же hero. Лендинг-спеки (`cookie-banner`, `legal-links`, `design-tokens`) зелёные
+  без правок, а `social-preview` расширен digest-проверкой red→green.
 - **AC-005:** при системной/браузерной настройке `prefers-reduced-motion: reduce` декоративный
   scroll-cue статичен (`animation-name: none`); бесконечное вертикальное движение отсутствует.
 
