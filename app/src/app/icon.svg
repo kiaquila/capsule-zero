@@ -1,17 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <style>
-    /* Capsule Zero "C." favicon — editorial C (Helvetica Neue Medium outline)
-       with the gold period carrying the ratified logo accent
-       (constitution §III v1.5, design-system §9.11).
-       The C inverts with the browser/OS colour scheme; the dot steps within
-       the gold family. */
-    .cz-c { fill: #1C1C1C; }
-    .cz-dot { fill: #EFBF04; }
-    @media (prefers-color-scheme: dark) {
-      .cz-c { fill: #EDEDED; }
-      .cz-dot { fill: #FFDD00; }
-    }
+    /* Capsule Zero "CZ" favicon — the gold monogram of the header
+       wordmark (initials of "Capsule Zero"), echoing the gold landing
+       logo one-to-one (constitution §III v1.5 logo accent; design-system
+       §9.11(d)). Founder-selected gallery variant V5: Helvetica Neue Bold,
+       font-size 300, letter-spacing -6, centered. Exact font vectors baked
+       to paths so it is font-independent. Gold steps within the ratified
+       family with the OS/browser colour scheme: gold-500 light, gold-450 dark. */
+    .cz-mark { fill: #EFBF04; }
+    @media (prefers-color-scheme: dark) { .cz-mark { fill: #FFDD00; } }
   </style>
-  <path class="cz-c" transform="translate(52,407.6) scale(0.4,-0.4)" d="M558 487Q550 518 536.0 544.0Q522 570 500.0 589.0Q478 608 448.5 618.5Q419 629 380 629Q323 629 281.5 606.0Q240 583 214.0 544.5Q188 506 175.5 457.0Q163 408 163 357Q163 306 175.5 257.0Q188 208 214.0 169.5Q240 131 281.5 108.0Q323 85 380 85Q422 85 454.0 99.5Q486 114 509.0 139.5Q532 165 545.0 199.0Q558 233 562 272H684Q680 208 656.5 155.0Q633 102 593.0 63.5Q553 25 499.0 4.0Q445 -17 380 -17Q300 -17 236.5 12.5Q173 42 129.0 93.0Q85 144 61.5 212.0Q38 280 38 357Q38 433 61.5 501.0Q85 569 129.0 620.0Q173 671 236.5 701.0Q300 731 380 731Q440 731 493.0 714.5Q546 698 586.5 666.5Q627 635 652.0 590.0Q677 545 683 487Z"/>
-  <circle class="cz-dot" cx="415" cy="390" r="48"/>
+  <path class="cz-mark" transform="translate(50.65,369.70) scale(0.3,-0.3)" d="M545 474H697Q690 536 663.0 584.0Q636 632 594.5 664.5Q553 697 500.5 714.0Q448 731 389 731Q307 731 241.5 702.0Q176 673 131.0 622.0Q86 571 62.0 502.5Q38 434 38 354Q38 276 62.0 208.5Q86 141 131.0 91.0Q176 41 241.5 12.5Q307 -16 389 -16Q455 -16 510.0 4.0Q565 24 606.0 62.0Q647 100 672.0 154.0Q697 208 703 275H551Q542 203 501.5 159.0Q461 115 389 115Q336 115 299.0 135.5Q262 156 239.0 190.0Q216 224 205.5 266.5Q195 309 195 354Q195 401 205.5 445.0Q216 489 239.0 523.5Q262 558 299.0 578.5Q336 599 389 599Q418 599 444.5 589.5Q471 580 492.0 563.0Q513 546 527.0 523.5Q541 501 545 474Z"/>
+  <path class="cz-mark" transform="translate(266.95,369.70) scale(0.3,-0.3)" d="M23 124V0H625V132H232L615 590V714H53V582H406Z"/>
 </svg>
