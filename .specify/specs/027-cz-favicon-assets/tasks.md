@@ -42,8 +42,8 @@
 - [x] T027 Vectorize "C.": extract the C outline from Helvetica Neue Medium (face 10 of `HelveticaNeue.ttc`) via fontTools `SVGPathPen` — exact glyph vector, no raster tracing; gold period `r=48` baseline-set per the approved gallery geometry (browser `dominant-baseline: central` math: baseline = 256 + 0.4×(975−217)/2 ≈ 407.6).
 - [x] T028 Colour onto ratified tokens with preserved inversion: C `#1C1C1C`→`#EDEDED`, dot `#EFBF04`→`#FFDD00` (gold-500 → gold-450, design-system §9.11).
 - [x] T029 Rebuild `app/src/app/favicon.ico` (16/32/48, transparent, light-theme fills) from the flat-fill SVG variant — not the CSS-styled SVG, because ImageMagick's internal MSVG renderer ignores class-based CSS fills. Update feature memory in the same change (AGENTS §9) and rerun SC-001…SC-007 evidence.
-- [ ] T030 Local docker preview (`docker compose --env-file deploy/compose.dev.env -f docker-compose.yml -f docker-compose.dev.yml`) and founder visual approval on light + dark chrome before opening the PR.
-- [ ] T031 Open the PR with the SENAR Done Gate after founder approval.
+- [x] T030 Local docker preview (`docker compose --env-file deploy/compose.dev.env -f docker-compose.yml -f docker-compose.dev.yml`) and founder visual approval on light + dark chrome before opening the PR — approved 2026-07-17: the founder reviewed the docker-served `/icon.svg` in both colour schemes and the landing tab, then instructed to open the PR.
+- [x] T031 Open the PR with the SENAR Done Gate after founder approval — PR #85 (`feat/favicon-cz-monogram`), opened 2026-07-17.
 
 ## Process Memory _(mandatory - required by SENAR; written before declaring work complete)_
 
