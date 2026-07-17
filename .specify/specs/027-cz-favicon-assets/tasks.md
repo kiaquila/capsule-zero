@@ -30,10 +30,20 @@
 - [x] T022 Run `xmllint --noout app/src/app/icon.svg`.
 - [x] T023 Run `rg -n "prefers-color-scheme: dark|#1C1C1C|#EDEDED" app/src/app/icon.svg`.
 - [x] T024 Run `test -f app/src/app/favicon.ico && test -f app/src/app/icon.svg && test ! -e app/src/app/icon.png`.
-- [ ] T014 Push the feature-memory update to `feat/favicon-theme-adaptive-svg`.
-- [ ] T015 Update PR #59 body so the SENAR Done Gate references this feature-memory package.
-- [ ] T016 Trigger or await a fresh review after the final pushed head SHA is available.
-- [ ] T017 Recheck PR #59 checks until `guard`, `baseline-checks`, `test`, and `osv-scan` are green.
+- [x] T014 Push the feature-memory update to `feat/favicon-theme-adaptive-svg`.
+- [x] T015 Update PR #59 body so the SENAR Done Gate references this feature-memory package.
+- [x] T016 Trigger or await a fresh review after the final pushed head SHA is available.
+- [x] T017 Recheck PR #59 checks until `guard`, `baseline-checks`, `test`, and `osv-scan` are green.
+
+## Phase 4: "C." Iteration (2026-07-17, `feat/favicon-cz-monogram`)
+
+- [x] T025 Build and docker-preview the first candidate — a "CZ" monogram vectorized from the founder's PNG (colour-separated masks → potrace). Founder reviewed it live and rejected it.
+- [x] T026 Produce a six-variant typographic gallery (light/dark chrome, 96/48/32/16 + tab mocks) in brand typography and palette; founder selected V3 — the editorial "C." mark.
+- [x] T027 Vectorize "C.": extract the C outline from Helvetica Neue Medium (face 10 of `HelveticaNeue.ttc`) via fontTools `SVGPathPen` — exact glyph vector, no raster tracing; gold period `r=48` baseline-set per the approved gallery geometry (browser `dominant-baseline: central` math: baseline = 256 + 0.4×(975−217)/2 ≈ 407.6).
+- [x] T028 Colour onto ratified tokens with preserved inversion: C `#1C1C1C`→`#EDEDED`, dot `#EFBF04`→`#FFDD00` (gold-500 → gold-450, design-system §9.11).
+- [x] T029 Rebuild `app/src/app/favicon.ico` (16/32/48, transparent, light-theme fills) from the flat-fill SVG variant — not the CSS-styled SVG, because ImageMagick's internal MSVG renderer ignores class-based CSS fills. Update feature memory in the same change (AGENTS §9) and rerun SC-001…SC-007 evidence.
+- [x] T030 Local docker preview (`docker compose --env-file deploy/compose.dev.env -f docker-compose.yml -f docker-compose.dev.yml`) and founder visual approval on light + dark chrome before opening the PR — approved 2026-07-17: the founder reviewed the docker-served `/icon.svg` in both colour schemes and the landing tab, then instructed to open the PR.
+- [x] T031 Open the PR with the SENAR Done Gate after founder approval — PR #85 (`feat/favicon-cz-monogram`), opened 2026-07-17.
 
 ## Process Memory _(mandatory - required by SENAR; written before declaring work complete)_
 
@@ -52,6 +62,11 @@
 - **Theme-adaptive follow-up stays in feature folder `027-cz-favicon-assets`**. Reason: this is the same favicon asset surface, not a new product feature.
 - **Use `icon.svg` instead of parallel PNG and SVG assets**. Reason: Next.js supports SVG under the `icon` convention, and a single modern source prevents browsers from selecting the stale non-adaptive PNG.
 - **Keep `favicon.ico` unchanged as fallback**. Reason: some clients may not support SVG favicons, and the existing ICO already covers legacy browser requests.
+- **"C." iteration stays in feature folder `027-cz-favicon-assets`** (2026-07-17). Reason: same favicon asset surface, same precedent as the theme-adaptive follow-up above.
+- **"C." selected over the CZ monogram** (founder decision, 2026-07-17). The founder's own CZ-monogram PNG was vectorized, docker-previewed, and rejected on sight; a six-variant gallery in brand typography followed (CZ grotesque pair / capsule-zero pill / "C." / thin-C+Z overlap / gold CZ echoing the landing logo / "C0"), and the founder chose the editorial "C." — one Helvetica Neue Medium C plus a gold period, the Aesop-style sign-off.
+- **C outline comes from the font, not from tracing**. Reason: fontTools `SVGPathPen` on `HelveticaNeue.ttc` face 10 yields the exact Medium glyph vector — crisper than potrace on a raster and byte-light (~1.3 KB SVG).
+- **Gold uses ratified tokens with a two-step inversion**. Reason: the founder required the light/dark inversion preserved; C flips `#1C1C1C`→`#EDEDED`, the period steps `#EFBF04`→`#FFDD00` — all four values inside the constitution §III / §9.11 palette, so the "one signal accent" rule holds.
+- **ICO uses light-theme fills**. Reason: ICO cannot theme-adapt; light chrome is the majority default, and dark-chrome clients that honor SVG favicons get `icon.svg` anyway.
 
 ### Known Issues
 
