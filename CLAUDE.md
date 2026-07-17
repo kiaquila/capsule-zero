@@ -34,7 +34,7 @@ When you change an architecture or implementation decision, actualize **all** af
 ## Design Principles (NON-NEGOTIABLE)
 
 - **Glassmorphism UI** — frosted glass surfaces, backdrop blur, translucent layers; never opaque containers.
-- **Achromatic interface** — black / white / grey; color comes ONLY from the user's items. Error color `#FFD600` (yellow, not red).
+- **Achromatic interface** — black / white / grey + ONE gold signal accent (`#EFBF04→#FFDD00`, primary CTA and logo accent only — Q4 closed 2026-07-16); all other color comes ONLY from the user's items. Error color `#FF5449` (signal red; yellow retired with Q4).
 - **8px grid** for spacing; the "screenshot test" (every screen worth screenshotting); "direct, not dictate" (guide, never impose).
 - Exact tokens: @.specify/memory/design-system.md and `docs_capsule_zero/project/frontend/styling.md`.
 

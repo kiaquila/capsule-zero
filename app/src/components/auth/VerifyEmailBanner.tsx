@@ -92,6 +92,8 @@ export function VerifyEmailBanner({
     return null;
   }
 
+  const statusIsError = status?.kind === "error" || Boolean(form.formState.errors.code);
+
   return (
     <NotificationBanner
       description={t("hint", { email })}
@@ -128,12 +130,12 @@ export function VerifyEmailBanner({
       </form>
       {status || form.formState.errors.code ? (
         <p
-          className="verify-email-status"
-          data-testid={
-            status?.kind === "error" || form.formState.errors.code
-              ? "verify-email-error"
-              : "verify-email-info"
+          className={
+            statusIsError
+              ? "verify-email-status verify-email-status-error"
+              : "verify-email-status"
           }
+          data-testid={statusIsError ? "verify-email-error" : "verify-email-info"}
           role={status?.kind === "error" ? "alert" : "status"}
         >
           {form.formState.errors.code?.message ?? status?.text}

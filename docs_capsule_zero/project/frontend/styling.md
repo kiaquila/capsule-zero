@@ -31,7 +31,7 @@ The interface is strictly achromatic. Color enters ONLY through the user's garme
 
 | Purpose | Value | Notes |
 |---------|-------|-------|
-| Error / Warning | `#FFD600` | Yellow, not red |
+| Error / Warning | `#FF5449` | Signal red (Q4, 2026-07-16 — design-system.md §9.11); text runs on scrim chips use `--color-error-text` `#FF7A70`; yellow `#FFD600` retired — gold `#EFBF04→#FFDD00` is the CTA/logo accent only |
 | Favorite active | `rgba(220,30,50,.90)` | Saturated opaque red |
 | Favorite border | `rgba(255,60,80,.70)` | Heart icon border |
 

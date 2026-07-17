@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Landing V2 — V3 Editorial Serif</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    /* inherited canon (glass heritage) */
+    --glass-bg: rgba(255,255,255,.22);
+    --glass-border: rgba(255,255,255,.58);
+    --glass-hi: inset 0 1px 0 rgba(255,255,255,.72);
+    --text-p: rgba(255,255,255,.95);
+    --text-s: rgba(255,255,255,.78);
+    --text-m: rgba(255,255,255,.50);
+    --scrim: rgba(0,0,0,.35);
+    --radius-lg: 20px;
+    --radius-pill: 50px;
+    /* gold accent family — flat solid treatment in this direction */
+    --gold-500: #EFBF04;
+    --gold-450: #FFDD00;
+    --cta-text: #141414;
+    /* error: terracotta/clay — retires yellow, warm not alarming */
+    --error: #E2725B;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body { font-family: 'Hanken Grotesk', sans-serif; color: var(--text-p); background: #111; overflow-x: hidden; }
+  .wallpaper { position: fixed; inset: 0; background: url('../wall.png') center/cover no-repeat; filter: grayscale(1); z-index: 0; }
+  .overlay { position: fixed; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.58), rgba(0,0,0,.40) 50%, rgba(0,0,0,.68)); z-index: 1; }
+  .page { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 20px 32px; }
+  .logo { color: var(--text-p); font-family: 'Fraunces', serif; font-size: 17px; font-weight: 400; letter-spacing: .02em; text-decoration: none; }
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .lang { background: none; border: 0; color: var(--text-s); font: inherit; font-size: 12px; font-weight: 500; letter-spacing: .06em; cursor: pointer; text-transform: uppercase; }
+  .lang:hover { color: var(--text-p); }
+  .login { min-height: 34px; padding: 0 16px; background: transparent; border: 1px solid rgba(255,255,255,.24); border-radius: var(--radius-pill); color: var(--text-p); font: inherit; font-size: 12px; font-weight: 500; letter-spacing: .04em; cursor: pointer; }
+  .login:hover { background: rgba(255,255,255,.10); }
+
+  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 24px; }
+  .hero { max-width: 760px; text-align: center; }
+  .rule { width: 56px; height: 1px; background: var(--gold-500); margin: 0 auto 18px; }
+  .eyebrow { display: block; margin-bottom: 26px; color: var(--gold-500); font-size: 12px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
+  h1 {
+    font-family: 'Fraunces', serif; font-optical-sizing: auto;
+    font-size: clamp(38px, 6vw, 62px); font-weight: 300; line-height: 1.08;
+    letter-spacing: 0; margin-bottom: 24px;
+  }
+  h1 em { font-style: italic; font-weight: 300; }
+  .sub { max-width: 540px; margin: 0 auto 36px; color: var(--text-s); font-size: 17px; font-weight: 400; line-height: 1.7; }
+  .cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    min-height: 54px; padding: 0 38px;
+    background: var(--gold-500);
+    border: 0; border-radius: var(--radius-pill);
+    color: var(--cta-text); font: inherit; font-size: 15px; font-weight: 600; letter-spacing: .01em;
+    cursor: pointer;
+    box-shadow: 0 8px 28px rgba(239,191,4,.30);
+    transition: background .2s ease, transform .2s ease;
+  }
+  .cta:hover { background: var(--gold-450); transform: translateY(-1px); }
+  .cta:focus-visible { outline: 2px solid rgba(255,255,255,.85); outline-offset: 3px; }
+  .micro { margin-top: 14px; color: var(--text-m); font-size: 13px; }
+
+  /* demo strip under hero — horizontal glass card row */
+  .demo {
+    margin: 40px auto 0; max-width: 680px;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(40px); backdrop-filter: blur(40px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 32px rgba(0,0,0,.22), var(--glass-hi);
+    padding: 20px 24px;
+    display: flex; align-items: center; gap: 20px; justify-content: space-between;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.16); border-radius: var(--radius-pill); font-size: 12.5px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,.26); }
+  .demo-result { text-align: right; flex: 0 0 auto; }
+  .demo-result .num { display: block; font-family: 'Fraunces', serif; font-size: 40px; font-weight: 300; line-height: 1; }
+  .demo-result .label { color: var(--text-s); font-size: 12.5px; }
+  .demo-note { margin: 10px auto 0; max-width: 680px; color: var(--text-m); font-size: 11px; text-align: center; }
+
+  .specimen { margin: 40px 32px 32px; padding: 24px; border: 1px dashed rgba(255,255,255,.30); border-radius: var(--radius-lg); }
+  .specimen-title { margin-bottom: 18px; color: var(--text-m); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+  .specimen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+  .spec-block h3 { margin-bottom: 12px; color: var(--text-s); font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+  .field label { display: block; margin-bottom: 6px; color: var(--text-s); font-size: 13px; }
+  .field input { width: 100%; min-height: 44px; padding: 0 14px; background: rgba(255,255,255,.12); border: 1px solid rgba(226,114,91,.85); border-radius: 14px; color: var(--text-p); font: inherit; font-size: 15px; }
+  .field input:focus-visible { outline: 2px solid rgba(255,255,255,.82); outline-offset: 2px; }
+  .error-chip { display: inline-block; margin-top: 8px; padding: 5px 10px; background: var(--scrim); border-radius: 8px; color: #F4937E; font-size: 13px; font-weight: 500; }
+  .notice { padding: 12px 14px; background: rgba(226,114,91,.12); border: 1px solid rgba(226,114,91,.45); border-radius: 14px; color: var(--text-p); font-size: 13px; line-height: 1.5; }
+  .notice b { color: #F4937E; font-weight: 600; }
+  .ramp p { line-height: 1.55; }
+  .ramp .r1 { color: var(--text-p); font-size: 17px; }
+  .ramp .r2 { color: var(--text-s); font-size: 15px; }
+  .ramp .r3 { color: var(--text-m); font-size: 13px; }
+  .ramp .cap { color: var(--text-m); font-size: 11px; margin-top: 6px; }
+
+  footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; padding: 20px 24px 24px; color: rgba(255,255,255,.58); font-size: 11px; text-transform: uppercase; }
+  footer a { color: inherit; text-decoration: none; }
+  footer a:hover { color: var(--text-p); }
+
+  .proto { position: fixed; z-index: 50; left: 16px; bottom: 16px; display: flex; gap: 6px; align-items: center; background: rgba(28,28,28,.92); border: 1px solid rgba(255,255,255,.16); border-radius: var(--radius-pill); padding: 6px 10px; }
+  .proto button { background: transparent; border: 1px solid rgba(255,255,255,.24); border-radius: var(--radius-pill); color: rgba(255,255,255,.78); font-size: 11px; font-weight: 600; padding: 4px 10px; cursor: pointer; }
+  .proto button.on { background: rgba(255,255,255,.9); color: #111; }
+  .proto .sep { width: 1px; height: 16px; background: rgba(255,255,255,.2); }
+
+  @media (max-width: 760px) {
+    header { padding: 16px 20px; }
+    .demo { flex-direction: column; align-items: stretch; }
+    .demo-result { text-align: center; }
+    .specimen { margin: 32px 20px 24px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wallpaper"></div>
+  <div class="overlay"></div>
+  <div class="page">
+    <header>
+      <a class="logo" href="#">Capsule Zero</a>
+      <div class="header-actions">
+        <button class="lang" id="langBtn" type="button">EN ▾</button>
+        <button class="login" id="loginBtn" type="button">Log in</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="rule"></div>
+        <span class="eyebrow" id="eyebrow"></span>
+        <h1 id="h1"></h1>
+        <p class="sub" id="sub"></p>
+        <button class="cta" type="button"><span id="cta"></span><span aria-hidden="true">→</span></button>
+        <p class="micro" id="micro"></p>
+
+        <div class="demo" aria-label="Product demo">
+          <div class="chips">
+            <span class="chip"><span class="dot" style="background:#1C1C1C"></span><span id="i1">Wool blazer</span></span>
+            <span class="chip"><span class="dot" style="background:#FFFFFF"></span><span id="i2">White tee</span></span>
+            <span class="chip"><span class="dot" style="background:#31456A"></span><span id="i3">Straight jeans</span></span>
+            <span class="chip"><span class="dot" style="background:#4A3728"></span><span id="i4">Leather loafers</span></span>
+            <span class="chip"><span class="dot" style="background:#B98A5A"></span><span id="i5">Camel coat</span></span>
+          </div>
+          <div class="demo-result"><span class="num">12</span><span class="label" id="demoLabel">wearable outfits</span></div>
+        </div>
+        <p class="demo-note" id="demoNote">Illustrative example — the exact counting model is pending decision Q1.</p>
+      </section>
+    </main>
+
+    <section class="specimen">
+      <p class="specimen-title">Specimen — error, focus &amp; text ramp (prototype-only strip)</p>
+      <div class="specimen-grid">
+        <div class="spec-block">
+          <h3>Error state</h3>
+          <div class="field">
+            <label for="em">Email</label>
+            <input id="em" type="text" value="kris@" aria-invalid="true" />
+            <span class="error-chip">This doesn't look like a complete email address</span>
+          </div>
+        </div>
+        <div class="spec-block">
+          <h3>Warning notice</h3>
+          <p class="notice">Photo is larger than <b>10 MB</b> — compress it or pick a smaller file.</p>
+        </div>
+        <div class="spec-block ramp">
+          <h3>Text ramp</h3>
+          <p class="r1">Primary .95 / 17px / 400 — body on overlay</p>
+          <p class="r2">Secondary .78 / 15px / 400 — supporting</p>
+          <p class="r3">Muted .50 / 13px / 400 — metadata only</p>
+          <p class="cap">Fraunces display 300 mixed case · Hanken Grotesk body · terracotta errors on scrim</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <a href="#">Terms of Use</a><span>·</span><a href="#">Privacy Policy</a><span>·</span><a href="#">Cookie Settings</a><span>·</span><span>© 2026 Capsule Zero</span>
+    </footer>
+  </div>
+
+  <div class="proto" role="group" aria-label="Prototype controls">
+    <button data-c="c1" class="on">C1</button>
+    <button data-c="c2">C2</button>
+    <button data-c="c3">C3</button>
+    <button data-c="c4">C4</button>
+    <span class="sep"></span>
+    <button data-l="en" class="on">EN</button>
+    <button data-l="ru">RU</button>
+  </div>
+
+<script>
+/* Serif direction renders headlines mixed-case with an italic accent word */
+const COPY = {
+  c1: {
+    en: { eyebrow: "Capsule Zero", h1: "How many outfits <em>hide</em> in your wardrobe?", sub: "Add five pieces you own — Capsule Zero counts the combinations and shows what one smart addition changes.", cta: "Count my outfits", micro: "No account · Free · About 2 minutes" },
+    ru: { eyebrow: "Capsule Zero", h1: "Сколько образов <em>прячется</em> в вашем гардеробе?", sub: "Добавьте пять любимых вещей — Capsule Zero покажет их сочетания и то, что изменит одна точная покупка.", cta: "Посчитать мои образы", micro: "Без аккаунта · Бесплатно · Около 2 минут" }
+  },
+  c2: {
+    en: { eyebrow: "The wardrobe method", h1: "A full closet. <em>Nothing</em> to wear.", sub: "Capsule Zero turns the clothes you already own into a system of outfits — built on color rules, not guesswork.", cta: "Build my mini-wardrobe", micro: "Free · No sign-up needed" },
+    ru: { eyebrow: "Метод гардероба", h1: "Полный шкаф — и <em>нечего</em> надеть.", sub: "Capsule Zero превращает вещи, которые у вас уже есть, в систему образов — по правилам цвета, а не наугад.", cta: "Собрать мини-гардероб", micro: "Бесплатно · Без регистрации" }
+  },
+  c3: {
+    en: { eyebrow: "When new money mindset meets old money taste", h1: "Fewer clothes. <em>More</em> outfits.", sub: "A wardrobe method built on a proprietary color system — see how far five pieces can go.", cta: "Start with five pieces", micro: "No account needed · Instant" },
+    ru: { eyebrow: "Когда тихая роскошь встречает осознанность минимализма", h1: "Меньше вещей. <em>Больше</em> образов.", sub: "Метод гардероба на собственной цветовой системе — узнайте, на что способны пять вещей.", cta: "Начать с пяти вещей", micro: "Без аккаунта · Мгновенно" }
+  },
+  c4: {
+    en: { eyebrow: "51 colors · One method", h1: "Your wardrobe, <em>made to work</em>.", sub: "Capsule Zero shows which outfits your clothes already make — before you buy anything new.", cta: "See my combinations", micro: "Runs in your browser — nothing is uploaded" },
+    ru: { eyebrow: "51 цвет · Один метод", h1: "Гардероб, который <em>работает</em>.", sub: "Capsule Zero показывает, какие образы уже есть в ваших вещах — до любых новых покупок.", cta: "Показать мои сочетания", micro: "Считается в браузере — ничего не загружается" }
+  }
+};
+const CHROME = {
+  en: { login: "Log in", lang: "EN ▾", demoLabel: "wearable outfits", demoNote: "Illustrative example — the exact counting model is pending decision Q1.", items: ["Wool blazer","White tee","Straight jeans","Leather loafers","Camel coat"] },
+  ru: { login: "Войти", lang: "RU ▾", demoLabel: "носибельных образов", demoNote: "Иллюстративный пример — модель подсчёта ждёт решения Q1.", items: ["Шерстяной блейзер","Белая футболка","Прямые джинсы","Кожаные лоферы","Пальто кэмел"] }
+};
+let cur = { c: "c1", l: "en" };
+function render() {
+  const t = COPY[cur.c][cur.l], ch = CHROME[cur.l];
+  eyebrow.textContent = t.eyebrow; h1.innerHTML = t.h1; sub.textContent = t.sub;
+  cta.textContent = t.cta; micro.textContent = t.micro;
+  loginBtn.textContent = ch.login; langBtn.textContent = ch.lang;
+  demoLabel.textContent = ch.demoLabel; demoNote.textContent = ch.demoNote;
+  ch.items.forEach((n, i) => document.getElementById("i" + (i+1)).textContent = n);
+  document.querySelectorAll(".proto [data-c]").forEach(b => b.classList.toggle("on", b.dataset.c === cur.c));
+  document.querySelectorAll(".proto [data-l]").forEach(b => b.classList.toggle("on", b.dataset.l === cur.l));
+  document.documentElement.lang = cur.l;
+}
+document.querySelectorAll(".proto [data-c]").forEach(b => b.onclick = () => { cur.c = b.dataset.c; render(); });
+document.querySelectorAll(".proto [data-l]").forEach(b => b.onclick = () => { cur.l = b.dataset.l; render(); });
+langBtn.onclick = () => { cur.l = cur.l === "en" ? "ru" : "en"; render(); };
+render();
+</script>
+</body>
+</html>

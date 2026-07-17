@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Landing V2 — Финал (V1c)</title>
+<style>
+  :root {
+    /* canon (design-system.md §1, §9) */
+    --glass-bg: rgba(255,255,255,.22);
+    --glass-border: rgba(255,255,255,.58);
+    --glass-hi: inset 0 1px 0 rgba(255,255,255,.72);
+    --text-p: rgba(255,255,255,.95);
+    --text-s: rgba(255,255,255,.78);
+    --text-m: rgba(255,255,255,.50);
+    --radius-lg: 20px;
+    --radius-pill: 50px;
+    /* gold accent family (D3, ратифицировано 2026-07-16) */
+    --gold-500: #EFBF04;
+    --gold-450: #FFDD00;
+    --cta-grad: linear-gradient(to right, #EFBF04 0%, #FFDD00 100%);
+    --cta-text: #0A0A0A;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: var(--text-p); background: #111; overflow-x: hidden; }
+  .wallpaper { position: fixed; inset: 0; background: url('../wall.png') center/cover no-repeat; filter: grayscale(1); z-index: 0; }
+  .overlay { position: fixed; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.58), rgba(0,0,0,.40) 50%, rgba(0,0,0,.68)); z-index: 1; }
+  .page { position: relative; z-index: 2; display: flex; flex-direction: column; }
+
+  /* ── First screen = exactly one viewport: header + hero; slides never peek in ── */
+  .fold { min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── Header: gold logo, original scale (13px/600/no tracking) ── */
+  header { display: flex; align-items: center; justify-content: space-between; padding: 22px 32px; }
+  .logo { flex: 0 0 auto; color: var(--gold-500); font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: uppercase; text-decoration: none; }
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .lang { background: none; border: 0; color: var(--text-p); font: inherit; font-size: 12px; font-weight: 600; letter-spacing: .04em; cursor: pointer; text-transform: uppercase; opacity: .85; }
+  .lang:hover { opacity: 1; }
+  .login { min-height: 34px; padding: 0 16px; background: transparent; border: 1px solid rgba(255,255,255,.24); border-radius: var(--radius-pill); color: var(--text-p); font: inherit; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; }
+  .login:hover { background: rgba(255,255,255,.10); }
+
+  /* ── Hero: centered, airy; h1 larger — still two words per line on desktop ── */
+  main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; text-align: center; }
+  h1 {
+    max-width: 960px;
+    margin: 0 auto 28px;
+    font-size: clamp(32px, 5.4vw, 60px); font-weight: 200; line-height: 1.14;
+    letter-spacing: .05em; text-transform: uppercase;
+    color: var(--text-p);
+  }
+  .sub {
+    max-width: 640px; margin: 0 auto 46px;
+    color: var(--text-s); font-size: 18px; font-weight: 400; line-height: 1.7;
+  }
+  .cta {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 56px; padding: 0 44px;
+    background: var(--cta-grad);
+    border: 1px solid rgba(255,255,255,.20);
+    border-radius: var(--radius-pill);
+    color: var(--cta-text); font: inherit; font-size: 16px; font-weight: 600;
+    letter-spacing: .02em; cursor: pointer;
+    box-shadow: 0 8px 28px rgba(239,191,4,.28);
+    transition: filter .2s ease, transform .2s ease;
+  }
+  .cta:hover { filter: brightness(1.06); transform: translateY(-1px); }
+  .cta:focus-visible { outline: 2px solid rgba(255,255,255,.85); outline-offset: 3px; }
+  .scroll-cue { margin-top: 64px; color: var(--text-m); font-size: 20px; line-height: 1; user-select: none; animation: cue 2.4s ease-in-out infinite; }
+  @keyframes cue { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(6px); opacity: .9; } }
+
+  /* ── Stub: reserved slides, strictly below the fold (How it works — later) ── */
+  .slides-stub { padding: 96px 32px 96px; }
+  .stub-head { text-align: center; margin-bottom: 36px; }
+  .stub-head h2 { font-size: 13px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--text-m); }
+  .stub-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; max-width: 960px; margin: 0 auto; }
+  .stub-card {
+    min-height: 200px; padding: 24px;
+    border: 1px dashed rgba(255,255,255,.28); border-radius: var(--radius-lg);
+    background: rgba(255,255,255,.05);
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .stub-card .n { font-size: 30px; font-weight: 200; color: var(--text-m); }
+  .stub-card p { color: var(--text-m); font-size: 13px; line-height: 1.5; }
+
+  footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; padding: 20px 24px 24px; color: rgba(255,255,255,.58); font-size: 11px; text-transform: uppercase; }
+  footer a { color: inherit; text-decoration: none; }
+  footer a:hover { color: var(--text-p); }
+
+  /* ── Proto chrome: language only ── */
+  .proto {
+    position: fixed; z-index: 50; left: 16px; bottom: 16px;
+    display: flex; gap: 6px; align-items: center;
+    background: rgba(28,28,28,.92); border: 1px solid rgba(255,255,255,.16);
+    border-radius: var(--radius-pill); padding: 6px 10px;
+  }
+  .proto button { background: transparent; border: 1px solid rgba(255,255,255,.24); border-radius: var(--radius-pill); color: rgba(255,255,255,.78); font-size: 11px; font-weight: 600; padding: 4px 10px; cursor: pointer; }
+  .proto button.on { background: rgba(255,255,255,.9); color: #111; }
+
+  @media (max-width: 860px) {
+    header { padding: 16px 20px; }
+    main { padding: 40px 20px; }
+    .sub { font-size: 16px; }
+    .stub-grid { grid-template-columns: 1fr; }
+    .slides-stub { padding: 64px 20px 64px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wallpaper"></div>
+  <div class="overlay"></div>
+  <div class="page">
+    <div class="fold">
+      <header>
+        <a class="logo" href="#">Capsule Zero</a>
+        <div class="header-actions">
+          <button class="lang" id="langBtn" type="button">RU ▾</button>
+          <button class="login" id="loginBtn" type="button">Войти</button>
+        </div>
+      </header>
+
+      <main>
+        <h1 id="h1">Создай свою<br>гардеробную капсулу</h1>
+        <p class="sub" id="sub">Загрузи несколько фото любимых вещей — и узнай, что добавить, чтобы образов на каждый день стало больше</p>
+        <button class="cta" type="button" id="cta">Попробовать бесплатно</button>
+        <div class="scroll-cue" aria-hidden="true">▾</div>
+      </main>
+    </div>
+
+    <!-- Reserved: slides land here post-MVP (How it works à la Nouva, etc.) -->
+    <section class="slides-stub" aria-label="Reserved for future slides">
+      <div class="stub-head"><h2 id="stubTitle">Как это работает — слайды появятся здесь</h2></div>
+      <div class="stub-grid">
+        <div class="stub-card"><span class="n">01</span><p id="st1">Зарезервировано: шаг 1</p></div>
+        <div class="stub-card"><span class="n">02</span><p id="st2">Зарезервировано: шаг 2</p></div>
+        <div class="stub-card"><span class="n">03</span><p id="st3">Зарезервировано: шаг 3</p></div>
+      </div>
+    </section>
+
+    <footer>
+      <a href="#" id="fTerms">Условия использования</a><span>·</span><a href="#" id="fPriv">Конфиденциальность</a><span>·</span><a href="#" id="fCookie">Настройки cookie</a><span>·</span><span>© 2026 Capsule Zero</span>
+    </footer>
+  </div>
+
+  <div class="proto" role="group" aria-label="Prototype controls">
+    <button data-l="ru" class="on">RU</button>
+    <button data-l="en">EN</button>
+  </div>
+
+<script>
+const T = {
+  ru: {
+    h1: "Создай свою<br>гардеробную капсулу",
+    sub: "Загрузи несколько фото любимых вещей — и узнай, что добавить, чтобы образов на каждый день стало больше",
+    cta: "Попробовать бесплатно", login: "Войти", lang: "RU ▾",
+    stubTitle: "Как это работает — слайды появятся здесь",
+    st: ["Зарезервировано: шаг 1", "Зарезервировано: шаг 2", "Зарезервировано: шаг 3"],
+    fTerms: "Условия использования", fPriv: "Конфиденциальность", fCookie: "Настройки cookie"
+  },
+  en: {
+    h1: "Create your<br>capsule wardrobe",
+    sub: "Upload a few photos of the clothes you love — and see what to add for more everyday outfits",
+    cta: "Try for free", login: "Log in", lang: "EN ▾",
+    stubTitle: "How it works — slides will land here",
+    st: ["Reserved: step 1", "Reserved: step 2", "Reserved: step 3"],
+    fTerms: "Terms of Use", fPriv: "Privacy Policy", fCookie: "Cookie Settings"
+  }
+};
+let lang = "ru";
+function render() {
+  const t = T[lang];
+  h1.innerHTML = t.h1; sub.textContent = t.sub; cta.textContent = t.cta;
+  loginBtn.textContent = t.login; langBtn.textContent = t.lang;
+  stubTitle.textContent = t.stubTitle;
+  ["st1","st2","st3"].forEach((id, i) => document.getElementById(id).textContent = t.st[i]);
+  fTerms.textContent = t.fTerms; fPriv.textContent = t.fPriv; fCookie.textContent = t.fCookie;
+  document.querySelectorAll(".proto [data-l]").forEach(b => b.classList.toggle("on", b.dataset.l === lang));
+  document.documentElement.lang = lang;
+}
+document.querySelectorAll(".proto [data-l]").forEach(b => b.onclick = () => { lang = b.dataset.l; render(); });
+langBtn.onclick = () => { lang = lang === "ru" ? "en" : "ru"; render(); };
+render();
+</script>
+</body>
+</html>

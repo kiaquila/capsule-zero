@@ -42,7 +42,7 @@ Implementation rules:
 - Configure mobile deep links for OAuth callbacks in Stage 2 (React Native submits the Google SDK `id_token` to the same Kratos provider config; Kratos validates the flow). Payment-return deep links are deferred — v0.1 mobile has no purchase CTA.
 - Persist language preference on `profiles.language` (allowed values: `en`, `ru`).
 - Persist optional `country` and `city` on `profiles`, but never block registration if absent.
-- Use inline UI errors with Capsule Zero yellow `#FFD600`; no alert popups.
+- Use inline UI errors with the Capsule Zero error accent `#FF5449` (signal red — Q4, 2026-07-16; the former yellow `#FFD600` is retired); no alert popups.
 - Production secrets (Kratos cookie/session secret, Resend API key) live only in the droplet's encrypted `.env` and provider dashboards.
 
 ## Data Model

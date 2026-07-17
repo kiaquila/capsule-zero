@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Landing V2 — Итерация 2 (V1: воздух, центр)</title>
+<style>
+  :root {
+    /* canon (design-system.md §1, §9) */
+    --glass-bg: rgba(255,255,255,.22);
+    --glass-border: rgba(255,255,255,.58);
+    --glass-hi: inset 0 1px 0 rgba(255,255,255,.72);
+    --text-p: rgba(255,255,255,.95);
+    --text-s: rgba(255,255,255,.78);
+    --text-m: rgba(255,255,255,.50);
+    --scrim: rgba(0,0,0,.35);
+    --radius-lg: 20px;
+    --radius-pill: 50px;
+    /* gold accent family (D3) */
+    --gold-500: #EFBF04;
+    --gold-450: #FFDD00;
+    --cta-grad: linear-gradient(to right, #EFBF04 0%, #FFDD00 100%);
+    --cta-text: #0A0A0A;
+    /* error family — set by the E-switcher (yellow retired) */
+    --err-text: #FF8A85;
+    --err-border: rgba(255,107,102,.75);
+    --err-bg: rgba(255,107,102,.10);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: var(--text-p); background: #111; overflow-x: hidden; }
+  .wallpaper { position: fixed; inset: 0; background: url('../wall.png') center/cover no-repeat; filter: grayscale(1); z-index: 0; }
+  .overlay { position: fixed; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.58), rgba(0,0,0,.40) 50%, rgba(0,0,0,.68)); z-index: 1; }
+  .page { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── Header: gold logo top-left (original corner), no hero duplication ── */
+  header { display: flex; align-items: center; justify-content: space-between; padding: 22px 32px; }
+  .logo { color: var(--gold-500); font-size: 15px; font-weight: 600; letter-spacing: .10em; text-transform: uppercase; text-decoration: none; }
+  .header-actions { display: flex; align-items: center; gap: 16px; }
+  .lang { background: none; border: 0; color: var(--text-p); font: inherit; font-size: 12px; font-weight: 600; letter-spacing: .04em; cursor: pointer; text-transform: uppercase; opacity: .85; }
+  .lang:hover { opacity: 1; }
+  .login { min-height: 34px; padding: 0 16px; background: transparent; border: 1px solid rgba(255,255,255,.24); border-radius: var(--radius-pill); color: var(--text-p); font: inherit; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; }
+  .login:hover { background: rgba(255,255,255,.10); }
+
+  /* ── Hero: centered, big, airy ── */
+  main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 96px 24px 72px; text-align: center; }
+  h1 {
+    max-width: 900px;
+    margin: 0 auto 28px;
+    font-size: clamp(32px, 5vw, 52px); font-weight: 200; line-height: 1.16;
+    letter-spacing: .05em; text-transform: uppercase;
+    color: var(--text-p);
+  }
+  .sub {
+    max-width: 640px; margin: 0 auto 44px;
+    color: var(--text-s); font-size: 18px; font-weight: 400; line-height: 1.7;
+  }
+  .cta {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-height: 56px; padding: 0 44px;
+    background: var(--cta-grad);
+    border: 1px solid rgba(255,255,255,.20);
+    border-radius: var(--radius-pill);
+    color: var(--cta-text); font: inherit; font-size: 16px; font-weight: 600;
+    letter-spacing: .02em; cursor: pointer;
+    box-shadow: 0 8px 28px rgba(239,191,4,.28);
+    transition: filter .2s ease, transform .2s ease;
+  }
+  .cta:hover { filter: brightness(1.06); transform: translateY(-1px); }
+  .cta:focus-visible { outline: 2px solid rgba(255,255,255,.85); outline-offset: 3px; }
+  .micro { margin-top: 16px; color: var(--text-m); font-size: 13px; letter-spacing: .02em; }
+  .scroll-cue { margin-top: 72px; color: var(--text-m); font-size: 20px; line-height: 1; user-select: none; animation: cue 2.4s ease-in-out infinite; }
+  @keyframes cue { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(6px); opacity: .9; } }
+
+  /* ── Stub: reserved slides below the fold (How it works — later) ── */
+  .slides-stub { padding: 72px 32px 84px; }
+  .stub-head { text-align: center; margin-bottom: 36px; }
+  .stub-head h2 { font-size: 13px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--text-m); }
+  .stub-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; max-width: 960px; margin: 0 auto; }
+  .stub-card {
+    min-height: 200px; padding: 24px;
+    border: 1px dashed rgba(255,255,255,.28); border-radius: var(--radius-lg);
+    background: rgba(255,255,255,.05);
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .stub-card .n { font-size: 30px; font-weight: 200; color: var(--text-m); }
+  .stub-card p { color: var(--text-m); font-size: 13px; line-height: 1.5; }
+
+  /* ── Specimen (prototype-only): error-shade picker playground ── */
+  .specimen { margin: 0 32px 32px; padding: 24px; border: 1px dashed rgba(255,255,255,.30); border-radius: var(--radius-lg); }
+  .specimen-title { margin-bottom: 6px; color: var(--text-m); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+  .specimen-sub { margin-bottom: 18px; color: var(--text-m); font-size: 12px; }
+  .specimen-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+  .spec-block h3 { margin-bottom: 12px; color: var(--text-s); font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+  .field label { display: block; margin-bottom: 6px; color: var(--text-s); font-size: 13px; }
+  .field input {
+    width: 100%; min-height: 44px; padding: 0 14px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid var(--err-border); border-radius: 14px;
+    color: var(--text-p); font: inherit; font-size: 15px;
+  }
+  .field input:focus-visible { outline: 2px solid rgba(255,255,255,.82); outline-offset: 2px; }
+  .error-chip { display: inline-block; margin-top: 8px; padding: 5px 10px; background: var(--scrim); border-radius: 8px; color: var(--err-text); font-size: 13px; font-weight: 500; }
+  .error-plain { display: block; margin-top: 8px; color: var(--err-text); font-size: 13px; font-weight: 500; }
+  .notice { padding: 12px 14px; background: var(--err-bg); border: 1px solid var(--err-border); border-radius: 14px; color: var(--text-p); font-size: 13px; line-height: 1.5; }
+  .notice b { color: var(--err-text); background: var(--scrim); padding: 1px 6px; border-radius: 6px; font-weight: 600; }
+  .swatch-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+  .swatch { display: flex; align-items: center; gap: 8px; color: var(--text-m); font-size: 12px; }
+  .swatch i { width: 16px; height: 16px; border-radius: 50%; display: inline-block; }
+
+  footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; padding: 20px 24px 24px; color: rgba(255,255,255,.58); font-size: 11px; text-transform: uppercase; }
+  footer a { color: inherit; text-decoration: none; }
+  footer a:hover { color: var(--text-p); }
+
+  /* ── Proto chrome (prototype-only, will not ship) ── */
+  .proto {
+    position: fixed; z-index: 50; left: 16px; bottom: 16px;
+    display: flex; flex-direction: column; gap: 6px;
+    background: rgba(28,28,28,.92); border: 1px solid rgba(255,255,255,.16);
+    border-radius: 16px; padding: 10px;
+  }
+  .proto-row { display: flex; gap: 6px; align-items: center; }
+  .proto-label { color: rgba(255,255,255,.5); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; width: 46px; }
+  .proto button { background: transparent; border: 1px solid rgba(255,255,255,.24); border-radius: var(--radius-pill); color: rgba(255,255,255,.78); font-size: 11px; font-weight: 600; padding: 4px 10px; cursor: pointer; }
+  .proto button.on { background: rgba(255,255,255,.9); color: #111; }
+
+  @media (max-width: 860px) {
+    header { padding: 16px 20px; }
+    main { padding: 64px 20px 48px; }
+    .sub { font-size: 16px; }
+    .stub-grid { grid-template-columns: 1fr; }
+    .slides-stub { padding: 48px 20px 56px; }
+    .specimen { margin: 0 20px 24px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wallpaper"></div>
+  <div class="overlay"></div>
+  <div class="page">
+    <header>
+      <a class="logo" href="#">Capsule Zero</a>
+      <div class="header-actions">
+        <button class="lang" id="langBtn" type="button">RU ▾</button>
+        <button class="login" id="loginBtn" type="button">Войти</button>
+      </div>
+    </header>
+
+    <main>
+      <h1 id="h1"></h1>
+      <p class="sub" id="sub"></p>
+      <button class="cta" type="button" id="cta"></button>
+      <p class="micro" id="micro"></p>
+      <div class="scroll-cue" aria-hidden="true">▾</div>
+    </main>
+
+    <!-- Reserved: slides land here post-MVP (How it works à la Nouva, etc.) -->
+    <section class="slides-stub" aria-label="Reserved for future slides">
+      <div class="stub-head"><h2 id="stubTitle">Как это работает — слайды появятся здесь</h2></div>
+      <div class="stub-grid">
+        <div class="stub-card"><span class="n">01</span><p id="st1">Зарезервировано: шаг 1</p></div>
+        <div class="stub-card"><span class="n">02</span><p id="st2">Зарезервировано: шаг 2</p></div>
+        <div class="stub-card"><span class="n">03</span><p id="st3">Зарезервировано: шаг 3</p></div>
+      </div>
+    </section>
+
+    <section class="specimen">
+      <p class="specimen-title" id="specTitle">Специмен ошибок — прототип-only, в продакшен не идёт</p>
+      <p class="specimen-sub" id="specSub">Жёлтый отставлен. Переключай E1–E4 внизу слева: цвет применяется к рамке, тексту и панели-предупреждению.</p>
+      <div class="specimen-grid">
+        <div class="spec-block">
+          <h3 id="specH1">Ошибка поля</h3>
+          <div class="field">
+            <label for="em">Email</label>
+            <input id="em" type="text" value="kris@" aria-invalid="true" />
+            <span class="error-chip" id="errChip">Похоже, адрес не дописан</span>
+            <span class="error-plain" id="errPlain">Похоже, адрес не дописан — вариант без подложки</span>
+          </div>
+        </div>
+        <div class="spec-block">
+          <h3 id="specH2">Предупреждение</h3>
+          <p class="notice" id="noticeText">Фото больше <b>10 МБ</b> — сожмите файл или выберите другой.</p>
+        </div>
+        <div class="spec-block">
+          <h3 id="specH3">Текущий оттенок</h3>
+          <div class="swatch-row" id="swatches"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <a href="#" id="fTerms">Условия использования</a><span>·</span><a href="#" id="fPriv">Конфиденциальность</a><span>·</span><a href="#" id="fCookie">Настройки cookie</a><span>·</span><span>© 2026 Capsule Zero</span>
+    </footer>
+  </div>
+
+  <div class="proto" role="group" aria-label="Prototype controls">
+    <div class="proto-row"><span class="proto-label">Смысл</span>
+      <button data-k="k1" class="on">K1</button>
+      <button data-k="k2">K2</button>
+      <button data-k="k3">K3</button>
+      <button data-k="k4">K4</button>
+      <button data-k="k5">K5</button>
+    </div>
+    <div class="proto-row"><span class="proto-label">Ошибка</span>
+      <button data-e="e1" class="on">E1</button>
+      <button data-e="e2">E2</button>
+      <button data-e="e3">E3</button>
+      <button data-e="e4">E4</button>
+    </div>
+    <div class="proto-row"><span class="proto-label">Язык</span>
+      <button data-l="ru" class="on">RU</button>
+      <button data-l="en">EN</button>
+    </div>
+  </div>
+
+<script>
+/* K-варианты: смысл = собери образы из любимых вещей + узнай, чем дополнить. Без технологий под капотом. */
+const COPY = {
+  k1: { /* формулировка фаундера №1 */
+    ru: { h1: "Собери образы из своих любимых вещей", sub: "Capsule Zero подскажет, чем усилить гардероб, чтобы образов и разнообразия стало больше, — это и есть гардеробная капсула." },
+    en: { h1: "Build outfits from the clothes you love", sub: "Capsule Zero shows what to add so you get more outfits and more variety — that's what a capsule wardrobe is." }
+  },
+  k2: { /* формулировка фаундера №2 */
+    ru: { h1: "Создай свою гардеробную капсулу", sub: "Собери образы из своих вещей — и узнай, что добавить, чтобы образов на каждый день стало больше." },
+    en: { h1: "Create your capsule wardrobe", sub: "Build outfits from your own pieces — and see what to add for more everyday outfits." }
+  },
+  k3: { /* от результата */
+    ru: { h1: "Больше образов из меньшего числа вещей", sub: "Собери сочетания из того, что уже висит в шкафу, — и узнай, какая одна вещь заметно расширит выбор." },
+    en: { h1: "More outfits from fewer clothes", sub: "Combine what's already in your closet — and see which single piece meaningfully widens your choice." }
+  },
+  k4: { /* пейн: утро */
+    ru: { h1: "Каждое утро — готовый образ", sub: "Capsule Zero складывает любимые вещи в капсулу: образы на каждый день и точная подсказка, чем её дополнить." },
+    en: { h1: "A ready outfit every morning", sub: "Capsule Zero turns your favorite pieces into a capsule: everyday outfits and a precise hint on what to add." }
+  },
+  k5: { /* вопрос-крючок */
+    ru: { h1: "Сколько образов прячется в твоём шкафу?", sub: "Собери их из любимых вещей — и узнай, чем дополнить гардероб, чтобы новых сочетаний стало ещё больше." },
+    en: { h1: "How many outfits hide in your closet?", sub: "Build them from the pieces you love — and see what to add for even more combinations." }
+  }
+};
+const CHROME = {
+  ru: { cta: "Попробовать бесплатно", micro: "Без регистрации · Результат за пару минут", login: "Войти", lang: "RU ▾",
+        stubTitle: "Как это работает — слайды появятся здесь", st: ["Зарезервировано: шаг 1", "Зарезервировано: шаг 2", "Зарезервировано: шаг 3"],
+        specTitle: "Специмен ошибок — прототип-only, в продакшен не идёт",
+        specSub: "Жёлтый отставлен. Переключай E1–E4 внизу слева: цвет применяется к рамке, тексту и панели-предупреждению.",
+        specH1: "Ошибка поля", specH2: "Предупреждение", specH3: "Текущий оттенок",
+        errChip: "Похоже, адрес не дописан", errPlain: "Похоже, адрес не дописан — вариант без подложки",
+        notice: 'Фото больше <b>10 МБ</b> — сожмите файл или выберите другой.',
+        fTerms: "Условия использования", fPriv: "Конфиденциальность", fCookie: "Настройки cookie" },
+  en: { cta: "Try for free", micro: "No sign-up · Takes a couple of minutes", login: "Log in", lang: "EN ▾",
+        stubTitle: "How it works — slides will land here", st: ["Reserved: step 1", "Reserved: step 2", "Reserved: step 3"],
+        specTitle: "Error specimen — prototype-only, never ships",
+        specSub: "Yellow is retired. Switch E1–E4 bottom-left: the shade drives border, text and warning panel.",
+        specH1: "Field error", specH2: "Warning notice", specH3: "Current shade",
+        errChip: "This address looks incomplete", errPlain: "This address looks incomplete — no-backing variant",
+        notice: 'Photo is larger than <b>10 MB</b> — compress it or pick a smaller file.',
+        fTerms: "Terms of Use", fPriv: "Privacy Policy", fCookie: "Cookie Settings" }
+};
+/* E-варианты: красная семья, все на тёмном скриме читабельны */
+const ERR = {
+  e1: { name: "Коралл",     nameEn: "Coral",      base: "#FF6B66", text: "#FF8A85", border: "rgba(255,107,102,.75)", bg: "rgba(255,107,102,.10)" },
+  e2: { name: "Терракота",  nameEn: "Terracotta", base: "#E2725B", text: "#F4937E", border: "rgba(226,114,91,.80)",  bg: "rgba(226,114,91,.12)"  },
+  e3: { name: "Роза",       nameEn: "Rose",       base: "#FF8095", text: "#FF9DAD", border: "rgba(255,128,149,.75)", bg: "rgba(255,128,149,.10)" },
+  e4: { name: "Сигнальный", nameEn: "Signal red", base: "#FF5449", text: "#FF7A70", border: "rgba(255,84,73,.78)",   bg: "rgba(255,84,73,.10)"   }
+};
+let cur = { k: "k1", e: "e1", l: "ru" };
+function render() {
+  const t = COPY[cur.k][cur.l], ch = CHROME[cur.l], e = ERR[cur.e];
+  h1.textContent = t.h1; sub.textContent = t.sub;
+  cta.textContent = ch.cta; micro.textContent = ch.micro;
+  loginBtn.textContent = ch.login; langBtn.textContent = ch.lang;
+  stubTitle.textContent = ch.stubTitle;
+  ["st1","st2","st3"].forEach((id, i) => document.getElementById(id).textContent = ch.st[i]);
+  specTitle.textContent = ch.specTitle; specSub.textContent = ch.specSub;
+  specH1.textContent = ch.specH1; specH2.textContent = ch.specH2; specH3.textContent = ch.specH3;
+  errChip.textContent = ch.errChip; errPlain.textContent = ch.errPlain;
+  noticeText.innerHTML = ch.notice;
+  fTerms.textContent = ch.fTerms; fPriv.textContent = ch.fPriv; fCookie.textContent = ch.fCookie;
+  const rs = document.documentElement.style;
+  rs.setProperty("--err-text", e.text); rs.setProperty("--err-border", e.border); rs.setProperty("--err-bg", e.bg);
+  swatches.innerHTML =
+    `<span class="swatch"><i style="background:${e.base}"></i>base ${e.base} · ${cur.l === "ru" ? e.name : e.nameEn}</span>` +
+    `<span class="swatch"><i style="background:${e.text}"></i>text-on-scrim ${e.text}</span>`;
+  document.querySelectorAll(".proto [data-k]").forEach(b => b.classList.toggle("on", b.dataset.k === cur.k));
+  document.querySelectorAll(".proto [data-e]").forEach(b => b.classList.toggle("on", b.dataset.e === cur.e));
+  document.querySelectorAll(".proto [data-l]").forEach(b => b.classList.toggle("on", b.dataset.l === cur.l));
+  document.documentElement.lang = cur.l;
+}
+document.querySelectorAll(".proto [data-k]").forEach(b => b.onclick = () => { cur.k = b.dataset.k; render(); });
+document.querySelectorAll(".proto [data-e]").forEach(b => b.onclick = () => { cur.e = b.dataset.e; render(); });
+document.querySelectorAll(".proto [data-l]").forEach(b => b.onclick = () => { cur.l = b.dataset.l; render(); });
+langBtn.onclick = () => { cur.l = cur.l === "ru" ? "en" : "ru"; render(); };
+render();
+</script>
+</body>
+</html>

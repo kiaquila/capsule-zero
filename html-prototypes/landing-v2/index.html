@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Landing V2 — выбор направления</title>
+<style>
+  :root { --ink: #1a1a1a; --ink-s: #555; --hair: rgba(0,0,0,.12); --gold: #EFBF04; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #F4F3F0; color: var(--ink); padding: 48px 32px; }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  h1 { font-size: 26px; font-weight: 300; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+  .lead { color: var(--ink-s); font-size: 14px; line-height: 1.6; max-width: 760px; margin-bottom: 8px; }
+  .note { color: var(--ink-s); font-size: 12.5px; line-height: 1.6; max-width: 760px; margin-bottom: 32px; }
+  .note b { color: var(--ink); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 36px; }
+  a.card { display: block; background: #fff; border: 1px solid var(--hair); border-radius: 16px; padding: 22px; text-decoration: none; color: inherit; transition: box-shadow .2s ease, transform .2s ease; }
+  a.card:hover { box-shadow: 0 12px 32px rgba(0,0,0,.10); transform: translateY(-2px); }
+  .tag { display: inline-block; margin-bottom: 12px; padding: 3px 10px; border-radius: 50px; font-size: 10.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+  .t1 { background: rgba(239,191,4,.15); color: #8a6d02; }
+  .t2 { background: #141414; color: #FFDD00; }
+  .t3 { background: rgba(0,0,0,.06); color: #333; }
+  .t4 { background: #fff; border: 1px solid var(--hair); color: #555; }
+  .card h2 { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+  .card ul { list-style: none; }
+  .card li { font-size: 12.5px; color: var(--ink-s); line-height: 1.7; padding-left: 14px; position: relative; }
+  .card li::before { content: "—"; position: absolute; left: 0; }
+  .meta { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hair); font-size: 11.5px; color: var(--ink-s); line-height: 1.6; }
+  .copy-table { background: #fff; border: 1px solid var(--hair); border-radius: 16px; padding: 22px; }
+  .copy-table h2 { font-size: 15px; font-weight: 600; margin-bottom: 14px; letter-spacing: .04em; text-transform: uppercase; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--hair); vertical-align: top; line-height: 1.5; }
+  th { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-s); }
+  td b { font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Landing V2 — четыре направления</h1>
+  <p class="lead">Каждый прототип — самостоятельный скин основы главной: hero (ценность + призыв + gold CTA), уменьшенный Log In справа сверху, образец ошибки/фокуса и текстовая рампа. Внизу каждой страницы — переключатель: <b>C1–C4</b> варианты копирайтинга × <b>EN/RU</b>.</p>
+  <p class="note"><b>Скоуп сознательно сужен</b> (решение 2026-07-16, зафиксировано в PRODUCT-PLAN §5 Этап 1 п.1): «как это работает», OPR-демо на всю страницу, соцдоказательство/отзывы и туториал отложены на после MVP. Число «12 образов» в демо-виджете — иллюстративный пример: модель подсчёта ждёт Q1.</p>
+
+  <div class="grid" style="grid-template-columns: 1fr;">
+    <a class="card" href="v1c-final.html" style="border: 2px solid var(--gold);">
+      <span class="tag t1">Итерация 3 · Финал — на финальной оценке</span>
+      <h2>V1c — финальный кандидат</h2>
+      <ul>
+        <li>Копирайт зафиксирован: «Создай свою / гардеробную капсулу» + «Загрузи несколько фото любимых вещей…» (K2 с правками фаундера)</li>
+        <li>Логотип золотой, оригинальный масштаб 13px; CTA «Попробовать бесплатно» без стрелки и без подписи</li>
+        <li>Ошибки: E4 сигнальный #FF5449 (зашит); переключатель остался только RU/EN</li>
+        <li>Заглушка слайдов «Как это работает» сохранена</li>
+      </ul>
+      <p class="meta">Специмен ошибок внизу — прототип-only, фиксирует выбранные значения для прошивки в дизайн-систему.</p>
+    </a>
+  </div>
+
+  <h1 style="font-size:18px; margin-bottom:16px;">Архив — раунд 2</h1>
+  <div class="grid" style="grid-template-columns: 1fr;">
+    <a class="card" href="v1b-centered-air.html">
+      <span class="tag t3">Итерация 2 · Архив</span>
+      <h2>V1b — Gold on Glass: воздух, центр</h2>
+      <ul>
+        <li>База V1 по решению фаундера 2026-07-16; демо-панель «Your five pieces» убрана (пост-MVP)</li>
+        <li>Золотой логотип в исходном углу, без дубля в hero; CTA «Попробовать бесплатно» без стрелки; призыв и CTA по центру, крупно</li>
+        <li>Переключатели: <b>К1–К5</b> смыслы призыва · <b>E1–E4</b> оттенок ошибок (жёлтый отставлен: коралл / терракота / роза / сигнальный) · RU/EN</li>
+        <li>Заглушка под будущие слайды «Как это работает» уже заложена</li>
+      </ul>
+      <p class="meta">Специмен ошибок и панель переключателей — прототип-only, в продакшен не идут.</p>
+    </a>
+  </div>
+
+  <h1 style="font-size:18px; margin-bottom:16px;">Архив — раунд 1 (выбран V1)</h1>
+  <div class="grid">
+    <a class="card" href="v1-gold-on-glass.html">
+      <span class="tag t1">V1 · Эволюция</span>
+      <h2>Gold on Glass</h2>
+      <ul>
+        <li>Текущий wall.png + glass, Helvetica Neue 200 uppercase</li>
+        <li>CTA: gold-градиент пилюля (Nouva-точный)</li>
+        <li>Ошибки: жёлтый сохранён, всегда на тёмном скриме</li>
+        <li>Демо-виджет: glass-панель с color dots</li>
+      </ul>
+      <p class="meta">Токен-импакт: минимальный — добавляется только gold-семья (+3 токена). Честная оговорка: семантическая коллизия CTA/ошибка снята только формой, не цветом.</p>
+    </a>
+    <a class="card" href="v2-editorial-dark.html">
+      <span class="tag t2">V2 · Смелый уход</span>
+      <h2>Editorial Dark (Nouva-like)</h2>
+      <ul>
+        <li>Near-black #0A0A0A, золотая аура, карточки #141414</li>
+        <li>Space Grotesk 500 sentence-case + Inter</li>
+        <li>CTA: gold-градиент + золотая тень</li>
+        <li>Статусы раздельно: success #66E36C, error #FF6B66 — жёлтый в ошибках отставлен</li>
+      </ul>
+      <p class="meta">Токен-импакт: большой — новая тёмная поверхность-семья, статус-палитра, смена шрифтов. Wall.png и glass уходят с лендинга (в продукте могут остаться).</p>
+    </a>
+    <a class="card" href="v3-editorial-serif.html">
+      <span class="tag t3">V3 · Журнальный</span>
+      <h2>Editorial Serif</h2>
+      <ul>
+        <li>Glass-наследие сохранено, центрированный hero</li>
+        <li>Fraunces 300 mixed-case с курсивным акцентом + Hanken Grotesk</li>
+        <li>CTA: плоский solid gold (без градиента)</li>
+        <li>Ошибки: терракота #E2725B на скриме — тёплая, не «кричит»</li>
+      </ul>
+      <p class="meta">Токен-импакт: средний — gold-семья + serif display-шрифт + error-ретюн. Самый «fashion-editorial» из четырёх; типографика дальше всего от текущей.</p>
+    </a>
+    <a class="card" href="v4-gallery-light.html">
+      <span class="tag t4">V4 · Светлый пересмотр</span>
+      <h2>Gallery Light</h2>
+      <ul>
+        <li>Бумага #F2F0EB, тёмные чернила, ч/б фото-блок</li>
+        <li>Archivo 500 uppercase + Inter</li>
+        <li>CTA: gold-градиент на светлом — максимальный контраст кнопки</li>
+        <li>Ошибки: глубокий красный #B3261E — классическая доступность</li>
+      </ul>
+      <p class="meta">Токен-импакт: максимальный — светлая тема инвертирует всю контраст-математику §9.7. Самый радикальный пересмотр ч/б концепции; glass уходит полностью.</p>
+    </a>
+  </div>
+
+  <div class="copy-table">
+    <h2>Варианты копирайтинга (EN · переключаются в каждом прототипе)</h2>
+    <table>
+      <tr><th></th><th>Механика</th><th>Заголовок</th><th>CTA</th></tr>
+      <tr><td><b>C1</b></td><td>Curiosity gap — вопрос о собственном гардеробе</td><td>How many outfits hide in your wardrobe?</td><td>Count my outfits</td></tr>
+      <tr><td><b>C2</b></td><td>Pain-first — «полный шкаф, нечего надеть»</td><td>A full closet. Nothing to wear.</td><td>Build my mini-wardrobe</td></tr>
+      <tr><td><b>C3</b></td><td>Identity — «меньше вещей, больше образов»; манифест сохранён как eyebrow</td><td>Fewer clothes. More outfits.</td><td>Start with five pieces</td></tr>
+      <tr><td><b>C4</b></td><td>Method authority — 51 цвет, один метод; приватность в микро-строке</td><td>Your wardrobe, made to work.</td><td>See my combinations</td></tr>
+    </table>
+  </div>
+</div>
+</body>
+</html>
