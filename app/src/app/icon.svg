@@ -6,14 +6,14 @@
        it was designed on — gold on near-black, echoing the landing hero
        (constitution §III v1.5 logo accent; design-system §9.11).
        Plate #0A0A0A = the CTA text token (btn-cta-text); hairline
-       rgba(255,255,255,.22) = the CTA border token (btn-cta-border),
+       rgba(255,255,255,.20) = the CTA border token (btn-cta-border),
        keeps the plate visible on dark tab strips.
        Letter vectors are byte-identical to the founder-approved V5 paths
        (Helvetica Neue Bold, baked outlines), scaled 0.82 about the glyph
        centre (256,262). Flat fills, no media query: the plate makes the
        mark independent of OS/browser colour scheme. -->
   <rect x="8" y="8" width="496" height="496" rx="118" fill="#0A0A0A"/>
-  <rect x="16" y="16" width="480" height="480" rx="110" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="16"/>
+  <rect x="16" y="16" width="480" height="480" rx="110" fill="none" stroke="rgba(255,255,255,.20)" stroke-width="16"/>
   <g transform="translate(256,262) scale(0.82) translate(-256,-262)">
     <path fill="#EFBF04" transform="translate(50.65,369.70) scale(0.3,-0.3)" d="M545 474H697Q690 536 663.0 584.0Q636 632 594.5 664.5Q553 697 500.5 714.0Q448 731 389 731Q307 731 241.5 702.0Q176 673 131.0 622.0Q86 571 62.0 502.5Q38 434 38 354Q38 276 62.0 208.5Q86 141 131.0 91.0Q176 41 241.5 12.5Q307 -16 389 -16Q455 -16 510.0 4.0Q565 24 606.0 62.0Q647 100 672.0 154.0Q697 208 703 275H551Q542 203 501.5 159.0Q461 115 389 115Q336 115 299.0 135.5Q262 156 239.0 190.0Q216 224 205.5 266.5Q195 309 195 354Q195 401 205.5 445.0Q216 489 239.0 523.5Q262 558 299.0 578.5Q336 599 389 599Q418 599 444.5 589.5Q471 580 492.0 563.0Q513 546 527.0 523.5Q541 501 545 474Z"/>
     <path fill="#EFBF04" transform="translate(266.95,369.70) scale(0.3,-0.3)" d="M23 124V0H625V132H232L615 590V714H53V582H406Z"/>
