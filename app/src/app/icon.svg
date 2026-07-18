@@ -4,12 +4,12 @@
        letterforms (initials of "Capsule Zero"; Helvetica Neue Bold,
        font-size 300, letter-spacing -6, centered; exact font vectors
        baked to paths so the mark is font-independent) recolored
-       achromatic and theme-adaptive, the way the first favicon
-       iteration was implemented: light browser chrome -> near-black
-       mark, dark browser chrome -> light grey-white mark (achromatic
-       family, constitution §III). The dark plate of the previous
-       iteration is retired: the mark adapts its ink to the tab strip
-       instead of carrying its own background surface. */
+       achromatic and preference-adaptive, the way the first favicon
+       iteration was implemented: a reported light scheme -> near-black
+       mark, a reported dark scheme -> light grey-white mark (achromatic
+       family, constitution §III). This media query does not sample a
+       custom tab surface; the dark plate is retired per the founder's
+       selected trade-off. */
     .cz-mark { fill: #1C1C1C; }
     @media (prefers-color-scheme: dark) { .cz-mark { fill: #EDEDED; } }
   </style>
