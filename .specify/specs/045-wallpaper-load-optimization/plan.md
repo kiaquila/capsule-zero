@@ -16,6 +16,12 @@
 | Negative | AC-003 покрывает возврат `wall.png`/runtime-grayscale — тест падает красным при регрессе (наблюдалось красным до реализации) | ✅ |
 | Doc consistency | `wall.png`-упоминания разделены: **доставочные** (`styling.md`, `screen-landing.md`, `f-001-landing.md`, `design-system.md` §1, `tokens.css` комментарии) актуализированы; **визуально-дизайнерские** (constitution §III, design-system §9.7, emotion-map, ux-validation) не трогались — визуал не изменился; грандфадзеная история (009/010/015/016) не переписана. `rg wall.png` не оставляет доставочное описание устаревшим | ✅ |
 
+Адверсариальное ревью перед PR (3 параллельных агента): security — CLEAN (LOW), frontend/design —
+COMPLIANT, code-reviewer — COMMENT (1×P2 + 3×P3, все отработаны — см. `tasks.md` § Review-driven
+fixes). Ключевой P2 (immutable-кэш error-ответов) исправлен: `always` снят со строки Cache-Control;
+`docker … nginx -t` на обновлённом блоке — снова ok; e2e после фиксов — **4/4** (2 теста × chromium
++ webkit-iphone), включая guard равенства хэшей.
+
 Локальный пайплайн на HEAD: `npm --prefix app run lint:css` (exit 0, 101/101 warnings — без прироста),
 `npm --prefix app run typecheck` (чисто), `npm --prefix app run lint` (0 errors, 91 pre-existing warnings),
 `npm --prefix app run build` (success), `npm run lint:e2e` (0 errors, 3 pre-existing skip-warnings),

@@ -1,4 +1,17 @@
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { expect, test } from "../../fixtures/base";
+
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+
+/** All wallpaper content hashes referenced by a source file (`wall.<hash>.ext`). */
+function wallHashes(relativePath: string): string[] {
+  const source = readFileSync(resolve(repoRoot, relativePath), "utf8");
+  return [...source.matchAll(/wall\.([0-9a-f]+)\.(?:avif|webp)/g)]
+    .map((match) => match[1])
+    .filter((hash): hash is string => hash !== undefined);
+}
 
 // Spec 045 — wallpaper load optimization.
 //
@@ -39,5 +52,25 @@ test.describe("landing wallpaper — load optimization (spec 045)", () => {
     expect(backgroundImage).toContain("wall.");
     expect(backgroundImage).toMatch(/\.(avif|webp)/);
     expect(backgroundImage).not.toContain("/wall.png");
+  });
+
+  // The wallpaper content hash is duplicated in the CSS (`.wallpaper-bg`
+  // image-set) and the layout preload with no shared source (CSS cannot import
+  // the TS constant). If they drift, the CSS still renders but the preload
+  // points at a stale/absent asset — the optimization is silently lost and, at
+  // the edge, that 404 could be cached. This guard turns the manual
+  // "update both places" contract into an enforced one.
+  test("CSS and layout reference the same wallpaper hash", () => {
+    const cssHashes = wallHashes("app/src/app/globals.css");
+    const layoutHashes = wallHashes("app/src/app/[locale]/layout.tsx");
+
+    expect(cssHashes.length).toBeGreaterThan(0);
+    expect(layoutHashes.length).toBeGreaterThan(0);
+
+    const unique = new Set([...cssHashes, ...layoutHashes]);
+    expect(
+      unique.size,
+      `wallpaper hashes drifted — css=${JSON.stringify(cssHashes)} layout=${JSON.stringify(layoutHashes)}`,
+    ).toBe(1);
   });
 });

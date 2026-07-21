@@ -48,12 +48,30 @@
   запуска image-оптимизатора (`/_next/image`, нужен sharp) в standalone за nginx. `image-set` +
   явный preload дают тот же результат меньшей кровью.
 
+### Review-driven fixes (адверсариальное ревью перед PR)
+
+Три параллельных ревью (code-reviewer / security-reviewer / frontend). Security — CLEAN,
+frontend — COMPLIANT. Code-reviewer — COMMENT: 1×P2 + 3×P3, все отработаны:
+
+- **P2 (fixed):** `add_header Cache-Control … immutable **always**` штамповал immutable и на
+  4xx/5xx. При деплой-скью 404 обоев кэшировался бы на год → клиент навсегда на тёмном фоне без
+  ревалидации. Убрал `always` только со строки Cache-Control (на security-заголовках оставил): на
+  ошибках заголовок не добавляется, upstream-Cache-Control скрыт → браузерная эвристика, не immutable.
+- **P3 (fixed):** `image-set()`+`type()` не рендерит обои на Safari ≤16 (iOS 16) — только тёмный
+  fallback. Добавил `background-image: url(webp)` до `image-set` через **документированный**
+  `stylelint-disable-next-line declaration-block-no-duplicate-properties` — старый WebKit держит
+  wallpaper, бюджет `--max-warnings 101` не тронут (disable не считается).
+- **P3 (fixed):** дубль хэша не был застрахован. Добавил тест «CSS and layout reference the same
+  wallpaper hash» (читает `globals.css` + `layout.tsx`, сверяет единственность хэша).
+- **P3 (fixed):** preload-локатор в POM сужен до `[href*="wall."]` — не ломается от будущих
+  сторонних image-preload'ов.
+
 ### Known issues
 
 - **Хэш обоев продублирован в двух местах** — `globals.css` `.wallpaper-bg` и
-  `[locale]/layout.tsx` `WALLPAPER_PRELOAD_HREF`. CSS не может импортировать TS-константу, поэтому
-  единого источника нет. **Контракт обновления:** при регенерации wallpaper обновить хэш в **обоих**
-  файлах (и в `location`-регексп он матчится по паттерну, отдельного апдейта не требует).
-  `wallpaper.spec.ts` пинит формат/наличие preload, но не сверяет равенство хэшей между собой.
-- **Object-Lock/прочие `/public`-ассеты** (svg, social preview) остаются на `max-age=0` — вне
-  слайса; отдельная оптимизация при необходимости.
+  `[locale]/layout.tsx` `WALLPAPER_PRELOAD_HREF`. CSS не может импортировать TS-константу, единого
+  источника нет. **Контракт обновления:** при регенерации wallpaper обновить хэш в обоих файлах
+  (в `location`-регекспе он матчится по паттерну). Дрейф теперь **ловится** тестом
+  «CSS and layout reference the same wallpaper hash» (P3-fix выше).
+- **Прочие `/public`-ассеты** (svg, social preview) остаются на `max-age=0` — вне слайса;
+  отдельная оптимизация при необходимости.

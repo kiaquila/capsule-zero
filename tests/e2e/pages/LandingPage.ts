@@ -54,8 +54,10 @@ export class LandingPage extends BasePage {
     this.footerTermsLink = page.getByTestId("footer-terms-link");
     this.footerPrivacyLink = page.getByTestId("footer-privacy-link");
     this.wallpaperBg = page.locator(".wallpaper-bg");
+    // Scoped to the wallpaper asset so an unrelated future image preload does
+    // not make this assertion ambiguous (spec 045 review).
     this.wallpaperPreloadLink = page.locator(
-      'link[rel="preload"][as="image"]',
+      'link[rel="preload"][as="image"][href*="wall."]',
     );
     this.auth = new AuthPopup(page);
     this.openGraphImage = page.locator('meta[property="og:image"]');
