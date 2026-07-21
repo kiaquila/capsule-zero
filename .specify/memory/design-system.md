@@ -21,7 +21,10 @@ The interface is strictly achromatic. Color enters ONLY through the user's garme
 | Inner highlight | — | — | `inset 0 1px 0 rgba(255,255,255,.72)` | — |
 
 ### Background
-- `wall.png` — grayscale photographic wallpaper
+- Grayscale photographic wallpaper — delivered as pre-encoded, content-hashed AVIF/WebP
+  (`wall.<hash>.avif` / `.webp`, grayscale baked in) over a dark `var(--color-black)` fallback,
+  preloaded high-priority and `immutable`-cached at the edge (spec 045; retired the 1.9 MB colour
+  `wall.png`)
 - Gradient overlay: `rgba(0,0,0,.58)` → `rgba(0,0,0,.40)` → `rgba(0,0,0,.68)`
 
 ### Text on Glass (White)

@@ -616,12 +616,23 @@ body {
   overflow-x: hidden;
 }
 
-/* Wallpaper фон — grayscale + gradient overlay */
+/* Wallpaper фон — grayscale + gradient overlay.
+   Spec 045: обои запечены в pre-encoded AVIF/WebP (grayscale вшит в ассет,
+   runtime-фильтр снят), имя контент-хэшировано под immutable-кэш. image-set()
+   даёт современным движкам AVIF, иначе WebP. Тёмный fallback-цвет (= тон
+   overlay) рисуется мгновенно — первый кадр тёмный, без светлой вспышки до
+   прихода картинки. Ассет ещё и предзагружается в <head> (layout.tsx). */
 .wallpaper-bg {
   position: fixed;
   inset: 0;
-  background: url("/wall.png") 50% center / cover no-repeat;
-  filter: grayscale(100%);
+  background-color: var(--color-black);
+  background-image: image-set(
+    url("/wall.3622f713.avif") type("image/avif"),
+    url("/wall.3622f713.webp") type("image/webp")
+  );
+  background-position: 50% center;
+  background-size: cover;
+  background-repeat: no-repeat;
   z-index: var(--z-bg);
 }
 

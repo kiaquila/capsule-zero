@@ -37,7 +37,7 @@ Prototype: `html-prototypes/landing-v2/v1c-final.html` (утверждён фа�
 колонку. Первый экран — один вьюпорт.
 
 ## Elements
-- **Background:** `wall.png` grayscale + трёхточечный gradient overlay (как во всём приложении)
+- **Background:** grayscale photographic wallpaper + трёхточечный gradient overlay (как во всём приложении; доставка — pre-encoded AVIF/WebP с preload, spec 045)
 - **Logo:** «Capsule Zero» текстом, gold (`--color-gold-500`), 13px/600 uppercase, без трекинга — слева в header
 - **Hero H1:** Helvetica 200 uppercase `clamp(32px, 5.4vw, 60px)`, две строки по два слова (явный перенос в копии)
 - **Hero subtitle:** 18px/400 (16px mobile), secondary `.78`
