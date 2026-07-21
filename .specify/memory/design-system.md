@@ -21,7 +21,10 @@ The interface is strictly achromatic. Color enters ONLY through the user's garme
 | Inner highlight | — | — | `inset 0 1px 0 rgba(255,255,255,.72)` | — |
 
 ### Background
-- `wall.png` — grayscale photographic wallpaper
+- Grayscale photographic wallpaper — delivered as pre-encoded, content-hashed AVIF/WebP
+  (`wall.<hash>.avif` / `.webp`, grayscale baked in) over a dark `var(--color-black)` fallback,
+  preloaded high-priority and `immutable`-cached at the edge (spec 045; retired the 1.9 MB colour
+  `wall.png`)
 - Gradient overlay: `rgba(0,0,0,.58)` → `rgba(0,0,0,.40)` → `rgba(0,0,0,.68)`
 
 ### Text on Glass (White)
@@ -382,12 +385,12 @@ rule must be audited in T013 — any h2 rendering below 20px gets an explicit �
 Enforcement: Playwright computed-style assertions on the primary screens (stylelint cannot pair
 size×weight) + `design-review` live pass.
 
-### 9.7 WCAG-AA approach — secondary text, placeholder, and the error accent over wall.png/glass
+### 9.7 WCAG-AA approach — secondary text, placeholder, and the error accent over wallpaper/glass
 
 **Honest physical constraint (measured, not vibes):** over the brightest unshaded wall patches
 seen through a `.22` white glass panel, even *solid white* text tops out near ≈ 2.6:1 — no alpha
 raise alone can reach 4.5:1 there. Therefore the mechanism is **hybrid: raise alphas where that
-suffices + a local dark scrim where it cannot**, never removing wall.png, glass, thin display
+suffices + a local dark scrim where it cannot**, never removing the wallpaper, glass, thin display
 headings, or the error accent (constitution §III; `#FFD600` at measurement time, `#FF5449`/`#FF7A70` since §9.11).
 
 1. **Token retune:** `--color-text-secondary` `.70` → **`.78`**, and the drifted `.62–.68` text

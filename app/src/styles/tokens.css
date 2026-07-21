@@ -2,7 +2,7 @@
    CAPSULE ZERO — Design Tokens
    Tailwind v4 @theme — все токены определяются здесь
    Источник: design-system.html + финальные hi-fi прототипы
-   Принцип: ахроматный glass morphism, 8px grid, wall.png фон
+   Принцип: ахроматный glass morphism, 8px grid, grayscale wallpaper фон
    ============================================================ */
 
 @theme {
@@ -52,7 +52,7 @@
 
   /* ----------------------------------------------------------
      ФОН — wallpaper + gradient overlay
-     wall.png (grayscale) + трёхточечный градиент
+     grayscale wallpaper (pre-encoded AVIF/WebP, spec 045) + трёхточечный градиент
   ---------------------------------------------------------- */
 
   --color-overlay-start: rgba(0,0,0,.58);

@@ -21,8 +21,8 @@
 
 | State | Description | What user sees |
 |-------|------------|----------------|
-| Default | Page loaded | One-viewport hero over wall.png B&W wallpaper, gold CTA, ghost login, language switcher |
-| Loading | Page loading | wall.png background + gradient overlay |
+| Default | Page loaded | One-viewport hero over the B&W grayscale wallpaper, gold CTA, ghost login, language switcher |
+| Loading | Page loading | Wallpaper (pre-encoded AVIF/WebP, preloaded — spec 045) + gradient overlay |
 | Auth popup (sign-up) | Hero CTA clicked | Glassmorphic auth popup, registration form first |
 | Auth popup (sign-in) | Log In clicked | Same popup, sign-in form first |
 | Below the fold | Scrolled | "How it works" slides stub (3 dashed cards), footer |

@@ -75,7 +75,7 @@ Every item must have: name, category, color palette (color dots). Auto-tagging i
   - Glass panels: `rgba(255,255,255,0.22)` + `backdrop-filter: blur(40px)` (main panels) / `blur(44px)` (nav, bottom sheets)
   - Border: `1px solid rgba(255,255,255,.58)` + highlight `inset 0 1px 0 rgba(255,255,255,.72)`
   - Shadow: `0 8px 32px rgba(0,0,0,.22)`
-- **Background:** `wall.png` grayscale + gradient overlay
+- **Background:** grayscale photographic wallpaper + gradient overlay
 - **8px grid** for all spacing
 - **Typography:** Helvetica Neue / Arial, thin wide headings, grotesque body
 - **Error color:** `#FF5449` (signal red; text runs on scrim chips use the lightened step `#FF7A70`) — decided 2026-07-16 with Q4. The former yellow `#FFD600` is retired so the error role cannot collide with the gold CTA accent.

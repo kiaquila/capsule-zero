@@ -16,7 +16,13 @@
 The interface is strictly achromatic. Color enters ONLY through the user's garment items and color dots.
 
 ### Background
-- `wall.png` — grayscale photographic wallpaper (full viewport)
+- Grayscale photographic wallpaper (full viewport), fixed behind the glass UI on every screen
+  (`.wallpaper-bg`).
+- **Delivery (spec 045):** pre-encoded, content-hashed AVIF + WebP (`wall.<hash>.avif` /
+  `.webp`) with the grayscale baked into the asset — no runtime `filter: grayscale()`. Served via
+  CSS `background-image: image-set(avif, webp)` over a dark `var(--color-black)` fallback (no light
+  flash before the image arrives), preloaded high-priority in the root layout, and cached
+  `immutable` at the nginx edge. Replaces the retired 1.9 MB colour `wall.png`.
 - Gradient overlay: `rgba(0,0,0,.58)` → `rgba(0,0,0,.40)` → `rgba(0,0,0,.68)`
 
 ### Text on Glass (White RGBA)

@@ -616,12 +616,31 @@ body {
   overflow-x: hidden;
 }
 
-/* Wallpaper фон — grayscale + gradient overlay */
+/* Wallpaper фон — grayscale + gradient overlay.
+   Spec 045: обои запечены в pre-encoded AVIF/WebP (grayscale вшит в ассет,
+   runtime-фильтр снят), имя контент-хэшировано под immutable-кэш. image-set()
+   даёт современным движкам AVIF, иначе WebP. Тёмный fallback-цвет (= тон
+   overlay) рисуется мгновенно — первый кадр тёмный, без светлой вспышки до
+   прихода картинки. Ассет ещё и предзагружается в <head> (layout.tsx). */
 .wallpaper-bg {
   position: fixed;
   inset: 0;
-  background: url("/wall.png") 50% center / cover no-repeat;
-  filter: grayscale(100%);
+  background-color: var(--color-black);
+  /* WebP fallback for engines without image-set()+type() (Safari ≤16 / iOS 16):
+     they ignore the image-set line below and keep the signature wallpaper instead
+     of collapsing to the flat dark fallback. Modern engines override it with the
+     AVIF image-set. The duplicate background-image is a deliberate progressive-
+     enhancement pattern, disabled here (not a stray literal) so it does not spend
+     the stylelint --max-warnings budget. */
+  /* stylelint-disable-next-line declaration-block-no-duplicate-properties */
+  background-image: url("/wall.f16b13cb.webp");
+  background-image: image-set(
+    url("/wall.b6f0e360.avif") type("image/avif"),
+    url("/wall.f16b13cb.webp") type("image/webp")
+  );
+  background-position: 50% center;
+  background-size: cover;
+  background-repeat: no-repeat;
   z-index: var(--z-bg);
 }
 
