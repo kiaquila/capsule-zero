@@ -26,6 +26,10 @@ export class LandingPage extends BasePage {
   readonly scrollCue: Locator;
   readonly footerTermsLink: Locator;
   readonly footerPrivacyLink: Locator;
+  /** Fixed wallpaper layer behind every screen (spec 045). */
+  readonly wallpaperBg: Locator;
+  /** High-priority `<head>` preload for the wallpaper asset (spec 045). */
+  readonly wallpaperPreloadLink: Locator;
   readonly auth: AuthPopup;
   private readonly openGraphImage: Locator;
   private readonly openGraphImageWidth: Locator;
@@ -49,6 +53,10 @@ export class LandingPage extends BasePage {
     this.scrollCue = page.getByTestId("scroll-cue");
     this.footerTermsLink = page.getByTestId("footer-terms-link");
     this.footerPrivacyLink = page.getByTestId("footer-privacy-link");
+    this.wallpaperBg = page.locator(".wallpaper-bg");
+    this.wallpaperPreloadLink = page.locator(
+      'link[rel="preload"][as="image"]',
+    );
     this.auth = new AuthPopup(page);
     this.openGraphImage = page.locator('meta[property="og:image"]');
     this.openGraphImageWidth = page.locator('meta[property="og:image:width"]');
@@ -112,6 +120,36 @@ export class LandingPage extends BasePage {
   async scrollCueAnimationName(): Promise<string> {
     return this.scrollCue.evaluate(
       (element) => getComputedStyle(element).animationName,
+    );
+  }
+
+  /**
+   * Computed `filter` of the wallpaper layer — must be `none` once the
+   * grayscale is baked into the pre-encoded asset (spec 045).
+   */
+  async wallpaperFilter(): Promise<string> {
+    return this.wallpaperBg.evaluate(
+      (element) => getComputedStyle(element).filter,
+    );
+  }
+
+  /**
+   * Computed `background-color` of the wallpaper layer — the dark fallback tone
+   * painted before the image arrives so the first paint is never a light flash.
+   */
+  async wallpaperBackgroundColor(): Promise<string> {
+    return this.wallpaperBg.evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    );
+  }
+
+  /**
+   * Computed `background-image` of the wallpaper layer — the pre-encoded
+   * `image-set()` (AVIF/WebP), never the retired colour PNG.
+   */
+  async wallpaperBackgroundImage(): Promise<string> {
+    return this.wallpaperBg.evaluate(
+      (element) => getComputedStyle(element).backgroundImage,
     );
   }
 
