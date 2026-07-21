@@ -633,10 +633,10 @@ body {
      enhancement pattern, disabled here (not a stray literal) so it does not spend
      the stylelint --max-warnings budget. */
   /* stylelint-disable-next-line declaration-block-no-duplicate-properties */
-  background-image: url("/wall.3622f713.webp");
+  background-image: url("/wall.f16b13cb.webp");
   background-image: image-set(
-    url("/wall.3622f713.avif") type("image/avif"),
-    url("/wall.3622f713.webp") type("image/webp")
+    url("/wall.b6f0e360.avif") type("image/avif"),
+    url("/wall.f16b13cb.webp") type("image/webp")
   );
   background-position: 50% center;
   background-size: cover;

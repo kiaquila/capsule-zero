@@ -17,7 +17,7 @@ export const metadata = siteMetadata;
 // is correct for all routes. Keep this hash in sync with `globals.css`
 // `.wallpaper-bg` — regenerating the asset mints a new content hash that must be
 // updated in BOTH places (see spec 045 tasks.md).
-const WALLPAPER_PRELOAD_HREF = "/wall.3622f713.avif";
+const WALLPAPER_PRELOAD_HREF = "/wall.b6f0e360.avif";
 
 interface LocaleLayoutProps {
   children: ReactNode;

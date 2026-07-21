@@ -1,16 +1,35 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, test } from "../../fixtures/base";
 
-const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+const repoRoot = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../../..",
+);
 
-/** All wallpaper content hashes referenced by a source file (`wall.<hash>.ext`). */
-function wallHashes(relativePath: string): string[] {
+type WallpaperFormat = "avif" | "webp";
+
+interface WallpaperReference {
+  filename: string;
+  format: WallpaperFormat;
+  hash: string;
+}
+
+/** All wallpaper asset references in a source file (`wall.<hash>.<format>`). */
+function wallpaperReferences(relativePath: string): WallpaperReference[] {
   const source = readFileSync(resolve(repoRoot, relativePath), "utf8");
-  return [...source.matchAll(/wall\.([0-9a-f]+)\.(?:avif|webp)/g)]
-    .map((match) => match[1])
-    .filter((hash): hash is string => hash !== undefined);
+  return [...source.matchAll(/wall\.([0-9a-f]+)\.(avif|webp)/g)].map(
+    (match) => {
+      const hash = match[1];
+      const format = match[2];
+      if (!hash || (format !== "avif" && format !== "webp")) {
+        throw new Error(`invalid wallpaper reference in ${relativePath}`);
+      }
+      return { filename: `wall.${hash}.${format}`, format, hash };
+    },
+  );
 }
 
 // Spec 045 — wallpaper load optimization.
@@ -29,13 +48,30 @@ function wallHashes(relativePath: string): string[] {
 test.describe("landing wallpaper — load optimization (spec 045)", () => {
   test("wallpaper is preloaded, pre-encoded, filter-free, with a dark fallback", async ({
     landing,
+    page,
   }) => {
+    const wallpaperResponses: Array<{ pathname: string; status: number }> = [];
+    page.on("response", (response) => {
+      const pathname = new URL(response.url()).pathname;
+      if (/\/wall\.[0-9a-f]+\.(?:avif|webp|png)$/.test(pathname)) {
+        wallpaperResponses.push({ pathname, status: response.status() });
+      }
+    });
+
     await landing.goto();
 
     // AC-001 — the wallpaper is preloaded in <head> as a high-priority image so
     // the browser fetches it in parallel with CSS, not after the render tree.
     await expect(landing.wallpaperPreloadLink).toHaveCount(1);
     await expect(landing.wallpaperPreloadLink).toHaveAttribute("as", "image");
+    await expect(landing.wallpaperPreloadLink).toHaveAttribute(
+      "type",
+      "image/avif",
+    );
+    await expect(landing.wallpaperPreloadLink).toHaveAttribute(
+      "fetchpriority",
+      "high",
+    );
     expect(await landing.wallpaperPreloadLink.getAttribute("href")).toMatch(
       /\/wall\.[0-9a-f]+\.avif$/,
     );
@@ -52,25 +88,58 @@ test.describe("landing wallpaper — load optimization (spec 045)", () => {
     expect(backgroundImage).toContain("wall.");
     expect(backgroundImage).toMatch(/\.(avif|webp)/);
     expect(backgroundImage).not.toContain("/wall.png");
+
+    // Current Chromium/WebKit targets support typed image-set, so the AVIF
+    // preload is reused as the rendered background: one successful wallpaper
+    // response and no WebP/PNG request. Safari 16's bounded AVIF+WebP legacy
+    // trade-off is documented in spec 045 and cannot be emulated by current
+    // Playwright WebKit.
+    await expect.poll(() => wallpaperResponses.length).toBe(1);
+    expect(wallpaperResponses).toEqual([
+      { pathname: "/wall.b6f0e360.avif", status: 200 },
+    ]);
   });
 
-  // The wallpaper content hash is duplicated in the CSS (`.wallpaper-bg`
-  // image-set) and the layout preload with no shared source (CSS cannot import
-  // the TS constant). If they drift, the CSS still renders but the preload
-  // points at a stale/absent asset — the optimization is silently lost and, at
-  // the edge, that 404 could be cached. This guard turns the manual
-  // "update both places" contract into an enforced one.
-  test("CSS and layout reference the same wallpaper hash", () => {
-    const cssHashes = wallHashes("app/src/app/globals.css");
-    const layoutHashes = wallHashes("app/src/app/[locale]/layout.tsx");
+  // CSS and the layout cannot share a source constant. Enforce both halves of
+  // the immutable-cache contract: the AVIF preload equals the CSS AVIF URL,
+  // and every referenced filename starts with the SHA-256 of its own bytes.
+  test("wallpaper references are content-addressed and preload stays in sync", () => {
+    const cssReferences = wallpaperReferences("app/src/app/globals.css");
+    const layoutReferences = wallpaperReferences(
+      "app/src/app/[locale]/layout.tsx",
+    );
+    const filenames = (
+      references: WallpaperReference[],
+      format: WallpaperFormat,
+    ) =>
+      new Set(
+        references
+          .filter((reference) => reference.format === format)
+          .map((reference) => reference.filename),
+      );
 
-    expect(cssHashes.length).toBeGreaterThan(0);
-    expect(layoutHashes.length).toBeGreaterThan(0);
+    expect(filenames(cssReferences, "avif")).toEqual(
+      filenames(layoutReferences, "avif"),
+    );
+    expect(filenames(cssReferences, "avif").size).toBe(1);
+    expect(filenames(cssReferences, "webp").size).toBe(1);
+    expect(filenames(layoutReferences, "webp").size).toBe(0);
 
-    const unique = new Set([...cssHashes, ...layoutHashes]);
-    expect(
-      unique.size,
-      `wallpaper hashes drifted — css=${JSON.stringify(cssHashes)} layout=${JSON.stringify(layoutHashes)}`,
-    ).toBe(1);
+    const uniqueReferences = new Map(
+      [...cssReferences, ...layoutReferences].map((reference) => [
+        reference.filename,
+        reference,
+      ]),
+    );
+    for (const reference of uniqueReferences.values()) {
+      const bytes = readFileSync(
+        resolve(repoRoot, "app/public", reference.filename),
+      );
+      const digest = createHash("sha256").update(bytes).digest("hex");
+      expect(
+        digest.startsWith(reference.hash),
+        `${reference.filename} is not prefixed by its SHA-256 (${digest})`,
+      ).toBe(true);
+    }
   });
 });

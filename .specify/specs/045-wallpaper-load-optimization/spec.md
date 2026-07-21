@@ -16,14 +16,16 @@ pre-encoded AVIF/WebP (контент-хэш в имени), предзагру�
 
 **In:**
 
-- `app/public/wall.3622f713.avif` (43 КБ) + `app/public/wall.3622f713.webp` (63 КБ) — pre-encoded
+- `app/public/wall.b6f0e360.avif` (43 КБ) + `app/public/wall.f16b13cb.webp` (63 КБ) — pre-encoded
   full-res (1672×941) grayscale-версии утверждённого wallpaper (grayscale вшит в ассет). Имя
-  контент-хэшировано под immutable-кэш. Старый `app/public/wall.png` (1.9 МБ, цветной) удалён.
-- `app/src/app/globals.css` — `.wallpaper-bg` переписан: `background-image: image-set(avif, webp)`
-  (движок выбирает AVIF, иначе WebP), `background-color: var(--color-black)` как мгновенный тёмный
-  fallback, `filter: grayscale(100%)` снят (запечён в ассет). Одиночный `background-image` —
-  без дубля свойства, чтобы не сломать stylelint-бюджет `--max-warnings 101`.
-- `app/src/app/[locale]/layout.tsx` — `ReactDOM.preload("/wall.3622f713.avif", { as: "image",
+  каждого формата начинается с первых 8 символов SHA-256 его байтов под immutable-кэш. Старый
+  `app/public/wall.png` (1.9 МБ, цветной) удалён.
+- `app/src/app/globals.css` — `.wallpaper-bg` использует progressive enhancement: WebP
+  `background-image: url(...)` для Safari ≤16, затем typed `image-set(avif, webp)` для современных
+  движков; `background-color: var(--color-black)` — мгновенный тёмный fallback, а
+  `filter: grayscale(100%)` снят (запечён в ассет). Дубль свойства точечно разрешён через
+  `stylelint-disable-next-line`, поэтому бюджет `--max-warnings 101` не растёт.
+- `app/src/app/[locale]/layout.tsx` — `ReactDOM.preload("/wall.b6f0e360.avif", { as: "image",
   type: "image/avif", fetchPriority: "high" })` в root-layout: браузер грузит обои параллельно с
   render-blocking CSS, высоким приоритетом. `type` даёт движкам без AVIF пропустить preload и
   упасть на WebP из `image-set`. Обои есть на каждом экране → preload в locale-layout корректен
@@ -37,11 +39,15 @@ pre-encoded AVIF/WebP (контент-хэш в имени), предзагру�
   внутри location, т.к. location-level `add_header` заменяет server-level набор.
 - `tests/e2e/` — расширение POM `LandingPage.ts` (locators `.wallpaper-bg`, preload-link;
   методы computed filter/bg-color/bg-image) + новый `specs/landing/wallpaper.spec.ts` (TDD
-  red→green; негатив — старый `wall.png` не возвращается).
+  red→green; негатив — старый `wall.png`/runtime-filter не возвращаются; проверяются сетевой 200,
+  точные preload-атрибуты, существование ассетов и соответствие filename-префиксов SHA-256).
 - Доки тем же изменением: `docs_capsule_zero/project/frontend/styling.md`,
   `docs_capsule_zero/screens/screen-landing.md`, `docs_capsule_zero/features/f-001-landing.md`,
-  `.specify/memory/design-system.md` §1 (строка про фон), `app/src/styles/tokens.css` комментарии —
-  формат-нейтральное описание доставки обоев.
+  `.specify/memory/constitution.md` §III, `.specify/memory/design-system.md` §1/§9.7,
+  `app/src/styles/tokens.css` комментарии — формат-нейтральное описание доставки обоев.
+- Merge-readiness security housekeeping: только уязвимые transitive dev-зависимости в
+  `app/package-lock.json` и `tests/e2e/package-lock.json` обновлены до исправленных
+  `brace-expansion` 1.1.16/5.0.7 и `js-yaml` 4.3.0; runtime-зависимости не менялись.
 
 **Out:**
 
@@ -49,9 +55,9 @@ pre-encoded AVIF/WebP (контент-хэш в имени), предзагру�
 - Перевод остальных `/public`-ассетов (svg, social preview) на новый формат/кэш — вне слайса.
 - `next/image`-оптимизатор для CSS-фона — фон нельзя выразить через `next/image` без переверстки
   слоёв; `image-set` + preload дают тот же эффект без запуска image-оптимизатора в standalone.
-- Высокодизайнерские доки (constitution §III, design-system §9.7 «over wall.png/glass»,
-  emotion-map, ux-validation) — описывают неизменившийся **визуал**, не формат доставки; не
-  редактируются. Историю грандфадзеных спеков (009/010/015/016) не переписываем.
+- История грандфадзеных спеков (009/010/015/016), emotion-map и ux-validation — не
+  переписываются; актуальные SSOT constitution/design-system получают только формат-нейтральную
+  замену имени удалённого файла, без изменения визуального принципа.
 
 ## Acceptance criteria
 
@@ -60,17 +66,19 @@ pre-encoded AVIF/WebP (контент-хэш в имени), предзагру�
 - **AC-002 (тёмный fallback + без runtime-фильтра):** computed `.wallpaper-bg` `filter === "none"`
   и `background-color === "rgb(10, 10, 10)"` (= `var(--color-black)`).
 - **AC-003 (pre-encoded + негатив):** computed `.wallpaper-bg` `background-image` содержит
-  `wall.` и `.avif`/`.webp` и **не** содержит `/wall.png`; браузер грузит только AVIF (WebP и
-  старый PNG не запрашиваются).
+  `wall.` и `.avif`/`.webp` и **не** содержит `/wall.png`; современные Chromium/WebKit-таргеты
+  загружают один AVIF с 200, без WebP/PNG. Принятый legacy trade-off: Safari 16 умеет AVIF, но не
+  typed `image-set`, поэтому может загрузить AVIF preload + WebP fallback (суммарно ≈ 108 КБ);
+  wallpaper остаётся видимым, а цветной PNG не возвращается.
 - **AC-004 (вес):** обои-ассет ≤ ~64 КБ (было 1.9 МБ) — ≥ 96% сокращение.
-- **AC-005 (кэш):** edge отдаёт `wall.<hash>.(avif|webp)` с
+- **AC-005 (кэш):** каждый `wall.<sha256-prefix>.(avif|webp)` существует, filename-префикс
+  совпадает с SHA-256 его байтов, а edge отдаёт его с
   `Cache-Control: public, max-age=31536000, immutable`, сохраняя HSTS/nosniff/Referrer-Policy.
 
 ## Negative scenario
 
-Ретро-регресс: возврат цветного `wall.png` или `filter: grayscale` перехватывается AC-003
-(`background-image` не содержит `/wall.png`) прямо в `wallpaper.spec.ts` — тест падает, если
-кто-то вернёт старый ассет или runtime-фильтр.
+Ретро-регресс: возврат цветного `wall.png` перехватывается AC-003 (`background-image` и сеть),
+а возврат `filter: grayscale` — AC-002 (`filter === "none"`) прямо в `wallpaper.spec.ts`.
 
 ## Verification
 
