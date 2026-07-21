@@ -26,6 +26,8 @@
       актуальные constitution/design-system.
 - [x] T013 Обновить четыре уязвимые transitive dev-зависимости до fixed versions; проверить
       clean install/lint/typecheck/e2e локально. GitHub OSV остаётся обязательным post-push signal.
+- [x] T014 После post-push OSV-сигнала `GO-2026-5970` обновить indirect `golang.org/x/text`
+      0.29.0 → fixed 0.39.0 (`x/sync` 0.17.0 → 0.21.0); проверить `go vet ./... && go test ./...`.
 
 ## Process Memory
 
@@ -89,7 +91,9 @@ frontend — COMPLIANT. Code-reviewer — COMMENT: 1×P2 + 3×P3, все отр�
 - **AC evidence (fixed):** e2e утверждает `type`/`fetchpriority`, один AVIF 200 на текущих targets,
   отсутствие WebP/PNG, а negative evidence разведён по AC-002/AC-003; Safari 16 trade-off записан.
 - **Security signal (fixed):** только четыре уязвимые transitive dev-версии из OSV обновлены до
-  `brace-expansion` 1.1.16/5.0.7 и `js-yaml` 4.3.0.
+  `brace-expansion` 1.1.16/5.0.7 и `js-yaml` 4.3.0. Повторный GitHub OSV на следующем HEAD
+  обнаружил новый `GO-2026-5970`: indirect `golang.org/x/text` обновлён 0.29.0 → fixed 0.39.0;
+  Go MVS сопутствующе поднял indirect `golang.org/x/sync` 0.17.0 → 0.21.0. API vet/tests зелёные.
 
 ### Known issues
 

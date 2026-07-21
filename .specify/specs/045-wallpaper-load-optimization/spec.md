@@ -45,9 +45,11 @@ pre-encoded AVIF/WebP (контент-хэш в имени), предзагру�
   `docs_capsule_zero/screens/screen-landing.md`, `docs_capsule_zero/features/f-001-landing.md`,
   `.specify/memory/constitution.md` §III, `.specify/memory/design-system.md` §1/§9.7,
   `app/src/styles/tokens.css` комментарии — формат-нейтральное описание доставки обоев.
-- Merge-readiness security housekeeping: только уязвимые transitive dev-зависимости в
+- Merge-readiness security housekeeping: уязвимые transitive dev-зависимости в
   `app/package-lock.json` и `tests/e2e/package-lock.json` обновлены до исправленных
-  `brace-expansion` 1.1.16/5.0.7 и `js-yaml` 4.3.0; runtime-зависимости не менялись.
+  `brace-expansion` 1.1.16/5.0.7 и `js-yaml` 4.3.0. Повторный GitHub OSV обнаружил новый
+  `GO-2026-5970` в indirect `golang.org/x/text` 0.29.0; API-модуль обновлён до fixed 0.39.0
+  вместе с совместимой indirect `golang.org/x/sync` 0.21.0.
 
 **Out:**
 
