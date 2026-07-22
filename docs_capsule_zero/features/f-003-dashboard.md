@@ -12,9 +12,9 @@
 
 | Area | Description | Shows |
 |---|---|---|
-| Active capsule hero | Current capsule summary | Palette, item/outfit/category counts, OPR |
+| Active capsule hero | Current capsule summary | Palette, item/outfit/category counts, OPR, secondary Layering Coverage |
 | Summary stats | Global wardrobe metrics | Total items, total outfits, uncapsulated count |
-| Shopping list preview | Priority recommendations | Top shopping opportunities with outfit impact |
+| Shopping list preview | Priority recommendations | Top shopping opportunities with role-specific impact |
 | Recently added | Latest wardrobe additions | Item name, category, color |
 | Quick-access cards | Secondary wardrobe states | Favorites, For Sale, For Repair, Uncapsulated |
 | Navigation | Primary app navigation | Dashboard, My Items, Capsules, Favorites, More |
@@ -28,7 +28,7 @@
 | Loading | Data fetching | Skeleton cards for each section |
 
 ## Acceptance Criteria
-1. Active capsule hero card shows palette, counts, and OPR
+1. Active capsule hero card shows palette, counts, OPR, and a separately labelled Layering Coverage percentage (or `N/A`)
 2. Capsule actions provide direct access to Open Capsule / Outfits / Shopping List
 3. Dashboard shows summary stats, shopping list preview, recently added, and quick-access cards
 4. Bottom navigation and More sheet expose the rest of the wardrobe sections

@@ -14,6 +14,7 @@ Prototype: `html-prototypes/capsule-result.html`
 │                                                         │
 │  ┌──────────────────────────────────────────────────┐   │
 │  │  My Capsule        OPR: 4.2  (+0.3 ▲)           │   │
+│  │  Layering: 100% · mid 12/12 · outer 12/12       │   │
 │  │  30 items · 126 outfits                          │   │
 │  │  Palette: ● ● ● ● ● ●                           │   │
 │  └──────────────────────────────────────────────────┘   │
@@ -80,16 +81,16 @@ Prototype: `html-prototypes/capsule-result.html`
 │                                                         │
 │  Category          Color              Priority  Impact  │
 │  ─────────────────────────────────────────────────────  │
-│  Trousers          Navy / charcoal    High     +12     │
-│  Ankle boots       Black              High     +8      │
-│  Cardigan          Beige / camel      Medium   +6      │
-│  Scarf             Grey               Low      +3      │
+│  Trousers          Navy / charcoal    High     +12 core looks │
+│  Ankle boots       Black              High     +8 core looks  │
+│  Cardigan          Beige / camel      Medium   +12 covered looks (+50 pp) │
+│  Coat              Charcoal grey      Medium   +12 covered looks (+50 pp) │
 │                                                         │
 │  Click row → search in catalog                          │
 ```
 
 ## Elements
-- **Capsule Header:** Name, OPR (large), delta, item/outfit counts, palette strip
+- **Capsule Header:** Name, OPR (large), delta, item/outfit counts, palette strip; secondary Layering Coverage with `mid x/B · outer y/B`
 - **Tab Bar:** 4 tabs — Items / Outfits / What's missing / Shopping list
 - **Item Cards:** Photo + name + color dots + favorite heart + actions menu (⋯)
 - **Actions Menu (⋯):** Remove from capsule / Replace item

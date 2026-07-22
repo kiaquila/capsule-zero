@@ -216,9 +216,51 @@ components:
         group:
           type: string
           enum: [achromatic, bright, pastel, desaturated, dark]
+    AlgorithmRole:
+      type: string
+      enum:
+        [
+          core_top,
+          core_bottom,
+          core_dress,
+          core_shoes,
+          layering_mid,
+          layering_outer,
+          accessory,
+        ]
+    AccessorySlot:
+      type: string
+      enum: [bag, headwear, neckwear, jewelry, belt, eyewear]
+    ImpactUnit:
+      type: string
+      enum: [core_base_looks, layering_coverage_percentage_points]
+    LayeringCoverage:
+      type: object
+      required:
+        [
+          score,
+          baseLookCount,
+          midCoveredLookCount,
+          outerCoveredLookCount,
+        ]
+      properties:
+        score:
+          type: [number, "null"]
+          minimum: 0
+          maximum: 100
+        baseLookCount:
+          type: integer
+          minimum: 0
+        midCoveredLookCount:
+          type: integer
+          minimum: 0
+        outerCoveredLookCount:
+          type: integer
+          minimum: 0
     Category:
       type: object
-      required: [id, name, wardrobeTypes, layer]
+      required:
+        [id, name, wardrobeTypes, layer, algorithmRole, accessorySlot]
       properties:
         id:
           type: string
@@ -233,6 +275,12 @@ components:
           type: string
           enum:
             [tops, dresses_skirts, bottoms, outerwear, shoes, bags, accessories]
+        algorithmRole:
+          $ref: "#/components/schemas/AlgorithmRole"
+        accessorySlot:
+          oneOf:
+            - $ref: "#/components/schemas/AccessorySlot"
+            - type: "null"
     AuthLocation:
       type: object
       properties:
@@ -542,7 +590,8 @@ components:
           $ref: "#/components/schemas/WardrobeType"
     CustomCategoryValidationResponse:
       type: object
-      required: [accepted, explanation, alternatives]
+      required:
+        [accepted, explanation, alternatives, algorithmRole, accessorySlot]
       properties:
         accepted:
           type: boolean
@@ -552,6 +601,14 @@ components:
           type: array
           items:
             type: string
+        algorithmRole:
+          oneOf:
+            - $ref: "#/components/schemas/AlgorithmRole"
+            - type: "null"
+        accessorySlot:
+          oneOf:
+            - $ref: "#/components/schemas/AccessorySlot"
+            - type: "null"
     Capsule:
       type: object
       required:
@@ -564,6 +621,7 @@ components:
           itemCount,
           outfitCount,
           opr,
+          layeringCoverage,
         ]
       properties:
         id:
@@ -585,6 +643,8 @@ components:
           type: integer
         opr:
           type: number
+        layeringCoverage:
+          $ref: "#/components/schemas/LayeringCoverage"
     CreateCapsuleRequest:
       type: object
       required: [name, wardrobeType, categoryTargets, paletteColorIds]
@@ -764,7 +824,7 @@ components:
             format: uuid
     GapRecommendation:
       type: object
-      required: [id, categoryId, priority, impact]
+      required: [id, categoryId, priority, impact, impactUnit]
       properties:
         id:
           type: string
@@ -781,6 +841,8 @@ components:
           enum: [high, medium, low]
         impact:
           type: number
+        impactUnit:
+          $ref: "#/components/schemas/ImpactUnit"
     PhotoUploadInitRequest:
       type: object
       required: [fileName, contentType, sizeBytes]

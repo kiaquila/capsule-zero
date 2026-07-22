@@ -13,6 +13,7 @@ Prototype: `html-prototypes/dashboard.html`
 │  ┌──────────────────────────────────────────────────┐   │
 │  │  My Capsule                              OPR 4.2 │   │
 │  │  ●● ●●● ●●       30 items    150 outfits        │   │
+│  │  Layering 100% · mid 12/12 · outer 12/12        │   │
 │  │  [View Capsule]                    +0.3 ▲        │   │
 │  └──────────────────────────────────────────────────┘   │
 │                                                         │
@@ -60,7 +61,7 @@ Prototype: `html-prototypes/dashboard.html`
 ```
 
 ## Elements
-- **Capsule Card:** Glass panel with capsule name, OPR, item/outfit/category counts, palette dots, direct actions
+- **Capsule Card:** Glass panel with capsule name, OPR, separately labelled Layering Coverage (or `N/A`), item/outfit/category counts, palette dots, direct actions
 - **Stats Row:** Total Items, Total Outfits, Uncapsulated
 - **Preview Panels:** Shopping List and Recently Added
 - **Quick Access Cards:** Favorites, For Sale, For Repair, Uncapsulated

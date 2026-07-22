@@ -86,6 +86,36 @@
 | Часы | Watch | ✓ | ✓ | Clean dial |
 | Галстук | Tie | — | ✓ | Silk, solid color or subtle |
 
+## Category → Algorithm Role Mapping
+
+This table is the canonical bridge from the merchandising/UI taxonomy to the OPR algorithm. The
+coarse UI/API section (`tops`, `dresses_skirts`, and so on) is **not** a counting role: implementations
+must resolve the concrete category first, then apply this mapping. In particular, a cardigan being
+displayed under `tops` does not make it a Core top, and `dresses_skirts` must distinguish Dress from
+Skirt. Built-in category seed rows persist the corresponding `algorithmRole` and nullable
+`accessorySlot`; the API exposes those machine fields. Implementations must never infer them from a
+localized display name.
+
+| Algorithm role / position | Exact categories | OPR denominator | Notes |
+|---|---|---|---|
+| **Core · top** | Tank top / Cami; Button-down shirt; Turtleneck; T-shirt; Polo shirt; Hoodie / Sweatshirt; Longsleeve | Yes | One top per non-dress base look |
+| **Core · bottom** | Skirt; Trousers; Leggings; Jeans; Shorts; Chinos | Yes | Skirt is a bottom despite the `dresses_skirts` UI/API section |
+| **Core · dress** | Dress | Yes | Replaces top + bottom |
+| **Core · shoes** | All categories in **Shoes** | Yes | Exactly one pair per base look |
+| **Layering · mid** | Crew neck sweater; Cardigan; Bomber jacket; Blazer | No | Feeds Layering Coverage, never the OPR numerator |
+| **Layering · outer** | All categories in **Outerwear** | No | Feeds Layering Coverage, never the OPR numerator |
+| **Accessory · bag** | All categories in **Bags** | Yes | Slot `bag` |
+| **Accessory · headwear** | Beanie / Hat; Fedora hat; Cap | Yes | Shared slot `headwear` |
+| **Accessory · neckwear** | Scarf; Tie | Yes | Shared slot `neckwear` |
+| **Accessory · jewelry** | Jewelry; Watch | Yes | Shared slot `jewelry` in v0 |
+| **Accessory · belt** | Belt | Yes | Slot `belt` |
+| **Accessory · eyewear** | Sunglasses | Yes | Slot `eyewear` |
+
+**Custom categories:** basicity validation must also assign exactly one algorithm role and, for an
+Accessory, one existing slot. A custom category without an unambiguous assignment remains a wardrobe
+item but is excluded from OPR/Layering Coverage with an explanation until the user chooses the closest
+supported category. Implementations must not infer counting role from the coarse API `layer` alone.
+
 ## Category Mechanics
 
 ### Quantity per Category

@@ -3,6 +3,18 @@
 > Capsule Zero proprietary color system. 51 colors in 5 groups.
 > Source of truth for UI palette picker, compatibility engine, and auto-tagging.
 > HEX values subject to visual approval — reference: `html-prototypes/color-system.html`.
+>
+> **Canonical compatibility source (Q6 closed 2026-07-21, founder decision — PRODUCT-PLAN §4).** This
+> file's Compatibility Matrix is the single source of truth for colour compatibility, and it is
+> **symmetric**: an achromatic on **either** side is always compatible, and the relation partitions the
+> chromatic groups into cliques {Brights}, {Pastels}, {Desaturated ∪ Darks}. The prototype
+> `areColorsCompatible()` (`html-prototypes/guided-journey.html`) is **group-based** (same clique ·
+> Desaturated↔Darks · achromatic target → compatible) — the earlier temperature/shade-based check is
+> gone, so the old set-divergence no longer exists. **Engine implementation note (not a product
+> question):** the prototype anchors on the first chromatic colour and so never evaluates an
+> *achromatic base*; the Go engine must implement the matrix **symmetrically** (achromatic compatible
+> whether it is base or target), not port that base-anchoring. Do not re-open Q6 as an unresolved
+> product question.
 
 ---
 

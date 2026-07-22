@@ -14,6 +14,9 @@ export class DashboardPage extends BasePage {
   readonly mobileSignOutButton: Locator;
   /** Stats row below the hero — readiness signal for visual snapshots (CSS class — no testid yet). */
   readonly statsRow: Locator;
+  readonly oprValue: Locator;
+  readonly layeringCoverage: Locator;
+  readonly layeringDiagnostics: Locator;
 
   constructor(page: Page, locale: Locale = "en") {
     super(page);
@@ -22,6 +25,11 @@ export class DashboardPage extends BasePage {
     this.mobileMoreToggle = page.getByTestId("nav-more-toggle");
     this.mobileSignOutButton = page.getByTestId("nav-sign-out-mobile");
     this.statsRow = page.locator(".dashboard-stats-row");
+    this.oprValue = page.getByTestId("dashboard-opr-value");
+    this.layeringCoverage = page.getByTestId("dashboard-layering-coverage");
+    this.layeringDiagnostics = page.getByTestId(
+      "dashboard-layering-diagnostics",
+    );
   }
 
   /**
