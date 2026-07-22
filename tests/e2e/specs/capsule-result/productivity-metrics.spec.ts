@@ -56,6 +56,26 @@ type SnapshotBuilder = (options: {
   categories: Record<GarderType, Array<{ id: string }>>;
 }>;
 
+type MockProviderRegistry = {
+  wardrobe: {
+    listItems(userId: string): Promise<Array<{ id: string; categoryId: string }>>;
+  };
+  capsules: {
+    createCapsule(
+      userId: string,
+      draft: {
+        name: string;
+        garderType: GarderType;
+        palette: { achromaticColors: []; selectedColors: [] };
+        categories: Array<{ categoryId: string; count: number }>;
+        itemIds: string[];
+      },
+    ): Promise<{ outfitCount: number }>;
+  };
+};
+
+type MockProviderFactory = () => MockProviderRegistry;
+
 const GENDERS = {
   all: ["women", "men", "mixed"],
   women: ["women", "mixed"],
@@ -64,6 +84,7 @@ const GENDERS = {
 
 const GUIDED_JOURNEY_DATA_MODULE_PATH =
   "../../../../app/src/components/guided-journey/guided-journey-data";
+const MOCK_PROVIDER_MODULE_PATH = "../../../../app/src/lib/providers/mock";
 
 type CommonJsResolver = (
   request: string,
@@ -77,6 +98,7 @@ async function importAppModule(modulePath: string): Promise<object> {
     _resolveFilename: CommonJsResolver;
   };
   const originalResolver = commonJsModule._resolveFilename;
+  const appRoot = path.resolve(process.cwd(), "../../app");
 
   commonJsModule._resolveFilename = function resolveAppAlias(
     request,
@@ -84,9 +106,12 @@ async function importAppModule(modulePath: string): Promise<object> {
     isMain,
     options,
   ) {
-    const resolvedRequest = request.startsWith("@/")
-      ? path.resolve(process.cwd(), "../../app/src", request.slice(2))
-      : request;
+    const resolvedRequest =
+      request === "server-only"
+        ? path.resolve(appRoot, "node_modules/server-only/empty.js")
+        : request.startsWith("@/")
+          ? path.resolve(appRoot, "src", request.slice(2))
+          : request;
     return originalResolver.call(
       this,
       resolvedRequest,
@@ -331,5 +356,50 @@ test.describe("Live productivity metrics", () => {
     );
 
     expect(actualIds).toEqual(providerIds);
+  });
+
+  test("persists the preview numerator when creating a capsule", async () => {
+    const mockProviderModule = await importAppModule(MOCK_PROVIDER_MODULE_PATH);
+    const createMockProviderRegistry = Reflect.get(
+      mockProviderModule,
+      "createMockProviderRegistry",
+    ) as unknown as MockProviderFactory | undefined;
+
+    expect(typeof createMockProviderRegistry).toBe("function");
+
+    const registry = createMockProviderRegistry?.();
+    const userId = "11111111-1111-4111-8111-111111111111";
+    const items = await registry?.wardrobe.listItems(userId);
+    const itemId = (categoryId: string) => {
+      const item = items?.find((candidate) => candidate.categoryId === categoryId);
+      expect(item, `missing ${categoryId} fixture`).toBeDefined();
+      return item?.id ?? "";
+    };
+    const draft = {
+      garderType: "women" as const,
+      palette: { achromaticColors: [] as [], selectedColors: [] as [] },
+      categories: [
+        { categoryId: "shirt", count: 1 },
+        { categoryId: "trousers", count: 1 },
+      ],
+      itemIds: [itemId("shirt"), itemId("trousers")],
+    };
+
+    const invalidCapsule = await registry?.capsules.createCapsule(userId, {
+      ...draft,
+      name: "Missing shoes",
+    });
+    const validCapsule = await registry?.capsules.createCapsule(userId, {
+      ...draft,
+      name: "Valid base",
+      categories: [
+        ...draft.categories,
+        { categoryId: "ankle-boots", count: 1 },
+      ],
+      itemIds: [...draft.itemIds, itemId("ankle-boots")],
+    });
+
+    expect(invalidCapsule?.outfitCount).toBe(0);
+    expect(validCapsule?.outfitCount).toBe(1);
   });
 });
