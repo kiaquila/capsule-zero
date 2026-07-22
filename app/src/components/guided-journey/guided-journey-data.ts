@@ -84,10 +84,11 @@ export async function buildGuidedJourneySnapshot({
       const defaultCounts = new Map(
         defaults.map((category) => [category.categoryId, category.count]),
       );
+      const supportedIds = new Set(defaultCounts.keys());
 
       return [
         type,
-        getCategoriesByGender(type).map((category) => ({
+        getCategoriesByGender(type, supportedIds).map((category) => ({
           id: category.id,
           label: locale === "ru" ? category.nameRu : category.nameEn,
           section: category.section,

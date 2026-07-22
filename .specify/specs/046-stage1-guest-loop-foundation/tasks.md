@@ -16,6 +16,9 @@
 - [x] T010 Native Codex P1 category completeness: RED-коммитом `ec099a8` доказать runtime gap
   31/48, затем добавить все 17 отсутствовавших built-in категорий в общий `CATEGORIES` role/slot
   catalog; заодно сделать прямые app-module imports e2e совместимыми с чистым CI package boundary
+- [x] T011 Independent code-review category projection: RED-коммитом `154bcf6` закрепить полную
+  category/gender/role/slot матрицу и provider-scoped Journey; исправить canonical mixed-gender
+  semantics и не расширять frozen Supabase provider новыми глобальными IDs
 
 ## Process Memory
 
@@ -88,6 +91,14 @@
   Result используют тот же общий lookup, поэтому штатная категория больше не превращается в
   исключённый custom item. Mandatory reuse-check: расширен существующий `CATEGORIES`; отдельный
   fallback/map не создавался.
+- **Mixed — режим общего гардероба, не отдельный пол:** категории women-only и men-only включают
+  `mixed`, а documented unisex категории — все три режима; Pumps / Dress shoes и Crossbody bag
+  доступны women/men/mixed согласно canonical taxonomy. Полная 48-entry matrix теперь проверяет
+  ID, genders, role, slot и уникальность, а не только representative примеры.
+- **Journey ограничен surface активного provider:** общий `CATEGORIES` остаётся каноническим lookup,
+  но presentation фильтруется множеством IDs, возвращённых `listJourneyCategories`. Это сохраняет
+  provider abstraction и не расширяет замороженный Supabase catalog. Mandatory reuse-check: расширен
+  существующий `getCategoriesByGender`; новый helper/provider variant не создавался.
 
 ### Dead Ends
 
@@ -124,6 +135,9 @@
   wardrobes могут содержать любую из 48 документированных категорий; отсутствие записи в общем
   lookup молча присваивало `algorithmRole=null` и завышало OPR. Негативный regression теперь проверяет
   и количество 48, и representative mappings `puffer`/`watch`/`cap`/`clutch`.
+- **Рендерить весь глобальный catalog независимо от provider ответа:** отвергнуто независимым
+  code-review — это протекало бы новыми IDs в frozen Supabase Journey. UI теперь пересекает canonical
+  metadata с provider-returned IDs, не меняя legacy provider.
 
 ### Known Issues
 
