@@ -13,7 +13,8 @@
 > validation — `eacaf2d`; zero-base remove path — `706c189`; повторное раздувание одинаковых
 > аксессуаров одного slot/color — `0a4fcd4`; неполная category projection — `ec099a8`/`154bcf6`;
 > legacy persisted numerator — `69529ee`. Затем display, preview и mock/API-backed creation
-> переведены на общий калькулятор.
+> переведены на общий калькулятор. Финальный OSV dependency fix изменяет только package metadata и
+> lockfile, поэтому относится к support scope вне failing-test-first application-code контура.
 
 ## Goal
 
@@ -62,6 +63,8 @@ Dashboard и Capsule Result не продолжали показывать по�
   validation, provider-scoped category projection, persisted numerator и zero-base Layering Coverage;
   test-first история сохранена отдельными красными коммитами, а прямые app-module проверки
   загружаются явным TypeScript runtime и не зависят от экспериментальных возможностей Node 25.
+- `app/package.json` и `app/package-lock.json` — точечное устранение OSV High findings для
+  транзитивных `fast-uri` и `sharp`; product behavior и provider contracts не меняются.
 
 **Out:**
 
@@ -131,6 +134,10 @@ Dashboard и Capsule Result не продолжали показывать по�
   счётчиком — renderer не должен повторно угадывать, какие три варианта вошли в numerator. Visible
   outfit cards строятся из тех же `previewBaseLooks` и selected representative IDs: базовый образ и
   каждая посчитанная accessory variation имеют отдельную карточку с теми же item IDs.
+- **AC-011 (dependency gate без advisory bypass):** `app/package-lock.json` разрешает
+  `fast-uri@3.1.4` и `sharp@0.35.3` либо более новые проверенные fixed versions; OSV Scan не содержит
+  findings из `app`, `npm audit` не содержит High vulnerabilities, а production Docker build проходит
+  с чистым `npm ci`. Advisory не игнорируется и workflow severity не ослабляется.
 
 ## Negative scenarios
 
@@ -167,6 +174,8 @@ Dashboard и Capsule Result не продолжали показывать по�
 13. **Renderer игнорирует selected representatives** — отвергнуто: cards не могут продолжать
     показывать первые items по UI section или structural/gap placeholders как посчитанные outfits;
     их item IDs обязаны совпадать с `previewBaseLooks` numerator.
+14. **OSV проходит через ignore/ослабление гейта** — отвергнуто: исправляются dependency versions;
+    workflow, scanner arguments и severity policy не меняются.
 
 Регрессия любого пункта — это доковое противоречие, ловится grep-аудитом `plan.md` и просмотром
 диффа при ревью.

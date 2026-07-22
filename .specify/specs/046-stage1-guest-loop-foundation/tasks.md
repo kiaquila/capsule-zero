@@ -39,6 +39,9 @@
 - [x] T018 Native Codex P2 renderer drift: RED-коммитом `b32be17` зафиксировать exact item IDs
   counted cards; заменить section-first `buildOutfits` на renderer из `previewBaseLooks` и selected
   representative IDs, включая base-only card
+- [x] T019 OSV gate: заменить уязвимые transitive `fast-uri@3.1.3` и `sharp@0.34.5` точечными
+  npm overrides на `3.1.4` / `0.35.3`, обновить app lockfile и подтвердить zero findings тем же
+  `osv-scanner-action:v2.3.5`, app CI-check и production Docker build
 
 ## Process Memory
 
@@ -147,6 +150,10 @@
   и его selected variations в exact visible layers; `data-item-id` закрепляет observable contract.
   Reuse-check: существующий renderer расширить безопасно было нельзя, потому что он намеренно строил
   три heuristic/gap cards без algorithm roles; общий `previewBaseLooks` теперь единственный input.
+- **OSV-fix закреплён на transitive boundary:** `fast-uri` обновлён внутри совместимого 3.x patch,
+  а `sharp` переопределён на исправленный `0.35.3`. Next загружает root-resolved `sharp` без runtime
+  version gate; Linux production image с чистым `npm ci` и standalone build проходит. Product code,
+  Supabase boundary и runtime contracts не менялись.
 
 ### Dead Ends
 
@@ -212,6 +219,10 @@
 - **Оставить три section-first cards рядом с canonical numerator:** отвергнуто native Codex — UI
   показывал structural/gap слои и первые аксессуары, которые не обязательно входили в посчитанные
   farthest-first варианты. Counted cards теперь являются прямой проекцией selected item IDs.
+- **Обновить только Next patch ради `sharp` CVE:** отвергнуто после проверки package metadata:
+  даже текущий `next@16.2.11` продолжает объявлять optional `sharp@^0.34.5`, поэтому patch-upgrade не
+  снимает OSV finding. Локальный override выбирает уже принятый upstream-линейкой `sharp@0.35.3` и
+  проверяется реальной standalone-сборкой, а не игнорированием advisory.
 
 ### Known Issues
 
@@ -226,3 +237,5 @@
 - **Точное hero-число OPR** — не зафиксировано (ждёт baseline-валидации алгоритма v0 в Этапе 1 P3).
   До этого не выносить число в hero-copy/acceptance.
 - **Реализация гостевой петли** — не в этом PR (Roadmap P1–P4, `spec.md`).
+- **Временный `sharp` override:** удалить его, когда стабильный Next начнёт объявлять безопасный
+  `sharp@>=0.35`; до этого Dependabot/OSV и production Docker build остаются обязательными guards.
