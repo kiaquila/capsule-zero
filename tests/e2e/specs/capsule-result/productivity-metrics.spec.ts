@@ -17,6 +17,7 @@ interface CategoryRole {
   id: string;
   algorithmRole: string;
   accessorySlot: string | null;
+  genders: string[];
 }
 
 type PreviewProductivity = (items: Array<{
@@ -30,12 +31,67 @@ type PreviewProductivity = (items: Array<{
   };
 }>) => { outfitCount: number; denominator: number };
 
-const NEW_CATEGORY_EXPECTATIONS = {
-  puffer: ["layering_outer", null],
-  watch: ["accessory", "jewelry"],
-  cap: ["accessory", "headwear"],
-  clutch: ["accessory", "bag"],
+type CategoriesByGender = (
+  type: "women" | "men" | "mixed",
+  supportedIds?: ReadonlySet<string>,
+) => CategoryRole[];
+
+const GENDERS = {
+  all: ["women", "men", "mixed"],
+  women: ["women", "mixed"],
+  men: ["men", "mixed"],
 } as const;
+
+const EXPECTED_CATEGORY_MATRIX = [
+  ["tank-top", GENDERS.all, "core_top", null],
+  ["shirt", GENDERS.all, "core_top", null],
+  ["turtleneck", GENDERS.all, "core_top", null],
+  ["sweater", GENDERS.all, "layering_mid", null],
+  ["cardigan", GENDERS.all, "layering_mid", null],
+  ["bomber", GENDERS.all, "layering_mid", null],
+  ["blazer", GENDERS.all, "layering_mid", null],
+  ["tshirt", GENDERS.all, "core_top", null],
+  ["polo", GENDERS.all, "core_top", null],
+  ["hoodie", GENDERS.all, "core_top", null],
+  ["longsleeve", GENDERS.all, "core_top", null],
+  ["dress", GENDERS.women, "core_dress", null],
+  ["skirt", GENDERS.women, "core_bottom", null],
+  ["trousers", GENDERS.all, "core_bottom", null],
+  ["leggings", GENDERS.women, "core_bottom", null],
+  ["jeans", GENDERS.all, "core_bottom", null],
+  ["shorts", GENDERS.all, "core_bottom", null],
+  ["chinos", GENDERS.men, "core_bottom", null],
+  ["trench", GENDERS.all, "layering_outer", null],
+  ["short-coat", GENDERS.all, "layering_outer", null],
+  ["vest", GENDERS.all, "layering_outer", null],
+  ["coat", GENDERS.all, "layering_outer", null],
+  ["puffer", GENDERS.all, "layering_outer", null],
+  ["fur-coat", GENDERS.women, "layering_outer", null],
+  ["parka", GENDERS.all, "layering_outer", null],
+  ["jacket", GENDERS.all, "layering_outer", null],
+  ["sandals", GENDERS.all, "core_shoes", null],
+  ["flats", GENDERS.women, "core_shoes", null],
+  ["heels", GENDERS.all, "core_shoes", null],
+  ["heeled-sandals", GENDERS.women, "core_shoes", null],
+  ["ankle-boots", GENDERS.all, "core_shoes", null],
+  ["boots", GENDERS.all, "core_shoes", null],
+  ["sneakers", GENDERS.all, "core_shoes", null],
+  ["loafers", GENDERS.all, "core_shoes", null],
+  ["knee-high-boots", GENDERS.women, "core_shoes", null],
+  ["tote", GENDERS.all, "accessory", "bag"],
+  ["crossbody", GENDERS.all, "accessory", "bag"],
+  ["clutch", GENDERS.women, "accessory", "bag"],
+  ["backpack", GENDERS.all, "accessory", "bag"],
+  ["scarf", GENDERS.all, "accessory", "neckwear"],
+  ["beanie", GENDERS.all, "accessory", "headwear"],
+  ["fedora", GENDERS.all, "accessory", "headwear"],
+  ["cap", GENDERS.all, "accessory", "headwear"],
+  ["jewelry", GENDERS.all, "accessory", "jewelry"],
+  ["belt", GENDERS.all, "accessory", "belt"],
+  ["sunglasses", GENDERS.all, "accessory", "eyewear"],
+  ["watch", GENDERS.all, "accessory", "jewelry"],
+  ["tie", GENDERS.men, "accessory", "neckwear"],
+] as const;
 
 test.describe("Live productivity metrics", () => {
   test("recalculates OPR and layering from one valid base", async ({
@@ -144,16 +200,39 @@ test.describe("Live productivity metrics", () => {
       "CATEGORIES",
     ) as CategoryRole[] | undefined;
 
-    expect(categories).toHaveLength(48);
-    expect(categories?.every(({ algorithmRole }) => algorithmRole)).toBe(true);
-
-    for (const [id, [algorithmRole, accessorySlot]] of Object.entries(
-      NEW_CATEGORY_EXPECTATIONS,
-    )) {
-      expect(categories?.find((category) => category.id === id)).toMatchObject({
+    const normalizedActual = categories
+      ?.map(({ id, genders, algorithmRole, accessorySlot }) => ({
+        id,
+        genders: [...genders].sort(),
         algorithmRole,
         accessorySlot,
-      });
-    }
+      }))
+      .sort((left, right) => left.id.localeCompare(right.id));
+    const normalizedExpected = EXPECTED_CATEGORY_MATRIX.map(
+      ([id, genders, algorithmRole, accessorySlot]) => ({
+        id,
+        genders: [...genders].sort(),
+        algorithmRole,
+        accessorySlot,
+      }),
+    ).sort((left, right) => left.id.localeCompare(right.id));
+
+    expect(new Set(categories?.map(({ id }) => id)).size).toBe(48);
+    expect(normalizedActual).toEqual(normalizedExpected);
+  });
+
+  test("filters journey categories to the active provider catalog", () => {
+    const getCategoriesByGender = Reflect.get(
+      categoriesModule,
+      "getCategoriesByGender",
+    ) as CategoriesByGender | undefined;
+
+    expect(typeof getCategoriesByGender).toBe("function");
+    expect(
+      getCategoriesByGender?.(
+        "mixed",
+        new Set(["dress", "chinos", "sneakers"]),
+      ).map(({ id }) => id),
+    ).toEqual(["dress", "chinos", "sneakers"]);
   });
 });
