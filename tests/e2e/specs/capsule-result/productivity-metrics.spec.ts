@@ -30,7 +30,14 @@ type PreviewProductivity = (items: Array<{
     hex: string;
     group: "achromatic" | "bright" | "pastel" | "desaturated" | "dark";
   };
-}>) => { outfitCount: number; denominator: number };
+}>) => {
+  outfitCount: number;
+  denominator: number;
+  previewBaseLooks: Array<{
+    itemIds: string[];
+    selectedAccessoryVariations: Array<{ key: string; itemIds: string[] }>;
+  }>;
+};
 
 type GarderType = "women" | "men" | "mixed";
 
@@ -88,6 +95,23 @@ const COLOR_COMPATIBILITY_MODULE_PATH =
   "../../../../app/src/lib/color-compatibility";
 const OUTFIT_PRODUCTIVITY_MODULE_PATH =
   "../../../../app/src/lib/outfit-productivity";
+const CORE_PRODUCTIVITY_ITEMS = [
+  {
+    itemId: "top",
+    algorithmRole: "core_top" as const,
+    accessorySlot: null,
+  },
+  {
+    itemId: "bottom",
+    algorithmRole: "core_bottom" as const,
+    accessorySlot: null,
+  },
+  {
+    itemId: "shoes",
+    algorithmRole: "core_shoes" as const,
+    accessorySlot: null,
+  },
+];
 
 const appRoot = path.resolve(process.cwd(), "../../app");
 const appModuleLoader = createJiti(import.meta.url, {
@@ -218,23 +242,6 @@ test.describe("Live productivity metrics", () => {
       outfitProductivity,
       "calculatePreviewOutfitProductivity",
     ) as PreviewProductivity | undefined;
-    const coreItems = [
-      {
-        itemId: "top",
-        algorithmRole: "core_top" as const,
-        accessorySlot: null,
-      },
-      {
-        itemId: "bottom",
-        algorithmRole: "core_bottom" as const,
-        accessorySlot: null,
-      },
-      {
-        itemId: "shoes",
-        algorithmRole: "core_shoes" as const,
-        accessorySlot: null,
-      },
-    ];
     const duplicateScarves = ["scarf-c", "scarf-a", "scarf-b"].map(
       (itemId) => ({
         itemId,
@@ -251,12 +258,51 @@ test.describe("Live productivity metrics", () => {
     expect(typeof calculatePreviewOutfitProductivity).toBe("function");
 
     const productivity = calculatePreviewOutfitProductivity?.([
-      ...coreItems,
+      ...CORE_PRODUCTIVITY_ITEMS,
       ...duplicateScarves,
     ]);
 
     expect(productivity?.outfitCount).toBe(2);
     expect(productivity?.denominator).toBe(6);
+  });
+
+  test("selects deterministic farthest-first accessory representatives", async () => {
+    const outfitProductivity = await importAppModule(
+      OUTFIT_PRODUCTIVITY_MODULE_PATH,
+    );
+    const calculatePreviewOutfitProductivity = Reflect.get(
+      outfitProductivity,
+      "calculatePreviewOutfitProductivity",
+    ) as PreviewProductivity | undefined;
+    const accessory = (itemId: string, accessorySlot: string) => ({
+      itemId,
+      algorithmRole: "accessory" as const,
+      accessorySlot,
+      dominantColor: {
+        id: "grey",
+        hex: "#8c8c8c",
+        group: "achromatic" as const,
+      },
+    });
+
+    const productivity = calculatePreviewOutfitProductivity?.([
+      ...CORE_PRODUCTIVITY_ITEMS,
+      accessory("bag", "bag"),
+      accessory("scarf", "neckwear"),
+      accessory("beanie", "headwear"),
+      accessory("belt", "belt"),
+    ]);
+
+    expect(productivity?.outfitCount).toBe(4);
+    expect(
+      productivity?.previewBaseLooks[0]?.selectedAccessoryVariations.map(
+        ({ itemIds }) => itemIds,
+      ),
+    ).toEqual([
+      ["bag", "beanie", "belt"],
+      ["scarf"],
+      ["bag"],
+    ]);
   });
 
   test("maps every documented built-in category to an algorithm role", async () => {
