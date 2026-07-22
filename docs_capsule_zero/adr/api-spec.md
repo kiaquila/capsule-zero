@@ -92,7 +92,13 @@ The generator writes the canonical web client to `app/src/lib/api/generated/open
   "paletteLocked": true,
   "itemCount": 28,
   "outfitCount": 112,
-  "opr": 4.0
+  "opr": 4.0,
+  "layeringCoverage": {
+    "score": 75,
+    "baseLookCount": 64,
+    "midCoveredLookCount": 48,
+    "outerCoveredLookCount": 48
+  }
 }
 ```
 

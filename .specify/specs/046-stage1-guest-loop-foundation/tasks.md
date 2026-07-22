@@ -34,6 +34,8 @@
   canonical farthest-first representatives при candidates > `A_max`, lowest-itemId dedup и
   color-aware distance; вынести enumeration/dedup/selection в `outfit-variation-selection.ts`,
   вернуть selected keys/item IDs в preview и доказать три независимые mutation failures
+- [x] T017 Native Codex P2 contract-example drift: дополнить Capsule JSON в `api-spec.md` обязательным
+  `layeringCoverage` object и сверить все четыре поля с authoritative OpenAPI schema
 
 ## Process Memory
 
@@ -134,6 +136,9 @@
   `previewBaseLooks` возвращает canonical base IDs и selected variation keys/item IDs. Selection
   вынесен из 315-line calculator в новый 170-line focused module; reuse-check: существовали только
   count-only helpers внутри `outfit-productivity.ts`, готового selector/representative module не было.
+- **Примеры API должны оставаться schema-conformant:** `layeringCoverage` стал required частью
+  `Capsule`, поэтому existing JSON example обновлён полным score/base/mid/outer object. OpenAPI остаётся
+  authoritative; отдельный schema или example-only variant не создавался.
 
 ### Dead Ends
 
@@ -194,6 +199,8 @@
   Это только семь overrides default count; mock methodology проходит по полному
   `getCategoriesByGender`. Probe точного PR HEAD вернул women=46, men=40, mixed=48, поэтому UI
   threshold 8 достижим без custom category; тред закрыт доказательством без product mutation.
+- **Оставить Capsule JSON без нового required поля:** отвергнуто native Codex — даже при корректной
+  OpenAPI schema такой пример учил бы consumer копировать невалидную response shape.
 
 ### Known Issues
 

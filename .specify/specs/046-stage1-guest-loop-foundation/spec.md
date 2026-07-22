@@ -160,6 +160,8 @@ Dashboard и Capsule Result не продолжали показывать по�
 11. **`A_max` реализован как `Math.min(count, 3)` без selection** — отвергнуто: при четырёх и более
     canonical candidates calculator обязан выполнить documented farthest-first и сохранить
     representative item IDs, а не только обрезать анонимное число.
+12. **Capsule example расходится с обязательной схемой** — отвергнуто: документированный JSON обязан
+    включать полный required `layeringCoverage`, чтобы copied payload не терял отдельную метрику.
 
 Регрессия любого пункта — это доковое противоречие, ловится grep-аудитом `plan.md` и просмотром
 диффа при ревью.
