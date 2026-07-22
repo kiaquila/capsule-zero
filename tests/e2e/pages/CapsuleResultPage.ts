@@ -19,6 +19,7 @@ export class CapsuleResultPage extends BasePage {
   readonly layeringCoverage: Locator;
   readonly layeringDiagnostics: Locator;
   readonly addItemButton: Locator;
+  readonly outfitCards: Locator;
 
   constructor(page: Page, locale: Locale = "en") {
     super(page);
@@ -33,6 +34,7 @@ export class CapsuleResultPage extends BasePage {
       "capsule-result-layering-diagnostics",
     );
     this.addItemButton = page.getByRole("button", { name: "Add item" });
+    this.outfitCards = page.locator(".capsule-result-outfit-card");
   }
 
   /** Locator for a single tab button. */
@@ -90,5 +92,16 @@ export class CapsuleResultPage extends BasePage {
       .getByRole("dialog")
       .getByRole("button", { name: "Remove", exact: true })
       .click();
+  }
+
+  /** Item IDs rendered by each visible counted-outfit card. */
+  async visibleOutfitItemIds(): Promise<string[][]> {
+    return this.outfitCards.evaluateAll((cards) =>
+      cards.map((card) =>
+        [...card.querySelectorAll<HTMLElement>("[data-item-id]")].map(
+          (layer) => layer.dataset.itemId ?? "",
+        ),
+      ),
+    );
   }
 }

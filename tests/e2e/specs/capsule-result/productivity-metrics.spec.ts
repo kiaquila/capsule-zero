@@ -41,6 +41,20 @@ type PreviewProductivity = (
   }>;
 };
 
+type PreviewOutfitCardBuilder = (options: {
+  items: Array<{
+    id: string;
+    categoryLabel: string;
+    colorPoints: Array<{ hex: string }>;
+  }>;
+  previewBaseLooks: Array<{
+    itemIds: string[];
+    selectedAccessoryVariations: Array<{ key: string; itemIds: string[] }>;
+  }>;
+  names: string[];
+  note: string;
+}) => Array<{ layers: Array<{ id: string }> }>;
+
 type GarderType = "women" | "men" | "mixed";
 
 type SnapshotBuilder = (options: {
@@ -99,6 +113,8 @@ const COLOR_COMPATIBILITY_MODULE_PATH =
   "../../../../app/src/lib/color-compatibility";
 const OUTFIT_PRODUCTIVITY_MODULE_PATH =
   "../../../../app/src/lib/outfit-productivity";
+const OUTFIT_PREVIEW_CARDS_MODULE_PATH =
+  "../../../../app/src/components/capsule-result/outfit-preview-cards";
 const CORE_PRODUCTIVITY_ITEMS = [
   {
     itemId: "top",
@@ -211,6 +227,25 @@ test.describe("Live productivity metrics", () => {
     // Core+Accessory items. Numerator and denominator move together.
     await expect(capsuleResult.oprValue).toHaveText("0.5");
 
+    await capsuleResult.openTab("outfits");
+    await expect(capsuleResult.outfitCards).toHaveCount(2);
+    await expect
+      .poll(() => capsuleResult.visibleOutfitItemIds())
+      .toEqual([
+        [
+          "22222222-2222-4222-8222-222222222221",
+          "22222222-2222-4222-8222-222222222222",
+          "22222222-2222-4222-8222-222222222226",
+        ],
+        [
+          "22222222-2222-4222-8222-222222222221",
+          "22222222-2222-4222-8222-222222222222",
+          "22222222-2222-4222-8222-222222222226",
+          "44444444-4444-4444-8444-444444444442",
+        ],
+      ]);
+    await capsuleResult.openTab("items");
+
     await capsuleResult.removeItem("Black leather ankle boots");
 
     await expect(capsuleResult.oprValue).toHaveText("0.0");
@@ -286,6 +321,13 @@ test.describe("Live productivity metrics", () => {
       outfitProductivity,
       "calculatePreviewOutfitProductivity",
     ) as PreviewProductivity | undefined;
+    const outfitPreviewCards = await importAppModule(
+      OUTFIT_PREVIEW_CARDS_MODULE_PATH,
+    );
+    const buildPreviewOutfitCards = Reflect.get(
+      outfitPreviewCards,
+      "buildPreviewOutfitCards",
+    ) as PreviewOutfitCardBuilder | undefined;
     const accessory = (
       itemId: string,
       accessorySlot: string,
@@ -301,7 +343,7 @@ test.describe("Live productivity metrics", () => {
       },
     });
 
-    const productivity = calculatePreviewOutfitProductivity?.([
+    const selectionItems = [
       ...CORE_PRODUCTIVITY_ITEMS,
       accessory("bag-black", "bag", "black"),
       accessory("bag-white", "bag", "white"),
@@ -309,7 +351,8 @@ test.describe("Live productivity metrics", () => {
       accessory("scarf-white", "neckwear", "white"),
       accessory("beanie-black", "headwear", "black"),
       accessory("beanie-white", "headwear", "white"),
-    ]);
+    ];
+    const productivity = calculatePreviewOutfitProductivity?.(selectionItems);
 
     expect(productivity?.outfitCount).toBe(4);
     expect(
@@ -320,6 +363,24 @@ test.describe("Live productivity metrics", () => {
       ["bag-black", "beanie-black", "scarf-black"],
       ["bag-white"],
       ["beanie-white", "scarf-white"],
+    ]);
+    expect(typeof buildPreviewOutfitCards).toBe("function");
+    expect(
+      buildPreviewOutfitCards?.({
+        items: selectionItems.map(({ itemId }) => ({
+          id: itemId,
+          categoryLabel: itemId,
+          colorPoints: [{ hex: "#8c8c8c" }],
+        })),
+        previewBaseLooks: productivity?.previewBaseLooks ?? [],
+        names: ["Everyday", "Variation"],
+        note: "Counted outfit",
+      }).map(({ layers }) => layers.map(({ id }) => id)),
+    ).toEqual([
+      ["bottom", "shoes", "top"],
+      ["bottom", "shoes", "top", "bag-black", "beanie-black", "scarf-black"],
+      ["bottom", "shoes", "top", "bag-white"],
+      ["bottom", "shoes", "top", "beanie-white", "scarf-white"],
     ]);
   });
 
