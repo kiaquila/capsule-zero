@@ -8,7 +8,7 @@ Enforcement is split across three layers:
 - **Behavioral verification** is enforced by the required GitHub check **`test`** (`.github/workflows/test.yml`), introduced by spec `025-e2e-tests`. The check runs the Playwright suite in `tests/e2e/` against the running web app. Every spec ≥ 025 must have at least one failing-then-passing test landed before the implementation that makes it green; the SENAR Done Gate row in the PR template binds that evidence to the merge decision.
 - **Done-Gate judgment** (negative-scenario waiver, accepted known issues, process memory quality) is enforced by the human merge owner.
 
-The SENAR rollout did not change `pr-guard.yml`, `ci.yml`, `osv-scan.yml`, or branch-protection approvals. Its only new automated gate was `test`.
+The SENAR rollout did not change `pr-guard.yml`, `ci.yml`, `osv-scan.yml`, or branch-protection approvals. Its only new automated gate was `test`. Separately, on 2026-07-22, `osv-scan` was promoted from an advisory security signal to a required branch-ruleset gate.
 
 ## Mapping
 
@@ -18,7 +18,7 @@ The SENAR rollout did not change `pr-guard.yml`, `ci.yml`, `osv-scan.yml`, or br
 | Scope boundaries            | one worktree, one branch, one PR + the `## Scope` (in/out) section in `spec.md`                                             |
 | Acceptance criteria         | `## Requirements` (FR-###) and `### Acceptance Scenarios` in `spec.md`                                                      |
 | Negative scenario           | `## Negative Scenarios` in `spec.md` (added by this layer)                                                                  |
-| Evidence-based verification | `## Verification` table in `plan.md` (AC → Evidence), plus `npm run preflight`, `baseline-checks`, `guard`, `AI Review`, and `test` |
+| Evidence-based verification | `## Verification` table in `plan.md` (AC → Evidence), plus `npm run preflight`, `baseline-checks`, `guard`, `AI Review`, `test`, and `osv-scan` |
 | Process memory              | `## Process Memory` (Dead Ends / Decisions / Known Issues) in `tasks.md`                                                    |
 | Human supervision           | final review and merge authority                                                                                           |
 
@@ -38,7 +38,7 @@ A PR is merge-ready only when **all** of the following are true on the current h
 - At least one negative scenario is covered, or the spec explicitly waives the negative-scenario requirement with a one-line reason.
 - `tasks.md` records the relevant dead ends, decisions, and known issues.
 - Any remaining known issue is accepted by the human merge owner.
-- The standard merge-ready conditions also hold: green required checks (`baseline-checks`, `guard`, `AI Review`, `test`), no blocking review findings on the head SHA, no merge conflicts.
+- The standard merge-ready conditions also hold: green required checks (`baseline-checks`, `guard`, `AI Review`, `test`, `osv-scan`), no blocking review findings on the head SHA, no merge conflicts.
 
 This gate is mirrored as a checklist in `.github/pull_request_template.md` so the merge owner can confirm it without leaving the PR view.
 
