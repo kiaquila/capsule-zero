@@ -19,7 +19,7 @@ test.describe("Live productivity metrics", () => {
   }) => {
     await expect(signedIn.oprValue).toHaveText("0.3");
     await expect(signedIn.layeringCoverage).toHaveText("0%");
-    await expect(signedIn.layeringDiagnostics).toContainText("1 base looks");
+    await expect(signedIn.layeringDiagnostics).toContainText("1 base look");
 
     const capsuleResult = new CapsuleResultPage(page, appLocale);
     await capsuleResult.goto();
@@ -33,7 +33,7 @@ test.describe("Live productivity metrics", () => {
     await expect(capsuleResult.oprValue).toHaveText("0.3");
     await expect(capsuleResult.layeringCoverage).toHaveText("50%");
     await expect(capsuleResult.layeringDiagnostics).toContainText(
-      "1 base looks",
+      "1 base look",
     );
 
     await capsuleResult.addItem("Stone grey structured tote");
@@ -42,7 +42,7 @@ test.describe("Live productivity metrics", () => {
     // Core+Accessory items. Numerator and denominator move together.
     await expect(capsuleResult.oprValue).toHaveText("0.5");
 
-    await capsuleResult.removeItem("Black leather loafers");
+    await capsuleResult.removeItem("Black leather sneakers");
 
     await expect(capsuleResult.oprValue).toHaveText("0.0");
     await expect(capsuleResult.layeringCoverage).toHaveText("N/A");
@@ -65,4 +65,5 @@ test.describe("Live productivity metrics", () => {
       ),
     ).toBe(true);
   });
+
 });

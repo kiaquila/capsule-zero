@@ -12,7 +12,11 @@ import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
-  formatOpr,
+  calculateOutfitProductivity,
+  calculatePreviewOutfitProductivity,
+  formatLayeringCoverage,
+} from "@/lib/outfit-productivity";
+import {
   type CapsuleResultCategory,
   type CapsuleResultGap,
   type CapsuleResultItem,
@@ -340,10 +344,28 @@ export function CapsuleResultShell({ snapshot }: CapsuleResultShellProps) {
                 </div>
 
                 <div className="capsule-result-opr">
-                  <p>{preview.opr}</p>
-                  <span>{t("opr")}</span>
-                  <small>{t("oprHint")}</small>
-                  <strong>{preview.oprDelta}</strong>
+                  <div className="capsule-result-opr-primary">
+                    <p data-testid="capsule-result-opr-value">{preview.opr}</p>
+                    <span>{t("opr")}</span>
+                    <small>{t("oprHint")}</small>
+                    <strong>{preview.oprDelta}</strong>
+                  </div>
+                  <div className="capsule-result-layering">
+                    <span>{t("layeringCoverage")}</span>
+                    <strong data-testid="capsule-result-layering-coverage">
+                      {formatLayeringCoverage(
+                        preview.layeringCoverage.score,
+                        t("layeringUnavailable"),
+                      )}
+                    </strong>
+                    <small data-testid="capsule-result-layering-diagnostics">
+                      {t("layeringDiagnostics", {
+                        base: preview.layeringCoverage.baseLookCount,
+                        mid: preview.layeringCoverage.midCoveredLookCount,
+                        outer: preview.layeringCoverage.outerCoveredLookCount,
+                      })}
+                    </small>
+                  </div>
                 </div>
               </section>
 
@@ -981,13 +1003,13 @@ function buildPreview(
   const categoryCount =
     snapshot.capsule?.categoryCount ?? snapshot.categories.length;
   const itemCount = items.length;
-  const outfitCount =
-    itemCount === snapshot.capsule?.itemCount
-      ? snapshot.capsule.outfitCount
-      : calculateOutfitCount(itemCount, categoryCount);
-  const opr = formatOpr(outfitCount, itemCount);
+  const productivity = haveSameItemIds(items, snapshot.items)
+    ? calculateOutfitProductivity(snapshot.capsule?.outfitCount ?? 0, items)
+    : calculatePreviewOutfitProductivity(items);
+  const outfitCount = productivity.outfitCount;
+  const opr = productivity.opr;
   const baseOpr = snapshot.capsule?.oprValue ?? 0;
-  const delta = Number(opr) - baseOpr;
+  const delta = productivity.oprValue - baseOpr;
   const gaps = buildGaps(snapshot.categories, snapshot.gaps, items, t);
 
   return {
@@ -995,12 +1017,25 @@ function buildPreview(
     outfitCount,
     categoryCount,
     opr,
+    layeringCoverage: productivity.layeringCoverage,
     oprDelta:
       delta === 0 ? (snapshot.capsule?.oprDelta ?? "+0.0") : formatDelta(delta),
     gaps,
     shoppingRows: gaps.slice(0, 5),
     outfits: buildOutfits(items, snapshot.categories, t),
   };
+}
+
+function haveSameItemIds(
+  currentItems: CapsuleResultItem[],
+  persistedItems: CapsuleResultItem[],
+): boolean {
+  if (currentItems.length !== persistedItems.length) {
+    return false;
+  }
+
+  const persistedIds = new Set(persistedItems.map((item) => item.id));
+  return currentItems.every((item) => persistedIds.has(item.id));
 }
 
 function buildGaps(
@@ -1147,17 +1182,6 @@ function layerFromCategory(
 
 function compactLayers(layers: Array<OutfitLayer | null>): OutfitLayer[] {
   return layers.filter((layer): layer is OutfitLayer => Boolean(layer));
-}
-
-function calculateOutfitCount(
-  itemCount: number,
-  categoryCount: number,
-): number {
-  if (itemCount < 2) {
-    return 0;
-  }
-
-  return Math.max(itemCount * Math.max(categoryCount, 1) + itemCount * 2, 0);
 }
 
 function formatDelta(delta: number): string {

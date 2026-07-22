@@ -6,6 +6,7 @@ import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { VerifyEmailBanner } from "@/components/auth/VerifyEmailBanner";
 import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
+import { formatLayeringCoverage } from "@/lib/outfit-productivity";
 import { cn } from "@/lib/utils";
 import {
   DashboardIcon,
@@ -20,10 +21,7 @@ interface DashboardShellProps {
   verifyEmail?: { email: string; flowId?: string };
 }
 
-export function DashboardShell({
-  snapshot,
-  verifyEmail,
-}: DashboardShellProps) {
+export function DashboardShell({ snapshot, verifyEmail }: DashboardShellProps) {
   const t = useTranslations("dashboard");
   const locale = useLocale();
   const router = useRouter();
@@ -138,11 +136,34 @@ export function DashboardShell({
               </div>
 
               <div className="dashboard-opr-widget">
-                <p className="dashboard-opr-value">
+                <p
+                  className="dashboard-opr-value"
+                  data-testid="dashboard-opr-value"
+                >
                   {snapshot.activeCapsule.opr}
                 </p>
                 <p className="dashboard-opr-label">{t("opr")}</p>
                 <p className="dashboard-opr-hint">{t("oprHint")}</p>
+                <div className="dashboard-layering-metric">
+                  <p className="dashboard-opr-label">{t("layeringCoverage")}</p>
+                  <strong data-testid="dashboard-layering-coverage">
+                    {formatLayeringCoverage(
+                      snapshot.activeCapsule.layeringCoverage.score,
+                      t("layeringUnavailable"),
+                    )}
+                  </strong>
+                  <small data-testid="dashboard-layering-diagnostics">
+                    {t("layeringDiagnostics", {
+                      base: snapshot.activeCapsule.layeringCoverage
+                        .baseLookCount,
+                      mid: snapshot.activeCapsule.layeringCoverage
+                        .midCoveredLookCount,
+                      outer:
+                        snapshot.activeCapsule.layeringCoverage
+                          .outerCoveredLookCount,
+                    })}
+                  </small>
+                </div>
               </div>
             </section>
           ) : (

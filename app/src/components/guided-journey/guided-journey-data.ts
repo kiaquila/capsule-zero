@@ -12,6 +12,7 @@ import type {
   ColorPoint,
   ColorTemperature,
 } from "@/types";
+import { areColorGroupsCompatible } from "@/lib/color-compatibility";
 
 export type { GarderType };
 
@@ -99,13 +100,18 @@ export async function buildGuidedJourneySnapshot({
       ] as const;
     }),
   );
-  const catalogResults = await registry.catalogSearch.search(session.userId, "");
+  const catalogResults = await registry.catalogSearch.search(
+    session.userId,
+    "",
+  );
 
   return {
     profile: {
       displayName: session.name ?? profile.displayName,
       email: session.email,
-      initials: buildInitials(session.name ?? profile.displayName ?? session.email),
+      initials: buildInitials(
+        session.name ?? profile.displayName ?? session.email,
+      ),
     },
     categories: Object.fromEntries(categoryEntries) as Record<
       GarderType,
@@ -130,14 +136,7 @@ export function arePaletteColorGroupsCompatible(
     return true;
   }
 
-  if (base.group === target.group) {
-    return true;
-  }
-
-  return (
-    (base.group === "desaturated" && target.group === "dark") ||
-    (base.group === "dark" && target.group === "desaturated")
-  );
+  return areColorGroupsCompatible(base.group, target.group);
 }
 
 function buildCatalogItem(
@@ -157,7 +156,9 @@ function buildCatalogItem(
   };
 }
 
-function resolvePublicImageUrl(imageUrl: string | undefined): string | undefined {
+function resolvePublicImageUrl(
+  imageUrl: string | undefined,
+): string | undefined {
   if (!imageUrl || imageUrl.startsWith("/fixtures/")) {
     return undefined;
   }

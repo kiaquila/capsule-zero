@@ -3,6 +3,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 
 import { getCategoriesByGender } from "@/lib/categories";
+import { areColorGroupsCompatible } from "@/lib/color-compatibility";
 import type { Capsule, ColorPoint } from "@/types";
 import type {
   BillingPort,
@@ -698,17 +699,15 @@ function upsertProfileFromSession(
   });
 }
 
-function arePaletteColorsCompatible(base: ColorPoint, target: ColorPoint): boolean {
+function arePaletteColorsCompatible(
+  base: ColorPoint,
+  target: ColorPoint,
+): boolean {
   if (target.isAchromatic) {
     return true;
   }
-  if (base.group === target.group) {
-    return true;
-  }
-  return (
-    (base.group === "desaturated" && target.group === "dark") ||
-    (base.group === "dark" && target.group === "desaturated")
-  );
+
+  return areColorGroupsCompatible(base.group, target.group);
 }
 
 function buildMethodologyPort(): MethodologyPort {
@@ -721,8 +720,7 @@ function buildMethodologyPort(): MethodologyPort {
           blockedColorIds: colorPoints
             .slice(MAX_PALETTE_COLORS)
             .map((color) => color.hex),
-          explanation:
-            "A capsule palette can include up to 15 colors total.",
+          explanation: "A capsule palette can include up to 15 colors total.",
         };
       }
       if (chromatic.length > MAX_CHROMATIC_COLORS) {

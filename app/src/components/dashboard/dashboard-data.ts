@@ -5,6 +5,11 @@ import type { Capsule, ColorPoint } from "@/types";
 import type { PersistedMockSession } from "@/features/auth/session";
 import { readMockProfilePreferences } from "@/features/profile/mock-profile-preferences";
 import { isWardrobeStatisticItem } from "@/components/wardrobe/wardrobe-statistics";
+import {
+  calculateOutfitProductivity,
+  type LayeringCoverage,
+  type ProductivityItem,
+} from "@/lib/outfit-productivity";
 
 export interface DashboardSnapshot {
   profile: {
@@ -21,6 +26,7 @@ export interface DashboardSnapshot {
     outfitCount: number;
     categoryCount: number;
     opr: string;
+    layeringCoverage: LayeringCoverage;
   } | null;
   stats: {
     totalItems: number;
@@ -105,7 +111,12 @@ export async function buildDashboardSnapshot({
       city: savedPreferences?.city ?? profile.city,
       coinBalance: profile.coinBalance,
     },
-    activeCapsule: capsule ? buildActiveCapsule(capsule) : null,
+    activeCapsule: capsule
+      ? buildActiveCapsule(
+          capsule,
+          items.filter((item) => capsule.itemIds.includes(item.id)),
+        )
+      : null,
     stats: {
       totalItems: wardrobeStatisticItems.length,
       totalOutfits,
@@ -134,10 +145,13 @@ export async function buildDashboardSnapshot({
 
 function buildActiveCapsule(
   capsule: Capsule,
+  items: WardrobeEntry[],
 ): NonNullable<DashboardSnapshot["activeCapsule"]> {
   const itemCount = capsule.itemIds.length;
-  const opr =
-    itemCount > 0 ? (capsule.outfitCount / itemCount).toFixed(1) : "0.0";
+  const productivity = calculateOutfitProductivity(
+    capsule.outfitCount,
+    items.map(toProductivityItem),
+  );
   const colors = [
     ...capsule.palette.achromaticColors,
     ...capsule.palette.selectedColors,
@@ -152,7 +166,18 @@ function buildActiveCapsule(
     itemCount,
     outfitCount: capsule.outfitCount,
     categoryCount: capsule.categories.length,
-    opr,
+    opr: productivity.opr,
+    layeringCoverage: productivity.layeringCoverage,
+  };
+}
+
+function toProductivityItem(item: WardrobeEntry): ProductivityItem {
+  const category = getCategoryById(item.categoryId);
+
+  return {
+    algorithmRole: category?.algorithmRole ?? null,
+    accessorySlot: category?.accessorySlot ?? null,
+    dominantColor: item.colorPoints[0],
   };
 }
 

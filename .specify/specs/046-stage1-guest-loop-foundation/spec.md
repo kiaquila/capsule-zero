@@ -5,17 +5,20 @@
 **Status**: Ready for merge
 **Input**: Фаундерские решения по PRODUCT-PLAN §4 (Q1/Q2/Q3/Q6), собранные в сессии 2026-07-21.
 
-> **TDD-waiver (конституция §VII):** слайс доковый/методологический; единственный app-артефакт —
-> механически generated OpenAPI projection, hand-written web / React Native / Go поведения нет.
-> Failing-test-first не применяется; верификация — contract/codegen guard + доковая консистентность
-> (grep-аудит + просмотр диффа), см. `plan.md`. Required-check `test` этот PR не гейтит по существу.
+> **TDD (конституция §VII):** исходный слайс был доковым/методологическим, но native Codex review
+> обнаружил уже наблюдаемый runtime drift: Dashboard и Capsule Result продолжали делить число
+> образов на все вещи и не показывали Layering Coverage. Расширение устранено test-first: failing e2e
+> зафиксирован отдельным коммитом `69600a3`; исправленная structural-layer инварианта — вторым
+> RED-коммитом `453a7e0`; запрещённый stale-numerator/new-denominator hybrid и dominant-color
+> validation — `eacaf2d`; zero-base remove path — `706c189`. Затем оба экрана переведены на общий
+> калькулятор.
 
 ## Goal
 
 Зафиксировать в каноне (`PRODUCT-PLAN.md`) и в методологии принятые фаундером 2026-07-21 решения
 Q1/Q2/Q3/Q6, задав **единую, консистентную модель OPR и гостевой петли** для Этапа 1 — так, чтобы
-последующие слои реализации (гостевой инструмент) строились на одной истине, без дрейфа доков и без
-изменения поведения приложения в этом PR.
+последующие слои реализации (гостевой инструмент) строились на одной истине, а уже существующие
+Dashboard и Capsule Result не продолжали показывать пользователю устаревшую формулу.
 
 ## Scope
 
@@ -49,12 +52,17 @@ Q1/Q2/Q3/Q6, задав **единую, консистентную модель 
   v1.6) — знаменатель = core+accessory items, структурные слои → Layering Coverage, число «80–150»
   помечено как пол для core-образов.
 - `.specify/specs/046-stage1-guest-loop-foundation/` — эта спека (spec/plan/tasks) с SENAR-полями.
+- `/app` — единый role-aware калькулятор OPR/Layering Coverage, подключённый к Dashboard и Capsule
+  Result; EN/RU display copy, стабильные e2e-селекторы и обновлённые визуальные baseline.
+- `tests/e2e/specs/capsule-result/productivity-metrics.spec.ts` — регрессия числителя/знаменателя,
+  structural/accessory preview, dominant-color validation и zero-base Layering Coverage; test-first
+  история сохранена отдельными красными коммитами.
 
 **Out:**
 
-- **Любой hand-written app-код, компоненты, стили, тесты** — гостевой инструмент реализуется
-  отдельными слоями/PR (см. Roadmap ниже); interim-CTA лендинга остаётся на auth до полного P4
-  vertical slice. Единственное app-изменение здесь — механически generated OpenAPI projection.
+- **Гостевой инструмент и новый маршрут** — реализуются отдельными слоями/PR (см. Roadmap ниже);
+  interim-CTA лендинга остаётся на auth до полного P4 vertical slice. Runtime scope этого PR
+  ограничен устранением обнаруженного drift на уже существующих Dashboard/Capsule Result.
 - **Basicity / фасон (Q5)** — реализация Этапа 2; здесь только eligibility-хук в методологии.
 - **Переделка post-signup Journey** — Этап 3.
 - **Точное маркетинговое hero-число OPR** — фиксируется baseline-валидацией алгоритма v0 (FITB +
@@ -94,9 +102,9 @@ Q1/Q2/Q3/Q6, задав **единую, консистентную модель 
 - **AC-005 (Q6 одна истина):** `colors.md` несёт блок «Canonical compatibility source»; ни один
   активный источник не предписывает temp/shade-совместимость как действующее правило.
 - **AC-006 (regression guard):** слайс не вводит coin-поверхность и не рекочет Supabase —
-  diff-аудит runtime/config поверхностей (`app/`, `api/`, `worker/`, `mobile/`, `infra/`, `deploy/`,
-  workflows, compose) пуст; doc-only упоминание `uncapsulated` — действующий wardrobe status, не
-  legacy-backend coupling.
+  точечный `/app` runtime diff не содержит этих контрактов, а diff инфраструктурных/config
+  поверхностей (`api/`, `worker/`, `mobile/`, `infra/`, `deploy/`, workflows, compose) пуст;
+  doc-only упоминание `uncapsulated` — действующий wardrobe status, не legacy-backend coupling.
 - **AC-008 (полная категория → роль):** `categories.md` однозначно отображает все 48 базовых
   категорий в Core/Layering/Accessory и position/slot; OpenAPI/клиент несут machine-readable role/slot,
   dress/skirt и tops-vs-layering неоднозначности закрыты, custom category без роли не попадает в
@@ -105,6 +113,12 @@ Q1/Q2/Q3/Q6, задав **единую, консистентную модель 
   Coverage и достижимый fixed priority; API/display contracts показывают score/diagnostics отдельно
   от OPR и маркируют impact в единицах core looks либо coverage, не смешивая их; строгие v0-примеры
   учитывают дискретные 0/50/100%, а partial coverage явно ограничен guest/Stage-2 контекстом.
+- **AC-010 (живые дисплеи следуют контракту):** Dashboard и Capsule Result вычисляют OPR через один
+  role-aware калькулятор со знаменателем Core+Accessory, показывают Layering Coverage отдельно и
+  возвращают `N/A` с diagnostics при нуле base looks. Локальный preview после add/remove/replace
+  пересчитывает numerator и denominator вместе: structural layer не создаёт counted outfit, а
+  совместимый Accessory создаёт bounded variation. Совместимость вещи определяется только по
+  dominant color; поведение закреплено e2e и визуальными baseline.
 
 ## Negative scenarios
 
@@ -124,6 +138,8 @@ Q1/Q2/Q3/Q6, задав **единую, консистентную модель 
 5. **Coin/Supabase-регрессия** — отвергнута AC-006 grep-guard'ом.
 6. **Мёртвый production CTA** — interim auth CTA сохраняется, пока весь вертикальный путь
    input→aha→save не готов/не включён; частичный P1 не уводит production в тупик.
+7. **Layering при нуле base looks** — наличие блейзера/пальто без полного Core-base не выдаёт
+   ложные `0%` или `100%`: UI показывает `N/A` и нулевые diagnostics; слой не попадает в OPR denominator.
 
 Регрессия любого пункта — это доковое противоречие, ловится grep-аудитом `plan.md` и просмотром
 диффа при ревью.

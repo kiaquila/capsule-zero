@@ -10,6 +10,9 @@
 - [x] T008 Merge-readiness review: native Codex P2 + две независимые локальные дорожки; устранить
   OPR drift, category-role ambiguity, guest/capsule invariant gap, accessory-cap/math drift,
   gap/recommendation inconsistency и production CTA dead-end
+- [x] T009 Native Codex P1 runtime alignment: test-first перевести Dashboard и Capsule Result на
+  единый Core+Accessory denominator, вывести отдельные Layering Coverage diagnostics и закрепить
+  zero-base `N/A` функциональным e2e + desktop/mobile visual baseline
 
 ## Process Memory
 
@@ -64,8 +67,16 @@
   P3, повторная validation после basicity — Этап 2.
 - **Production CTA остаётся завершённым:** P1–P3 строятся за выключенным route/feature flag; hero CTA
   меняется с interim auth только в P4 вместе с работающим input→aha→save вертикальным путём.
-- **Слайс — docs + generated contract projection:** TDD-waiver по конституции §VII; hand-written
-  app behavior нет, верификация = API/codegen guard + typecheck + доковая консистентность.
+- **Runtime drift включён в scope после review:** native Codex на SHA `0efa972` показал, что два уже
+  живых экрана сохранили старый all-items denominator и не визуализируют Layering Coverage. Выполнен
+  TDD: RED-коммит `69600a3`, затем review выявил ошибочную structural-layer инварианту; корректное
+  ожидание сохранено отдельным RED-коммитом `453a7e0`. Следующий review выявил hybrid preview и
+  невозможный provider fixture без shoes: regression-контракт расширен RED-коммитами `eacaf2d` и
+  `706c189`. После этого добавлены общий `outfit-productivity.ts`, два consumers, EN/RU copy и visual
+  baselines. Новый модуль оправдан mandatory reuse-check: существовали только дублированные локальные
+  формулы в `dashboard-data.ts` и `capsule-result-data.ts`, общего calculator не было. Общий
+  `color-compatibility.ts` заменяет три дублированные матрицы в Journey, Capsule Result и mock
+  methodology.
 
 ### Dead Ends
 
@@ -89,6 +100,12 @@
 - **Сохранять 2–3 guest items сразу в strict capsule:** отвергнуто — нарушает min-7/min-8 и palette
   lock. Используется существующий `uncapsulated` wardrobe status; пользователь ничего не теряет и не
   принуждается добавлять вещи при регистрации.
+- **Оставить runtime alignment будущему PR:** отвергнуто native review — Dashboard/Capsule Result
+  уже наблюдаемы пользователем и тем же PR публиковали бы контракт, которому сами не следуют.
+- **Пересчитывать preview numerator по item/category totals или замораживать только numerator:**
+  отвергнуто повторными review — первое создаёт outfits из structural layer, второе создаёт hybrid
+  после Core/Accessory mutation. Preview теперь перечисляет color-valid Core bases и bounded
+  accessory variations; persisted state использует авторитетный provider `outfitCount`.
 
 ### Known Issues
 
