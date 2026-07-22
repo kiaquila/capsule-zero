@@ -60,7 +60,8 @@ Dashboard и Capsule Result не продолжали показывать по�
 - `tests/e2e/specs/capsule-result/productivity-metrics.spec.ts` — регрессия числителя/знаменателя,
   structural/accessory preview, каноническая `(slot, colorId)` дедупликация, dominant-color
   validation, provider-scoped category projection, persisted numerator и zero-base Layering Coverage;
-  test-first история сохранена отдельными красными коммитами.
+  test-first история сохранена отдельными красными коммитами, а прямые app-module проверки
+  загружаются явным TypeScript runtime и не зависят от экспериментальных возможностей Node 25.
 
 **Out:**
 
@@ -151,6 +152,8 @@ Dashboard и Capsule Result не продолжали показывать по�
 9. **Persisted numerator обходит Core-инвариант** — repository не использует `items×categories`:
    capsule без shoes сохраняет `outfitCount=0`, а валидная top+bottom+shoes база — `1`, тем же
    calculator, который обслуживает preview.
+10. **Regression проходит локально только на Node 25** — прямые импорты app `.ts` не полагаются на
+    встроенное type stripping: тот же focused suite обязан проходить на CI Node 20.
 
 Регрессия любого пункта — это доковое противоречие, ловится grep-аудитом `plan.md` и просмотром
 диффа при ревью.

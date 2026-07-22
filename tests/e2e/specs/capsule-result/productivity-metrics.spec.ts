@@ -1,11 +1,9 @@
-import Module from "node:module";
 import path from "node:path";
+
+import { createJiti } from "jiti";
 
 import { expect, test } from "../../fixtures/visual";
 import { CapsuleResultPage } from "../../pages/CapsuleResultPage";
-import * as categoriesModule from "../../../../app/src/lib/categories";
-import * as colorCompatibility from "../../../../app/src/lib/color-compatibility";
-import * as outfitProductivity from "../../../../app/src/lib/outfit-productivity";
 
 type DominantCompatibility = (
   itemColors: Array<{
@@ -85,47 +83,22 @@ const GENDERS = {
 const GUIDED_JOURNEY_DATA_MODULE_PATH =
   "../../../../app/src/components/guided-journey/guided-journey-data";
 const MOCK_PROVIDER_MODULE_PATH = "../../../../app/src/lib/providers/mock";
+const CATEGORIES_MODULE_PATH = "../../../../app/src/lib/categories";
+const COLOR_COMPATIBILITY_MODULE_PATH =
+  "../../../../app/src/lib/color-compatibility";
+const OUTFIT_PRODUCTIVITY_MODULE_PATH =
+  "../../../../app/src/lib/outfit-productivity";
 
-type CommonJsResolver = (
-  request: string,
-  parent?: unknown,
-  isMain?: boolean,
-  options?: unknown,
-) => string;
+const appRoot = path.resolve(process.cwd(), "../../app");
+const appModuleLoader = createJiti(import.meta.url, {
+  alias: {
+    "@": path.resolve(appRoot, "src"),
+    "server-only": path.resolve(appRoot, "node_modules/server-only/empty.js"),
+  },
+});
 
 async function importAppModule(modulePath: string): Promise<object> {
-  const commonJsModule = Module as unknown as {
-    _resolveFilename: CommonJsResolver;
-  };
-  const originalResolver = commonJsModule._resolveFilename;
-  const appRoot = path.resolve(process.cwd(), "../../app");
-
-  commonJsModule._resolveFilename = function resolveAppAlias(
-    request,
-    parent,
-    isMain,
-    options,
-  ) {
-    const resolvedRequest =
-      request === "server-only"
-        ? path.resolve(appRoot, "node_modules/server-only/empty.js")
-        : request.startsWith("@/")
-          ? path.resolve(appRoot, "src", request.slice(2))
-          : request;
-    return originalResolver.call(
-      this,
-      resolvedRequest,
-      parent,
-      isMain,
-      options,
-    );
-  };
-
-  try {
-    return await import(modulePath);
-  } finally {
-    commonJsModule._resolveFilename = originalResolver;
-  }
+  return (await appModuleLoader.import(modulePath)) as object;
 }
 
 const EXPECTED_CATEGORY_MATRIX = [
@@ -219,7 +192,10 @@ test.describe("Live productivity metrics", () => {
     );
   });
 
-  test("uses only the dominant item color for compatibility", () => {
+  test("uses only the dominant item color for compatibility", async () => {
+    const colorCompatibility = await importAppModule(
+      COLOR_COMPATIBILITY_MODULE_PATH,
+    );
     const isDominantColorCompatibleWithPalette = Reflect.get(
       colorCompatibility,
       "isDominantColorCompatibleWithPalette",
@@ -234,7 +210,10 @@ test.describe("Live productivity metrics", () => {
     ).toBe(true);
   });
 
-  test("deduplicates same-slot accessories with the same dominant color", () => {
+  test("deduplicates same-slot accessories with the same dominant color", async () => {
+    const outfitProductivity = await importAppModule(
+      OUTFIT_PRODUCTIVITY_MODULE_PATH,
+    );
     const calculatePreviewOutfitProductivity = Reflect.get(
       outfitProductivity,
       "calculatePreviewOutfitProductivity",
@@ -280,7 +259,8 @@ test.describe("Live productivity metrics", () => {
     expect(productivity?.denominator).toBe(6);
   });
 
-  test("maps every documented built-in category to an algorithm role", () => {
+  test("maps every documented built-in category to an algorithm role", async () => {
+    const categoriesModule = await importAppModule(CATEGORIES_MODULE_PATH);
     const categories = Reflect.get(
       categoriesModule,
       "CATEGORIES",

@@ -27,6 +27,9 @@
   `calculatePreviewOutfitProductivity` и закрепить invalid `0` / valid base `1`
 - [x] T014 Final persisted-ID test efficacy: добавить duplicate shirt/shoes IDs в valid draft,
   проверить сохранённый unique `itemIds`; mutation proof удалением `Set` даёт `4` вместо `1`
+- [x] T015 CI Node-20 portability: воспроизвести падение run `29944207430` локально на Node
+  `20.20.2`, заменить неявный Node-25 type stripping на явный `jiti` app-module loader и получить
+  focused Chromium `6 passed` на той же версии Node, что использует CI
 
 ## Process Memory
 
@@ -117,6 +120,10 @@
   сохранением, как в production-shaped repository; legacy `items×categories` удалён. Mandatory
   reuse-check: расширен существующий mock `createCapsule`, общий calculator уже создан в T009;
   новый repository/helper не добавлялся, frozen Supabase не изменялся.
+- **E2E app-module boundary исполняется на минимальной Node-версии проекта:** прямые проверки
+  `categories`, calculator, Journey builder и mock provider используют `jiti` с алиасами `@` и
+  `server-only`. Это делает тестовый контракт явным и одинаковым на Node 20/25; product runtime и
+  provider abstraction не меняются.
 
 ### Dead Ends
 
@@ -165,6 +172,9 @@
 - **Сохранять `itemIds.length × categories.length` как авторитетный outfitCount:** отвергнуто native
   Codex — такая формула давала ненулевой OPR без shoes и расходилась с preview после первой мутации.
   Capsule creation теперь сохраняет результат общего algorithm, а не combinatorial placeholder.
+- **Полагаться на Node 25 built-in TypeScript stripping в e2e:** отвергнуто зелёным локальным, но
+  красным CI run `29944207430` на Node 20. Прямые imports app `.ts` завершали процесс до collection;
+  явный `jiti` loader воспроизводимо проходит focused suite на Node `20.20.2`.
 
 ### Known Issues
 
