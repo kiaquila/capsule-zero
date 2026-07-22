@@ -14,10 +14,15 @@ published on loopback by the `capsule-zero` compose project:
 | `/self-service/*`, `/sessions/*` | `404` | Kratos public is otherwise not exposed at the edge |
 
 There is **no in-Docker nginx** — the container stack only publishes its ports on
-loopback. Cloudflare proxying, Full (strict) TLS, DNSSEC, WAF/DDoS defaults, Bot Fight
-Mode, and an origin firewall allowlist protect the public edge. The origin certificate is
-issued by host `certbot`; renewals traverse Cloudflare and reload nginx via the deploy
-hook `/etc/letsencrypt/renewal-hooks/deploy/reload-host-nginx.sh`.
+loopback. Cloudflare proxying, Full (strict) TLS, DNSSEC, WAF/DDoS defaults, and an
+origin firewall allowlist protect the public edge. A Cloudflare rate-limiting rule blocks
+an IP for 10 seconds after more than 10 `POST` requests to `/api/auth/*` in 10 seconds;
+`/api/auth/logout` is excluded. Origin nginx and the API retain the stricter sustained
+authentication limit of 10 requests per minute. Bot Fight Mode is deliberately disabled:
+on the Free plan it cannot be scoped or bypassed and challenged the API health monitor.
+The origin certificate is issued by host `certbot`; renewals traverse Cloudflare and
+reload nginx via the deploy hook
+`/etc/letsencrypt/renewal-hooks/deploy/reload-host-nginx.sh`.
 
 The former `dev.capsulezero.app` edge was decommissioned on 2026-07-02 with the Hetzner
 migration — every merge to `main` deploys straight to production via
