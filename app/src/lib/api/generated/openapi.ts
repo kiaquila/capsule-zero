@@ -425,11 +425,26 @@ export type ColorDot = {
   group: "achromatic" | "bright" | "pastel" | "desaturated" | "dark";
 };
 
+export type AlgorithmRole = "core_top" | "core_bottom" | "core_dress" | "core_shoes" | "layering_mid" | "layering_outer" | "accessory";
+
+export type AccessorySlot = "bag" | "headwear" | "neckwear" | "jewelry" | "belt" | "eyewear";
+
+export type ImpactUnit = "core_base_looks" | "layering_coverage_percentage_points";
+
+export type LayeringCoverage = {
+  score: number | null;
+  baseLookCount: number;
+  midCoveredLookCount: number;
+  outerCoveredLookCount: number;
+};
+
 export type Category = {
   id: string;
   name: string;
   wardrobeTypes: Array<WardrobeType>;
   layer: "tops" | "dresses_skirts" | "bottoms" | "outerwear" | "shoes" | "bags" | "accessories";
+  algorithmRole: AlgorithmRole;
+  accessorySlot: AccessorySlot | null;
 };
 
 export type AuthLocation = {
@@ -578,6 +593,8 @@ export type CustomCategoryValidationResponse = {
   accepted: boolean;
   explanation: string;
   alternatives: Array<string>;
+  algorithmRole: AlgorithmRole | null;
+  accessorySlot: AccessorySlot | null;
 };
 
 export type Capsule = {
@@ -589,6 +606,7 @@ export type Capsule = {
   itemCount: number;
   outfitCount: number;
   opr: number;
+  layeringCoverage: LayeringCoverage;
 };
 
 export type CreateCapsuleRequest = {
@@ -671,6 +689,7 @@ export type GapRecommendation = {
   colorIds?: Array<string>;
   priority: "high" | "medium" | "low";
   impact: number;
+  impactUnit: ImpactUnit;
 };
 
 export type PhotoUploadInitRequest = {
@@ -1768,13 +1787,76 @@ export const API_SCHEMAS = {
       }
     }
   },
+  "AlgorithmRole": {
+    "type": "string",
+    "enum": [
+      "core_top",
+      "core_bottom",
+      "core_dress",
+      "core_shoes",
+      "layering_mid",
+      "layering_outer",
+      "accessory"
+    ]
+  },
+  "AccessorySlot": {
+    "type": "string",
+    "enum": [
+      "bag",
+      "headwear",
+      "neckwear",
+      "jewelry",
+      "belt",
+      "eyewear"
+    ]
+  },
+  "ImpactUnit": {
+    "type": "string",
+    "enum": [
+      "core_base_looks",
+      "layering_coverage_percentage_points"
+    ]
+  },
+  "LayeringCoverage": {
+    "type": "object",
+    "required": [
+      "score",
+      "baseLookCount",
+      "midCoveredLookCount",
+      "outerCoveredLookCount"
+    ],
+    "properties": {
+      "score": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "minimum": 0,
+        "maximum": 100
+      },
+      "baseLookCount": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "midCoveredLookCount": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "outerCoveredLookCount": {
+        "type": "integer",
+        "minimum": 0
+      }
+    }
+  },
   "Category": {
     "type": "object",
     "required": [
       "id",
       "name",
       "wardrobeTypes",
-      "layer"
+      "layer",
+      "algorithmRole",
+      "accessorySlot"
     ],
     "properties": {
       "id": {
@@ -1800,6 +1882,19 @@ export const API_SCHEMAS = {
           "shoes",
           "bags",
           "accessories"
+        ]
+      },
+      "algorithmRole": {
+        "$ref": "#/components/schemas/AlgorithmRole"
+      },
+      "accessorySlot": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AccessorySlot"
+          },
+          {
+            "type": "null"
+          }
         ]
       }
     }
@@ -2288,7 +2383,9 @@ export const API_SCHEMAS = {
     "required": [
       "accepted",
       "explanation",
-      "alternatives"
+      "alternatives",
+      "algorithmRole",
+      "accessorySlot"
     ],
     "properties": {
       "accepted": {
@@ -2302,6 +2399,26 @@ export const API_SCHEMAS = {
         "items": {
           "type": "string"
         }
+      },
+      "algorithmRole": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AlgorithmRole"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "accessorySlot": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/AccessorySlot"
+          },
+          {
+            "type": "null"
+          }
+        ]
       }
     }
   },
@@ -2315,7 +2432,8 @@ export const API_SCHEMAS = {
       "paletteLocked",
       "itemCount",
       "outfitCount",
-      "opr"
+      "opr",
+      "layeringCoverage"
     ],
     "properties": {
       "id": {
@@ -2345,6 +2463,9 @@ export const API_SCHEMAS = {
       },
       "opr": {
         "type": "number"
+      },
+      "layeringCoverage": {
+        "$ref": "#/components/schemas/LayeringCoverage"
       }
     }
   },
@@ -2659,7 +2780,8 @@ export const API_SCHEMAS = {
       "id",
       "categoryId",
       "priority",
-      "impact"
+      "impact",
+      "impactUnit"
     ],
     "properties": {
       "id": {
@@ -2686,6 +2808,9 @@ export const API_SCHEMAS = {
       },
       "impact": {
         "type": "number"
+      },
+      "impactUnit": {
+        "$ref": "#/components/schemas/ImpactUnit"
       }
     }
   },

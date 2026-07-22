@@ -25,7 +25,7 @@
 - Empty state: "Your capsule is complete!"
 
 ### Tab 4: Shopping List
-- Text list: category + color + priority (High/Medium/Low) + impact (+N outfits)
+- Text list: category + color + priority (High/Medium/Low) + role-specific impact
 - Click on row → opens Search from Catalog pre-filtered
 
 ## Interface States
@@ -44,12 +44,13 @@
 1. Visual grid of items with color dots
 2. Outfits tab: static outfit combinations (view-only)
 3. Gap analysis tab: text-based list (category + color)
-4. Shopping list tab: category + color + priority + impact (+N outfits)
+4. Shopping list tab: category + color + priority + role-specific impact (core base looks or Layering Coverage)
 5. All data based on categories, palette, and item auto-tagging
 6. OPR prominently displayed (see f-015-opr.md)
+7. Layering Coverage displayed as a separate secondary score with `mid x/B` and `outer y/B` diagnostics; never folded into OPR
 
 ## Key Components
-- **CapsuleHeader** — capsule name + OPR metric + delta
+- **CapsuleHeader** — capsule name + OPR metric + delta + separate Layering Coverage diagnostics
 - **ItemGrid** — responsive grid of capsule items
 - **OutfitGrid** — generated outfit combination cards
 - **GapAnalysisList** — text list of missing items with icons

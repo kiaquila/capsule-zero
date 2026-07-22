@@ -2,7 +2,9 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
-import { getCategoriesByGender } from "@/lib/categories";
+import { getCategoriesByGender, getCategoryById } from "@/lib/categories";
+import { areColorGroupsCompatible } from "@/lib/color-compatibility";
+import { calculatePreviewOutfitProductivity } from "@/lib/outfit-productivity";
 import type { Capsule, ColorPoint } from "@/types";
 import type {
   BillingPort,
@@ -613,6 +615,24 @@ export function createMockProviderRegistry(
       },
 
       async createCapsule(userId, draft: CapsuleDraft) {
+        const itemIds = [...new Set(draft.itemIds)];
+        const productivity = calculatePreviewOutfitProductivity(
+          itemIds.flatMap((itemId) => {
+            const item = wardrobeItems.get(itemId);
+            if (!item) {
+              return [];
+            }
+
+            const category = getCategoryById(item.categoryId);
+            const dominantColor = item.colorPoints[0];
+            return [{
+              itemId,
+              algorithmRole: category?.algorithmRole ?? null,
+              accessorySlot: category?.accessorySlot ?? null,
+              ...(dominantColor ? { dominantColor } : {}),
+            }];
+          }),
+        );
         const capsule: Capsule = {
           id: deterministicUuid("capsule", `${userId}:${draft.name}`),
           userId,
@@ -620,11 +640,8 @@ export function createMockProviderRegistry(
           garderType: draft.garderType,
           palette: draft.palette,
           categories: draft.categories,
-          itemIds: draft.itemIds,
-          outfitCount: Math.max(
-            draft.itemIds.length * draft.categories.length,
-            0,
-          ),
+          itemIds,
+          outfitCount: productivity.outfitCount,
           gapAnalysis: [],
           createdAt: now(),
         };
@@ -698,17 +715,15 @@ function upsertProfileFromSession(
   });
 }
 
-function arePaletteColorsCompatible(base: ColorPoint, target: ColorPoint): boolean {
+function arePaletteColorsCompatible(
+  base: ColorPoint,
+  target: ColorPoint,
+): boolean {
   if (target.isAchromatic) {
     return true;
   }
-  if (base.group === target.group) {
-    return true;
-  }
-  return (
-    (base.group === "desaturated" && target.group === "dark") ||
-    (base.group === "dark" && target.group === "desaturated")
-  );
+
+  return areColorGroupsCompatible(base.group, target.group);
 }
 
 function buildMethodologyPort(): MethodologyPort {
@@ -721,8 +736,7 @@ function buildMethodologyPort(): MethodologyPort {
           blockedColorIds: colorPoints
             .slice(MAX_PALETTE_COLORS)
             .map((color) => color.hex),
-          explanation:
-            "A capsule palette can include up to 15 colors total.",
+          explanation: "A capsule palette can include up to 15 colors total.",
         };
       }
       if (chromatic.length > MAX_CHROMATIC_COLORS) {

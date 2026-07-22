@@ -52,7 +52,7 @@ As an authenticated user, I want to see my generated capsule result so I can und
 
 As a user, I want to switch between items, outfits, missing pieces, and shopping recommendations so I can act on the result.
 
-**Why this priority**: The result screen's value is not only the item grid; outfits, gaps, and shopping impact explain the product methodology.
+**Why this priority**: The result screen's value is not only the item grid; outfits, gaps, and role-specific shopping impact explain the product methodology.
 
 **Independent Test**: Use the tab controls on `/en/capsule-result` and verify each tab updates without a page reload.
 
@@ -60,7 +60,7 @@ As a user, I want to switch between items, outfits, missing pieces, and shopping
 
 1. **Given** the result is visible, **When** the Outfits tab is selected, **Then** static view-only outfit cards render with capsule item layers.
 2. **Given** the result is visible, **When** the What's Missing tab is selected, **Then** text-based gaps show category, color hint, priority type, and explanation.
-3. **Given** the result is visible, **When** the Shopping List tab is selected, **Then** rows show category, recommended color, priority, outfit impact, and a catalog-search handoff link.
+3. **Given** the result is visible, **When** the Shopping List tab is selected, **Then** rows show category, recommended color, priority, role-specific impact (core base looks or Layering Coverage), and a catalog-search handoff link.
 
 ### User Story 3 - Local Capsule Management Preview (Priority: P3)
 
@@ -113,7 +113,7 @@ As a Stage 1 reviewer, I want add/remove/replace/favorite controls to behave loc
 - **FR-005**: Items tab MUST render visual item cards with color dots, favorite controls, local action controls, and an Add Item card.
 - **FR-006**: Outfits tab MUST render static view-only outfit combinations derived from current local capsule items.
 - **FR-007**: Gap Analysis tab MUST render text-based category + color recommendations or a complete-capsule empty state.
-- **FR-008**: Shopping List tab MUST render category, color, priority, and impact rows with a catalog-search handoff link.
+- **FR-008**: Shopping List tab MUST render category, color, priority, and role-specific impact rows with a catalog-search handoff link.
 - **FR-009**: Add/remove/replace/favorite interactions MUST remain local-only and recalculate visible counts, OPR, gaps, and shopping rows.
 - **FR-010**: Replacement and addition candidates MUST be validated against the immutable capsule palette.
 - **FR-011**: Result copy MUST be localized through next-intl EN/RU messages and MUST not expose ES-AR.
@@ -128,7 +128,7 @@ As a Stage 1 reviewer, I want add/remove/replace/favorite controls to behave loc
 
 - **CapsuleResultSnapshot**: Serializable server-built setup data containing profile, current capsule, category plans, capsule items, available candidates, palette colors, and initial gaps.
 - **CapsuleResultItem**: Local/mock item preview sourced from wardrobe or catalog fixtures with category, colors, source, and favorite state.
-- **CapsuleResultGap**: Derived category + color recommendation with priority type, impact, and explanation.
+- **CapsuleResultGap**: Derived category + color recommendation with priority type, role-specific impact, and explanation.
 - **LocalCapsulePreview**: Client-side result state for item membership, favorites, action menus, picker mode, and preview recalculation.
 
 ## Success Criteria

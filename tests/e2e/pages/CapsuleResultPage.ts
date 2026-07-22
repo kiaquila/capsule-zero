@@ -15,12 +15,26 @@ export class CapsuleResultPage extends BasePage {
   readonly tabs: Locator;
   /** The active content panel below the tab strip (CSS class — no testid yet). */
   readonly panel: Locator;
+  readonly oprValue: Locator;
+  readonly layeringCoverage: Locator;
+  readonly layeringDiagnostics: Locator;
+  readonly addItemButton: Locator;
+  readonly outfitCards: Locator;
 
   constructor(page: Page, locale: Locale = "en") {
     super(page);
     this.path = `/${locale}/capsule-result`;
     this.tabs = page.getByTestId("capsule-result-tabs");
     this.panel = page.locator(".capsule-result-panel");
+    this.oprValue = page.getByTestId("capsule-result-opr-value");
+    this.layeringCoverage = page.getByTestId(
+      "capsule-result-layering-coverage",
+    );
+    this.layeringDiagnostics = page.getByTestId(
+      "capsule-result-layering-diagnostics",
+    );
+    this.addItemButton = page.getByRole("button", { name: "Add item" });
+    this.outfitCards = page.locator(".capsule-result-outfit-card");
   }
 
   /** Locator for a single tab button. */
@@ -54,5 +68,40 @@ export class CapsuleResultPage extends BasePage {
         }
       }
     }
+  }
+
+  /** Add a compatible candidate through the capsule item picker. */
+  async addItem(candidateName: string): Promise<void> {
+    await this.addItemButton.click();
+    await this.page
+      .getByRole("button", { name: new RegExp(candidateName, "i") })
+      .click();
+  }
+
+  /** Remove an item through its contextual action and confirmation dialog. */
+  async removeItem(itemName: string): Promise<void> {
+    const itemCard = this.page
+      .locator(".capsule-result-item-card")
+      .filter({ has: this.page.getByRole("heading", { name: itemName }) });
+
+    await itemCard
+      .getByRole("button", { name: `Open actions for ${itemName}` })
+      .click();
+    await itemCard.getByRole("button", { name: "Remove", exact: true }).click();
+    await this.page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Remove", exact: true })
+      .click();
+  }
+
+  /** Item IDs rendered by each visible counted-outfit card. */
+  async visibleOutfitItemIds(): Promise<string[][]> {
+    return this.outfitCards.evaluateAll((cards) =>
+      cards.map((card) =>
+        [...card.querySelectorAll<HTMLElement>("[data-item-id]")].map(
+          (layer) => layer.dataset.itemId ?? "",
+        ),
+      ),
+    );
   }
 }

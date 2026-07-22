@@ -92,7 +92,13 @@ The generator writes the canonical web client to `app/src/lib/api/generated/open
   "paletteLocked": true,
   "itemCount": 28,
   "outfitCount": 112,
-  "opr": 4.0
+  "opr": 4.0,
+  "layeringCoverage": {
+    "score": 75,
+    "baseLookCount": 64,
+    "midCoveredLookCount": 48,
+    "outerCoveredLookCount": 48
+  }
 }
 ```
 
@@ -152,6 +158,14 @@ as Stage 2 boundaries for Google OAuth and Apple Sign-In.
 
 ## Journey
 
+`Category.layer` is the coarse UI section only. Every API category also carries the machine-readable
+`algorithmRole` and nullable `accessorySlot` from the canonical category → role/slot mapping in
+`docs_capsule_zero/project/methodology/categories.md`; OPR, Layering Coverage, and recommendation code
+MUST consume those fields and must not derive a role from the localized display `name` or treat `tops`
+as synonymous with Core. Built-in seed rows persist the mapping, so a UUID resolves without a hidden
+name-based lookup. Custom-category validation returns a nullable role/slot pair (`null` when rejected)
+before that category can participate in either metric.
+
 | Route                                   | Method | Auth | Purpose                                               |
 | --------------------------------------- | -----: | ---- | ----------------------------------------------------- |
 | `/api/journey/categories`               |    GET | User | List categories filtered by wardrobe type             |
@@ -160,6 +174,12 @@ as Stage 2 boundaries for Google OAuth and Apple Sign-In.
 | `/api/capsules`                         |   POST | User | Create capsule from journey selections                |
 
 ## Capsules
+
+`Capsule.layeringCoverage` is separate from `opr` and carries the score plus base/mid/outer diagnostics;
+`score=null` is the `B=0` / N/A state. Gap and shopping-list `impact` values are role-specific and carry
+an explicit `impactUnit`: Core rows report `core_base_looks`, while Layering rows report
+`layering_coverage_percentage_points`. Consumers MUST NOT compare or sum the two scales as if they were
+both outfit counts. The fixed cross-role priority is defined in `outfit-generation.md` §4.
 
 | Route                                             | Method | Auth | Purpose                                                 |
 | ------------------------------------------------- | -----: | ---- | ------------------------------------------------------- |

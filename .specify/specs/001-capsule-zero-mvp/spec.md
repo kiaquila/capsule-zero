@@ -268,7 +268,7 @@ As a user, I want to see my completed capsule with outfits, gap analysis, and sh
 1. **Given** the result, **When** loaded, **Then** visual grid of items with color dots displayed
 2. **Given** outfits tab, **When** viewed, **Then** static outfit combinations shown (view-only)
 3. **Given** gap analysis tab, **When** viewed, **Then** text-based list: category + color of missing items
-4. **Given** shopping list tab, **When** viewed, **Then** text list: category + color + priority + impact (+N outfits)
+4. **Given** shopping list tab, **When** viewed, **Then** text list: category + color + priority + role-specific impact (core base looks or Layering Coverage)
 5. **Given** data, **When** generated, **Then** all based on categories, palette, and item auto-tagging
 
 ---
@@ -465,7 +465,7 @@ As a system, I want imported marketplace items to populate the shared database f
 - **FR-008**: System MUST block incompatible items with explanation and alternative
 - **FR-009**: System MUST lock capsule palette after creation (immutable in v0.1)
 - **FR-010**: System MUST generate outfit combinations algorithmically from capsule items
-- **FR-011**: System MUST calculate and display OPR (outfits / items)
+- **FR-011**: System MUST calculate and display OPR (wearable outfits ÷ (core + accessory items)); structural layers MUST be reported separately as Layering Coverage. Canonical counting model: `docs_capsule_zero/project/methodology/outfit-generation.md` §3.
 - **FR-012**: System MUST perform gap analysis and generate prioritized shopping list
 - **FR-013**: System MUST parse marketplace URLs using a best-effort generic parser, with retailer-specific adapters where needed for higher accuracy
 - **FR-014**: System MUST provide semantic search from shared item database
@@ -483,7 +483,7 @@ As a system, I want imported marketplace items to populate the shared database f
 - **Item**: Name, photo(s), category, color dots (1-3), brand, material, price, source URL, capsule membership, basicity score
 - **Outfit**: Generated combination of items following layer rules and color harmony
 - **Palette**: User-selected achromatic and chromatic colors, ordered with achromats first in UI, governed by same-group or Desaturated↔Dark compatibility rules
-- **Shopping List Item**: Category, recommended color, priority, impact (+N outfits)
+- **Shopping List Item**: Category, recommended color, priority, role-specific impact (core base looks or Layering Coverage)
 
 ## Success Criteria
 

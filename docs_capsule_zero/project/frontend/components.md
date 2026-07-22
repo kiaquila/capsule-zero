@@ -122,7 +122,7 @@ Push `use client` as low as possible. Route pages should stay server-rendered un
 | `ItemCard` | Photo, name, color dots, capsule membership, status/favorite controls |
 | `ItemDetail` | View/edit state for name, category, colors, brand, material, price |
 | `UploadTabs` | Photo upload, marketplace links, catalog search |
-| `OPRDisplay` | Formatted `outfits / items` with delta |
+| `OPRDisplay` | Formatted wearable outfits ÷ (core + accessory items) with delta; renders Layering Coverage as a separate labelled secondary value with mid/outer diagnostics and `N/A` zero-base state |
 | `ShoppingListRow` | Category, color, priority, impact |
 | `BottomNav` | Primary mobile navigation |
 
