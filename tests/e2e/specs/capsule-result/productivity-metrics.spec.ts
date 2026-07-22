@@ -21,16 +21,18 @@ interface CategoryRole {
   genders: string[];
 }
 
-type PreviewProductivity = (items: Array<{
-  itemId: string;
-  algorithmRole: string | null;
-  accessorySlot: string | null;
-  dominantColor?: {
-    id: string;
-    hex: string;
-    group: "achromatic" | "bright" | "pastel" | "desaturated" | "dark";
-  };
-}>) => {
+type PreviewProductivity = (
+  items: Array<{
+    itemId: string;
+    algorithmRole: string | null;
+    accessorySlot: string | null;
+    dominantColor?: {
+      id: string;
+      hex: string;
+      group: "achromatic" | "bright" | "pastel" | "desaturated" | "dark";
+    };
+  }>,
+) => {
   outfitCount: number;
   denominator: number;
   previewBaseLooks: Array<{
@@ -63,7 +65,9 @@ type SnapshotBuilder = (options: {
 
 type MockProviderRegistry = {
   wardrobe: {
-    listItems(userId: string): Promise<Array<{ id: string; categoryId: string }>>;
+    listItems(
+      userId: string,
+    ): Promise<Array<{ id: string; categoryId: string }>>;
   };
   capsules: {
     createCapsule(
@@ -264,9 +268,17 @@ test.describe("Live productivity metrics", () => {
 
     expect(productivity?.outfitCount).toBe(2);
     expect(productivity?.denominator).toBe(6);
+    expect(
+      productivity?.previewBaseLooks[0]?.selectedAccessoryVariations,
+    ).toEqual([
+      {
+        key: '["neckwear","grey"]',
+        itemIds: ["scarf-a"],
+      },
+    ]);
   });
 
-  test("selects deterministic farthest-first accessory representatives", async () => {
+  test("selects deterministic farthest-first representatives across slot colors", async () => {
     const outfitProductivity = await importAppModule(
       OUTFIT_PRODUCTIVITY_MODULE_PATH,
     );
@@ -274,12 +286,16 @@ test.describe("Live productivity metrics", () => {
       outfitProductivity,
       "calculatePreviewOutfitProductivity",
     ) as PreviewProductivity | undefined;
-    const accessory = (itemId: string, accessorySlot: string) => ({
+    const accessory = (
+      itemId: string,
+      accessorySlot: string,
+      colorId: string,
+    ) => ({
       itemId,
       algorithmRole: "accessory" as const,
       accessorySlot,
       dominantColor: {
-        id: "grey",
+        id: colorId,
         hex: "#8c8c8c",
         group: "achromatic" as const,
       },
@@ -287,10 +303,12 @@ test.describe("Live productivity metrics", () => {
 
     const productivity = calculatePreviewOutfitProductivity?.([
       ...CORE_PRODUCTIVITY_ITEMS,
-      accessory("bag", "bag"),
-      accessory("scarf", "neckwear"),
-      accessory("beanie", "headwear"),
-      accessory("belt", "belt"),
+      accessory("bag-black", "bag", "black"),
+      accessory("bag-white", "bag", "white"),
+      accessory("scarf-black", "neckwear", "black"),
+      accessory("scarf-white", "neckwear", "white"),
+      accessory("beanie-black", "headwear", "black"),
+      accessory("beanie-white", "headwear", "white"),
     ]);
 
     expect(productivity?.outfitCount).toBe(4);
@@ -299,18 +317,17 @@ test.describe("Live productivity metrics", () => {
         ({ itemIds }) => itemIds,
       ),
     ).toEqual([
-      ["bag", "beanie", "belt"],
-      ["scarf"],
-      ["bag"],
+      ["bag-black", "beanie-black", "scarf-black"],
+      ["bag-white"],
+      ["beanie-white", "scarf-white"],
     ]);
   });
 
   test("maps every documented built-in category to an algorithm role", async () => {
     const categoriesModule = await importAppModule(CATEGORIES_MODULE_PATH);
-    const categories = Reflect.get(
-      categoriesModule,
-      "CATEGORIES",
-    ) as CategoryRole[] | undefined;
+    const categories = Reflect.get(categoriesModule, "CATEGORIES") as
+      | CategoryRole[]
+      | undefined;
 
     const normalizedActual = categories
       ?.map(({ id, genders, algorithmRole, accessorySlot }) => ({
@@ -375,10 +392,9 @@ test.describe("Live productivity metrics", () => {
       locale: "en",
     });
     const actualIds = Object.fromEntries(
-      Object.entries(snapshot?.categories ?? {}).map(([garderType, entries]) => [
-        garderType,
-        entries.map(({ id }) => id),
-      ]),
+      Object.entries(snapshot?.categories ?? {}).map(
+        ([garderType, entries]) => [garderType, entries.map(({ id }) => id)],
+      ),
     );
 
     expect(actualIds).toEqual(providerIds);
@@ -397,7 +413,9 @@ test.describe("Live productivity metrics", () => {
     const userId = "11111111-1111-4111-8111-111111111111";
     const items = await registry?.wardrobe.listItems(userId);
     const itemId = (categoryId: string) => {
-      const item = items?.find((candidate) => candidate.categoryId === categoryId);
+      const item = items?.find(
+        (candidate) => candidate.categoryId === categoryId,
+      );
       expect(item, `missing ${categoryId} fixture`).toBeDefined();
       return item?.id ?? "";
     };
@@ -423,12 +441,7 @@ test.describe("Live productivity metrics", () => {
         ...draft.categories,
         { categoryId: "ankle-boots", count: 1 },
       ],
-      itemIds: [
-        ...draft.itemIds,
-        shoesId,
-        draft.itemIds[0] ?? "",
-        shoesId,
-      ],
+      itemIds: [...draft.itemIds, shoesId, draft.itemIds[0] ?? "", shoesId],
     });
 
     expect(invalidCapsule?.outfitCount).toBe(0);
