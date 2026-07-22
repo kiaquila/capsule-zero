@@ -128,7 +128,9 @@ Dashboard и Capsule Result не продолжали показывать по�
   ядро не получает ненулевой persisted `outfitCount`; поведение закреплено e2e и визуальными baseline.
   При количестве accessory candidates больше `A_max` preview перечисляет, дедуплицирует и выбирает
   canonical representatives ровно по farthest-first §3.1, возвращая их keys/item IDs вместе со
-  счётчиком — renderer не должен повторно угадывать, какие три варианта вошли в numerator.
+  счётчиком — renderer не должен повторно угадывать, какие три варианта вошли в numerator. Visible
+  outfit cards строятся из тех же `previewBaseLooks` и selected representative IDs: базовый образ и
+  каждая посчитанная accessory variation имеют отдельную карточку с теми же item IDs.
 
 ## Negative scenarios
 
@@ -162,6 +164,9 @@ Dashboard и Capsule Result не продолжали показывать по�
     representative item IDs, а не только обрезать анонимное число.
 12. **Capsule example расходится с обязательной схемой** — отвергнуто: документированный JSON обязан
     включать полный required `layeringCoverage`, чтобы copied payload не терял отдельную метрику.
+13. **Renderer игнорирует selected representatives** — отвергнуто: cards не могут продолжать
+    показывать первые items по UI section или structural/gap placeholders как посчитанные outfits;
+    их item IDs обязаны совпадать с `previewBaseLooks` numerator.
 
 Регрессия любого пункта — это доковое противоречие, ловится grep-аудитом `plan.md` и просмотром
 диффа при ревью.

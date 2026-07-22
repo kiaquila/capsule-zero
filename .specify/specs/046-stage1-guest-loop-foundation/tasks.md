@@ -36,6 +36,9 @@
   вернуть selected keys/item IDs в preview и доказать три независимые mutation failures
 - [x] T017 Native Codex P2 contract-example drift: дополнить Capsule JSON в `api-spec.md` обязательным
   `layeringCoverage` object и сверить все четыре поля с authoritative OpenAPI schema
+- [x] T018 Native Codex P2 renderer drift: RED-коммитом `b32be17` зафиксировать exact item IDs
+  counted cards; заменить section-first `buildOutfits` на renderer из `previewBaseLooks` и selected
+  representative IDs, включая base-only card
 
 ## Process Memory
 
@@ -139,6 +142,11 @@
 - **Примеры API должны оставаться schema-conformant:** `layeringCoverage` стал required частью
   `Capsule`, поэтому existing JSON example обновлён полным score/base/mid/outer object. OpenAPI остаётся
   authoritative; отдельный schema или example-only variant не создавался.
+- **Renderer потребляет результат calculator, а не повторяет selection:** старый `buildOutfits` из
+  первых items по UI section удалён. Новый focused `outfit-preview-cards.ts` преобразует каждый base
+  и его selected variations в exact visible layers; `data-item-id` закрепляет observable contract.
+  Reuse-check: существующий renderer расширить безопасно было нельзя, потому что он намеренно строил
+  три heuristic/gap cards без algorithm roles; общий `previewBaseLooks` теперь единственный input.
 
 ### Dead Ends
 
@@ -201,6 +209,9 @@
   threshold 8 достижим без custom category; тред закрыт доказательством без product mutation.
 - **Оставить Capsule JSON без нового required поля:** отвергнуто native Codex — даже при корректной
   OpenAPI schema такой пример учил бы consumer копировать невалидную response shape.
+- **Оставить три section-first cards рядом с canonical numerator:** отвергнуто native Codex — UI
+  показывал structural/gap слои и первые аксессуары, которые не обязательно входили в посчитанные
+  farthest-first варианты. Counted cards теперь являются прямой проекцией selected item IDs.
 
 ### Known Issues
 

@@ -22,6 +22,11 @@ import {
   type CapsuleResultItem,
   type CapsuleResultSnapshot,
 } from "./capsule-result-data";
+import {
+  buildPreviewOutfitCards,
+  type OutfitCard,
+  type OutfitLayer,
+} from "./outfit-preview-cards";
 
 interface CapsuleResultShellProps {
   snapshot: CapsuleResultSnapshot;
@@ -53,20 +58,6 @@ type IconName =
   | "viewGrid"
   | "viewList"
   | "x";
-
-interface OutfitLayer {
-  id: string;
-  label: string;
-  colorHex: string;
-  isGap: boolean;
-}
-
-interface OutfitCard {
-  id: string;
-  name: string;
-  note: string;
-  layers: OutfitLayer[];
-}
 
 export function CapsuleResultShell({ snapshot }: CapsuleResultShellProps) {
   const t = useTranslations("capsuleResult");
@@ -789,6 +780,7 @@ function OutfitLayerTile({
         view === "moodboard" && "capsule-result-outfit-layer-moodboard",
         layer.isGap && "capsule-result-outfit-layer-gap",
       )}
+      data-item-id={layer.isGap ? undefined : layer.id}
     >
       <span className="capsule-result-outfit-layer-thumb">
         <span
@@ -1003,9 +995,10 @@ function buildPreview(
   const categoryCount =
     snapshot.capsule?.categoryCount ?? snapshot.categories.length;
   const itemCount = items.length;
+  const previewProductivity = calculatePreviewOutfitProductivity(items);
   const productivity = haveSameItemIds(items, snapshot.items)
     ? calculateOutfitProductivity(snapshot.capsule?.outfitCount ?? 0, items)
-    : calculatePreviewOutfitProductivity(items);
+    : previewProductivity;
   const outfitCount = productivity.outfitCount;
   const opr = productivity.opr;
   const baseOpr = snapshot.capsule?.oprValue ?? 0;
@@ -1022,7 +1015,16 @@ function buildPreview(
       delta === 0 ? (snapshot.capsule?.oprDelta ?? "+0.0") : formatDelta(delta),
     gaps,
     shoppingRows: gaps.slice(0, 5),
-    outfits: buildOutfits(items, snapshot.categories, t),
+    outfits: buildPreviewOutfitCards({
+      items,
+      previewBaseLooks: previewProductivity.previewBaseLooks,
+      names: [
+        t("outfitNames.everyday"),
+        t("outfitNames.layered"),
+        t("outfitNames.travel"),
+      ],
+      note: t("outfitNotes.viewOnly"),
+    }),
   };
 }
 
@@ -1078,64 +1080,6 @@ function buildGaps(
     });
 }
 
-function buildOutfits(
-  items: CapsuleResultItem[],
-  categories: CapsuleResultCategory[],
-  t: ReturnType<typeof useTranslations<"capsuleResult">>,
-): OutfitCard[] {
-  if (!items.length) {
-    return [];
-  }
-
-  const tops = items.filter((item) => item.section === "tops");
-  const bottoms = items.filter(
-    (item) => item.section === "bottoms" || item.section === "dresses",
-  );
-  const shoes = items.filter((item) => item.section === "shoes");
-  const bags = items.filter((item) => item.section === "bags");
-  const accessories = items.filter((item) => item.section === "accessories");
-  const outerwear = items.filter((item) => item.section === "outerwear");
-
-  return [
-    {
-      id: "everyday",
-      name: t("outfitNames.everyday"),
-      note: t("outfitNotes.viewOnly"),
-      layers: compactLayers([
-        layerFromItem(tops[0]),
-        layerFromItem(bottoms[0]),
-        layerFromItem(shoes[0]) ?? layerFromCategory(categories, "shoes"),
-        layerFromItem(bags[0]) ?? layerFromCategory(categories, "bags"),
-      ]),
-    },
-    {
-      id: "layered",
-      name: t("outfitNames.layered"),
-      note: t("outfitNotes.viewOnly"),
-      layers: compactLayers([
-        layerFromItem(tops[1] ?? tops[0]),
-        layerFromItem(bottoms[0]),
-        layerFromItem(outerwear[0]) ??
-          layerFromCategory(categories, "outerwear"),
-        layerFromItem(accessories[0]) ??
-          layerFromCategory(categories, "accessories"),
-      ]),
-    },
-    {
-      id: "travel",
-      name: t("outfitNames.travel"),
-      note: t("outfitNotes.viewOnly"),
-      layers: compactLayers([
-        layerFromItem(tops[0] ?? items[0]),
-        layerFromItem(bottoms[1] ?? bottoms[0]),
-        layerFromItem(shoes[0]) ?? layerFromCategory(categories, "shoes"),
-        layerFromItem(bags[0] ?? accessories[0]) ??
-          layerFromCategory(categories, "bags"),
-      ]),
-    },
-  ].filter((outfit) => outfit.layers.length >= 2);
-}
-
 function visibleOutfitLayers(
   layers: OutfitLayer[],
   outfitView: OutfitView,
@@ -1145,43 +1089,6 @@ function visibleOutfitLayers(
   }
 
   return [...layers.slice(0, 3), { extraCount: layers.length - 3 }];
-}
-
-function layerFromItem(
-  item: CapsuleResultItem | undefined,
-): OutfitLayer | null {
-  if (!item) {
-    return null;
-  }
-
-  return {
-    id: item.id,
-    label: item.categoryLabel,
-    colorHex: item.colorPoints[0]?.hex ?? "#8C8C8C",
-    isGap: false,
-  };
-}
-
-function layerFromCategory(
-  categories: CapsuleResultCategory[],
-  section: CapsuleResultCategory["section"],
-): OutfitLayer | null {
-  const category = categories.find((item) => item.section === section);
-
-  if (!category) {
-    return null;
-  }
-
-  return {
-    id: `gap-layer-${category.id}`,
-    label: category.label,
-    colorHex: category.colorHex,
-    isGap: true,
-  };
-}
-
-function compactLayers(layers: Array<OutfitLayer | null>): OutfitLayer[] {
-  return layers.filter((layer): layer is OutfitLayer => Boolean(layer));
 }
 
 function formatDelta(delta: number): string {
