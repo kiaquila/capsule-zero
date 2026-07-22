@@ -1,6 +1,7 @@
 import { expect, test } from "../../fixtures/visual";
 import { CapsuleResultPage } from "../../pages/CapsuleResultPage";
 import * as colorCompatibility from "../../../../app/src/lib/color-compatibility";
+import { calculatePreviewOutfitProductivity } from "../../../../app/src/lib/outfit-productivity";
 
 type DominantCompatibility = (
   itemColors: Array<{
@@ -66,4 +67,43 @@ test.describe("Live productivity metrics", () => {
     ).toBe(true);
   });
 
+  test("deduplicates same-slot accessories with the same dominant color", () => {
+    const coreItems = [
+      {
+        itemId: "top",
+        algorithmRole: "core_top" as const,
+        accessorySlot: null,
+      },
+      {
+        itemId: "bottom",
+        algorithmRole: "core_bottom" as const,
+        accessorySlot: null,
+      },
+      {
+        itemId: "shoes",
+        algorithmRole: "core_shoes" as const,
+        accessorySlot: null,
+      },
+    ];
+    const duplicateScarves = ["scarf-c", "scarf-a", "scarf-b"].map(
+      (itemId) => ({
+        itemId,
+        algorithmRole: "accessory" as const,
+        accessorySlot: "neckwear" as const,
+        dominantColor: {
+          id: "grey",
+          hex: "#8c8c8c",
+          group: "achromatic" as const,
+        },
+      }),
+    );
+
+    const productivity = calculatePreviewOutfitProductivity([
+      ...coreItems,
+      ...duplicateScarves,
+    ]);
+
+    expect(productivity.outfitCount).toBe(2);
+    expect(productivity.denominator).toBe(6);
+  });
 });
