@@ -1,7 +1,8 @@
 import { expect, test } from "../../fixtures/visual";
 import { CapsuleResultPage } from "../../pages/CapsuleResultPage";
+import * as categoriesModule from "../../../../app/src/lib/categories";
 import * as colorCompatibility from "../../../../app/src/lib/color-compatibility";
-import { calculatePreviewOutfitProductivity } from "../../../../app/src/lib/outfit-productivity";
+import * as outfitProductivity from "../../../../app/src/lib/outfit-productivity";
 
 type DominantCompatibility = (
   itemColors: Array<{
@@ -11,6 +12,30 @@ type DominantCompatibility = (
     group: "achromatic" | "bright" | "pastel" | "desaturated" | "dark";
   }>,
 ) => boolean;
+
+interface CategoryRole {
+  id: string;
+  algorithmRole: string;
+  accessorySlot: string | null;
+}
+
+type PreviewProductivity = (items: Array<{
+  itemId: string;
+  algorithmRole: string | null;
+  accessorySlot: string | null;
+  dominantColor?: {
+    id: string;
+    hex: string;
+    group: "achromatic" | "bright" | "pastel" | "desaturated" | "dark";
+  };
+}>) => { outfitCount: number; denominator: number };
+
+const NEW_CATEGORY_EXPECTATIONS = {
+  puffer: ["layering_outer", null],
+  watch: ["accessory", "jewelry"],
+  cap: ["accessory", "headwear"],
+  clutch: ["accessory", "bag"],
+} as const;
 
 test.describe("Live productivity metrics", () => {
   test("recalculates OPR and layering from one valid base", async ({
@@ -68,6 +93,10 @@ test.describe("Live productivity metrics", () => {
   });
 
   test("deduplicates same-slot accessories with the same dominant color", () => {
+    const calculatePreviewOutfitProductivity = Reflect.get(
+      outfitProductivity,
+      "calculatePreviewOutfitProductivity",
+    ) as PreviewProductivity | undefined;
     const coreItems = [
       {
         itemId: "top",
@@ -98,12 +127,33 @@ test.describe("Live productivity metrics", () => {
       }),
     );
 
-    const productivity = calculatePreviewOutfitProductivity([
+    expect(typeof calculatePreviewOutfitProductivity).toBe("function");
+
+    const productivity = calculatePreviewOutfitProductivity?.([
       ...coreItems,
       ...duplicateScarves,
     ]);
 
-    expect(productivity.outfitCount).toBe(2);
-    expect(productivity.denominator).toBe(6);
+    expect(productivity?.outfitCount).toBe(2);
+    expect(productivity?.denominator).toBe(6);
+  });
+
+  test("maps every documented built-in category to an algorithm role", () => {
+    const categories = Reflect.get(
+      categoriesModule,
+      "CATEGORIES",
+    ) as CategoryRole[] | undefined;
+
+    expect(categories).toHaveLength(48);
+    expect(categories?.every(({ algorithmRole }) => algorithmRole)).toBe(true);
+
+    for (const [id, [algorithmRole, accessorySlot]] of Object.entries(
+      NEW_CATEGORY_EXPECTATIONS,
+    )) {
+      expect(categories?.find((category) => category.id === id)).toMatchObject({
+        algorithmRole,
+        accessorySlot,
+      });
+    }
   });
 });
