@@ -75,4 +75,20 @@ export class CapsuleResultPage extends BasePage {
       .getByRole("button", { name: new RegExp(candidateName, "i") })
       .click();
   }
+
+  /** Remove an item through its contextual action and confirmation dialog. */
+  async removeItem(itemName: string): Promise<void> {
+    const itemCard = this.page
+      .locator(".capsule-result-item-card")
+      .filter({ has: this.page.getByRole("heading", { name: itemName }) });
+
+    await itemCard
+      .getByRole("button", { name: `Open actions for ${itemName}` })
+      .click();
+    await itemCard.getByRole("button", { name: "Remove", exact: true }).click();
+    await this.page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Remove", exact: true })
+      .click();
+  }
 }

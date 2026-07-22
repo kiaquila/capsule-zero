@@ -41,6 +41,14 @@ test.describe("Live productivity metrics", () => {
     // One compatible accessory adds one bounded variation: 2 outfits / 4
     // Core+Accessory items. Numerator and denominator move together.
     await expect(capsuleResult.oprValue).toHaveText("0.5");
+
+    await capsuleResult.removeItem("Black leather loafers");
+
+    await expect(capsuleResult.oprValue).toHaveText("0.0");
+    await expect(capsuleResult.layeringCoverage).toHaveText("N/A");
+    await expect(capsuleResult.layeringDiagnostics).toContainText(
+      "0 base looks",
+    );
   });
 
   test("uses only the dominant item color for compatibility", () => {
