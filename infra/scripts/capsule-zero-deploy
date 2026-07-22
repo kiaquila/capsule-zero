@@ -9,7 +9,11 @@ state_dir="/var/lib/capsule-zero"
 nginx_sync_marker="$state_dir/last-host-nginx-sync-sha"
 nginx_paths=(
   /etc/nginx/conf.d/00-capsule-zero.conf
+  /etc/nginx/conf.d/00-cz-hardening.conf
+  /etc/nginx/snippets/cz-request-guard.conf
+  /etc/nginx/sites-available/00-default-deny.conf
   /etc/nginx/sites-available/capsulezero.app.conf
+  /etc/nginx/sites-enabled/00-default-deny.conf
   /etc/nginx/sites-enabled/capsulezero.app.conf
   /etc/nginx/sites-enabled/default
 )
@@ -153,7 +157,11 @@ restore_nginx_config() {
 
 apply_host_nginx_config() {
   install -m 644 infra/nginx-host/00-capsule-zero.conf /etc/nginx/conf.d/00-capsule-zero.conf || return
+  install -m 644 infra/nginx-host/00-cz-hardening.conf /etc/nginx/conf.d/00-cz-hardening.conf || return
+  install -m 644 infra/nginx-host/cz-request-guard.conf /etc/nginx/snippets/cz-request-guard.conf || return
+  install -m 644 infra/nginx-host/00-default-deny.conf /etc/nginx/sites-available/00-default-deny.conf || return
   install -m 644 infra/nginx-host/capsulezero.app.conf /etc/nginx/sites-available/capsulezero.app.conf || return
+  ln -sf /etc/nginx/sites-available/00-default-deny.conf /etc/nginx/sites-enabled/ || return
   ln -sf /etc/nginx/sites-available/capsulezero.app.conf /etc/nginx/sites-enabled/ || return
   rm -f /etc/nginx/sites-enabled/default || return
   nginx -t || return
