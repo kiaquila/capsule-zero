@@ -18,9 +18,9 @@ test.describe("Live productivity metrics", () => {
 
     await capsuleResult.addItem("Camel wool blazer");
 
-    // The preview numerator becomes 27; only the two Core items remain in
-    // the denominator. The legacy all-item denominator would display 9.0.
-    await expect(capsuleResult.oprValue).toHaveText("13.5");
+    // A structural layer changes neither the counted outfits nor the
+    // Core+Accessory denominator: the OPR must remain 18 / 2.
+    await expect(capsuleResult.oprValue).toHaveText("9.0");
     await expect(capsuleResult.layeringCoverage).toHaveText("N/A");
     await expect(capsuleResult.layeringDiagnostics).toContainText(
       "0 base looks",
