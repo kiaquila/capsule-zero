@@ -71,7 +71,7 @@ The target user persona: 25–40, upper-middle income, "new money mindset meets 
 ## O
 
 ### OPR (Outfit Productivity Ratio)
-The hero metric: wearable outfits / wardrobe pieces that build them (core + accessory items; structural layers → separate Layering Coverage score). "80–150 outfits from 30 items" is a floor for core base looks; the accessorised total is higher and fixed by algorithm-v0 validation. Counting model: `project/methodology/outfit-generation.md` §3 (ratified 2026-07-21). Displayed on capsule cards, updated on every change, shows delta.
+The hero metric: wearable outfits ÷ wardrobe pieces that build them (core + accessory items; structural layers → separate Layering Coverage score). "80–150 outfits from 30 items" is a floor for core base looks; the accessorised total is higher and fixed by algorithm-v0 validation. Counting model: `project/methodology/outfit-generation.md` §3 (ratified 2026-07-21). Displayed on capsule cards, updated on every change, shows delta.
 - **RU:** Outfit Productivity Ratio (используется без перевода)
 
 ## P
@@ -98,7 +98,7 @@ The primary quality criterion: "Will the user screenshot this screen and send to
 Items imported from marketplace links that are flagged as public. Other users can find them via "Search from Catalog". Single record with a publicity flag, no duplication. Personal photos never become public.
 
 ### Shopping List
-The prioritized list of recommended purchases based on gap analysis. Four columns: category, recommended color, priority (High/Medium/Low), impact (+N outfits).
+The prioritized list of recommended purchases based on gap analysis. Four columns: category, recommended color, priority (High/Medium/Low), and role-specific impact (core base looks or Layering Coverage).
 - **RU:** Шоппинг-лист
 - **ES-AR:** Lista de compras
 

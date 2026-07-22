@@ -17,7 +17,7 @@ A capsule wardrobe is a curated collection of universal items that combine into 
 - **Quantity matters.** You can have multiple items in one category (e.g., 3 T-shirts of different colors).
 - **Start from the real wardrobe.** The capsule is built from what the user already owns. The platform directs, not dictates.
 
-**Key metric:** Outfit Productivity Ratio = wearable outfits / wardrobe pieces that build them. The
+**Key metric:** Outfit Productivity Ratio = wearable outfits ÷ wardrobe pieces that build them. The
 counting model (core base looks + bounded accessory variations; structural layers as a separate
 coverage score) is defined in `outfit-generation.md` §3 (ratified 2026-07-21, PRODUCT-PLAN §4 Q1).
 The classic "a good capsule of 30 items yields 80–150+ unique outfits" figure refers to **core base
@@ -48,9 +48,10 @@ All 51 colors are displayed at once, organized by group. User taps to add colors
 
 > **Guest mode inverts this (Q3, 2026-07-21):** the pre-signup guest tool does **not** ask for a
 > palette up front. The palette is **derived** from the items the guest adds ("your items are Darks +
-> achromats") and shown as part of the aha result. A locked, immutable palette is only established
-> when the guest registers and their items become a real capsule (§7). The picker-first flow below
-> governs the post-signup **capsule** entity, not the guest loop.
+> achromats") and shown as part of the aha result. Registration saves those items as `uncapsulated`;
+> it does not establish a locked palette or create a capsule. A locked, immutable palette is only
+> established later when the user explicitly promotes an eligible set under §7.2. The picker-first
+> flow below governs that strict **capsule** entity, not the guest loop.
 
 ### Selection logic
 1. Achromatics (3 colors) — always available, always selectable, never locked out
@@ -122,11 +123,13 @@ only hard requirement is enough to produce one base look.
 
 | Parameter | Guest value | Note |
 |-----------|-------------|------|
-| Required minimum | **1 top + 1 bottom + 1 pair shoes** (or 1 dress + 1 pair shoes) | Guarantees ≥ 1 core base look (`outfit-generation.md` §3). No "min 8 categories", no "min 7 items". |
+| Required minimum | **At least one mutually color-compatible** top + bottom + shoes combination (or dress + shoes) | Guarantees ≥ 1 core base look (`outfit-generation.md` §3). Category presence alone is insufficient. No "min 8 categories", no "min 7 items". |
 | Everything else | Optional | Layers, accessories, extra items all optional — the guest may add 3–5 items and get a result. |
-| Palette | Derived from items | Not asked up front (§3). No immutable lock in guest mode. |
+| Palette | Derived from items | Not asked up front (§3). No immutable lock in guest mode. Incompatible items may remain in the guest wardrobe, but only mutually compatible Core combinations count as looks. |
 | Persistence | localStorage, survives reload | Losing uploaded items is the worst first experience (PRODUCT-PLAN D1). |
-| "Capsule" concept | Not used | The strict capsule entity (locked palette + limits below) is created only after registration, from the same items. |
+| Zero-result state | Explain + alternatives | If the required categories exist but no color-valid Core combination does, show which items conflict and offer compatible preset/add/replace paths. Do not show a fake OPR or open the result gate yet. |
+| Save after signup | `uncapsulated` wardrobe entries | Persist the same guest items without forcing capsule thresholds. Recompute and preserve the guest result/full plan from those entries; create a strict capsule only when the user later chooses to promote a compatible set that satisfies §7.2. |
+| "Capsule" concept | Not used in guest UI | Registration does not silently create an invalid capsule or force extra items. The strict entity remains post-signup and retains its locked-palette/limit invariants. |
 
 Post-registration the Journey itself is also revised/lightened — that is **Этап 3**, out of scope here.
 

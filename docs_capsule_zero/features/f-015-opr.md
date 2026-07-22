@@ -5,21 +5,22 @@
 ## Outfit Productivity Ratio (US-023) — P1
 
 ### Overview
-- **Purpose:** Hero metric showing capsule efficiency — outfits per item
-- **Formula:** OPR = wearable outfits / wardrobe pieces that build them (**core + accessory items**).
+- **Purpose:** Hero metric showing capsule efficiency — wearable outfits per core or accessory item; structural layers are scored separately
+- **Formula:** OPR = wearable outfits ÷ wardrobe pieces that build them (**core + accessory items**).
   Structural layers (cardigan/blazer/coat) are tracked as a separate **Layering Coverage** score, not
   in the denominator. Full counting model (base looks + bounded accessory variations):
   `docs_capsule_zero/project/methodology/outfit-generation.md` §3 (ratified 2026-07-21, PRODUCT-PLAN §4 Q1).
 
 ### Display
-- **Dashboard:** shown on capsule card in format "X.X" (e.g., 4.2)
-- **Capsule Result:** hero metric at top
+- **Dashboard:** OPR shown on capsule card in format "X.X" (e.g., 4.2); Layering Coverage shown as a clearly labelled compact secondary percentage
+- **Capsule Result:** OPR hero metric at top; Layering Coverage immediately below with `mid x/B` and `outer y/B` diagnostics
 - **Delta:** "+0.3 from last change" shown after every modification
 
 ### Acceptance Criteria
 1. OPR shown on dashboard capsule card in format "X.X"
 2. Recalculated on every capsule change (add/remove/replace)
 3. Delta shown: "+0.3 from last change"
+4. Layering Coverage is shown separately from OPR on Dashboard and Capsule Result; Capsule Result exposes the mid/outer diagnostics and renders `N/A` when there are no base looks
 
 ### Benchmarks
 - "80–150+ outfits from 30 items" is a **floor for core base looks**; the accessorised hero total is

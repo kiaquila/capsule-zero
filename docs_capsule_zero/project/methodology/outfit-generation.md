@@ -12,17 +12,19 @@
 
 | Layer | Categories | Rule | Counting role |
 |-------|-----------|------|---------------|
-| **1: Basic top** | T-shirt, button-down shirt, turtleneck, tank top/cami | Mandatory (unless dress) | **Core** |
+| **1: Basic top** | All `categories.md` Core-top categories | Mandatory (unless dress) | **Core** |
 | **1 alt: Dress** | Any dress category | Replaces layers 1+2 | **Core** |
-| **2: Bottom** | Trousers, jeans, skirt, shorts, leggings | Mandatory (unless dress) | **Core** |
-| **3: Mid layer** | Cardigan, blazer, crew neck sweater | Optional — adds variety | **Layering** (separate coverage score) |
-| **4: Outerwear** | Coat, jacket, parka, puffer jacket | Optional — contextual | **Layering** (separate coverage score) |
+| **2: Bottom** | All `categories.md` Core-bottom categories | Mandatory (unless dress) | **Core** |
+| **3: Mid layer** | Crew neck sweater, cardigan, bomber, blazer | Optional — adds variety | **Layering** (separate coverage score) |
+| **4: Outerwear** | All `categories.md` Outerwear categories | Optional — contextual | **Layering** (separate coverage score) |
 | **5: Shoes** | Any shoes category | 1 pair per outfit | **Core** |
 | **6: Bag** | Any bags category | Optional, 0–1 | **Accessory** (folds into OPR, capped) |
-| **7: Accessories** | Scarf, hat, jewelry, belt | Optional, 0–3 | **Accessory** (folds into OPR, capped) |
+| **7: Accessories** | Headwear, neckwear, jewelry/watch, belt, eyewear | Optional; total accessory cap in §2.3 | **Accessory** (folds into OPR, capped) |
 
-Three counting roles drive OPR (§3): **Core**, **Layering**, **Accessory**. They are defined once
-here and reused everywhere (recommendation ranking, gap analysis, aha-screen).
+Three counting roles drive OPR (§3): **Core**, **Layering**, **Accessory**. The exhaustive category
+mapping, including the accessory slot for every supported category, lives in `categories.md`
+§Category → Algorithm Role Mapping and is reused everywhere (recommendation ranking, gap analysis,
+aha-screen). UI/API sections are presentation metadata, not algorithm roles.
 
 ## 2. Combination Rules
 
@@ -47,17 +49,21 @@ so each **individual outfit** stays realistic (a person does not wear two bags).
 **per-outfit** rules; the **aggregate** bound that stops accessories from dominating OPR is separate
 and lives in §3.1. Per outfit:
 
-1. **One item per accessory slot.** Slots are: **bag, hat, scarf, belt, jewelry**. At most one item
-   from each slot in a single outfit. (Jewelry is treated as one styling slot in v0.1.)
-2. **Accessory ↔ accessory compatibility.** Two accessories may share an outfit only if they
-   co-wear. v0.1 baseline: (a) color-compatible by the same `colors.md` matrix used for all items,
-   and (b) different slots (scarf + hat = allowed; two head pieces = not). The richer "which
-   accessory pairs are stylistically compatible" table is a v0.1 stub to be extended in Stage 2.
-3. **Per-outfit cap.** At most **1 bag** (layer 6) + up to **3 layer-7 accessories**, one per slot,
-   all mutually compatible.
+1. **One item per accessory slot.** Slots are: **bag, headwear, neckwear, jewelry, belt, eyewear**.
+   At most one item from each slot in a single outfit. `categories.md` maps every supported accessory
+   category to exactly one slot (Watch shares `jewelry`; Scarf and Tie share `neckwear`).
+2. **Accessory compatibility.** Every accessory must be color-compatible with every Core item in
+   the base look; accessories in the same variation must also be mutually color-compatible. v0.1
+   uses the same `colors.md` matrix for both checks and requires different slots (scarf + hat =
+   allowed; two head pieces = not). The richer "which accessory pairs are stylistically compatible"
+   table is a v0.1 stub to be extended in Stage 2.
+3. **Per-outfit cap.** At most **3 accessory items total, including any bag**, one per slot and all
+   mutually compatible. This is the founder-approved `≤3/outfit` cap; it is distinct from `A_max`,
+   which caps how many accessorised variants of one base look enter the OPR numerator (§3.1).
 4. **Deduplication.** Outfits that differ only by an accessory that does not change the look
-   (e.g. swapping one grey scarf for another grey scarf) collapse to one counted outfit. An outfit
-   is identified by `(base look, set of filled accessory slots with a colour-distinct item in each)`.
+   (e.g. swapping one grey scarf for another grey scarf) collapse to one counted outfit. Before
+   bounded selection, candidate variations are deduplicated by `(base look, sorted set of
+   (slot, colorId))`; the lowest canonical `itemId` is retained only as the rendering representative.
 
 ### 2.4 Formality
 In v0.1 simplified: all basic items are considered neutral. Formality scoring in v0.2.
@@ -78,30 +84,37 @@ filter to colour-only in a way that blocks this.
 1. **Base look** = one valid **Core** combination: `top × bottom × shoes` **or** `dress × shoes`,
    colour-valid per §2.1. Base looks are the backbone of the count.
 2. **Accessorised variations (bounded per base look).** A base look counts once bare, plus **at most
-   `A_max` accessorised variants** (v0 default `A_max = 3`), chosen as the most *distinct* stylings by
-   occupied-slot signature under the §2.3 ruleset. It is **not** the full power set of accessory
+   `A_max` accessorised variants** (**v0 fixed value: `A_max = 3`**), chosen deterministically under
+   the §2.3 ruleset. It is **not** the full power set of accessory
    combinations. This per-base-look cap is the real aggregate bound: any base look yields at most
    `1 + A_max` counted outfits, so the numerator is `≤ base looks × (1 + A_max)` — accessories raise
    the number, deliberately (founder decision Q1), but by **at most a small constant factor**, never
    multiplicatively.
-   - **Why the cap is required (not optional).** Without it, counting every valid accessory set is
-     multiplicative: each colour-distinct accessory in a slot multiplies the numerator (`base looks ×
-     2^slots`) while adding only **+1** to the denominator. Worked example on the doc's own rules with
-     achromatic accessories (universally compatible, so §2.3.2 never prunes): core 2 tops × 2 bottoms ×
-     2 shoes = 8 base looks (6 items); add bag + hat + scarf + belt (4 items) → 16 accessory sets per
-     base look → 128 "outfits" / 10 items ≈ **OPR 12.8**, and adding a second colour per slot pushes it
-     past 100 for the *same* core. That is the combinatorial explosion the model rejects. The cap keeps
-     the count honest and premium.
-   - `A_max` and the exact variant-selection rule are an **open sub-decision** validated in the
-     algorithm-v0 layer (FITB + human panel) and confirmed with the founder — see this spec's Known
-     Issues and PRODUCT-PLAN §5.
+   - **Why the cap is required (not optional).** Without it, enumerating every valid accessory set
+     grows combinatorially while the denominator grows linearly. Worked example using the doc's own
+     `≤3/outfit` rule and achromatic accessories (so §2.3.2 never prunes): core 2 tops × 2 bottoms ×
+     2 shoes = 8 base looks (6 items); five slots with three colour-distinct items each add 15 items
+     and yield `Σ(k=0..3) C(5,k) × 3^k = 376` valid accessory sets per base look. Full enumeration
+     would report `8 × 376 = 3,008` outfits / 21 items ≈ **OPR 143.2** for the same small core. That is
+     the combinatorial explosion the model rejects.
+   - **Deterministic v0 selection.** Enumerate non-empty candidates that pass §2.3, deduplicate them
+     by their sorted `(slot, colorId)` tuples, then select at most three with farthest-first traversal:
+     start with the candidate
+     having the most occupied slots (tie → lexicographically smallest tuple key); each next candidate
+     maximises its minimum Hamming distance from already selected candidates across slot occupancy and
+     color ID (tie → lexicographically smallest key). Rendering uses the canonical representative
+     retained by §2.3.4. Fewer than three valid candidates means use all of them. `A_max = 3` and this
+     rule form the **engineering v0 contract (2026-07-22)** within the founder-approved Q1 bounds;
+     they are not attributed as an additional founder decision. Quality validation may version them
+     later but does not leave Q1 or Stage 1 blocked.
 3. **Structural layers (mid-layer, outerwear) do NOT create new counted outfits.** A base look worn
    with or without a cardigan is the *same* outfit for OPR — layering is variety / context, not a new
    look. Their value is reported by the separate **Layering Coverage** score (§3.4).
 
 ### 3.2 Denominator — items that build the count
 Only items whose category **feeds the numerator**: **Core items** (tops, bottoms, dresses, shoes) +
-**Accessory items** (bags, scarves, hats, jewelry, belts). **Structural-layer items are excluded
+**Accessory items** in the six canonical slots (bag, headwear, neckwear, jewelry/watch, belt,
+eyewear; exact categories in `categories.md`). **Structural-layer items are excluded
 from the OPR denominator** — they are surfaced through Layering Coverage instead. This keeps the
 metric consistent: a category is in *both* numerator and denominator, or in *neither* (and then in a
 separate score). The forbidden hybrid — counting a category's items in the denominator while refusing
@@ -111,14 +124,21 @@ its contribution to the numerator (which would penalise owning a cardigan) — i
 | Counting role | In numerator? | In OPR denominator? | Where its value shows |
 |---|---|---|---|
 | Core (top/bottom/dress/shoes) | Yes (base looks) | Yes | Hero OPR |
-| Accessory (bag/scarf/hat/jewelry/belt) | Yes (bounded variations) | Yes | Hero OPR |
+| Accessory (all six canonical slots) | Yes (bounded variations) | Yes | Hero OPR |
 | Layering (mid-layer/outerwear) | No | No | Layering Coverage score |
 
 ### 3.4 Layering Coverage (separate score)
-How well the wardrobe's mid-layer / outerwear pieces cover the base looks — e.g. "you can layer 6 of
-your 12 base looks." Computed from `gap-analysis.md` Rule 1 (structural gaps) and Rule 4 (layer
-balance). This is where the cardigan / coat earns its keep without inflating or deflating the hero
-OPR. Never merged into the hero number.
+For each valid base look, compute two flags: `midCovered = 1` when at least one eligible/color-compatible
+mid-layer can be worn with every Core item in that look, and `outerCovered = 1` under the same rule for
+outerwear. For `B > 0` base looks:
+
+`Layering Coverage = 100 × Σ(midCovered + outerCovered) / (2 × B)`
+
+Round only for display and show the two diagnostics (`mid: x/B`, `outer: y/B`) so the recommendation is
+explainable. When `B = 0`, the score is **N/A**, not zero: the core-feasibility recommendation runs
+first (§4). v0 eligibility is colour-only (§2.5); Stage 2 can add cut/formality/context filters without
+changing the formula. This is where a cardigan or coat earns its keep without inflating or deflating
+hero OPR. Never merge the score into the hero number.
 
 ### 3.5 Display & delta
 - Hero OPR is shown on the Capsule Result screen and on the capsule card in the Dashboard.
@@ -132,36 +152,49 @@ The methodology's classic figure — "a good capsule of 30 items yields 80–150
 to **Core base looks** (top×bottom×shoes) before accessories. With the bounded accessory increment
 (§3.1, ≤ `1 + A_max` per base look) the hero number sits **above** that core figure by **at most a
 small constant factor**, not multiplicatively; the exact ranges are pending validation in the
-algorithm-v0 layer (FITB + human panel, `gap-analysis.md` / PRODUCT-PLAN §5 Этап 2). Do **not** pin a
-hero number in marketing copy or acceptance criteria until that validation fixes it — the "80–150"
-line is a floor for the core count, not the accessorised hero total.
+algorithm-v0 baseline layer (FITB + human panel, PRODUCT-PLAN §5 Stage 1 P3); Stage 2 repeats quality
+validation after basicity is active. Do **not** pin a hero number in marketing copy or acceptance
+criteria until the baseline validation fixes it — the "80–150" line is a floor for the core count,
+not the accessorised hero total.
 
 ## 4. Recommendation Signal (one next item)
 
-The free-loop "add one item" recommendation ranks **categories**, consistent with this model:
-- **Core categories** rank by **Δcore** — how many new base looks a category+color would unlock.
-- **Layering** and **structural** gaps rank by the separate coverage / balance signal
-  (`gap-analysis.md` Rules 1/4), never silently mixed into the same argmax as Δcore.
+The free-loop "add one item" recommendation evaluates **category+color candidates**, then collapses
+equal winners to one category recommendation with its equally valid color options. It uses a reachable
+fixed priority and does not merge unlike scales into one score:
+
+1. **Core feasibility:** when there is no valid base look, recommend the missing/replacement Core
+   category+color candidate that creates the most valid base looks (minimum one). This includes a
+   compatible-color alternative when all required categories exist but their colours cannot form a
+   look.
+2. **Layering structure:** once a valid base look exists, if Layering Coverage is below 100%, recommend
+   the mid/outer category+color candidate that adds the most newly covered base looks (tie: mid before
+   outer, then canonical category order). Report impact as covered looks / percentage points, never
+   as outfits.
+3. **Core growth:** when both layering dimensions cover every current base look, recommend the Core
+   category+color candidate with maximum **Δcore** (new deduplicated base looks; tie: canonical
+   category order).
+
+- **Core categories** therefore rank by **Δcore**, while **Layering** ranks by coverage gain; the fixed
+  priority decides which scale is active instead of comparing their raw values.
 - **Accessories are excluded from the "add one item" recommendation — by rule, not omission.** Even
   though accessories feed the hero OPR (§3.1), the single recommendation is about acquiring a garment
   that grows the wardrobe's **base looks** or fills a structural/layering gap (`gap-analysis.md`
   shopping list prioritises structural gaps). Accessories are bounded contributors and styling
   refinements, not the primary growth lever — recommending "buy a 4th scarf" would be noise. They may
   enrich the *display* of existing looks but are never the single "add this next" answer in v0.
-- **Selecting the single winner across the two scales.** Core gaps take priority: the top **Δcore**
-  category is the recommendation whenever any core addition still raises the base-look count. Only when
-  no core addition materially raises Δcore does the recommendation fall to the top **layering-coverage**
-  gap (Rules 1/4). This fixed cross-scale priority is deterministic — the two scales are compared, never
-  merged into one score.
-- **Color is not ranked in v0**: within a fixed category every palette-compatible color yields the
-  same OPR delta, so v0 recommends a *category*, and shows equal options as equal. A specific color
-  needs a separate colour-gap / preference signal — Stage 2 (Q5).
+- **Color affects feasibility, not taste-ranking in v0.** In the guest state, derived colors can span
+  incompatible groups, so candidate color can change Δcore or Layering Coverage and MUST participate
+  in that calculation. The output names all max-scoring color options for the winning category; when
+  their impact ties, v0 does not invent a preferred color. Stage 2 may add a separate color-gap /
+  preference score to rank those ties.
 
 ## 5. Generation Trigger
 
 Outfits are regenerated when the capsule is first created (after Journey Step 3) or when an item is
 added / removed / replaced. In v0.1: static generation (batch), not real-time — the user sees a
 pre-generated outfit grid. In the **guest loop** (pre-signup) the same generation runs entirely in
-the browser once the guest has **≥ 1 top + ≥ 1 bottom + ≥ 1 pair shoes** (or ≥ 1 dress + ≥ 1 pair
-shoes) — the minimum that guarantees ≥ 1 base look (`capsule-methodology.md` §7.1); guest items never
-leave the device.
+the browser once the guest has at least one **mutually color-compatible** combination of ≥1 top + ≥1
+bottom + ≥1 pair shoes (or ≥1 dress + ≥1 pair shoes). Category presence without a color-valid
+combination is a zero-result state with explained add/replace alternatives, not an OPR result
+(`capsule-methodology.md` §7.1); guest items never leave the device before signup.

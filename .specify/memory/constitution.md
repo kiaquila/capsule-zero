@@ -48,7 +48,7 @@ Capsule Zero proprietary color circle methodology.
 
 ### Outfit Productivity Ratio (OPR)
 
-**Formula:** wearable outfits / wardrobe pieces that build them — **core + accessory items**
+**Formula:** wearable outfits ÷ wardrobe pieces that build them — **core + accessory items**
 (structural layers tracked as a separate **Layering Coverage** score, not in the denominator).
 Detailed counting model: `docs_capsule_zero/project/methodology/outfit-generation.md` §3 (ratified
 2026-07-21, PRODUCT-PLAN §4 Q1).
