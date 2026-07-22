@@ -6,7 +6,10 @@
 
 ### Overview
 - **Purpose:** Hero metric showing capsule efficiency — outfits per item
-- **Formula:** OPR = number of generated outfits / number of items in capsule
+- **Formula:** OPR = wearable outfits / wardrobe pieces that build them (**core + accessory items**).
+  Structural layers (cardigan/blazer/coat) are tracked as a separate **Layering Coverage** score, not
+  in the denominator. Full counting model (base looks + bounded accessory variations):
+  `docs_capsule_zero/project/methodology/outfit-generation.md` §3 (ratified 2026-07-21, PRODUCT-PLAN §4 Q1).
 
 ### Display
 - **Dashboard:** shown on capsule card in format "X.X" (e.g., 4.2)
@@ -19,7 +22,9 @@
 3. Delta shown: "+0.3 from last change"
 
 ### Benchmarks
-- Good capsule of 30 items → OPR 2.7-5.0+ (80-150+ outfits)
+- "80–150+ outfits from 30 items" is a **floor for core base looks**; the accessorised hero total is
+  higher (bounded — at most a small constant factor above core) and is fixed by algorithm-v0 validation,
+  not asserted as a benchmark here
 - No "good/bad" evaluation — just a number
 - Higher is better (more outfit combinations per item)
 

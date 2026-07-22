@@ -71,7 +71,7 @@ The target user persona: 25–40, upper-middle income, "new money mindset meets 
 ## O
 
 ### OPR (Outfit Productivity Ratio)
-The hero metric: number of generated outfits / number of items in capsule. A good capsule of 30 items yields OPR 2.7–5.0+ (80–150+ outfits). Displayed on capsule cards, updated on every change, shows delta.
+The hero metric: wearable outfits / wardrobe pieces that build them (core + accessory items; structural layers → separate Layering Coverage score). "80–150 outfits from 30 items" is a floor for core base looks; the accessorised total is higher and fixed by algorithm-v0 validation. Counting model: `project/methodology/outfit-generation.md` §3 (ratified 2026-07-21). Displayed on capsule cards, updated on every change, shows delta.
 - **RU:** Outfit Productivity Ratio (используется без перевода)
 
 ## P

@@ -17,7 +17,12 @@ A capsule wardrobe is a curated collection of universal items that combine into 
 - **Quantity matters.** You can have multiple items in one category (e.g., 3 T-shirts of different colors).
 - **Start from the real wardrobe.** The capsule is built from what the user already owns. The platform directs, not dictates.
 
-**Key metric:** Outfit Productivity Ratio = number of outfits / number of items. A good capsule of 30 items yields 80–150+ unique outfits.
+**Key metric:** Outfit Productivity Ratio = wearable outfits / wardrobe pieces that build them. The
+counting model (core base looks + bounded accessory variations; structural layers as a separate
+coverage score) is defined in `outfit-generation.md` §3 (ratified 2026-07-21, PRODUCT-PLAN §4 Q1).
+The classic "a good capsule of 30 items yields 80–150+ unique outfits" figure refers to **core base
+looks** before accessories; the accessorised hero total sits above it and is fixed by algorithm-v0
+validation, not asserted here.
 
 ## 2. Color Architecture
 
@@ -40,6 +45,12 @@ Achromatics (Black, Gray, White) are **always compatible** with all 51 colors in
 ## 3. Palette Selection (Journey Step 3)
 
 All 51 colors are displayed at once, organized by group. User taps to add colors to their palette.
+
+> **Guest mode inverts this (Q3, 2026-07-21):** the pre-signup guest tool does **not** ask for a
+> palette up front. The palette is **derived** from the items the guest adds ("your items are Darks +
+> achromats") and shown as part of the aha result. A locked, immutable palette is only established
+> when the guest registers and their items become a real capsule (§7). The picker-first flow below
+> governs the post-signup **capsule** entity, not the guest loop.
 
 ### Selection logic
 1. Achromatics (3 colors) — always available, always selectable, never locked out
@@ -102,7 +113,24 @@ Every item must have auto-generated tags (AI-generated on addition, user-editabl
 - Source URL
 - Price
 
-## 7. Capsule Limits (v0.1)
+## 7. Limits (v0.1)
+
+### 7.1 Guest mode (pre-signup) — lighter rules _(Q3, ratified 2026-07-21)_
+
+The guest loop is deliberately **not** a capsule and does not enforce the capsule limits below. Its
+only hard requirement is enough to produce one base look.
+
+| Parameter | Guest value | Note |
+|-----------|-------------|------|
+| Required minimum | **1 top + 1 bottom + 1 pair shoes** (or 1 dress + 1 pair shoes) | Guarantees ≥ 1 core base look (`outfit-generation.md` §3). No "min 8 categories", no "min 7 items". |
+| Everything else | Optional | Layers, accessories, extra items all optional — the guest may add 3–5 items and get a result. |
+| Palette | Derived from items | Not asked up front (§3). No immutable lock in guest mode. |
+| Persistence | localStorage, survives reload | Losing uploaded items is the worst first experience (PRODUCT-PLAN D1). |
+| "Capsule" concept | Not used | The strict capsule entity (locked palette + limits below) is created only after registration, from the same items. |
+
+Post-registration the Journey itself is also revised/lightened — that is **Этап 3**, out of scope here.
+
+### 7.2 Capsule (post-signup)
 
 | Parameter | Value | Note |
 |-----------|-------|------|

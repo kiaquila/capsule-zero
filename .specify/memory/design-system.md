@@ -154,7 +154,7 @@ All active v0.1 UI text exists in EN and RU, with ES-AR retained as v0.2 referen
 | Color temperature | Warm (yellow/orange undertone) vs Cool (blue/pink) vs Neutral. |
 | Gap analysis | Detection of missing items to increase outfit potential. |
 | Guided Journey | 3-step capsule creation flow: type > categories > colors+items. |
-| Outfit Productivity Ratio | Outfits / items count. |
+| Outfit Productivity Ratio | Wearable outfits / items that build them (core + accessory; structural layers → separate Layering Coverage). Model: `docs_capsule_zero/project/methodology/outfit-generation.md` §3 (2026-07-21). |
 | Palette lock | After confirmation, palette cannot be changed (v0.1 constraint). |
 | Saturation | Descriptive property behind the Bright / Pastel / Desaturated / Dark groups; not a separate compatibility filter. |
 | Shopping list | Prioritized purchase list based on gap analysis. |

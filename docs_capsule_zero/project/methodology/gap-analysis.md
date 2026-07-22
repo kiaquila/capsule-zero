@@ -28,6 +28,15 @@ Ideal ratio across layers:
 
 Imbalance is flagged as a gap with specific recommendations.
 
+> **Feeds the guest aha (Q1/Q2, 2026-07-21):** Rule 3 (Combinability) is the source of the single
+> "add one item" recommendation shown to the guest before the signup gate; Rules 1 + 4 (structural
+> gaps + layer balance) feed the **Layering Coverage** score defined in `outfit-generation.md` §3.4.
+> The recommendation ranks **categories** by Δcore (core gaps first) or by the coverage/balance signal
+> (layering gaps) — the two scales are compared by fixed priority, never merged into one argmax
+> (`outfit-generation.md` §4). **Accessories are not recommended as the next buy** (§4) — they feed
+> hero OPR but are styling refinements, not the growth lever. The full list of recommendations +
+> shopping list is behind the gate; the guest sees one.
+
 ## 2. Shopping List Format
 
 The shopping list is the actionable output of gap analysis. Each row represents a recommended addition:
@@ -79,14 +88,19 @@ When the capsule has categories selected but no items added yet:
 
 ### Validation Summary
 
+> **Scope:** the thresholds below govern the **capsule** entity (post-signup). The **guest loop**
+> (pre-signup) uses the lighter rules in `capsule-methodology.md` §7.1 — its only hard requirement is
+> **1 top + 1 bottom + 1 pair shoes** (or 1 dress + 1 pair shoes); "min 8 categories" and "min 7
+> items" do **not** apply to guests, and the palette is derived, not selected (Q3, 2026-07-21).
+
 | Rule | Value/Threshold | Behavior |
 |------|----------------|----------|
 | Palette: min achromats | 0 | No blocking |
 | Palette: max colors | 15 total / 12 chromatic | Naturally constrained by combinability rules |
-| Categories: min selected | 8 | Blocks progress |
+| Categories: min selected _(capsule)_ | 8 | Blocks progress. Guest: not enforced (§7.1) |
 | Categories: max slots | Unlimited | Soft size label, no blocking |
 | Quantity per category | Min 0, default 1, no hard cap | Stepper |
-| Total items in capsule | Min 7 to create; warning at 40; hard limit 50 | Min blocks creation; 40–50 shows warning + suggest new capsule. → `capsule-methodology.md` Section 7 |
+| Total items _(capsule)_ | Min 7 to create; warning at 40; hard limit 50 | Min blocks creation; 40–50 shows warning + suggest new capsule. Guest: min = 1 core triad (§7.1). → `capsule-methodology.md` Section 7 |
 | Custom category | Basicity algorithm | Rejection with explanation |
 | Item color vs palette | Same group or Desaturated↔Dark compatibility check | Block with recommendation |
 | Photo upload: format | JPEG, PNG, WebP | Error for other formats |
