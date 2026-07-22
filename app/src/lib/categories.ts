@@ -63,23 +63,40 @@ export const CATEGORIES: Category[] = [
   // OUTERWEAR
   defineCategory({ id: "trench",          nameRu: "Плащ",             nameEn: "Trench coat",          nameEs: "Gabardina",              section: "outerwear", genders: ["women", "men", "mixed"] }, "layering_outer"),
   defineCategory({ id: "short-coat",      nameRu: "Полупальто",       nameEn: "Short coat",           nameEs: "Abrigo corto",           section: "outerwear", genders: ["women", "men", "mixed"] }, "layering_outer"),
+  defineCategory({ id: "vest",            nameRu: "Жилет",            nameEn: "Vest / Gilet",          nameEs: "Chaleco",                section: "outerwear", genders: ["women", "men", "mixed"] }, "layering_outer"),
   defineCategory({ id: "coat",            nameRu: "Пальто",           nameEn: "Coat",                 nameEs: "Abrigo",                 section: "outerwear", genders: ["women", "men", "mixed"] }, "layering_outer"),
+  defineCategory({ id: "puffer",          nameRu: "Пуховик",          nameEn: "Puffer jacket",        nameEs: "Campera acolchada",      section: "outerwear", genders: ["women", "men", "mixed"] }, "layering_outer"),
+  defineCategory({ id: "fur-coat",        nameRu: "Шуба",             nameEn: "Fur / Faux fur coat",  nameEs: "Abrigo de piel",         section: "outerwear", genders: ["women"] }, "layering_outer"),
+  defineCategory({ id: "parka",           nameRu: "Парка",            nameEn: "Parka",                nameEs: "Parka",                  section: "outerwear", genders: ["women", "men", "mixed"] }, "layering_outer"),
+  defineCategory({ id: "jacket",          nameRu: "Куртка",           nameEn: "Jacket",               nameEs: "Campera",                section: "outerwear", genders: ["women", "men", "mixed"] }, "layering_outer"),
 
   // SHOES
+  defineCategory({ id: "sandals",         nameRu: "Сандалии",         nameEn: "Sandals",              nameEs: "Sandalias",              section: "shoes",     genders: ["women", "men", "mixed"] }, "core_shoes"),
   defineCategory({ id: "sneakers",        nameRu: "Кеды / Кроссовки", nameEn: "Sneakers",             nameEs: "Zapatillas",             section: "shoes",     genders: ["women", "men", "mixed"] }, "core_shoes"),
   defineCategory({ id: "loafers",         nameRu: "Лоферы",           nameEn: "Loafers",              nameEs: "Mocasines",              section: "shoes",     genders: ["women", "men", "mixed"] }, "core_shoes"),
   defineCategory({ id: "ankle-boots",     nameRu: "Ботинки",          nameEn: "Ankle boots",          nameEs: "Botines",                section: "shoes",     genders: ["women", "men", "mixed"] }, "core_shoes"),
   defineCategory({ id: "heels",           nameRu: "Туфли на каблуке", nameEn: "Heels",                nameEs: "Zapatos de taco",        section: "shoes",     genders: ["women"] }, "core_shoes"),
   defineCategory({ id: "flats",           nameRu: "Балетки / Туфли",  nameEn: "Flats",                nameEs: "Zapatos planos",         section: "shoes",     genders: ["women"] }, "core_shoes"),
+  defineCategory({ id: "heeled-sandals",  nameRu: "Босоножки",        nameEn: "Heeled sandals",       nameEs: "Sandalias con taco",     section: "shoes",     genders: ["women"] }, "core_shoes"),
+  defineCategory({ id: "boots",           nameRu: "Ботинки",          nameEn: "Boots",                nameEs: "Botas",                  section: "shoes",     genders: ["women", "men", "mixed"] }, "core_shoes"),
+  defineCategory({ id: "knee-high-boots", nameRu: "Сапоги / Ботфорты", nameEn: "Knee-high boots",      nameEs: "Botas altas",            section: "shoes",     genders: ["women"] }, "core_shoes"),
 
   // BAGS
   defineCategory({ id: "tote",            nameRu: "Тоут",             nameEn: "Tote bag",             nameEs: "Bolso tote",             section: "bags",      genders: ["women", "men", "mixed"] }, "accessory", "bag"),
   defineCategory({ id: "crossbody",       nameRu: "Кросс-боди",       nameEn: "Crossbody bag",        nameEs: "Bandolera",              section: "bags",      genders: ["women"] }, "accessory", "bag"),
+  defineCategory({ id: "clutch",          nameRu: "Клатч",            nameEn: "Clutch",               nameEs: "Clutch",                 section: "bags",      genders: ["women"] }, "accessory", "bag"),
   defineCategory({ id: "backpack",        nameRu: "Рюкзак",           nameEn: "Backpack",             nameEs: "Mochila",                section: "bags",      genders: ["women", "men", "mixed"] }, "accessory", "bag"),
 
   // ACCESSORIES
-  defineCategory({ id: "belt",            nameRu: "Ремень",           nameEn: "Belt",                 nameEs: "Cinturón",               section: "accessories", genders: ["women", "men", "mixed"] }, "accessory", "belt"),
   defineCategory({ id: "scarf",           nameRu: "Шарф",             nameEn: "Scarf",                nameEs: "Bufanda",                section: "accessories", genders: ["women", "men", "mixed"] }, "accessory", "neckwear"),
+  defineCategory({ id: "beanie",          nameRu: "Шапка",            nameEn: "Beanie / Hat",         nameEs: "Gorro",                  section: "accessories", genders: ["women", "men", "mixed"] }, "accessory", "headwear"),
+  defineCategory({ id: "fedora",          nameRu: "Шляпа-федора",     nameEn: "Fedora hat",           nameEs: "Sombrero fedora",        section: "accessories", genders: ["women", "men", "mixed"] }, "accessory", "headwear"),
+  defineCategory({ id: "cap",             nameRu: "Кепка",            nameEn: "Cap",                  nameEs: "Gorra",                  section: "accessories", genders: ["women", "men", "mixed"] }, "accessory", "headwear"),
+  defineCategory({ id: "jewelry",         nameRu: "Украшения",        nameEn: "Jewelry",              nameEs: "Joyas",                  section: "accessories", genders: ["women", "men", "mixed"] }, "accessory", "jewelry"),
+  defineCategory({ id: "belt",            nameRu: "Ремень",           nameEn: "Belt",                 nameEs: "Cinturón",               section: "accessories", genders: ["women", "men", "mixed"] }, "accessory", "belt"),
+  defineCategory({ id: "sunglasses",      nameRu: "Очки",             nameEn: "Sunglasses",           nameEs: "Anteojos de sol",        section: "accessories", genders: ["women", "men", "mixed"] }, "accessory", "eyewear"),
+  defineCategory({ id: "watch",           nameRu: "Часы",             nameEn: "Watch",                nameEs: "Reloj",                  section: "accessories", genders: ["women", "men", "mixed"] }, "accessory", "jewelry"),
+  defineCategory({ id: "tie",             nameRu: "Галстук",          nameEn: "Tie",                  nameEs: "Corbata",                section: "accessories", genders: ["men"] }, "accessory", "neckwear"),
 ];
 
 export function getCategoriesByGender(gender: GarderType): Category[] {

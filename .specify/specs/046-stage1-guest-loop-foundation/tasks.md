@@ -13,6 +13,9 @@
 - [x] T009 Native Codex P1 runtime alignment: test-first перевести Dashboard и Capsule Result на
   единый Core+Accessory denominator, вывести отдельные Layering Coverage diagnostics и закрепить
   zero-base `N/A` и `(slot, colorId)` accessory dedup функциональным e2e + desktop/mobile visual baseline
+- [x] T010 Native Codex P1 category completeness: RED-коммитом `ec099a8` доказать runtime gap
+  31/48, затем добавить все 17 отсутствовавших built-in категорий в общий `CATEGORIES` role/slot
+  catalog; заодно сделать прямые app-module imports e2e совместимыми с чистым CI package boundary
 
 ## Process Memory
 
@@ -78,6 +81,13 @@
   формулы в `dashboard-data.ts` и `capsule-result-data.ts`, общего calculator не было. Общий
   `color-compatibility.ts` заменяет три дублированные матрицы в Journey, Capsule Result и mock
   methodology.
+- **Runtime category catalog обязан совпадать с каноническими 48:** native Codex на SHA `e0c496f`
+  обнаружил, что `categories.md` и OpenAPI уже обещают полный taxonomy, но `CATEGORIES` содержал лишь
+  31 запись. `puffer`/прочая верхняя одежда теперь имеет `layering_outer`, все недостающие shoes —
+  `core_shoes`, а bags/accessories получают один из шести канонических slots. Dashboard и Capsule
+  Result используют тот же общий lookup, поэтому штатная категория больше не превращается в
+  исключённый custom item. Mandatory reuse-check: расширен существующий `CATEGORIES`; отдельный
+  fallback/map не создавался.
 
 ### Dead Ends
 
@@ -110,6 +120,10 @@
 - **Считать одинаковые аксессуары отдельными вариантами до `A_max`:** отвергнуто review — три серых
   шарфа одного `neckwear` slot не могут вытеснять цветово/слотово отличающиеся варианты. Preview
   канонизирует и дедуплицирует sorted `(slot, colorId)` tuples до применения cap.
+- **Считать сокращённый UI catalog достаточным для runtime OPR:** отвергнуто native review. Старые
+  wardrobes могут содержать любую из 48 документированных категорий; отсутствие записи в общем
+  lookup молча присваивало `algorithmRole=null` и завышало OPR. Негативный regression теперь проверяет
+  и количество 48, и representative mappings `puffer`/`watch`/`cap`/`clutch`.
 
 ### Known Issues
 
