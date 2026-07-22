@@ -3,8 +3,12 @@ import type {
   CustomCategoryValidationResponse,
   LayeringCoverage,
 } from "@/lib/api/generated/openapi";
-import { areColorGroupsCompatible } from "./color-compatibility";
 import type { ColorPoint } from "@/types";
+import {
+  canonicalItemIds,
+  itemsAreMutuallyCompatible,
+  selectAccessoryVariations,
+} from "./outfit-variation-selection";
 
 export type { LayeringCoverage };
 
@@ -22,6 +26,20 @@ export interface OutfitProductivity {
   oprValue: number;
   denominator: number;
   layeringCoverage: LayeringCoverage;
+}
+
+export interface SelectedAccessoryVariation {
+  key: string;
+  itemIds: string[];
+}
+
+export interface PreviewBaseLook {
+  itemIds: string[];
+  selectedAccessoryVariations: SelectedAccessoryVariation[];
+}
+
+export interface PreviewOutfitProductivity extends OutfitProductivity {
+  previewBaseLooks: PreviewBaseLook[];
 }
 
 export function calculateOutfitProductivity(
@@ -46,16 +64,31 @@ export function calculateOutfitProductivity(
 
 export function calculatePreviewOutfitProductivity(
   items: ProductivityItem[],
-): OutfitProductivity {
+): PreviewOutfitProductivity {
   const eligibleItems = eligibleProductivityItems(items);
   const accessories = itemsByRole(eligibleItems, "accessory");
-  const outfitCount = buildValidBaseLooks(eligibleItems).reduce(
+  const previewBaseLooks = buildValidBaseLooks(eligibleItems).map(
+    (baseLook): PreviewBaseLook => ({
+      itemIds: canonicalItemIds(baseLook),
+      selectedAccessoryVariations: selectAccessoryVariations(
+        baseLook,
+        accessories,
+      ).map(({ key, items: selectedItems }) => ({
+        key,
+        itemIds: canonicalItemIds(selectedItems),
+      })),
+    }),
+  );
+  const outfitCount = previewBaseLooks.reduce(
     (count, baseLook) =>
-      count + 1 + Math.min(countAccessoryVariations(baseLook, accessories), 3),
+      count + 1 + baseLook.selectedAccessoryVariations.length,
     0,
   );
 
-  return calculateOutfitProductivity(outfitCount, items);
+  return {
+    ...calculateOutfitProductivity(outfitCount, items),
+    previewBaseLooks,
+  };
 }
 
 export function formatLayeringCoverage(
@@ -128,77 +161,4 @@ function coveredLookCount(
   return baseLooks.filter((look) =>
     layers.some((layer) => itemsAreMutuallyCompatible([...look, layer])),
   ).length;
-}
-
-function countAccessoryVariations(
-  baseLook: ProductivityItem[],
-  accessories: ProductivityItem[],
-): number {
-  const candidateKeys = new Set<string>();
-  const canonicalAccessories = [...accessories].sort((first, second) =>
-    first.itemId.localeCompare(second.itemId),
-  );
-
-  function visit(startIndex: number, selected: ProductivityItem[]): void {
-    for (let index = startIndex; index < canonicalAccessories.length; index += 1) {
-      const candidate = canonicalAccessories[index];
-
-      if (
-        !candidate?.accessorySlot ||
-        selected.some(
-          (accessory) => accessory.accessorySlot === candidate.accessorySlot,
-        ) ||
-        !itemsAreMutuallyCompatible([...baseLook, ...selected, candidate])
-      ) {
-        continue;
-      }
-
-      const variation = [...selected, candidate];
-      candidateKeys.add(accessoryVariationKey(variation));
-
-      if (variation.length < 3) {
-        visit(index + 1, variation);
-      }
-    }
-  }
-
-  visit(0, []);
-  return candidateKeys.size;
-}
-
-function accessoryVariationKey(accessories: ProductivityItem[]): string {
-  return accessories
-    .map((accessory) => [
-      accessory.accessorySlot,
-      accessory.dominantColor?.id ??
-        accessory.dominantColor?.hex.toLowerCase() ??
-        accessory.itemId,
-    ])
-    .sort(([firstSlot, firstColor], [secondSlot, secondColor]) =>
-      `${firstSlot}:${firstColor}`.localeCompare(`${secondSlot}:${secondColor}`),
-    )
-    .map((tuple) => JSON.stringify(tuple))
-    .join("|");
-}
-
-function itemsAreMutuallyCompatible(items: ProductivityItem[]): boolean {
-  return items.every((item, index) =>
-    items
-      .slice(index + 1)
-      .every((candidate) => colorsAreCompatible(item, candidate)),
-  );
-}
-
-function colorsAreCompatible(
-  first: ProductivityItem,
-  second: ProductivityItem,
-): boolean {
-  if (!first.dominantColor || !second.dominantColor) {
-    return true;
-  }
-
-  return areColorGroupsCompatible(
-    first.dominantColor.group,
-    second.dominantColor.group,
-  );
 }

@@ -126,6 +126,9 @@ Dashboard и Capsule Result не продолжали показывать по�
   схлопываются до одного варианта. Совместимость вещи определяется только по dominant color;
   mock/API-backed capsule creation сохраняет numerator из того же алгоритма, поэтому неполное Core
   ядро не получает ненулевой persisted `outfitCount`; поведение закреплено e2e и визуальными baseline.
+  При количестве accessory candidates больше `A_max` preview перечисляет, дедуплицирует и выбирает
+  canonical representatives ровно по farthest-first §3.1, возвращая их keys/item IDs вместе со
+  счётчиком — renderer не должен повторно угадывать, какие три варианта вошли в numerator.
 
 ## Negative scenarios
 
@@ -154,6 +157,9 @@ Dashboard и Capsule Result не продолжали показывать по�
    calculator, который обслуживает preview.
 10. **Regression проходит локально только на Node 25** — прямые импорты app `.ts` не полагаются на
     встроенное type stripping: тот же focused suite обязан проходить на CI Node 20.
+11. **`A_max` реализован как `Math.min(count, 3)` без selection** — отвергнуто: при четырёх и более
+    canonical candidates calculator обязан выполнить documented farthest-first и сохранить
+    representative item IDs, а не только обрезать анонимное число.
 
 Регрессия любого пункта — это доковое противоречие, ловится grep-аудитом `plan.md` и просмотром
 диффа при ревью.

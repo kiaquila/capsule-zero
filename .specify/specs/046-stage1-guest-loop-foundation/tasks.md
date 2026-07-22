@@ -30,6 +30,10 @@
 - [x] T015 CI Node-20 portability: воспроизвести падение run `29944207430` локально на Node
   `20.20.2`, заменить неявный Node-25 type stripping на явный `jiti` app-module loader и получить
   focused Chromium `6 passed` на той же версии Node, что использует CI
+- [x] T016 Native Codex P2 deterministic selection: RED-коммитами `375c327` и `74cfe9a` потребовать
+  canonical farthest-first representatives при candidates > `A_max`, lowest-itemId dedup и
+  color-aware distance; вынести enumeration/dedup/selection в `outfit-variation-selection.ts`,
+  вернуть selected keys/item IDs в preview и доказать три независимые mutation failures
 
 ## Process Memory
 
@@ -124,6 +128,12 @@
   `categories`, calculator, Journey builder и mock provider используют `jiti` с алиасами `@` и
   `server-only`. Это делает тестовый контракт явным и одинаковым на Node 20/25; product runtime и
   provider abstraction не меняются.
+- **`A_max` выбирает воспроизводимые образы, а не только ограничивает число:** общий preview
+  перечисляет все color-valid вариации ≤3 items, дедуплицирует `(slot,colorId)` с lowest-itemId
+  representative, затем выбирает до трёх farthest-first по occupancy/color Hamming distance.
+  `previewBaseLooks` возвращает canonical base IDs и selected variation keys/item IDs. Selection
+  вынесен из 315-line calculator в новый 170-line focused module; reuse-check: существовали только
+  count-only helpers внутри `outfit-productivity.ts`, готового selector/representative module не было.
 
 ### Dead Ends
 
@@ -175,6 +185,15 @@
 - **Полагаться на Node 25 built-in TypeScript stripping в e2e:** отвергнуто зелёным локальным, но
   красным CI run `29944207430` на Node 20. Прямые imports app `.ts` завершали процесс до collection;
   явный `jiti` loader воспроизводимо проходит focused suite на Node `20.20.2`.
+- **Реализовать farthest-first как `Math.min(candidateCount, 3)`:** отвергнуто native Codex — число
+  оставалось ограниченным, но identities трёх counted outfits были неопределены. RED-9 и mutation
+  proof требуют documented selection и canonical representatives до подсчёта numerator. Финальный
+  review отдельно доказал чувствительность теста к lowest-itemId overwrite (`scarf-c` вместо
+  `scarf-a`) и к удалению color IDs из distance (`bag-black`/`beanie-black` вместо white variants).
+- **Считать `MOCK_JOURNEY_CATEGORIES` полным selectable catalog:** отвергнуто как ложное P1.
+  Это только семь overrides default count; mock methodology проходит по полному
+  `getCategoriesByGender`. Probe точного PR HEAD вернул women=46, men=40, mixed=48, поэтому UI
+  threshold 8 достижим без custom category; тред закрыт доказательством без product mutation.
 
 ### Known Issues
 
