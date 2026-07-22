@@ -3,7 +3,7 @@ import type {
   CustomCategoryValidationResponse,
   LayeringCoverage,
 } from "@/lib/api/generated/openapi";
-import { areColorGroupsCompatible } from "@/lib/color-compatibility";
+import { areColorGroupsCompatible } from "./color-compatibility";
 import type { ColorGroup } from "@/types";
 
 export type { LayeringCoverage };
