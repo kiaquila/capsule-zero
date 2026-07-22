@@ -10,8 +10,8 @@
 > образов на все вещи и не показывали Layering Coverage. Расширение устранено test-first: failing e2e
 > зафиксирован отдельным коммитом `69600a3`; исправленная structural-layer инварианта — вторым
 > RED-коммитом `453a7e0`; запрещённый stale-numerator/new-denominator hybrid и dominant-color
-> validation — `eacaf2d`; zero-base remove path — `706c189`. Затем оба экрана переведены на общий
-> калькулятор.
+> validation — `eacaf2d`; zero-base remove path — `706c189`; повторное раздувание одинаковых
+> аксессуаров одного slot/color — `0a4fcd4`. Затем оба экрана переведены на общий калькулятор.
 
 ## Goal
 
@@ -55,8 +55,9 @@ Dashboard и Capsule Result не продолжали показывать по�
 - `/app` — единый role-aware калькулятор OPR/Layering Coverage, подключённый к Dashboard и Capsule
   Result; EN/RU display copy, стабильные e2e-селекторы и обновлённые визуальные baseline.
 - `tests/e2e/specs/capsule-result/productivity-metrics.spec.ts` — регрессия числителя/знаменателя,
-  structural/accessory preview, dominant-color validation и zero-base Layering Coverage; test-first
-  история сохранена отдельными красными коммитами.
+  structural/accessory preview, каноническая `(slot, colorId)` дедупликация, dominant-color
+  validation и zero-base Layering Coverage; test-first история сохранена отдельными красными
+  коммитами.
 
 **Out:**
 
@@ -117,8 +118,9 @@ Dashboard и Capsule Result не продолжали показывать по�
   role-aware калькулятор со знаменателем Core+Accessory, показывают Layering Coverage отдельно и
   возвращают `N/A` с diagnostics при нуле base looks. Локальный preview после add/remove/replace
   пересчитывает numerator и denominator вместе: structural layer не создаёт counted outfit, а
-  совместимый Accessory создаёт bounded variation. Совместимость вещи определяется только по
-  dominant color; поведение закреплено e2e и визуальными baseline.
+  совместимый Accessory создаёт bounded variation; одинаковые аксессуары одного `(slot, colorId)`
+  схлопываются до одного варианта. Совместимость вещи определяется только по dominant color;
+  поведение закреплено e2e и визуальными baseline.
 
 ## Negative scenarios
 
@@ -140,6 +142,8 @@ Dashboard и Capsule Result не продолжали показывать по�
    input→aha→save не готов/не включён; частичный P1 не уводит production в тупик.
 7. **Layering при нуле base looks** — наличие блейзера/пальто без полного Core-base не выдаёт
    ложные `0%` или `100%`: UI показывает `N/A` и нулевые diagnostics; слой не попадает в OPR denominator.
+8. **Дубли аксессуаров раздувают OPR** — несколько вещей одного accessory slot с одним dominant
+   `colorId` дают один канонический вариант, а не занимают весь `A_max`.
 
 Регрессия любого пункта — это доковое противоречие, ловится grep-аудитом `plan.md` и просмотром
 диффа при ревью.

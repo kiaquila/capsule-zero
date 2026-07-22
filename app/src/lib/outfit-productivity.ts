@@ -4,7 +4,7 @@ import type {
   LayeringCoverage,
 } from "@/lib/api/generated/openapi";
 import { areColorGroupsCompatible } from "./color-compatibility";
-import type { ColorGroup } from "@/types";
+import type { ColorPoint } from "@/types";
 
 export type { LayeringCoverage };
 
@@ -12,7 +12,8 @@ export interface ProductivityItem extends Pick<
   CustomCategoryValidationResponse,
   "algorithmRole" | "accessorySlot"
 > {
-  dominantColor?: { group: ColorGroup };
+  itemId: string;
+  dominantColor?: Pick<ColorPoint, "id" | "hex" | "group">;
 }
 
 export interface OutfitProductivity {
@@ -133,11 +134,14 @@ function countAccessoryVariations(
   baseLook: ProductivityItem[],
   accessories: ProductivityItem[],
 ): number {
-  let count = 0;
+  const candidateKeys = new Set<string>();
+  const canonicalAccessories = [...accessories].sort((first, second) =>
+    first.itemId.localeCompare(second.itemId),
+  );
 
   function visit(startIndex: number, selected: ProductivityItem[]): void {
-    for (let index = startIndex; index < accessories.length; index += 1) {
-      const candidate = accessories[index];
+    for (let index = startIndex; index < canonicalAccessories.length; index += 1) {
+      const candidate = canonicalAccessories[index];
 
       if (
         !candidate?.accessorySlot ||
@@ -149,16 +153,32 @@ function countAccessoryVariations(
         continue;
       }
 
-      count += 1;
+      const variation = [...selected, candidate];
+      candidateKeys.add(accessoryVariationKey(variation));
 
-      if (selected.length < 2) {
-        visit(index + 1, [...selected, candidate]);
+      if (variation.length < 3) {
+        visit(index + 1, variation);
       }
     }
   }
 
   visit(0, []);
-  return count;
+  return candidateKeys.size;
+}
+
+function accessoryVariationKey(accessories: ProductivityItem[]): string {
+  return accessories
+    .map((accessory) => [
+      accessory.accessorySlot,
+      accessory.dominantColor?.id ??
+        accessory.dominantColor?.hex.toLowerCase() ??
+        accessory.itemId,
+    ])
+    .sort(([firstSlot, firstColor], [secondSlot, secondColor]) =>
+      `${firstSlot}:${firstColor}`.localeCompare(`${secondSlot}:${secondColor}`),
+    )
+    .map((tuple) => JSON.stringify(tuple))
+    .join("|");
 }
 
 function itemsAreMutuallyCompatible(items: ProductivityItem[]): boolean {

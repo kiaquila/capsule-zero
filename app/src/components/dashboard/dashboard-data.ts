@@ -175,6 +175,7 @@ function toProductivityItem(item: WardrobeEntry): ProductivityItem {
   const category = getCategoryById(item.categoryId);
 
   return {
+    itemId: item.id,
     algorithmRole: category?.algorithmRole ?? null,
     accessorySlot: category?.accessorySlot ?? null,
     dominantColor: item.colorPoints[0],

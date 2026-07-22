@@ -184,6 +184,7 @@ function buildItem(
 
   return {
     id: item.id,
+    itemId: item.id,
     name: item.name,
     categoryId: item.categoryId,
     categoryLabel: categoryName(item.categoryId, locale),
@@ -218,6 +219,7 @@ function buildSyntheticIncompatibleItem(
 
   return {
     id: "stage-1-incompatible-blush-scarf",
+    itemId: "stage-1-incompatible-blush-scarf",
     name: locale === "ru" ? "Шелковый шарф Blush" : "Blush silk scarf",
     categoryId,
     categoryLabel: categoryName(categoryId, locale),

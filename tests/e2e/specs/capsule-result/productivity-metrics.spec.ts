@@ -43,7 +43,7 @@ test.describe("Live productivity metrics", () => {
     // Core+Accessory items. Numerator and denominator move together.
     await expect(capsuleResult.oprValue).toHaveText("0.5");
 
-    await capsuleResult.removeItem("Black leather sneakers");
+    await capsuleResult.removeItem("Black leather ankle boots");
 
     await expect(capsuleResult.oprValue).toHaveText("0.0");
     await expect(capsuleResult.layeringCoverage).toHaveText("N/A");

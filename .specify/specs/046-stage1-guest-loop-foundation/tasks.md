@@ -12,7 +12,7 @@
   gap/recommendation inconsistency и production CTA dead-end
 - [x] T009 Native Codex P1 runtime alignment: test-first перевести Dashboard и Capsule Result на
   единый Core+Accessory denominator, вывести отдельные Layering Coverage diagnostics и закрепить
-  zero-base `N/A` функциональным e2e + desktop/mobile visual baseline
+  zero-base `N/A` и `(slot, colorId)` accessory dedup функциональным e2e + desktop/mobile visual baseline
 
 ## Process Memory
 
@@ -72,8 +72,9 @@
   TDD: RED-коммит `69600a3`, затем review выявил ошибочную structural-layer инварианту; корректное
   ожидание сохранено отдельным RED-коммитом `453a7e0`. Следующий review выявил hybrid preview и
   невозможный provider fixture без shoes: regression-контракт расширен RED-коммитами `eacaf2d` и
-  `706c189`. После этого добавлены общий `outfit-productivity.ts`, два consumers, EN/RU copy и visual
-  baselines. Новый модуль оправдан mandatory reuse-check: существовали только дублированные локальные
+  `706c189`. Финальный review поймал одинаковые аксессуары, занимавшие весь `A_max`; RED-коммит
+  `0a4fcd4` закрепил canonical `(slot, colorId)` dedup до cap. После этого добавлены общий
+  `outfit-productivity.ts`, два consumers, EN/RU copy и visual baselines. Новый модуль оправдан mandatory reuse-check: существовали только дублированные локальные
   формулы в `dashboard-data.ts` и `capsule-result-data.ts`, общего calculator не было. Общий
   `color-compatibility.ts` заменяет три дублированные матрицы в Journey, Capsule Result и mock
   methodology.
@@ -106,6 +107,9 @@
   отвергнуто повторными review — первое создаёт outfits из structural layer, второе создаёт hybrid
   после Core/Accessory mutation. Preview теперь перечисляет color-valid Core bases и bounded
   accessory variations; persisted state использует авторитетный provider `outfitCount`.
+- **Считать одинаковые аксессуары отдельными вариантами до `A_max`:** отвергнуто review — три серых
+  шарфа одного `neckwear` slot не могут вытеснять цветово/слотово отличающиеся варианты. Preview
+  канонизирует и дедуплицирует sorted `(slot, colorId)` tuples до применения cap.
 
 ### Known Issues
 
