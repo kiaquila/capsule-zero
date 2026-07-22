@@ -70,7 +70,7 @@ type MockProviderRegistry = {
         categories: Array<{ categoryId: string; count: number }>;
         itemIds: string[];
       },
-    ): Promise<{ outfitCount: number }>;
+    ): Promise<{ outfitCount: number; itemIds: string[] }>;
   };
 };
 
@@ -384,6 +384,7 @@ test.describe("Live productivity metrics", () => {
       ],
       itemIds: [itemId("shirt"), itemId("trousers")],
     };
+    const shoesId = itemId("ankle-boots");
 
     const invalidCapsule = await registry?.capsules.createCapsule(userId, {
       ...draft,
@@ -396,10 +397,16 @@ test.describe("Live productivity metrics", () => {
         ...draft.categories,
         { categoryId: "ankle-boots", count: 1 },
       ],
-      itemIds: [...draft.itemIds, itemId("ankle-boots")],
+      itemIds: [
+        ...draft.itemIds,
+        shoesId,
+        draft.itemIds[0] ?? "",
+        shoesId,
+      ],
     });
 
     expect(invalidCapsule?.outfitCount).toBe(0);
     expect(validCapsule?.outfitCount).toBe(1);
+    expect(validCapsule?.itemIds).toEqual([...draft.itemIds, shoesId]);
   });
 });

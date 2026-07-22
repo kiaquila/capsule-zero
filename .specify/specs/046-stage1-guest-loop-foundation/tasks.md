@@ -25,6 +25,8 @@
 - [x] T013 Native Codex P2 persisted numerator: RED-коммитом `69529ee` доказать legacy result
   `4` для capsule без shoes; mock/API-backed `createCapsule` перевести на общий role/color-aware
   `calculatePreviewOutfitProductivity` и закрепить invalid `0` / valid base `1`
+- [x] T014 Final persisted-ID test efficacy: добавить duplicate shirt/shoes IDs в valid draft,
+  проверить сохранённый unique `itemIds`; mutation proof удалением `Set` даёт `4` вместо `1`
 
 ## Process Memory
 
@@ -157,6 +159,9 @@
 - **Тестировать provider scope только прямым вызовом `getCategoriesByGender`:** отвергнуто финальным
   code-review — такой тест оставался бы зелёным при удалении `supportedIds` в Journey consumer.
   Regression перенесён на `buildGuidedJourneySnapshot` с реальным provider-shaped stub.
+- **Проверять persisted numerator только на unique-ID fixture:** отвергнуто code-review — тест не
+  защищал repository-level dedup. Valid draft теперь намеренно повторяет shirt и shoes, а assertion
+  проверяет и `outfitCount=1`, и канонический сохранённый `itemIds`.
 - **Сохранять `itemIds.length × categories.length` как авторитетный outfitCount:** отвергнуто native
   Codex — такая формула давала ненулевой OPR без shoes и расходилась с preview после первой мутации.
   Capsule creation теперь сохраняет результат общего algorithm, а не combinatorial placeholder.
