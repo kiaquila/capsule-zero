@@ -219,7 +219,7 @@ When assigned to implement a specific feature, read in this order:
 ## Delivery Workflow
 
 - Product code lands through pull requests only.
-- Required GitHub checks are `baseline-checks`, `guard`, `AI Review`, and `test`.
+- Required GitHub checks are `baseline-checks`, `guard`, `AI Review`, `test`, and `osv-scan`.
 - `AI Review` runs on GitHub-hosted `ubuntu-latest` and validates native Codex review for the current PR head; it must never depend on a local or self-hosted runner.
 - Durable workflow docs live under `docs_capsule_zero/project/devops/`.
 - CI and branch-protection requirements are documented in `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md`.
@@ -248,7 +248,7 @@ A task is **not complete** until the current PR head SHA has:
 - At least one negative scenario covered, or an explicit one-line waiver in `spec.md`.
 - `## Process Memory` (Dead Ends / Decisions / Known Issues) updated in `tasks.md` _before_ declaring the work complete.
 - The SENAR Done Gate checklist filled in the PR description.
-- The standard merge-ready conditions: green `baseline-checks` / `guard` / `AI Review` / `test`, no blocking review findings, no merge conflicts.
+- The standard merge-ready conditions: green `baseline-checks` / `guard` / `AI Review` / `test` / `osv-scan`, no blocking review findings, no merge conflicts.
 
 **Scope of application:** SENAR fields are required for every spec authored after the SENAR layer shipped (i.e. starting with `005-…`). Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered and keep their original shape; do not retrofit them.
 

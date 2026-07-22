@@ -91,4 +91,4 @@ POM/selector rules, and run commands.
 
 ## Delivery
 
-Product code lands through pull requests only. Required checks: `baseline-checks`, `guard`, `AI Review`, and `test`. `AI Review` is GitHub-hosted and validates native Codex review; it is not a local-runner workflow. A human remains the final review and merge authority. Full workflow: AGENTS.md → "Delivery Workflow" and `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md`.
+Product code lands through pull requests only. Required checks: `baseline-checks`, `guard`, `AI Review`, `test`, and `osv-scan`. `AI Review` is GitHub-hosted and validates native Codex review; it is not a local-runner workflow. A human remains the final review and merge authority. Full workflow: AGENTS.md → "Delivery Workflow" and `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md`.

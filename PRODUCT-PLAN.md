@@ -268,7 +268,7 @@ Acloset £2.99/мес; **полный sweep coin-упоминаний** по в�
 - **OPR** как метрика и обещание.
 - **Стек и инфраструктура** — Go / Next.js / Kratos / Postgres / Hetzner, прод-CD на `main`.
 - **Инженерный контракт** — spec-kit, SENAR Done Gate, TDD для app-кода спек ≥ 025, PR-гейты
-  (`baseline-checks`, `guard`, `AI Review`, `test`), человек — финальный ревьюер.
+  (`baseline-checks`, `guard`, `AI Review`, `test`, `osv-scan`), человек — финальный ревьюер.
 - **Правило «никакого Supabase»** (AGENTS §8).
 - **Локали** — EN + RU в v0.1, ES-AR в v0.2.
 

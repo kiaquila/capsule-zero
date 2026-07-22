@@ -25,7 +25,8 @@ credential is part of this flow.
 - A Codex cloud environment exists for the repository.
 - Automatic Codex reviews remain off; the canonical trigger is the human-authored
   `@codex review` comment.
-- Branch rules require `baseline-checks`, `guard`, `AI Review`, and `test`.
+- Branch rules require `baseline-checks`, `guard`, `AI Review`, `test`, and
+  `osv-scan`.
 - `scripts/resolve-pr-context.mjs` and `scripts/ai-review-gate.mjs` exist on
   `main`.
 

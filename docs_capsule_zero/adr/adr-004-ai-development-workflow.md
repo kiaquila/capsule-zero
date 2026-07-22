@@ -13,7 +13,8 @@ requirement.
 ## Decision
 
 - Product code lands through pull requests.
-- Required checks are `baseline-checks`, `guard`, `AI Review`, and `test`.
+- Required checks are `baseline-checks`, `guard`, `AI Review`, `test`, and
+  `osv-scan`.
 - `AI Review` runs as a GitHub Actions job on `ubuntu-latest`; it never depends on
   a local machine or self-hosted runner.
 - A connected human account triggers native Codex review with `@codex review`.
@@ -23,6 +24,7 @@ requirement.
 - The repository-owned gate validates Codex output against the current PR head SHA.
 - Codex P0, P1, and P2 findings fail the gate; P3-only or no-findings reviews pass.
 - Missing, stale, or unverifiable reviewer evidence fails closed.
+- Known dependency vulnerabilities reported by `osv-scan` block merge.
 - Human review and merge authority remain final.
 
 ## Consequences
