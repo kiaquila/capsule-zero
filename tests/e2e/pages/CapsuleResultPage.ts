@@ -15,12 +15,24 @@ export class CapsuleResultPage extends BasePage {
   readonly tabs: Locator;
   /** The active content panel below the tab strip (CSS class — no testid yet). */
   readonly panel: Locator;
+  readonly oprValue: Locator;
+  readonly layeringCoverage: Locator;
+  readonly layeringDiagnostics: Locator;
+  readonly addItemButton: Locator;
 
   constructor(page: Page, locale: Locale = "en") {
     super(page);
     this.path = `/${locale}/capsule-result`;
     this.tabs = page.getByTestId("capsule-result-tabs");
     this.panel = page.locator(".capsule-result-panel");
+    this.oprValue = page.getByTestId("capsule-result-opr-value");
+    this.layeringCoverage = page.getByTestId(
+      "capsule-result-layering-coverage",
+    );
+    this.layeringDiagnostics = page.getByTestId(
+      "capsule-result-layering-diagnostics",
+    );
+    this.addItemButton = page.getByRole("button", { name: "Add item" });
   }
 
   /** Locator for a single tab button. */
@@ -54,5 +66,13 @@ export class CapsuleResultPage extends BasePage {
         }
       }
     }
+  }
+
+  /** Add a compatible candidate through the capsule item picker. */
+  async addItem(candidateName: string): Promise<void> {
+    await this.addItemButton.click();
+    await this.page
+      .getByRole("button", { name: new RegExp(candidateName, "i") })
+      .click();
   }
 }
