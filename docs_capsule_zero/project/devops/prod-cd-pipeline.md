@@ -11,10 +11,12 @@ changes deploy-relevant code. Spec: `.specify/specs/033-prod-cd-activation/`.
 
 ## Architecture
 
-The production server is a **Hetzner Cloud CX23** (2 vCPU / 4 GB / 40 GB, Ubuntu 26.04) at
-`178.105.95.17` (`ssh cz`). A single **host (systemd) nginx** — installed via `apt`, not in
-Docker — is the sole TLS edge. There is **no Cloudflare**; DNS A records point straight at
-the server. Containers publish only on loopback:
+The production server is a **Hetzner Cloud CX23** (2 vCPU / 4 GB / 40 GB, Ubuntu 26.04).
+Its public web edge is `178.105.95.17`; operator and CI SSH use only the server's Tailscale
+address, `100.110.12.48` (`ssh cz` from an enrolled operator device). Public TCP/22 is
+closed. A single **host (systemd) nginx** — installed via `apt`, not in Docker — is the sole
+TLS edge. There is **no Cloudflare**; DNS A records point straight at the server. Containers
+publish only on loopback:
 
 ```
 Internet → host nginx :80/:443 (TLS: capsulezero.app)
@@ -44,8 +46,9 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
    builds get `--build-arg GIT_SHA=<gitsha>` (api also `BUILD_TIME`): the api binary is
    stamped via `-ldflags -X main.commit/main.buildTime` and both images set the OCI
    `org.opencontainers.image.revision` label (spec 036).
-4. **deploy** — SSH to the server as the unprivileged `deploy` user, then run the
-   root-owned wrapper
+4. **deploy** — the GitHub-hosted runner obtains a short-lived Tailscale identity through
+   GitHub OIDC, joins as `tag:ci`, and is permitted to reach only `cz:22`. It then connects
+   over SSH as the unprivileged `deploy` user and runs the root-owned wrapper
    `/usr/local/sbin/capsule-zero-deploy <web-image> <api-image> <sha> <sync-nginx>`.
    The wrapper validates the immutable image refs and SHA, updates the root-owned
    `/opt/capsule-zero` checkout, runs
@@ -98,9 +101,15 @@ apt-get update && apt-get install -y docker.io docker-compose-v2 nginx certbot g
 # 2G swap (the box ships with none)
 fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
 echo "/swapfile none swap sw 0 0" >> /etc/fstab
-# firewall
-ufw allow OpenSSH && ufw allow 80/tcp && ufw allow 443/tcp && ufw --force enable
+# firewall: SSH is private; the public interface exposes only the web edge
+ufw allow in on tailscale0 to any port 22 proto tcp comment 'SSH via Tailscale only'
+ufw allow 80/tcp && ufw allow 443/tcp && ufw --force enable
 ```
+
+Install Tailscale from its official Ubuntu repository, enroll the host as `cz`, and keep
+the server's stable tailnet address in the deployment secret. The tailnet policy owns
+`tag:ci` and grants both enrolled members and CI only TCP/22 to this host; all other
+tailnet traffic is denied by default.
 
 ### 2. Deploy user + SSH access for CI
 
@@ -210,12 +219,19 @@ Renewals: certbot's systemd timer + the deploy hook above. Verify with
 
 ### 5. GitHub repository secrets
 
-| Secret                    | Value                                          |
-| ------------------------- | ---------------------------------------------- |
-| `PROD_DEPLOY_HOST`        | `178.105.95.17`                                |
-| `PROD_DEPLOY_USER`        | `deploy`                                       |
-| `PROD_DEPLOY_SSH_KEY`     | private CI SSH key (matches `authorized_keys`) |
-| `PROD_DEPLOY_KNOWN_HOSTS` | `ssh-keyscan -t ed25519 178.105.95.17` output  |
+| Secret                    | Value                                                 |
+| ------------------------- | ----------------------------------------------------- |
+| `PROD_DEPLOY_HOST`        | `100.110.12.48` (server's Tailscale address)          |
+| `PROD_DEPLOY_USER`        | `deploy`                                              |
+| `PROD_DEPLOY_SSH_KEY`     | private CI SSH key (matches `authorized_keys`)        |
+| `PROD_DEPLOY_KNOWN_HOSTS` | `ssh-keyscan -t ed25519 100.110.12.48` output         |
+| `TS_OAUTH_CLIENT_ID`      | Tailscale workload-identity client ID                 |
+| `TS_AUDIENCE`             | audience generated with the Tailscale OIDC credential |
+
+The Tailscale federated credential uses issuer `https://token.actions.githubusercontent.com`,
+subject `repo:kiaquila/capsule-zero:environment:production`, `auth_keys` scope, and
+`tag:ci`. The deploy job needs `id-token: write`; no long-lived Tailscale client secret is
+stored in GitHub.
 
 `GITHUB_TOKEN` (built-in) authenticates the GHCR **push** from CI — no extra secret needed.
 The legacy `DEV_DEPLOY_*` secrets are retired with the dev environment.
