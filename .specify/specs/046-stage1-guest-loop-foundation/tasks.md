@@ -22,6 +22,9 @@
 - [x] T012 Final test-efficacy review: заменить helper-only provider assertion на прямой
   `buildGuidedJourneySnapshot` regression со stub-provider; mutation proof удалением `supportedIds`
   падает с 127 лишними IDs, восстановленная реализация даёт focused Chromium `5 passed`
+- [x] T013 Native Codex P2 persisted numerator: RED-коммитом `69529ee` доказать legacy result
+  `4` для capsule без shoes; mock/API-backed `createCapsule` перевести на общий role/color-aware
+  `calculatePreviewOutfitProductivity` и закрепить invalid `0` / valid base `1`
 
 ## Process Memory
 
@@ -106,6 +109,12 @@
   узкие ID-наборы для women/men/mixed и сравнивает итоговый `snapshot.categories`. Поэтому удаление
   `supportedIds` из `buildGuidedJourneySnapshot` воспроизводимо ломает regression, даже если сам
   `getCategoriesByGender` остаётся корректным.
+- **Persisted и preview numerator имеют один алгоритм:** mock capsule repository (и использующий его
+  ещё не мигрировавший API capsule port) теперь собирает role/slot/dominant-color projection из
+  wardrobe items и вызывает `calculatePreviewOutfitProductivity`. Item IDs дедуплицируются перед
+  сохранением, как в production-shaped repository; legacy `items×categories` удалён. Mandatory
+  reuse-check: расширен существующий mock `createCapsule`, общий calculator уже создан в T009;
+  новый repository/helper не добавлялся, frozen Supabase не изменялся.
 
 ### Dead Ends
 
@@ -148,6 +157,9 @@
 - **Тестировать provider scope только прямым вызовом `getCategoriesByGender`:** отвергнуто финальным
   code-review — такой тест оставался бы зелёным при удалении `supportedIds` в Journey consumer.
   Regression перенесён на `buildGuidedJourneySnapshot` с реальным provider-shaped stub.
+- **Сохранять `itemIds.length × categories.length` как авторитетный outfitCount:** отвергнуто native
+  Codex — такая формула давала ненулевой OPR без shoes и расходилась с preview после первой мутации.
+  Capsule creation теперь сохраняет результат общего algorithm, а не combinatorial placeholder.
 
 ### Known Issues
 

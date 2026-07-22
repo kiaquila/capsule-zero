@@ -2,8 +2,9 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 
-import { getCategoriesByGender } from "@/lib/categories";
+import { getCategoriesByGender, getCategoryById } from "@/lib/categories";
 import { areColorGroupsCompatible } from "@/lib/color-compatibility";
+import { calculatePreviewOutfitProductivity } from "@/lib/outfit-productivity";
 import type { Capsule, ColorPoint } from "@/types";
 import type {
   BillingPort,
@@ -614,6 +615,24 @@ export function createMockProviderRegistry(
       },
 
       async createCapsule(userId, draft: CapsuleDraft) {
+        const itemIds = [...new Set(draft.itemIds)];
+        const productivity = calculatePreviewOutfitProductivity(
+          itemIds.flatMap((itemId) => {
+            const item = wardrobeItems.get(itemId);
+            if (!item) {
+              return [];
+            }
+
+            const category = getCategoryById(item.categoryId);
+            const dominantColor = item.colorPoints[0];
+            return [{
+              itemId,
+              algorithmRole: category?.algorithmRole ?? null,
+              accessorySlot: category?.accessorySlot ?? null,
+              ...(dominantColor ? { dominantColor } : {}),
+            }];
+          }),
+        );
         const capsule: Capsule = {
           id: deterministicUuid("capsule", `${userId}:${draft.name}`),
           userId,
@@ -621,11 +640,8 @@ export function createMockProviderRegistry(
           garderType: draft.garderType,
           palette: draft.palette,
           categories: draft.categories,
-          itemIds: draft.itemIds,
-          outfitCount: Math.max(
-            draft.itemIds.length * draft.categories.length,
-            0,
-          ),
+          itemIds,
+          outfitCount: productivity.outfitCount,
           gapAnalysis: [],
           createdAt: now(),
         };

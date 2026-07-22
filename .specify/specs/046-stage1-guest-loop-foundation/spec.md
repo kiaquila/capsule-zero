@@ -11,7 +11,9 @@
 > зафиксирован отдельным коммитом `69600a3`; исправленная structural-layer инварианта — вторым
 > RED-коммитом `453a7e0`; запрещённый stale-numerator/new-denominator hybrid и dominant-color
 > validation — `eacaf2d`; zero-base remove path — `706c189`; повторное раздувание одинаковых
-> аксессуаров одного slot/color — `0a4fcd4`. Затем оба экрана переведены на общий калькулятор.
+> аксессуаров одного slot/color — `0a4fcd4`; неполная category projection — `ec099a8`/`154bcf6`;
+> legacy persisted numerator — `69529ee`. Затем display, preview и mock/API-backed creation
+> переведены на общий калькулятор.
 
 ## Goal
 
@@ -53,11 +55,12 @@ Dashboard и Capsule Result не продолжали показывать по�
   помечено как пол для core-образов.
 - `.specify/specs/046-stage1-guest-loop-foundation/` — эта спека (spec/plan/tasks) с SENAR-полями.
 - `/app` — единый role-aware калькулятор OPR/Layering Coverage, подключённый к Dashboard и Capsule
-  Result; EN/RU display copy, стабильные e2e-селекторы и обновлённые визуальные baseline.
+  Result, а также к mock/API-backed capsule creation; EN/RU display copy, стабильные e2e-селекторы
+  и обновлённые визуальные baseline.
 - `tests/e2e/specs/capsule-result/productivity-metrics.spec.ts` — регрессия числителя/знаменателя,
   structural/accessory preview, каноническая `(slot, colorId)` дедупликация, dominant-color
-  validation и zero-base Layering Coverage; test-first история сохранена отдельными красными
-  коммитами.
+  validation, provider-scoped category projection, persisted numerator и zero-base Layering Coverage;
+  test-first история сохранена отдельными красными коммитами.
 
 **Out:**
 
@@ -120,7 +123,8 @@ Dashboard и Capsule Result не продолжали показывать по�
   пересчитывает numerator и denominator вместе: structural layer не создаёт counted outfit, а
   совместимый Accessory создаёт bounded variation; одинаковые аксессуары одного `(slot, colorId)`
   схлопываются до одного варианта. Совместимость вещи определяется только по dominant color;
-  поведение закреплено e2e и визуальными baseline.
+  mock/API-backed capsule creation сохраняет numerator из того же алгоритма, поэтому неполное Core
+  ядро не получает ненулевой persisted `outfitCount`; поведение закреплено e2e и визуальными baseline.
 
 ## Negative scenarios
 
@@ -144,6 +148,9 @@ Dashboard и Capsule Result не продолжали показывать по�
    ложные `0%` или `100%`: UI показывает `N/A` и нулевые diagnostics; слой не попадает в OPR denominator.
 8. **Дубли аксессуаров раздувают OPR** — несколько вещей одного accessory slot с одним dominant
    `colorId` дают один канонический вариант, а не занимают весь `A_max`.
+9. **Persisted numerator обходит Core-инвариант** — repository не использует `items×categories`:
+   capsule без shoes сохраняет `outfitCount=0`, а валидная top+bottom+shoes база — `1`, тем же
+   calculator, который обслуживает preview.
 
 Регрессия любого пункта — это доковое противоречие, ловится grep-аудитом `plan.md` и просмотром
 диффа при ревью.
