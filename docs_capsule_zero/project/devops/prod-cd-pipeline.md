@@ -179,11 +179,10 @@ reject dangerous canned ACLs and AllUsers grant-read. The backup credential
 remains in canonical `BACKUP_S3_*` variables and is not passed to the API.
 
 Hetzner/RGW still accepts `PutObject` with Object Lock mode, retain-until, or
-legal-hold headers despite the corresponding action denies. This cannot read
-or delete existing data, but can create newly locked objects and amplify
-storage cost/denial of service. Backup automation remains disabled until its
-uploader forbids/sanitizes those headers and the residual is explicitly
-accepted or fixed by the provider.
+legal-hold headers despite the corresponding action denies. This credential
+cannot read or delete existing data, but a compromised writer could create new
+locked objects and amplify storage cost. The backup uploader therefore sends a
+fixed, locally controlled set of headers and no caller-controlled metadata.
 
 Policy/CORS readback, the runtime audit, the caveated backup hybrid-policy
 audit, proof that both key projects are bucketless, and atomic env rotation
@@ -197,9 +196,19 @@ standalone Go smoke passed readiness, signed PUT of exactly `10485760` bytes,
 HEAD, signed GET checksum match, and cleanup. Private/public exact-origin CORS
 probes returned `200` with their exact headers and max-age `300`; attacker
 origins and backup preflight returned `403` without
-`Access-Control-Allow-Origin`. Backup automation remains deferred until the
-header/risk gate above plus client-side encryption, scheduling, retention, and
-restore verification land.
+`Access-Control-Allow-Origin`.
+
+Encrypted off-site backup automation was enabled on 2026-07-22. The root-owned
+`capsule-zero-backup.timer` runs daily at 03:17 UTC with a randomized delay and
+uploads an `age`-encrypted PostgreSQL dump, production configuration, security
+journal slice, and checksum manifest under `postgres/YYYY/MM/DD/`. Plaintext
+backup data exists only in process pipes. The Object Storage bucket has Object
+Lock retention, the server keeps only an upload-only credential, and the `age`
+private key is stored off-server on the operator Mac. A full download,
+decryption, checksum, and PostgreSQL restore drill passed before the timer was
+enabled. Check the latest run with
+`systemctl status capsule-zero-backup.service` and list the schedule with
+`systemctl list-timers capsule-zero-backup.timer`.
 
 ### 4. Cloudflare, TLS certificate + host nginx
 
