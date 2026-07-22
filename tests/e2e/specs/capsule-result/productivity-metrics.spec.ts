@@ -1,3 +1,6 @@
+import Module from "node:module";
+import path from "node:path";
+
 import { expect, test } from "../../fixtures/visual";
 import { CapsuleResultPage } from "../../pages/CapsuleResultPage";
 import * as categoriesModule from "../../../../app/src/lib/categories";
@@ -31,16 +34,74 @@ type PreviewProductivity = (items: Array<{
   };
 }>) => { outfitCount: number; denominator: number };
 
-type CategoriesByGender = (
-  type: "women" | "men" | "mixed",
-  supportedIds?: ReadonlySet<string>,
-) => CategoryRole[];
+type GarderType = "women" | "men" | "mixed";
+
+type SnapshotBuilder = (options: {
+  registry: {
+    profiles: {
+      getProfile(userId: string): Promise<{ displayName: string }>;
+    };
+    methodology: {
+      listJourneyCategories(
+        garderType: GarderType,
+      ): Promise<Array<{ categoryId: string; count: number }>>;
+    };
+    catalogSearch: {
+      search(userId: string, query: string): Promise<[]>;
+    };
+  };
+  session: { userId: string; email: string; name?: string };
+  locale: "en" | "ru";
+}) => Promise<{
+  categories: Record<GarderType, Array<{ id: string }>>;
+}>;
 
 const GENDERS = {
   all: ["women", "men", "mixed"],
   women: ["women", "mixed"],
   men: ["men", "mixed"],
 } as const;
+
+const GUIDED_JOURNEY_DATA_MODULE_PATH =
+  "../../../../app/src/components/guided-journey/guided-journey-data";
+
+type CommonJsResolver = (
+  request: string,
+  parent?: unknown,
+  isMain?: boolean,
+  options?: unknown,
+) => string;
+
+async function importAppModule(modulePath: string): Promise<object> {
+  const commonJsModule = Module as unknown as {
+    _resolveFilename: CommonJsResolver;
+  };
+  const originalResolver = commonJsModule._resolveFilename;
+
+  commonJsModule._resolveFilename = function resolveAppAlias(
+    request,
+    parent,
+    isMain,
+    options,
+  ) {
+    const resolvedRequest = request.startsWith("@/")
+      ? path.resolve(process.cwd(), "../../app/src", request.slice(2))
+      : request;
+    return originalResolver.call(
+      this,
+      resolvedRequest,
+      parent,
+      isMain,
+      options,
+    );
+  };
+
+  try {
+    return await import(modulePath);
+  } finally {
+    commonJsModule._resolveFilename = originalResolver;
+  }
+}
 
 const EXPECTED_CATEGORY_MATRIX = [
   ["tank-top", GENDERS.all, "core_top", null],
@@ -221,18 +282,54 @@ test.describe("Live productivity metrics", () => {
     expect(normalizedActual).toEqual(normalizedExpected);
   });
 
-  test("filters journey categories to the active provider catalog", () => {
-    const getCategoriesByGender = Reflect.get(
-      categoriesModule,
-      "getCategoriesByGender",
-    ) as CategoriesByGender | undefined;
+  test("builds journey categories from the active provider catalog", async () => {
+    const guidedJourneyData = await importAppModule(
+      GUIDED_JOURNEY_DATA_MODULE_PATH,
+    );
+    const buildGuidedJourneySnapshot = Reflect.get(
+      guidedJourneyData,
+      "buildGuidedJourneySnapshot",
+    ) as unknown as SnapshotBuilder | undefined;
+    const providerIds: Record<GarderType, string[]> = {
+      women: ["dress", "sneakers"],
+      men: ["chinos", "sneakers"],
+      mixed: ["dress", "chinos", "sneakers"],
+    };
+    const registry = {
+      profiles: {
+        async getProfile() {
+          return { displayName: "Journey Test" };
+        },
+      },
+      methodology: {
+        async listJourneyCategories(garderType: GarderType) {
+          return providerIds[garderType].map((categoryId) => ({
+            categoryId,
+            count: 1,
+          }));
+        },
+      },
+      catalogSearch: {
+        async search() {
+          return [] as [];
+        },
+      },
+    };
 
-    expect(typeof getCategoriesByGender).toBe("function");
-    expect(
-      getCategoriesByGender?.(
-        "mixed",
-        new Set(["dress", "chinos", "sneakers"]),
-      ).map(({ id }) => id),
-    ).toEqual(["dress", "chinos", "sneakers"]);
+    expect(typeof buildGuidedJourneySnapshot).toBe("function");
+
+    const snapshot = await buildGuidedJourneySnapshot?.({
+      registry,
+      session: { userId: "journey-test", email: "journey@example.com" },
+      locale: "en",
+    });
+    const actualIds = Object.fromEntries(
+      Object.entries(snapshot?.categories ?? {}).map(([garderType, entries]) => [
+        garderType,
+        entries.map(({ id }) => id),
+      ]),
+    );
+
+    expect(actualIds).toEqual(providerIds);
   });
 });

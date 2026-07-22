@@ -19,6 +19,9 @@
 - [x] T011 Independent code-review category projection: RED-коммитом `154bcf6` закрепить полную
   category/gender/role/slot матрицу и provider-scoped Journey; исправить canonical mixed-gender
   semantics и не расширять frozen Supabase provider новыми глобальными IDs
+- [x] T012 Final test-efficacy review: заменить helper-only provider assertion на прямой
+  `buildGuidedJourneySnapshot` regression со stub-provider; mutation proof удалением `supportedIds`
+  падает с 127 лишними IDs, восстановленная реализация даёт focused Chromium `5 passed`
 
 ## Process Memory
 
@@ -99,6 +102,10 @@
   но presentation фильтруется множеством IDs, возвращённых `listJourneyCategories`. Это сохраняет
   provider abstraction и не расширяет замороженный Supabase catalog. Mandatory reuse-check: расширен
   существующий `getCategoriesByGender`; новый helper/provider variant не создавался.
+- **Provider boundary проверяется на consumer, а не только на helper:** test stub возвращает разные
+  узкие ID-наборы для women/men/mixed и сравнивает итоговый `snapshot.categories`. Поэтому удаление
+  `supportedIds` из `buildGuidedJourneySnapshot` воспроизводимо ломает regression, даже если сам
+  `getCategoriesByGender` остаётся корректным.
 
 ### Dead Ends
 
@@ -138,6 +145,9 @@
 - **Рендерить весь глобальный catalog независимо от provider ответа:** отвергнуто независимым
   code-review — это протекало бы новыми IDs в frozen Supabase Journey. UI теперь пересекает canonical
   metadata с provider-returned IDs, не меняя legacy provider.
+- **Тестировать provider scope только прямым вызовом `getCategoriesByGender`:** отвергнуто финальным
+  code-review — такой тест оставался бы зелёным при удалении `supportedIds` в Journey consumer.
+  Regression перенесён на `buildGuidedJourneySnapshot` с реальным provider-shaped stub.
 
 ### Known Issues
 
