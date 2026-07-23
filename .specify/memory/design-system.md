@@ -377,11 +377,13 @@ landing subtitle is `.landing-hero-subtitle` at 16–18px/**400**, so this 17px/
 | Computed size | Minimum weight | Covers today |
 |---|---|---|
 | `< 20px` | **≥ 400** | all body, labels, buttons, captions, dense UI — no exceptions. Flips `.landing-manifesto p` (17px/300 → 400) ⚑ — done as `.landing-hero-subtitle` 16–18px/400 in spec 044; thin *headings* stay editorial, thin *body* does not |
-| `20–27px` | **≥ 300** | working-UI titles: greeting/topbar/section titles at 24–25px/300 all remain |
+| `20–23px` | **≥ 400** | working-UI titles below the editorial band (spec 047 clarification): auth-panel title and notification-banner h2 at 20px/400 — every 300 measured in this band was an inheritance defect, none intentional |
+| `24–27px` | **≥ 300** | working-UI titles: greeting/topbar/section titles at 24–25px/300 all remain |
 | `≥ 28px` | **≥ 200** | display numerals & hero only: OPR 52/64px, stats 30px, journey-size 28px, manifesto h1 42px |
 
-`.text-editorial` (300) may only be applied to text ≥ 20px. The global `h2 { font-weight: 300 }`
-rule must be audited in T013 — any h2 rendering below 20px gets an explicit ≥ 400.
+`.text-editorial` (300) may only be applied to text ≥ 24px. The global `h2 { font-weight: 300 }`
+rule must be audited in T013 — any h2 rendering below 24px gets an explicit ≥ 400 (spec 047
+applied this to `.auth-panel-title` and `.notification-banner-copy h2`, both 20px).
 Enforcement: Playwright computed-style assertions on the primary screens (stylelint cannot pair
 size×weight) + `design-review` live pass.
 

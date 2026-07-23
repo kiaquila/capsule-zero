@@ -121,7 +121,6 @@ export async function signUpWithPasswordAction(
     const session = await providers.auth.signUpWithPassword({
       email: parsed.data.email,
       password: parsed.data.password,
-      name: parsed.data.name,
       locale: normalizeActionLocale(input.locale),
     });
     if (!session) {

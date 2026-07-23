@@ -17,8 +17,8 @@
 ## User Flow — Registration
 
 1. User selects the hero CTA (temporary route from landing) or opens the direct auth URL
-2. Glassmorphic auth form displayed with email+password fields
-3. Optional location field (country/city) — skippable, does not block registration
+2. Glassmorphic auth form displayed — Google button first (when enabled), then email+password+confirm fields
+3. Credentials only (spec 047): name/country/city are not asked at sign-up — they are edited later on the profile screen and stay optional
 4. Real-time inline validation as user types
 5. On success → redirect to Dashboard
 

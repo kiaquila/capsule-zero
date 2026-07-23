@@ -3,7 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -103,6 +109,36 @@ export function AuthPanel({
   // leave the prop undefined and the panel asks the server after mount.
   const [fetchedGoogleAvailable, setFetchedGoogleAvailable] = useState(false);
   const googleAvailable = googleSignIn ?? fetchedGoogleAvailable;
+  const panelRef = useRef<HTMLElement>(null);
+  // The panel scrolls internally with the scrollbar hidden; this flag drives
+  // the bottom fade so cut-off content reads as "continues below", not broken.
+  const [hasOverflowBelow, setHasOverflowBelow] = useState(false);
+
+  // A new mode's form starts at the top — otherwise the panel keeps the
+  // previous mode's scroll offset (e.g. after tapping a below-the-fold link).
+  useEffect(() => {
+    panelRef.current?.scrollTo({ top: 0 });
+  }, [mode]);
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) {
+      return;
+    }
+    const update = () => {
+      setHasOverflowBelow(
+        panel.scrollHeight - panel.scrollTop - panel.clientHeight > 8,
+      );
+    };
+    update();
+    panel.addEventListener("scroll", update, { passive: true });
+    const observer = new ResizeObserver(update);
+    observer.observe(panel);
+    return () => {
+      panel.removeEventListener("scroll", update);
+      observer.disconnect();
+    };
+  }, [mode, googleAvailable]);
 
   useEffect(() => {
     if (googleSignIn !== undefined) {
@@ -157,9 +193,6 @@ export function AuthPanel({
       email: "",
       password: "",
       confirmPassword: "",
-      name: "",
-      country: "",
-      city: "",
     },
   });
   const recoverySchema = useMemo(
@@ -286,12 +319,10 @@ export function AuthPanel({
   };
 
   // Shared by the sign-in and sign-up forms; hidden when the deployment does
-  // not offer Google. Monochrome glyph — the interface stays achromatic.
+  // not offer Google. Leads the form — on mobile the primary path must sit
+  // above the fold. Monochrome glyph — the interface stays achromatic.
   const googleBlock = googleAvailable ? (
     <>
-      <div aria-hidden="true" className="auth-divider">
-        {t("orDivider")}
-      </div>
       <button
         className="auth-social"
         data-testid="auth-google-button"
@@ -302,6 +333,9 @@ export function AuthPanel({
         <GoogleGlyph />
         {googleSubmitting ? t("googleRedirecting") : t("continueWithGoogle")}
       </button>
+      <div aria-hidden="true" className="auth-divider">
+        {t("orDivider")}
+      </div>
     </>
   ) : null;
 
@@ -325,24 +359,31 @@ export function AuthPanel({
     redirectToDashboard();
   });
 
-  const headerAction =
-    mode === "signIn" ? (
-      <button className="auth-mode-switch" type="button" onClick={() => switchMode("signUp")}>
-        {t("signUpTab")}
-      </button>
-    ) : (
-      <button className="auth-mode-switch" type="button" onClick={() => switchMode("signIn")}>
-        {mode === "signUp" ? t("logInTab") : t("backToLogin")}
-      </button>
-    );
+  // The header names the current mode (the old top-left mode-switch button
+  // read as a wrong title over the form); switching lives in the links under
+  // each form.
+  const panelTitle =
+    mode === "signIn"
+      ? t("signInTitle")
+      : mode === "signUp"
+        ? t("signUpTitle")
+        : t("recoveryTitle");
 
   return (
     <section
-      className={cn("auth-panel glass", `auth-panel-${variant}`)}
+      aria-labelledby="auth-panel-title"
+      className={cn(
+        "auth-panel glass",
+        `auth-panel-${variant}`,
+        hasOverflowBelow && "auth-panel-more",
+      )}
+      ref={panelRef}
       style={elevatedGlassStyle}
     >
       <div className="auth-panel-header">
-        {headerAction}
+        <h2 className="auth-panel-title" id="auth-panel-title">
+          {panelTitle}
+        </h2>
         {onClose ? (
           <button className="auth-close" type="button" onClick={onClose} aria-label={t("close")}>
             ×
@@ -356,6 +397,7 @@ export function AuthPanel({
 
       {mode === "signIn" ? (
         <form noValidate onSubmit={onSignIn}>
+          {googleBlock}
           <AuthField
             autoComplete="email"
             error={signInForm.formState.errors.email?.message}
@@ -402,10 +444,13 @@ export function AuthPanel({
           >
             {signInForm.formState.isSubmitting ? t("checking") : t("logInTab")}
           </button>
-          {googleBlock}
           <p className="auth-switch-link">
             {t("signInLinkPrefix")}{" "}
-            <button type="button" onClick={() => switchMode("signUp")}>
+            <button
+              data-testid="auth-mode-switch"
+              type="button"
+              onClick={() => switchMode("signUp")}
+            >
               {t("signInLinkAction")}
             </button>
           </p>
@@ -414,7 +459,6 @@ export function AuthPanel({
 
       {mode === "recovery" ? (
         <form noValidate onSubmit={onRecoveryRequest}>
-          <h2 className="auth-recovery-title">{t("recoveryTitle")}</h2>
           <p className="auth-recovery-hint">{t("recoveryHint")}</p>
           <AuthField
             autoComplete="email"
@@ -444,7 +488,6 @@ export function AuthPanel({
 
       {mode === "recoveryCode" ? (
         <form noValidate onSubmit={onRecoveryComplete}>
-          <h2 className="auth-recovery-title">{t("recoveryTitle")}</h2>
           <p className="auth-recovery-hint">{t("recoveryCodeHint")}</p>
           <AuthField
             autoComplete="one-time-code"
@@ -515,13 +558,13 @@ export function AuthPanel({
 
       {mode === "signUp" ? (
         <form noValidate onSubmit={onSignUp}>
-          <p className="auth-required-note">{t("requiredNote")}</p>
+          {googleBlock}
           <AuthField
             autoComplete="email"
             error={signUpForm.formState.errors.email?.message}
             inputMode="email"
             name="email"
-            placeholder={`${t("email")} *`}
+            placeholder={t("email")}
             register={signUpForm.register("email")}
             type="email"
           />
@@ -529,7 +572,7 @@ export function AuthPanel({
             autoComplete="new-password"
             error={signUpForm.formState.errors.password?.message}
             name="password"
-            placeholder={`${t("password")} *`}
+            placeholder={t("password")}
             register={signUpForm.register("password")}
             reveal={{
               visible: passwordVisible,
@@ -551,32 +594,6 @@ export function AuthPanel({
             }}
             type={confirmVisible ? "text" : "password"}
           />
-          <AuthField
-            autoComplete="given-name"
-            error={signUpForm.formState.errors.name?.message}
-            name="name"
-            placeholder={t("name")}
-            register={signUpForm.register("name")}
-            type="text"
-          />
-          <div className="auth-optional-row">
-            <AuthField
-              autoComplete="country-name"
-              error={signUpForm.formState.errors.country?.message}
-              name="country"
-              placeholder={t("country")}
-              register={signUpForm.register("country")}
-              type="text"
-            />
-            <AuthField
-              autoComplete="address-level2"
-              error={signUpForm.formState.errors.city?.message}
-              name="city"
-              placeholder={t("city")}
-              register={signUpForm.register("city")}
-              type="text"
-            />
-          </div>
           <button
             className="auth-primary"
             disabled={signUpForm.formState.isSubmitting}
@@ -584,10 +601,13 @@ export function AuthPanel({
           >
             {signUpForm.formState.isSubmitting ? t("creating") : t("createAccountCta")}
           </button>
-          {googleBlock}
           <p className="auth-switch-link">
             {t("logInLinkPrefix")}{" "}
-            <button type="button" onClick={() => switchMode("signIn")}>
+            <button
+              data-testid="auth-mode-switch"
+              type="button"
+              onClick={() => switchMode("signIn")}
+            >
               {t("logInLinkAction")}
             </button>
           </p>

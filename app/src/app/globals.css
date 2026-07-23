@@ -1056,10 +1056,28 @@ textarea {
 
 .auth-panel {
   width: min(100%, 400px);
-  max-height: calc(100svh - 128px);
+  /* Reserve covers the fixed header above plus in-app browser chrome below
+     (Telegram/Instagram float a bar over the page bottom edge). */
+  max-height: calc(100svh - 112px - env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 22px 24px 20px;
   scrollbar-width: none;
+}
+
+/* Bottom fade while more content hides below the fold — the scrollbar is
+   hidden, so without it the cut-off form reads as a rendering bug. */
+.auth-panel-more {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    var(--color-black) calc(100% - 48px),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    var(--color-black) calc(100% - 48px),
+    transparent
+  );
 }
 
 .auth-panel,
@@ -1088,10 +1106,9 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 18px;
+  margin-bottom: 16px;
 }
 
-.auth-mode-switch,
 .auth-close,
 .auth-forgot-row button,
 .auth-switch-link button,
@@ -1103,11 +1120,15 @@ textarea {
   font: inherit;
 }
 
-.auth-mode-switch {
-  font-size: 13px;
-  font-weight: 500;
+/* Working-UI title: 20px demands ≥ 400 (§9.6 audit) — the inherited editorial
+   h2 300 serves only the ≥ 24px band. Metrics match .profile-header-info h2. */
+.auth-panel-title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 20px;
+  font-weight: 400;
   letter-spacing: 0;
-  text-transform: uppercase;
+  line-height: 1.2;
 }
 
 .auth-close {
@@ -1123,7 +1144,6 @@ textarea {
   text-decoration: none;
 }
 
-.auth-mode-switch:hover,
 .auth-close:hover,
 .auth-forgot-row button:hover,
 .auth-switch-link button:hover,
@@ -1131,16 +1151,11 @@ textarea {
   color: var(--color-text-primary);
 }
 
-.auth-required-note,
 .auth-recovery-hint {
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   color: var(--color-text-placeholder);
   font-size: 12px;
   line-height: 1.55;
-}
-
-.auth-field {
-  margin-bottom: 10px;
 }
 
 .auth-field-wrap {
@@ -1170,6 +1185,24 @@ textarea {
   background: var(--btn-primary-bg);
 }
 
+/* Chrome autofill paints an opaque UA background over the glass. The
+   never-completing transition keeps that paint from ever rendering — an inset
+   box-shadow would need an opaque colour and kill the translucent surface.
+   Trade-off (ratified): autofilled inputs skip the :focus background tint;
+   focus stays signalled by the .82 border (§9.7). */
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text-primary);
+  caret-color: var(--color-text-primary);
+  transition: background-color 9999999s ease-out;
+}
+
+.auth-input:autofill {
+  -webkit-text-fill-color: var(--color-text-primary);
+  caret-color: var(--color-text-primary);
+}
+
 .auth-input-error {
   border-color: var(--color-error-border);
 }
@@ -1196,9 +1229,11 @@ textarea {
   color: var(--color-text-secondary);
 }
 
+/* Always-rendered 16px reserve (14 + 2) owns the inter-field gap — errors
+   appear inside it with a ~4px push instead of shoving fields mid-typing. */
 .auth-field-message {
-  min-height: 15px;
-  margin-top: 3px;
+  min-height: 14px;
+  margin-top: 2px;
   padding-left: 4px;
   color: var(--color-text-secondary);
   font-size: 11px;
@@ -1206,17 +1241,18 @@ textarea {
 }
 
 .auth-field-message-error {
-  /* §9.7 скрим-чип (043) */
-  display: inline-block;
+  /* §9.7 скрим-чип (043); block (не inline-block) — иначе baseline-зазор
+     line-box добавляет ~4px под чипом */
+  display: block;
   width: fit-content;
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-sm);
   background: var(--color-scrim);
   color: var(--color-error-text);
 }
 
 .auth-forgot-row {
-  margin: -2px 0 14px;
+  margin: -4px 0 12px;
   text-align: right;
 }
 
@@ -1235,12 +1271,13 @@ textarea {
 }
 
 /* Google sign-in (spec 037): design-system social-button surface (.28 glass)
-   under the same shape/typography as .auth-primary. */
+   under the same shape/typography as .auth-primary. The block leads the form
+   (button, then divider, then the email fields). */
 .auth-divider {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 16px;
+  margin: 12px 0;
   color: var(--color-text-secondary);
   font-size: 11px;
   letter-spacing: 0.08em;
@@ -1262,7 +1299,6 @@ textarea {
   gap: 10px;
   width: 100%;
   min-height: 44px;
-  margin-top: 16px;
   padding: 0 16px;
   border: 1px solid var(--btn-primary-border);
   border-radius: var(--radius-pill);
@@ -1330,19 +1366,6 @@ textarea {
   text-underline-offset: 2px;
 }
 
-.auth-optional-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0;
-}
-
-.auth-recovery-title {
-  margin: 0 0 8px;
-  color: var(--color-text-primary);
-  font-size: 20px;
-  line-height: 1.2;
-}
-
 /* Standard notification banner (spec 035) — the shared glass surface for
    inline notifications across the app (see components/common/
    NotificationBanner.tsx). Sits inside the page's content column so its
@@ -1367,6 +1390,8 @@ textarea {
   padding-right: 32px;
   color: var(--color-text-primary);
   font-size: 20px;
+  /* 20px working-UI title — §9.6 audit: below 24px the editorial 300 is illegible */
+  font-weight: 400;
   line-height: 1.2;
 }
 
@@ -3689,11 +3714,6 @@ textarea {
 
   .auth-panel-standalone {
     width: 400px;
-  }
-
-  .auth-optional-row {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
   }
 
   .cookie-banner {
