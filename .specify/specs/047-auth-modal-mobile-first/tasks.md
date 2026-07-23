@@ -49,6 +49,13 @@
       первым в ветке, реализация — следующим коммитом; green-прогоны — в
       plan.md § Verification.
 
+- [x] T014 Post-push OSV-сигнал на PR HEAD: GHSA-6g55-p6wh-862q (postcss
+      8.5.10, High 7.5) — override в app/package.json поднят до fixed 8.5.12,
+      lockfile обновлён, stylelint/production build перепроверены. npm-audit
+      дополнительно шумит на sharp/libvips (GHSA-f88m-g3jw-g9cj) — по базе OSV
+      resolved-версия не затронута, osv-scan его не флагает; источник истины —
+      osv-scan на PR HEAD (паттерн 045).
+
 ## Process Memory
 
 ### Decisions
