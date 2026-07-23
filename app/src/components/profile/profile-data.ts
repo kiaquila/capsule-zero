@@ -3,6 +3,7 @@ import type { AppLocale } from "@/i18n/routing";
 import type { ProviderRegistry } from "@/lib/providers";
 import type { DashboardSnapshot } from "@/components/dashboard/dashboard-data";
 import { buildDashboardSnapshot } from "@/components/dashboard/dashboard-data";
+import { splitDisplayName } from "@/features/profile/display-name";
 import { readMockProfilePreferences } from "@/features/profile/mock-profile-preferences";
 
 export interface ProfileSnapshot {
@@ -73,8 +74,9 @@ export async function buildProfileSnapshot({
       readMockProfilePreferences(session.userId),
     ]);
   const fallbackNames = splitDisplayName(
-    session.name ?? providerProfile.displayName,
     session.email ?? providerProfile.email,
+    session.name,
+    providerProfile.displayName,
   );
   const names = {
     firstName: savedPreferences?.firstName ?? fallbackNames.firstName,
@@ -169,19 +171,6 @@ export async function buildProfileSnapshot({
       ],
       clothingSizes: ["", "XS", "S", "M", "L", "XL"],
     },
-  };
-}
-
-// A credentials-only sign-up (spec 048) carries no name — start from the email
-// local-part rather than presenting a fabricated identity; empty strings are
-// the honest floor (initials and username already fall back to the email).
-function splitDisplayName(displayName: string | undefined, email: string) {
-  const source = displayName?.trim() || (email.split("@")[0] ?? "");
-  const parts = source.split(/\s+/).filter(Boolean);
-
-  return {
-    firstName: parts[0] ?? "",
-    lastName: parts.slice(1).join(" "),
   };
 }
 

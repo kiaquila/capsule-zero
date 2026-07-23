@@ -3,6 +3,7 @@ import type { ProviderRegistry, WardrobeEntry } from "@/lib/providers";
 import type { AppLocale } from "@/i18n/routing";
 import type { Capsule, ColorPoint } from "@/types";
 import type { PersistedMockSession } from "@/features/auth/session";
+import { resolveDisplayName } from "@/features/profile/display-name";
 import { readMockProfilePreferences } from "@/features/profile/mock-profile-preferences";
 import { isWardrobeStatisticItem } from "@/components/wardrobe/wardrobe-statistics";
 import {
@@ -91,8 +92,13 @@ export async function buildDashboardSnapshot({
   const displayName = savedPreferences
     ? `${savedPreferences.firstName} ${savedPreferences.lastName}`.trim()
     : "";
-  const profileDisplayName = displayName || session.name || profile.displayName;
   const email = savedPreferences?.email ?? session.email ?? profile.email;
+  const profileDisplayName = resolveDisplayName(
+    email,
+    displayName,
+    session.name,
+    profile.displayName,
+  );
 
   const totalOutfits = capsule?.outfitCount ?? 0;
   const favorites = items.filter((item) => item.favorite).length;

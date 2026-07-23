@@ -14,7 +14,8 @@
 | AC-003 | тот же тест: `.auth-panel-title` Log In → Create Account после `auth-mode-switch` — passed; grep: `.auth-mode-switch` отсутствует в `app/src` | ✅ |
 | AC-004 | Живой браузер dev-стека: 375×812 — обе формы целиком (sign-up scrollHeight = clientHeight); 375×667 — форма регистрации тоже влезает целиком (542px контента при 555px доступных — fade не требуется); стресс 640×420 — fade появляется (`auth-panel-more`), scrollTop сбрасывается в 0 при смене режима, `body.style.overflow === "hidden"` пока попап открыт | ✅ |
 | AC-005 | `registration.spec.ts` — passed против прод-shape стека (Go API + Kratos + Postgres): регистрация email+password → сессия → /dashboard. `google-sign-in.spec.ts` не гонялся локально (dev-стек без Kratos OIDC-креденшелов — mock-петля живёт в CI); порядок/видимость кнопки покрыты AC-001 | ✅ (google loop — CI) |
-| Negative | Красный прогон нового теста на старом UI фиксируется при подготовке PR (TDD red-артефакт, tasks T011); регресс порядка/состава полей ловится green-ассертами | pending (PR prep) |
+| AC-006 | `profile-name-fallback.spec.ts`: API-shaped session/profile без имени → email `new.user@example.com` даёт display name `new.user`, initials `NU`; RED commit `72b8309` получил `""`, green focused Chromium — 1/1 | ✅ |
+| Negative | Красный прогон auth-popup теста на старом UI (T011) и RED `72b8309` с пустым dashboard name; регресс порядка/состава полей и API no-name path ловятся green-ассертами | ✅ |
 
 Локальные гейты на текущем HEAD: app typecheck — чисто; ESLint — 0 errors /
 91 pre-existing warnings; stylelint — 0 errors / 99 pre-existing warnings;
@@ -22,4 +23,7 @@ production build — exit 0; e2e lint — 0 errors / 3 pre-existing `.skip()`
 warnings; e2e typecheck — чисто; `check-feature-memory --worktree` — passed via
 048-триплет. Целевые Playwright-спеки (`auth-popup` + `registration`, chromium,
 против docker dev-стека) — 5/5 passed. Критерий истины для GitHub-гейтов —
-checks на PR HEAD.
+checks на PR HEAD. После merge с текущим `main`: `auth-popup` + `registration`
++ API no-name regression — 6/6 Chromium; app/e2e typecheck и quiet ESLint,
+stylelint (0 errors / 99 pre-existing warnings), production build,
+feature-memory и repository-baseline guards — passed.

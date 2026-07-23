@@ -73,8 +73,23 @@
       Close/reopen не помог; обход — ручной workflow_dispatch всех пяти
       воркфлоу (у pr-guard в dispatch-режиме сломан diff по base_ref=main —
       shallow checkout без main; на pull_request-событиях гейт зелёный).
+- [x] T017 Merge свежего `origin/main`: конфликт был только в security
+      overrides/lockfile; объединены `fast-uri 3.1.4`, `postcss 8.5.12`,
+      `sharp 0.35.3`. Поскольку main занял spec 047 для production-edge,
+      feature memory и активные ссылки auth-modal перенумерованы в 048.
+- [x] T018 Последний Codex P2: profile fallback из предыдущего раунда не
+      покрывал dashboard, который показывал пустое имя API-пользователю.
+      RED `72b8309` воспроизвёл `displayName: ""`; общий
+      `features/profile/display-name.ts` теперь обслуживает dashboard и
+      profile, focused Chromium / e2e typecheck / quiet lint — green.
 
 ## Process Memory
+
+### Dead Ends
+
+- Фикс только в `buildProfileSnapshot` устранил вымышленное имя на profile,
+  но не затронул `buildDashboardSnapshot`: второй Codex review воспроизвёл
+  пустые greeting/nav name. Fallback обязан жить в общем identity-helper.
 
 ### Decisions
 
@@ -94,8 +109,12 @@
   подобранный цвет градиента даёт грязную кромку.
 - `signUpTab` удалён из messages и тестовых фикстур; `logInTab` остался —
   это текст submit-кнопки входа.
+- Shared helper проверяет непустые trimmed candidates по приоритету
+  saved preferences → session → provider profile, затем использует email
+  local-part. Это сохраняет введённое пользователем имя и даёт честный
+  детерминированный fallback credentials-only аккаунтам.
 
-### Follow-ups
+### Known Issues
 
 - Онбординг-сбор имени после первой ценности — в русле PRODUCT-PLAN (первая
   ценность до регистрации); отдельным слайсом.

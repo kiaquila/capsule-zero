@@ -44,6 +44,11 @@
   name/country/city (и без ставшего ненужным `optionalText`).
 - `app/src/features/auth/actions.ts` — `signUpWithPasswordAction` не передаёт
   `name` провайдеру (контракт `PasswordCredentials.name?` не тронут).
+- `app/src/features/profile/display-name.ts`,
+  `app/src/components/{dashboard,profile}/*-data.ts` — общий fallback
+  display-name из email local-part, если credentials-only регистрация не дала
+  ни session name, ни profile display name; dashboard/profile не показывают
+  пустую или вымышленную идентичность.
 - `app/src/components/landing/LandingPage.tsx` — body scroll lock, пока открыт
   попап.
 - `app/src/app/globals.css` — `.auth-panel` max-height
@@ -86,3 +91,6 @@
   внизу, контент доскролливается до конца, body позади не скроллится.
 - AC-005: регистрация email+password проходит на mock и api провайдерах
   (существующие e2e), Google-флоу спека 037 не сломан.
+- AC-006: если API-backed credentials-only регистрация возвращает пустые
+  `session.name` и `profile.displayName`, dashboard/profile используют
+  непустой email local-part как display name и строят из него инициалы.
