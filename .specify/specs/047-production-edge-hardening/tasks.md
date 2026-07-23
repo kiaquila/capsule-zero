@@ -47,6 +47,11 @@
   framework patch.** The scanner reported nine fixable advisories against
   `next@16.2.6`; the dependency and lockfile moved only to `16.2.11`. The full app
   lint/CSS-lint/typecheck/production-build chain and the same OSV scanner image pass.
+- **2026-07-23 certificate validation moved from `x509 -checkhost` to
+  `verify -verify_hostname`.** Both local OpenSSL 3.6.2 and production OpenSSL 3.5.5
+  returned nonzero for the isolated apex-only mismatch, but the stronger deploy
+  precondition now uses the verification command whose exit contract covers both the
+  hostname and the certbot chain against the system trust store.
 
 ### Known Issues
 

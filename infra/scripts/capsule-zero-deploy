@@ -7,7 +7,9 @@ compose_file="docker-compose.yml"
 env_file=".env"
 state_dir="/var/lib/capsule-zero"
 nginx_sync_marker="$state_dir/last-host-nginx-sync-sha"
-host_tls_certificate="/etc/letsencrypt/live/capsulezero.app/fullchain.pem"
+host_tls_certificate="/etc/letsencrypt/live/capsulezero.app/cert.pem"
+host_tls_chain="/etc/letsencrypt/live/capsulezero.app/chain.pem"
+host_tls_ca_path="/etc/ssl/certs"
 nginx_paths=(
   /etc/nginx/conf.d/00-capsule-zero.conf
   /etc/nginx/conf.d/00-cz-hardening.conf
@@ -158,15 +160,19 @@ restore_nginx_config() {
 }
 
 verify_host_certificate() {
-  local hostname
-  [ -r "$host_tls_certificate" ] || {
-    echo "host TLS certificate is missing: $host_tls_certificate" >&2
-    return 1
-  }
+  local hostname path
+  for path in "$host_tls_certificate" "$host_tls_chain" "$host_tls_ca_path"; do
+    [ -r "$path" ] || {
+      echo "host TLS verification input is missing: $path" >&2
+      return 1
+    }
+  done
   for hostname in capsulezero.app www.capsulezero.app; do
-    if ! openssl x509 -in "$host_tls_certificate" -noout \
-      -checkhost "$hostname" >/dev/null 2>&1; then
-      echo "host TLS certificate does not cover $hostname" >&2
+    if ! openssl verify -CApath "$host_tls_ca_path" \
+      -untrusted "$host_tls_chain" \
+      -verify_hostname "$hostname" \
+      "$host_tls_certificate" >/dev/null 2>&1; then
+      echo "host TLS certificate chain does not verify for $hostname" >&2
       return 1
     fi
   done

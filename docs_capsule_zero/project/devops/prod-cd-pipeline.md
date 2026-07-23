@@ -248,8 +248,14 @@ The routine deploy wrapper verifies the live certificate before copying the dual
 vhost:
 
 ```bash
-openssl x509 -in /etc/letsencrypt/live/capsulezero.app/fullchain.pem -noout -checkhost capsulezero.app
-openssl x509 -in /etc/letsencrypt/live/capsulezero.app/fullchain.pem -noout -checkhost www.capsulezero.app
+openssl verify -CApath /etc/ssl/certs \
+  -untrusted /etc/letsencrypt/live/capsulezero.app/chain.pem \
+  -verify_hostname capsulezero.app \
+  /etc/letsencrypt/live/capsulezero.app/cert.pem
+openssl verify -CApath /etc/ssl/certs \
+  -untrusted /etc/letsencrypt/live/capsulezero.app/chain.pem \
+  -verify_hostname www.capsulezero.app \
+  /etc/letsencrypt/live/capsulezero.app/cert.pem
 ```
 
 If either check fails, expand or reissue the certificate before enabling the new vhost,
