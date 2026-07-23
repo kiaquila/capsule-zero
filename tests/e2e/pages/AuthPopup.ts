@@ -13,6 +13,10 @@ export class AuthPopup {
   readonly closeButton: Locator;
   /** "Continue with Google" social button (spec 037; leads the form since 047). */
   readonly googleButton: Locator;
+  /** Email input of whichever email-bearing form is active. */
+  readonly emailInput: Locator;
+  /** Every input of the active form (sign-up renders exactly 3, spec 047). */
+  readonly formInputs: Locator;
   /** Present only when the popup is in sign-in mode (current-password input). */
   readonly signInForm: Locator;
   /** Present only when the popup is in sign-up mode (new-password input). */
@@ -42,6 +46,8 @@ export class AuthPopup {
     this.modeSwitch = this.container.getByTestId("auth-mode-switch");
     this.closeButton = this.container.locator(".auth-close");
     this.googleButton = this.container.getByTestId("auth-google-button");
+    this.emailInput = this.container.locator('input[name="email"]');
+    this.formInputs = this.container.locator("form input");
     this.signInForm = this.container.locator(
       'input[autocomplete="current-password"]',
     );
@@ -74,7 +80,7 @@ export class AuthPopup {
 
   /** Submit the sign-in form (popup must be in sign-in mode). */
   async signIn(email: string, password: string): Promise<void> {
-    await this.container.locator('input[name="email"]').fill(email);
+    await this.emailInput.fill(email);
     await this.container.locator('input[name="password"]').fill(password);
     await this.container.locator('button[type="submit"]').click();
   }
@@ -83,7 +89,7 @@ export class AuthPopup {
    * spec 047 — profile details move to the profile screen). */
   async signUp(email: string, password: string): Promise<void> {
     await this.clickModeSwitch();
-    await this.container.locator('input[name="email"]').fill(email);
+    await this.emailInput.fill(email);
     await this.container.locator('input[name="password"]').fill(password);
     await this.container
       .locator('input[name="confirmPassword"]')

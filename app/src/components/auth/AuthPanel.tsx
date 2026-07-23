@@ -134,6 +134,11 @@ export function AuthPanel({
     panel.addEventListener("scroll", update, { passive: true });
     const observer = new ResizeObserver(update);
     observer.observe(panel);
+    // The content wrapper grows when error chips or the server message appear
+    // after the initial layout — the panel's own box stays fixed then.
+    if (panel.firstElementChild) {
+      observer.observe(panel.firstElementChild);
+    }
     return () => {
       panel.removeEventListener("scroll", update);
       observer.disconnect();
@@ -222,8 +227,7 @@ export function AuthPanel({
     setServerMessage(null);
   };
 
-  const showError = (text: string) =>
-    setServerMessage({ text, kind: "error" });
+  const showError = (text: string) => setServerMessage({ text, kind: "error" });
   const showInfo = (text: string) => setServerMessage({ text, kind: "info" });
   // Every server-side failure is shown through the localized code map — raw
   // provider text never reaches the user (spec 035 review round 2).
@@ -380,259 +384,276 @@ export function AuthPanel({
       ref={panelRef}
       style={elevatedGlassStyle}
     >
-      <div className="auth-panel-header">
-        <h2 className="auth-panel-title" id="auth-panel-title">
-          {panelTitle}
-        </h2>
-        {onClose ? (
-          <button className="auth-close" type="button" onClick={onClose} aria-label={t("close")}>
-            ×
-          </button>
-        ) : (
-          <a className="auth-close" href={`/${locale}`} aria-label={t("close")}>
-            ×
-          </a>
-        )}
-      </div>
-
-      {mode === "signIn" ? (
-        <form noValidate onSubmit={onSignIn}>
-          {googleBlock}
-          <AuthField
-            autoComplete="email"
-            error={signInForm.formState.errors.email?.message}
-            inputMode="email"
-            name="email"
-            placeholder={t("email")}
-            register={signInForm.register("email")}
-            type="email"
-          />
-          <AuthField
-            autoComplete="current-password"
-            error={signInForm.formState.errors.password?.message}
-            name="password"
-            placeholder={t("password")}
-            register={signInForm.register("password")}
-            reveal={{
-              visible: passwordVisible,
-              toggle: () => setPasswordVisible((value) => !value),
-              label: passwordVisible ? t("hidePassword") : t("showPassword"),
-            }}
-            type={passwordVisible ? "text" : "password"}
-          />
-          <div className="auth-forgot-row">
+      <div className="auth-panel-content">
+        <div className="auth-panel-header">
+          <h2 className="auth-panel-title" id="auth-panel-title">
+            {panelTitle}
+          </h2>
+          {onClose ? (
             <button
-              data-testid="auth-forgot-link"
+              className="auth-close"
               type="button"
-              onClick={() => {
-                const typedEmail = signInForm.getValues("email").trim();
-                if (typedEmail) {
-                  recoveryForm.setValue("email", typedEmail, {
-                    shouldValidate: true,
-                  });
-                }
-                switchMode("recovery");
-              }}
+              onClick={onClose}
+              aria-label={t("close")}
             >
-              {t("forgotPassword")}
+              ×
             </button>
-          </div>
-          <button
-            className="auth-primary"
-            disabled={signInForm.formState.isSubmitting}
-            type="submit"
-          >
-            {signInForm.formState.isSubmitting ? t("checking") : t("logInTab")}
-          </button>
-          <p className="auth-switch-link">
-            {t("signInLinkPrefix")}{" "}
-            <button
-              data-testid="auth-mode-switch"
-              type="button"
-              onClick={() => switchMode("signUp")}
+          ) : (
+            <a
+              className="auth-close"
+              href={`/${locale}`}
+              aria-label={t("close")}
             >
-              {t("signInLinkAction")}
-            </button>
-          </p>
-        </form>
-      ) : null}
-
-      {mode === "recovery" ? (
-        <form noValidate onSubmit={onRecoveryRequest}>
-          <p className="auth-recovery-hint">{t("recoveryHint")}</p>
-          <AuthField
-            autoComplete="email"
-            error={recoveryForm.formState.errors.email?.message}
-            inputMode="email"
-            name="recoveryEmail"
-            placeholder={t("email")}
-            register={recoveryForm.register("email")}
-            testId="recovery-email-input"
-            type="email"
-          />
-          <button
-            className="auth-primary"
-            data-testid="recovery-submit"
-            disabled={recoveryForm.formState.isSubmitting}
-            type="submit"
-          >
-            {recoveryForm.formState.isSubmitting ? t("sending") : t("recoveryCta")}
-          </button>
-          <p className="auth-switch-link">
-            <button type="button" onClick={() => switchMode("signIn")}>
-              {t("backToLogin")}
-            </button>
-          </p>
-        </form>
-      ) : null}
-
-      {mode === "recoveryCode" ? (
-        <form noValidate onSubmit={onRecoveryComplete}>
-          <p className="auth-recovery-hint">{t("recoveryCodeHint")}</p>
-          <AuthField
-            autoComplete="one-time-code"
-            error={recoveryCompleteForm.formState.errors.code?.message}
-            inputMode="numeric"
-            name="recoveryCode"
-            placeholder={t("codePlaceholder")}
-            register={recoveryCompleteForm.register("code")}
-            testId="recovery-code-input"
-            type="text"
-          />
-          <AuthField
-            autoComplete="new-password"
-            error={recoveryCompleteForm.formState.errors.newPassword?.message}
-            name="recoveryNewPassword"
-            placeholder={t("newPassword")}
-            register={recoveryCompleteForm.register("newPassword")}
-            reveal={{
-              visible: passwordVisible,
-              toggle: () => setPasswordVisible((value) => !value),
-              label: passwordVisible ? t("hidePassword") : t("showPassword"),
-            }}
-            testId="recovery-new-password-input"
-            type={passwordVisible ? "text" : "password"}
-          />
-          <AuthField
-            autoComplete="new-password"
-            error={
-              recoveryCompleteForm.formState.errors.confirmPassword?.message
-            }
-            name="recoveryConfirmPassword"
-            placeholder={t("confirmPassword")}
-            register={recoveryCompleteForm.register("confirmPassword")}
-            reveal={{
-              visible: confirmVisible,
-              toggle: () => setConfirmVisible((value) => !value),
-              label: confirmVisible ? t("hidePassword") : t("showPassword"),
-            }}
-            testId="recovery-confirm-password-input"
-            type={confirmVisible ? "text" : "password"}
-          />
-          <button
-            className="auth-primary"
-            data-testid="recovery-submit"
-            disabled={recoveryCompleteForm.formState.isSubmitting}
-            type="submit"
-          >
-            {recoveryCompleteForm.formState.isSubmitting
-              ? t("resetting")
-              : t("resetCta")}
-          </button>
-          <p className="auth-switch-link">
-            <button
-              data-testid="recovery-resend"
-              type="button"
-              onClick={resendRecoveryCode}
-            >
-              {t("resendCode")}
-            </button>
-          </p>
-          <p className="auth-switch-link">
-            <button type="button" onClick={() => switchMode("signIn")}>
-              {t("backToLogin")}
-            </button>
-          </p>
-        </form>
-      ) : null}
-
-      {mode === "signUp" ? (
-        <form noValidate onSubmit={onSignUp}>
-          {googleBlock}
-          <AuthField
-            autoComplete="email"
-            error={signUpForm.formState.errors.email?.message}
-            inputMode="email"
-            name="email"
-            placeholder={t("email")}
-            register={signUpForm.register("email")}
-            type="email"
-          />
-          <AuthField
-            autoComplete="new-password"
-            error={signUpForm.formState.errors.password?.message}
-            name="password"
-            placeholder={t("password")}
-            register={signUpForm.register("password")}
-            reveal={{
-              visible: passwordVisible,
-              toggle: () => setPasswordVisible((value) => !value),
-              label: passwordVisible ? t("hidePassword") : t("showPassword"),
-            }}
-            type={passwordVisible ? "text" : "password"}
-          />
-          <AuthField
-            autoComplete="new-password"
-            error={signUpForm.formState.errors.confirmPassword?.message}
-            name="confirmPassword"
-            placeholder={t("confirmPassword")}
-            register={signUpForm.register("confirmPassword")}
-            reveal={{
-              visible: confirmVisible,
-              toggle: () => setConfirmVisible((value) => !value),
-              label: confirmVisible ? t("hidePassword") : t("showPassword"),
-            }}
-            type={confirmVisible ? "text" : "password"}
-          />
-          <button
-            className="auth-primary"
-            disabled={signUpForm.formState.isSubmitting}
-            type="submit"
-          >
-            {signUpForm.formState.isSubmitting ? t("creating") : t("createAccountCta")}
-          </button>
-          <p className="auth-switch-link">
-            {t("logInLinkPrefix")}{" "}
-            <button
-              data-testid="auth-mode-switch"
-              type="button"
-              onClick={() => switchMode("signIn")}
-            >
-              {t("logInLinkAction")}
-            </button>
-          </p>
-        </form>
-      ) : null}
-
-      {serverMessage ? (
-        <p
-          className={cn(
-            "auth-server-message",
-            serverMessage.kind === "error" && "auth-server-message-error",
+              ×
+            </a>
           )}
-          role={serverMessage.kind === "error" ? "alert" : undefined}
-          aria-live={serverMessage.kind === "error" ? "assertive" : "polite"}
-        >
-          {serverMessage.text}
-        </p>
-      ) : null}
+        </div>
 
-      <p className="auth-terms-note">
-        {t("termsConsentPrefix")}{" "}
-        <Link href="/terms-of-use">{landing("terms")}</Link>{" "}
-        {t("termsConsentMiddle")}{" "}
-        <Link href="/privacy-policy">{landing("privacy")}</Link>
-      </p>
+        {mode === "signIn" ? (
+          <form noValidate onSubmit={onSignIn}>
+            {googleBlock}
+            <AuthField
+              autoComplete="email"
+              error={signInForm.formState.errors.email?.message}
+              inputMode="email"
+              name="email"
+              placeholder={t("email")}
+              register={signInForm.register("email")}
+              type="email"
+            />
+            <AuthField
+              autoComplete="current-password"
+              error={signInForm.formState.errors.password?.message}
+              name="password"
+              placeholder={t("password")}
+              register={signInForm.register("password")}
+              reveal={{
+                visible: passwordVisible,
+                toggle: () => setPasswordVisible((value) => !value),
+                label: passwordVisible ? t("hidePassword") : t("showPassword"),
+              }}
+              type={passwordVisible ? "text" : "password"}
+            />
+            <div className="auth-forgot-row">
+              <button
+                data-testid="auth-forgot-link"
+                type="button"
+                onClick={() => {
+                  const typedEmail = signInForm.getValues("email").trim();
+                  if (typedEmail) {
+                    recoveryForm.setValue("email", typedEmail, {
+                      shouldValidate: true,
+                    });
+                  }
+                  switchMode("recovery");
+                }}
+              >
+                {t("forgotPassword")}
+              </button>
+            </div>
+            <button
+              className="auth-primary"
+              disabled={signInForm.formState.isSubmitting}
+              type="submit"
+            >
+              {signInForm.formState.isSubmitting
+                ? t("checking")
+                : t("logInTab")}
+            </button>
+            <p className="auth-switch-link">
+              {t("signInLinkPrefix")}{" "}
+              <button
+                data-testid="auth-mode-switch"
+                type="button"
+                onClick={() => switchMode("signUp")}
+              >
+                {t("signInLinkAction")}
+              </button>
+            </p>
+          </form>
+        ) : null}
+
+        {mode === "recovery" ? (
+          <form noValidate onSubmit={onRecoveryRequest}>
+            <p className="auth-recovery-hint">{t("recoveryHint")}</p>
+            <AuthField
+              autoComplete="email"
+              error={recoveryForm.formState.errors.email?.message}
+              inputMode="email"
+              name="recoveryEmail"
+              placeholder={t("email")}
+              register={recoveryForm.register("email")}
+              testId="recovery-email-input"
+              type="email"
+            />
+            <button
+              className="auth-primary"
+              data-testid="recovery-submit"
+              disabled={recoveryForm.formState.isSubmitting}
+              type="submit"
+            >
+              {recoveryForm.formState.isSubmitting
+                ? t("sending")
+                : t("recoveryCta")}
+            </button>
+            <p className="auth-switch-link">
+              <button type="button" onClick={() => switchMode("signIn")}>
+                {t("backToLogin")}
+              </button>
+            </p>
+          </form>
+        ) : null}
+
+        {mode === "recoveryCode" ? (
+          <form noValidate onSubmit={onRecoveryComplete}>
+            <p className="auth-recovery-hint">{t("recoveryCodeHint")}</p>
+            <AuthField
+              autoComplete="one-time-code"
+              error={recoveryCompleteForm.formState.errors.code?.message}
+              inputMode="numeric"
+              name="recoveryCode"
+              placeholder={t("codePlaceholder")}
+              register={recoveryCompleteForm.register("code")}
+              testId="recovery-code-input"
+              type="text"
+            />
+            <AuthField
+              autoComplete="new-password"
+              error={recoveryCompleteForm.formState.errors.newPassword?.message}
+              name="recoveryNewPassword"
+              placeholder={t("newPassword")}
+              register={recoveryCompleteForm.register("newPassword")}
+              reveal={{
+                visible: passwordVisible,
+                toggle: () => setPasswordVisible((value) => !value),
+                label: passwordVisible ? t("hidePassword") : t("showPassword"),
+              }}
+              testId="recovery-new-password-input"
+              type={passwordVisible ? "text" : "password"}
+            />
+            <AuthField
+              autoComplete="new-password"
+              error={
+                recoveryCompleteForm.formState.errors.confirmPassword?.message
+              }
+              name="recoveryConfirmPassword"
+              placeholder={t("confirmPassword")}
+              register={recoveryCompleteForm.register("confirmPassword")}
+              reveal={{
+                visible: confirmVisible,
+                toggle: () => setConfirmVisible((value) => !value),
+                label: confirmVisible ? t("hidePassword") : t("showPassword"),
+              }}
+              testId="recovery-confirm-password-input"
+              type={confirmVisible ? "text" : "password"}
+            />
+            <button
+              className="auth-primary"
+              data-testid="recovery-submit"
+              disabled={recoveryCompleteForm.formState.isSubmitting}
+              type="submit"
+            >
+              {recoveryCompleteForm.formState.isSubmitting
+                ? t("resetting")
+                : t("resetCta")}
+            </button>
+            <p className="auth-switch-link">
+              <button
+                data-testid="recovery-resend"
+                type="button"
+                onClick={resendRecoveryCode}
+              >
+                {t("resendCode")}
+              </button>
+            </p>
+            <p className="auth-switch-link">
+              <button type="button" onClick={() => switchMode("signIn")}>
+                {t("backToLogin")}
+              </button>
+            </p>
+          </form>
+        ) : null}
+
+        {mode === "signUp" ? (
+          <form noValidate onSubmit={onSignUp}>
+            {googleBlock}
+            <AuthField
+              autoComplete="email"
+              error={signUpForm.formState.errors.email?.message}
+              inputMode="email"
+              name="email"
+              placeholder={t("email")}
+              register={signUpForm.register("email")}
+              type="email"
+            />
+            <AuthField
+              autoComplete="new-password"
+              error={signUpForm.formState.errors.password?.message}
+              name="password"
+              placeholder={t("password")}
+              register={signUpForm.register("password")}
+              reveal={{
+                visible: passwordVisible,
+                toggle: () => setPasswordVisible((value) => !value),
+                label: passwordVisible ? t("hidePassword") : t("showPassword"),
+              }}
+              type={passwordVisible ? "text" : "password"}
+            />
+            <AuthField
+              autoComplete="new-password"
+              error={signUpForm.formState.errors.confirmPassword?.message}
+              name="confirmPassword"
+              placeholder={t("confirmPassword")}
+              register={signUpForm.register("confirmPassword")}
+              reveal={{
+                visible: confirmVisible,
+                toggle: () => setConfirmVisible((value) => !value),
+                label: confirmVisible ? t("hidePassword") : t("showPassword"),
+              }}
+              type={confirmVisible ? "text" : "password"}
+            />
+            <button
+              className="auth-primary"
+              disabled={signUpForm.formState.isSubmitting}
+              type="submit"
+            >
+              {signUpForm.formState.isSubmitting
+                ? t("creating")
+                : t("createAccountCta")}
+            </button>
+            <p className="auth-switch-link">
+              {t("logInLinkPrefix")}{" "}
+              <button
+                data-testid="auth-mode-switch"
+                type="button"
+                onClick={() => switchMode("signIn")}
+              >
+                {t("logInLinkAction")}
+              </button>
+            </p>
+          </form>
+        ) : null}
+
+        {serverMessage ? (
+          <p
+            className={cn(
+              "auth-server-message",
+              serverMessage.kind === "error" && "auth-server-message-error",
+            )}
+            role={serverMessage.kind === "error" ? "alert" : undefined}
+            aria-live={serverMessage.kind === "error" ? "assertive" : "polite"}
+          >
+            {serverMessage.text}
+          </p>
+        ) : null}
+
+        <p className="auth-terms-note">
+          {t("termsConsentPrefix")}{" "}
+          <Link href="/terms-of-use">{landing("terms")}</Link>{" "}
+          {t("termsConsentMiddle")}{" "}
+          <Link href="/privacy-policy">{landing("privacy")}</Link>
+        </p>
+      </div>
     </section>
   );
 }

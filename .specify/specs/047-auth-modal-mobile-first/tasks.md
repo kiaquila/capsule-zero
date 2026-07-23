@@ -49,12 +49,30 @@
       первым в ветке, реализация — следующим коммитом; green-прогоны — в
       plan.md § Verification.
 
-- [x] T014 Post-push OSV-сигнал на PR HEAD: GHSA-6g55-p6wh-862q (postcss
-      8.5.10, High 7.5) — override в app/package.json поднят до fixed 8.5.12,
-      lockfile обновлён, stylelint/production build перепроверены. npm-audit
-      дополнительно шумит на sharp/libvips (GHSA-f88m-g3jw-g9cj) — по базе OSV
-      resolved-версия не затронута, osv-scan его не флагает; источник истины —
-      osv-scan на PR HEAD (паттерн 045).
+- [x] T014 Post-push OSV-сигналы на PR HEAD, две волны за ~20 минут:
+      (1) GHSA-6g55-p6wh-862q (postcss 8.5.10, High 7.5) — override поднят до
+      fixed 8.5.12; (2) свежая публикация пачки адвайзори — next 16.2.6
+      (5 GHSA, до 8.3) → 16.2.11 и транзитивный sharp 0.34.5
+      (GHSA-f88m-g3jw-g9cj libvips) → override 0.35.0 (next держал 0.34.x).
+      После бампов: typecheck/eslint/stylelint/production build — зелёные.
+      Урок: npm-audit увидел sharp/libvips раньше, чем OSV его ингестнул —
+      расхождение баз временное, гейт остаётся osv-scan на PR HEAD.
+- [x] T015 Codex-ревью (нативное, триггер @codex review от владельца): 4
+      замечания, все отработаны. P2 fabricated-name: buildProfileSnapshot
+      больше не подставляет "Stage 1 Mock User" — фолбэк имени из local-part
+      email, пустые строки как честное дно (инициалы/username уже деградируют
+      к email). P2 overflow-recompute: ResizeObserver дополнительно наблюдает
+      content-обёртку панели (.auth-panel-content) — чипы ошибок/server
+      message меняют высоту контента без изменения бокса панели. P2 стейл-
+      таблица f-002-auth.md (Register-строка + Social Auth placement). P3
+      POM: emailInput/formInputs переехали в AuthPopup, спека не строит
+      селекторы сама.
+- [x] T016 Инфраструктурный инцидент GitHub: после пуша f9e53c4 события
+      pull_request перестали доставляться в Actions (check-suite от
+      github-actions не создавался; issue_comment при этом работал).
+      Close/reopen не помог; обход — ручной workflow_dispatch всех пяти
+      воркфлоу (у pr-guard в dispatch-режиме сломан diff по base_ref=main —
+      shallow checkout без main; на pull_request-событиях гейт зелёный).
 
 ## Process Memory
 

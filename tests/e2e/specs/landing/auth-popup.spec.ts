@@ -56,9 +56,8 @@ test.describe("Landing — auth popup", () => {
     );
 
     await expect(landing.auth.googleButton).toBeVisible();
-    const emailInput = landing.auth.container.locator('input[name="email"]');
     const googleBox = await landing.auth.googleButton.boundingBox();
-    const emailBox = await emailInput.boundingBox();
+    const emailBox = await landing.auth.emailInput.boundingBox();
     expect(googleBox).not.toBeNull();
     expect(emailBox).not.toBeNull();
     expect(googleBox!.y + googleBox!.height).toBeLessThanOrEqual(emailBox!.y);
@@ -70,6 +69,6 @@ test.describe("Landing — auth popup", () => {
 
     // Sign-up asks for credentials only (profile details move to the profile
     // screen): email, password, confirm — no name/country/city inputs.
-    await expect(landing.auth.container.locator("form input")).toHaveCount(3);
+    await expect(landing.auth.formInputs).toHaveCount(3);
   });
 });

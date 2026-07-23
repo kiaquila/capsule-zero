@@ -74,6 +74,7 @@ export async function buildProfileSnapshot({
     ]);
   const fallbackNames = splitDisplayName(
     session.name ?? providerProfile.displayName,
+    session.email ?? providerProfile.email,
   );
   const names = {
     firstName: savedPreferences?.firstName ?? fallbackNames.firstName,
@@ -171,15 +172,17 @@ export async function buildProfileSnapshot({
   };
 }
 
-function splitDisplayName(displayName: string | undefined) {
-  const parts = (displayName ?? "Stage 1 Mock User")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-  const firstName = parts[0] ?? "Stage";
-  const lastName = parts.slice(1).join(" ") || "User";
+// A credentials-only sign-up (spec 047) carries no name — start from the email
+// local-part rather than presenting a fabricated identity; empty strings are
+// the honest floor (initials and username already fall back to the email).
+function splitDisplayName(displayName: string | undefined, email: string) {
+  const source = displayName?.trim() || (email.split("@")[0] ?? "");
+  const parts = source.split(/\s+/).filter(Boolean);
 
-  return { firstName, lastName };
+  return {
+    firstName: parts[0] ?? "",
+    lastName: parts.slice(1).join(" "),
+  };
 }
 
 function buildInitials(value: string) {

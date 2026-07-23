@@ -34,14 +34,14 @@
 
 | State                 | Description               | What user sees                                     |
 | --------------------- | ------------------------- | -------------------------------------------------- |
-| Register              | Default registration form | Email, password, name fields                       |
+| Register              | Default registration form | Email, password, confirm-password fields (spec 047) |
 | Login                 | Login form                | Email, password fields + "Forgot password"         |
 | Validating            | Real-time field check     | Inline validation messages (not popups)            |
 | Submitting            | Form submitted            | Disabled button + loading indicator                |
 | Error                 | Validation/server error   | Inline error messages (signal red #FF5449 — Q4, 2026-07-16) |
 | Success               | Auth complete             | Redirect to Dashboard                              |
 | Recovery              | Forgot password           | Email input for password reset                     |
-| Social Auth           | Google sign-in (spec 037) | "Continue with Google" under the primary CTA; failed callback lands on /auth with a localized error. Apple stays Stage 2 |
+| Social Auth           | Google sign-in (spec 037) | "Continue with Google" leads the form above an "or" divider (spec 047); failed callback lands on /auth with a localized error. Apple stays Stage 2 |
 
 ## Acceptance Criteria
 
