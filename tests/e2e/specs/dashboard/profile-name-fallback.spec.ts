@@ -31,6 +31,18 @@ type DashboardSnapshotBuilder = (options: {
   };
 }>;
 
+type TestRegistry = Parameters<DashboardSnapshotBuilder>[0]["registry"] & {
+  auth: {
+    signUpWithPassword(credentials: {
+      email: string;
+      password: string;
+      locale: "en" | "ru";
+    }): Promise<{
+      user: { id: string; email: string; name?: string };
+    } | null>;
+  };
+};
+
 const appRoot = path.resolve(process.cwd(), "../../app");
 const appModuleLoader = createJiti(import.meta.url, {
   alias: {
@@ -79,5 +91,34 @@ test.describe("Dashboard — credentials-only profile name", () => {
 
     expect(snapshot.profile.displayName).toBe("new.user");
     expect(snapshot.profile.initials).toBe("NU");
+  });
+
+  test("does not replace an absent mock registration name with the founder fixture", async () => {
+    const dashboardData = (await appModuleLoader.import(
+      "../../../../app/src/components/dashboard/dashboard-data",
+    )) as { buildDashboardSnapshot: DashboardSnapshotBuilder };
+    const mockProvider = (await appModuleLoader.import(
+      "../../../../app/src/lib/providers/mock",
+    )) as { createMockProviderRegistry: () => TestRegistry };
+    const registry = mockProvider.createMockProviderRegistry();
+    const session = await registry.auth.signUpWithPassword({
+      email: "mock.user@example.com",
+      password: "MockPass123!",
+      locale: "en",
+    });
+
+    expect(session).not.toBeNull();
+    const snapshot = await dashboardData.buildDashboardSnapshot({
+      registry,
+      session: {
+        userId: session!.user.id,
+        email: session!.user.email,
+        name: session!.user.name,
+      },
+      locale: "en",
+    });
+
+    expect(snapshot.profile.displayName).toBe("mock.user");
+    expect(snapshot.profile.initials).toBe("MU");
   });
 });
