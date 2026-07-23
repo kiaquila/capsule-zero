@@ -20,7 +20,7 @@ test.describe("Auth — registration", () => {
     await landing.dismissCookieBannerIfPresent();
     await landing.openAuth();
 
-    await landing.auth.signUp(uniqueEmail("reg"), PASSWORDS.initial, "E2E");
+    await landing.auth.signUp(uniqueEmail("reg"), PASSWORDS.initial);
 
     await page.waitForURL(/\/(en|ru)\/dashboard/, { timeout: 25_000 });
     await expect(page).toHaveURL(/\/dashboard/);

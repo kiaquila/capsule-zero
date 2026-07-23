@@ -3,6 +3,7 @@ import type { AppLocale } from "@/i18n/routing";
 import type { ProviderRegistry } from "@/lib/providers";
 import type { DashboardSnapshot } from "@/components/dashboard/dashboard-data";
 import { buildDashboardSnapshot } from "@/components/dashboard/dashboard-data";
+import { splitDisplayName } from "@/features/profile/display-name";
 import { readMockProfilePreferences } from "@/features/profile/mock-profile-preferences";
 
 export interface ProfileSnapshot {
@@ -73,7 +74,9 @@ export async function buildProfileSnapshot({
       readMockProfilePreferences(session.userId),
     ]);
   const fallbackNames = splitDisplayName(
-    session.name ?? providerProfile.displayName,
+    session.email ?? providerProfile.email,
+    session.name,
+    providerProfile.displayName,
   );
   const names = {
     firstName: savedPreferences?.firstName ?? fallbackNames.firstName,
@@ -169,17 +172,6 @@ export async function buildProfileSnapshot({
       clothingSizes: ["", "XS", "S", "M", "L", "XL"],
     },
   };
-}
-
-function splitDisplayName(displayName: string | undefined) {
-  const parts = (displayName ?? "Stage 1 Mock User")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-  const firstName = parts[0] ?? "Stage";
-  const lastName = parts.slice(1).join(" ") || "User";
-
-  return { firstName, lastName };
 }
 
 function buildInitials(value: string) {

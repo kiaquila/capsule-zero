@@ -17,8 +17,8 @@
 ## User Flow — Registration
 
 1. User selects the hero CTA (temporary route from landing) or opens the direct auth URL
-2. Glassmorphic auth form displayed with email+password fields
-3. Optional location field (country/city) — skippable, does not block registration
+2. Glassmorphic auth form displayed — Google button first (when enabled), then email+password+confirm fields
+3. Credentials only (spec 048): name/country/city are not asked at sign-up — they are edited later on the profile screen and stay optional
 4. Real-time inline validation as user types
 5. On success → redirect to Dashboard
 
@@ -34,20 +34,21 @@
 
 | State                 | Description               | What user sees                                     |
 | --------------------- | ------------------------- | -------------------------------------------------- |
-| Register              | Default registration form | Email, password, name fields                       |
+| Register              | Default registration form | Email, password, confirm-password fields (spec 048) |
 | Login                 | Login form                | Email, password fields + "Forgot password"         |
 | Validating            | Real-time field check     | Inline validation messages (not popups)            |
 | Submitting            | Form submitted            | Disabled button + loading indicator                |
 | Error                 | Validation/server error   | Inline error messages (signal red #FF5449 — Q4, 2026-07-16) |
 | Success               | Auth complete             | Redirect to Dashboard                              |
 | Recovery              | Forgot password           | Email input for password reset                     |
-| Social Auth           | Google sign-in (spec 037) | "Continue with Google" under the primary CTA; failed callback lands on /auth with a localized error. Apple stays Stage 2 |
+| Social Auth           | Google sign-in (spec 037) | "Continue with Google" leads the form above an "or" divider (spec 048); failed callback lands on /auth with a localized error. Apple stays Stage 2 |
 
 ## Acceptance Criteria
 
 1. Stage 1 glassmorphic styling with email+password auth only
 2. Real-time inline validation (no alert popups)
-3. Optional location field — registration not blocked if skipped
+3. Registration asks only for email, password, and password confirmation;
+   optional name/location data is collected later on the profile screen (spec 048)
 4. Successful registration → redirect to Dashboard
 5. Login form with switcher to registration
 6. "Forgot password" → email recovery flow

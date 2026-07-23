@@ -41,7 +41,7 @@ Implementation rules:
 - Google sign-in is active in v0.1 (spec 037) through the Kratos **native-app OIDC flow with session-token exchange** — not the browser flow — because sessions are token-based and the edge keeps Kratos public closed except for the exact `/self-service/methods/oidc/callback/google` path. The Go API owns `/api/auth/providers`, `/api/auth/google/start`, and `/api/auth/google/complete`; provider credentials enter only via the host env file (`SELFSERVICE_METHODS_OIDC_CONFIG_PROVIDERS`), and everything defaults to off (`AUTH_GOOGLE_ENABLED=false`). Account linking for duplicate emails and auto-verified Google addresses are recorded follow-ups (spec 037 Known Issues). Operator runbook: `docs_capsule_zero/project/devops/google-oauth-setup.md`. Apple Sign-In stays behind the Stage 2 social-auth integration gate.
 - Configure mobile deep links for OAuth callbacks in Stage 2 (React Native submits the Google SDK `id_token` to the same Kratos provider config; Kratos validates the flow). Payment-return deep links are deferred — v0.1 mobile has no purchase CTA.
 - Persist language preference on `profiles.language` (allowed values: `en`, `ru`).
-- Persist optional `country` and `city` on `profiles`, but never block registration if absent.
+- Persist optional `country` and `city` on `profiles`; the sign-up form no longer collects them (spec 048) — they are edited on the profile screen and never block registration.
 - Use inline UI errors with the Capsule Zero error accent `#FF5449` (signal red — Q4, 2026-07-16; the former yellow `#FFD600` is retired); no alert popups.
 - Production secrets (Kratos cookie/session secret, Resend API key) live only in the droplet's encrypted `.env` and provider dashboards.
 

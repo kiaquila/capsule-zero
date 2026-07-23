@@ -7,12 +7,6 @@ export interface AuthValidationMessages {
   invalidCode: string;
 }
 
-const optionalText = z
-  .string()
-  .trim()
-  .transform((value) => (value.length > 0 ? value : undefined))
-  .optional();
-
 export function createSignInSchema(messages: AuthValidationMessages) {
   return z.object({
     email: z.string().trim().email(messages.invalidEmail),
@@ -20,15 +14,14 @@ export function createSignInSchema(messages: AuthValidationMessages) {
   });
 }
 
+// Sign-up asks only for credentials (spec 048) — profile details (name,
+// country, city) are collected later on the profile screen.
 export function createSignUpSchema(messages: AuthValidationMessages) {
   return z
     .object({
       email: z.string().trim().email(messages.invalidEmail),
       password: z.string().min(8, messages.weakPassword),
       confirmPassword: z.string().min(8, messages.weakPassword),
-      name: optionalText,
-      country: optionalText,
-      city: optionalText,
     })
     .refine((data) => data.password === data.confirmPassword, {
       path: ["confirmPassword"],

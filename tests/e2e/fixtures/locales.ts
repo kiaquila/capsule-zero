@@ -23,12 +23,14 @@ export const landingCopy = {
 
 export const authCopy = {
   en: {
-    signUpTab: "Sign Up",
+    signInTitle: "Log In",
+    signUpTitle: "Create Account",
     logInTab: "Log In",
     close: "Close",
   },
   ru: {
-    signUpTab: "Зарегистрироваться",
+    signInTitle: "Вход",
+    signUpTitle: "Регистрация",
     logInTab: "Войти",
     close: "Закрыть",
   },

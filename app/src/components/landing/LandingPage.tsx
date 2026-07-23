@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 import { openCookieSettings } from "@/lib/cookie-consent";
@@ -15,6 +15,21 @@ export function LandingPage() {
   const t = useTranslations("landing");
   const locale = useLocale();
   const [authMode, setAuthMode] = useState<LandingAuthMode | null>(null);
+
+  // Lock the page behind the auth popup: on touch devices the swipe otherwise
+  // chains to the body and the panel's own (hidden-scrollbar) scroll never
+  // engages, leaving the form bottom unreachable.
+  useEffect(() => {
+    if (!authMode) {
+      return;
+    }
+    const { style } = document.body;
+    const previousOverflow = style.overflow;
+    style.overflow = "hidden";
+    return () => {
+      style.overflow = previousOverflow;
+    };
+  }, [authMode]);
 
   return (
     <div className="cz-page">

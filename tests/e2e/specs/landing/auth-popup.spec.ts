@@ -1,4 +1,5 @@
 import { expect, test } from "../../fixtures/base";
+import { authCopy } from "../../fixtures/locales";
 
 test.describe("Landing — auth popup", () => {
   test.beforeEach(async ({ landing }) => {
@@ -40,5 +41,34 @@ test.describe("Landing — auth popup", () => {
     await landing.auth.clickModeSwitch();
 
     await expect(landing.auth.signUpForm).toBeVisible();
+  });
+
+  // Spec 048: the header titles the active mode; the Google button leads the
+  // form so the primary path stays above the mobile fold.
+  test("panel is titled per mode and the Google button sits above the email field", async ({
+    landing,
+    appLocale,
+  }) => {
+    await landing.openAuth();
+
+    await expect(landing.auth.panelTitle).toHaveText(
+      authCopy[appLocale].signInTitle,
+    );
+
+    await expect(landing.auth.googleButton).toBeVisible();
+    const googleBox = await landing.auth.googleButton.boundingBox();
+    const emailBox = await landing.auth.emailInput.boundingBox();
+    expect(googleBox).not.toBeNull();
+    expect(emailBox).not.toBeNull();
+    expect(googleBox!.y + googleBox!.height).toBeLessThanOrEqual(emailBox!.y);
+
+    await landing.auth.clickModeSwitch();
+    await expect(landing.auth.panelTitle).toHaveText(
+      authCopy[appLocale].signUpTitle,
+    );
+
+    // Sign-up asks for credentials only (profile details move to the profile
+    // screen): email, password, confirm — no name/country/city inputs.
+    await expect(landing.auth.formInputs).toHaveCount(3);
   });
 });

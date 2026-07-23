@@ -100,16 +100,14 @@
 
 | Element | EN | ES-AR | RU |
 |---------|-----|-------|-----|
-| Tab: Sign Up | Sign Up | Registrarse | Зарегистрироваться |
-| Tab: Log In | Log In | Iniciar sesión | Войти |
+| Panel title: Sign Up | Create Account | Crear Cuenta | Регистрация |
+| Panel title: Log In | Log In | Iniciar sesión | Вход |
 | Placeholder: Email | Email | Email | Email |
 | Placeholder: Password | Password | Contraseña | Пароль |
-| Placeholder: Confirm password | Confirm password * | Confirmá tu contraseña * | Подтвердите пароль * |
-| Placeholder: Name | Name (optional) | Nombre (opcional) | Имя (необязательно) |
+| Placeholder: Confirm password | Confirm password | Confirmá tu contraseña | Подтвердите пароль |
 | Forgot password | Forgot password? | ¿Olvidaste tu contraseña? | Забыли пароль? |
 | Sign in link | New here? Create an account | ¿Primera vez? Creá una cuenta | Впервые здесь? Создать аккаунт |
 | Log in link | Already have an account? Log in | ¿Ya tenés cuenta? Iniciá sesión | Уже есть аккаунт? Войдите |
-| Required note | Required fields are marked * | Los campos obligatorios están marcados * | Обязательные поля отмечены * |
 | Create account CTA | Create Account | Crear Cuenta | Создать аккаунт |
 | Social divider | or | o | или |
 | Social: Google | Continue with Google | Continuar con Google | Продолжить с Google |
