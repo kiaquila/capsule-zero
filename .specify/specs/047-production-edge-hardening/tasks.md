@@ -13,6 +13,8 @@
 - [x] Fail closed before installing the dual-host vhost unless the live certificate
   covers both public hostnames.
 - [x] Enable encrypted daily off-site backups after the restore drill.
+- [x] Upgrade Next.js from `16.2.6` to the OSV-fixed `16.2.11` patch after the
+  corrected PR head exposed the newly published advisories.
 - [x] Address the first Codex review findings and prepare the corrected head for the
   required current-head checks and second Codex review.
 
@@ -41,6 +43,10 @@
   boundary.** The upload-only key still cannot read or delete data. The uploader emits a
   fixed local header set with no caller-controlled metadata, while encryption, schedule,
   retention, and a full restore drill close the remaining activation gates.
+- **2026-07-23 the failing current-head OSV gate became the regression test for a
+  framework patch.** The scanner reported nine fixable advisories against
+  `next@16.2.6`; the dependency and lockfile moved only to `16.2.11`. The full app
+  lint/CSS-lint/typecheck/production-build chain and the same OSV scanner image pass.
 
 ### Known Issues
 

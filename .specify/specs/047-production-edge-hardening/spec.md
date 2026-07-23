@@ -28,6 +28,8 @@ must not silently block an HTTP method used by `docs_capsule_zero/adr/openapi.ya
 - Daily `age`-encrypted off-site backup automation using the existing upload-only
   Object Storage policy, a fixed uploader header set, Object Lock retention, and an
   off-server decryption key.
+- The exact Next.js patch update required to clear the current-head OSV security
+  gate; no framework migration or application behavior change.
 - Actualization of current architecture, runtime, operator, and feature-memory docs.
 
 ### Out
@@ -54,7 +56,9 @@ must not silently block an HTTP method used by `docs_capsule_zero/adr/openapi.ya
 - The backup credential cannot read, list, overwrite, or delete stored backups, and the
   uploader accepts no caller-controlled metadata or Object Lock headers.
 
-TDD waiver: this slice changes infrastructure, delivery wiring, and documentation only.
-Per the repository testing contract, validation uses config checks, isolated nginx
-probes, live read-only edge/host checks, and GitHub merge gates rather than a
-failing-application-test-first commit.
+TDD posture: the infrastructure, delivery wiring, and documentation changes use config
+checks, isolated nginx probes, live read-only edge/host checks, and GitHub merge gates
+under the repository's infrastructure waiver. No application behavior changed. The
+security-only Next.js patch was preceded by the failing current-head OSV scan and is
+validated by the same scanner plus the full app lint, CSS lint, typecheck, and production
+build chain.

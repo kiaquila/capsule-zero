@@ -31,5 +31,5 @@ caller input.
 | 6 | Operator Tailscale SSH and live nginx configuration work | `tailscale ping cz`; read-only `ssh cz 'sudo nginx -t'`; repository-managed nginx files match the live host |
 | 7 | Encrypted backup automation is scheduled and its restore path was proven before enablement | Read-only `systemctl status capsule-zero-backup.service`; `systemctl list-timers capsule-zero-backup.timer`; live operator restore-drill evidence recorded with the rollout |
 | 8 | Active architecture and operator docs describe the deployed topology | Targeted drift scan across AGENTS/CLAUDE, constitution, ADR-001, active runtime specs, architecture summaries, backend docs, and devops runbooks |
-| 9 | Repository validation passes | `git diff --check`; `node scripts/check-repo-baseline.mjs`; `node scripts/check-feature-memory.mjs --worktree` |
+| 9 | Repository and security validation passes | `git diff --check`; `node scripts/check-repo-baseline.mjs`; `node scripts/check-feature-memory.mjs --worktree`; `cd app && npm run ci:check`; OSV scanner v2.3.5 recursive scan |
 | 10 | Current PR head is merge-ready | PR #94 required checks `baseline-checks`, `guard`, `AI Review`, `test`, and `osv-scan` green; no unresolved blocking review thread; merge state clean |
