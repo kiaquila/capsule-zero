@@ -18,7 +18,8 @@ spec 040 adds the private Hetzner Object Storage adapter, health dependency,
 and unattached original-photo upload foundation. Redis, item attachment,
 public-catalog behavior, backups, and the remaining product domains continue
 in their own slices. The production server is a Hetzner CX23 (spec 033), and
-the Cloudflare front-door/CDN remains deferred to Stage 2. The `/app` frontend
+the Cloudflare/Tailscale production edge plus encrypted backup automation are
+active (spec 047). The `/app` frontend
 stays; its frozen Supabase provider is replaced domain by domain with the real
 `api` provider.
 

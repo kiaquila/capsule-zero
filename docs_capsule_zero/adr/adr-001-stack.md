@@ -7,7 +7,7 @@
 
 ## Status
 
-Accepted (rewritten 2026-06-27 for the production-stack pivot; API-gateway row updated 2026-06-28 from Traefik to nginx; v0.1 slim-runtime rows aligned with ADR-007 on 2026-07-01; storage row revised 2026-07-10 from DigitalOcean Spaces to Hetzner Object Storage).
+Accepted (rewritten 2026-06-27 for the production-stack pivot; API-gateway row updated 2026-06-28 from Traefik to nginx; v0.1 slim-runtime rows aligned with ADR-007 on 2026-07-01; storage row revised 2026-07-10 from DigitalOcean Spaces to Hetzner Object Storage; Cloudflare/Tailscale production edge activated 2026-07-22 in spec 047).
 
 ## Context
 
@@ -24,7 +24,7 @@ Capsule Zero is targeting production-grade v0.1 directly. There is no Stage 1 mo
 - coins-only monetization through Lava.top one-time purchases — coins and image enhancement are in the v0.2 backlog; v0.1 ships with a Lava.top stub
 - a single Hetzner Cloud server running docker-compose with every service declared explicitly (migrated from DigitalOcean on 2026-07-02, spec 033 — the single-server docker-compose shape is unchanged)
 - self-hosted observability under tight RAM budget (no Sentry/Prometheus in v0.1)
-- a Cloudflare front-door for DDoS protection and CDN (activation deferred to Stage 2 — founder decision 2026-07-02; v0.1 object storage does not assume a CDN)
+- an active Cloudflare application front-door for DDoS protection and CDN, without assuming that native Hetzner Object Storage catalog URLs share that CDN
 
 The previous Phase 4 stack (Supabase / Vercel / Flutter / Photoroom / mock-first Stage 1) is dropped before any product code derived from it lands in production. `/app` remains the canonical provider-abstracted Next.js frontend; the retired Supabase provider inside it is removed domain by domain as the Go API absorbs each bounded context.
 
@@ -42,10 +42,10 @@ Adopt the following production stack:
 | Database                 | PostgreSQL 16 with Postgres FTS in v0.1; pgvector and PgBouncer are deferred by ADR-007 until semantic-search and connection-pressure triggers fire               |
 | Cache / sessions / queue | Redis 7 with a Redis-based job queue (River or asynq) — Kafka is deferred until services split                                                                    |
 | Auth                     | Ory Kratos email/password in v0.1; Google OAuth and Apple Sign-In in Stage 2                                                                                      |
-| File storage             | Hetzner Object Storage (S3-compatible); private assets via signed URLs, public catalog via native object URL until Stage-2 CDN/front-door activation              |
+| File storage             | Hetzner Object Storage (S3-compatible); private assets via signed URLs, public catalog via native object URLs until a separate catalog-CDN slice                 |
 | Image processing         | Self-hosted Capsule Zero model behind a Go worker, deferred to Stage 2                                                                                            |
 | Email                    | Resend for transactional email (verification, password reset, security notifications), MailHog for local dev                                                      |
-| DNS / anti-DDoS          | Spaceship registrar; Cloudflare nameservers + proxy on `capsulezero.app` are **deferred to Stage 2** (founder decision 2026-07-02, spec 033) — v0.1 pre-launch runs direct DNS A records to the host nginx edge |
+| DNS / anti-DDoS          | Spaceship registrar; Cloudflare authoritative DNS + proxy on the apex and `www`, Full (strict) TLS, DNSSEC, default WAF/DDoS controls, and Cloudflare-only origin web ingress are active since 2026-07-22 (spec 047) |
 | Observability            | syslog file logs + OpenTelemetry trace export in v0.1; Grafana dashboards, Sentry, and Prometheus are deferred                                                    |
 | Hosting                  | Single Hetzner Cloud server (CX23: 2 vCPU / 4 GB / 40 GB, Ubuntu 26.04) running docker-compose — migrated from the DigitalOcean droplet 2026-07-02 (spec 033)     |
 | Payments                 | Lava.top one-time product payments on web; stubbed in v0.1, integrated after core wardrobe and capsule flows ship                                                 |
@@ -81,12 +81,13 @@ not for unbounded wardrobe media growth. Hetzner Cloud Volumes are block storage
 for mounted server files and bounded scratch/model cache; they are not the
 browser/mobile signed-upload boundary and are attachable to only one server at a
 time. DigitalOcean Spaces is superseded because it would keep storage in the old
-provider after compute moved away. Cloudflare R2 remains a Stage-2 candidate if
-the Cloudflare front-door becomes the primary edge, but adopting it now would
-pull storage into a provider that v0.1 deliberately keeps deferred.
+provider after compute moved away. Cloudflare R2 remains a future
+catalog/storage candidate, but activating Cloudflare as the application front
+door does not justify moving storage again without a measured cost or delivery
+benefit.
 
 Two Hetzner constraints shape implementation: Object Storage has no built-in CDN,
-so v0.1 public catalog assets use native object URLs until Stage 2; and there is
+so v0.1 public catalog assets use native object URLs until a separate catalog-CDN slice; and there is
 no default data-at-rest encryption, so database backups are encrypted client-side
 and personal-photo storage requires an explicit privacy/security acceptance or a
 later SSE-C/API-proxy design. While Hetzner's current high-traffic advisory
@@ -97,9 +98,16 @@ signed-upload smoke before creating production buckets.
 
 The 4 GB server cannot host Kafka (JVM eats > 1 GB of RAM) and we do not yet have multiple consumers. A Redis-based job queue covers image processing, embedding generation, marketplace parsing, and webhook fanout. Kafka becomes interesting only when the image worker, the API, and a second downstream consumer all need durable, replayable streams — i.e. when we extract the image worker into its own service.
 
-### Why Cloudflare and not nginx rate-limit alone (activation: Stage 2)
+### Why Cloudflare and not nginx rate-limit alone
 
-The choice stands; the activation is deferred to Stage 2 (founder decision 2026-07-02, spec 033). Once enabled, Cloudflare is free at the level we need, gives DNS, DDoS protection, bot fight mode, CDN, and TLS edge — all in one provider — and lets the server stay behind a proxy; nginx then handles app-level TLS, rate-limit, and auth routing without also having to play "first line of defense". Until then v0.1 pre-launch runs direct DNS: host nginx `limit_req` plus the Go API's per-client limiter carry the rate-limiting, and the missing DDoS floor is an accepted pre-launch risk (no users yet; the shipped realip/CF-ranges nginx config stays inert until the cut-over).
+The 2026-07-02 Stage-2 deferral was superseded by the 2026-07-22 activation
+(spec 047). Cloudflare now provides authoritative DNS, DDoS protection, CDN,
+strict TLS, and the public proxy boundary; the origin firewalls accept web
+traffic only from Cloudflare ranges. nginx still terminates origin TLS and owns
+application routing, sustained rate limits, and auth routing. Bot Fight Mode is
+deliberately disabled because the unscoped Free-plan control challenged the API
+health monitor; scoped edge rate limiting and the default WAF/DDoS controls stay
+active.
 
 ### Why nginx and not Traefik or Caddy
 
@@ -127,7 +135,7 @@ Positive:
 - Bounded contexts inside the monolith map directly to future microservice extractions.
 - One language (Go) for backend, one (TypeScript) for web + mobile — smaller cognitive surface than Supabase + Flutter + Vercel + RLS DSL.
 - No BaaS lock-in. The schema, auth, and storage all run on commodity software the team owns.
-- Cloudflare absorbs the noisy traffic floor for free (from its Stage-2 activation on; v0.1 pre-launch accepts direct-DNS exposure).
+- Cloudflare absorbs the noisy traffic floor; the origin is no longer directly exposed for web traffic.
 - Resend keeps Kratos email flows working without rolling our own SMTP.
 
 Tradeoffs:
@@ -145,7 +153,7 @@ Tradeoffs:
 - **Microservices from Day 1 with Kafka and API Gateway routing across services:** real overhead for one engineer team with no scaling justification. Rejected; the monolith stays modular so extraction is cheap later.
 - **Vercel + serverless:** fast preview deployments, but ties prod to a vendor and complicates background workers and pgvector tuning.
 - **DigitalOcean Spaces:** previously accepted, but superseded when storage was moved into Hetzner with compute on 2026-07-10.
-- **Cloudflare R2 + AWS SES + Mailgun:** equivalent feature set, but adds extra provider coupling before the Stage-2 Cloudflare front-door is active.
+- **Cloudflare R2 + AWS SES + Mailgun:** equivalent feature set, but adds storage/email provider coupling without a measured benefit; the active application proxy does not require R2.
 - **Flutter mobile (previous Phase 4 choice):** great DX, dropped to align languages with the web team.
 - **Stripe Checkout for payments:** previously accepted, then superseded by the Lava.top constraint.
 

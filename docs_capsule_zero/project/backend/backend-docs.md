@@ -19,7 +19,7 @@ Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a
 | Cache / sessions / queue | Redis 7 planned for a later spec-024 phase; no Redis service or queue consumer is active in the current slice       |
 | Object storage           | Hetzner Object Storage (S3-compatible; no built-in CDN in v0.1)                                                      |
 | Email                    | Resend SMTP courier for Kratos is provisioned; there is no `internal/email` transactional client in the current API |
-| Front-door               | Direct DNS → host nginx in v0.1; the Cloudflare proxy (DDoS, bot fight, CDN) is deferred to Stage 2 (2026-07-02)    |
+| Front-door               | Cloudflare proxy → Cloudflare-only origin firewall → host nginx; scoped edge rate limit + default WAF/DDoS controls (spec 047) |
 | Observability            | syslog file logs + OpenTelemetry trace export; Grafana dashboards deferred by ADR-007 (Sentry/Prometheus → Stage 2) |
 | Migrations               | Embedded SQL migration files applied at API boot, serialized behind a `pg_advisory_lock` (spec 034); files from `0002` on must be runnable by the non-superuser `capsule_app` owner role |
 
@@ -154,16 +154,15 @@ backup bucket is isolated in FSN under project `15296835`. All application
 access is mediated by the Go storage adapter:
 
 - private reads use **signed GET URLs** with TTL ≤ 15 min;
-- public catalog images are served from the public catalog bucket's native object URL until a Stage-2 CDN/front-door is wired;
+- public catalog images are served from the public catalog bucket's native object URL until a separate catalog-CDN slice is wired;
 - uploads use **signed PUT URLs** with TTL ≤ 5 min, issued by the Go API after metadata validation;
 - browser/mobile uploads require explicit `/api/uploads/photo/complete` with both
   the issued `jobId` and `assetId`; the API verifies the object by `HeadObject`
   and the completion endpoint is idempotent;
-- nightly Postgres backup automation is deferred to spec-024 Phase 5; when it
-  lands it must encrypt client-side before writing to the isolated backup
-  bucket, forbid Object Lock control headers, carry explicit acceptance of the
-  remaining provider risk or wait for a provider fix, and enforce at least
-  14 day retention.
+- nightly Postgres backups encrypt client-side before writing to the isolated
+  Object-Locked bucket through a fixed-header uploader. The root-owned timer,
+  off-server private key, retention posture, and restore drill are recorded in
+  spec 047.
 
 Spec 040 provides the private-bucket adapter and unattached original-photo
 metadata only. It requires explicit static credentials, probes the private
@@ -195,10 +194,10 @@ The same audit found a bounded provider exception: Hetzner/RGW accepts
 `PutObject` with Object Lock mode, retain-until, or legal-hold headers despite
 the dedicated action denies. It does not let the writer read or delete existing
 data, but it can create newly locked objects and amplify storage cost or denial
-of service. Backup automation stays disabled until its uploader
-sanitizes/forbids those headers and the residual receives explicit acceptance
-or a provider fix, in addition to encryption, scheduling, retention, and
-restore verification. Policy readback and the caveated live audits passed
+of service. Spec 047 accepts that residual behind a root-owned uploader that
+constructs a fixed local header set with no caller-controlled metadata. Daily
+`age`-encrypted backups, Object Lock retention, and a full restore drill passed
+before activation; the private key stays off-server. Policy readback and the caveated live audits passed
 before the server env was atomically rotated, preserving `root:root` mode `600`
 and `OBJECT_STORAGE_UPLOADS_ENABLED=false`. The superseded runtime and backup
 keys plus both temporary policy-operator keys were revoked; only the new
@@ -283,12 +282,12 @@ later-slice work.
 | `OBJECT_STORAGE_PRIVATE_BUCKET` | server      | Private assets bucket (avatars, item originals, processed variants, marketplace imports)               |
 | `OBJECT_STORAGE_UPLOADS_ENABLED` | server      | Default-off activation gate; key hardening is complete, but quota/cleanup/attachment still block enablement |
 | `OBJECT_STORAGE_PUBLIC_BUCKET` | server       | Public catalog bucket, introduced when moderated catalog imagery is served                             |
-| `OBJECT_STORAGE_PUBLIC_BASE_URL` | server     | Native public object URL base until Stage-2 CDN/front-door activation                                  |
-| `BACKUP_S3_ENDPOINT`          | later phase   | Provisioned isolated endpoint (`https://fsn1.your-objectstorage.com` in production)                    |
-| `BACKUP_S3_REGION`            | later phase   | Provisioned backup bucket region (`fsn1` in production)                                               |
-| `BACKUP_S3_BUCKET`            | later phase   | Provisioned Object-Locked bucket; backup automation is still deferred                                 |
-| `BACKUP_S3_ACCESS_KEY_ID`     | later phase   | Writer key from bucketless key-only project `15302925`; never passed to the API                        |
-| `BACKUP_S3_SECRET_ACCESS_KEY` | later phase   | Writer key secret from bucketless key-only project `15302925`; never passed to the API                 |
+| `OBJECT_STORAGE_PUBLIC_BASE_URL` | server     | Native public object URL base until a separate catalog-CDN slice                                       |
+| `BACKUP_S3_ENDPOINT`          | host backup   | Isolated endpoint (`https://fsn1.your-objectstorage.com` in production)                                |
+| `BACKUP_S3_REGION`            | host backup   | Backup bucket region (`fsn1` in production)                                                           |
+| `BACKUP_S3_BUCKET`            | host backup   | Object-Locked bucket used by the active encrypted daily backup timer                                  |
+| `BACKUP_S3_ACCESS_KEY_ID`     | host backup   | Writer key from bucketless key-only project `15302925`; never passed to the API                        |
+| `BACKUP_S3_SECRET_ACCESS_KEY` | host backup   | Writer key secret from bucketless key-only project `15302925`; never passed to the API                 |
 | `KRATOS_SMTP_CONNECTION_URI`  | server        | Active Resend SMTP courier connection for Kratos                                                      |
 | `RESEND_API_KEY`              | later phase   | Future direct transactional-email client; Kratos currently uses SMTP                                  |
 | `RESEND_FROM`                 | later phase   | Future direct-client sender (for example `no-reply@capsulezero.app`)                                  |
@@ -328,14 +327,14 @@ The auth/profile and object-storage foundations have delivered:
 - Kratos identity schema and the provisioned Resend SMTP courier;
 - nginx config with TLS, rate-limit, and Kratos `auth_request` middleware;
 - API health checks for Postgres, Kratos, and private Object Storage;
-- ~~Cloudflare proxy active on `capsulezero.app`~~ — deferred to Stage 2 (founder decision 2026-07-02, spec 033);
+- Cloudflare proxy active on the apex + `www`, with Cloudflare-only origin web ingress and Tailscale-only SSH (spec 047);
 - Hetzner Object Storage asset/backup buckets, bucketless runtime/backup key
   projects, cross-project policies, and exact-origin asset CORS;
   policy readback, the runtime audit, the caveated backup hybrid-policy audit,
   and protected env rotation passed. The backup writer cannot read/delete
   existing data, but Put-time Object Lock headers remain a bounded
-  storage-DoS/cost risk that blocks backup automation pending header
-  sanitization and explicit acceptance/provider fix. The old same-project
+  storage-DoS/cost risk. Spec 047 accepts it behind a root-owned fixed-header
+  uploader; encrypted scheduling, retention, and a restore drill are complete. The old same-project
   runtime/backup keys and both temporary policy operators were revoked, and the
   post-revocation signed 10 MiB
   PUT/HEAD/GET/checksum/delete smoke passed with checksum verification and
@@ -343,10 +342,9 @@ The auth/profile and object-storage foundations have delivered:
   backup preflight failed closed without an allow-origin header. Uploads still
   wait for owner quota, orphan cleanup, and wardrobe attachment.
 
-Redis, async queue consumers, imgproxy, and encrypted database-backup automation
-remain later spec-024 phases. The isolated backup bucket and hybrid writer key
-being provisioned does not mean backup header controls, risk acceptance,
-scheduling, encryption, retention, or restore verification has landed.
+Redis, async queue consumers, and imgproxy remain later spec-024 phases.
+Encrypted database-backup automation landed in spec 047; personal-photo upload
+activation remains separate.
 
 Feature PRs after that must not introduce ad-hoc schema changes outside migrations.
 

@@ -1,5 +1,8 @@
 # Plan 026 — Dev Continuous Deployment Pipeline
 
+> **Retired historical plan:** spec 033 decommissioned this dev environment;
+> current production ingress and deploy transport live in specs 033 and 047.
+
 ## Approach
 
 Build-in-CI, pull-on-droplet. GitHub Actions builds the web image and pushes it to GHCR; the

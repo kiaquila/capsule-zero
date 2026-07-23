@@ -1,5 +1,11 @@
 # Spec 033 — Production CD Activation (Hetzner migration, full-stack deploy on merge)
 
+> **Operational hardening update (2026-07-22):** spec 047 supersedes this
+> slice's original direct-DNS/public-SSH posture. The same CD pipeline now joins
+> Tailscale through GitHub OIDC before SSH; Cloudflare fronts the apex + `www`;
+> origin web ingress is Cloudflare-only; public TCP/22 is closed. This spec
+> remains the source for the build-in-CI/pull-on-server deployment contract.
+
 ## Goal
 
 Every merge to `main` that changes deploy-relevant code automatically builds the **web**
@@ -58,8 +64,9 @@ environment is reintroduced.
 - Password recovery + email verification completion slice (Kratos flows stay disabled;
   `KRATOS_SMTP_CONNECTION_URI` holds a placeholder until Resend is configured — safe
   because the courier never sends while those flows are off).
-- Reintroducing a preview/dev environment; Cloudflare front-door; Redis / Object Storage /
+- Reintroducing a preview/dev environment; Redis / Object Storage /
   observability phases of spec 024; wardrobe/capsule/catalog/billing domains on the Go API.
+  The Cloudflare front-door was out of this original slice and later landed in spec 047.
 - Decommissioning the old DigitalOcean droplet (operator decision once prod is verified).
 
 ## Negative Scenarios

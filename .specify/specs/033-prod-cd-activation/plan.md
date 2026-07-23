@@ -1,5 +1,9 @@
 # Plan 033 — Production CD Activation
 
+> **Current transport boundary:** spec 047 keeps this plan's
+> build-in-CI/pull-on-server model but replaces public SSH/direct DNS with
+> GitHub-OIDC Tailscale deploy SSH and a Cloudflare-only origin.
+
 ## Approach
 
 Same delivery model as spec 026's dev pipeline, retargeted at production and widened to
@@ -30,7 +34,8 @@ Deliberate differences from the dev pipeline:
 ### Edge topology
 
 ```
-Internet → host nginx :80/:443 (TLS: capsulezero.app; Hetzner CX23, Ubuntu 26.04)
+Internet → Cloudflare DNS/CDN/WAF → Cloudflare-only origin firewall
+         → host nginx :80/:443 (TLS: capsulezero.app + www; Hetzner CX23)
    ├─ /                            → http://127.0.0.1:3000  (web)
    ├─ /api/*                       → http://127.0.0.1:8080  (api; auth writes limit_req 10r/m)
    └─ /self-service/*, /sessions/* → 404

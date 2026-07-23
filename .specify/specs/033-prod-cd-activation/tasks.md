@@ -29,7 +29,9 @@
 - [ ] Decide the registration account-enumeration residual (verification-gated sign-up vs auto-login) inside the recovery/verification slice
 - [ ] Decommission the old DigitalOcean droplet once prod is verified (data: nothing to migrate — it never ran the backend)
 - [ ] Reintroduce a preview/dev environment when the team wants pre-prod isolation again (re-derive from spec 026 + this pipeline)
-- [ ] Cloudflare front-door — **deferred to Stage 2** (founder decision 2026-07-02); realip/CF-ranges config in nginx stays inert until then, and the CF-ranges refresh mechanism (spec 024 hardening note) lands with the same Stage-2 activation
+- [x] Cloudflare front-door — activated 2026-07-22 in spec 047 with apex +
+  `www`, Full (strict) TLS, DNSSEC, Cloudflare-only origin ingress, and active
+  real-IP restoration
 
 ## Process Memory
 
@@ -76,6 +78,11 @@
   realip/CF-ranges edge config already shipped stays inert, and the Cloudflare-IP-ranges
   refresh mechanism (spec 024 Known Issues hardening note) moves to the Stage-2 activation
   rather than pre-real-QA hardening.
+- **2026-07-22 spec 047 supersedes the Cloudflare deferral and public deploy
+  transport.** Cloudflare is active for the apex + `www`; the origin web
+  firewall trusts only Cloudflare ranges. Public TCP/22 is closed and the
+  GitHub-hosted deploy runner joins Tailscale through OIDC as an ephemeral
+  `tag:ci` node before invoking the unchanged root-owned wrapper.
 - **2026-07-02 nginx 1.28 (Ubuntu 26.04) required two edge adjustments:** the vhost moved
   to the modern `http2 on;` directive, and the distro's http-level `server_tokens build;`
   had to be commented out in `/etc/nginx/nginx.conf` because the shared snippet owns that
@@ -153,8 +160,8 @@
   the recovery/verification slice.
 - The old DigitalOcean droplet still runs the retired Phase-1 web containers; it serves no
   traffic (DNS moved) and awaits decommission.
-- `x-real-ip` / realip Cloudflare ranges in the edge config are inert (no Cloudflare in
-  front); the Go limiter keys on the nginx-set `X-Capsule-Client-IP` which host nginx
-  overwrites with `$remote_addr` — correct for the direct-DNS topology.
+- `x-real-ip` / realip Cloudflare ranges are active. Keep the repository
+  snapshot and both origin firewalls synchronized with Cloudflare's published
+  IPv4/IPv6 ranges (spec 047 Known Issues).
 - The GitHub `environment:` hardening (scoping `PROD_DEPLOY_*` to a protected environment)
   is optional and not configured; consider before launch.
