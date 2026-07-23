@@ -49,6 +49,9 @@
   display-name из email local-part, если credentials-only регистрация не дала
   ни session name, ни profile display name; dashboard/profile не показывают
   пустую или вымышленную идентичность.
+- `app/src/lib/providers/mock/index.ts` — mock credentials flow сохраняет
+  явно отсутствующее имя, а founder fixture подставляется только в seed/recovery
+  сценариях; provider profile не маскирует email fallback полным email.
 - `app/src/components/landing/LandingPage.tsx` — body scroll lock, пока открыт
   попап.
 - `app/src/app/globals.css` — `.auth-panel` max-height
@@ -94,3 +97,6 @@
 - AC-006: если API-backed credentials-only регистрация возвращает пустые
   `session.name` и `profile.displayName`, dashboard/profile используют
   непустой email local-part как display name и строят из него инициалы.
+- AC-007: mock credentials-only регистрация без name не подставляет
+  `Capsule Zero Founder`; dashboard/profile получают тот же email-local-part
+  fallback, что и API-backed аккаунт.

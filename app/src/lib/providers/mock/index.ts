@@ -101,7 +101,11 @@ export function createMockProviderRegistry(
   );
   const invoices = new Map<string, LavaInvoice>();
   const ledger = new Map<string, CoinLedgerEntry>();
-  let currentSession: MockSession | null = buildSession(now());
+  let currentSession: MockSession | null = buildSession(
+    now(),
+    MOCK_USER.email,
+    MOCK_USER.name,
+  );
 
   const profileRepository: ProfileRepository = {
     async getProfile(userId) {
@@ -532,7 +536,11 @@ export function createMockProviderRegistry(
           );
         }
         const timestamp = now();
-        currentSession = buildSession(timestamp);
+        currentSession = buildSession(
+          timestamp,
+          MOCK_USER.email,
+          MOCK_USER.name,
+        );
         upsertProfileFromSession(profiles, currentSession, timestamp);
         return clone(currentSession);
       },
@@ -681,7 +689,7 @@ export function createMockProviderRegistry(
 function buildSession(
   timestamp: string,
   email = MOCK_USER.email,
-  name = MOCK_USER.name,
+  name?: string,
 ): MockSession {
   const userId =
     email === MOCK_USER.email ? MOCK_USER.id : deterministicUuid("user", email);
@@ -709,7 +717,7 @@ function upsertProfileFromSession(
     ...(existing ?? MOCK_PROFILE),
     userId: session.user.id,
     email: session.user.email,
-    displayName: session.user.name ?? session.user.email,
+    displayName: session.user.name ?? "",
     createdAt: existing?.createdAt ?? timestamp,
     updatedAt: timestamp,
   });

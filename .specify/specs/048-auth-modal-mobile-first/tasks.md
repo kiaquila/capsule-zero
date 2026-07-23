@@ -82,6 +82,12 @@
       RED `72b8309` воспроизвёл `displayName: ""`; общий
       `features/profile/display-name.ts` теперь обслуживает dashboard и
       profile, focused Chromium / e2e typecheck / quiet lint — green.
+- [x] T019 Следующий Codex P2: mock `buildSession` default parameter превращал
+      явно отсутствующее имя credentials-only пользователя в
+      `Capsule Zero Founder`. RED `7e2186c` воспроизвёл видимый founder
+      dashboard; mock теперь передаёт fixture name явно только для
+      seed/recovery, а credentials flow оставляет name undefined и пустой
+      provider displayName для общего email fallback. Focused Chromium — 2/2.
 
 ## Process Memory
 
@@ -90,6 +96,9 @@
 - Фикс только в `buildProfileSnapshot` устранил вымышленное имя на profile,
   но не затронул `buildDashboardSnapshot`: второй Codex review воспроизвёл
   пустые greeting/nav name. Fallback обязан жить в общем identity-helper.
+- Shared resolver не может исправить mock session, если provider уже подменил
+  отсутствие имени валидным founder fixture: provider должен сохранять
+  семантику explicit absence до presentation fallback.
 
 ### Decisions
 
@@ -113,6 +122,9 @@
   saved preferences → session → provider profile, затем использует email
   local-part. Это сохраняет введённое пользователем имя и даёт честный
   детерминированный fallback credentials-only аккаунтам.
+- Mock seed/recovery по-прежнему явно получают `MOCK_USER.name`; password
+  credentials без name не получают fixture identity, а mock profile хранит
+  пустой displayName, чтобы presentation-layer применил общий local-part.
 
 ### Known Issues
 
