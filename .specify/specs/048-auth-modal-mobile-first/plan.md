@@ -16,6 +16,7 @@
 | AC-005 | `registration.spec.ts` — passed против прод-shape стека (Go API + Kratos + Postgres): регистрация email+password → сессия → /dashboard. `google-sign-in.spec.ts` не гонялся локально (dev-стек без Kratos OIDC-креденшелов — mock-петля живёт в CI); порядок/видимость кнопки покрыты AC-001 | ✅ (google loop — CI) |
 | AC-006 | `profile-name-fallback.spec.ts`: API-shaped session/profile без имени → email `new.user@example.com` даёт display name `new.user`, initials `NU`; RED commit `72b8309` получил `""`, green focused Chromium — 1/1 | ✅ |
 | AC-007 | тот же spec, реальный mock provider: credentials-only `mock.user@example.com` не получает founder fixture; RED `7e2186c` получил `Capsule Zero Founder`, green focused Chromium — 2/2 вместе с API path | ✅ |
+| AC-008 | `rg` по активным source docs: `f-002-auth.md` acceptance criteria и `i18n/ui-texts.md` больше не содержат optional location, Sign Up tabs, required-note, `*` или optional Name; historical HTML prototypes остаются явно grandfathered | ✅ |
 | Negative | Красный прогон auth-popup теста на старом UI (T011), RED `72b8309` с пустым API dashboard name и RED `7e2186c` с founder identity в mock; все три регресса закрыты green-ассертами | ✅ |
 
 Локальные гейты на текущем HEAD: app typecheck — чисто; ESLint — 0 errors /

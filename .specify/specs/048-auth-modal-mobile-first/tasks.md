@@ -88,6 +88,10 @@
       dashboard; mock теперь передаёт fixture name явно только для
       seed/recovery, а credentials flow оставляет name undefined и пустой
       provider displayName для общего email fallback. Focused Chromium — 2/2.
+- [x] T020 Codex P2 на `01ee97e`: синхронизированы оставшиеся auth source
+      docs — acceptance criterion больше не обещает location на регистрации,
+      i18n-таблица описывает panel titles, три credentials-поля без `*` и не
+      содержит удалённые Name/required-note строки.
 
 ## Process Memory
 
@@ -99,6 +103,9 @@
 - Shared resolver не может исправить mock session, если provider уже подменил
   отсутствие имени валидным founder fixture: provider должен сохранять
   семантику explicit absence до presentation fallback.
+- Обновления screen/feature docs недостаточно, если агрегат
+  `i18n/ui-texts.md` всё ещё перечисляет удалённые auth controls: source-doc
+  аудит должен охватывать и глобальные copy inventories.
 
 ### Decisions
 
@@ -125,6 +132,8 @@
 - Mock seed/recovery по-прежнему явно получают `MOCK_USER.name`; password
   credentials без name не получают fixture identity, а mock profile хранит
   пустой displayName, чтобы presentation-layer применил общий local-part.
+- В `ui-texts.md` прежние tab labels заменены заголовками панели; испанская
+  колонка обновлена как reference-copy, хотя ES-AR остаётся вне active v0.1.
 
 ### Known Issues
 

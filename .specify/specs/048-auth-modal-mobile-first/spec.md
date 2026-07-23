@@ -68,7 +68,8 @@
   bounding box) и состава полей регистрации (ровно 3 инпута);
   `fixtures/locales.ts` — `signInTitle`/`signUpTitle` вместо `signUpTab`.
 - Доки той же поставкой: `docs_capsule_zero/screens/screen-auth.md`,
-  `docs_capsule_zero/features/f-002-auth.md`, `docs_capsule_zero/adr/adr-002-auth.md`.
+  `docs_capsule_zero/features/f-002-auth.md`, `docs_capsule_zero/adr/adr-002-auth.md`,
+  `docs_capsule_zero/i18n/ui-texts.md`.
 
 **Out:**
 
@@ -100,3 +101,6 @@
 - AC-007: mock credentials-only регистрация без name не подставляет
   `Capsule Zero Founder`; dashboard/profile получают тот же email-local-part
   fallback, что и API-backed аккаунт.
+- AC-008: активные auth source docs не обещают Sign Up tabs, required
+  asterisks, name/location inputs; i18n-таблица совпадает с тремя
+  credentials-полями и заголовками текущей панели.

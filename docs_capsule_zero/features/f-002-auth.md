@@ -47,7 +47,8 @@
 
 1. Stage 1 glassmorphic styling with email+password auth only
 2. Real-time inline validation (no alert popups)
-3. Optional location field — registration not blocked if skipped
+3. Registration asks only for email, password, and password confirmation;
+   optional name/location data is collected later on the profile screen (spec 048)
 4. Successful registration → redirect to Dashboard
 5. Login form with switcher to registration
 6. "Forgot password" → email recovery flow
