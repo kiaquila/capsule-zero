@@ -1,5 +1,12 @@
 # nginx Reverse Proxy — Operator Runbook
 
+> **Historical Phase-1 record — do not execute.** This document preserves the
+> original in-Docker nginx rollout. Production now uses host nginx behind
+> active Cloudflare, loopback-only compose ports, Tailscale-only SSH, and the
+> transactional deploy wrapper from spec 047. The executable operator source
+> is [`prod-cd-pipeline.md`](prod-cd-pipeline.md), and the maintained host
+> configuration is under `infra/nginx-host/`.
+>
 > Phase 1 of `.specify/specs/024-production-stack-runtime/` ships the minimum
 > stack that can serve the existing Next.js landing on
 > `https://capsulezero.app` behind nginx with a Let's Encrypt certificate.

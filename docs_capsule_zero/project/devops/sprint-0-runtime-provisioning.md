@@ -14,9 +14,12 @@ Phase 1 delivers the host `nginx + web` runtime that replaces the host Caddy + l
 
 - GitHub `main` is current and required checks are green.
 - Server of at least 2 vCPU / 4 GB (current: Hetzner CX23, Ubuntu 26.04), Docker + docker-compose installed.
-- (Stage 2 — the Cloudflare front-door is deferred, founder decision 2026-07-02.) Cloudflare account with the `capsulezero.app` zone; not needed for the v0.1 bring-up.
-- (Stage 2, with the Cloudflare proxy.) Cloudflare API token with Zone Read + DNS Edit on `capsulezero.app`, stored as `CF_DNS_API_TOKEN` in the server `.env` for ACME DNS-01. Until the proxy is on, nginx + certbot use HTTP-01 with port 80 directly.
-- Spaceship registrar account with a direct `A` record for `capsulezero.app` pointing at the server IP (the Cloudflare nameserver cut-over is deferred to Stage 2).
+- Cloudflare account with the active `capsulezero.app` zone, apex + `www`
+  proxied, Full (strict) TLS, DNSSEC, and Cloudflare-only origin web ingress
+  (spec 047).
+- Certbot uses HTTP-01 through the proxied records to the allowlisted origin;
+  `CF_DNS_API_TOKEN` is not consumed by the current runtime.
+- Spaceship remains the registrar and delegates authoritative DNS to Cloudflare.
 - Resend domain/SPF/DKIM and the production Kratos SMTP courier are provisioned.
 - Hetzner Object Storage topology from ADR-003: the private/public asset
   buckets are provisioned in project `15203114` / HEL; the Object-Locked backup
@@ -41,7 +44,7 @@ Required keys at minimum: see `docs_capsule_zero/project/devops/docker-compose-d
 
 ## Production-First Posture
 
-There is no Stage 1 mock-first layer (see ADR-006). Every active service in the runtime comes up against real Postgres / real Kratos / real Hetzner Object Storage / real Resend from the first deploy (the Cloudflare front-door/CDN joins at Stage 2 — founder decision 2026-07-02). Local development uses the same stack with a `docker-compose.dev.yml` override that swaps Resend for MailHog and enables API hot-reload (the override is reintroduced in Phase 2 alongside Kratos).
+There is no Stage 1 mock-first layer (see ADR-006). Every active service in the runtime comes up against real Postgres / real Kratos / real Hetzner Object Storage / real Resend from the first deploy. The active Cloudflare/Tailscale edge remains an operator boundary outside local development (spec 047). Local development uses the same stack with a `docker-compose.dev.yml` override that swaps Resend for MailHog and enables API hot-reload (the override is reintroduced in Phase 2 alongside Kratos).
 
 Real provider integration gates that remain:
 
@@ -115,15 +118,22 @@ can replay the request and overwrite the same final object, potentially making
 the completed asset's stored ETag stale. This is an accepted bounded residual
 for the original-only foundation, not a guarantee to extend to broader assets.
 
-### 1. DNS
+### 1. DNS and private administration
 
-- v0.1 (current): at the Spaceship registrar, point a direct `A` record for `capsulezero.app` at the server IP. TLS is Let's Encrypt on host nginx (HTTP-01). Add `grafana.capsulezero.app` only after ADR-007 promotes Grafana.
-- Stage 2 (Cloudflare front-door activation — founder decision 2026-07-02 deferred it out of v0.1): switch Spaceship nameservers to Cloudflare; `A` record with proxy (orange cloud) enabled; SSL/TLS mode `Full (strict)`; enable `Bot Fight Mode` and `Always Use HTTPS`; add a cache-`Bypass` rule for `capsulezero.app/api/*`; refresh the nginx realip CF-ranges snippet (spec 024 Known Issues) in the same change.
+- Keep Spaceship delegated to Cloudflare nameservers. The apex + `www` records
+  stay proxied with Full (strict) TLS, Always Use HTTPS, DNSSEC, scoped auth
+  rate limiting, and the default WAF/DDoS controls. Bot Fight Mode stays
+  disabled because it challenged the health monitor.
+- Keep Cloudflare's published proxy ranges synchronized in
+  `infra/nginx-host/00-capsule-zero.conf`, Hetzner Cloud Firewall, and `ufw`.
+- Keep public TCP/22 closed. Operator devices and the ephemeral GitHub
+  `tag:ci` identity reach the host only over Tailscale.
 
 ### 2. Droplet baseline
 
 - Set the hostname to `capsulezero-prod`.
-- Configure `ufw` to allow `22/tcp`, `80/tcp`, `443/tcp` only.
+- Configure `ufw` to allow TCP/22 only on `tailscale0` and TCP/80/443 only from
+  Cloudflare's published IPv4/IPv6 ranges.
 - Create a `capsule-zero` user; disable root password login.
 - Install Docker Engine + docker-compose plugin from the official Docker apt repository.
 - Prepare the protected plaintext env file at the canonical
@@ -142,7 +152,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-The root compose file keeps the rollback `nginx` service behind the `docker-edge` profile. Do not enable that profile during the normal production bootstrap while host nginx owns ports 80/443. The current default stack brings up Kratos, Postgres, the Go API, and the Next.js web container; Object Storage and Resend are external providers. Redis, an in-process queue consumer, imgproxy, and backup automation have not landed. PgBouncer, Grafana, and the standalone worker container are promoted only when ADR-007 triggers open. The embedded SQL migrator runs at API boot, and Kratos runs its own migrations through its init container.
+The root compose file keeps the rollback `nginx` service behind the `docker-edge` profile. Do not enable that profile during the normal production bootstrap while host nginx owns ports 80/443. The current default stack brings up Kratos, Postgres, the Go API, and the Next.js web container; Object Storage and Resend are external providers. Encrypted backup automation runs as a root-owned host systemd timer (spec 047), not a compose service. Redis, an in-process queue consumer, and imgproxy have not landed. PgBouncer, Grafana, and the standalone worker container are promoted only when ADR-007 triggers open. The embedded SQL migrator runs at API boot, and Kratos runs its own migrations through its init container.
 
 Use the compose edge only as an explicit rollback path after stopping host nginx:
 
@@ -184,16 +194,15 @@ are not part of the current probe and must not be invented in evidence.
   not evidence for this slice.
 - Confirm syslog files are present and rotated on the host; Grafana smoke checks start only after ADR-007 promotes the dashboard service.
 
-### 6. Backups (deferred)
+### 6. Backups (activated by spec 047)
 
 The Object-Locked bucket and the writer from bucketless key-only project
-`15302925` are provisioned, but nightly `pg_dump`, client-side encryption,
-Object Lock header sanitization/risk acceptance, scheduling,
-lifecycle/retention, and restore verification remain spec-024 Phase 5 work. Do
-not upload plaintext database data or mark backups complete based on bucket/key
-provisioning alone. Once Phase 5 lands, verify forbidden Object Lock headers,
-the first encrypted object under `postgres/`, at least 14 day retention, and a
-restore drill.
+`15302925` are provisioned. Spec 047 activated nightly `pg_dump` only after
+client-side `age` encryption, a root-owned fixed-header uploader, explicit
+acceptance of the provider's bounded Put-time Object Lock residual, scheduling,
+retention, and a successful restore drill. Never upload plaintext database
+data. Verify the timer/service and restore path through the production runbook;
+bucket/key provisioning alone remains insufficient evidence.
 
 ## Stage 2 Integration Gates
 
@@ -233,12 +242,14 @@ Droplet
 - Hostname: capsulezero-prod
 - ufw status: pass/fail
 
-DNS (v0.1 — direct; Cloudflare deferred to Stage 2)
+DNS / edge (active Cloudflare, spec 047)
 
-- Spaceship direct `A` record (apex) → server IP: pass/fail
+- Spaceship delegates to Cloudflare nameservers; DNSSEC DS present: pass/fail
+- Cloudflare apex + `www` proxied; Full (strict) TLS: pass/fail
+- Origin web firewall accepts only Cloudflare ranges: pass/fail
+- Operator/CI SSH is Tailscale-only; public TCP/22 closed: pass/fail
 - Grafana A record omitted until ADR-007 promotion: pass/fail
 - Let's Encrypt cert valid on host nginx: pass/fail
-- Stage 2 only (do not verify in v0.1): Spaceship → Cloudflare NS; proxy enabled; SSL/TLS Full (strict); Bot Fight Mode
 
 docker-compose
 

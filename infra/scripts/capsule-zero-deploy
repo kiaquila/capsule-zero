@@ -7,6 +7,7 @@ compose_file="docker-compose.yml"
 env_file=".env"
 state_dir="/var/lib/capsule-zero"
 nginx_sync_marker="$state_dir/last-host-nginx-sync-sha"
+host_tls_certificate="/etc/letsencrypt/live/capsulezero.app/fullchain.pem"
 nginx_paths=(
   /etc/nginx/conf.d/00-capsule-zero.conf
   /etc/nginx/conf.d/00-cz-hardening.conf
@@ -61,6 +62,7 @@ require_cmd ln
 require_cmd mkdir
 require_cmd mktemp
 require_cmd nginx
+require_cmd openssl
 require_cmd rm
 require_cmd systemctl
 
@@ -155,7 +157,23 @@ restore_nginx_config() {
   systemctl reload nginx
 }
 
+verify_host_certificate() {
+  local hostname
+  [ -r "$host_tls_certificate" ] || {
+    echo "host TLS certificate is missing: $host_tls_certificate" >&2
+    return 1
+  }
+  for hostname in capsulezero.app www.capsulezero.app; do
+    if ! openssl x509 -in "$host_tls_certificate" -noout \
+      -checkhost "$hostname" >/dev/null 2>&1; then
+      echo "host TLS certificate does not cover $hostname" >&2
+      return 1
+    fi
+  done
+}
+
 apply_host_nginx_config() {
+  verify_host_certificate || return
   install -m 644 infra/nginx-host/00-capsule-zero.conf /etc/nginx/conf.d/00-capsule-zero.conf || return
   install -m 644 infra/nginx-host/00-cz-hardening.conf /etc/nginx/conf.d/00-cz-hardening.conf || return
   install -m 644 infra/nginx-host/cz-request-guard.conf /etc/nginx/snippets/cz-request-guard.conf || return

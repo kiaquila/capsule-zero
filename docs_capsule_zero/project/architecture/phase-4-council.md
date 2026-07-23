@@ -11,7 +11,7 @@ Rerun complete (2026-06-27). Production-stack pivot accepted: Go modular monolit
 
 API-gateway choice revised 2026-06-28: nginx 1.27 replaces Traefik v3 in DI-017. Rationale recorded in ADR-001 § "Why nginx and not Traefik or Caddy".
 
-Hosting and front-door revised 2026-07-02 (spec 033): the DigitalOcean droplet in DI-006 is superseded by a Hetzner CX23 (2 vCPU / 4 GB / 40 GB), and the Cloudflare proxy in DI-006 / DI-020 is **deferred to Stage 2** — v0.1 pre-launch runs direct DNS to the host nginx edge. The dated DI-006 / DI-020 register rows keep their 2026-06-27 wording as history; the affected constraint and follow-up bullets carry inline deferral notes. Current state lives in AGENTS.md.
+Hosting and front-door revised 2026-07-02 (spec 033): the DigitalOcean droplet in DI-006 is superseded by a Hetzner CX23 (2 vCPU / 4 GB / 40 GB), and Cloudflare was initially deferred. Spec 047 supersedes that deferral on 2026-07-22: the apex + `www` are proxied now, origin web ingress is Cloudflare-only, and SSH is Tailscale-only. The dated DI-006 / DI-020 register rows keep their 2026-06-27 wording as history. Current state lives in AGENTS.md and ADR-001.
 
 Storage revised 2026-07-10 (spec 039): DigitalOcean Spaces in DI-004 is superseded by **Hetzner Object Storage**. The dated DI-004 row keeps its 2026-06-27 wording as history; current storage posture lives in ADR-003 and uses provider-neutral `OBJECT_STORAGE_*` / `BACKUP_S3_*` env keys.
 
@@ -19,7 +19,9 @@ Storage implementation advanced 2026-07-10 (spec 040): the `internal/storage`
 and `internal/uploads` packages, authenticated original-photo init/complete
 routes, and the `0003_object_storage_uploads.sql` migration landed. The API is
 still a standard-library `net/http` router with a textual OpenAPI guard; Redis,
-processed variants, and backup automation remain deferred.
+processed variants remain deferred. Spec 047 activated encrypted daily backup
+automation on 2026-07-22 after fixed-header uploader hardening and a restore
+drill.
 
 ## Purpose
 
@@ -38,7 +40,7 @@ The council was rerun after the founder accepted these new constraints:
 - Object storage was originally selected as DigitalOcean Spaces (S3-compatible, built-in CDN) instead of Supabase Storage. Superseded 2026-07-10 by Hetzner Object Storage after the compute migration.
 - API gateway is nginx 1.27 with `auth_request` into Kratos and `limit_req_zone` rate-limit (Traefik was the original pick on 2026-06-27; revised on 2026-06-28).
 - Email is Resend.
-- DNS is Spaceship; Cloudflare proxy fronts the server for DDoS and CDN (activation deferred to Stage 2 — 2026-07-02; v0.1 runs direct DNS).
+- DNS is Spaceship/Cloudflare; the Cloudflare proxy fronts the apex + `www` for DDoS and CDN, with origin web ingress restricted to Cloudflare ranges (activated 2026-07-22, spec 047).
 - No Kafka in v0.1 — Redis-based job queue is enough for the worker count we have.
 - Coins, image enhancement, and the self-hosted image model are in v0.2 backlog; Lava.top integration is stubbed in v0.1.
 - ES-AR remains globally deferred to v0.2.
@@ -98,7 +100,7 @@ Capsule Zero is a mobile-first product with two clients over one self-hosted bac
 - **Web** — Next.js App Router served by the `web` container.
 - **Mobile** — React Native iOS/Android app distributed through TestFlight and Google Play internal testing.
 
-A **Go modular monolith** behind **nginx** owns identity (via Kratos), relational data, and signed-URL issuance; later slices add the remaining search and background-job surface. Postgres handles the currently landed auth/profile and original-upload schema; FTS domain tables arrive with their slice, while pgvector is deferred. Redis is the accepted future cache/queue choice but is not in the active compose stack yet. Hetzner Object Storage asset and Object-Locked backup buckets are provisioned, but encrypted database-backup automation remains Phase 5 work. Resend is provisioned as the Kratos SMTP courier. Cloudflare absorbs the noisy traffic floor from its Stage-2 activation on (deferred 2026-07-02, spec 033 — v0.1 runs direct DNS to the host nginx edge).
+A **Go modular monolith** behind **nginx** owns identity (via Kratos), relational data, and signed-URL issuance; later slices add the remaining search and background-job surface. Postgres handles the currently landed auth/profile and original-upload schema; FTS domain tables arrive with their slice, while pgvector is deferred. Redis is the accepted future cache/queue choice but is not in the active compose stack yet. Hetzner Object Storage asset and Object-Locked backup buckets are provisioned; encrypted daily backup automation is active after the spec-047 fixed-header boundary and restore drill. Resend is provisioned as the Kratos SMTP courier. Cloudflare now absorbs the public traffic floor and the origin web firewall accepts only Cloudflare ranges; operator and CI SSH use Tailscale.
 
 Direct presigned URLs are intentionally short-lived bearer capabilities, not
 opaque handles: their host/path/query reveal the bucket, object key, and
@@ -113,7 +115,7 @@ Custom Go services can be extracted out of the monolith later — the first natu
 
 - Founder approval on the rewritten ADRs (`adr-001-stack.md`, `adr-002-auth.md`, `adr-003-storage.md`, `adr-006-mock-first-mvp-stage-one.md`).
 - DigitalOcean droplet upgrade to at least 4 GB / 2 vCPU / 80 GB. (Resolved 2026-07-02 by migrating to a Hetzner CX23 instead — spec 033.)
-- Spaceship DNS pointed at Cloudflare nameservers; Cloudflare proxy enabled on `capsulezero.app`. (Deferred to Stage 2 — 2026-07-02.)
+- ~~Spaceship DNS pointed at Cloudflare nameservers; Cloudflare proxy enabled on `capsulezero.app`.~~ Completed 2026-07-22 with apex + `www`, Full (strict) TLS, DNSSEC, and Cloudflare-only origin ingress (spec 047).
 - ~~Resend account created and SPF/DKIM published.~~ Completed 2026-07-03.
 - ~~Hetzner Object Storage buckets created with CORS for `capsulezero.app` where browser upload/download flows require it.~~ Buckets, scoped policies, exact-origin asset CORS, absent backup CORS, protected server env, and the redacted signed 10 MiB smoke completed 2026-07-10. Upload activation remains default-off pending quota/cleanup/attachment.
 - Ship `.specify/specs/024-production-stack-runtime/`.

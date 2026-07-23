@@ -4,7 +4,8 @@
 
 Accepted (rewritten 2026-06-27 for the production-stack pivot; revised
 2026-07-10 to supersede DigitalOcean Spaces with Hetzner Object Storage;
-least-privilege credential topology hardened 2026-07-11).
+least-privilege credential topology hardened 2026-07-11; backup boundary
+activated by spec 047 on 2026-07-22).
 
 ## Context
 
@@ -20,7 +21,12 @@ The storage architecture must support both web uploads and React Native camera/g
 
 Personal photos must never become public in v0.1. Marketplace-imported items may enter the shared item database after moderation. The quality gate requires upload plus optional background removal to complete in under 5 seconds whenever the user opts into background removal — this gate is enforced once the self-hosted Capsule Zero image model ships in Stage 2.
 
-The previous Phase 4 choice (Supabase Storage + Photoroom/remove.bg) is dropped. The storage replacement must stay compatible with direct web and mobile uploads, integrate cleanly with the Go monolith, and keep production infrastructure inside Hetzner after the 2026-07-02 hosting migration. A CDN is no longer assumed in v0.1; Cloudflare/CDN activation is Stage 2.
+The previous Phase 4 choice (Supabase Storage + Photoroom/remove.bg) is dropped.
+The storage replacement must stay compatible with direct web and mobile
+uploads, integrate cleanly with the Go monolith, and keep production
+infrastructure inside Hetzner after the 2026-07-02 hosting migration.
+Cloudflare now fronts the application, but proxying public catalog bucket URLs
+through a catalog CDN remains a separate Stage-2 storage slice.
 
 ## Decision
 
@@ -70,11 +76,11 @@ S3-compatible tooling before enabling the storage slice.
   retain-until, or legal-hold headers despite the explicit retention/legal-hold
   action denies. This does not grant the writer read or delete access to
   existing data, but it permits creation of newly locked objects and therefore
-  leaves a bounded write-time storage-DoS/cost-amplification residual. Backup
-  automation must sanitize and forbid these headers and obtain explicit risk
-  acceptance or a provider fix before activation. The bucket must remain free
-  of plaintext database data; its creation does not complete backup encryption,
-  scheduling, retention, or restore verification.
+  leaves a bounded write-time storage-DoS/cost-amplification residual. Spec 047
+  accepted that residual behind a root-owned uploader that emits a fixed local
+  header set and accepts no caller-controlled Object Lock headers. The bucket
+  remains free of plaintext database data; client-side encryption, scheduling,
+  retention, and a restore drill passed before the daily timer was activated.
 
 The data-plane credentials are stored only in the protected production env
 file; neither key-only project owns a bucket, so the credentials do not gain
@@ -120,7 +126,10 @@ Background removal is performed by the self-hosted Capsule Zero model running as
 - Store every object key with a user or item prefix, for example `<bucket-prefix>/<user_id>/<item_id>/<asset_id>.webp`.
 - Store file metadata in Postgres through `item_assets`; storage paths alone are not source of truth.
 - Use **signed GET URLs** (TTL ≤ 15 min) for private image reads, served by the Go API.
-- Use **public object URLs** only for approved shared catalog images copied to the public catalog bucket after moderation. A CDN/front-door is Stage 2.
+- Use **public object URLs** only for approved shared catalog images copied to
+  the public catalog bucket after moderation. The application front door is
+  already Cloudflare; proxying catalog bucket URLs through a catalog CDN is a
+  separate Stage-2 slice.
 - Use **signed PUT URLs** (TTL ≤ 5 min) for direct browser/mobile uploads, with size and content-type bounds verified by the Go API before issue.
 - Server-side credentials live only in the protected plaintext
   `/opt/capsule-zero/.env`, owned by `root:root` with mode `600`, or provider
@@ -128,12 +137,11 @@ Background removal is performed by the self-hosted Capsule Zero model running as
 - Enforce upload constraints before storage: JPEG, PNG, WebP; max 10 MB.
 - Normalize processed display images to WebP where quality permits.
 - CORS on production asset buckets allows `https://capsulezero.app` only; local origins belong to separate dev/test buckets.
-- Nightly `pg_dump` automation is deferred to spec-024 Phase 5. When it lands,
-  it uploads only client-side-encrypted data to the already Object-Locked
-  backup bucket and enforces at least 14 day retention. Activation additionally
-  requires the uploader to sanitize/forbid Object Lock mode, retain-until, and
-  legal-hold headers plus explicit acceptance of the remaining provider risk or
-  a provider fix.
+- Nightly `pg_dump` automation is active through spec 047. It uploads only
+  client-side-encrypted data to the Object-Locked backup bucket and enforces at
+  least 14 day retention. The root-owned uploader constructs a fixed header set
+  with no caller-controlled Object Lock mode, retain-until, or legal-hold
+  headers; the remaining provider risk is explicitly accepted.
 - Hetzner Object Storage has no default data-at-rest encryption. Backups must be encrypted before upload. On 2026-07-10 the founder explicitly accepted direct signed PUT/GET for the bounded v0.1 personal-photo-original foundation, with private storage, short TTLs, exact-origin CORS, owner-bound API operations, opaque random object keys, and no credential/presigned-URL logging. A presigned URL itself is not opaque: its host, path, and signature query necessarily expose the bucket, object key, and access-key ID. Treat it as a short-lived bearer capability. Image-byte inspection, orphan cleanup, and an SSE-C/API-proxy alternative remain follow-ups before broader storage use.
 - A holder can replay a signed PUT before its five-minute expiry and overwrite
   the same final object with bytes that satisfy the signed size/content-type
@@ -177,8 +185,8 @@ Tradeoffs:
 - There is no default data-at-rest encryption. Backups are encrypted client-side; personal-image storage needs an explicit acceptance or SSE-C/API-proxy follow-up.
 - Hetzner does not provide built-in cross-location bucket replication; cross-region asset replication is a later resilience task after deletion/privacy semantics are defined.
 - We own the image model. Until it ships, background removal is unavailable and the 5 second gate is dormant.
-- Backups and lifecycle policies are our responsibility; automation remains
-  deferred to spec-024 Phase 5 even though the isolated bucket/key are ready.
+- Backups and lifecycle policies are our responsibility; the active spec-047
+  timer, retention, and restore procedure require ongoing operator checks.
 - Signed URL leakage and replay handling are on us: short TTLs bound exposure,
   but cannot revoke or prevent same-key replay before expiry.
 

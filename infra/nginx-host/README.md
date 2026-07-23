@@ -23,6 +23,10 @@ on the Free plan it cannot be scoped or bypassed and challenged the API health m
 The origin certificate is issued by host `certbot`; renewals traverse Cloudflare and
 reload nginx via the deploy hook
 `/etc/letsencrypt/renewal-hooks/deploy/reload-host-nginx.sh`.
+Before the dual-host vhost is installed, `capsule-zero-deploy` verifies that the live
+certificate matches both `capsulezero.app` and `www.capsulezero.app`. A missing or
+apex-only certificate fails the host-nginx sync and activates the transactional rollback
+instead of publishing an invalid `www` TLS endpoint.
 
 The former `dev.capsulezero.app` edge was decommissioned on 2026-07-02 with the Hetzner
 migration — every merge to `main` deploys straight to production via
@@ -35,6 +39,7 @@ Routine updates are applied automatically by the deploy wrapper
 successful sync. Manual install:
 
 ```bash
+sudo install -d -m 755 /etc/nginx/snippets
 sudo install -m 644 infra/nginx-host/00-capsule-zero.conf /etc/nginx/conf.d/00-capsule-zero.conf
 sudo install -m 644 infra/nginx-host/00-cz-hardening.conf /etc/nginx/conf.d/00-cz-hardening.conf
 sudo install -m 644 infra/nginx-host/cz-request-guard.conf /etc/nginx/snippets/cz-request-guard.conf

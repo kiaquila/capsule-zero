@@ -155,10 +155,10 @@ The platform guides the user through methodology without imposing. It suggests, 
 - **Auth:** Ory Kratos (email/password and Google sign-in in v0.1 — spec 037, native-flow OIDC; Apple Sign-In in Stage 2)
 - **Database:** PostgreSQL 16 with Postgres FTS in v0.1; pgvector and PgBouncer are deferred by ADR-007 until the semantic-search and connection-pressure triggers fire
 - **Cache / queue:** Redis 7 (cache, sessions, Redis-based job queue)
-- **File storage:** Hetzner Object Storage (S3-compatible; no built-in CDN in v0.1, CDN/front-door deferred to Stage 2)
+- **File storage:** Hetzner Object Storage (S3-compatible; no built-in object-storage CDN in v0.1, so public catalog assets use native object URLs until a separate catalog-CDN slice)
 - **Email:** Resend for transactional email (verification, password reset, security alerts)
 - **Image processing:** Self-hosted Capsule Zero model behind a worker (deferred to Stage 2)
-- **DNS / front-door:** Spaceship registrar; Cloudflare proxy for DDoS protection and CDN is deferred to Stage 2 (founder decision 2026-07-02) — v0.1 pre-launch runs direct DNS to the host nginx edge
+- **DNS / front-door:** Spaceship registrar with Cloudflare authoritative DNS and active proxying for the apex + `www`; Full (strict) TLS, DNSSEC, default WAF/DDoS controls, Cloudflare-only origin web ingress, and Tailscale-only SSH are active since 2026-07-22 (spec 047)
 - **Observability:** syslog file logs + tracing in v0.1; Grafana, Sentry, and Prometheus are deferred
 - **Hosting:** Single Hetzner Cloud server running docker-compose (migrated from DigitalOcean 2026-07-02); every service declared as a separate `services:` entry
 - **Languages:** EN (primary) and RU in v0.1 — i18n from Day 1, switching without reload. ES-AR is retained as reference copy and deferred globally to v0.2.

@@ -213,8 +213,10 @@ enabled. Check the latest run with
 ### 4. Cloudflare, TLS certificate + host nginx
 
 Cloudflare uses the Free plan with both web records proxied, SSL/TLS mode **Full
-(strict)**, Always Use HTTPS, minimum TLS 1.2, TLS 1.3, Bot Fight Mode, the default WAF
-and DDoS protections, AI-training crawlers blocked, and DNSSEC enabled. The registrar has
+(strict)**, Always Use HTTPS, minimum TLS 1.2, TLS 1.3, the default WAF and DDoS
+protections, AI-training crawlers blocked, and DNSSEC enabled. Bot Fight Mode is
+disabled because its unscoped Free-plan challenge interfered with the API health
+monitor. The registrar has
 only Cloudflare's assigned nameservers and Cloudflare's DS record. Keep the IP ranges in
 `infra/nginx-host/00-capsule-zero.conf` and both origin firewalls synchronized with
 Cloudflare's published list: nginx trusts `CF-Connecting-IP` only from those ranges, so
@@ -224,11 +226,16 @@ rate limiting and Fail2Ban continue to key on the real visitor address.
 systemctl stop nginx
 certbot certonly --standalone -d capsulezero.app -d www.capsulezero.app --non-interactive --agree-tos -m <email>
 install -d -m 755 /var/www/certbot
+install -d -m 755 /etc/nginx/snippets
 install -d -m 755 /etc/letsencrypt/renewal-hooks/deploy
 printf '#!/bin/sh\nnginx -t && systemctl reload nginx\n' > /etc/letsencrypt/renewal-hooks/deploy/reload-host-nginx.sh
 chmod 755 /etc/letsencrypt/renewal-hooks/deploy/reload-host-nginx.sh
 install -m 644 /opt/capsule-zero/infra/nginx-host/00-capsule-zero.conf /etc/nginx/conf.d/00-capsule-zero.conf
+install -m 644 /opt/capsule-zero/infra/nginx-host/00-cz-hardening.conf /etc/nginx/conf.d/00-cz-hardening.conf
+install -m 644 /opt/capsule-zero/infra/nginx-host/cz-request-guard.conf /etc/nginx/snippets/cz-request-guard.conf
+install -m 644 /opt/capsule-zero/infra/nginx-host/00-default-deny.conf /etc/nginx/sites-available/00-default-deny.conf
 install -m 644 /opt/capsule-zero/infra/nginx-host/capsulezero.app.conf /etc/nginx/sites-available/capsulezero.app.conf
+ln -sf /etc/nginx/sites-available/00-default-deny.conf /etc/nginx/sites-enabled/
 ln -sf /etc/nginx/sites-available/capsulezero.app.conf /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 # Ubuntu 26.04 nginx.conf sets `server_tokens build;` at http level — comment it out;
@@ -236,6 +243,20 @@ rm -f /etc/nginx/sites-enabled/default
 sed -i 's|^\(\s*\)server_tokens .*;|\1# server_tokens (managed by capsule-zero conf.d snippet)|' /etc/nginx/nginx.conf
 nginx -t && systemctl enable --now nginx && systemctl reload nginx
 ```
+
+The routine deploy wrapper verifies the live certificate before copying the dual-host
+vhost:
+
+```bash
+openssl x509 -in /etc/letsencrypt/live/capsulezero.app/fullchain.pem -noout -checkhost capsulezero.app
+openssl x509 -in /etc/letsencrypt/live/capsulezero.app/fullchain.pem -noout -checkhost www.capsulezero.app
+```
+
+If either check fails, expand or reissue the certificate before enabling the new vhost,
+for example with
+`certbot certonly --standalone -d capsulezero.app -d www.capsulezero.app`. The deploy
+wrapper fails closed and restores the previous nginx tree when this precondition is not
+met.
 
 Renewals: certbot's systemd timer + the deploy hook above. HTTP-01 validation traverses
 the proxied Cloudflare records and reaches the allowlisted origin; verify after every
