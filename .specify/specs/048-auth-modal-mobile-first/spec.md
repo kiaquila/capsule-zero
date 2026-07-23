@@ -1,4 +1,4 @@
-# 047 — Auth Modal Mobile-First: Google сверху, форма без лишних полей, честный скролл
+# 048 — Auth Modal Mobile-First: Google сверху, форма без лишних полей, честный скролл
 
 ## Goal
 

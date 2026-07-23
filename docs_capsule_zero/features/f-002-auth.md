@@ -18,7 +18,7 @@
 
 1. User selects the hero CTA (temporary route from landing) or opens the direct auth URL
 2. Glassmorphic auth form displayed — Google button first (when enabled), then email+password+confirm fields
-3. Credentials only (spec 047): name/country/city are not asked at sign-up — they are edited later on the profile screen and stay optional
+3. Credentials only (spec 048): name/country/city are not asked at sign-up — they are edited later on the profile screen and stay optional
 4. Real-time inline validation as user types
 5. On success → redirect to Dashboard
 
@@ -34,14 +34,14 @@
 
 | State                 | Description               | What user sees                                     |
 | --------------------- | ------------------------- | -------------------------------------------------- |
-| Register              | Default registration form | Email, password, confirm-password fields (spec 047) |
+| Register              | Default registration form | Email, password, confirm-password fields (spec 048) |
 | Login                 | Login form                | Email, password fields + "Forgot password"         |
 | Validating            | Real-time field check     | Inline validation messages (not popups)            |
 | Submitting            | Form submitted            | Disabled button + loading indicator                |
 | Error                 | Validation/server error   | Inline error messages (signal red #FF5449 — Q4, 2026-07-16) |
 | Success               | Auth complete             | Redirect to Dashboard                              |
 | Recovery              | Forgot password           | Email input for password reset                     |
-| Social Auth           | Google sign-in (spec 037) | "Continue with Google" leads the form above an "or" divider (spec 047); failed callback lands on /auth with a localized error. Apple stays Stage 2 |
+| Social Auth           | Google sign-in (spec 037) | "Continue with Google" leads the form above an "or" divider (spec 048); failed callback lands on /auth with a localized error. Apple stays Stage 2 |
 
 ## Acceptance Criteria
 

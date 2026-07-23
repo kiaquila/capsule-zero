@@ -40,8 +40,9 @@
   },
   "overrides": {
     "@babel/core": "7.29.6",
+    "fast-uri": "3.1.4",
     "js-yaml": "4.3.0",
     "postcss": "8.5.12",
-    "sharp": "0.35.0"
+    "sharp": "0.35.3"
   }
 }

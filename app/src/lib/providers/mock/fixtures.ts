@@ -212,6 +212,27 @@ export const MOCK_WARDROBE_ITEMS: WardrobeEntry[] = [
     createdAt: "2026-06-01T10:40:00.000Z",
     updatedAt: "2026-06-01T10:50:00.000Z",
   },
+  {
+    id: "22222222-2222-4222-8222-222222222226",
+    userId: MOCK_USER.id,
+    name: "Black leather ankle boots",
+    categoryId: "ankle-boots",
+    photoUrl: "/fixtures/wardrobe/black-ankle-boots.jpg",
+    imageUrl: "/fixtures/wardrobe/black-ankle-boots.jpg",
+    colorPoints: [MOCK_COLORS.black],
+    brand: "Vagabond",
+    material: "Leather",
+    price: 165,
+    capsuleIds: ["33333333-3333-4333-8333-333333333333"],
+    isPublic: false,
+    sourceType: "photo_upload",
+    status: "active",
+    favorite: false,
+    fromCatalog: false,
+    version: 1,
+    createdAt: "2026-06-01T10:55:00.000Z",
+    updatedAt: "2026-06-01T10:55:00.000Z",
+  },
 ];
 
 export const MOCK_CATALOG_ITEMS: WardrobeEntry[] = [
@@ -266,8 +287,12 @@ export const MOCK_CAPSULE: Capsule = {
   garderType: "women",
   palette: MOCK_CAPSULE_PALETTE,
   categories: MOCK_JOURNEY_CATEGORIES,
-  itemIds: MOCK_WARDROBE_ITEMS.slice(0, 2).map((item) => item.id),
-  outfitCount: 18,
+  itemIds: [
+    "22222222-2222-4222-8222-222222222221",
+    "22222222-2222-4222-8222-222222222222",
+    "22222222-2222-4222-8222-222222222226",
+  ],
+  outfitCount: 1,
   gapAnalysis: [
     {
       categoryId: "sneakers",

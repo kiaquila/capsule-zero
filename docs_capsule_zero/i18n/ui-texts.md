@@ -129,7 +129,10 @@
 |---------|-----|-------|-----|
 | Welcome | Welcome! | ¡Bienvenida! | Добро пожаловать! |
 | OPR label | OPR | OPR | OPR |
-| OPR tooltip | Outfit Productivity Ratio — outfits per item | Ratio de Productividad — outfits por prenda | Соотношение комплектов к вещам |
+| OPR tooltip | Wearable outfits per core or accessory item; layers scored separately | Outfits utilizables por prenda base o accesorio; las capas se evalúan aparte | Носибельные комплекты на вещи основы и аксессуары; слои оцениваются отдельно |
+| Layering Coverage | Layering Coverage | Cobertura de capas | Покрытие слоями |
+| Layering Coverage unavailable | N/A — add a base look first | N/D — primero agregá un look base | Н/Д — сначала добавьте базовый образ |
+| Layering diagnostics | Mid {covered}/{total} · Outer {covered}/{total} | Media capa {covered}/{total} · Exterior {covered}/{total} | Средний слой {covered}/{total} · Верхний слой {covered}/{total} |
 | Total Items | Total Items | Total de Prendas | Всего вещей |
 | in wardrobe | in wardrobe | en guardarropa | в гардеробе |
 | Total Outfits | Total Outfits | Total de Outfits | Всего комплектов |

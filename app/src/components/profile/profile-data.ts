@@ -172,7 +172,7 @@ export async function buildProfileSnapshot({
   };
 }
 
-// A credentials-only sign-up (spec 047) carries no name — start from the email
+// A credentials-only sign-up (spec 048) carries no name — start from the email
 // local-part rather than presenting a fabricated identity; empty strings are
 // the honest floor (initials and username already fall back to the email).
 function splitDisplayName(displayName: string | undefined, email: string) {

@@ -14,7 +14,7 @@ export function createSignInSchema(messages: AuthValidationMessages) {
   });
 }
 
-// Sign-up asks only for credentials (spec 047) — profile details (name,
+// Sign-up asks only for credentials (spec 048) — profile details (name,
 // country, city) are collected later on the profile screen.
 export function createSignUpSchema(messages: AuthValidationMessages) {
   return z

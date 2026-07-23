@@ -1,5 +1,8 @@
 # Tasks 026 — Dev Continuous Deployment Pipeline
 
+> **Retired historical task log:** spec 033 decommissioned this dev
+> environment; spec 047 owns the current Cloudflare/Tailscale edge.
+
 ## Tasks
 
 - [x] Amend Constitution VII + CLAUDE.md/AGENTS.md/tests/README.md: TDD failing-test-first

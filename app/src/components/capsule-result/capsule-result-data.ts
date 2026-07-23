@@ -1,8 +1,14 @@
 import { getCategoryById, type Category } from "@/lib/categories";
 import type { AppLocale } from "@/i18n/routing";
 import type { ProviderRegistry, WardrobeEntry } from "@/lib/providers";
-import type { Capsule, ColorGroup, ColorPoint } from "@/types";
+import type { Capsule, ColorPoint } from "@/types";
 import type { PersistedMockSession } from "@/features/auth/session";
+import {
+  calculateOutfitProductivity,
+  type LayeringCoverage,
+  type ProductivityItem,
+} from "@/lib/outfit-productivity";
+import { isDominantColorCompatibleWithPalette } from "@/lib/color-compatibility";
 
 export type CapsuleResultItemSource = "photo" | "marketplace" | "catalog";
 
@@ -15,7 +21,7 @@ export interface CapsuleResultCategory {
   count: number;
 }
 
-export interface CapsuleResultItem {
+export interface CapsuleResultItem extends ProductivityItem {
   id: string;
   name: string;
   categoryId: string;
@@ -62,6 +68,7 @@ export interface CapsuleResultSnapshot {
     opr: string;
     oprValue: number;
     oprDelta: string;
+    layeringCoverage: LayeringCoverage;
     createdAt: string;
   } | null;
   categories: CapsuleResultCategory[];
@@ -118,12 +125,17 @@ export async function buildCapsuleResultSnapshot({
     ...catalogCandidates,
     buildSyntheticIncompatibleItem(locale, palette),
   ]);
+  const productivity = capsule
+    ? calculateOutfitProductivity(capsule.outfitCount, capsuleItems)
+    : null;
 
   return {
     profile: {
       displayName: session.name ?? profile.displayName,
       email: session.email,
-      initials: buildInitials(session.name ?? profile.displayName ?? session.email),
+      initials: buildInitials(
+        session.name ?? profile.displayName ?? session.email,
+      ),
     },
     capsule: capsule
       ? {
@@ -134,16 +146,24 @@ export async function buildCapsuleResultSnapshot({
           itemCount: capsuleItems.length,
           outfitCount: capsule.outfitCount,
           categoryCount: capsule.categories.length,
-          opr: formatOpr(capsule.outfitCount, capsuleItems.length),
-          oprValue: oprValue(capsule.outfitCount, capsuleItems.length),
+          opr: productivity?.opr ?? "0.0",
+          oprValue: productivity?.oprValue ?? 0,
           oprDelta: "+0.3",
+          layeringCoverage: productivity?.layeringCoverage ?? {
+            score: null,
+            baseLookCount: 0,
+            midCoveredLookCount: 0,
+            outerCoveredLookCount: 0,
+          },
           createdAt: capsule.createdAt,
         }
       : null,
     categories,
     items: capsuleItems,
     availableItems,
-    gaps: capsule ? buildInitialGaps(capsule, categories, capsuleItems, locale) : [],
+    gaps: capsule
+      ? buildInitialGaps(capsule, categories, capsuleItems, locale)
+      : [],
   };
 }
 
@@ -151,29 +171,7 @@ export function isItemCompatibleWithPalette(
   itemColors: ColorPoint[],
   palette: ColorPoint[],
 ): boolean {
-  const chromaticPalette = palette.filter((color) => !color.isAchromatic);
-
-  if (!chromaticPalette.length) {
-    return true;
-  }
-
-  return itemColors.every((itemColor) => {
-    if (itemColor.isAchromatic) {
-      return true;
-    }
-
-    return chromaticPalette.every((paletteColor) =>
-      areColorGroupsCompatible(itemColor.group, paletteColor.group),
-    );
-  });
-}
-
-export function formatOpr(outfitCount: number, itemCount: number): string {
-  return oprValue(outfitCount, itemCount).toFixed(1);
-}
-
-export function oprValue(outfitCount: number, itemCount: number): number {
-  return itemCount > 0 ? outfitCount / itemCount : 0;
+  return isDominantColorCompatibleWithPalette(itemColors, palette);
 }
 
 function buildItem(
@@ -186,10 +184,14 @@ function buildItem(
 
   return {
     id: item.id,
+    itemId: item.id,
     name: item.name,
     categoryId: item.categoryId,
     categoryLabel: categoryName(item.categoryId, locale),
     section: category?.section ?? "custom",
+    algorithmRole: category?.algorithmRole ?? null,
+    accessorySlot: category?.accessorySlot ?? null,
+    dominantColor: item.colorPoints[0],
     brand: item.brand,
     material: item.material,
     price: item.price,
@@ -217,10 +219,14 @@ function buildSyntheticIncompatibleItem(
 
   return {
     id: "stage-1-incompatible-blush-scarf",
+    itemId: "stage-1-incompatible-blush-scarf",
     name: locale === "ru" ? "Шелковый шарф Blush" : "Blush silk scarf",
     categoryId,
     categoryLabel: categoryName(categoryId, locale),
     section: "accessories",
+    algorithmRole: "accessory",
+    accessorySlot: "neckwear",
+    dominantColor: SYNTHETIC_INCOMPATIBLE_COLOR,
     brand: "Stage 1 catalog",
     material: "Silk",
     price: 96,
@@ -268,7 +274,10 @@ function buildInitialGaps(
       id: `gap-${gap.categoryId}`,
       categoryId: gap.categoryId,
       categoryLabel: category?.label ?? categoryName(gap.categoryId, locale),
-      colorHint: translateColorHint(gap.colorHint, locale) ?? category?.colorHint ?? colorName(color, locale),
+      colorHint:
+        translateColorHint(gap.colorHint, locale) ??
+        category?.colorHint ??
+        colorName(color, locale),
       colorHex: category?.colorHex ?? color.hex,
       type: "structural" as const,
       reason: translateGapReason(gap.reason, locale),
@@ -291,16 +300,17 @@ function buildInitialGaps(
       reason: buildGapReason(category.section, locale),
       impact: Math.max(4, 10 - index * 2),
       priority:
-        index < 2 ? ("high" as const) : index < 4 ? ("medium" as const) : ("low" as const),
+        index < 2
+          ? ("high" as const)
+          : index < 4
+            ? ("medium" as const)
+            : ("low" as const),
     }));
 
   return [...explicitGaps, ...derivedGaps];
 }
 
-function pickColorHint(
-  palette: Capsule["palette"],
-  index: number,
-): ColorPoint {
+function pickColorHint(palette: Capsule["palette"], index: number): ColorPoint {
   const colors = [...palette.selectedColors, ...palette.achromaticColors];
   return colors[index % colors.length] ?? palette.achromaticColors[0];
 }
@@ -412,25 +422,9 @@ function translateGapReason(reason: string, locale: AppLocale): string {
   return translations[reason] ?? reason;
 }
 
-function areColorGroupsCompatible(
-  baseGroup: ColorGroup,
-  targetGroup: ColorGroup,
-): boolean {
-  if (baseGroup === "achromatic" || targetGroup === "achromatic") {
-    return true;
-  }
-
-  if (baseGroup === targetGroup) {
-    return true;
-  }
-
-  return (
-    (baseGroup === "desaturated" && targetGroup === "dark") ||
-    (baseGroup === "dark" && targetGroup === "desaturated")
-  );
-}
-
-function resolvePublicImageUrl(imageUrl: string | undefined): string | undefined {
+function resolvePublicImageUrl(
+  imageUrl: string | undefined,
+): string | undefined {
   if (!imageUrl || imageUrl.startsWith("/fixtures/")) {
     return undefined;
   }

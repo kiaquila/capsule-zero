@@ -11,13 +11,19 @@ changes deploy-relevant code. Spec: `.specify/specs/033-prod-cd-activation/`.
 
 ## Architecture
 
-The production server is a **Hetzner Cloud CX23** (2 vCPU / 4 GB / 40 GB, Ubuntu 26.04) at
-`178.105.95.17` (`ssh cz`). A single **host (systemd) nginx** — installed via `apt`, not in
-Docker — is the sole TLS edge. There is **no Cloudflare**; DNS A records point straight at
-the server. Containers publish only on loopback:
+The production server is a **Hetzner Cloud CX23** (2 vCPU / 4 GB / 40 GB, Ubuntu 26.04).
+Cloudflare is the public web edge; proxied `capsulezero.app` and `www.capsulezero.app`
+records point to origin `178.105.95.17`. The origin firewall accepts TCP/80 and TCP/443
+only from Cloudflare's published proxy ranges. Operator and CI SSH use only the server's
+Tailscale address, `100.110.12.48` (`ssh cz` from an enrolled operator device); public
+TCP/22 is closed. A single **host (systemd) nginx** — installed via `apt`, not in Docker —
+terminates authenticated TLS from Cloudflare and proxies to containers published only on
+loopback:
 
 ```
-Internet → host nginx :80/:443 (TLS: capsulezero.app)
+Internet → Cloudflare DNS/CDN/WAF :80/:443
+         → origin firewall (Cloudflare proxy ranges only)
+         → host nginx :80/:443 (TLS: capsulezero.app + www.capsulezero.app)
    ├─ /                              → http://127.0.0.1:3000  (web,  Next.js)
    ├─ /api/*                         → http://127.0.0.1:8080  (api,  Go monolith;
    │                                    limit_req on /api/auth/(registration|login|recovery))
@@ -44,8 +50,9 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
    builds get `--build-arg GIT_SHA=<gitsha>` (api also `BUILD_TIME`): the api binary is
    stamped via `-ldflags -X main.commit/main.buildTime` and both images set the OCI
    `org.opencontainers.image.revision` label (spec 036).
-4. **deploy** — SSH to the server as the unprivileged `deploy` user, then run the
-   root-owned wrapper
+4. **deploy** — the GitHub-hosted runner obtains a short-lived Tailscale identity through
+   GitHub OIDC, joins as `tag:ci`, and is permitted to reach only `cz:22`. It then connects
+   over SSH as the unprivileged `deploy` user and runs the root-owned wrapper
    `/usr/local/sbin/capsule-zero-deploy <web-image> <api-image> <sha> <sync-nginx>`.
    The wrapper validates the immutable image refs and SHA, updates the root-owned
    `/opt/capsule-zero` checkout, runs
@@ -98,9 +105,17 @@ apt-get update && apt-get install -y docker.io docker-compose-v2 nginx certbot g
 # 2G swap (the box ships with none)
 fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
 echo "/swapfile none swap sw 0 0" >> /etc/fstab
-# firewall
-ufw allow OpenSSH && ufw allow 80/tcp && ufw allow 443/tcp && ufw --force enable
+# firewall: SSH is private; origin web ports accept Cloudflare proxy ranges only
+ufw allow in on tailscale0 to any port 22 proto tcp comment 'SSH via Tailscale only'
+# Repeat for every IPv4 and IPv6 range published at https://www.cloudflare.com/ips/:
+ufw allow proto tcp from <cloudflare-cidr> to any port 80,443 comment 'Cloudflare origin'
+ufw --force enable
 ```
+
+Install Tailscale from its official Ubuntu repository, enroll the host as `cz`, and keep
+the server's stable tailnet address in the deployment secret. The tailnet policy owns
+`tag:ci` and grants both enrolled members and CI only TCP/22 to this host; all other
+tailnet traffic is denied by default.
 
 ### 2. Deploy user + SSH access for CI
 
@@ -164,11 +179,10 @@ reject dangerous canned ACLs and AllUsers grant-read. The backup credential
 remains in canonical `BACKUP_S3_*` variables and is not passed to the API.
 
 Hetzner/RGW still accepts `PutObject` with Object Lock mode, retain-until, or
-legal-hold headers despite the corresponding action denies. This cannot read
-or delete existing data, but can create newly locked objects and amplify
-storage cost/denial of service. Backup automation remains disabled until its
-uploader forbids/sanitizes those headers and the residual is explicitly
-accepted or fixed by the provider.
+legal-hold headers despite the corresponding action denies. This credential
+cannot read or delete existing data, but a compromised writer could create new
+locked objects and amplify storage cost. The backup uploader therefore sends a
+fixed, locally controlled set of headers and no caller-controlled metadata.
 
 Policy/CORS readback, the runtime audit, the caveated backup hybrid-policy
 audit, proof that both key projects are bucketless, and atomic env rotation
@@ -182,21 +196,46 @@ standalone Go smoke passed readiness, signed PUT of exactly `10485760` bytes,
 HEAD, signed GET checksum match, and cleanup. Private/public exact-origin CORS
 probes returned `200` with their exact headers and max-age `300`; attacker
 origins and backup preflight returned `403` without
-`Access-Control-Allow-Origin`. Backup automation remains deferred until the
-header/risk gate above plus client-side encryption, scheduling, retention, and
-restore verification land.
+`Access-Control-Allow-Origin`.
 
-### 4. TLS certificate + host nginx
+Encrypted off-site backup automation was enabled on 2026-07-22. The root-owned
+`capsule-zero-backup.timer` runs daily at 03:17 UTC with a randomized delay and
+uploads an `age`-encrypted PostgreSQL dump, production configuration, security
+journal slice, and checksum manifest under `postgres/YYYY/MM/DD/`. Plaintext
+backup data exists only in process pipes. The Object Storage bucket has Object
+Lock retention, the server keeps only an upload-only credential, and the `age`
+private key is stored off-server on the operator Mac. A full download,
+decryption, checksum, and PostgreSQL restore drill passed before the timer was
+enabled. Check the latest run with
+`systemctl status capsule-zero-backup.service` and list the schedule with
+`systemctl list-timers capsule-zero-backup.timer`.
+
+### 4. Cloudflare, TLS certificate + host nginx
+
+Cloudflare uses the Free plan with both web records proxied, SSL/TLS mode **Full
+(strict)**, Always Use HTTPS, minimum TLS 1.2, TLS 1.3, the default WAF and DDoS
+protections, AI-training crawlers blocked, and DNSSEC enabled. Bot Fight Mode is
+disabled because its unscoped Free-plan challenge interfered with the API health
+monitor. The registrar has
+only Cloudflare's assigned nameservers and Cloudflare's DS record. Keep the IP ranges in
+`infra/nginx-host/00-capsule-zero.conf` and both origin firewalls synchronized with
+Cloudflare's published list: nginx trusts `CF-Connecting-IP` only from those ranges, so
+rate limiting and Fail2Ban continue to key on the real visitor address.
 
 ```bash
 systemctl stop nginx
-certbot certonly --standalone -d capsulezero.app --non-interactive --agree-tos -m <email>
+certbot certonly --standalone -d capsulezero.app -d www.capsulezero.app --non-interactive --agree-tos -m <email>
 install -d -m 755 /var/www/certbot
+install -d -m 755 /etc/nginx/snippets
 install -d -m 755 /etc/letsencrypt/renewal-hooks/deploy
 printf '#!/bin/sh\nnginx -t && systemctl reload nginx\n' > /etc/letsencrypt/renewal-hooks/deploy/reload-host-nginx.sh
 chmod 755 /etc/letsencrypt/renewal-hooks/deploy/reload-host-nginx.sh
 install -m 644 /opt/capsule-zero/infra/nginx-host/00-capsule-zero.conf /etc/nginx/conf.d/00-capsule-zero.conf
+install -m 644 /opt/capsule-zero/infra/nginx-host/00-cz-hardening.conf /etc/nginx/conf.d/00-cz-hardening.conf
+install -m 644 /opt/capsule-zero/infra/nginx-host/cz-request-guard.conf /etc/nginx/snippets/cz-request-guard.conf
+install -m 644 /opt/capsule-zero/infra/nginx-host/00-default-deny.conf /etc/nginx/sites-available/00-default-deny.conf
 install -m 644 /opt/capsule-zero/infra/nginx-host/capsulezero.app.conf /etc/nginx/sites-available/capsulezero.app.conf
+ln -sf /etc/nginx/sites-available/00-default-deny.conf /etc/nginx/sites-enabled/
 ln -sf /etc/nginx/sites-available/capsulezero.app.conf /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 # Ubuntu 26.04 nginx.conf sets `server_tokens build;` at http level — comment it out;
@@ -205,17 +244,45 @@ sed -i 's|^\(\s*\)server_tokens .*;|\1# server_tokens (managed by capsule-zero c
 nginx -t && systemctl enable --now nginx && systemctl reload nginx
 ```
 
-Renewals: certbot's systemd timer + the deploy hook above. Verify with
-`certbot renew --dry-run`.
+The routine deploy wrapper verifies the live certificate before copying the dual-host
+vhost:
+
+```bash
+openssl verify -CApath /etc/ssl/certs \
+  -untrusted /etc/letsencrypt/live/capsulezero.app/chain.pem \
+  -verify_hostname capsulezero.app \
+  /etc/letsencrypt/live/capsulezero.app/cert.pem
+openssl verify -CApath /etc/ssl/certs \
+  -untrusted /etc/letsencrypt/live/capsulezero.app/chain.pem \
+  -verify_hostname www.capsulezero.app \
+  /etc/letsencrypt/live/capsulezero.app/cert.pem
+```
+
+If either check fails, expand or reissue the certificate before enabling the new vhost,
+for example with
+`certbot certonly --standalone -d capsulezero.app -d www.capsulezero.app`. The deploy
+wrapper fails closed and restores the previous nginx tree when this precondition is not
+met.
+
+Renewals: certbot's systemd timer + the deploy hook above. HTTP-01 validation traverses
+the proxied Cloudflare records and reaches the allowlisted origin; verify after every
+firewall or DNS change with `certbot renew --dry-run`.
 
 ### 5. GitHub repository secrets
 
-| Secret                    | Value                                          |
-| ------------------------- | ---------------------------------------------- |
-| `PROD_DEPLOY_HOST`        | `178.105.95.17`                                |
-| `PROD_DEPLOY_USER`        | `deploy`                                       |
-| `PROD_DEPLOY_SSH_KEY`     | private CI SSH key (matches `authorized_keys`) |
-| `PROD_DEPLOY_KNOWN_HOSTS` | `ssh-keyscan -t ed25519 178.105.95.17` output  |
+| Secret                    | Value                                                 |
+| ------------------------- | ----------------------------------------------------- |
+| `PROD_DEPLOY_HOST`        | `100.110.12.48` (server's Tailscale address)          |
+| `PROD_DEPLOY_USER`        | `deploy`                                              |
+| `PROD_DEPLOY_SSH_KEY`     | private CI SSH key (matches `authorized_keys`)        |
+| `PROD_DEPLOY_KNOWN_HOSTS` | `ssh-keyscan -t ed25519 100.110.12.48` output         |
+| `TS_OAUTH_CLIENT_ID`      | Tailscale workload-identity client ID                 |
+| `TS_AUDIENCE`             | audience generated with the Tailscale OIDC credential |
+
+The Tailscale federated credential uses issuer `https://token.actions.githubusercontent.com`,
+subject `repo:kiaquila/capsule-zero:environment:production`, `auth_keys` scope, and
+`tag:ci`. The deploy job needs `id-token: write`; no long-lived Tailscale client secret is
+stored in GitHub.
 
 `GITHUB_TOKEN` (built-in) authenticates the GHCR **push** from CI — no extra secret needed.
 The legacy `DEV_DEPLOY_*` secrets are retired with the dev environment.

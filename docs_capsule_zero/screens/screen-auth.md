@@ -35,7 +35,7 @@ Prototype: `html-prototypes/auth.html`; popup host: live `LandingPage` + reusabl
 └─────────────────────────────────────────────────────────┘
 ```
 
-Sign-up asks for credentials only (spec 047): name, country, and city moved to
+Sign-up asks for credentials only (spec 048): name, country, and city moved to
 the profile screen (see `.specify/specs/020-stage-1-profile/`), where they were
 already editable. The panel header titles the active mode ("Log In" /
 "Create Account" / recovery); mode switching lives in the link under the form.
@@ -48,7 +48,7 @@ already editable. The panel header titles the active mode ("Log In" /
 - **Inputs:** Glass input style
 - **Register Button:** Primary glass button
 - **Validation:** Inline, real-time, signal red (#FF5449, Q4 2026-07-16) for errors — text on scrim chips uses #FF7A70
-- **Google Button:** active since spec 037 when the deployment enables the provider — social glass surface, monochrome G glyph; since spec 047 it leads the form (above the email fields, followed by an "or" divider) so the primary path stays above the mobile fold; hidden otherwise
+- **Google Button:** active since spec 037 when the deployment enables the provider — social glass surface, monochrome G glyph; since spec 048 it leads the form (above the email fields, followed by an "or" divider) so the primary path stays above the mobile fold; hidden otherwise
 - **Apple Icon:** Stage 2 only; always black when implemented
 
 ## Interactivity
@@ -66,7 +66,7 @@ already editable. The panel header titles the active mode ("Log In" /
 - Mobile: Glass panel full-width with padding
 - Tablet/Desktop: Glass panel centered, max-width ~400px
 - Panel max-height: `calc(100svh - 112px - env(safe-area-inset-bottom))` with
-  internal scroll (spec 047) — the reserve covers the fixed header and in-app
+  internal scroll (spec 048) — the reserve covers the fixed header and in-app
   browser chrome (Telegram/Instagram float a bar over the page bottom)
 - Overflow affordance: when content continues below the fold the panel bottom
   fades out (mask); the scrollbar stays hidden

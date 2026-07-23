@@ -37,5 +37,6 @@ behavior is verified by package tests.
 
 The current upload schema supports only `photo_upload` jobs transitioning from
 `queued` to `completed`, plus unattached `original` item assets. Redis queue
-consumers, processed variants, backup automation, and the remaining product
-bounded contexts are deferred to later slices.
+consumers, processed variants, and the remaining product bounded contexts are
+deferred to later slices. Encrypted database backups are an operator-managed
+host service activated by spec 047; they are deliberately outside the API.

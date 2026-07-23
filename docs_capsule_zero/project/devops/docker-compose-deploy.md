@@ -7,8 +7,9 @@ Ory Kratos, plain PostgreSQL 16, and external Hetzner Object Storage; Redis and
 imgproxy are later spec-024 phases. The public edge is host-managed nginx; the
 compose-managed nginx service is retained only as a `docker-edge` rollback
 profile. Compose is the only process supervisor for application containers;
-VM-level firewalling, host nginx, backups, and secret delivery remain outside
-git. PgBouncer, pgvector, a standalone worker container, and Grafana dashboards
+VM-level firewalling, host service installation, backup units, and secret
+delivery remain operator-managed; repository-managed host-nginx config lives in
+`infra/nginx-host/`. PgBouncer, pgvector, a standalone worker container, and Grafana dashboards
 remain deferred by ADR-007.
 
 The full runtime is delivered by `.specify/specs/024-production-stack-runtime/` across six phases. Phase 1 ships host nginx + web (operational runbook: `docs_capsule_zero/project/devops/nginx-reverse-proxy.md`); this document describes the steady-state operational contract once every phase has shipped.
@@ -35,7 +36,7 @@ Deferred runtime elements stay out of the active compose topology until ADR-007 
 | `pgvector`          | Plain `postgres:16` ships first; semantic-search migrations add vectors later.        |
 | `redis`             | Pending spec-024 phase; there is no Redis service or queue consumer in the current stack. |
 | `imgproxy`          | Pending derivative-image phase; spec 040 stores originals only.                       |
-| Backup automation  | Bucket/key are provisioned; Object Lock header sanitization/risk acceptance, encryption, scheduling, retention, and restores are Phase 5. |
+| Backup automation  | Active as a root-owned systemd timer outside compose; fixed-header upload-only writer, `age` encryption, Object Lock retention, and restore drill are recorded in spec 047. |
 | Standalone `worker` | Deferred by ADR-007; no in-process Redis consumer has landed either.                  |
 | `grafana`           | syslog files + traces are the v0.1 observability surface; dashboards come back later. |
 
@@ -49,9 +50,8 @@ edge bind-mounts `/etc/letsencrypt` and `/var/www/certbot` when the
 
 Object storage and email leave the droplet:
 
-- **Hetzner Object Storage** for private originals and the provisioned future
-  public-catalog/backup boundaries. The backup bucket is not evidence that
-  encrypted backup automation has landed.
+- **Hetzner Object Storage** for private originals, the future public catalog,
+  and active encrypted off-site backups (spec 047).
 - **Resend** for the provisioned Kratos SMTP courier (verification and password recovery).
 
 ## Files
@@ -93,9 +93,9 @@ stack are exactly the `${VAR:?…}`-guarded interpolations in
 Provisioned policy-boundary and later-phase keys are also present in the
 template, but are not consumed by the spec-040 private upload path:
 
-- `CF_DNS_API_TOKEN` — Stage 2 only: certbot DNS-01 against Cloudflare once the deferred front-door activates (founder decision 2026-07-02); until then certbot uses HTTP-01 directly
+- `CF_DNS_API_TOKEN` — not consumed by the current runtime; certbot HTTP-01 traverses the proxied Cloudflare records to the allowlisted origin
 - `OBJECT_STORAGE_PUBLIC_BUCKET`, `OBJECT_STORAGE_PUBLIC_BASE_URL` — provisioned catalog boundary; public-catalog application behavior remains deferred
-- `BACKUP_S3_ENDPOINT`, `BACKUP_S3_REGION`, `BACKUP_S3_BUCKET`, `BACKUP_S3_ACCESS_KEY_ID`, `BACKUP_S3_SECRET_ACCESS_KEY` — Phase 5 encrypted Postgres backups
+- `BACKUP_S3_ENDPOINT`, `BACKUP_S3_REGION`, `BACKUP_S3_BUCKET`, `BACKUP_S3_ACCESS_KEY_ID`, `BACKUP_S3_SECRET_ACCESS_KEY` — active root-owned encrypted backup service, never passed to the API
 - `RESEND_API_KEY`, `RESEND_FROM` — reserved for a future direct email client;
   the provisioned Kratos courier already uses `KRATOS_SMTP_CONNECTION_URI`
 - `MOBILE_DEEP_LINK_SCHEME` — React Native slice
@@ -176,13 +176,15 @@ docker compose down -v
 docker compose up -d
 ```
 
-## Backups (deferred Phase 5)
+## Backups (active through spec 047)
 
 The isolated Object-Locked bucket and its writer credential from bucketless
-key-only project `15302925` are provisioned, but the nightly job, client-side
-encryption, Object Lock header sanitization/risk acceptance, retention
-enforcement, and restore drills have not landed. The following pipeline is the
-Phase-5 target, not a currently scheduled command:
+key-only project `15302925` are provisioned. Spec 047 activated the root-owned
+nightly job only after client-side `age` encryption, a fixed-header uploader,
+explicit residual-risk acceptance, retention enforcement, and a successful
+restore drill. The operator-managed service uses the equivalent of this
+pipeline; it is shown as an explanatory shape, not as a replacement for the
+installed service:
 
 ```bash
 docker compose exec postgres pg_dump -U capsule_zero -d capsule_zero --format=custom | \
@@ -209,11 +211,10 @@ canned ACLs and AllUsers grant-read.
 Hetzner/RGW nevertheless accepts `PutObject` carrying Object Lock mode,
 retain-until, or legal-hold headers. This does not expose or permit deletion of
 existing objects, but it can create newly locked objects, producing a bounded
-storage-DoS/cost-amplification risk. The Phase-5 uploader must forbid/sanitize
-those headers and receive explicit residual-risk acceptance or wait for a
-provider fix. These provisioning facts also do not authorize plaintext
-uploads: backup automation must encrypt with age before the first database
-object is stored.
+storage-DoS/cost-amplification risk. Spec 047 accepts that residual behind the
+root-owned uploader, which constructs its own fixed header set and exposes no
+caller-controlled Object Lock headers. Plaintext database uploads remain
+forbidden.
 
 Object storage durability is provided by Hetzner Object Storage, but it is not a
 complete backup strategy by itself. Database restores must be exercised on a
@@ -233,10 +234,12 @@ a later resilience task after deletion/privacy semantics are defined.
 
 ## Ingress
 
-Public traffic enters via direct DNS -> host nginx on the server (ports 80/443); the Cloudflare front-door is deferred to Stage 2 (founder decision 2026-07-02, spec 033). The rollback compose nginx profile preserves the same routing contract when `docker-edge` is enabled:
+Public traffic enters through Cloudflare DNS/CDN/WAF, then the Cloudflare-only
+origin firewall and host nginx on ports 80/443 (spec 047). The rollback compose
+nginx profile preserves the same routing contract when `docker-edge` is enabled:
 
 - terminates Let's Encrypt TLS for `capsulezero.app` (certs issued by host certbot, mounted from `/etc/letsencrypt`),
-- carries the `realip` config for Cloudflare (`set_real_ip_from` Cloudflare ranges + `real_ip_header CF-Connecting-IP`) — inert until the Stage-2 Cloudflare activation; with direct DNS, `$remote_addr` is already the true client,
+- carries the active `realip` config for Cloudflare (`set_real_ip_from` Cloudflare ranges + `real_ip_header CF-Connecting-IP`) so `$remote_addr` is the trusted visitor address,
 - runs a per-IP `limit_req_zone` rate-limit (keyed on the realip-corrected client),
 - runs an `auth_request` against Kratos for protected routes,
 - routes `/` to `web`,
@@ -244,7 +247,12 @@ Public traffic enters via direct DNS -> host nginx on the server (ports 80/443);
 - returns `404` for `/self-service/*` and `/sessions/*` — the Kratos public API is **not** exposed at the edge. All auth writes go through the Go API (`/api/auth/*`), which drives Kratos over the internal network and owns duplicate-identifier sanitization + the auth rate limit; recovery emails contain code only and verification email links land on app routes via custom Kratos courier templates, so no public self-service path is needed in v0.1.
 - adds a `grafana.capsulezero.app` route only after ADR-007 promotes Grafana.
 
-The Cloudflare proxy (edge TLS offload, DDoS protection, Bot Fight Mode, CDN) joins at Stage 2; until then host nginx is the sole edge. Postgres, Redis, and both the Kratos public and admin APIs stay internal to the compose network in production; no host port is exposed (the dev override binds Kratos public to `127.0.0.1:4433` for local inspection only).
+Cloudflare proxying, Full (strict) TLS, DNSSEC, scoped authentication rate
+limiting, and the default WAF/DDoS controls are active. Bot Fight Mode stays
+disabled because the unscoped Free-plan feature challenged the health monitor.
+Postgres, Redis, and both the Kratos public and admin APIs stay internal to the
+compose network in production; no host port is exposed (the dev override binds
+Kratos public to `127.0.0.1:4433` for local inspection only).
 
 ## Operational Constraints
 
@@ -257,10 +265,9 @@ The Cloudflare proxy (edge TLS offload, DDoS protection, Bot Fight Mode, CDN) jo
   plus put/get/delete only under `item-originals/*` and `smoke/spec-040/*`; the
   public bucket explicitly denies it `s3:*`. The backup writer belongs to
   bucketless key-only project `15302925` and uses the caveated hybrid policy
-  described above; backup CORS is absent. It cannot read/delete existing data,
-  but Put-time Object Lock headers remain a bounded storage-DoS/cost residual
-  and block backup automation pending header sanitization plus explicit
-  acceptance/provider fix.
+  described above; backup CORS is absent. It cannot read/delete existing data.
+  Put-time Object Lock headers remain a bounded storage-DoS/cost residual,
+  accepted for the active backup job behind spec 047's fixed-header uploader.
 - Policy/CORS readback, the runtime audit, the backup hybrid-policy audit with
   its recorded Object Lock header exception, bucketless-project checks, and the
   protected env rotation passed. `/opt/capsule-zero/.env`

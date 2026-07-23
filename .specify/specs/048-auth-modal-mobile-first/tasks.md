@@ -1,6 +1,6 @@
-# 047 — Tasks & Process Memory
+# 048 — Tasks & Process Memory
 
-**Input**: `.specify/specs/047-auth-modal-mobile-first/spec.md`, `plan.md`
+**Input**: `.specify/specs/048-auth-modal-mobile-first/spec.md`, `plan.md`
 
 ## Tasks
 

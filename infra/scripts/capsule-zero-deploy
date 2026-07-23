@@ -7,9 +7,16 @@ compose_file="docker-compose.yml"
 env_file=".env"
 state_dir="/var/lib/capsule-zero"
 nginx_sync_marker="$state_dir/last-host-nginx-sync-sha"
+host_tls_certificate="/etc/letsencrypt/live/capsulezero.app/cert.pem"
+host_tls_chain="/etc/letsencrypt/live/capsulezero.app/chain.pem"
+host_tls_ca_path="/etc/ssl/certs"
 nginx_paths=(
   /etc/nginx/conf.d/00-capsule-zero.conf
+  /etc/nginx/conf.d/00-cz-hardening.conf
+  /etc/nginx/snippets/cz-request-guard.conf
+  /etc/nginx/sites-available/00-default-deny.conf
   /etc/nginx/sites-available/capsulezero.app.conf
+  /etc/nginx/sites-enabled/00-default-deny.conf
   /etc/nginx/sites-enabled/capsulezero.app.conf
   /etc/nginx/sites-enabled/default
 )
@@ -57,6 +64,7 @@ require_cmd ln
 require_cmd mkdir
 require_cmd mktemp
 require_cmd nginx
+require_cmd openssl
 require_cmd rm
 require_cmd systemctl
 
@@ -151,9 +159,33 @@ restore_nginx_config() {
   systemctl reload nginx
 }
 
+verify_host_certificate() {
+  local hostname path
+  for path in "$host_tls_certificate" "$host_tls_chain" "$host_tls_ca_path"; do
+    [ -r "$path" ] || {
+      echo "host TLS verification input is missing: $path" >&2
+      return 1
+    }
+  done
+  for hostname in capsulezero.app www.capsulezero.app; do
+    if ! openssl verify -CApath "$host_tls_ca_path" \
+      -untrusted "$host_tls_chain" \
+      -verify_hostname "$hostname" \
+      "$host_tls_certificate" >/dev/null 2>&1; then
+      echo "host TLS certificate chain does not verify for $hostname" >&2
+      return 1
+    fi
+  done
+}
+
 apply_host_nginx_config() {
+  verify_host_certificate || return
   install -m 644 infra/nginx-host/00-capsule-zero.conf /etc/nginx/conf.d/00-capsule-zero.conf || return
+  install -m 644 infra/nginx-host/00-cz-hardening.conf /etc/nginx/conf.d/00-cz-hardening.conf || return
+  install -m 644 infra/nginx-host/cz-request-guard.conf /etc/nginx/snippets/cz-request-guard.conf || return
+  install -m 644 infra/nginx-host/00-default-deny.conf /etc/nginx/sites-available/00-default-deny.conf || return
   install -m 644 infra/nginx-host/capsulezero.app.conf /etc/nginx/sites-available/capsulezero.app.conf || return
+  ln -sf /etc/nginx/sites-available/00-default-deny.conf /etc/nginx/sites-enabled/ || return
   ln -sf /etc/nginx/sites-available/capsulezero.app.conf /etc/nginx/sites-enabled/ || return
   rm -f /etc/nginx/sites-enabled/default || return
   nginx -t || return

@@ -43,7 +43,7 @@ test.describe("Landing — auth popup", () => {
     await expect(landing.auth.signUpForm).toBeVisible();
   });
 
-  // Spec 047: the header titles the active mode; the Google button leads the
+  // Spec 048: the header titles the active mode; the Google button leads the
   // form so the primary path stays above the mobile fold.
   test("panel is titled per mode and the Google button sits above the email field", async ({
     landing,

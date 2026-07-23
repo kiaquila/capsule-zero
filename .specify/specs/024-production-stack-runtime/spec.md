@@ -20,7 +20,7 @@ The spec ships in incremental PRs against the same feature folder. Each phase ke
 | Phase 2 — Auth vertical slice (Postgres + Kratos + Go API auth + `api` provider) | Add `postgres` (plain `postgres:16`) and `kratos` to compose; scaffold the Go `api` with the auth/profile bounded context (`GET /api/health`, Kratos session validation, `profiles` mapping); nginx routes `/api/*`; add the `api` provider mode in `/app` implementing `AuthPort` + `ProfileRepository` against the Go API. Registration/login work end-to-end on the existing `/app` UI. | **Shipped** |
 | Phase 3 — Redis + remaining `/api/*` surface | Add `redis` and the Redis queue consumer goroutines inside `api`; widen `/api/*` coverage as the next domain slices land. | Pending |
 | Phase 4 — Storage + email + imgproxy | Hetzner Object Storage buckets with CORS for `https://capsulezero.app`. Resend domain verified with SPF + DKIM. `imgproxy` deployed for on-the-fly derivatives. | **Partial** — Resend and the spec-040 default-off storage foundation are complete: buckets, dedicated bucketless runtime/backup key projects, cross-project action policies, exact asset CORS/negative probes, absent backup CORS, protected-env credential rotation, old-key/operator revocation, and the post-revocation signed 10 MiB smoke. `imgproxy` remains. |
-| Phase 5 — Observability + backups | syslog rotation, OTLP trace exporter, and nightly encrypted `pg_dump` cron with 14-day object-retention policy. Backup activation must reject Object Lock headers on `PutObject` and explicitly accept or close Hetzner's remaining write-time retention/hold residual. Grafana remains deferred by ADR-007. | Pending |
+| Phase 5 — Observability + backups | syslog rotation, OTLP trace exporter, and nightly encrypted `pg_dump` with Object Lock retention. Grafana remains deferred by ADR-007. | **Partial** — spec 047 activated the root-owned encrypted backup timer after a fixed-header uploader boundary, explicit residual-risk acceptance, retention setup, and a restore drill. syslog/OTLP completion remains. |
 | Phase 6 — Supabase provider retirement | `/app` **stays** (it is the real frontend). Once every domain is on the `api` provider, remove the Supabase provider and `@supabase/*`, drop the unused `/web` placeholder, and retire `docker-compose.legacy-supabase.yml` + the Supabase env keys. No `/app` → `/web` rename. | Pending |
 
 Each phase ships as its own PR with feature-memory updates against this folder. The `## Verification` table in `plan.md` records acceptance criteria for each phase separately.
@@ -42,7 +42,10 @@ Each phase ships as its own PR with feature-memory updates against this folder. 
   - `infra/kratos/` — identity schema, courier (Resend SMTP) configuration, self-service flow config (Phase 2)
   - `infra/postgres/` — init scripts: provision the Kratos database + role and the app database (Phase 2). pgvector is deferred by ADR-007 to the semantic catalog-search slice.
 - `api/migrations/` — SQL migrations applied at boot by the embedded migrator. The auth slice ships `0001_initial_auth.sql` (`profiles`); the wardrobe/capsule/catalog schema plus methodology seed (`color_catalog`, `category_catalog`, `compatibility_rules`) arrive with their domain slices.
-- ~~Cloudflare configuration walkthrough (DNS, proxy on, SSL/TLS Full strict, Bot Fight Mode)~~ — the Cloudflare front-door is **deferred to Stage 2** (founder decision 2026-07-02, spec 033); v0.1 runs direct DNS → host nginx
+- Cloudflare authoritative DNS + proxy on the apex and `www`, Full (strict)
+  TLS, DNSSEC, Cloudflare-only origin web ingress, scoped edge rate limiting,
+  and default WAF/DDoS controls (activated 2026-07-22 in spec 047). Bot Fight
+  Mode stays disabled because it challenged the health monitor.
 - Hetzner Object Storage buckets for private uploads, public catalog assets,
   and encrypted backups; bucketless key-only projects for runtime/backup
   credentials with cross-project prefix/action policies; CORS limited to
@@ -87,7 +90,10 @@ The runtime must survive the following without silently degrading. Each is cover
 ## Constraints
 
 - Production server ≥ 2 vCPU / 4 GB RAM (current: Hetzner CX23 — 2 vCPU / 4 GB / 40 GB, Ubuntu 26.04; superseded the DigitalOcean droplet requirement 2026-07-02, spec 033). The runtime fails closed if memory pressure drives any service into OOM during the first-start smoke.
-- DNS: `capsulezero.app` A records point directly at the production server; the Cloudflare cut-over (Spaceship nameservers → Cloudflare proxy → nginx) is **deferred to Stage 2** (founder decision 2026-07-02, spec 033). No third-party CDN is active in v0.1; public catalog assets use native Hetzner Object Storage object URLs until the Stage-2 CDN/front-door decision.
+- DNS: Spaceship delegates to Cloudflare; proxied apex + `www` records reach the
+  Cloudflare-only origin firewall and host nginx. The application front-door
+  CDN is active, while public catalog assets continue to use native Hetzner
+  Object Storage object URLs until a separate catalog-CDN slice.
 - All secrets live only in protected plaintext `/opt/capsule-zero/.env`
   (`root:root`, mode `600`) and provider dashboards. Filesystem encryption is
   not established. Never in git, never in chat with agents.

@@ -78,7 +78,7 @@
 
 | Task              | Days | Description                                                                                                                                                                          | Result         |
 | ----------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------- |
-| Stack selection   | D1-2 | Web (Next.js/React), mobile (React Native), Go backend, plain Postgres in v0.1 (pgvector deferred), Hetzner Object Storage, Cloudflare front-door/CDN deferred to Stage 2, Lava.top payments (stubbed in v0.1). | ADR            |
+| Stack selection   | D1-2 | Web (Next.js/React), mobile (React Native), Go backend, plain Postgres in v0.1 (pgvector deferred), Hetzner Object Storage, active Cloudflare application front-door/CDN, monetization frozen until PRODUCT-PLAN Stage 4. | ADR            |
 | Repository        | D2-3 | Mono/multi-repo. Linting, formatting, commit hooks, folder structure.                                                                                                                | Clean repo     |
 | CI/CD             | D3-4 | Auto-tests, build, deploy. Staging. Preview deployments.                                                                                                                             | CI/CD pipeline |
 | API design        | D4-5 | Shared web/mobile backend contract, REST/RPC endpoints, schemas, authentication, Lava.top webhook contract.                                                                          | API spec       |
@@ -92,7 +92,7 @@
 
 | Sprint                            | Days            | Focus                                                                                                                                                                             | Result                                                                               |
 | --------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| 0: Readiness Gate                 | D1-5 (W5)       | OpenAPI contract, Go monolith migrations + tests, React Native scaffold, docker-compose runtime on the server, Cloudflare anti-DDoS (deferred to Stage 2, 2026-07-02), Resend setup, lint/hooks, founder approval. | Phase 5 entrance checklist complete (`.specify/specs/024-production-stack-runtime/`) |
+| 0: Readiness Gate                 | D1-5 (W5)       | OpenAPI contract, Go monolith migrations + tests, React Native scaffold, docker-compose runtime on the server, active Cloudflare anti-DDoS/origin isolation + Tailscale-only SSH (spec 047), Resend setup, lint/hooks, founder approval. | Phase 5 entrance checklist complete (`.specify/specs/024-production-stack-runtime/`) |
 | 1: Foundation                     | D6-10 (W6)      | Landing pixel-perfect, navigation, mobile-first layout system, shared tokens, Go API auth + profile slice.                                                                        | Landing + backend foundation on staging                                              |
 | 2: Shared Contract + Mobile Shell | D11-15 (W7)     | Auth, profile, generated clients from OpenAPI, React Native routing, deep links, shared domain models.                                                                            | Web auth + React Native shell                                                        |
 | 3: Onboarding                     | D16-20 (W8)     | Guided journey (wardrobe type, categories, colors + items), profile, transitions across web and mobile.                                                                           | Onboarding on staging/internal mobile build                                          |
@@ -187,7 +187,7 @@
 | ----------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
 | Claude.ai (Opus/Sonnet) | Product AI, Marketing, UX/UI Researcher, UX/UI Designer (specs), Tech Architect, AI Stylist-Consultant | Strategy, research, specifications, styling expertise |
 | Claude Code             | Programmer AI, QA AI, DevOps                                                                           | Code, testing, CI/CD, deploy, optimization            |
-| External APIs           | Hetzner Object Storage, Resend, Cloudflare (Stage 2), Lava.top (stubbed in v0.1)                        | Specialized services                                  |
+| External APIs           | Hetzner Object Storage, Resend, active Cloudflare front door; monetization provider deferred to PRODUCT-PLAN Stage 4 | Specialized services                                  |
 
 ### Artifact Handoff Protocol
 

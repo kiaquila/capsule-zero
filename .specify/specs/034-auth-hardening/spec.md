@@ -46,8 +46,8 @@ is ready for real-provider QA:
 - Recovery / email verification / settings flows (next slice; decision 2026-07-02:
   auto-login stays, verification is async — the registration status-code enumeration
   residual remains accepted for v0.1).
-- Cloudflare front-door and CF-ranges refresh (deferred to Stage 2, founder decision
-  2026-07-02).
+- Cloudflare front-door and CF-ranges refresh (out of this auth slice; later
+  activated by spec 047 on 2026-07-22).
 - Shared (Redis-backed) rate-limit store — single-droplet topology keeps the in-memory
   limiter; revisit on scale-out.
 - nginx edge changes: the Go limiter is the single chokepoint both edge-direct and

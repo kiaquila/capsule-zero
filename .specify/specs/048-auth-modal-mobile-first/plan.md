@@ -1,4 +1,4 @@
-# 047 — Plan & Verification
+# 048 — Plan & Verification
 
 Однослайсовая доставка. Application-код (spec ≥ 025) — по TDD: расширенный
 `auth-popup.spec.ts` (заголовки, порядок Google/email, состав полей) красный на
@@ -20,6 +20,6 @@
 91 pre-existing warnings; stylelint — 0 errors / 99 pre-existing warnings;
 production build — exit 0; e2e lint — 0 errors / 3 pre-existing `.skip()`
 warnings; e2e typecheck — чисто; `check-feature-memory --worktree` — passed via
-047-триплет. Целевые Playwright-спеки (`auth-popup` + `registration`, chromium,
+048-триплет. Целевые Playwright-спеки (`auth-popup` + `registration`, chromium,
 против docker dev-стека) — 5/5 passed. Критерий истины для GitHub-гейтов —
 checks на PR HEAD.

@@ -1,5 +1,10 @@
 # Spec 026 — Dev Continuous Deployment Pipeline
 
+> **Retired historical slice:** spec 033 decommissioned `dev.capsulezero.app`
+> and moved all merges to production on 2026-07-02. Spec 047 later activated
+> Cloudflare and Tailscale-only administration on 2026-07-22. The topology below
+> describes the former dev environment and must not be used for current setup.
+
 ## Goal
 
 Every merge to `main` that changes application or delivery-relevant code automatically

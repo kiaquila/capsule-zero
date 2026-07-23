@@ -2410,6 +2410,31 @@ textarea {
   line-height: 1.45;
 }
 
+.dashboard-layering-metric {
+  width: 100%;
+  margin-top: 14px;
+  border-top: 1px solid var(--color-white-a16);
+  padding-top: 12px;
+}
+
+.dashboard-layering-metric strong {
+  display: block;
+  margin-top: 5px;
+  margin-bottom: 8px;
+  color: var(--color-text-primary);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.dashboard-layering-metric small {
+  display: block;
+  margin-top: 0;
+  color: var(--color-text-placeholder);
+  font-size: 8.5px;
+  line-height: 1.4;
+}
+
 .dashboard-empty-card {
   display: flex;
   min-height: 280px;
@@ -4519,6 +4544,22 @@ textarea {
   text-align: center;
 }
 
+.capsule-result-opr-primary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.capsule-result-layering {
+  display: flex;
+  width: 132px;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 14px;
+  border-top: 1px solid var(--color-white-a16);
+  padding-top: 10px;
+}
+
 .capsule-result-opr p {
   color: var(--color-text-primary);
   font-size: 52px;
@@ -4548,6 +4589,15 @@ textarea {
 .capsule-result-opr strong {
   /* stylelint-disable-next-line declaration-property-value-disallowed-list -- 039 US2/T013: approved at .78; becomes var(--color-text-secondary) when the .78 retune lands test-first (§9.2, Codex P2) */
   color: rgba(255, 255, 255, 0.78);
+}
+
+.capsule-result-layering strong {
+  font-size: 16px;
+}
+
+.capsule-result-layering small {
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .capsule-result-tabs {
@@ -5501,6 +5551,20 @@ textarea {
     border-left: 0;
     padding-top: 16px;
     text-align: left;
+  }
+
+  .capsule-result-opr-primary {
+    align-items: flex-start;
+  }
+
+  .capsule-result-layering {
+    width: auto;
+    align-items: flex-start;
+    margin-top: 0;
+    border-top: 0;
+    border-left: 1px solid var(--color-white-a16);
+    padding-top: 0;
+    padding-left: 16px;
   }
 
   .capsule-result-opr p {
