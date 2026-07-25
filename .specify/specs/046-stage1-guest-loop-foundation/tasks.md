@@ -42,6 +42,10 @@
 - [x] T019 OSV gate: заменить уязвимые transitive `fast-uri@3.1.3` и `sharp@0.34.5` точечными
   npm overrides на `3.1.4` / `0.35.3`, обновить app lockfile и подтвердить zero findings тем же
   `osv-scanner-action:v2.3.5`, app CI-check и production Docker build
+- [x] T020 OSV follow-up 2026-07-24: обновить `postcss` до `8.5.18` и совместимую
+  `brace-expansion@5.x` цепочку до `5.0.8`; для dev-only `brace-expansion@1.1.16`, у которого нет
+  patched 1.x, добавить точные app/e2e package overrides до 2026-08-08 и подтвердить zero findings
+  тем же scanner-action image
 
 ## Process Memory
 
@@ -154,6 +158,13 @@
   а `sharp` переопределён на исправленный `0.35.3`. Next загружает root-resolved `sharp` без runtime
   version gate; Linux production image с чистым `npm ci` и standalone build проходит. Product code,
   Supabase boundary и runtime contracts не менялись.
+- **Временное OSV-исключение точное и fail-closed:** новые исправимые `postcss`/`brace-expansion@5`
+  findings обновлены. Legacy `brace-expansion@1.1.16` используется только dev-only ESLint-цепочкой
+  через `minimatch@3`; upstream не опубликовал patched 1.x. Два локальных `PackageOverrides`
+  совпадают по exact name/version/ecosystem и истекают 2026-08-08. Политика в
+  `github-ci-and-branch-protection.md` запрещает broad ID-ignore и unversioned exceptions.
+  `npm audit` не читает OSV config и поэтому продолжает сообщать этот принятый finding; merge gate
+  проверяется pinned OSV Scanner v2.3.5, который применяет точные локальные overrides.
 
 ### Dead Ends
 
@@ -223,6 +234,9 @@
   даже текущий `next@16.2.11` продолжает объявлять optional `sharp@^0.34.5`, поэтому patch-upgrade не
   снимает OSV finding. Локальный override выбирает уже принятый upstream-линейкой `sharp@0.35.3` и
   проверяется реальной standalone-сборкой, а не игнорированием advisory.
+- **Принудительно подменить `brace-expansion@1.x` на 5.0.8:** отвергнуто реальным lint-прогоном —
+  `minimatch@3` ожидает callable CommonJS export, а 5.x экспортирует object; результат
+  `TypeError: expand is not a function`. Compatible patched 1.x release на 2026-07-24 отсутствует.
 
 ### Known Issues
 
@@ -239,3 +253,6 @@
 - **Реализация гостевой петли** — не в этом PR (Roadmap P1–P4, `spec.md`).
 - **Временный `sharp` override:** удалить его, когда стабильный Next начнёт объявлять безопасный
   `sharp@>=0.35`; до этого Dependabot/OSV и production Docker build остаются обязательными guards.
+- **Временный `brace-expansion@1.1.16` scanner override:** до 2026-08-08 проверить patched 1.x либо
+  переход ESLint / `eslint-plugin-jsx-a11y` с `minimatch@3`; удалить исключение сразу после
+  совместимого upstream fix. Просроченный override обязан снова сделать OSV gate красным.
