@@ -121,7 +121,7 @@ Push `use client` as low as possible. Route pages should stay server-rendered un
 | `CategoryStepper` | Used in Journey Step 2 |
 | `ItemCard` | Photo, name, color dots, capsule membership, status/favorite controls |
 | `ItemDetail` | View/edit state for name, category, colors, brand, material, price |
-| `UploadTabs` | Photo upload, marketplace links, catalog search |
+| `UploadTabs` | Final Photos / Links / Search design. Before both PRODUCT-PLAN Q8 gates close, Links and shared merchant Search have no live handlers; P2 may ship the separate own-imagery preset picker |
 | `OPRDisplay` | Formatted wearable outfits ÷ (core + accessory items) with delta; renders Layering Coverage as a separate labelled secondary value with mid/outer diagnostics and `N/A` zero-base state |
 | `ShoppingListRow` | Category, color, priority, impact |
 | `BottomNav` | Primary mobile navigation |

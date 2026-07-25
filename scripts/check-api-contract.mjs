@@ -7,8 +7,13 @@ import YAML from "yaml";
 const root = resolve(process.cwd());
 const apiSpecPath = resolve(root, "docs_capsule_zero/adr/api-spec.md");
 const openApiPath = resolve(root, "docs_capsule_zero/adr/openapi.yaml");
+const providerContractsPath = resolve(
+  root,
+  "app/src/lib/providers/contracts.ts",
+);
 const apiSpec = readFileSync(apiSpecPath, "utf8");
 const openApi = YAML.parse(readFileSync(openApiPath, "utf8"));
+const providerContracts = readFileSync(providerContractsPath, "utf8");
 const errors = [];
 
 const requiredErrorCodes = [
@@ -158,34 +163,67 @@ for (const status of ["active", "uncapsulated", "for_sale", "for_repair"]) {
   }
 }
 
-const candidateProperties =
-  openApi.components?.schemas?.MarketplaceParsedCandidate?.properties || {};
-for (const property of [
-  "sourceUrl",
-  "title",
-  "imageUrls",
-  "price",
-  "currency",
-  "brand",
-  "suggestedCategoryId",
-  "suggestedColorIds",
+// PRODUCT-PLAN Q8: shared merchant-image import/search stays out of the
+// executable contract until the compliance-scheme spec and external legal
+// review are both complete. Narrative product specs may describe the retained
+// feature, but OpenAPI/codegen must not make it implementable early.
+for (const path of [
+  "/api/imports/marketplace",
+  "/api/imports/{importId}",
+  "/api/imports/{importId}/confirm",
+  "/api/catalog/search",
+  "/api/catalog/items/{itemId}",
+  "/api/catalog/items/{itemId}/add",
+  "/api/admin/moderation/items",
+  "/api/admin/moderation/items/{itemId}",
 ]) {
-  if (!candidateProperties[property]) {
-    errors.push(`MarketplaceParsedCandidate must include ${property}.`);
+  if (paths[path]) {
+    errors.push(`${path} is blocked by PRODUCT-PLAN Q8.`);
   }
 }
 
-const catalogSearchParameters = new Set(
-  (paths["/api/catalog/search"]?.get?.parameters || []).map(
-    (parameter) => parameter.name,
-  ),
-);
-for (const parameter of ["q", "categoryId", "colorIds", "limit"]) {
-  if (!catalogSearchParameters.has(parameter)) {
-    errors.push(
-      `/api/catalog/search must document query parameter ${parameter}.`,
-    );
+const blockedQ8Schemas = [
+  "MarketplaceImportRequest",
+  "MarketplaceParsedCandidate",
+  "MarketplaceImport",
+  "MarketplaceConfirmRequest",
+  "CatalogSearchResponse",
+  "AdminModerationRequest",
+];
+for (const schema of blockedQ8Schemas) {
+  if (openApi.components?.schemas?.[schema]) {
+    errors.push(`${schema} is blocked by PRODUCT-PLAN Q8.`);
   }
+}
+
+const sourceTypeEnum = openApi.components?.schemas?.SourceType?.enum || [];
+if (sourceTypeEnum.includes("marketplace")) {
+  errors.push("SourceType marketplace is blocked by PRODUCT-PLAN Q8.");
+}
+
+if (
+  openApi.components?.schemas?.CreateItemRequest?.properties?.catalogItemId
+) {
+  errors.push("CreateItemRequest.catalogItemId is blocked by PRODUCT-PLAN Q8.");
+}
+
+const uploadJobTypes =
+  openApi.components?.schemas?.UploadJob?.properties?.jobType?.enum || [];
+for (const jobType of ["marketplace_parse", "item_embedding"]) {
+  if (uploadJobTypes.includes(jobType)) {
+    errors.push(`UploadJob ${jobType} is blocked by PRODUCT-PLAN Q8.`);
+  }
+}
+
+const providerRegistryBody = providerContracts.match(
+  /export interface ProviderRegistry\s*{([\s\S]*?)\n}/,
+)?.[1];
+if (!providerRegistryBody) {
+  errors.push("ProviderRegistry interface could not be inspected.");
+} else if (/\bmarketplaceImports\s*:/.test(providerRegistryBody)) {
+  errors.push(
+    "ProviderRegistry.marketplaceImports is blocked by PRODUCT-PLAN Q8.",
+  );
 }
 
 // spec 034: every route the Go binary actually registers must exist in the

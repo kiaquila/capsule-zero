@@ -2,6 +2,13 @@
 
 > Source: US-011 (spec.md). Prototype: `html-prototypes/guided-journey.html` (tab "Paste Links")
 
+> **Retained design, blocked implementation (2026-07-24):** `PRODUCT-PLAN.md` Q8 chose option (б),
+> so this feature remains in the product. It may not be implemented in UI handlers, OpenAPI,
+> generated clients, schemas, migrations, storage paths, workers, or provisioning until a
+> compliance-scheme spec defines user-performed import, source link-back, no extra platform copies,
+> notice-and-takedown, and repeat-infringer handling, and an external legal review accepts the
+> scheme. The flow below is design input for that future spec, not a current runtime contract.
+
 ## Overview
 - **Purpose:** Paste marketplace URLs → system parses item data automatically (killer feature)
 - **User:** User adding items during Journey Step 3 or from My Items
@@ -16,7 +23,9 @@
 5. Save → items added to wardrobe / capsule
 
 ## Parsing Strategy (v0.1)
-Best-effort generic parsing for product URLs, with optional retailer-specific adapters for higher accuracy.
+Deferred behind the Q8 gates. A later compliance-scheme spec must decide whether best-effort parsing
+and retailer adapters can satisfy the no-extra-copy and source-link requirements before any adapter
+is implemented.
 
 ## Interface States
 

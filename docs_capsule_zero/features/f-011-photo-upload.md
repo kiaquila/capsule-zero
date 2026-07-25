@@ -2,6 +2,10 @@
 
 > Source: US-017 (spec.md). Prototype: `html-prototypes/guided-journey.html` Step 3
 
+> Personal-photo upload is separate from the Q8 shared merchant-image surface: originals remain
+> private and never feed the shared catalog. The related marketplace-link method is retained only
+> as design until its compliance-scheme spec and external legal review are complete.
+
 ## Overview
 - **Purpose:** Upload photos of real wardrobe items with optional background removal and auto-tagging
 - **User:** User adding items during Journey Step 3 or from My Items
@@ -52,9 +56,9 @@
 - Unsupported format (GIF, TIFF) → error listing supported formats
 - Very dark/light photo → auto-tagging may struggle, easy manual correction
 - Multiple uploads → process sequentially with queue indicator
-- Personal photos → never become public in shared DB (v0.1)
+- Personal photos → remain private and never enter the shared merchant catalog
 
 ## Related Features
 - f-006-guided-journey.md — Parent flow (Step 3)
 - f-005-my-items.md — Items appear in grid after upload
-- f-007-marketplace-import.md — Alternative item addition method
+- f-007-marketplace-import.md — Retained alternative, implementation blocked by both Q8 gates

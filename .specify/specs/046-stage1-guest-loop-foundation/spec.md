@@ -18,6 +18,10 @@
 > Security-follow-up 2026-07-24 также меняет только dependency metadata и scanner config:
 > исправимые новые advisories обновляются, а единственная legacy dev-цепочка без совместимого
 > upstream-патча получает точное version-scoped исключение со сроком пересмотра.
+> Q8 follow-up после native review меняет authoritative OpenAPI, generated projection, contract
+> guard и decision-carrying docs, но не добавляет application behavior: заблокированный
+> merchant-import/shared-search surface удаляется из codegen до закрытия compliance/legal gates.
+> Это contract/support scope; generated client остаётся механической проекцией.
 
 ## Goal
 
@@ -73,6 +77,11 @@ Dashboard и Capsule Result не продолжали показывать по�
   `brace-expansion@1.1.16` приходит только через dev-only ESLint → `minimatch@3`, совместимого
   patched 1.x release нет. `app/osv-scanner.toml` и `tests/e2e/osv-scanner.toml` принимают только
   эту точную npm-версию до 2026-08-08; workflow, severity и остальные версии не исключаются.
+- **Q8 contract freeze 2026-07-24:** retained US-011/US-012/US-025 остаются design scope, но
+  OpenAPI/generated client не содержат marketplace-import, shared catalog/search/add, moderation,
+  `sourceType=marketplace`, `catalogItemId` и merchant processing/embedding jobs. Contract guard
+  запрещает их раннее возвращение; canonical active docs отличают own-imagery preset P2 от
+  merchant-image surface, гейтившегося compliance-scheme spec + external legal review.
 
 **Out:**
 
@@ -154,6 +163,11 @@ Dashboard и Capsule Result не продолжали показывать по�
   объясняет dev-only reachability и отсутствие patched 1.x; тот же OSV v2.3.5 recursive scan
   завершается без findings. Broad ID-ignore, unversioned package override и ослабление workflow
   запрещены.
+- **AC-013 (Q8 fail-closed contract):** product stories и prototype copy сохраняют выбранную
+  опцию (б), но executable OpenAPI/generated client не экспонируют merchant-import/shared-search/
+  moderation paths или blocked schemas/enums. `check-api-contract.mjs` падает при раннем возврате
+  любого перечисленного артефакта. Own-imagery preset catalog получает отдельный P2 contract и не
+  используется как лазейка для восстановления shared merchant corpus.
 
 ## Negative scenarios
 
@@ -194,6 +208,9 @@ Dashboard и Capsule Result не продолжали показывать по�
     dependency versions; workflow, scanner arguments и severity policy не меняются. Для нового
     `brace-expansion@1.1.16` finding без совместимого patched release разрешено только точное
     version-scoped исключение из AC-012 с коротким expiry; оно не скрывает fixed 5.x или иные версии.
+15. **Закрытие Q8 трактуется как разрешение немедленно реализовать retained surface** — отвергнуто:
+    design docs сохраняют фичу, но active machine contract/codegen остаются пустыми до обеих
+    предусловий; guard блокирует путь, schema, enum или job-type regression.
 
 Регрессия любого пункта — это доковое противоречие, ловится grep-аудитом `plan.md` и просмотром
 диффа при ревью.

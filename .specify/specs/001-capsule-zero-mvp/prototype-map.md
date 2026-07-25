@@ -4,6 +4,11 @@
 >
 > Landing authority was updated on 2026-07-17 by specs 043/044. The original
 > `html-prototypes/index.html` remains historical and is not the active landing contract.
+>
+> **Q8 implementation gate (2026-07-24):** the link-import, shared-catalog search, and public
+> imported-item prototype states remain design references for retained US-011/US-012/US-025, not
+> implementation authority. They stay disabled until the compliance-scheme spec and external legal
+> review are both complete. The accepted OpenAPI/generated client intentionally omit that surface.
 
 ## Screen Inventory
 
@@ -16,9 +21,9 @@
 | 5   | Item Detail Card             | `html-prototypes/my-items.html` (modal/detail)                     | US-007                         | View, Edit                                | SATISFACTION       |
 | 6   | Guided Journey Step 1/3      | `html-prototypes/guided-journey.html`                              | US-008                         | Default, Selected                         | CREATIVITY         |
 | 7   | Guided Journey Step 2/3      | `html-prototypes/guided-journey.html`                              | US-009                         | Default, Validation error                 | CREATIVITY         |
-| 8   | Guided Journey Step 3/3      | `html-prototypes/guided-journey.html`                              | US-010, US-011, US-012, US-017 | Default, Upload, Parsing, Search, Loading | CREATIVITY         |
-| 9   | Import by Links              | `html-prototypes/guided-journey.html` (tab "Paste Links")          | US-011                         | Input, Parsing, Photo selection, Error    | CREATIVITY         |
-| 10  | Search from Catalog          | `html-prototypes/guided-journey.html` (tab "Search Catalog")       | US-012                         | Search, Results, Empty results            | CREATIVITY         |
+| 8   | Guided Journey Step 3/3      | `html-prototypes/guided-journey.html`                              | US-010, US-011, US-012, US-017 | Default, Upload; Parsing/Search gated by Q8 | CREATIVITY         |
+| 9   | Import by Links              | `html-prototypes/guided-journey.html` (tab "Paste Links")          | US-011                         | Design-only until both Q8 gates close      | CREATIVITY         |
+| 10  | Search from Catalog          | `html-prototypes/guided-journey.html` (tab "Search Catalog")       | US-012                         | Own-preset design; shared corpus Q8-gated  | CREATIVITY         |
 | 11  | Capsule Result               | `html-prototypes/capsule-result.html`                              | US-013, US-014, US-015, US-016 | Default, Editing                          | SATISFACTION       |
 | 12  | Uncapsulated                 | `html-prototypes/uncapsulated.html`                                | US-020                         | Empty, Filled                             | —                  |
 | 13  | Favorites                    | `html-prototypes/favorites.html`                                   | US-019                         | Empty, Filled (My / From catalogs)        | —                  |
@@ -57,7 +62,10 @@
 - **Spec sections:** US-008 (Step 1), US-009 (Step 2), US-010 (Step 3), US-011 (Import), US-012 (Search), US-017 (Photo upload)
 - **Step 1:** Three large cards (Women's/Men's/Mixed), progress 1/3
 - **Step 2:** Textual category checklist, quantity steppers, "Add your own category" CTA, progress 2/3
-- **Step 3:** Add Items first, then Color Palette. Achromats appear first, followed by all other colors in one grid. Users can select any number of compatible colors; incompatible colors are blocked
+- **Step 3:** Add Items first, then Color Palette. Achromats appear first, followed by all other
+  colors in one grid. Users can select any number of compatible colors; incompatible colors are
+  blocked. The prototype's link-import and shared-search tabs are not active implementation
+  contracts before both Q8 gates close; P2 may implement the separate own-imagery preset picker.
 
 ### `html-prototypes/capsule-result.html` — Capsule Result
 
@@ -109,7 +117,7 @@
 | US-018 | Multilingual          | All screens (language switcher on landing + profile)                                     |
 | US-022 | Cost per Wear         | `html-prototypes/my-items.html` (detail card, NICE-TO-HAVE)                              |
 | US-023 | OPR Display           | `html-prototypes/dashboard.html` (capsule card)                                          |
-| US-025 | Public Imported Items | Backend only (shared DB flag)                                                            |
+| US-025 | Public Imported Items | Design-only backend story; blocked by Q8 compliance spec + external legal review         |
 
 ## Viewing Prototypes
 

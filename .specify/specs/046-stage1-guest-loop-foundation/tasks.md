@@ -46,6 +46,10 @@
   `brace-expansion@5.x` цепочку до `5.0.8`; для dev-only `brace-expansion@1.1.16`, у которого нет
   patched 1.x, добавить точные app/e2e package overrides до 2026-08-08 и подтвердить zero findings
   тем же scanner-action image
+- [x] T021 Q8 contract sweep: сохранить US-011/US-012/US-025 как gated design, удалить
+  merchant-import/shared-search/moderation surface из authoritative OpenAPI/generated client,
+  добавить negative contract guard, прогнать canonical manual list + inventory и актуализировать
+  active decision docs без schema/migration/runtime реализации
 
 ## Process Memory
 
@@ -165,6 +169,10 @@
   `github-ci-and-branch-protection.md` запрещает broad ID-ignore и unversioned exceptions.
   `npm audit` не читает OSV config и поэтому продолжает сообщать этот принятый finding; merge gate
   проверяется pinned OSV Scanner v2.3.5, который применяет точные локальные overrides.
+- **Q8 закрывает продуктовый вопрос, но не implementation gates:** вариант (б) сохраняет три
+  истории и будущий UX. До compliance-scheme spec и external legal review machine contract обязан
+  быть пустым: blocked paths/schemas/enums/jobs удалены из OpenAPI и generated projection, а
+  `check-api-contract.mjs` запрещает раннее возвращение. Own-imagery preset P2 — отдельный contract.
 
 ### Dead Ends
 
@@ -241,6 +249,10 @@
   OSV Scanner v2.3.5 как `unknown keys`. В schema этого тега вложенный `Vulnerability` содержит
   только `ignore`, а expiry и reason принадлежат внешнему `PackageOverrideEntry`. Временная
   просроченная дата при корректной внешней форме вернула два High finding и ненулевой exit.
+- **Оставить `/api/catalog/search` и marketplace schemas как «спеку наперёд»:** отвергнуто native
+  Codex P1. OpenAPI порождает клиент и превращает gated design в готовое разрешение реализации;
+  narrative specs достаточно для проектирования, executable surface возвращается только вместе с
+  обеими закрытыми предусловиями и их проверками.
 
 ### Known Issues
 
@@ -260,3 +272,6 @@
 - **Временный `brace-expansion@1.1.16` scanner override:** до 2026-08-08 проверить patched 1.x либо
   переход ESLint / `eslint-plugin-jsx-a11y` с `minimatch@3`; удалить исключение сразу после
   совместимого upstream fix. Просроченный override обязан снова сделать OSV gate красным.
+- **Q8 compliance scheme и legal review ещё не выполнены:** retained merchant-import/shared-search
+  нельзя реализовывать или возвращать в codegen. Historical specs, frozen Supabase provider и
+  legacy migrations из inventory не являются активным implementation contract.

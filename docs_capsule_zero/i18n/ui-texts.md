@@ -27,6 +27,11 @@
 
 ## Guided Journey — Step 3: Colors & Items
 
+> The three upload-method labels below are retained reference copy. `Paste links` and search over the
+> shared merchant-image corpus must not be exposed as active controls until the PRODUCT-PLAN Q8
+> compliance-scheme spec and external legal review are both complete. The own-imagery preset picker
+> receives separate active copy with its P2 implementation.
+
 | Element | EN | ES-AR | RU |
 |---------|-----|-------|-----|
 | Title | Choose your colors | Elegí tus colores | Выбери свои любимые цвета |

@@ -5,6 +5,13 @@
 > D2. Do not implement, provision, expose, test as a release gate, or use it for a new contract or
 > code generation. Stage 4 will delete or replace the retained legacy after choosing a model.
 
+> **Shared merchant-catalog freeze (2026-07-24):** `PRODUCT-PLAN.md` Q8 retains the feature but
+> blocks implementation until a compliance-scheme spec and external legal review are both complete.
+> Marketplace-import, shared-search, moderation, public-promotion, and embedding descriptions below
+> are target design only where explicitly retained; they must not become packages, routes, schemas,
+> migrations, jobs, env, storage prefixes, or seed data before both gates close. The accepted
+> OpenAPI/generated client omit that surface. The own-imagery preset catalog is separate.
+
 ## Stack
 
 Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a single Hetzner Cloud server (migrated from DigitalOcean 2026-07-02, spec 033). Every deployed v0.1 container is declared as a separate `services:` entry in one root `docker-compose.yml`. The current API contains the auth/profile, storage, and uploads packages; Redis and any queue consumer are deferred to a later spec-024 phase.
@@ -44,9 +51,10 @@ The Go monolith owns all business logic; the database has no RLS. Authorization 
   migrations/                     ← embedded SQL migration files
 ```
 
-Wardrobe, capsule, methodology, marketplace, catalog, billing, moderation,
-Redis/event-bus, and standalone-worker packages are target bounded contexts;
-they have not landed in the current API tree.
+Wardrobe, capsule, methodology, own-preset catalog, billing, Redis/event-bus,
+and standalone-worker packages are target bounded contexts; they have not
+landed in the current API tree. Marketplace, shared merchant catalog, and
+moderation remain blocked design contexts under Q8, not implementation backlog.
 
 ## API Surface
 
@@ -68,13 +76,13 @@ The broader target surface (full list in OpenAPI) remains:
 - `POST/GET/PATCH /api/capsules`, `/api/capsules/current`, `/api/capsules/{id}/items`, `/outfits`, `/gaps`, `/shopping-list`
 - `GET/POST/PATCH/DELETE /api/items`, `/api/items/{id}/favorite`, `/api/items/{id}/status`
 - `GET /api/uploads/{jobId}` after a later job-status slice (init/complete are already implemented)
-- `POST /api/imports/marketplace`, `GET /api/imports/{id}`, `POST /api/imports/{id}/confirm`
-- `GET /api/catalog/search`, `POST /api/catalog/items/{id}/add`
 - `POST /api/billing/invoices`, `GET /api/billing/invoices/{id}`, `POST /api/billing/coins/spend` (stub in v0.1)
 - `POST /api/webhooks/lava` (stub in v0.1)
-- `GET/POST /api/admin/moderation/items` (admin role required)
 
-Auth: every authenticated route runs through nginx `auth_request` into Kratos and re-validates the session in the handler. Public routes (`health`, `catalog/search` public reads) skip session resolution.
+Marketplace import, shared catalog/search/add, and moderation routes are
+deliberately absent from the target surface until both Q8 gates close.
+
+Auth: every authenticated route runs through nginx `auth_request` into Kratos and re-validates the session in the handler. Public operational routes such as `health` skip session resolution.
 
 ## Database Schema
 
@@ -99,7 +107,9 @@ add them through new migrations.
 | `coin_ledger` | Planned append-only coin purchase/spend/refund log; not present in the current migrations                                                       |
 | `lava_events` | Planned processed Lava.top webhook event IDs for idempotency; not present in the current migrations                                             |
 
-Canonical ownership column name is `user_id` (referencing `profiles.id`). Shared items use a two-table ownership pattern: `items.visibility` controls catalog exposure, while `wardrobe_entries.user_id` controls each user's relationship to an item.
+Canonical ownership column name is `user_id` (referencing `profiles.id`). The
+possible two-table shared-item ownership pattern remains design-only under Q8;
+it must not be migrated before the compliance scheme and legal review.
 
 ### Static Methodology Data
 
@@ -113,14 +123,16 @@ Canonical ownership column name is `user_id` (referencing `profiles.id`). Shared
 
 | Table                 | Purpose                                                                                                                        |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `items`               | Canonical item metadata: name, category, colors, brand, material, source URL, source type, owner, visibility, moderation state |
+| `items`               | Canonical durable item metadata; own-preset/private-item fields land separately, while merchant source/visibility/moderation fields remain Q8-blocked |
 | `wardrobe_entries`    | Per-user relationship to an item: active/uncapsulated/for_sale/for_repair, favorite, from catalog, user overrides              |
 | `item_assets`         | Currently only unattached private `original` asset metadata; other variants arrive in later slices                            |
 | `upload_jobs`         | Currently only owner-bound `photo_upload` rows with `queued` or `completed` status                                             |
-| `marketplace_imports` | Submitted URLs, parse status, parsed candidates, confirmed item link                                                           |
-| `moderation_queue`    | Internal approval flow before marketplace items become public catalog entries                                                  |
+| `marketplace_imports` | **Q8-blocked design only:** no migration before the compliance-scheme spec and legal review                                      |
+| `moderation_queue`    | **Q8-blocked design only:** no migration or public-promotion flow before both gates                                              |
 
-Deferred by ADR-007: `item_embeddings` stores pgvector vectors and searchable text when the semantic-search slice promotes pgvector. v0.1 catalog search uses FTS-ready item text on plain Postgres.
+`item_embeddings` and shared-catalog FTS/hybrid search are blocked by Q8 in
+addition to ADR-007's pgvector deferral. Neither FTS-ready merchant text nor an
+embedding migration belongs to v0.1 before both product gates close.
 
 ### Capsules
 
@@ -140,11 +152,11 @@ There is no Postgres RLS. Authorization is enforced in Go on every request:
 
 - The `auth` middleware resolves `user_id` from the Kratos session cookie before the handler runs and rejects requests without a valid session.
 - Repository methods take `user_id` as an explicit parameter; they refuse to return rows that do not belong to that user.
-- Public catalog reads use a dedicated read path that is not session-gated but only returns rows where `items.visibility = 'public'`.
+- Public own-preset catalog reads, once specified, use a dedicated read path; this does not authorize shared merchant entries.
 - Personal uploads and their assets are never public in v0.1.
-- Marketplace-imported items start private or moderation-pending and only become public after explicit approval.
+- Marketplace-imported items have no active storage/publication state before both Q8 gates close.
 - Coin ledger inserts and Lava.top event writes are only callable from internal billing/webhook handlers — there is no public route that mutates the ledger.
-- Admin moderation routes require an admin role claim attached to the Kratos identity.
+- Any future admin moderation routes require an admin role claim and both Q8 gates.
 
 ## Storage
 
@@ -227,13 +239,14 @@ Hetzner Object Storage has no default data-at-rest encryption. Backups must be e
 
 The current slice does not enqueue background work and has no Redis consumer.
 Its only durable job type is `photo_upload`, which transitions from `queued` to
-`completed` when the verified original asset is materialized. Planned async job
-types are:
+`completed` when the verified original asset is materialized. Planned non-Q8
+async job types are:
 
-- `marketplace_parse` — fetch + parse a product URL into candidate items
-- `item_embedding` — deferred until ADR-007 promotes pgvector and the semantic-search slice
 - `webhook_fanout` — forward a verified Lava.top webhook to downstream handlers (v0.2)
 - `background_removal` — Stage 2, when the self-hosted image model ships
+
+`marketplace_parse` and merchant `item_embedding` are not job types in the
+accepted contract; they may be reconsidered only after both Q8 gates close.
 
 When the Redis phase lands, async jobs may be produced by API handlers and
 consumed by queue-worker goroutines inside `/api`; a standalone `/worker`
@@ -279,9 +292,9 @@ later-slice work.
 | `OBJECT_STORAGE_REGION`       | server        | Application Object Storage region (`hel1` in the provisioned production topology)                       |
 | `OBJECT_STORAGE_ACCESS_KEY_ID` | server        | Runtime key from bucketless key-only project `15302873`; access is granted cross-project by bucket policy |
 | `OBJECT_STORAGE_SECRET_ACCESS_KEY` | server   | Runtime key secret from bucketless key-only project `15302873`                                         |
-| `OBJECT_STORAGE_PRIVATE_BUCKET` | server      | Private assets bucket (avatars, item originals, processed variants, marketplace imports)               |
+| `OBJECT_STORAGE_PRIVATE_BUCKET` | server      | Private assets bucket (avatars, item originals, approved processed variants; no merchant-import prefix before both Q8 gates) |
 | `OBJECT_STORAGE_UPLOADS_ENABLED` | server      | Default-off activation gate; key hardening is complete, but quota/cleanup/attachment still block enablement |
-| `OBJECT_STORAGE_PUBLIC_BUCKET` | server       | Public catalog bucket, introduced when moderated catalog imagery is served                             |
+| `OBJECT_STORAGE_PUBLIC_BUCKET` | server       | Public bucket for Capsule Zero-owned preset imagery; merchant imports remain Q8-blocked                |
 | `OBJECT_STORAGE_PUBLIC_BASE_URL` | server     | Native public object URL base until a separate catalog-CDN slice                                       |
 | `BACKUP_S3_ENDPOINT`          | host backup   | Isolated endpoint (`https://fsn1.your-objectstorage.com` in production)                                |
 | `BACKUP_S3_REGION`            | host backup   | Backup bucket region (`fsn1` in production)                                                           |
@@ -296,7 +309,7 @@ later-slice work.
 | `LAVA_API_URL`                | server        | Lava.top base URL (v0.2)                                                                              |
 | `APP_BASE_URL`                | server/web    | Public app URL (e.g. `https://capsulezero.app`)                                                       |
 | `MOBILE_DEEP_LINK_SCHEME`     | server/mobile | Mobile return URL scheme for auth callbacks (Stage 2)                                                 |
-| `EMBEDDING_PROVIDER`          | server        | Catalog embedding provider switch, introduced when ADR-007 promotes pgvector/semantic search          |
+| `EMBEDDING_PROVIDER`          | server        | Deferred provider switch; shared merchant search additionally requires both Q8 gates                   |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | server        | Trace exporter target                                                                                 |
 
 ## Local Development
@@ -356,7 +369,7 @@ Seed data must include:
 - garment categories from `docs_capsule_zero/project/methodology/categories.md`
 - compatibility matrix from `docs_capsule_zero/project/methodology/colors.md`
 - coin pack definitions matching market docs (5, 15, 30 coin packs) — wired to Lava.top in v0.2
-- a small public catalog fixture for semantic search smoke testing
+- a small Capsule Zero-owned preset fixture when the P2 catalog spec defines its contract; no merchant/shared-search seed before both Q8 gates
 
 ## References
 

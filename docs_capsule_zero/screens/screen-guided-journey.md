@@ -3,6 +3,12 @@ URL: /journey
 Feature: features/f-006-guided-journey.md
 Prototype: `html-prototypes/guided-journey.html`
 
+> **Q8 implementation gate (2026-07-24):** Paste Links and shared
+> merchant-catalog search remain approved screen design only. They have no
+> active handlers until the compliance-scheme spec and external legal review
+> have both landed. Capsule Zero-owned preset selection is a separate Stage-2
+> source.
+
 ## Step 1/3 — Wardrobe Type
 
 ```
@@ -97,14 +103,16 @@ Prototype: `html-prototypes/guided-journey.html`
 - **Progress indicator:** 3-dot stepper (● active, ○ inactive)
 - **Type cards (Step 1):** Large glass cards with icons
 - **Category checklist (Step 2):** Scrollable list, toggles + quantity steppers
-- **Item tabs (Step 3):** Upload Photos / Paste Links / Search Catalog
+- **Item tabs (Step 3 target design):** Upload Photos / Paste Links / Search Catalog; the latter
+  two are Q8-gated and non-operational until both gates land
 - **Color grid (Step 3):** Single palette grid with achromats first, then all other colors
 - **Blocked state:** incompatible colors are unavailable for selection
 
 ## Interactivity
 - Step 1: Click card → select type, auto-advance to Step 2
 - Step 2: Toggle categories, adjust quantities, validate min 8
-- Step 3: Add items via 3 methods, then select any number of compatible colors
+- Step 3: add personal photos through the active flow; activate link import and shared
+  merchant-catalog search only after both Q8 gates, then select any number of compatible colors
 - Selecting a color updates the availability of the remaining palette options
 - [Create capsule] → loading → redirect to Capsule Result
 - [← Back] → navigate to previous step

@@ -3,6 +3,12 @@ URL: /favorites
 Feature: features/f-013-favorites.md
 Prototype: `html-prototypes/favorites.html`
 
+> **Q8 implementation gate (2026-07-24):** “From Catalogs” is retained as a
+> target screen concept, but shared user-imported merchant items must not be
+> loaded or persisted until the compliance-scheme spec and external legal
+> review have both landed. Capsule Zero-owned presets are a separate Stage-2
+> source.
+
 ## Desktop Layout
 
 ```
@@ -34,7 +40,8 @@ Prototype: `html-prototypes/favorites.html`
 ```
 
 ## Elements
-- **Two sections:** "My Items" and "From Catalogs"
+- **Two target sections:** "My Items" and "From Catalogs"; the merchant-backed section is
+  Q8-gated and must remain non-operational until both gates land
 - **Item Cards:** Photo + name + color dots + filled heart (♥)
 - **Heart icon:** `rgba(220,30,50,.90)` saturated red when active
 - **Catalog badge:** "From catalog" label on catalog items

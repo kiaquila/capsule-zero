@@ -14,7 +14,7 @@ Capsule Zero stores visual assets for:
 - user avatars
 - original garment photos
 - background-removed garment photos (when the Stage 2 self-hosted model ships)
-- marketplace-imported product photos
+- marketplace-imported product photos (future Q8-gated asset class; not an active storage surface)
 - thumbnails and derived display variants
 
 The storage architecture must support both web uploads and React Native camera/gallery uploads.
@@ -36,15 +36,17 @@ Use **Hetzner Object Storage** for object storage. Use a self-hosted **Capsule Z
 
 | Bucket                         | Region posture                                                | Visibility | Purpose                                                                 |
 | ------------------------------ | ------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------- |
-| `capsulezero-prod-private-assets` | HEL while the Hetzner high-traffic advisory recommends HEL; otherwise re-benchmark HEL vs NBG before provisioning | private    | User avatars, original wardrobe photos, processed variants, marketplace imports |
-| `capsulezero-prod-public-catalog` | Same primary region as private assets                         | public     | Approved catalog imagery for semantic search results after moderation   |
+| `capsulezero-prod-private-assets` | HEL while the Hetzner high-traffic advisory recommends HEL; otherwise re-benchmark HEL vs NBG before provisioning | private    | User avatars, original wardrobe photos, and processed variants; no merchant-import prefix or permission while Q8 is gated |
+| `capsulezero-prod-public-catalog` | Same primary region as private assets                         | public     | Capsule Zero-owned preset imagery only; merchant imagery publication is Q8-blocked |
 | `capsulezero-prod-backups`       | FSN, separate Hetzner project/key from application assets      | private    | Client-side encrypted `pg_dump` backups with Object Lock/lifecycle retention |
 
-Logical asset classes live as prefixes inside the private asset bucket:
-`avatars/`, `item-originals/`, `item-processed/`, and
-`marketplace-imports/`. Multiple Hetzner buckets share the account-level object
-storage base quota, so separate buckets/projects are used for policy isolation
-rather than because of base-cost pressure.
+Active logical asset classes use prefixes inside the private asset bucket:
+`avatars/`, `item-originals/`, and `item-processed/`. `marketplace-imports/` is a
+reserved design name only: it must not be provisioned, authorized in bucket
+policy, or written until the compliance-scheme spec and external legal review
+have both landed. Multiple Hetzner buckets share the account-level object storage
+base quota, so separate buckets/projects are used for policy isolation rather
+than because of base-cost pressure.
 
 The app does not create buckets at runtime. Operators create buckets,
 credentials, CORS, lifecycle, and Object Lock through Hetzner Console plus
@@ -126,9 +128,10 @@ Background removal is performed by the self-hosted Capsule Zero model running as
 - Store every object key with a user or item prefix, for example `<bucket-prefix>/<user_id>/<item_id>/<asset_id>.webp`.
 - Store file metadata in Postgres through `item_assets`; storage paths alone are not source of truth.
 - Use **signed GET URLs** (TTL ≤ 15 min) for private image reads, served by the Go API.
-- Use **public object URLs** only for approved shared catalog images copied to
-  the public catalog bucket after moderation. The application front door is
-  already Cloudflare; proxying catalog bucket URLs through a catalog CDN is a
+- Use **public object URLs** for Capsule Zero-owned preset images in the public
+  catalog bucket. Merchant-image publication and moderation are absent from the
+  active storage contract until both Q8 gates land. The application front door
+  is already Cloudflare; proxying catalog bucket URLs through a catalog CDN is a
   separate Stage-2 slice.
 - Use **signed PUT URLs** (TTL ≤ 5 min) for direct browser/mobile uploads, with size and content-type bounds verified by the Go API before issue.
 - Server-side credentials live only in the protected plaintext

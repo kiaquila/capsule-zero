@@ -221,7 +221,7 @@ As a user, I want to choose color palette and add items (photos, links, or searc
 
 ### US-011 — Marketplace Link Import (Priority: P1)
 
-> **Retained, with conditions (2026-07-24).** Founder chose option (б) of [`PRODUCT-PLAN.md`](../../../PRODUCT-PLAN.md) §4-Q8, so "parses ... all photos" survives — but only on the Polyvore pattern, and under D6 the durable parts remain the extracted attributes and the source link while the merchant image stays a disposable layer. Image retention waits for the compliance-scheme spec and external legal review.
+> **Retained, with conditions (2026-07-24).** Founder chose option (б) of [`PRODUCT-PLAN.md`](../../../PRODUCT-PLAN.md) §4-Q8, so "parses ... all photos" survives — but only on the Polyvore pattern, and under D6 the durable parts remain the extracted attributes and the source link while the merchant image stays a disposable layer. The entire story—not only image retention—stays out of active UI handlers, OpenAPI/codegen, schemas, migrations, storage permissions, jobs, and provider behavior until the compliance-scheme spec and external legal review have both landed.
 
 As a user, I want to paste marketplace URLs so the system parses them and adds items to my wardrobe.
 
@@ -242,7 +242,7 @@ As a user, I want to paste marketplace URLs so the system parses them and adds i
 
 ### US-012 — Semantic Search from Shared Database (Priority: P1)
 
-> **Retained, with conditions (2026-07-24).** The corpus here is built from users' marketplace imports (merchant photos). Founder chose option (б) of [`PRODUCT-PLAN.md`](../../../PRODUCT-PLAN.md) §4-Q8, so it stays — gated on the compliance-scheme spec and external legal review. Our own preset catalog (D5/D6) is the second corpus and carries no such gate.
+> **Retained, with conditions (2026-07-24).** The corpus here is built from users' marketplace imports (merchant photos). Founder chose option (б) of [`PRODUCT-PLAN.md`](../../../PRODUCT-PLAN.md) §4-Q8, so it stays — but no active API/codegen, schema, migration, provider, or search job may implement it until the compliance-scheme spec and external legal review have both landed. Our own preset catalog (D5/D6) is the second corpus and carries no such gate; its future P2 contract must not silently reactivate this one.
 
 As a user, I want to find similar items from the shared database by description to add them to my capsule.
 
@@ -433,7 +433,7 @@ As a user, I want to mark items for repair so they're excluded from capsules unt
 
 ### US-025 — Public Imported Items (Priority: P1)
 
-> **Retained, with conditions (2026-07-24).** Founder chose option (б) of [`PRODUCT-PLAN.md`](../../../PRODUCT-PLAN.md) §4-Q8: this story stays. Because it makes merchant photos public to other users under no licence, it may only be built on the Polyvore pattern (user-performed import, no extra platform-made copies, mandatory link-back, working notice-and-takedown, repeat-infringer policy) and only after the compliance-scheme spec and an external legal review.
+> **Retained, with conditions (2026-07-24).** Founder chose option (б) of [`PRODUCT-PLAN.md`](../../../PRODUCT-PLAN.md) §4-Q8: this story stays. Because it makes merchant photos public to other users under no licence, it may only be built on the Polyvore pattern (user-performed import, no extra platform-made copies, mandatory link-back, working notice-and-takedown, repeat-infringer policy) and only after the compliance-scheme spec and an external legal review. Until both gates land there is no active moderation/publication schema, route, migration, storage policy, job, generated-client operation, or provider behavior for this story.
 
 As a system, I want imported marketplace items to populate the shared database for semantic search enrichment.
 
