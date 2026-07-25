@@ -38,13 +38,15 @@ export const authCopy = {
 
 export const journeyCopy = {
   en: {
+    linkUnavailable:
+      "Link import is temporarily unavailable while we complete the required compliance and legal review. Upload a photo or choose from the Capsule Zero preset catalog instead.",
     linkTab: "Paste Links",
-    linkPlaceholder: "Paste one or more product URLs...",
     searchTab: "Search Catalog",
   },
   ru: {
+    linkUnavailable:
+      "Импорт по ссылкам временно недоступен, пока мы завершаем обязательную проверку соответствия требованиям и юридическую проверку. Загрузите фото или выберите вещь из каталога Capsule Zero.",
     linkTab: "Вставить ссылки",
-    linkPlaceholder: "Вставьте одну или несколько ссылок на товары...",
     searchTab: "Поиск в каталоге",
   },
 } as const satisfies Record<Locale, Record<string, string>>;

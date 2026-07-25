@@ -11,9 +11,14 @@ const providerContractsPath = resolve(
   root,
   "app/src/lib/providers/contracts.ts",
 );
+const supabaseProviderPath = resolve(
+  root,
+  "app/src/lib/providers/supabase/index.ts",
+);
 const apiSpec = readFileSync(apiSpecPath, "utf8");
 const openApi = YAML.parse(readFileSync(openApiPath, "utf8"));
 const providerContracts = readFileSync(providerContractsPath, "utf8");
+const supabaseProvider = readFileSync(supabaseProviderPath, "utf8");
 const errors = [];
 
 const requiredErrorCodes = [
@@ -237,6 +242,17 @@ if (!providerUploadJobType) {
       errors.push(`Provider UploadJobType ${jobType} is blocked by PRODUCT-PLAN Q8.`);
     }
   }
+}
+
+const supabaseRegistryBody = supabaseProvider.match(
+  /export function createSupabaseProviderRegistry\(\): ProviderRegistry\s*{([\s\S]*?)\ntype UserAuthorizer/,
+)?.[1];
+if (!supabaseRegistryBody) {
+  errors.push("Supabase ProviderRegistry factory could not be inspected.");
+} else if (/\bbuildCatalogSearchPort\s*\(/.test(supabaseRegistryBody)) {
+  errors.push(
+    "Supabase catalogSearch cannot expose the gated shared merchant catalog.",
+  );
 }
 
 // spec 034: every route the Go binary actually registers must exist in the

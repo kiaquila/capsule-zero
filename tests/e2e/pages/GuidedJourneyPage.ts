@@ -8,8 +8,9 @@ import { journeyCopy, type Locale } from "../fixtures/locales";
  */
 export class GuidedJourneyPage extends BasePage {
   readonly path: string;
+  readonly linkGateNote: Locator;
+  readonly linkImportForm: Locator;
   readonly linkTab: Locator;
-  readonly linkInput: Locator;
   readonly searchTab: Locator;
 
   constructor(page: Page, locale: Locale = "en") {
@@ -18,7 +19,10 @@ export class GuidedJourneyPage extends BasePage {
     this.linkTab = page.getByRole("tab", {
       name: journeyCopy[locale].linkTab,
     });
-    this.linkInput = page.getByPlaceholder(journeyCopy[locale].linkPlaceholder);
+    this.linkGateNote = page.getByText(journeyCopy[locale].linkUnavailable, {
+      exact: true,
+    });
+    this.linkImportForm = page.getByTestId("journey-link-import-form");
     this.searchTab = page.getByRole("tab", {
       name: journeyCopy[locale].searchTab,
     });

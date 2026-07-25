@@ -19,6 +19,7 @@ test.describe("Guided journey — Q8 implementation gate", () => {
 
     await expect(journey.searchTab).toHaveAttribute("aria-selected", "true");
     await expect(journey.linkTab).toBeDisabled();
-    await expect(journey.linkInput).toHaveCount(0);
+    await expect(journey.linkGateNote).toBeVisible();
+    await expect(journey.linkImportForm).toHaveCount(0);
   });
 });
