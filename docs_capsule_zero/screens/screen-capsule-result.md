@@ -3,6 +3,11 @@ URL: /capsule/[id]
 Feature: features/f-009-capsule-result.md
 Prototype: `html-prototypes/capsule-result.html`
 
+> **Q8 implementation gate (2026-07-24):** any Catalog action that would search
+> or copy shared user-imported merchant imagery is design-only until the
+> compliance-scheme spec and external legal review have both landed. Owned
+> preset selection is a separate Stage-2 surface.
+
 ## Desktop Layout
 
 ```
@@ -101,8 +106,10 @@ Prototype: `html-prototypes/capsule-result.html`
 - Click item card → detail view
 - Click [♡] → toggle favorite
 - Click [⋯] → actions: Remove / Replace
-- Click [+ Add item] → item picker (My Items / Catalog / Upload)
-- Click shopping list row → catalog search pre-filtered
+- Click [+ Add item] → item picker (My Items / owned Presets / Upload); shared merchant Catalog
+  remains Q8-gated
+- Click shopping list row → owned-preset suggestions when Stage 2 lands; shared merchant search
+  only after both Q8 gates
 - Incompatible replacement → blocked with message
 
 ## Responsive

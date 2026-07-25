@@ -12,12 +12,21 @@ the generated client, and contract checks together.
 > unsupported legacy: do not implement, call, provision, test as a release gate, or restore them to
 > code generation until Stage 4 chooses and specifies a new model.
 
+> **Shared merchant-catalog freeze (2026-07-24):** `PRODUCT-PLAN.md` Q8 retains user-performed
+> marketplace import and shared search as product intent, but blocks implementation until a
+> compliance-scheme spec and external legal review are both complete. The authoritative OpenAPI and
+> generated client therefore omit marketplace-import, shared-catalog search/add, moderation routes,
+> `sourceType=marketplace`, `catalogItemId`, and marketplace/embedding job types. Narrative feature
+> specs may design the future surface; no handler, migration, client call, env, or provisioning may
+> restore it before both gates close. The own-imagery preset catalog will receive a separate
+> production contract in its P2 implementation spec.
+
 ## API Principles
 
 - Ory Kratos owns identity and session state. nginx runs an `auth_request` subrequest against Kratos in front of protected routes; the Go API re-validates the Kratos session on every authenticated request.
 - The Go modular monolith exposes the REST API at `/api/*`; the Next.js web app and React Native mobile app both consume the same OpenAPI contract through generated clients.
 - Next.js Server Actions may wrap calls to the Go API for in-app mutations; they never embed admin credentials.
-- The Go monolith owns database-heavy operations: compatibility validation, outfit regeneration, OPR, gap analysis, and catalog search. Catalog search is Postgres FTS-first in v0.1; hybrid FTS + pgvector ranking ships later with the semantic-search slice per ADR-007.
+- The Go monolith owns database-heavy operations: compatibility validation, outfit regeneration, OPR, and gap analysis. Search over the own-imagery preset catalog is specified with its P2 implementation slice; shared merchant-catalog search remains outside the executable contract under the Q8 freeze. Hybrid FTS + pgvector ranking remains deferred by ADR-007 and cannot bypass that product gate.
 - Go handlers validate request payloads explicitly against the OpenAPI contract; the current `net/http` router is manual and `scripts/check-api-contract.mjs` provides route/operation drift detection. Web forms mirror relevant constraints with Zod where useful for inline validation.
 - All mutating routes require an authenticated user unless explicitly marked as webhook.
 - Authorization is enforced in Go on every request — there is no Postgres RLS.
@@ -74,8 +83,8 @@ The generator writes the canonical web client to `app/src/lib/api/generated/open
   "brand": "string|null",
   "material": "string|null",
   "price": 120,
-  "sourceType": "photo_upload|marketplace|catalog",
-  "visibility": "private|moderation_pending|public",
+  "sourceType": "photo_upload|catalog",
+  "visibility": "private|public",
   "imageUrl": "signed-or-public-url",
   "fromCatalog": false
 }
@@ -198,7 +207,7 @@ both outfit counts. The fixed cross-role priority is defined in `outfit-generati
 | Route                         | Method | Auth | Purpose                                                          |
 | ----------------------------- | -----: | ---- | ---------------------------------------------------------------- |
 | `/api/items`                  |    GET | User | List user's wardrobe entries with filters                        |
-| `/api/items`                  |   POST | User | Create item metadata from confirmed upload/import/catalog result |
+| `/api/items`                  |   POST | User | Create item metadata from a confirmed photo or owned-preset result |
 | `/api/items/:itemId`          |    GET | User | Read item detail                                                 |
 | `/api/items/:itemId`          |  PATCH | User | Edit name, category, colors, brand, material, price              |
 | `/api/items/:itemId`          | DELETE | User | Delete private item or remove user's wardrobe entry              |
@@ -239,28 +248,18 @@ Attaching the resulting asset
 to a wardrobe item, frontend wiring, byte decoding/scanning, processing, and
 orphan cleanup are later slices.
 
-## Marketplace Imports
+## Q8-Blocked Surface
 
-| Route                            | Method | Auth | Purpose                                                    |
-| -------------------------------- | -----: | ---- | ---------------------------------------------------------- |
-| `/api/imports/marketplace`       |   POST | User | Submit one or more product URLs                            |
-| `/api/imports/:importId`         |    GET | User | Read parse status and parsed candidate data                |
-| `/api/imports/:importId/confirm` |   POST | User | Confirm selected photo and editable tags, then create item |
-
-## Catalog Search
-
-| Route                            | Method | Auth | Purpose                                            |
-| -------------------------------- | -----: | ---- | -------------------------------------------------- |
-| `/api/catalog/search`            |    GET | User | FTS-first search over public catalog items         |
-| `/api/catalog/items/:itemId`     |    GET | User | Read public catalog item                           |
-| `/api/catalog/items/:itemId/add` |   POST | User | Add public catalog item to user's wardrobe/capsule |
+Marketplace import, shared merchant-catalog search/add, and moderation routes are intentionally
+absent from this accepted implementation contract. Their product stories remain in spec 001, but
+they are design-only until the compliance-scheme spec fixes source-link, copy, takedown, and
+repeat-infringer behavior and an external legal review accepts that scheme. The contract guard
+fails if those paths or their request/response schemas are reintroduced early.
 
 ## Admin/Internal
 
 | Route                                 | Method | Auth   | Purpose                                    |
 | ------------------------------------- | -----: | ------ | ------------------------------------------ |
-| `/api/admin/moderation/items`         |    GET | Admin  | List marketplace items awaiting moderation |
-| `/api/admin/moderation/items/:itemId` |  PATCH | Admin  | Approve/reject catalog visibility          |
 | `/api/health`                         |    GET | Public | Build identity plus Postgres, Kratos, and private-storage readiness |
 | `/livez`                              |    GET | Public | Dependency-free container liveness (server operations only) |
 
@@ -271,6 +270,5 @@ orphan cleanup are later slices.
 | `validate_palette(color_ids text[])`                       | Enforce compatibility matrix and blocked color messaging  |
 | `validate_item_for_capsule(item_id uuid, capsule_id uuid)` | Block incompatible item additions                         |
 | `regenerate_capsule_outputs(capsule_id uuid)`              | Recompute outfits, OPR, gaps, and shopping list           |
-| `search_catalog_fts(query text, filters jsonb)`            | Rank public catalog items with full-text search/filtering |
-
-Deferred semantic-search work adds `search_catalog_hybrid(...)` and `queue_item_embedding(...)` when pgvector, embedding dimensions, and vector indexes are promoted by ADR-007.
+Search RPCs are not part of the accepted contract. Own-preset search is specified with P2; shared
+merchant-catalog FTS/hybrid search remains blocked by Q8 even after ADR-007 promotes pgvector.

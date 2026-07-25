@@ -1,0 +1,7 @@
+[[PackageOverrides]]
+name = "brace-expansion"
+version = "1.1.16"
+ecosystem = "npm"
+vulnerability.ignore = true
+effectiveUntil = 2026-08-08
+reason = "Dev-only ESLint/minimatch@3 dependency; no compatible patched 1.x release exists. Remove when upstream leaves minimatch@3 or a patched 1.x is published."

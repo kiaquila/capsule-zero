@@ -11,13 +11,10 @@ import type {
 
 export type ProviderMode = "mock" | "supabase" | "api";
 
+/** `marketplace` is retained only for frozen legacy records; Q8 blocks new behavior. */
 export type ItemSourceType = "photo_upload" | "marketplace" | "catalog";
 export type ItemStatus = "active" | "uncapsulated" | "for_sale" | "for_repair";
-export type UploadJobType =
-  | "photo_upload"
-  | "background_removal"
-  | "marketplace_parse"
-  | "item_embedding";
+export type UploadJobType = "photo_upload" | "background_removal";
 export type UploadJobStatus =
   | "queued"
   | "processing"
@@ -258,6 +255,7 @@ export interface MarketplaceCandidate {
   sourceUrl: string;
 }
 
+/** @deprecated Q8-gated legacy shape; deliberately absent from ProviderRegistry. */
 export interface MarketplaceImport {
   id: string;
   userId: string;
@@ -269,6 +267,7 @@ export interface MarketplaceImport {
   updatedAt: string;
 }
 
+/** @deprecated Q8-gated legacy shape; deliberately absent from ProviderRegistry. */
 export interface MarketplaceImportPort {
   createImport(userId: string, url: string): Promise<MarketplaceImport>;
   getImport(
@@ -404,7 +403,6 @@ export interface ProviderRegistry {
   wardrobe: WardrobeRepository;
   storage: StoragePort;
   imageProcessing: ImageProcessingPort;
-  marketplaceImports: MarketplaceImportPort;
   catalogSearch: CatalogSearchPort;
   billing: BillingPort;
   capsules: CapsuleRepository;

@@ -2,6 +2,12 @@
 
 > Source: Capsule_Zero_UX_Validation_v1_0.pdf (Phase 2 Deliverable, February 2026). Analysis of 30+ user reviews across 6 direct competitors, 5 UX benchmarks, 12 actionable insights.
 
+> **Q8 product gate (2026-07-24):** research still supports three low-friction item-add paths, and
+> the founder retained marketplace import plus shared merchant search. Those two paths are design
+> targets only until the compliance-scheme spec and external legal review are both complete. The
+> active pre-signup loop uses Capsule Zero-owned preset imagery; this UX evidence cannot authorize
+> merchant-image API, storage, migration, generated-client, or live-control implementation.
+
 ## 1. Executive Summary
 
 Analysis of user reviews across Cladwell, Whering, Indyx, Stylebook, Acloset, and CAPSULE (ApS), combined with expert reviews from fashion bloggers and UX analysts.
@@ -29,7 +35,9 @@ Users consistently cite photographing, uploading, and tagging as the #1 reason t
 | Stylebook | Manual background removal tool is "fussy". No AI assistance. No automatic tagging. Pure manual labor. | High |
 | Acloset | Photo uploading "glitchy, may require more than one attempt". Slow process. Ad interruptions during upload on free tier. | High |
 
-> **CZ Implication:** Three upload methods (photo, marketplace links, semantic search) directly address this. Link import is the killer differentiator — no competitor offers automated parsing from marketplace URLs.
+> **CZ Implication:** Three upload methods remain the target. The own-imagery preset catalog removes
+> initial friction now; link import and shared merchant search remain differentiated future paths
+> behind both Q8 gates.
 
 ### 2.2 AI Outfit Recommendations — Overpromised, Underdelivered
 
@@ -65,14 +73,14 @@ No competitor achieves fashion-editorial visual standards. Cladwell is "dated" a
 
 | Feature | Best-in-Class | What Works | CZ Adaptation |
 |---------|--------------|------------|---------------|
-| Onboarding speed | Cladwell | Pre-built capsule templates. Time-to-value under 2 min. | Guided Journey (3 steps). Semantic search from shared DB. |
+| Onboarding speed | Cladwell | Pre-built capsule templates. Time-to-value under 2 min. | Guided Journey with own-imagery presets; shared merchant search follows only after Q8 gates. |
 | Background removal | Whering / Indyx | Automatic bg removal on upload. Whering's is faster, Indyx has better quality. | Optional bg removal (checkbox, off by default). Quality must match Indyx level. Processing < 5 sec. |
 | Auto-tagging | Whering | Detects category, colors, style, fit, neckline, sleeve, pattern, occasion. | Auto-tag name, category, color points. More focused (3 fields vs 8) but more accurate. Easy manual correction. |
 | Wardrobe analytics | Whering / Indyx | Cost-per-wear tracking, wear frequency, wardrobe composition charts. | OPR (Outfit Productivity Ratio) as the hero metric. Cost per wear as NICE-TO-HAVE. Unique angle: productivity, not guilt. |
 | Social / community | Whering / CAPSULE | Friends can style your wardrobe. Community feed. Outfit sharing. | Explicitly out of scope for v0.1. Validated as nice-to-have, not essential for capsule-building. |
 | Sustainability framing | Whering | 60-day no-buy challenges. Repair services. Donation links. Conscious consumption positioning. | Sustainability as natural outcome of capsule methodology, not marketing message. "Fewer, better" is inherently sustainable. |
 | Stylist access | Indyx | Human stylists create custom lookbooks ($150+). High satisfaction. | AI Stylist methodology replaces human stylists. Methodology-driven results at scale. |
-| Item import | Indyx | Forward shopping receipts or paste product links. Chrome extension for desktop. | Marketplace link parsing is CZ's killer feature. Automated extraction of name, category, colors, all photos from URL. |
+| Item import | Indyx | Forward shopping receipts or paste product links. Chrome extension for desktop. | Retained differentiator, but parser/copy/link-back behavior must be accepted by the Q8 compliance and legal gates first. |
 
 ## 4. Competitor UX Scorecard
 
@@ -94,12 +102,14 @@ Scale: 1-5 (1 = poor, 5 = excellent). Weighted by importance to CZ's positioning
 ## 5. Critical UX Insights
 
 ### Insight #1: Time-to-first-value determines retention
-Users who don't see value within 5-10 minutes abandon permanently. CZ's Guided Journey must reach the result screen (capsule + outfits + gap analysis) within a single focused session. Semantic search from shared database lets users build a capsule plan even without photos.
+Users who don't see value within 5-10 minutes abandon permanently. CZ's Guided Journey must reach the result screen (capsule + outfits + gap analysis) within a single focused session. The own-imagery preset catalog lets users build a capsule plan without photos; shared merchant search is not required for first value.
 > **Target:** First capsule result within 10 minutes of registration.
 
 ### Insight #2: Photo quality drives emotional engagement
 Users report that e-commerce images make the wardrobe "look much better" and increases engagement. The visual quality of item photos directly correlates with return visits. Messy phone photos feel depressing, not inspiring.
-> **Target:** Marketplace link import produces editorial-quality item cards by default. Photo upload with optional background removal maintains clean aesthetics.
+> **Target:** Capsule Zero-owned presets provide editorial-quality item cards by default. A future
+> marketplace import must preserve lawful source/link behavior from the Q8 compliance scheme;
+> photo upload with optional background removal maintains clean aesthetics.
 
 ### Insight #3: Users want guidance, not freedom
 Open-ended apps produce "where do I even start?" paralysis. Cladwell's templates and Indyx's Style Workshop succeed because they provide structure. Users consistently praise guided experiences over blank-canvas approaches.
@@ -139,7 +149,8 @@ Analysis of first 30 seconds of each competitor's user experience.
 
 ### 7.1 Must-Build (validated by competitor failures)
 
-1. **Three upload paths** — Photo + marketplace links + semantic search. Eliminates the #1 adoption barrier.
+1. **Three item-add paths** — retained final design. Ship own presets first; marketplace links and
+   shared merchant search remain blocked until both Q8 gates close.
 2. **Accurate auto-tagging with easy correction** — Users expect automation but also expect to fix errors. Correction must be inline, instant, no page reloads.
 3. **Transparent methodology** — Color rules visible in UI (compatible/incompatible indicators). Users trust systems they understand.
 4. **Fast time-to-value** — Guided Journey produces a complete capsule (with outfits and gap analysis) in under 10 minutes. No empty states.
@@ -148,12 +159,15 @@ Analysis of first 30 seconds of each competitor's user experience.
 
 ### 7.2 Must-Avoid (validated by competitor mistakes)
 
-1. **Generic stock imagery as wardrobe items** — Cladwell's approach destroys personal connection. Every item should be real (user photo, marketplace image, or catalog item).
+1. **Generic stock imagery as wardrobe items** — Cladwell's approach destroys personal connection.
+   Use user photos or Capsule Zero-owned presets now; merchant imagery requires both Q8 gates.
 2. **AI-generated outfits without methodology** — Random pairing with weather overlay is not styling. CZ's color system guarantees harmony without AI gambling.
 3. **Social features in v0.1** — Every competitor with social features reports minority usage. Social adds complexity without core value for capsule building.
 4. **Ad-supported free tier** — Acloset and Pureple prove ads destroy perceived premium quality. Incompatible with CZ's positioning.
 5. **Feature overload on first screen** — Acloset's cluttered dashboard and social feed overwhelm new users. CZ's 8-section dashboard should show counts and CTAs, nothing more.
-6. **Mandatory upload before value** — Don't gate the experience behind "upload your entire wardrobe first". Semantic search lets users build a capsule plan with zero photos.
+6. **Mandatory upload before value** — Don't gate the experience behind "upload your entire
+   wardrobe first". Capsule Zero-owned presets deliver the zero-photo plan without depending on the
+   blocked shared merchant corpus.
 
 ### 7.3 Watch-and-Learn (competitor features for v0.2+)
 

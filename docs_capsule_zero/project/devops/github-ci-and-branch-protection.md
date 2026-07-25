@@ -20,7 +20,13 @@ Branch protection for `main` must require:
 - `test`
 - `osv-scan`
 
-`osv-scan` is a fail-closed dependency-security gate. A reported known vulnerability blocks merge until the dependency is fixed or the ruleset is changed by an authorized maintainer.
+`osv-scan` is a fail-closed dependency-security gate. A reported known vulnerability blocks merge
+until the dependency is fixed. When no compatible fixed release exists, an authorized maintainer may
+accept a narrowly scoped `PackageOverrides` exception in an `osv-scanner.toml` beside the affected
+lockfile. The exception must name the exact package version and ecosystem, explain runtime
+reachability and why an upgrade is unavailable, and carry a short `effectiveUntil` review date.
+Broad vulnerability-ID ignores, unversioned package ignores, and severity/workflow weakening do not
+satisfy this policy.
 
 ## Fail-Closed Rules
 
@@ -28,6 +34,8 @@ Branch protection for `main` must require:
 - `AI Review` accepts only native Codex evidence bound to the current PR head SHA and fails on P0-P2, missing, stale, malformed, or untrusted evidence.
 - The AI review job runs on GitHub-hosted `ubuntu-latest`; no local or self-hosted runner is allowed in the gate path.
 - `osv-scan` must complete successfully on the current PR head SHA; a failed, missing, or pending scan is not merge-ready.
+- Expired OSV exceptions must fail closed. Before `effectiveUntil`, either remove the exception after
+  updating the dependency or renew it through human review with fresh upstream evidence.
 - Product changes under `app/`, `api/`, `worker/`, `web/`, or `mobile/` require complete feature memory in `.specify/specs/<feature-id>/spec.md`, `plan.md`, and `tasks.md`.
 - Skipped required gates must not be treated as successful merge readiness.
 

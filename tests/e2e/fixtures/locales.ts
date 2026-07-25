@@ -36,9 +36,28 @@ export const authCopy = {
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 
+export const journeyCopy = {
+  en: {
+    linkUnavailable:
+      "Link import is temporarily unavailable while we complete the required compliance and legal review. Upload a photo or choose from the Capsule Zero preset catalog instead.",
+    linkTab: "Paste Links",
+    searchTab: "Search Catalog",
+  },
+  ru: {
+    linkUnavailable:
+      "Импорт по ссылкам временно недоступен, пока мы завершаем обязательную проверку соответствия требованиям и юридическую проверку. Загрузите фото или выберите вещь из каталога Capsule Zero.",
+    linkTab: "Вставить ссылки",
+    searchTab: "Поиск в каталоге",
+  },
+} as const satisfies Record<Locale, Record<string, string>>;
+
 // The live legal documents are currently shared across EN/RU routes. Keep
 // unavoidable legal-copy assertions here so policy edits have one test source.
 export const legalCopy = {
+  termsMarketplaceImportGate:
+    "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification and an external legal review are complete and all required launch controls are in place.",
+  privacyMarketplaceImportGate:
+    "Capsule Zero does not currently collect or process marketplace URLs, parsed item candidates, or marketplace source-site metadata because marketplace link import is disabled.",
   termsMonetizationHold:
     "Capsule Zero does not currently sell subscriptions, coins, credits, or other paid digital features, and no payment provider is active for the Service.",
   privacyMonetizationHold:
@@ -50,5 +69,11 @@ export const legalCopy = {
     "purchasing coins",
     "coin economy",
     "paid coin features",
+  ],
+  activeMarketplaceImportClaims: [
+    "The Service lets you import item information from third-party product URLs",
+    "Marketplace import is best-effort",
+    "Marketplace URLs you submit",
+    "Best-effort parsing of product URLs into structured item data",
   ],
 } as const;

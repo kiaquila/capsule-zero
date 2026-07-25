@@ -313,6 +313,13 @@ export function createSupabaseProviderRegistry(): ProviderRegistry {
     colorCatalog,
     categoryCatalog,
   );
+  // Frozen Supabase-era merchant-import code stays as superseded legacy only.
+  // Q8 deliberately keeps it unreachable from ProviderRegistry until both
+  // implementation gates have landed.
+  void buildMarketplaceImportPort;
+  void guardMarketplaceImportPort;
+  void buildCatalogSearchPort;
+  void guardCatalogSearchPort;
 
   return {
     mode: "supabase",
@@ -324,21 +331,7 @@ export function createSupabaseProviderRegistry(): ProviderRegistry {
       buildImageProcessingPort(clients),
       authorizeUser,
     ),
-    marketplaceImports: guardMarketplaceImportPort(
-      buildMarketplaceImportPort(
-        clients.service,
-        wardrobe,
-      ),
-      authorizeUser,
-    ),
-    catalogSearch: guardCatalogSearchPort(
-      buildCatalogSearchPort(
-        clients,
-        colorCatalog,
-        categoryCatalog,
-      ),
-      authorizeUser,
-    ),
+    catalogSearch: buildRetiredCatalogSearchPort(),
     billing: guardBillingPort(buildBillingPort(clients.service), authorizeUser),
     capsules: guardCapsuleRepository(capsules, authorizeUser),
     methodology: buildMethodologyPort(
@@ -388,6 +381,23 @@ function buildRetiredProfileRepository(): ProfileRepository {
       return retiredSupabaseAuth("profile update");
     },
   };
+}
+
+function buildRetiredCatalogSearchPort(): CatalogSearchPort {
+  return {
+    async search() {
+      return retiredSupabaseCatalogSearch("catalog search");
+    },
+    async addCatalogItem() {
+      return retiredSupabaseCatalogSearch("catalog item add");
+    },
+  };
+}
+
+function retiredSupabaseCatalogSearch(operation: string): never {
+  throw new Error(
+    `SUPABASE_CATALOG_SEARCH_RETIRED: ${operation} cannot use the gated shared merchant catalog; use an active owned-preset provider.`,
+  );
 }
 
 function guardWardrobeRepository(

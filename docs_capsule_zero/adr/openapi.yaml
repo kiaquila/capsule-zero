@@ -8,8 +8,12 @@ info:
     Monetization is on hold under PRODUCT-PLAN.md D2: no coin balance, billing,
     payment-provider, purchase, or payment-webhook surface is part of the
     authoritative contract until Stage 4 selects a new model.
+    Shared merchant-image import/search is also absent under PRODUCT-PLAN.md
+    Q8: it may return only after the compliance-scheme spec and external legal
+    review are complete.
 x-status: sprint-0-foundation
 x-monetization-status: on-hold
+x-shared-merchant-catalog-status: blocked-pending-compliance-spec-and-legal-review
 servers:
   - url: https://{host}
     variables:
@@ -25,9 +29,6 @@ tags:
   - name: Capsules
   - name: Items
   - name: Uploads
-  - name: Imports
-  - name: Catalog
-  - name: Admin
   - name: Health
 components:
   securitySchemes:
@@ -69,13 +70,6 @@ components:
     jobId:
       in: path
       name: jobId
-      required: true
-      schema:
-        type: string
-        format: uuid
-    importId:
-      in: path
-      name: importId
       required: true
       schema:
         type: string
@@ -191,13 +185,10 @@ components:
       enum: [active, uncapsulated, for_sale, for_repair]
     SourceType:
       type: string
-      enum: [photo_upload, marketplace, catalog]
+      enum: [photo_upload, catalog]
     Visibility:
       type: string
-      enum: [private, moderation_pending, public]
-    ModerationStatus:
-      type: string
-      enum: [none, pending, approved, rejected]
+      enum: [private, public]
     ProcessingStatus:
       type: string
       enum: [queued, processing, completed, failed, retryable]
@@ -756,9 +747,6 @@ components:
         assetId:
           type: [string, "null"]
           format: uuid
-        catalogItemId:
-          type: [string, "null"]
-          format: uuid
     UpdateItemRequest:
       type: object
       required: [version]
@@ -928,109 +916,12 @@ components:
           format: uuid
         jobType:
           type: string
-          enum:
-            [
-              photo_upload,
-              background_removal,
-              marketplace_parse,
-              item_embedding,
-            ]
+          enum: [photo_upload, background_removal]
         status:
           $ref: "#/components/schemas/ProcessingStatus"
         durationMs:
           type: [integer, "null"]
         errorMessage:
-          type: [string, "null"]
-    MarketplaceImportRequest:
-      type: object
-      required: [urls]
-      properties:
-        urls:
-          type: array
-          minItems: 1
-          maxItems: 5
-          items:
-            type: string
-            format: uri
-    MarketplaceParsedCandidate:
-      type: object
-      required:
-        [sourceUrl, title, imageUrls, suggestedCategoryId, suggestedColorIds]
-      properties:
-        sourceUrl:
-          type: string
-          format: uri
-        title:
-          type: string
-        imageUrls:
-          type: array
-          minItems: 1
-          items:
-            type: string
-            format: uri
-        price:
-          type: [number, "null"]
-        currency:
-          type: [string, "null"]
-        brand:
-          type: [string, "null"]
-        suggestedCategoryId:
-          type: [string, "null"]
-          format: uuid
-        suggestedColorIds:
-          type: array
-          items:
-            type: string
-    MarketplaceImport:
-      type: object
-      required: [id, status, candidates]
-      properties:
-        id:
-          type: string
-          format: uuid
-        status:
-          $ref: "#/components/schemas/ProcessingStatus"
-        candidates:
-          type: array
-          items:
-            $ref: "#/components/schemas/MarketplaceParsedCandidate"
-    MarketplaceConfirmRequest:
-      type: object
-      required: [candidateIndex, name, categoryId, colorIds]
-      properties:
-        candidateIndex:
-          type: integer
-          minimum: 0
-        name:
-          type: string
-        categoryId:
-          type: string
-          format: uuid
-        colorIds:
-          type: array
-          minItems: 1
-          maxItems: 3
-          items:
-            type: string
-        selectedImageUrl:
-          type: string
-          format: uri
-    CatalogSearchResponse:
-      type: object
-      required: [items]
-      properties:
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/Item"
-    AdminModerationRequest:
-      type: object
-      required: [decision]
-      properties:
-        decision:
-          type: string
-          enum: [approved, rejected]
-        reason:
           type: [string, "null"]
     MessageResponse:
       type: object
@@ -2043,201 +1934,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UploadJob"
-        "404":
-          $ref: "#/components/responses/NotFound"
-  /api/imports/marketplace:
-    post:
-      tags: [Imports]
-      operationId: createMarketplaceImport
-      x-auth: user
-      summary: Submit one or more product URLs.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/MarketplaceImportRequest"
-      responses:
-        "202":
-          description: Import job accepted.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MarketplaceImport"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-  /api/imports/{importId}:
-    parameters:
-      - $ref: "#/components/parameters/importId"
-    get:
-      tags: [Imports]
-      operationId: getMarketplaceImport
-      x-auth: user
-      summary: Read parse status and parsed candidate data.
-      responses:
-        "200":
-          description: Import status.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MarketplaceImport"
-        "404":
-          $ref: "#/components/responses/NotFound"
-  /api/imports/{importId}/confirm:
-    parameters:
-      - $ref: "#/components/parameters/importId"
-    post:
-      tags: [Imports]
-      operationId: confirmMarketplaceImport
-      x-auth: user
-      summary: Confirm candidate tags and create item.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/MarketplaceConfirmRequest"
-      responses:
-        "201":
-          description: Created item.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Item"
-        "422":
-          $ref: "#/components/responses/SemanticValidation"
-  /api/catalog/search:
-    get:
-      tags: [Catalog]
-      operationId: searchCatalog
-      x-auth: user
-      summary: FTS-first search over public catalog items.
-      parameters:
-        - in: query
-          name: q
-          required: true
-          schema:
-            type: string
-            minLength: 2
-        - in: query
-          name: categoryId
-          schema:
-            type: string
-            format: uuid
-        - in: query
-          name: colorIds
-          schema:
-            type: array
-            items:
-              type: string
-          style: form
-          explode: false
-        - in: query
-          name: limit
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 50
-            default: 20
-      responses:
-        "200":
-          description: Catalog search results.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CatalogSearchResponse"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-  /api/catalog/items/{itemId}:
-    parameters:
-      - $ref: "#/components/parameters/itemId"
-    get:
-      tags: [Catalog]
-      operationId: getCatalogItem
-      x-auth: user
-      summary: Read public catalog item.
-      responses:
-        "200":
-          description: Catalog item.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Item"
-        "404":
-          $ref: "#/components/responses/NotFound"
-  /api/catalog/items/{itemId}/add:
-    parameters:
-      - $ref: "#/components/parameters/itemId"
-    post:
-      tags: [Catalog]
-      operationId: addCatalogItem
-      x-auth: user
-      summary: Add public catalog item to user's wardrobe or capsule.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                capsuleId:
-                  type: [string, "null"]
-                  format: uuid
-      responses:
-        "201":
-          description: Added wardrobe item.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Item"
-        "422":
-          $ref: "#/components/responses/SemanticValidation"
-  /api/admin/moderation/items:
-    get:
-      tags: [Admin]
-      operationId: listModerationItems
-      x-auth: admin
-      x-client-availability: server
-      summary: List marketplace items awaiting moderation.
-      responses:
-        "200":
-          description: Moderation items.
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [items]
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Item"
-        "403":
-          $ref: "#/components/responses/Forbidden"
-  /api/admin/moderation/items/{itemId}:
-    parameters:
-      - $ref: "#/components/parameters/itemId"
-    patch:
-      tags: [Admin]
-      operationId: updateModerationItem
-      x-auth: admin
-      x-client-availability: server
-      summary: Approve or reject catalog visibility.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AdminModerationRequest"
-      responses:
-        "200":
-          description: Updated moderation item.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Item"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
   /api/health:

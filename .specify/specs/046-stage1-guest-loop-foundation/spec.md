@@ -15,6 +15,13 @@
 > legacy persisted numerator — `69529ee`. Затем display, preview и mock/API-backed creation
 > переведены на общий калькулятор. Финальный OSV dependency fix изменяет только package metadata и
 > lockfile, поэтому относится к support scope вне failing-test-first application-code контура.
+> Security-follow-up 2026-07-24 также меняет только dependency metadata и scanner config:
+> исправимые новые advisories обновляются, а единственная legacy dev-цепочка без совместимого
+> upstream-патча получает точное version-scoped исключение со сроком пересмотра.
+> Q8 follow-up после native review меняет authoritative OpenAPI, generated projection, contract
+> guard и decision-carrying docs, но не добавляет application behavior: заблокированный
+> merchant-import/shared-search surface удаляется из codegen до закрытия compliance/legal gates.
+> Это contract/support scope; generated client остаётся механической проекцией.
 
 ## Goal
 
@@ -65,6 +72,21 @@ Dashboard и Capsule Result не продолжали показывать по�
   загружаются явным TypeScript runtime и не зависят от экспериментальных возможностей Node 25.
 - `app/package.json` и `app/package-lock.json` — точечное устранение OSV High findings для
   транзитивных `fast-uri` и `sharp`; product behavior и provider contracts не меняются.
+- **Security-follow-up 2026-07-24:** `postcss` обновляется до fixed `8.5.18`,
+  `brace-expansion@5.x` — до fixed `5.0.8` в app/e2e lockfiles. Оставшийся
+  `brace-expansion@1.1.16` приходит только через dev-only ESLint → `minimatch@3`, совместимого
+  patched 1.x release нет. `app/osv-scanner.toml` и `tests/e2e/osv-scanner.toml` принимают только
+  эту точную npm-версию до 2026-08-08; workflow, severity и остальные версии не исключаются.
+- **Q8 contract freeze 2026-07-24:** retained US-011/US-012/US-025 остаются design scope, но
+  OpenAPI/generated client не содержат marketplace-import, shared catalog/search/add, moderation,
+  `sourceType=marketplace`, `catalogItemId` и merchant processing/embedding jobs. Contract guard
+  запрещает их раннее возвращение; canonical active docs отличают own-imagery preset P2 от
+  merchant-image surface, гейтившегося compliance-scheme spec + external legal review. Общий
+  `ProviderRegistry` также не экспонирует legacy marketplace-import port, поэтому `api` mode не
+  может унаследовать рабочую mock-реализацию в обход OpenAPI. Retained Links tab видим как
+  недоступный target-design control без формы/handler; прямой `?tab=links` не активирует его.
+  Публичные Terms и Privacy Policy описывают этот surface как будущий и условный: до закрытия
+  обоих gates они не обещают импорт и не заявляют сбор URL или передачу marketplace adapters.
 
 **Out:**
 
@@ -136,8 +158,28 @@ Dashboard и Capsule Result не продолжали показывать по�
   каждая посчитанная accessory variation имеют отдельную карточку с теми же item IDs.
 - **AC-011 (dependency gate без advisory bypass):** `app/package-lock.json` разрешает
   `fast-uri@3.1.4` и `sharp@0.35.3` либо более новые проверенные fixed versions; OSV Scan не содержит
-  findings из `app`, `npm audit` не содержит High vulnerabilities, а production Docker build проходит
-  с чистым `npm ci`. Advisory не игнорируется и workflow severity не ослабляется.
+  findings для этих двух пакетов, а production Docker build проходит с чистым `npm ci`. Их
+  advisories не игнорируются и workflow severity не ослабляется. Общий `npm audit` может отдельно
+  показывать только явно принятую legacy-цепочку из AC-012, поскольку npm audit не читает локальный
+  OSV package override.
+- **AC-012 (новый advisory без совместимого legacy fix):** `postcss>=8.5.18` и
+  `brace-expansion@5.0.8` снимают все исправимые findings. Исключение для оставшегося
+  `brace-expansion@1.1.16` совпадает по package/version/ecosystem, действует только до 2026-08-08,
+  объясняет dev-only reachability и отсутствие patched 1.x; тот же OSV v2.3.5 recursive scan
+  завершается без findings. Broad ID-ignore, unversioned package override и ослабление workflow
+  запрещены.
+- **AC-013 (Q8 fail-closed contract):** product stories и prototype copy сохраняют выбранную
+  опцию (б), но executable OpenAPI/generated client не экспонируют merchant-import/shared-search/
+  moderation paths или blocked schemas/enums. `check-api-contract.mjs` падает при раннем возврате
+  любого перечисленного артефакта. `ProviderRegistry` не содержит marketplace-import port, а
+  frozen Supabase registry не подключает legacy shared-catalog search. Guided-journey Links tab
+  disabled и не рендерит import form/handler даже при прямом query handoff; рядом EN/RU copy
+  объясняет compliance/legal gate и указывает photo upload + own-imagery preset alternatives.
+  Live Terms/Privacy на обеих active locale routes явно говорят, что import недоступен, URL/source
+  metadata не собираются и не передаются, а будущая активация требует предварительного обновления
+  legal copy после compliance-scheme spec и external legal review.
+  Own-imagery preset catalog получает отдельный P2 contract и не используется как лазейка для
+  восстановления shared merchant corpus.
 
 ## Negative scenarios
 
@@ -174,8 +216,16 @@ Dashboard и Capsule Result не продолжали показывать по�
 13. **Renderer игнорирует selected representatives** — отвергнуто: cards не могут продолжать
     показывать первые items по UI section или structural/gap placeholders как посчитанные outfits;
     их item IDs обязаны совпадать с `previewBaseLooks` numerator.
-14. **OSV проходит через ignore/ослабление гейта** — отвергнуто: исправляются dependency versions;
-    workflow, scanner arguments и severity policy не меняются.
+14. **Исправимый OSV advisory проходит через ignore/ослабление гейта** — отвергнуто: исправляются
+    dependency versions; workflow, scanner arguments и severity policy не меняются. Для нового
+    `brace-expansion@1.1.16` finding без совместимого patched release разрешено только точное
+    version-scoped исключение из AC-012 с коротким expiry; оно не скрывает fixed 5.x или иные версии.
+15. **Закрытие Q8 трактуется как разрешение немедленно реализовать retained surface** — отвергнуто:
+    design docs сохраняют фичу, но active machine contract/codegen остаются пустыми до обеих
+    предусловий; guard блокирует путь, schema, enum или job-type regression, а disabled Links tab
+    не может открыть старую mock-import форму. Frozen Supabase catalog-search также fail-closed, а
+    blocked control не остаётся немым: copy объясняет причину и доступные альтернативы. Публичные
+    Terms/Privacy не могут представлять disabled import или dormant adapters как работающую услугу.
 
 Регрессия любого пункта — это доковое противоречие, ловится grep-аудитом `plan.md` и просмотром
 диффа при ревью.

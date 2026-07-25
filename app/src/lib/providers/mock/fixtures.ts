@@ -7,7 +7,6 @@ import type {
 } from "@/types";
 import type {
   CoinPack,
-  MarketplaceImport,
   Profile,
   UploadJob,
   WardrobeEntry,
@@ -143,7 +142,7 @@ export const MOCK_WARDROBE_ITEMS: WardrobeEntry[] = [
     price: 129,
     capsuleIds: ["33333333-3333-4333-8333-333333333333"],
     isPublic: false,
-    sourceType: "marketplace",
+    sourceType: "photo_upload",
     status: "active",
     favorite: false,
     fromCatalog: false,
@@ -326,40 +325,6 @@ export const MOCK_UPLOAD_JOBS: UploadJob[] = [
     durationMs: 5001,
     createdAt: "2026-06-01T13:10:00.000Z",
     updatedAt: "2026-06-01T13:10:05.000Z",
-  },
-];
-
-export const MOCK_MARKETPLACE_IMPORTS: MarketplaceImport[] = [
-  {
-    id: "66666666-6666-4666-8666-666666666661",
-    userId: MOCK_USER.id,
-    url: "https://example-market.test/products/navy-trousers",
-    status: "parsed",
-    candidates: [
-      {
-        id: "candidate-navy-trousers",
-        name: "Ink navy straight trousers",
-        categoryId: "trousers",
-        imageUrl: "/fixtures/marketplace/ink-navy-trousers.jpg",
-        colorPoints: [MOCK_COLORS.navy],
-        brand: "ZARA",
-        material: "Wool blend",
-        price: 129,
-        sourceUrl: "https://example-market.test/products/navy-trousers",
-      },
-    ],
-    createdAt: "2026-06-01T14:00:00.000Z",
-    updatedAt: "2026-06-01T14:00:01.000Z",
-  },
-  {
-    id: "66666666-6666-4666-8666-666666666662",
-    userId: MOCK_USER.id,
-    url: "https://example-market.test/products/unparseable",
-    status: "failed",
-    candidates: [],
-    errorCode: "MARKETPLACE_PARSE_FAILED",
-    createdAt: "2026-06-01T14:10:00.000Z",
-    updatedAt: "2026-06-01T14:10:01.000Z",
   },
 ];
 

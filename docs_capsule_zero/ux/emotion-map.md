@@ -3,6 +3,12 @@
 > Phase 2 artifact for Phase 3 (UX/UI Design). For each v0.1 screen: target emotion, UX principle, and design implication. Co-created by UX/UI Researcher and AI Stylist-Consultant.
 >
 > Sources: FVD v1.2, User Stories v1.4, Styling Guide v1.3, UX Validation v1.0.
+>
+> **Q8 implementation gate (2026-07-24):** the link-import and shared
+> merchant-catalog experiences below remain approved design targets, but their
+> controls must not invoke active handlers until the compliance-scheme spec and
+> external legal review have both landed. Capsule Zero-owned presets are a
+> separate Stage-2 catalog surface.
 
 ## Emotional Arc
 

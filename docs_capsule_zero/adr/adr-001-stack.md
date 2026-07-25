@@ -4,6 +4,13 @@
 > pricing, or purchase-flow statement below is superseded historical context under `PRODUCT-PLAN.md`
 > D2. Do not implement, provision, expose, test as a release gate, or use it for a new contract or
 > code generation. Stage 4 will delete or replace the retained legacy after choosing a model.
+>
+> **Shared merchant-catalog freeze (2026-07-24):** Marketplace link import and semantic search
+> across user-imported merchant imagery remain accepted product design under `PRODUCT-PLAN.md`
+> Q8, but they are not an active runtime contract. Do not add routes, schemas, generated-client
+> operations, storage permissions, jobs, migrations, or provider behavior until the
+> compliance-scheme spec and external legal review have both landed. The owned preset catalog is
+> a separate Stage-2 surface.
 
 ## Status
 
@@ -17,9 +24,10 @@ Capsule Zero is targeting production-grade v0.1 directly. There is no Stage 1 mo
 - a React Native iOS and Android app sharing the same backend
 - email/password authentication in v0.1, with Google OAuth and Apple Sign-In deferred to Stage 2
 - private user wardrobe data and photos
-- three upload methods: photo upload, marketplace link import, semantic catalog search
+- three target upload methods: photo upload plus the Q8-gated marketplace link import and
+  shared merchant-catalog search
 - self-hosted image processing under a 5 second quality gate (deferred to Stage 2)
-- a shared item database for public marketplace imports
+- a shared item database for public marketplace imports — **retained, with conditions (2026-07-24, [`PRODUCT-PLAN.md`](../../PRODUCT-PLAN.md) §4-Q8, option (б)):** we hold no licence to republish merchant product images, so this requirement stands only on the Polyvore pattern — the user imports, the platform makes no extra copies, every image links back, and notice-and-takedown plus a repeat-infringer policy are live. Gated on a separate compliance-scheme spec **and** external legal review before any implementation
 - EN and RU from v0.1 day 1, with ES-AR globally deferred to v0.2
 - coins-only monetization through Lava.top one-time purchases — coins and image enhancement are in the v0.2 backlog; v0.1 ships with a Lava.top stub
 - a single Hetzner Cloud server running docker-compose with every service declared explicitly (migrated from DigitalOcean on 2026-07-02, spec 033 — the single-server docker-compose shape is unchanged)
@@ -37,9 +45,9 @@ Adopt the following production stack:
 | Web frontend             | Next.js App Router, React, TypeScript                                                                                                                             |
 | Mobile                   | React Native (iOS + Android), sharing the same Go API contract                                                                                                    |
 | Styling                  | Tailwind CSS v4 with Capsule Zero glass tokens                                                                                                                    |
-| Backend                  | Go modular monolith (single binary, bounded contexts: auth, wardrobe, capsule, search, billing, moderation)                                                       |
+| Backend                  | Go modular monolith (single binary; active bounded contexts are added slice by slice). Merchant-catalog search and moderation remain Q8-blocked design until both gates land |
 | API gateway              | nginx 1.27 with Let's Encrypt TLS (certbot on host), rate-limit (`limit_req_zone`), `auth_request` into Ory Kratos                                                |
-| Database                 | PostgreSQL 16 with Postgres FTS in v0.1; pgvector and PgBouncer are deferred by ADR-007 until semantic-search and connection-pressure triggers fire               |
+| Database                 | PostgreSQL 16 with Postgres FTS in v0.1; pgvector and PgBouncer are deferred by ADR-007. Shared merchant semantic search additionally requires both Q8 gates before any schema or migration |
 | Cache / sessions / queue | Redis 7 with a Redis-based job queue (River or asynq) — Kafka is deferred until services split                                                                    |
 | Auth                     | Ory Kratos email/password in v0.1; Google OAuth and Apple Sign-In in Stage 2                                                                                      |
 | File storage             | Hetzner Object Storage (S3-compatible); private assets via signed URLs, public catalog via native object URLs until a separate catalog-CDN slice                 |
@@ -96,7 +104,12 @@ signed-upload smoke before creating production buckets.
 
 ### Why no Kafka in v0.1
 
-The 4 GB server cannot host Kafka (JVM eats > 1 GB of RAM) and we do not yet have multiple consumers. A Redis-based job queue covers image processing, embedding generation, marketplace parsing, and webhook fanout. Kafka becomes interesting only when the image worker, the API, and a second downstream consumer all need durable, replayable streams — i.e. when we extract the image worker into its own service.
+The 4 GB server cannot host Kafka (JVM eats > 1 GB of RAM) and we do not yet have multiple
+consumers. A Redis-based job queue covers active image-processing and webhook workloads.
+Embedding generation and marketplace parsing are target workloads only: no job types or handlers
+for them may enter the active contract before both Q8 gates land. Kafka becomes interesting only
+when the image worker, the API, and a second downstream consumer all need durable, replayable
+streams — i.e. when we extract the image worker into its own service.
 
 ### Why Cloudflare and not nginx rate-limit alone
 

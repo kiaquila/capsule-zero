@@ -42,11 +42,28 @@
 - [x] T019 OSV gate: заменить уязвимые transitive `fast-uri@3.1.3` и `sharp@0.34.5` точечными
   npm overrides на `3.1.4` / `0.35.3`, обновить app lockfile и подтвердить zero findings тем же
   `osv-scanner-action:v2.3.5`, app CI-check и production Docker build
+- [x] T020 OSV follow-up 2026-07-24: обновить `postcss` до `8.5.18` и совместимую
+  `brace-expansion@5.x` цепочку до `5.0.8`; для dev-only `brace-expansion@1.1.16`, у которого нет
+  patched 1.x, добавить точные app/e2e package overrides до 2026-08-08 и подтвердить zero findings
+  тем же scanner-action image
+- [x] T021 Q8 contract sweep: сохранить US-011/US-012/US-025 как gated design, удалить
+  merchant-import/shared-search/moderation surface из authoritative OpenAPI/generated client,
+  добавить negative contract guard, убрать marketplace port и работающую mock/UI import-реализацию,
+  retired Supabase catalog-search path отсоединить от shared records, оставить Links tab disabled
+  без формы/handler с локализованным объяснением и upload/preset alternatives, привести live
+  Terms/Privacy к conditional/no-processing статусу, прогнать canonical manual list + inventory и
+  актуализировать active decision docs без schema/migration/runtime реализации
 
 ## Process Memory
 
 ### Decisions
 
+- **Q8 закрывает все executable обходы, а не только OpenAPI:** frozen Supabase provider не может
+  сохранять `search_catalog_hybrid`/public-record path за общим `catalogSearch`; registry возвращает
+  fail-closed retired port. Видимый disabled Links control следует Direct, Not Dictate: EN/RU copy
+  объясняет compliance/legal gate и направляет к photo upload или own-imagery preset catalog.
+  Публичные Terms/Privacy также являются частью live product contract: пока surface disabled, они
+  обязаны говорить no URL collection/no adapter disclosure и условно описывать только future launch.
 - **Модель OPR (Q1, фаундер 2026-07-21):** core base look = верх×низ×обувь (или платье×обувь);
   структурные слои (кардиган/блейзер/пальто) — отдельный **Layering Coverage** score, вне hero-OPR и
   вне знаменателя; аксессуары (сумка/шарф/шапка/украшения/ремень) входят в hero-OPR «умно». Знаменатель
@@ -154,6 +171,20 @@
   а `sharp` переопределён на исправленный `0.35.3`. Next загружает root-resolved `sharp` без runtime
   version gate; Linux production image с чистым `npm ci` и standalone build проходит. Product code,
   Supabase boundary и runtime contracts не менялись.
+- **Временное OSV-исключение точное и fail-closed:** новые исправимые `postcss`/`brace-expansion@5`
+  findings обновлены. Legacy `brace-expansion@1.1.16` используется только dev-only ESLint-цепочкой
+  через `minimatch@3`; upstream не опубликовал patched 1.x. Два локальных `PackageOverrides`
+  совпадают по exact name/version/ecosystem и истекают 2026-08-08. Политика в
+  `github-ci-and-branch-protection.md` запрещает broad ID-ignore и unversioned exceptions.
+  `npm audit` не читает OSV config и поэтому продолжает сообщать этот принятый finding; merge gate
+  проверяется pinned OSV Scanner v2.3.5, который применяет точные локальные overrides.
+- **Q8 закрывает продуктовый вопрос, но не implementation gates:** вариант (б) сохраняет три
+  истории и будущий UX. До compliance-scheme spec и external legal review machine contract обязан
+  быть пустым: blocked paths/schemas/enums/jobs удалены из OpenAPI и generated projection, а
+  `check-api-contract.mjs` запрещает раннее возвращение. Рабочий marketplace mock-порт также удалён
+  из общего `ProviderRegistry`, поэтому `api` mode больше не наследует его через fixture registry;
+  сама mock-реализация удалена, а frozen Supabase-реализация остаётся недостижимым superseded
+  legacy. Own-imagery preset P2 — отдельный contract.
 
 ### Dead Ends
 
@@ -223,6 +254,17 @@
   даже текущий `next@16.2.11` продолжает объявлять optional `sharp@^0.34.5`, поэтому patch-upgrade не
   снимает OSV finding. Локальный override выбирает уже принятый upstream-линейкой `sharp@0.35.3` и
   проверяется реальной standalone-сборкой, а не игнорированием advisory.
+- **Принудительно подменить `brace-expansion@1.x` на 5.0.8:** отвергнуто реальным lint-прогоном —
+  `minimatch@3` ожидает callable CommonJS export, а 5.x экспортирует object; результат
+  `TypeError: expand is not a function`. Compatible patched 1.x release на 2026-07-24 отсутствует.
+- **Вложить `reason`/`effectiveUntil` в `[PackageOverrides.vulnerability]`:** отвергнуто pinned
+  OSV Scanner v2.3.5 как `unknown keys`. В schema этого тега вложенный `Vulnerability` содержит
+  только `ignore`, а expiry и reason принадлежат внешнему `PackageOverrideEntry`. Временная
+  просроченная дата при корректной внешней форме вернула два High finding и ненулевой exit.
+- **Оставить `/api/catalog/search` и marketplace schemas как «спеку наперёд»:** отвергнуто native
+  Codex P1. OpenAPI порождает клиент и превращает gated design в готовое разрешение реализации;
+  narrative specs достаточно для проектирования, executable surface возвращается только вместе с
+  обеими закрытыми предусловиями и их проверками.
 
 ### Known Issues
 
@@ -239,3 +281,10 @@
 - **Реализация гостевой петли** — не в этом PR (Roadmap P1–P4, `spec.md`).
 - **Временный `sharp` override:** удалить его, когда стабильный Next начнёт объявлять безопасный
   `sharp@>=0.35`; до этого Dependabot/OSV и production Docker build остаются обязательными guards.
+- **Временный `brace-expansion@1.1.16` scanner override:** до 2026-08-08 проверить patched 1.x либо
+  переход ESLint / `eslint-plugin-jsx-a11y` с `minimatch@3`; удалить исключение сразу после
+  совместимого upstream fix. Просроченный override обязан снова сделать OSV gate красным.
+- **Q8 compliance scheme и legal review ещё не выполнены:** retained merchant-import/shared-search
+  нельзя реализовывать или возвращать в codegen. Historical specs, frozen Supabase provider и
+  legacy migrations из inventory не являются активным implementation contract. Текущая legal copy
+  не заменяет будущую compliance scheme: перед активацией Terms/Privacy должны быть обновлены снова.

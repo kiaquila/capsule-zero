@@ -2,6 +2,8 @@
 
 > Source: US-012 (spec.md). Prototype: `html-prototypes/guided-journey.html` (tab "Search Catalog")
 
+> **Retained, with conditions (2026-07-24).** The founder chose option (б) of [`PRODUCT-PLAN.md`](../../PRODUCT-PLAN.md) §4-Q8: the shared corpus of user-imported merchant items stays, built on the Polyvore pattern. Because we hold no licence to republish merchant photos, this feature may not be implemented until the compliance-scheme spec (user-performed import, no extra platform copies, mandatory link-back, notice-and-takedown, repeat-infringer policy) and an external legal review are both done. The active OpenAPI/generated client intentionally omit its routes and schemas until then. Our own preset catalog (D5/D6) is a separate corpus; its picker/search contract belongs to the P2 implementation spec rather than silently reusing the blocked shared-catalog API.
+
 ## Overview
 - **Purpose:** Find items from shared database by text description — populate capsule without photos
 - **User:** User adding items during Journey Step 3

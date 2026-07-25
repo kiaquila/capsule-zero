@@ -5,20 +5,6 @@ export const API_VERSION = "0.1.0" as const;
 
 export const API_OPERATIONS = [
   {
-    "method": "GET",
-    "path": "/api/admin/moderation/items",
-    "operationId": "listModerationItems",
-    "auth": "admin",
-    "clientAvailability": "server"
-  },
-  {
-    "method": "PATCH",
-    "path": "/api/admin/moderation/items/{itemId}",
-    "operationId": "updateModerationItem",
-    "auth": "admin",
-    "clientAvailability": "server"
-  },
-  {
     "method": "POST",
     "path": "/api/auth/google/complete",
     "operationId": "completeGoogleSignIn",
@@ -174,51 +160,9 @@ export const API_OPERATIONS = [
   },
   {
     "method": "GET",
-    "path": "/api/catalog/items/{itemId}",
-    "operationId": "getCatalogItem",
-    "auth": "user",
-    "clientAvailability": "web-mobile"
-  },
-  {
-    "method": "POST",
-    "path": "/api/catalog/items/{itemId}/add",
-    "operationId": "addCatalogItem",
-    "auth": "user",
-    "clientAvailability": "web-mobile"
-  },
-  {
-    "method": "GET",
-    "path": "/api/catalog/search",
-    "operationId": "searchCatalog",
-    "auth": "user",
-    "clientAvailability": "web-mobile"
-  },
-  {
-    "method": "GET",
     "path": "/api/health",
     "operationId": "getHealth",
     "auth": "public",
-    "clientAvailability": "web-mobile"
-  },
-  {
-    "method": "GET",
-    "path": "/api/imports/{importId}",
-    "operationId": "getMarketplaceImport",
-    "auth": "user",
-    "clientAvailability": "web-mobile"
-  },
-  {
-    "method": "POST",
-    "path": "/api/imports/{importId}/confirm",
-    "operationId": "confirmMarketplaceImport",
-    "auth": "user",
-    "clientAvailability": "web-mobile"
-  },
-  {
-    "method": "POST",
-    "path": "/api/imports/marketplace",
-    "operationId": "createMarketplaceImport",
-    "auth": "user",
     "clientAvailability": "web-mobile"
   },
   {
@@ -410,11 +354,9 @@ export type WardrobeType = "women" | "men" | "mixed";
 
 export type ItemStatus = "active" | "uncapsulated" | "for_sale" | "for_repair";
 
-export type SourceType = "photo_upload" | "marketplace" | "catalog";
+export type SourceType = "photo_upload" | "catalog";
 
-export type Visibility = "private" | "moderation_pending" | "public";
-
-export type ModerationStatus = "none" | "pending" | "approved" | "rejected";
+export type Visibility = "private" | "public";
 
 export type ProcessingStatus = "queued" | "processing" | "completed" | "failed" | "retryable";
 
@@ -649,7 +591,6 @@ export type CreateItemRequest = {
   price?: number | null;
   sourceType: SourceType;
   assetId?: string | null;
-  catalogItemId?: string | null;
 };
 
 export type UpdateItemRequest = {
@@ -724,48 +665,10 @@ export type BackgroundRemovalRequest = {
 
 export type UploadJob = {
   id: string;
-  jobType: "photo_upload" | "background_removal" | "marketplace_parse" | "item_embedding";
+  jobType: "photo_upload" | "background_removal";
   status: ProcessingStatus;
   durationMs?: number | null;
   errorMessage?: string | null;
-};
-
-export type MarketplaceImportRequest = {
-  urls: Array<string>;
-};
-
-export type MarketplaceParsedCandidate = {
-  sourceUrl: string;
-  title: string;
-  imageUrls: Array<string>;
-  price?: number | null;
-  currency?: string | null;
-  brand?: string | null;
-  suggestedCategoryId: string | null;
-  suggestedColorIds: Array<string>;
-};
-
-export type MarketplaceImport = {
-  id: string;
-  status: ProcessingStatus;
-  candidates: Array<MarketplaceParsedCandidate>;
-};
-
-export type MarketplaceConfirmRequest = {
-  candidateIndex: number;
-  name: string;
-  categoryId: string;
-  colorIds: Array<string>;
-  selectedImageUrl?: string;
-};
-
-export type CatalogSearchResponse = {
-  items: Array<Item>;
-};
-
-export type AdminModerationRequest = {
-  decision: "approved" | "rejected";
-  reason?: string | null;
 };
 
 export type MessageResponse = {
@@ -785,22 +688,6 @@ export type IdResponse = {
   id: string;
 };
 export interface ApiOperationPayloads {
-  listModerationItems: {
-    path: ListModerationItemsPathParams;
-    query: ListModerationItemsQueryParams;
-    header: ListModerationItemsHeaderParams;
-    cookie: ListModerationItemsCookieParams;
-    request: ListModerationItemsRequestBody;
-    response: ListModerationItemsResponseBody;
-  };
-  updateModerationItem: {
-    path: UpdateModerationItemPathParams;
-    query: UpdateModerationItemQueryParams;
-    header: UpdateModerationItemHeaderParams;
-    cookie: UpdateModerationItemCookieParams;
-    request: UpdateModerationItemRequestBody;
-    response: UpdateModerationItemResponseBody;
-  };
   completeGoogleSignIn: {
     path: CompleteGoogleSignInPathParams;
     query: CompleteGoogleSignInQueryParams;
@@ -977,30 +864,6 @@ export interface ApiOperationPayloads {
     request: GetCurrentCapsuleRequestBody;
     response: GetCurrentCapsuleResponseBody;
   };
-  getCatalogItem: {
-    path: GetCatalogItemPathParams;
-    query: GetCatalogItemQueryParams;
-    header: GetCatalogItemHeaderParams;
-    cookie: GetCatalogItemCookieParams;
-    request: GetCatalogItemRequestBody;
-    response: GetCatalogItemResponseBody;
-  };
-  addCatalogItem: {
-    path: AddCatalogItemPathParams;
-    query: AddCatalogItemQueryParams;
-    header: AddCatalogItemHeaderParams;
-    cookie: AddCatalogItemCookieParams;
-    request: AddCatalogItemRequestBody;
-    response: AddCatalogItemResponseBody;
-  };
-  searchCatalog: {
-    path: SearchCatalogPathParams;
-    query: SearchCatalogQueryParams;
-    header: SearchCatalogHeaderParams;
-    cookie: SearchCatalogCookieParams;
-    request: SearchCatalogRequestBody;
-    response: SearchCatalogResponseBody;
-  };
   getHealth: {
     path: GetHealthPathParams;
     query: GetHealthQueryParams;
@@ -1008,30 +871,6 @@ export interface ApiOperationPayloads {
     cookie: GetHealthCookieParams;
     request: GetHealthRequestBody;
     response: GetHealthResponseBody;
-  };
-  getMarketplaceImport: {
-    path: GetMarketplaceImportPathParams;
-    query: GetMarketplaceImportQueryParams;
-    header: GetMarketplaceImportHeaderParams;
-    cookie: GetMarketplaceImportCookieParams;
-    request: GetMarketplaceImportRequestBody;
-    response: GetMarketplaceImportResponseBody;
-  };
-  confirmMarketplaceImport: {
-    path: ConfirmMarketplaceImportPathParams;
-    query: ConfirmMarketplaceImportQueryParams;
-    header: ConfirmMarketplaceImportHeaderParams;
-    cookie: ConfirmMarketplaceImportCookieParams;
-    request: ConfirmMarketplaceImportRequestBody;
-    response: ConfirmMarketplaceImportResponseBody;
-  };
-  createMarketplaceImport: {
-    path: CreateMarketplaceImportPathParams;
-    query: CreateMarketplaceImportQueryParams;
-    header: CreateMarketplaceImportHeaderParams;
-    cookie: CreateMarketplaceImportCookieParams;
-    request: CreateMarketplaceImportRequestBody;
-    response: CreateMarketplaceImportResponseBody;
   };
   listItems: {
     path: ListItemsPathParams;
@@ -1202,24 +1041,6 @@ export interface ApiOperationPayloads {
     response: GetLivenessResponseBody;
   };
 }
-
-export type ListModerationItemsPathParams = Record<string, never>;
-export type ListModerationItemsQueryParams = Record<string, never>;
-export type ListModerationItemsHeaderParams = Record<string, never>;
-export type ListModerationItemsCookieParams = Record<string, never>;
-export type ListModerationItemsRequestBody = never;
-export type ListModerationItemsResponseBody = {
-  items: Array<Item>;
-};
-
-export type UpdateModerationItemPathParams = {
-  itemId: string;
-};
-export type UpdateModerationItemQueryParams = Record<string, never>;
-export type UpdateModerationItemHeaderParams = Record<string, never>;
-export type UpdateModerationItemCookieParams = Record<string, never>;
-export type UpdateModerationItemRequestBody = AdminModerationRequest;
-export type UpdateModerationItemResponseBody = Item;
 
 export type CompleteGoogleSignInPathParams = Record<string, never>;
 export type CompleteGoogleSignInQueryParams = Record<string, never>;
@@ -1401,69 +1222,12 @@ export type GetCurrentCapsuleResponseBody = {
   capsule: Capsule | null;
 };
 
-export type GetCatalogItemPathParams = {
-  itemId: string;
-};
-export type GetCatalogItemQueryParams = Record<string, never>;
-export type GetCatalogItemHeaderParams = Record<string, never>;
-export type GetCatalogItemCookieParams = Record<string, never>;
-export type GetCatalogItemRequestBody = never;
-export type GetCatalogItemResponseBody = Item;
-
-export type AddCatalogItemPathParams = {
-  itemId: string;
-};
-export type AddCatalogItemQueryParams = Record<string, never>;
-export type AddCatalogItemHeaderParams = Record<string, never>;
-export type AddCatalogItemCookieParams = Record<string, never>;
-export type AddCatalogItemRequestBody = {
-  capsuleId?: string | null;
-};
-export type AddCatalogItemResponseBody = Item;
-
-export type SearchCatalogPathParams = Record<string, never>;
-export type SearchCatalogQueryParams = {
-  q: string;
-  categoryId?: string;
-  colorIds?: Array<string>;
-  limit?: number;
-};
-export type SearchCatalogHeaderParams = Record<string, never>;
-export type SearchCatalogCookieParams = Record<string, never>;
-export type SearchCatalogRequestBody = never;
-export type SearchCatalogResponseBody = CatalogSearchResponse;
-
 export type GetHealthPathParams = Record<string, never>;
 export type GetHealthQueryParams = Record<string, never>;
 export type GetHealthHeaderParams = Record<string, never>;
 export type GetHealthCookieParams = Record<string, never>;
 export type GetHealthRequestBody = never;
 export type GetHealthResponseBody = HealthResponse;
-
-export type GetMarketplaceImportPathParams = {
-  importId: string;
-};
-export type GetMarketplaceImportQueryParams = Record<string, never>;
-export type GetMarketplaceImportHeaderParams = Record<string, never>;
-export type GetMarketplaceImportCookieParams = Record<string, never>;
-export type GetMarketplaceImportRequestBody = never;
-export type GetMarketplaceImportResponseBody = MarketplaceImport;
-
-export type ConfirmMarketplaceImportPathParams = {
-  importId: string;
-};
-export type ConfirmMarketplaceImportQueryParams = Record<string, never>;
-export type ConfirmMarketplaceImportHeaderParams = Record<string, never>;
-export type ConfirmMarketplaceImportCookieParams = Record<string, never>;
-export type ConfirmMarketplaceImportRequestBody = MarketplaceConfirmRequest;
-export type ConfirmMarketplaceImportResponseBody = Item;
-
-export type CreateMarketplaceImportPathParams = Record<string, never>;
-export type CreateMarketplaceImportQueryParams = Record<string, never>;
-export type CreateMarketplaceImportHeaderParams = Record<string, never>;
-export type CreateMarketplaceImportCookieParams = Record<string, never>;
-export type CreateMarketplaceImportRequestBody = MarketplaceImportRequest;
-export type CreateMarketplaceImportResponseBody = MarketplaceImport;
 
 export type ListItemsPathParams = Record<string, never>;
 export type ListItemsQueryParams = {
@@ -1724,7 +1488,6 @@ export const API_SCHEMAS = {
     "type": "string",
     "enum": [
       "photo_upload",
-      "marketplace",
       "catalog"
     ]
   },
@@ -1732,17 +1495,7 @@ export const API_SCHEMAS = {
     "type": "string",
     "enum": [
       "private",
-      "moderation_pending",
       "public"
-    ]
-  },
-  "ModerationStatus": {
-    "type": "string",
-    "enum": [
-      "none",
-      "pending",
-      "approved",
-      "rejected"
     ]
   },
   "ProcessingStatus": {
@@ -2652,13 +2405,6 @@ export const API_SCHEMAS = {
           "null"
         ],
         "format": "uuid"
-      },
-      "catalogItemId": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "format": "uuid"
       }
     }
   },
@@ -2955,9 +2701,7 @@ export const API_SCHEMAS = {
         "type": "string",
         "enum": [
           "photo_upload",
-          "background_removal",
-          "marketplace_parse",
-          "item_embedding"
+          "background_removal"
         ]
       },
       "status": {
@@ -2970,173 +2714,6 @@ export const API_SCHEMAS = {
         ]
       },
       "errorMessage": {
-        "type": [
-          "string",
-          "null"
-        ]
-      }
-    }
-  },
-  "MarketplaceImportRequest": {
-    "type": "object",
-    "required": [
-      "urls"
-    ],
-    "properties": {
-      "urls": {
-        "type": "array",
-        "minItems": 1,
-        "maxItems": 5,
-        "items": {
-          "type": "string",
-          "format": "uri"
-        }
-      }
-    }
-  },
-  "MarketplaceParsedCandidate": {
-    "type": "object",
-    "required": [
-      "sourceUrl",
-      "title",
-      "imageUrls",
-      "suggestedCategoryId",
-      "suggestedColorIds"
-    ],
-    "properties": {
-      "sourceUrl": {
-        "type": "string",
-        "format": "uri"
-      },
-      "title": {
-        "type": "string"
-      },
-      "imageUrls": {
-        "type": "array",
-        "minItems": 1,
-        "items": {
-          "type": "string",
-          "format": "uri"
-        }
-      },
-      "price": {
-        "type": [
-          "number",
-          "null"
-        ]
-      },
-      "currency": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "brand": {
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "suggestedCategoryId": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "format": "uuid"
-      },
-      "suggestedColorIds": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
-      }
-    }
-  },
-  "MarketplaceImport": {
-    "type": "object",
-    "required": [
-      "id",
-      "status",
-      "candidates"
-    ],
-    "properties": {
-      "id": {
-        "type": "string",
-        "format": "uuid"
-      },
-      "status": {
-        "$ref": "#/components/schemas/ProcessingStatus"
-      },
-      "candidates": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/MarketplaceParsedCandidate"
-        }
-      }
-    }
-  },
-  "MarketplaceConfirmRequest": {
-    "type": "object",
-    "required": [
-      "candidateIndex",
-      "name",
-      "categoryId",
-      "colorIds"
-    ],
-    "properties": {
-      "candidateIndex": {
-        "type": "integer",
-        "minimum": 0
-      },
-      "name": {
-        "type": "string"
-      },
-      "categoryId": {
-        "type": "string",
-        "format": "uuid"
-      },
-      "colorIds": {
-        "type": "array",
-        "minItems": 1,
-        "maxItems": 3,
-        "items": {
-          "type": "string"
-        }
-      },
-      "selectedImageUrl": {
-        "type": "string",
-        "format": "uri"
-      }
-    }
-  },
-  "CatalogSearchResponse": {
-    "type": "object",
-    "required": [
-      "items"
-    ],
-    "properties": {
-      "items": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Item"
-        }
-      }
-    }
-  },
-  "AdminModerationRequest": {
-    "type": "object",
-    "required": [
-      "decision"
-    ],
-    "properties": {
-      "decision": {
-        "type": "string",
-        "enum": [
-          "approved",
-          "rejected"
-        ]
-      },
-      "reason": {
         "type": [
           "string",
           "null"
@@ -3216,59 +2793,6 @@ export const API_SCHEMAS = {
 } as const;
 
 export const API_OPERATION_PAYLOADS = {
-  "listModerationItems": {
-    "requestRequired": false,
-    "successStatusCodes": [
-      "200"
-    ],
-    "requestSchema": null,
-    "responseSchemas": [
-      {
-        "type": "object",
-        "required": [
-          "items"
-        ],
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Item"
-            }
-          }
-        }
-      }
-    ],
-    "pathParameters": [],
-    "queryParameters": [],
-    "headerParameters": [],
-    "cookieParameters": []
-  },
-  "updateModerationItem": {
-    "requestRequired": true,
-    "successStatusCodes": [
-      "200"
-    ],
-    "requestSchema": "AdminModerationRequest",
-    "responseSchemas": [
-      "Item"
-    ],
-    "pathParameters": [
-      {
-        "name": "itemId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "style": null,
-        "explode": null
-      }
-    ],
-    "queryParameters": [],
-    "headerParameters": [],
-    "cookieParameters": []
-  },
   "completeGoogleSignIn": {
     "requestRequired": true,
     "successStatusCodes": [
@@ -3754,132 +3278,6 @@ export const API_OPERATION_PAYLOADS = {
     "headerParameters": [],
     "cookieParameters": []
   },
-  "getCatalogItem": {
-    "requestRequired": false,
-    "successStatusCodes": [
-      "200"
-    ],
-    "requestSchema": null,
-    "responseSchemas": [
-      "Item"
-    ],
-    "pathParameters": [
-      {
-        "name": "itemId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "style": null,
-        "explode": null
-      }
-    ],
-    "queryParameters": [],
-    "headerParameters": [],
-    "cookieParameters": []
-  },
-  "addCatalogItem": {
-    "requestRequired": true,
-    "successStatusCodes": [
-      "201"
-    ],
-    "requestSchema": {
-      "type": "object",
-      "properties": {
-        "capsuleId": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "uuid"
-        }
-      }
-    },
-    "responseSchemas": [
-      "Item"
-    ],
-    "pathParameters": [
-      {
-        "name": "itemId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "style": null,
-        "explode": null
-      }
-    ],
-    "queryParameters": [],
-    "headerParameters": [],
-    "cookieParameters": []
-  },
-  "searchCatalog": {
-    "requestRequired": false,
-    "successStatusCodes": [
-      "200"
-    ],
-    "requestSchema": null,
-    "responseSchemas": [
-      "CatalogSearchResponse"
-    ],
-    "pathParameters": [],
-    "queryParameters": [
-      {
-        "name": "q",
-        "in": "query",
-        "required": true,
-        "schema": {
-          "type": "string",
-          "minLength": 2
-        },
-        "style": null,
-        "explode": null
-      },
-      {
-        "name": "categoryId",
-        "in": "query",
-        "required": false,
-        "schema": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "style": null,
-        "explode": null
-      },
-      {
-        "name": "colorIds",
-        "in": "query",
-        "required": false,
-        "schema": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "style": "form",
-        "explode": false
-      },
-      {
-        "name": "limit",
-        "in": "query",
-        "required": false,
-        "schema": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 50,
-          "default": 20
-        },
-        "style": null,
-        "explode": null
-      }
-    ],
-    "headerParameters": [],
-    "cookieParameters": []
-  },
   "getHealth": {
     "requestRequired": false,
     "successStatusCodes": [
@@ -3888,72 +3286,6 @@ export const API_OPERATION_PAYLOADS = {
     "requestSchema": null,
     "responseSchemas": [
       "HealthResponse"
-    ],
-    "pathParameters": [],
-    "queryParameters": [],
-    "headerParameters": [],
-    "cookieParameters": []
-  },
-  "getMarketplaceImport": {
-    "requestRequired": false,
-    "successStatusCodes": [
-      "200"
-    ],
-    "requestSchema": null,
-    "responseSchemas": [
-      "MarketplaceImport"
-    ],
-    "pathParameters": [
-      {
-        "name": "importId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "style": null,
-        "explode": null
-      }
-    ],
-    "queryParameters": [],
-    "headerParameters": [],
-    "cookieParameters": []
-  },
-  "confirmMarketplaceImport": {
-    "requestRequired": true,
-    "successStatusCodes": [
-      "201"
-    ],
-    "requestSchema": "MarketplaceConfirmRequest",
-    "responseSchemas": [
-      "Item"
-    ],
-    "pathParameters": [
-      {
-        "name": "importId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string",
-          "format": "uuid"
-        },
-        "style": null,
-        "explode": null
-      }
-    ],
-    "queryParameters": [],
-    "headerParameters": [],
-    "cookieParameters": []
-  },
-  "createMarketplaceImport": {
-    "requestRequired": true,
-    "successStatusCodes": [
-      "202"
-    ],
-    "requestSchema": "MarketplaceImportRequest",
-    "responseSchemas": [
-      "MarketplaceImport"
     ],
     "pathParameters": [],
     "queryParameters": [],

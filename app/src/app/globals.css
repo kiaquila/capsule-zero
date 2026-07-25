@@ -3355,6 +3355,20 @@ textarea {
   border-bottom-color: var(--nav-active-indicator);
 }
 
+.journey-tab-button:disabled,
+.journey-tab-button:disabled:hover {
+  color: var(--color-text-placeholder);
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.journey-link-gate-note {
+  margin: -8px 0 18px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .journey-upload-zone {
   display: flex;
   min-height: 166px;

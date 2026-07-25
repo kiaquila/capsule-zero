@@ -37,8 +37,8 @@ export type LegalBlock =
       rows: string[][];
     };
 
-const lastUpdated = "July 16, 2026";
-const effectiveDate = "July 16, 2026";
+const lastUpdated = "July 24, 2026";
+const effectiveDate = "July 24, 2026";
 
 const operatingEntity = "Capsule Zero S.A.S.";
 const registeredOffice =
@@ -56,7 +56,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
     title: "Terms of Use",
     eyebrow: "Legal",
     summary:
-      "The binding contract between you and Capsule Zero S.A.S. governing accounts, wardrobe content, AI-assisted recommendations, marketplace import, semantic search, mobile apps, current free access, and your statutory consumer rights.",
+      "The binding contract between you and Capsule Zero S.A.S. governing accounts, wardrobe content, AI-assisted recommendations, semantic search, mobile apps, current free access, gated future features, and your statutory consumer rights.",
     lastUpdated,
     effectiveDate,
     relatedDocument: {
@@ -64,7 +64,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
       label: "Privacy Policy",
     },
     intro: [
-      `These Terms of Use ("Terms") form a binding contract between you and ${operatingEntity}, a company incorporated under the laws of the Argentine Republic with registered office in ${registeredOffice} ("Capsule Zero", "we", "us", "our"). They govern your access to and use of the Capsule Zero website at ${productDomain}, the Capsule Zero web application, our iOS and Android mobile applications, account features, wardrobe and capsule tools, photo upload and image-processing flows, marketplace import, semantic search, the shared item catalog, support, and any related services we provide (together, the "Service").`,
+      `These Terms of Use ("Terms") form a binding contract between you and ${operatingEntity}, a company incorporated under the laws of the Argentine Republic with registered office in ${registeredOffice} ("Capsule Zero", "we", "us", "our"). They govern your access to and use of the Capsule Zero website at ${productDomain}, the Capsule Zero web application, our iOS and Android mobile applications, account features, wardrobe and capsule tools, photo upload and image-processing flows, semantic search, the Capsule Zero preset catalog, support, and any related services we provide (together, the "Service"). Section 7 separately identifies a future feature that is not part of the current Service.`,
       "By creating an account, signing in, uploading content, or using the Service, you confirm that you have read these Terms, that you accept them, and that you have the legal capacity to enter into this contract. If you use the Service on behalf of another person, organization, or legal entity, you confirm that you have authority to accept these Terms on their behalf, and references to \"you\" include both you and that person or entity.",
       "These Terms apply in addition to the separate Privacy Policy, any product-specific notices we surface in the Service (for example, age-gates or content-moderation notices), and any mandatory consumer-protection rules that apply where you live.",
     ],
@@ -142,7 +142,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "Capsule Zero provides digital tools that help you build and manage capsule wardrobes. Core features include photo upload with automated background removal, marketplace link import, semantic search across a shared item catalog, color-compatibility analysis based on the Capsule Zero color methodology, category and palette guidance, outfit generation, gap analysis, and the OPR metric.",
+            text: "Capsule Zero provides digital tools that help you build and manage capsule wardrobes. Core features include photo upload with automated background removal, search across Capsule Zero preset items, color-compatibility analysis based on the Capsule Zero color methodology, category and palette guidance, outfit generation, gap analysis, and the OPR metric.",
           },
           {
             type: "paragraph",
@@ -150,7 +150,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
           },
           {
             type: "paragraph",
-            text: "We may launch new features, retire old features, change the supported set of marketplaces, retire mobile platforms, change supported languages, change supported regions, and change how recommendations are produced. We will give reasonable notice of material changes where required by law. Any future monetization will require updated terms and consumer notices before a purchase is available.",
+            text: "We may launch new features, retire old features, retire mobile platforms, change supported languages, change supported regions, and change how recommendations are produced. We will give reasonable notice of material changes where required by law. Any future monetization will require updated terms and consumer notices before a purchase is available.",
           },
         ],
       },
@@ -160,7 +160,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "\"Your Content\" means everything you upload, submit, generate, edit, label, classify, search for, or otherwise provide through the Service. This includes wardrobe photographs, avatar images, item names, brands, materials, categories, color tags, marketplace links, notes, capsule configurations, outfits, preferences, ratings, search queries, support messages, and feedback.",
+            text: "\"Your Content\" means everything you upload, submit, generate, edit, label, classify, search for, or otherwise provide through the Service. This includes wardrobe photographs, avatar images, item names, brands, materials, categories, color tags, notes, capsule configurations, outfits, preferences, ratings, search queries, support messages, and feedback.",
           },
           {
             type: "paragraph",
@@ -177,7 +177,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
               "Do not upload photos of children, government IDs, payment cards, intimate imagery, illegal content, hate speech, threats, harassment, biometric templates, or content that infringes the rights of any third party.",
               "Do not upload sensitive personal data that is not needed for the Service, including health data, ethnicity, religion, political opinions, sexual orientation, or trade-union membership.",
               "If a photograph contains another identifiable person, you confirm that you have any consent or other legal basis required to upload that image and to allow us to process it.",
-              "Do not upload counterfeit listings, misleading product information, or deceptive marketplace metadata.",
+              "Do not upload counterfeit listings, misleading product information, or deceptive third-party product metadata.",
               "We do not pre-screen Your Content, but we may review, refuse, hide, remove, watermark, demote, or otherwise moderate Your Content where we reasonably believe it violates these Terms, our acceptable use rules, or applicable law.",
             ],
           },
@@ -189,7 +189,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "Capsule Zero uses algorithms, automated classification, vector and semantic search, color-compatibility rules, and AI-assisted features to suggest item categories, dominant colors, outfit combinations, capsule palettes, gap analysis, shopping ideas, marketplace candidates, and image enhancements (together, \"AI-Assisted Output\"). AI-Assisted Output is generated automatically and is informed by the Capsule Zero methodology, by your data, and by the shared catalog.",
+            text: "Capsule Zero uses algorithms, automated classification, vector and semantic search, color-compatibility rules, and AI-assisted features to suggest item categories, dominant colors, outfit combinations, capsule palettes, gap analysis, shopping ideas, and image enhancements (together, \"AI-Assisted Output\"). AI-Assisted Output is generated automatically and is informed by the Capsule Zero methodology, by your data, and by Capsule Zero preset items.",
           },
           {
             type: "paragraph",
@@ -207,19 +207,19 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
       },
       {
         id: "marketplace-links",
-        title: "7. Marketplace Import and Third-Party Services",
+        title: "7. Marketplace Import Gate and Third-Party Services",
         blocks: [
           {
             type: "paragraph",
-            text: "The Service lets you import item information from third-party product URLs, view linked product pages, and discover items through semantic search results that may reference third-party stores or brands. Third-party stores, retailers, marketplaces, social networks, app stores, and other third-party services (\"Third-Party Services\") are not controlled by Capsule Zero. Your use of any Third-Party Service is subject to that service's own terms, privacy policy, pricing, availability, tax, shipping, customs, return, repair, refund, and content moderation rules.",
+            text: "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification and an external legal review are complete and all required launch controls are in place. Until then, you can upload photographs you are entitled to use or choose Capsule Zero-owned preset catalog items.",
           },
           {
             type: "paragraph",
-            text: "Capsule Zero is not the seller, manufacturer, importer, repair partner, resale broker, or warranty provider for items referenced from any Third-Party Service. We do not guarantee that any third-party listing is authentic, currently available, accurately priced, lawfully sold in your jurisdiction, free of counterfeit risk, or compliant with any consumer-protection requirement. Any dispute regarding a third-party purchase, refund, shipment, condition, repair, or resale is between you and the Third-Party Service.",
+            text: "If marketplace link import is activated after those conditions are satisfied, we will update these Terms and the Privacy Policy before launch to describe the supported flow, user responsibilities, notice-and-takedown controls, repeat-infringer policy, data processing, and any third-party providers. The platform will not generate additional derivative copies of a third-party image, and each imported image will retain a link to its source.",
           },
           {
             type: "paragraph",
-            text: "Marketplace import is best-effort and may produce incomplete or inaccurate item data. We may add, remove, or change the set of supported marketplaces and adapters at any time. If a parsed item is wrong, you can edit it manually.",
+            text: "Third-party stores, retailers, marketplaces, social networks, app stores, and other third-party services (\"Third-Party Services\") are not controlled by Capsule Zero. Your use of any Third-Party Service is subject to that service's own terms and privacy policy. Capsule Zero is not the seller, manufacturer, importer, repair partner, resale broker, or warranty provider for third-party items.",
           },
         ],
       },
@@ -229,11 +229,11 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "Capsule Zero operates a shared item catalog and a semantic-search index that lets users discover items by free-text description. Personal wardrobe content is private by default. Public catalog entries may be derived from marketplace imports, curated brand data, user submissions, or system seeding.",
+            text: "Capsule Zero preset catalog items use imagery produced and owned by Capsule Zero. Personal wardrobe content is private by default. The separate shared user-import pool described in Section 7 remains unavailable while its compliance and legal launch conditions are open.",
           },
           {
             type: "paragraph",
-            text: "If you choose to submit, publish, or contribute item data to the shared catalog, you confirm that you have the rights necessary to do so, you grant Capsule Zero the rights described in Section 5 and the additional rights needed to operate, distribute, and moderate the catalog feature, and you accept that the submission may be edited, normalized, deduplicated, rejected, or removed by us.",
+            text: "If a future shared contribution feature is activated, its updated terms and in-product notice will explain the rights required to submit content, the limited rights granted to Capsule Zero, how source links are preserved, and how submissions may be moderated or removed.",
           },
           {
             type: "paragraph",
@@ -351,7 +351,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "We aim to keep the Service available and to ship improvements continuously. The Service is provided on an evolving basis. We may release updates, change features, change supported regions or languages, change supported marketplaces, retire mobile platforms, change the supported set of social-login providers, or otherwise modify the Service.",
+            text: "We aim to keep the Service available and to ship improvements continuously. The Service is provided on an evolving basis. We may release updates, change features, change supported regions or languages, retire mobile platforms, change the supported set of social-login providers, or otherwise modify the Service.",
           },
           {
             type: "paragraph",
@@ -387,7 +387,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "To the maximum extent permitted by applicable law, the Service, the Capsule Zero IP, the AI-Assisted Output, the shared catalog, marketplace import, and any other feature are provided on an \"as is\" and \"as available\" basis. We disclaim all express and implied warranties of any kind, including warranties of merchantability, fitness for a particular purpose, non-infringement, accuracy of recommendations, completeness of catalog data, marketplace availability, profitability, resale value, suitability for any specific event or dress code, uninterrupted operation, error-free operation, virus-free operation, and continued compatibility with any third-party service.",
+            text: "To the maximum extent permitted by applicable law, the Service, the Capsule Zero IP, the AI-Assisted Output, the preset catalog, and any other available feature are provided on an \"as is\" and \"as available\" basis. We disclaim all express and implied warranties of any kind, including warranties of merchantability, fitness for a particular purpose, non-infringement, accuracy of recommendations, completeness of catalog data, third-party availability, profitability, resale value, suitability for any specific event or dress code, uninterrupted operation, error-free operation, virus-free operation, and continued compatibility with any third-party service.",
           },
           {
             type: "paragraph",
@@ -468,7 +468,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
     title: "Privacy Policy",
     eyebrow: "Privacy",
     summary:
-      "How Capsule Zero S.A.S. collects, uses, shares, stores, and protects personal data across the website, web app, mobile apps, wardrobe tools, uploads, marketplace import, AI-assisted recommendations, support, and analytics — and how you can exercise your privacy rights.",
+      "How Capsule Zero S.A.S. collects, uses, shares, stores, and protects personal data across the website, web app, mobile apps, wardrobe tools, uploads, AI-assisted recommendations, support, and analytics — and how you can exercise your privacy rights.",
     lastUpdated,
     effectiveDate,
     relatedDocument: {
@@ -476,7 +476,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
       label: "Terms of Use",
     },
     intro: [
-      `This Privacy Policy ("Policy") explains how ${operatingEntity} ("Capsule Zero", "we", "us") processes personal data when you visit ${productDomain}, create an account, use our web or mobile applications, upload wardrobe content, import marketplace links, search the shared catalog, contact support, receive product communications, or otherwise interact with us.`,
+      `This Privacy Policy ("Policy") explains how ${operatingEntity} ("Capsule Zero", "we", "us") processes personal data when you visit ${productDomain}, create an account, use our web or mobile applications, upload wardrobe content, search Capsule Zero preset items, contact support, receive product communications, or otherwise interact with us.`,
       "Capsule Zero is a premium digital fashion-tech product. We aim to process personal data in a privacy-conscious way: private wardrobe content is private by default, AI-Assisted Output should be explainable, and optional features collect only what they need.",
       `This Policy applies in addition to the Terms of Use. For questions about this Policy, or to exercise any of the rights described below, contact our Privacy team at ${privacyEmail}. Our Data Protection Officer can be reached at ${dpoEmail}.`,
     ],
@@ -507,7 +507,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "This Policy applies to the Capsule Zero website, the Capsule Zero web application, our iOS and Android mobile applications, account and authentication flows, wardrobe and capsule tools, photo upload and image-processing flows, marketplace import and semantic search, the shared catalog, support channels, analytics, and product communications.",
+            text: "This Policy applies to the Capsule Zero website, the Capsule Zero web application, our iOS and Android mobile applications, account and authentication flows, wardrobe and capsule tools, photo upload and image-processing flows, preset-catalog search, support channels, analytics, and product communications. Describing the gated future feature below does not make that feature active.",
           },
           {
             type: "paragraph",
@@ -548,8 +548,8 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
                 "Original images, processed images, thumbnails, image-processing status, retry information, file metadata such as size and MIME type. We strip non-essential metadata where reasonable.",
               ],
               [
-                "Marketplace and catalog data",
-                "Marketplace URLs you submit, parsed item candidates, source-site metadata, semantic-search queries, and your interactions with the public catalog.",
+                "Gated marketplace import and catalog data",
+                "Capsule Zero does not currently collect or process marketplace URLs, parsed item candidates, or marketplace source-site metadata because marketplace link import is disabled. Current catalog data is limited to your search queries and interactions with Capsule Zero preset items.",
               ],
               [
                 "Dormant legacy profile data",
@@ -592,9 +592,9 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
           {
             type: "list",
             items: [
-              "Directly from you, when you create an account, upload photos, fill in profile fields, import marketplace links, search the catalog, or contact support.",
+              "Directly from you, when you create an account, upload photos, fill in profile fields, search Capsule Zero preset items, or contact support.",
               "Automatically, from your browser, device, app, cookies, local storage, and our server-side logs.",
-              "From service providers, including marketplace-parsing tools, authentication providers, app stores, image-processing providers, analytics providers, and customer-support providers.",
+              "From service providers, including authentication providers, app stores, image-processing providers, analytics providers, and customer-support providers.",
               "From other users, only where they interact with you through shared features (for example, where a user submits an item to the shared catalog that you later interact with).",
             ],
           },
@@ -696,9 +696,9 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
                 "Upload pipeline, image cleanup, semantic search",
               ],
               [
-                "Marketplace parsing",
-                "Marketplace adapter providers",
-                "Best-effort parsing of product URLs into structured item data",
+                "Future marketplace import",
+                "No current recipient",
+                "No marketplace URL or source-site metadata is disclosed. If the gated feature is activated, we will update this Policy before collection or disclosure to any marketplace adapter provider begins.",
               ],
               [
                 "Analytics, logging, error monitoring",

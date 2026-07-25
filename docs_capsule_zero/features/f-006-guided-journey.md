@@ -2,6 +2,12 @@
 
 > Source: US-008, US-009, US-010 (spec.md). Prototype: `html-prototypes/guided-journey.html`
 
+> **Q8 implementation gate (2026-07-24):** the three-method journey remains the target product
+> design. The own-imagery preset picker may be specified and shipped in P2, but marketplace-link
+> import and search over the shared merchant-image pool stay disabled until the compliance-scheme
+> spec and external legal review are both complete. This document does not authorize API, schema,
+> migration, generated-client, or live-tab implementation of that blocked surface.
+
 ## Overview
 - **Purpose:** 3-step capsule creation flow — the core product experience
 - **User:** Authenticated user creating a capsule
@@ -42,7 +48,9 @@
 ## Step 3/3 — Colors & Items
 
 ### User Flow
-1. **Items first:** user adds garments via Upload Photos / Paste Links / Search Catalog
+1. **Items first:** user adds garments via the own-preset picker and any currently enabled methods;
+   Upload Photos / Paste Links / Search Catalog remain the final three-method design, with link
+   import and shared merchant search gated by Q8
 2. **Palette selection:** achromatic colors appear first, followed by all other colors in a single continuous grid
 3. User can select up to 15 compatible colors (12 chromatic + 3 achromatic)
 4. Colors incompatible with the current palette become unavailable
@@ -53,7 +61,8 @@
 - Achromatic colors appear first in the palette UI but remain optional
 - User can select up to 15 compatible colors
 - Incompatible colors are blocked based on same-group or Desaturated↔Dark compatibility
-- Three upload methods available
+- Three upload methods remain in the final design; before both Q8 gates close, link import and
+  shared merchant-catalog search are unavailable rather than mock-successful
 - "Create capsule" → generates capsule, redirects to Result
 
 ## Interface States
@@ -66,7 +75,7 @@
 | Step 2 custom error | Invalid custom category | Error: "This doesn't look like a basic item..." |
 | Step 3 palette | Color selection | Single grid with achromats first |
 | Step 3 compatibility state | Incompatible color | Blocked/unavailable color options |
-| Step 3 items | Adding items | Upload/Links/Search tabs |
+| Step 3 items | Adding items | Own-preset picker; gated methods are absent or clearly unavailable |
 | Creating | Capsule generating | Loading animation |
 | Complete | Capsule created | Redirect to Capsule Result |
 
@@ -76,7 +85,8 @@
 - **CategoryChecklist** — scrollable list with toggles + quantity steppers
 - **CustomCategoryInput** — text input with basicity validation
 - **PaletteSelector** — single grid with achromats first
-- **ItemUploadTabs** — three-tab component (Photos / Links / Search)
+- **ItemUploadTabs** — final three-tab design (Photos / Links / Search); Links and shared Search do
+  not receive live handlers before both Q8 gates close
 
 ## Validation Rules
 - Achromatics are optional and shown first in the palette
