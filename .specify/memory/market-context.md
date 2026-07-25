@@ -72,6 +72,8 @@ No existing player combines premium editorial aesthetics, methodology-driven cap
 
 ## 4. Two Killer Features
 
+> **Retained, with conditions (2026-07-24).** Both features assume we may store and republish merchant product photos, and the licence review behind [`PRODUCT-PLAN.md`](../../PRODUCT-PLAN.md) D5 found no basis for that. The founder chose option (б) of §4-Q8: both features stay, built on the Polyvore pattern (user-performed import, no extra platform copies, mandatory link-back, notice-and-takedown, repeat-infringer policy), gated on a compliance-scheme spec and external legal review. The positioning stands; the mechanism now carries conditions.
+
 ### Marketplace Link Import (US-011)
 - Paste product URLs from supported web stores with best-effort parsing
 - System parses: name, category, colors, all photos, brand, material, source URL

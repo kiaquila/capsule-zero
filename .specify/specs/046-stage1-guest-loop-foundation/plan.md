@@ -37,7 +37,7 @@ bounded module.
 
 | AC | Evidence | Result |
 |---|---|---|
-| AC-001 | `rg -c "ЗАКРЫТ 2026-07-21" PRODUCT-PLAN.md` → **4** (Q1/Q2/Q3/Q6). `rg -n "Открыт только \*\*Q5|Этап 1 разблокирован" PRODUCT-PLAN.md` находит оба актуальных статуса | ✅ |
+| AC-001 | `rg -c "ЗАКРЫТ 2026-07-21" PRODUCT-PLAN.md` → **4** (Q1/Q2/Q3/Q6). `rg -n "Открыт только \*\*Q5\|Этап 1 разблокирован" PRODUCT-PLAN.md` находит оба актуальных статуса. **Второй запрос устарел 2026-07-24** (D5/D6 добавили Q7 и Q8): формулировка «Открыт только Q5» заменена перечнем трёх открытых вопросов, «Этап 1 разблокирован» сохранилось. Свидетельство этого PR не пересматривается — статус на его head SHA был верен | ✅ |
 | AC-002 | `outfit-generation.md` §3.2/§3.3: Core и Accessory входят в обе части OPR, Layering — ни в одну и имеет отдельный score; forbidden hybrid явно отвергнут | ✅ |
 | AC-003 | `rg -n "A_max = 3|Deterministic v0 selection|3 accessory items total|OPR 143.2" docs_capsule_zero/project/methodology/outfit-generation.md` подтверждает два разных потолка, детерминированный selection и пересчитанный пример `Σ C(5,k)×3^k=376` | ✅ |
 | AC-004 | `rg -n "mutually color-compatible|color-valid Core combination|uncapsulated|Zero-result state" docs_capsule_zero/project/methodology/{capsule-methodology,gap-analysis,outfit-generation}.md` подтверждает color-valid минимум, объяснимый zero-result и save без нарушения capsule thresholds | ✅ |

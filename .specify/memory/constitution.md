@@ -127,6 +127,8 @@ The platform guides the user through methodology without imposing. It suggests, 
 2. **Select categories** (checklist, min 8)
 3. **Choose colors + add items** (palette selection, three upload methods: photo, marketplace links, semantic search)
 
+> **Note 2026-07-24 — no principle amended here.** The third upload method (semantic search over a shared database of user-imported merchant photos) rests on rights we were unable to establish. Founder question [`PRODUCT-PLAN.md`](../../PRODUCT-PLAN.md) §4-Q8 was decided in favour of keeping it (option (б), Polyvore pattern), so the principle above stands unchanged and needs no amendment. What changed is downstream of the principle, not in it: the method may only be built with user-performed import, no extra platform-made copies, mandatory link-back, notice-and-takedown and a repeat-infringer policy, after a compliance-scheme spec and external legal review. Separately, PRODUCT-PLAN D5 makes the own-imagery preset catalog the default item source and puts guest photo upload out of Stage 1 — a sequencing decision, not a change to this principle.
+
 ### Emotional Arc
 
 **Attraction → Trust → Creativity → Satisfaction**

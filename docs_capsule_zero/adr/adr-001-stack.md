@@ -19,7 +19,7 @@ Capsule Zero is targeting production-grade v0.1 directly. There is no Stage 1 mo
 - private user wardrobe data and photos
 - three upload methods: photo upload, marketplace link import, semantic catalog search
 - self-hosted image processing under a 5 second quality gate (deferred to Stage 2)
-- a shared item database for public marketplace imports
+- a shared item database for public marketplace imports — **retained, with conditions (2026-07-24, [`PRODUCT-PLAN.md`](../../PRODUCT-PLAN.md) §4-Q8, option (б)):** we hold no licence to republish merchant product images, so this requirement stands only on the Polyvore pattern — the user imports, the platform makes no extra copies, every image links back, and notice-and-takedown plus a repeat-infringer policy are live. Gated on a separate compliance-scheme spec **and** external legal review before any implementation
 - EN and RU from v0.1 day 1, with ES-AR globally deferred to v0.2
 - coins-only monetization through Lava.top one-time purchases — coins and image enhancement are in the v0.2 backlog; v0.1 ships with a Lava.top stub
 - a single Hetzner Cloud server running docker-compose with every service declared explicitly (migrated from DigitalOcean on 2026-07-02, spec 033 — the single-server docker-compose shape is unchanged)

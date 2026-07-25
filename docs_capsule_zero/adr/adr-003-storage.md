@@ -19,7 +19,7 @@ Capsule Zero stores visual assets for:
 
 The storage architecture must support both web uploads and React Native camera/gallery uploads.
 
-Personal photos must never become public in v0.1. Marketplace-imported items may enter the shared item database after moderation. The quality gate requires upload plus optional background removal to complete in under 5 seconds whenever the user opts into background removal — this gate is enforced once the self-hosted Capsule Zero image model ships in Stage 2.
+Personal photos must never become public in v0.1. Marketplace-imported items may enter the shared item database after moderation. — **retained, with conditions (2026-07-24, [`PRODUCT-PLAN.md`](../../PRODUCT-PLAN.md) §4-Q8, option (б)).** Republishing merchant product photos is not covered by any licence we hold, so the `marketplace-imported product photos` asset class, the `marketplace-imports/` prefix and publication into `capsulezero-prod-public-catalog` survive only under the Polyvore pattern: the user performs the import, the platform generates **no additional derivative copies** of a third-party image (the specific conduct that defeated Polyvore's summary judgment), every stored object keeps its source URL, and takedown removal must be able to delete it. Do not implement before the compliance-scheme spec and external legal review both land. The quality gate requires upload plus optional background removal to complete in under 5 seconds whenever the user opts into background removal — this gate is enforced once the self-hosted Capsule Zero image model ships in Stage 2.
 
 The previous Phase 4 choice (Supabase Storage + Photoroom/remove.bg) is dropped.
 The storage replacement must stay compatible with direct web and mobile
