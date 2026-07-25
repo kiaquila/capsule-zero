@@ -172,7 +172,10 @@
 - **Q8 закрывает продуктовый вопрос, но не implementation gates:** вариант (б) сохраняет три
   истории и будущий UX. До compliance-scheme spec и external legal review machine contract обязан
   быть пустым: blocked paths/schemas/enums/jobs удалены из OpenAPI и generated projection, а
-  `check-api-contract.mjs` запрещает раннее возвращение. Own-imagery preset P2 — отдельный contract.
+  `check-api-contract.mjs` запрещает раннее возвращение. Рабочий marketplace mock-порт также удалён
+  из общего `ProviderRegistry`, поэтому `api` mode больше не наследует его через fixture registry;
+  сама mock-реализация удалена, а frozen Supabase-реализация остаётся недостижимым superseded
+  legacy. Own-imagery preset P2 — отдельный contract.
 
 ### Dead Ends
 

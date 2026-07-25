@@ -16,8 +16,6 @@ import type {
   ItemDraft,
   ItemStatus,
   LavaInvoice,
-  MarketplaceImport,
-  MarketplaceImportPort,
   MethodologyPort,
   PhotoUploadMetadata,
   Profile,
@@ -38,7 +36,6 @@ import {
   MOCK_CATALOG_ITEMS,
   MOCK_COIN_PACKS,
   MOCK_JOURNEY_CATEGORIES,
-  MOCK_MARKETPLACE_IMPORTS,
   MOCK_PROFILE,
   MOCK_UPLOAD_JOBS,
   MOCK_USER,
@@ -93,12 +90,6 @@ export function createMockProviderRegistry(
   const capsules = new Map<string, Capsule>([
     [MOCK_CAPSULE.id, clone(MOCK_CAPSULE)],
   ]);
-  const marketplaceImports = new Map(
-    MOCK_MARKETPLACE_IMPORTS.map((marketplaceImport) => [
-      marketplaceImport.id,
-      clone(marketplaceImport),
-    ]),
-  );
   const invoices = new Map<string, LavaInvoice>();
   const ledger = new Map<string, CoinLedgerEntry>();
   let currentSession: MockSession | null = buildSession(
@@ -258,74 +249,6 @@ export function createMockProviderRegistry(
         return null;
       }
       return clone(job);
-    },
-  };
-
-  const marketplaceImportPort: MarketplaceImportPort = {
-    async createImport(userId, url) {
-      const fixture = [...marketplaceImports.values()].find(
-        (item) =>
-          item.url.includes("unparseable") === url.includes("unparseable"),
-      );
-      const source = fixture ?? MOCK_MARKETPLACE_IMPORTS[0];
-      const marketplaceImport: MarketplaceImport = {
-        ...source,
-        id: deterministicUuid("marketplace-import", `${userId}:${url}`),
-        userId,
-        url,
-        candidates: source.candidates.map((candidate) => ({
-          ...candidate,
-          sourceUrl: url,
-        })),
-        createdAt: now(),
-        updatedAt: now(),
-      };
-      marketplaceImports.set(marketplaceImport.id, marketplaceImport);
-      return clone(marketplaceImport);
-    },
-
-    async getImport(userId, importId) {
-      const marketplaceImport = marketplaceImports.get(importId);
-      if (!marketplaceImport || marketplaceImport.userId !== userId) {
-        return null;
-      }
-      return clone(marketplaceImport);
-    },
-
-    async confirmCandidate(userId, importId, candidateId) {
-      const marketplaceImport = marketplaceImports.get(importId);
-      if (!marketplaceImport || marketplaceImport.userId !== userId) {
-        throw new Error("NOT_FOUND: Marketplace import not found.");
-      }
-      const candidate = marketplaceImport.candidates.find(
-        (item) => item.id === candidateId,
-      );
-      if (!candidate) {
-        throw new Error("NOT_FOUND: Marketplace candidate not found.");
-      }
-
-      const item = buildWardrobeEntry(
-        userId,
-        {
-          name: candidate.name,
-          categoryId: candidate.categoryId,
-          colorPoints: candidate.colorPoints,
-          sourceType: "marketplace",
-          imageUrl: candidate.imageUrl,
-          brand: candidate.brand,
-          material: candidate.material,
-          price: candidate.price,
-          sourceUrl: candidate.sourceUrl,
-        },
-        now(),
-      );
-      wardrobeItems.set(item.id, item);
-      marketplaceImports.set(importId, {
-        ...marketplaceImport,
-        status: "confirmed",
-        updatedAt: now(),
-      });
-      return clone(item);
     },
   };
 
@@ -611,7 +534,6 @@ export function createMockProviderRegistry(
     wardrobe: wardrobeRepository,
     storage: storagePort,
     imageProcessing: imageProcessingPort,
-    marketplaceImports: marketplaceImportPort,
     catalogSearch: catalogSearchPort,
     billing: billingPort,
     capsules: {

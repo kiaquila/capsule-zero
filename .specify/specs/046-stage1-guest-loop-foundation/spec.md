@@ -81,7 +81,9 @@ Dashboard и Capsule Result не продолжали показывать по�
   OpenAPI/generated client не содержат marketplace-import, shared catalog/search/add, moderation,
   `sourceType=marketplace`, `catalogItemId` и merchant processing/embedding jobs. Contract guard
   запрещает их раннее возвращение; canonical active docs отличают own-imagery preset P2 от
-  merchant-image surface, гейтившегося compliance-scheme spec + external legal review.
+  merchant-image surface, гейтившегося compliance-scheme spec + external legal review. Общий
+  `ProviderRegistry` также не экспонирует legacy marketplace-import port, поэтому `api` mode не
+  может унаследовать рабочую mock-реализацию в обход OpenAPI.
 
 **Out:**
 

@@ -313,6 +313,11 @@ export function createSupabaseProviderRegistry(): ProviderRegistry {
     colorCatalog,
     categoryCatalog,
   );
+  // Frozen Supabase-era merchant-import code stays as superseded legacy only.
+  // Q8 deliberately keeps it unreachable from ProviderRegistry until both
+  // implementation gates have landed.
+  void buildMarketplaceImportPort;
+  void guardMarketplaceImportPort;
 
   return {
     mode: "supabase",
@@ -322,13 +327,6 @@ export function createSupabaseProviderRegistry(): ProviderRegistry {
     storage: guardStoragePort(buildStoragePort(clients), authorizeUser),
     imageProcessing: guardImageProcessingPort(
       buildImageProcessingPort(clients),
-      authorizeUser,
-    ),
-    marketplaceImports: guardMarketplaceImportPort(
-      buildMarketplaceImportPort(
-        clients.service,
-        wardrobe,
-      ),
       authorizeUser,
     ),
     catalogSearch: guardCatalogSearchPort(
