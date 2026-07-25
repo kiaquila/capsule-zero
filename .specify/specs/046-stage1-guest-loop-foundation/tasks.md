@@ -237,6 +237,10 @@
 - **Принудительно подменить `brace-expansion@1.x` на 5.0.8:** отвергнуто реальным lint-прогоном —
   `minimatch@3` ожидает callable CommonJS export, а 5.x экспортирует object; результат
   `TypeError: expand is not a function`. Compatible patched 1.x release на 2026-07-24 отсутствует.
+- **Вложить `reason`/`effectiveUntil` в `[PackageOverrides.vulnerability]`:** отвергнуто pinned
+  OSV Scanner v2.3.5 как `unknown keys`. В schema этого тега вложенный `Vulnerability` содержит
+  только `ignore`, а expiry и reason принадлежат внешнему `PackageOverrideEntry`. Временная
+  просроченная дата при корректной внешней форме вернула два High finding и ненулевой exit.
 
 ### Known Issues
 
