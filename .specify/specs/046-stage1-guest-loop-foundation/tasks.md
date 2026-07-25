@@ -49,13 +49,18 @@
 - [x] T021 Q8 contract sweep: сохранить US-011/US-012/US-025 как gated design, удалить
   merchant-import/shared-search/moderation surface из authoritative OpenAPI/generated client,
   добавить negative contract guard, убрать marketplace port и работающую mock/UI import-реализацию,
-  оставить Links tab disabled без формы/handler, прогнать canonical manual list + inventory и
-  актуализировать active decision docs без schema/migration/runtime реализации
+  retired Supabase catalog-search path отсоединить от shared records, оставить Links tab disabled
+  без формы/handler с локализованным объяснением и upload/preset alternatives, прогнать canonical
+  manual list + inventory и актуализировать active decision docs без schema/migration/runtime реализации
 
 ## Process Memory
 
 ### Decisions
 
+- **Q8 закрывает все executable обходы, а не только OpenAPI:** frozen Supabase provider не может
+  сохранять `search_catalog_hybrid`/public-record path за общим `catalogSearch`; registry возвращает
+  fail-closed retired port. Видимый disabled Links control следует Direct, Not Dictate: EN/RU copy
+  объясняет compliance/legal gate и направляет к photo upload или own-imagery preset catalog.
 - **Модель OPR (Q1, фаундер 2026-07-21):** core base look = верх×низ×обувь (или платье×обувь);
   структурные слои (кардиган/блейзер/пальто) — отдельный **Layering Coverage** score, вне hero-OPR и
   вне знаменателя; аксессуары (сумка/шарф/шапка/украшения/ремень) входят в hero-OPR «умно». Знаменатель

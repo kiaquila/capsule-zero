@@ -170,7 +170,9 @@ Dashboard и Capsule Result не продолжали показывать по�
   опцию (б), но executable OpenAPI/generated client не экспонируют merchant-import/shared-search/
   moderation paths или blocked schemas/enums. `check-api-contract.mjs` падает при раннем возврате
   любого перечисленного артефакта. `ProviderRegistry` не содержит marketplace-import port, а
-  guided-journey Links tab disabled и не рендерит import form/handler даже при прямом query handoff.
+  frozen Supabase registry не подключает legacy shared-catalog search. Guided-journey Links tab
+  disabled и не рендерит import form/handler даже при прямом query handoff; рядом EN/RU copy
+  объясняет compliance/legal gate и указывает photo upload + own-imagery preset alternatives.
   Own-imagery preset catalog получает отдельный P2 contract и не используется как лазейка для
   восстановления shared merchant corpus.
 
@@ -216,7 +218,8 @@ Dashboard и Capsule Result не продолжали показывать по�
 15. **Закрытие Q8 трактуется как разрешение немедленно реализовать retained surface** — отвергнуто:
     design docs сохраняют фичу, но active machine contract/codegen остаются пустыми до обеих
     предусловий; guard блокирует путь, schema, enum или job-type regression, а disabled Links tab
-    не может открыть старую mock-import форму.
+    не может открыть старую mock-import форму. Frozen Supabase catalog-search также fail-closed, а
+    blocked control не остаётся немым: copy объясняет причину и доступные альтернативы.
 
 Регрессия любого пункта — это доковое противоречие, ловится grep-аудитом `plan.md` и просмотром
 диффа при ревью.

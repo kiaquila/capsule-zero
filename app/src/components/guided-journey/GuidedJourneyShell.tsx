@@ -516,6 +516,7 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
                   <div className="journey-tab-bar" role="tablist">
                     {(["upload", "links", "search"] as JourneyTab[]).map((tab) => (
                       <button
+                        aria-describedby={tab === "links" ? "journey-link-gate-note" : undefined}
                         aria-selected={activeTab === tab}
                         className={cn("journey-tab-button", activeTab === tab && "journey-tab-active")}
                         disabled={tab === "links"}
@@ -532,6 +533,9 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
                       </button>
                     ))}
                   </div>
+                  <p className="journey-link-gate-note" id="journey-link-gate-note">
+                    {t("items.linkUnavailable")}
+                  </p>
 
                   {activeTab === "upload" ? (
                     <div className="journey-tab-panel">

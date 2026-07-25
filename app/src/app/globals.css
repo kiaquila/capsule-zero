@@ -3362,6 +3362,13 @@ textarea {
   opacity: 0.45;
 }
 
+.journey-link-gate-note {
+  margin: -8px 0 18px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .journey-upload-zone {
   display: flex;
   min-height: 166px;
