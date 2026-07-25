@@ -55,7 +55,7 @@ export const journeyCopy = {
 // unavoidable legal-copy assertions here so policy edits have one test source.
 export const legalCopy = {
   termsMarketplaceImportGate:
-    "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification is complete and an external legal review has approved the launch controls.",
+    "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification and an external legal review are complete and all required launch controls are in place.",
   privacyMarketplaceImportGate:
     "Capsule Zero does not currently collect or process marketplace URLs, parsed item candidates, or marketplace source-site metadata because marketplace link import is disabled.",
   termsMonetizationHold:

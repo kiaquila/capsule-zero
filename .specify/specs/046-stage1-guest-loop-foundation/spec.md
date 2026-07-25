@@ -85,6 +85,8 @@ Dashboard и Capsule Result не продолжали показывать по�
   `ProviderRegistry` также не экспонирует legacy marketplace-import port, поэтому `api` mode не
   может унаследовать рабочую mock-реализацию в обход OpenAPI. Retained Links tab видим как
   недоступный target-design control без формы/handler; прямой `?tab=links` не активирует его.
+  Публичные Terms и Privacy Policy описывают этот surface как будущий и условный: до закрытия
+  обоих gates они не обещают импорт и не заявляют сбор URL или передачу marketplace adapters.
 
 **Out:**
 
@@ -173,6 +175,9 @@ Dashboard и Capsule Result не продолжали показывать по�
   frozen Supabase registry не подключает legacy shared-catalog search. Guided-journey Links tab
   disabled и не рендерит import form/handler даже при прямом query handoff; рядом EN/RU copy
   объясняет compliance/legal gate и указывает photo upload + own-imagery preset alternatives.
+  Live Terms/Privacy на обеих active locale routes явно говорят, что import недоступен, URL/source
+  metadata не собираются и не передаются, а будущая активация требует предварительного обновления
+  legal copy после compliance-scheme spec и external legal review.
   Own-imagery preset catalog получает отдельный P2 contract и не используется как лазейка для
   восстановления shared merchant corpus.
 
@@ -219,7 +224,8 @@ Dashboard и Capsule Result не продолжали показывать по�
     design docs сохраняют фичу, но active machine contract/codegen остаются пустыми до обеих
     предусловий; guard блокирует путь, schema, enum или job-type regression, а disabled Links tab
     не может открыть старую mock-import форму. Frozen Supabase catalog-search также fail-closed, а
-    blocked control не остаётся немым: copy объясняет причину и доступные альтернативы.
+    blocked control не остаётся немым: copy объясняет причину и доступные альтернативы. Публичные
+    Terms/Privacy не могут представлять disabled import или dormant adapters как работающую услугу.
 
 Регрессия любого пункта — это доковое противоречие, ловится grep-аудитом `plan.md` и просмотром
 диффа при ревью.

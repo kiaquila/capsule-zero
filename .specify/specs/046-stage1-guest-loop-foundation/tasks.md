@@ -50,8 +50,9 @@
   merchant-import/shared-search/moderation surface из authoritative OpenAPI/generated client,
   добавить negative contract guard, убрать marketplace port и работающую mock/UI import-реализацию,
   retired Supabase catalog-search path отсоединить от shared records, оставить Links tab disabled
-  без формы/handler с локализованным объяснением и upload/preset alternatives, прогнать canonical
-  manual list + inventory и актуализировать active decision docs без schema/migration/runtime реализации
+  без формы/handler с локализованным объяснением и upload/preset alternatives, привести live
+  Terms/Privacy к conditional/no-processing статусу, прогнать canonical manual list + inventory и
+  актуализировать active decision docs без schema/migration/runtime реализации
 
 ## Process Memory
 
@@ -61,6 +62,8 @@
   сохранять `search_catalog_hybrid`/public-record path за общим `catalogSearch`; registry возвращает
   fail-closed retired port. Видимый disabled Links control следует Direct, Not Dictate: EN/RU copy
   объясняет compliance/legal gate и направляет к photo upload или own-imagery preset catalog.
+  Публичные Terms/Privacy также являются частью live product contract: пока surface disabled, они
+  обязаны говорить no URL collection/no adapter disclosure и условно описывать только future launch.
 - **Модель OPR (Q1, фаундер 2026-07-21):** core base look = верх×низ×обувь (или платье×обувь);
   структурные слои (кардиган/блейзер/пальто) — отдельный **Layering Coverage** score, вне hero-OPR и
   вне знаменателя; аксессуары (сумка/шарф/шапка/украшения/ремень) входят в hero-OPR «умно». Знаменатель
@@ -283,4 +286,5 @@
   совместимого upstream fix. Просроченный override обязан снова сделать OSV gate красным.
 - **Q8 compliance scheme и legal review ещё не выполнены:** retained merchant-import/shared-search
   нельзя реализовывать или возвращать в codegen. Historical specs, frozen Supabase provider и
-  legacy migrations из inventory не являются активным implementation contract.
+  legacy migrations из inventory не являются активным implementation contract. Текущая legal copy
+  не заменяет будущую compliance scheme: перед активацией Terms/Privacy должны быть обновлены снова.
