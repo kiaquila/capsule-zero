@@ -226,6 +226,19 @@ if (!providerRegistryBody) {
   );
 }
 
+const providerUploadJobType = providerContracts.match(
+  /export type UploadJobType\s*=\s*([\s\S]*?);/,
+)?.[1];
+if (!providerUploadJobType) {
+  errors.push("Provider UploadJobType could not be inspected.");
+} else {
+  for (const jobType of ["marketplace_parse", "item_embedding"]) {
+    if (providerUploadJobType.includes(`"${jobType}"`)) {
+      errors.push(`Provider UploadJobType ${jobType} is blocked by PRODUCT-PLAN Q8.`);
+    }
+  }
+}
+
 // spec 034: every route the Go binary actually registers must exist in the
 // OpenAPI contract with the same method + path, so an endpoint can never ship
 // undocumented. The reverse direction stays loose on purpose — the contract is

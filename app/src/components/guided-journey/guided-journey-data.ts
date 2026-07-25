@@ -17,7 +17,7 @@ import { areColorGroupsCompatible } from "@/lib/color-compatibility";
 export type { GarderType };
 
 export type JourneyStep = 1 | 2 | 3;
-export type JourneyItemSource = "photo" | "marketplace" | "catalog";
+export type JourneyItemSource = "photo" | "catalog";
 
 export interface PaletteColorOption extends ColorPoint {
   id: string;

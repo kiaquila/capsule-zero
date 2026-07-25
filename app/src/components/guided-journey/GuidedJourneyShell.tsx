@@ -37,7 +37,8 @@ interface AddedJourneyItem {
   source: JourneyItemSource;
 }
 
-type JourneyTab = "upload" | "links" | "search";
+type ActiveJourneyTab = "upload" | "search";
+type JourneyTab = ActiveJourneyTab | "links";
 
 const MAX_TOTAL_COLORS = 15;
 const MAX_CHROMATIC_COLORS = 12;
@@ -64,10 +65,8 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
   );
   const [customCategory, setCustomCategory] = useState("");
   const [customCategoryError, setCustomCategoryError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<JourneyTab>(initialTab);
+  const [activeTab, setActiveTab] = useState<ActiveJourneyTab>(initialTab);
   const [addedItems, setAddedItems] = useState<AddedJourneyItem[]>([]);
-  const [linkInput, setLinkInput] = useState("");
-  const [linkError, setLinkError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState(() =>
     buildInitialSearchQuery(snapshot, requestedCategoryId),
@@ -121,8 +120,6 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
     objectUrls.current.length = 0;
     setActiveTab("upload");
     setAddedItems([]);
-    setLinkInput("");
-    setLinkError(null);
     setUploadError(null);
     setSearchQuery("");
     setSelectedColorIds([]);
@@ -246,75 +243,6 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
         source: "photo",
       });
     });
-  };
-
-  const addLinks = () => {
-    const urls = linkInput
-      .split(/\s+/)
-      .map((url) => url.trim())
-      .filter(Boolean);
-
-    if (!urls.length) {
-      setLinkError(t("items.linkRequired"));
-      return;
-    }
-
-    const existingMarketplaceIds = new Set(
-      addedItems
-        .filter((item) => item.source === "marketplace")
-        .map((item) => item.id),
-    );
-
-    for (const url of urls) {
-      if (!/^https?:\/\//i.test(url)) {
-        setLinkError(t("items.linkInvalid"));
-        return;
-      }
-
-      if (url.includes("unparseable")) {
-        setLinkError(t("items.linkUnparseable"));
-        return;
-      }
-
-      let host = "";
-
-      try {
-        host = new URL(url).host.replace(/^www\./, "");
-      } catch {
-        setLinkError(t("items.linkInvalid"));
-        return;
-      }
-
-      const id = `marketplace-${url}`;
-      const name = t("items.parsedName", { host });
-      const colorPoints = [snapshot.paletteColors.find((color) => color.id === "K9")].filter(
-        (color): color is PaletteColorOption => Boolean(color),
-      );
-      const dominantColor = colorPoints[0] ?? null;
-
-      if (existingMarketplaceIds.has(id)) {
-        setLinkError(t("items.linkDuplicate"));
-        return;
-      }
-
-      if (dominantColor && !isItemColorCompatible(dominantColor)) {
-        setLinkError(t("items.incompatible", { color: dominantColor.name }));
-        return;
-      }
-
-      addItem({
-        id,
-        name,
-        categoryLabel: t("items.marketplaceCategory"),
-        colorPoints,
-        source: "marketplace",
-      });
-      existingMarketplaceIds.add(id);
-    }
-
-    setLinkInput("");
-    setLinkError(null);
-    setItemNotice(null);
   };
 
   const addCatalogItem = (item: JourneyCatalogItem) => {
@@ -590,8 +518,13 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
                       <button
                         aria-selected={activeTab === tab}
                         className={cn("journey-tab-button", activeTab === tab && "journey-tab-active")}
+                        disabled={tab === "links"}
                         key={tab}
-                        onClick={() => setActiveTab(tab)}
+                        onClick={() => {
+                          if (tab !== "links") {
+                            setActiveTab(tab);
+                          }
+                        }}
                         role="tab"
                         type="button"
                       >
@@ -625,24 +558,6 @@ export function GuidedJourneyShell({ snapshot }: GuidedJourneyShellProps) {
                         <span>{t("items.backgroundRemoval")}</span>
                       </label>
                       {uploadError ? <p className="journey-field-note">{uploadError}</p> : null}
-                    </div>
-                  ) : null}
-
-                  {activeTab === "links" ? (
-                    <div className="journey-tab-panel">
-                      <div className="journey-link-row">
-                        <textarea
-                          className="journey-input journey-textarea"
-                          onChange={(event) => setLinkInput(event.target.value)}
-                          placeholder={t("items.linkPlaceholder")}
-                          value={linkInput}
-                        />
-                        <button className="journey-ghost-button" onClick={addLinks} type="button">
-                          {t("items.addLink")}
-                        </button>
-                      </div>
-                      <p className="journey-muted">{t("items.linkHint")}</p>
-                      {linkError ? <p className="journey-field-note">{linkError}</p> : null}
                     </div>
                   ) : null}
 
@@ -904,8 +819,8 @@ function buildCustomCategoryId(label: string) {
   return `custom-${slug || encodeURIComponent(label)}`;
 }
 
-function parseJourneyTab(raw: string | null): JourneyTab | null {
-  return raw === "upload" || raw === "links" || raw === "search" ? raw : null;
+function parseJourneyTab(raw: string | null): ActiveJourneyTab | null {
+  return raw === "upload" || raw === "search" ? raw : null;
 }
 
 function buildInitialSearchQuery(

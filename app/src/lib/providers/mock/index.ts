@@ -593,8 +593,7 @@ export function createMockProviderRegistry(
         integrations: {
           supabase: "mocked",
           storage: "mocked",
-          marketplaceImport: "mocked",
-          semanticSearch: "mocked",
+          presetCatalog: "mocked",
           backgroundRemoval: "mocked",
           lavaTop: "mocked",
           googleOAuth: "pending-gate",

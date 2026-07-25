@@ -48,8 +48,9 @@
   тем же scanner-action image
 - [x] T021 Q8 contract sweep: сохранить US-011/US-012/US-025 как gated design, удалить
   merchant-import/shared-search/moderation surface из authoritative OpenAPI/generated client,
-  добавить negative contract guard, прогнать canonical manual list + inventory и актуализировать
-  active decision docs без schema/migration/runtime реализации
+  добавить negative contract guard, убрать marketplace port и работающую mock/UI import-реализацию,
+  оставить Links tab disabled без формы/handler, прогнать canonical manual list + inventory и
+  актуализировать active decision docs без schema/migration/runtime реализации
 
 ## Process Memory
 

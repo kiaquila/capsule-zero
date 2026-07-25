@@ -14,11 +14,7 @@ export type ProviderMode = "mock" | "supabase" | "api";
 /** `marketplace` is retained only for frozen legacy records; Q8 blocks new behavior. */
 export type ItemSourceType = "photo_upload" | "marketplace" | "catalog";
 export type ItemStatus = "active" | "uncapsulated" | "for_sale" | "for_repair";
-export type UploadJobType =
-  | "photo_upload"
-  | "background_removal"
-  | "marketplace_parse"
-  | "item_embedding";
+export type UploadJobType = "photo_upload" | "background_removal";
 export type UploadJobStatus =
   | "queued"
   | "processing"

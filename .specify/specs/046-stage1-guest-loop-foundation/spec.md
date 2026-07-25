@@ -83,7 +83,8 @@ Dashboard и Capsule Result не продолжали показывать по�
   запрещает их раннее возвращение; canonical active docs отличают own-imagery preset P2 от
   merchant-image surface, гейтившегося compliance-scheme spec + external legal review. Общий
   `ProviderRegistry` также не экспонирует legacy marketplace-import port, поэтому `api` mode не
-  может унаследовать рабочую mock-реализацию в обход OpenAPI.
+  может унаследовать рабочую mock-реализацию в обход OpenAPI. Retained Links tab видим как
+  недоступный target-design control без формы/handler; прямой `?tab=links` не активирует его.
 
 **Out:**
 
@@ -168,8 +169,10 @@ Dashboard и Capsule Result не продолжали показывать по�
 - **AC-013 (Q8 fail-closed contract):** product stories и prototype copy сохраняют выбранную
   опцию (б), но executable OpenAPI/generated client не экспонируют merchant-import/shared-search/
   moderation paths или blocked schemas/enums. `check-api-contract.mjs` падает при раннем возврате
-  любого перечисленного артефакта. Own-imagery preset catalog получает отдельный P2 contract и не
-  используется как лазейка для восстановления shared merchant corpus.
+  любого перечисленного артефакта. `ProviderRegistry` не содержит marketplace-import port, а
+  guided-journey Links tab disabled и не рендерит import form/handler даже при прямом query handoff.
+  Own-imagery preset catalog получает отдельный P2 contract и не используется как лазейка для
+  восстановления shared merchant corpus.
 
 ## Negative scenarios
 
@@ -212,7 +215,8 @@ Dashboard и Capsule Result не продолжали показывать по�
     version-scoped исключение из AC-012 с коротким expiry; оно не скрывает fixed 5.x или иные версии.
 15. **Закрытие Q8 трактуется как разрешение немедленно реализовать retained surface** — отвергнуто:
     design docs сохраняют фичу, но active machine contract/codegen остаются пустыми до обеих
-    предусловий; guard блокирует путь, schema, enum или job-type regression.
+    предусловий; guard блокирует путь, schema, enum или job-type regression, а disabled Links tab
+    не может открыть старую mock-import форму.
 
 Регрессия любого пункта — это доковое противоречие, ловится grep-аудитом `plan.md` и просмотром
 диффа при ревью.
