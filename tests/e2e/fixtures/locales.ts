@@ -36,6 +36,19 @@ export const authCopy = {
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 
+export const journeyCopy = {
+  en: {
+    linkTab: "Paste Links",
+    linkPlaceholder: "Paste one or more product URLs...",
+    searchTab: "Search Catalog",
+  },
+  ru: {
+    linkTab: "Вставить ссылки",
+    linkPlaceholder: "Вставьте одну или несколько ссылок на товары...",
+    searchTab: "Поиск в каталоге",
+  },
+} as const satisfies Record<Locale, Record<string, string>>;
+
 // The live legal documents are currently shared across EN/RU routes. Keep
 // unavoidable legal-copy assertions here so policy edits have one test source.
 export const legalCopy = {
