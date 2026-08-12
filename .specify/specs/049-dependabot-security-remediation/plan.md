@@ -18,7 +18,7 @@ the corresponding lockfile records.
 | 4 | GitHub dependency security features are enabled | [V4 — repository security settings](#v4--repository-security-settings) |
 | 5 | Vulnerability remediation is complete without suppression | `go run github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.3.5 --recursive .` returns `No issues found`; `npm audit --json` returns zero vulnerabilities in `/`, `/app`, and `/tests/e2e` |
 | 6 | Dependency metadata remains installable and the application is unchanged behaviorally | Clean `npm ci` in `/`, `/app`, and `/tests/e2e`; `npm run preflight` |
-| 7 | Current PR head is merge-ready | PR #97 required checks `baseline-checks`, `guard`, `AI Review`, `test`, and `osv-scan` are green; no unresolved blocking review thread; merge state clean |
+| 7 | Current PR head is merge-ready | [V7 — head-bound merge readiness](#v7--head-bound-merge-readiness) |
 
 ### V1 — Ecosystem coverage
 
@@ -48,3 +48,17 @@ gh api repos/kiaquila/capsule-zero/dependency-graph/sbom --jq '.sbom.SPDXID'
 
 Expected evidence is respectively `HTTP/2.0 204 No Content`,
 `{"enabled":true,"paused":false}`, and `SPDXRef-DOCUMENT`.
+
+### V7 — Head-bound merge readiness
+
+Run after all required checks settle. The command fails if GitHub is not evaluating the
+checked-out SHA, any required check is not green, the PR is not cleanly mergeable, or a
+review thread remains unresolved.
+
+```sh
+head_sha="$(git rev-parse HEAD)"
+test "$(gh pr view 97 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
+gh pr checks 97 --repo kiaquila/capsule-zero --required
+test "$(gh pr view 97 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
+test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:97) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
+```

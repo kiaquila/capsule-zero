@@ -39,6 +39,8 @@
   dependency graph.
 - After the first native review, each external-setting and Dependabot policy row gained
   an exact executable verification command instead of a prose-only evidence summary.
+- After the second native review, the external merge-readiness row gained a command that
+  binds GitHub check, merge-state, and unresolved-thread evidence to `git rev-parse HEAD`.
 
 ### Known Issues
 
