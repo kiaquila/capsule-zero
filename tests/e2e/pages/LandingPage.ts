@@ -26,6 +26,9 @@ export class LandingPage extends BasePage {
   readonly scrollCue: Locator;
   readonly footerTermsLink: Locator;
   readonly footerPrivacyLink: Locator;
+  readonly footerCommunityLink: Locator;
+  readonly footerCopyrightPolicyLink: Locator;
+  readonly footerEnforcementLink: Locator;
   /** Fixed wallpaper layer behind every screen (spec 045). */
   readonly wallpaperBg: Locator;
   /** High-priority `<head>` preload for the wallpaper asset (spec 045). */
@@ -53,6 +56,11 @@ export class LandingPage extends BasePage {
     this.scrollCue = page.getByTestId("scroll-cue");
     this.footerTermsLink = page.getByTestId("footer-terms-link");
     this.footerPrivacyLink = page.getByTestId("footer-privacy-link");
+    this.footerCommunityLink = page.getByTestId("footer-community-link");
+    this.footerCopyrightPolicyLink = page.getByTestId(
+      "footer-copyright-policy-link",
+    );
+    this.footerEnforcementLink = page.getByTestId("footer-enforcement-link");
     this.wallpaperBg = page.locator(".wallpaper-bg");
     // Scoped to the wallpaper asset so an unrelated future image preload does
     // not make this assertion ambiguous (spec 045 review).

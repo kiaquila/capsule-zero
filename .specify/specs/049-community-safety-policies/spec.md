@@ -1,0 +1,96 @@
+# Spec 049 — Community Safety Policies
+
+## Goal
+
+Publish a coherent user-content policy layer for Capsule Zero before any shared
+user-import surface can launch. The Terms of Use must incorporate dedicated
+Community Guidelines, Copyright & Intellectual Property Policy, and Enforcement &
+Appeals Policy. Together they must allocate responsibility for user content, reserve
+the moderation and account-enforcement rights needed to protect Capsule Zero and its
+users, and expose notice, counter-notice, appeal, and repeat-infringer rules.
+
+The policy language is adapted to Capsule Zero's wardrobe, image-upload, catalog,
+semantic-search, and future shared-import context. It must not imply that the gated
+shared user-import pool, affiliate monetization, or a marketplace is operating today,
+and it does not replace the external legal review required by PRODUCT-PLAN D5/D6.
+
+## Scope
+
+### In
+
+- Localized static routes for `/community-guidelines`, `/copyright-policy`, and
+  `/enforcement-policy`, rendered by the existing legal-document component.
+- Terms of Use updates that incorporate those policies, retain user ownership,
+  require rights and lawful-content warranties, describe Capsule Zero as an
+  intermediary for user-submitted content, and reserve moderation, retention,
+  third-party-link, disclaimer, liability, indemnity, and termination protections.
+- Community rules covering IP and counterfeit material; sexual and intimate content;
+  child safety; private information; hate, harassment, self-harm, violence and violent
+  actors; regulated or dangerous goods; scams and harmful misinformation;
+  impersonation; spam and manipulation; commercial disclosures; and platform security.
+- Copyright/IP notice requirements, counter-notice requirements, a 10–14-business-day
+  restoration window where the DMCA applies, a reasonably implemented repeat-infringer
+  policy, and support for matching or standard technical measures where applicable.
+- Enforcement disclosure for automated, manual, and hybrid review; removal and
+  distribution limits; account/domain restrictions; reports; statements of reasons;
+  appeals; and action against abusive reports or appeals.
+- Discoverable legal navigation and landing-footer links in EN and RU.
+- Source-grounded policy notes and a launch/legal-review checklist in feature memory.
+
+### Out
+
+- Activating marketplace-link import, the shared user-import pool, public user uploads,
+  affiliate links, payments, or any new schema/API/storage surface.
+- Claiming that Capsule Zero has completed U.S. Copyright Office DMCA-agent
+  registration, EU/UK representative appointment, or external legal approval unless
+  separately verified.
+- Building the report form, moderation console, hash blacklist, CDN purge, provenance
+  ledger, or appeal workflow. Those operational controls remain prerequisites for the
+  future shared-import implementation.
+- Translating the full legal documents. As with the existing legal pages, both active
+  locale routes expose the same authoritative English text while navigation labels are
+  localized.
+
+## Acceptance Criteria
+
+- **AC-001**: Each of the three new legal routes renders in EN and RU with a unique H1,
+  metadata, table of contents, and links to the other policy documents.
+- **AC-002**: Terms expressly incorporates Community, Copyright/IP, and Enforcement
+  policies and contains the user responsibility, rights warranty, intermediary,
+  reporting, third-party-link, user-content disclaimer, retention, enforcement,
+  indemnity, liability-cap, consumer-rights, and survival protections in scope.
+- **AC-003**: Community Guidelines cover every prohibited-content and prohibited-
+  behavior category listed in Scope and apply to private, public, linked, metadata,
+  comment, message, and AI-generated or manipulated content.
+- **AC-004**: Copyright/IP Policy publishes complete notice and counter-notice elements,
+  explains expeditious removal, the conditional 10–14-business-day restoration period,
+  repeat-infringer strikes/termination, and good-faith/false-report consequences.
+- **AC-005**: Enforcement Policy describes automated, manual, and hybrid detection and
+  proportionate actions, notice and appeal where appropriate, report-abuse controls,
+  and the distinction between illegal-content action and policy action.
+- **AC-006**: The landing footer and legal-document navigation make all policies
+  discoverable without dead anchors and remain usable at mobile width.
+- **AC-007**: No policy represents the gated shared-import pool, affiliate program,
+  marketplace, or payment flow as currently available, and no page claims completed
+  external legal review or DMCA-agent registration.
+- **AC-008**: The app lint, CSS lint, TypeScript checks, production build, focused
+  Playwright suite, repository baseline, and feature-memory guard pass.
+
+## Negative Scenarios
+
+- A policy must not say that Capsule Zero owns user content merely because it is
+  uploaded or shared.
+- A policy must not promise that all content is reviewed before or after publication,
+  or restrict human review to complaints only.
+- A counter-notice must not trigger restoration when the reporting party timely shows
+  that it has filed the applicable court or Copyright Claims Board action.
+- Consumer rights and liabilities that cannot lawfully be excluded must remain carved
+  out from disclaimers, indemnity, governing-law, and liability limitations.
+- The policy routes must not activate or create implementation contracts for the gated
+  shared-import feature.
+
+## TDD Posture
+
+The new route, navigation, and required-copy assertions are committed and run red before
+implementation. Policy drafting and feature-memory changes are documentation work, but
+the public Next.js route behavior follows the application-code TDD contract.
