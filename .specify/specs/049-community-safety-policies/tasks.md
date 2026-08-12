@@ -15,7 +15,7 @@
 - [x] T007 Run the policy completeness and gated-feature negative audits.
 - [x] T008 Run focused e2e, lint, CSS lint, typechecks, build, repo baseline, and
       feature-memory verification; record evidence in `plan.md`.
-- [ ] T009 Fill Process Memory, publish the branch, and open a ready-for-review PR with
+- [x] T009 Fill Process Memory, publish the branch, and open a ready-for-review PR with
       the SENAR Done Gate and external-legal-review warning.
 
 ## Process Memory

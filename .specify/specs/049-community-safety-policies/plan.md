@@ -64,7 +64,7 @@ The earlier symlink-based attempt was discarded because Turbopack rejected exter
 | 6 | Landing/legal navigation is discoverable and mobile-usable | Combined focused Chromium + WebKit/iPhone suite: 6/6 passed, including three footer navigations with no dead anchor |
 | 7 | Shared-import and legal-registration gates remain honest | Negative Playwright assertions and copy scan found no ownership transfer or current-feature claim; Copyright Policy expressly disclaims completed agent registration/legal review |
 | 8 | Repository and app gates pass | `git diff --check`, feature memory, repo baseline, API contract, app/e2e lint, CSS lint, both typechecks, app unit hook, Go vet/tests, and production build passed; full CI-shaped browser suite: 84 passed / 8 environment-dependent skipped; lint gates retained the repository's warning-only baseline |
-| 9 | Current PR head is merge-ready | Pending required GitHub checks and review |
+| 9 | Current PR head is merge-ready | PR #98 is open and ready for review; required GitHub checks and human review remain pending |
 
 ## Reuse Check
 
