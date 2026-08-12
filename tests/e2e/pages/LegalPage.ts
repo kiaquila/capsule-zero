@@ -23,6 +23,7 @@ export class LegalPage extends BasePage {
   readonly path: string;
   readonly root: Locator;
   readonly heading: Locator;
+  readonly navigation: Locator;
   readonly backToHome: Locator;
 
   constructor(
@@ -34,6 +35,7 @@ export class LegalPage extends BasePage {
     this.path = `/${locale}/${slug}`;
     this.root = page.getByTestId("legal-page");
     this.heading = this.root.getByRole("heading", { level: 1 });
+    this.navigation = this.root.locator("header nav");
     this.backToHome = page.getByTestId("legal-back-home");
   }
 }

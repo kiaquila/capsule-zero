@@ -77,3 +77,20 @@ export const legalCopy = {
     "Best-effort parsing of product URLs into structured item data",
   ],
 } as const;
+
+export const legalNavigationCopy = {
+  en: [
+    "Terms of Use",
+    "Privacy Policy",
+    "Community Guidelines",
+    "Copyright & IP",
+    "Enforcement & Appeals",
+  ],
+  ru: [
+    "Условия использования",
+    "Политика конфиденциальности",
+    "Правила сообщества",
+    "Авторские и иные права",
+    "Модерация и обжалование",
+  ],
+} as const satisfies Record<Locale, readonly string[]>;
