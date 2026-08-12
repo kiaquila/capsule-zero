@@ -37,6 +37,8 @@
   their existing parent ranges in the lockfiles.
 - No OSV ignore or audit suppression is added. The security gate must pass on the real
   dependency graph.
+- After the first native review, each external-setting and Dependabot policy row gained
+  an exact executable verification command instead of a prose-only evidence summary.
 
 ### Known Issues
 
