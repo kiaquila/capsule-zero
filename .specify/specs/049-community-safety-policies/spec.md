@@ -35,6 +35,8 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
   distribution limits; account/domain restrictions; reports; statements of reasons;
   appeals; and action against abusive reports or appeals.
 - Discoverable legal navigation and landing-footer links in EN and RU.
+- Removal of the obsolete European Commission ODR-platform link from the existing
+  Terms while preserving applicable local-court and alternative-redress rights.
 - Source-grounded policy notes and a launch/legal-review checklist in feature memory.
 
 ### Out

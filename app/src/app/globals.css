@@ -1714,7 +1714,8 @@ textarea {
 }
 
 .legal-header-links {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   border: 1px solid var(--glass-nav-border);
@@ -3998,11 +3999,11 @@ textarea {
 
   .legal-header-links {
     width: 100%;
-    justify-content: space-between;
+    justify-content: center;
   }
 
   .legal-header-links a {
-    flex: 1;
+    flex: 1 1 calc(33.333% - 6px);
     justify-content: center;
     padding: 0 10px;
   }

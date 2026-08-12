@@ -1,4 +1,11 @@
-export type LegalDocumentSlug = "privacy-policy" | "terms-of-use";
+export type LegalDocumentSlug =
+  | "privacy-policy"
+  | "terms-of-use"
+  | "community-guidelines"
+  | "copyright-policy"
+  | "enforcement-policy";
+
+type CoreLegalDocumentSlug = "privacy-policy" | "terms-of-use";
 
 export interface LegalDocument {
   slug: LegalDocumentSlug;
@@ -50,15 +57,15 @@ const supportEmail = "support@capsulezero.com";
 const dpoEmail = "dpo@capsulezero.com";
 const ipNoticeEmail = "ip@capsulezero.com";
 
-export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
+export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
   "terms-of-use": {
     slug: "terms-of-use",
     title: "Terms of Use",
     eyebrow: "Legal",
     summary:
       "The binding contract between you and Capsule Zero S.A.S. governing accounts, wardrobe content, AI-assisted recommendations, semantic search, mobile apps, current free access, gated future features, and your statutory consumer rights.",
-    lastUpdated,
-    effectiveDate,
+    lastUpdated: "August 12, 2026",
+    effectiveDate: "August 12, 2026",
     relatedDocument: {
       href: "/privacy-policy",
       label: "Privacy Policy",
@@ -66,13 +73,14 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
     intro: [
       `These Terms of Use ("Terms") form a binding contract between you and ${operatingEntity}, a company incorporated under the laws of the Argentine Republic with registered office in ${registeredOffice} ("Capsule Zero", "we", "us", "our"). They govern your access to and use of the Capsule Zero website at ${productDomain}, the Capsule Zero web application, our iOS and Android mobile applications, account features, wardrobe and capsule tools, photo upload and image-processing flows, semantic search, the Capsule Zero preset catalog, support, and any related services we provide (together, the "Service"). Section 7 separately identifies a future feature that is not part of the current Service.`,
       "By creating an account, signing in, uploading content, or using the Service, you confirm that you have read these Terms, that you accept them, and that you have the legal capacity to enter into this contract. If you use the Service on behalf of another person, organization, or legal entity, you confirm that you have authority to accept these Terms on their behalf, and references to \"you\" include both you and that person or entity.",
-      "These Terms apply in addition to the separate Privacy Policy, any product-specific notices we surface in the Service (for example, age-gates or content-moderation notices), and any mandatory consumer-protection rules that apply where you live.",
+      "These Terms include and incorporate by reference our Community Guidelines, Copyright & Intellectual Property Policy, and Enforcement & Appeals Policy. They also apply with our separate Privacy Policy, product-specific notices we surface in the Service (for example, age gates or content-moderation notices), and mandatory consumer-protection rules that apply where you live. You may not use the Service to do, submit, link to, or share anything contrary to those policies, and you may not attempt to circumvent them.",
     ],
     highlights: [
       "You keep ownership of your wardrobe photos and content; we receive a limited license needed to operate, secure, and improve the Service.",
       "Capsule Zero recommends; it does not dictate. AI-assisted output is advisory and is not a substitute for professional, medical, financial, or legal advice.",
       "Capsule Zero is currently free to use and has no active checkout or payment flow; we will publish updated terms before introducing monetization.",
       "Consumers in the EEA, UK, and other jurisdictions keep their statutory rights; nothing in these Terms limits mandatory consumer protections.",
+      "Reports, removals, appeals, and repeat-infringer action follow our published Copyright & IP and Enforcement & Appeals policies.",
     ],
     sections: [
       {
@@ -171,6 +179,14 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
             text: "If you choose to publish item data into the shared catalog, send content to support, or otherwise make content available beyond your private wardrobe, you grant us the additional rights reasonably necessary to display, share, moderate, and operate that feature. We will describe any such additional sharing in the relevant feature surface.",
           },
           {
+            type: "paragraph",
+            text: "When a feature permits you to make Your Content available to other users, you grant Capsule Zero, our affiliates and service providers, and the users who receive it a non-exclusive, worldwide, royalty-free license to host, store, cache, reproduce, display, save, transmit, and distribute that content only as reasonably necessary to operate, secure, moderate, and provide that feature. You receive no automatic right to payment or revenue sharing from that use. Any broader commercial or derivative-use license must be disclosed in updated terms before the feature is activated. You cannot grant rights you do not have, and this license does not make Capsule Zero the owner of Your Content.",
+          },
+          {
+            type: "paragraph",
+            text: "For content submitted at your direction, Capsule Zero acts as a neutral intermediary. You are solely responsible for Your Content and its accuracy, legality, source, and the permissions attached to it. We do not review all content before or after submission and do not endorse User Content posted by other users. To the maximum extent permitted by law, we are not responsible or liable to third parties for that content merely because it is stored, indexed, recommended, displayed, or technically processed by the Service.",
+          },
+          {
             type: "list",
             items: [
               "Upload only content you own, that you have permission to upload, or that you are otherwise legally permitted to share.",
@@ -178,7 +194,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
               "Do not upload sensitive personal data that is not needed for the Service, including health data, ethnicity, religion, political opinions, sexual orientation, or trade-union membership.",
               "If a photograph contains another identifiable person, you confirm that you have any consent or other legal basis required to upload that image and to allow us to process it.",
               "Do not upload counterfeit listings, misleading product information, or deceptive third-party product metadata.",
-              "We do not pre-screen Your Content, but we may review, refuse, hide, remove, watermark, demote, or otherwise moderate Your Content where we reasonably believe it violates these Terms, our acceptable use rules, or applicable law.",
+              "We do not review all Your Content, but we may use automated tools, manual review, or hybrid review to refuse, hide, remove, restrict, label, watermark, demote, or otherwise moderate it where we reasonably believe it violates these Terms, an incorporated policy, or applicable law, or where action is necessary to protect Capsule Zero or its users.",
             ],
           },
         ],
@@ -219,7 +235,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
           },
           {
             type: "paragraph",
-            text: "Third-party stores, retailers, marketplaces, social networks, app stores, and other third-party services (\"Third-Party Services\") are not controlled by Capsule Zero. Your use of any Third-Party Service is subject to that service's own terms and privacy policy. Capsule Zero is not the seller, manufacturer, importer, repair partner, resale broker, or warranty provider for third-party items.",
+            text: "Third-party stores, retailers, marketplaces, social networks, app stores, advertisers, and other third-party services (\"Third-Party Services\") are not owned or controlled by Capsule Zero. A link, recommendation, search result, item card, or future commercial disclosure does not mean that we endorse or guarantee a third party, its content, products, prices, availability, practices, or services. You access and purchase from Third-Party Services at your own risk and subject to their own terms and privacy policies. To the maximum extent permitted by law, Capsule Zero has no liability arising from your access to, use of, or purchase from them. Capsule Zero is not the seller, manufacturer, importer, repair partner, resale broker, or warranty provider for third-party items.",
           },
         ],
       },
@@ -297,23 +313,19 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
       },
       {
         id: "ip-takedown",
-        title: "13. Intellectual Property and Notice-and-Action Procedure",
+        title: "13. Intellectual Property, Reports, and Notice-and-Action",
         blocks: [
           {
             type: "paragraph",
-            text: "Capsule Zero respects intellectual property rights and complies with applicable notice-and-action obligations, including the U.S. Digital Millennium Copyright Act (DMCA) and the EU Digital Services Act (Regulation (EU) 2022/2065).",
+            text: "Capsule Zero respects intellectual-property rights and maintains reporting and notice-and-action procedures under applicable law. Our incorporated Copyright & Intellectual Property Policy explains the information required in a rights notice, counter-notice procedure, restoration timing where the U.S. Digital Millennium Copyright Act (DMCA) applies, and our reasonably implemented repeat-infringer policy. Publication of that policy does not represent that any future shared-import feature has launched or that a jurisdiction-specific registration has been completed.",
           },
           {
             type: "paragraph",
-            text: "If you are a rights holder and you believe that content available through the Service infringes your copyright, trademark, design right, or other intellectual property right, please send a notice to " + ipNoticeEmail + " that includes (a) your name, contact details, and the right you hold; (b) sufficient identification of the protected work or right; (c) sufficient identification of the allegedly infringing content (including a URL or item ID); (d) a statement made in good faith that the use is not authorized; (e) a statement, under penalty of perjury where applicable, that the information is accurate and that you are authorized to act; and (f) your electronic or physical signature.",
+            text: "Rights holders and authorized agents may report copyright, trademark, design-right, counterfeit, or other intellectual-property concerns to " + ipNoticeEmail + ". Anyone may report other allegedly illegal or policy-violating content to " + legalEmail + ". Reports and appeals must be made in good faith and contain enough information for us to identify the content, understand the basis, and contact the reporter. Fraudulent, baseless, automated, repetitive, or abusive submissions may be rejected or restricted and may carry legal consequences.",
           },
           {
             type: "paragraph",
-            text: "We will review valid notices and may remove, disable, or restrict access to the affected content. We may also notify the user who submitted the content and, where applicable, give them a chance to submit a counter-notice. Repeat infringers may have their accounts suspended or terminated.",
-          },
-          {
-            type: "paragraph",
-            text: "Other illegal-content notices, including hate speech, terrorism, child sexual abuse material, non-consensual intimate imagery, scams, counterfeit listings, or violations of the EU Digital Services Act, can be sent to " + legalEmail + ". We will act on valid notices in a timely, diligent, non-arbitrary, and objective manner, and we will inform the notifier and, where appropriate, the affected user of our decision.",
+            text: "We review sufficiently precise reports in a timely, diligent, objective, and non-arbitrary manner. We may remove or disable content, limit its distribution, restrict it geographically, suspend features, or suspend or terminate accounts and associated domains. Where appropriate or required by law, we notify the affected user, provide a statement of reasons, and offer a counter-notice or appeal route under the Copyright & IP and Enforcement & Appeals policies.",
           },
         ],
       },
@@ -323,7 +335,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "You agree not to use the Service for illegal, harmful, deceptive, infringing, abusive, or security-compromising activity. In particular, you may not:",
+            text: "Our incorporated Community Guidelines define the content and conduct allowed on Capsule Zero. They apply to private and public uploads, links, catalog submissions, metadata, comments, messages, AI-generated or manipulated content, account behavior, and attempts to use the Service indirectly. Without limiting those Guidelines, you may not:",
           },
           {
             type: "list",
@@ -341,7 +353,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
           },
           {
             type: "paragraph",
-            text: "We operate the Service in line with the content-moderation principles of the EU Digital Services Act and similar regimes. We may apply content-moderation measures, including content removal, demotion, account restriction, age-gating, or geographic restriction, where reasonably necessary to comply with law, protect users, or protect the integrity of the Service. We will explain content-moderation decisions to affected users where required by law and provide an internal complaint mechanism via " + supportEmail + ".",
+            text: "Our Enforcement & Appeals Policy describes how we detect and act on potential violations through automated tools, manual review, and hybrid approaches. Depending on context, severity, repetition, and risk, we may block submission, remove content, limit distribution or features, add labels or sensitivity screens, restrict a domain or account, preserve evidence, report matters where legally required, or suspend or terminate access. Where appropriate or required by law, we explain decisions and provide an internal appeal through " + supportEmail + ".",
           },
         ],
       },
@@ -391,6 +403,10 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
           },
           {
             type: "paragraph",
+            text: "Capsule Zero does not warrant the ownership, legality, accuracy, authenticity, safety, or suitability of User Content posted by other users. You may encounter content that is inaccurate, objectionable, misleading, infringing, illegal, or otherwise unsuitable. To the maximum extent permitted by law, Capsule Zero assumes no responsibility or liability for that content or for a third party's conduct merely because the Service hosts, recommends, links to, or displays it.",
+          },
+          {
+            type: "paragraph",
             text: "Nothing in these Terms excludes or limits liability that cannot be excluded or limited under applicable law, including liability for death, personal injury caused by negligence, fraud, fraudulent misrepresentation, gross negligence, willful misconduct, or any other liability that cannot be waived under mandatory consumer law.",
           },
         ],
@@ -437,7 +453,7 @@ export const legalDocuments: Record<LegalDocumentSlug, LegalDocument> = {
           },
           {
             type: "paragraph",
-            text: "Nothing in this section deprives you of the protection of mandatory consumer-protection rules that apply where you live. If you are a consumer in the EEA, UK, Switzerland, Brazil, or another jurisdiction with mandatory protective rules, you keep those rights, and you may also be entitled to bring proceedings in your local courts. EU consumers may also access the European Commission's online dispute-resolution platform at https://ec.europa.eu/consumers/odr.",
+            text: "Nothing in this section deprives you of the protection of mandatory consumer-protection rules that apply where you live. If you are a consumer in the EEA, UK, Switzerland, Brazil, or another jurisdiction with mandatory protective rules, you keep those rights, and you may also be entitled to bring proceedings in your local courts or use an available competent alternative-dispute-resolution body. The former European Commission online dispute-resolution platform was discontinued in 2025 and is not presented as an available redress channel.",
           },
         ],
       },

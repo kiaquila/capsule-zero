@@ -1,5 +1,33 @@
 import { Link } from "@/i18n/navigation";
-import type { LegalBlock, LegalDocument } from "@/lib/legal-content";
+import type {
+  LegalBlock,
+  LegalDocument,
+  LegalDocumentSlug,
+} from "@/lib/legal-content";
+
+const legalNavigation: ReadonlyArray<{
+  href: `/${LegalDocumentSlug}`;
+  label: string;
+  slug: LegalDocumentSlug;
+}> = [
+  { href: "/terms-of-use", label: "Terms", slug: "terms-of-use" },
+  { href: "/privacy-policy", label: "Privacy", slug: "privacy-policy" },
+  {
+    href: "/community-guidelines",
+    label: "Community",
+    slug: "community-guidelines",
+  },
+  {
+    href: "/copyright-policy",
+    label: "Copyright",
+    slug: "copyright-policy",
+  },
+  {
+    href: "/enforcement-policy",
+    label: "Enforcement",
+    slug: "enforcement-policy",
+  },
+];
 
 interface LegalPageProps {
   document: LegalDocument;
@@ -16,20 +44,15 @@ export function LegalPage({ document }: LegalPageProps) {
           Capsule Zero
         </Link>
         <nav className="legal-header-links" aria-label="Legal documents">
-          <Link
-            className={document.slug === "terms-of-use" ? "legal-link-active" : ""}
-            href="/terms-of-use"
-          >
-            Terms
-          </Link>
-          <Link
-            className={
-              document.slug === "privacy-policy" ? "legal-link-active" : ""
-            }
-            href="/privacy-policy"
-          >
-            Privacy
-          </Link>
+          {legalNavigation.map((item) => (
+            <Link
+              className={document.slug === item.slug ? "legal-link-active" : ""}
+              href={item.href}
+              key={item.slug}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
       </header>
 

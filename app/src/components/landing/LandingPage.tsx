@@ -97,6 +97,21 @@ export function LandingPage() {
           {t("privacy")}
         </Link>
         <span aria-hidden="true">·</span>
+        <Link href="/community-guidelines" data-testid="footer-community-link">
+          {t("community")}
+        </Link>
+        <span aria-hidden="true">·</span>
+        <Link
+          href="/copyright-policy"
+          data-testid="footer-copyright-policy-link"
+        >
+          {t("copyrightPolicy")}
+        </Link>
+        <span aria-hidden="true">·</span>
+        <Link href="/enforcement-policy" data-testid="footer-enforcement-link">
+          {t("enforcement")}
+        </Link>
+        <span aria-hidden="true">·</span>
         <button
           className="landing-footer-button"
           onClick={openCookieSettings}

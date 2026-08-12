@@ -41,6 +41,9 @@ All statutory language is qualified by applicability and mandatory local law.
 - EU Digital Services Act, Regulation (EU) 2022/2065, especially Articles 16, 17,
   and 20:
   https://eur-lex.europa.eu/eli/reg/2022/2065/oj
+- Regulation (EU) 2024/3228 discontinuing the former European Online Dispute
+  Resolution Platform and repealing Regulation (EU) No 524/2013 from 2025-07-20:
+  https://eur-lex.europa.eu/eli/reg/2024/3228
 
 ## Verification
 
@@ -53,14 +56,14 @@ The earlier symlink-based attempt was discarded because Turbopack rejected exter
 
 | # | Acceptance criterion | Evidence |
 |---|---|---|
-| 1 | New EN/RU routes render with legal-page structure | Pending focused Playwright and production-build route output |
-| 2 | Terms incorporates the policy stack and protective clauses | Pending focused Playwright copy assertions and source audit |
-| 3 | Community content/risk matrix is complete | Pending policy matrix audit against Spec 049 AC-003 |
-| 4 | Copyright notice, counter-notice, restoration, and repeat-infringer rules are complete | Pending focused Playwright copy assertions and source audit |
-| 5 | Automated/manual/hybrid enforcement and appeals are disclosed | Pending focused Playwright copy assertions and source audit |
-| 6 | Landing/legal navigation is discoverable and mobile-usable | Pending focused Chromium + WebKit/iPhone Playwright run |
-| 7 | Shared-import and legal-registration gates remain honest | Pending negative copy scan |
-| 8 | Repository and app gates pass | Pending `git diff --check`, feature memory, repo baseline, lint, CSS lint, typechecks, build |
+| 1 | New EN/RU routes render with legal-page structure | Combined focused Chromium + WebKit/iPhone suite: 6/6 passed with CI's two-worker posture; production build emitted all six static policy routes |
+| 2 | Terms incorporates the policy stack and protective clauses | Focused Terms assertions passed; source audit confirmed responsibility, rights warranty, intermediary, report, third-party, disclaimer, retention, enforcement, indemnity, liability-cap, consumer, and survival clauses |
+| 3 | Community content/risk matrix is complete | `rg` matrix audit covered IP/counterfeit, intimate/child/privacy, hate/harassment/self-harm, dangerous/regulated/violent, scams/misinformation/impersonation, spam/commercial, security, reporting, and enforcement sections |
+| 4 | Copyright notice, counter-notice, restoration, and repeat-infringer rules are complete | Focused assertions passed for `10 to 14 business days`, `repeat-infringer policy`, `standard technical measures`, and `misrepresentation`; source audit covered all notice/counter-notice elements |
+| 5 | Automated/manual/hybrid enforcement and appeals are disclosed | Focused assertions passed for review modes, distribution limits, statements of reasons, and report/appeal abuse; source audit covered action and redress paths |
+| 6 | Landing/legal navigation is discoverable and mobile-usable | Combined focused Chromium + WebKit/iPhone suite: 6/6 passed, including three footer navigations with no dead anchor |
+| 7 | Shared-import and legal-registration gates remain honest | Negative Playwright assertions and copy scan found no ownership transfer or current-feature claim; Copyright Policy expressly disclaims completed agent registration/legal review |
+| 8 | Repository and app gates pass | `git diff --check`, feature memory, repo baseline, API contract, app/e2e lint, CSS lint, both typechecks, app unit hook, Go vet/tests, and production build passed; full CI-shaped browser suite: 84 passed / 8 environment-dependent skipped; lint gates retained the repository's warning-only baseline |
 | 9 | Current PR head is merge-ready | Pending required GitHub checks and review |
 
 ## Reuse Check
@@ -70,3 +73,7 @@ existing legal routes. The renderer, data model, and route shape are reused. A s
 policy-content module is required because Terms/Privacy already occupy more than 900
 lines and the three new documents have distinct policy ownership; duplicating the
 renderer or app layout would not fit the established responsibility.
+
+The existing `legal-content.ts` remains above the TypeScript module-size soft trigger;
+this change limits its growth to the Terms clauses that must live in the binding core
+contract and puts all three new policy documents in responsibility-specific modules.
