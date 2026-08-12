@@ -17,6 +17,8 @@
       feature-memory verification; record evidence in `plan.md`.
 - [x] T009 Fill Process Memory, publish the branch, and open a ready-for-review PR with
       the SENAR Done Gate and external-legal-review warning.
+- [x] T010 Address Codex review by extracting the duplicated landing/auth policy footer
+      and localizing legal-header labels through the active EN/RU message catalog.
 
 ## Process Memory
 
@@ -37,6 +39,11 @@
   and does not activate the shared user-import surface.
 - The discontinued European Commission ODR platform is removed as a live consumer-
   redress link; the Terms preserve mandatory local court and available ADR rights.
+- The landing and standalone-auth entry points now share one legal-footer component;
+  policy labels, destinations, order, and test IDs therefore cannot drift between them.
+- The legal header reuses the existing `landing` message catalog. The authoritative
+  policy body remains English on both locale routes until a separately reviewed legal
+  translation exists, as declared in Scope.
 
 ### Known Issues
 

@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type {
   LegalBlock,
@@ -7,24 +8,33 @@ import type {
 
 const legalNavigation: ReadonlyArray<{
   href: `/${LegalDocumentSlug}`;
-  label: string;
+  labelKey:
+    | "terms"
+    | "privacy"
+    | "community"
+    | "copyrightPolicy"
+    | "enforcement";
   slug: LegalDocumentSlug;
 }> = [
-  { href: "/terms-of-use", label: "Terms", slug: "terms-of-use" },
-  { href: "/privacy-policy", label: "Privacy", slug: "privacy-policy" },
+  { href: "/terms-of-use", labelKey: "terms", slug: "terms-of-use" },
+  {
+    href: "/privacy-policy",
+    labelKey: "privacy",
+    slug: "privacy-policy",
+  },
   {
     href: "/community-guidelines",
-    label: "Community",
+    labelKey: "community",
     slug: "community-guidelines",
   },
   {
     href: "/copyright-policy",
-    label: "Copyright",
+    labelKey: "copyrightPolicy",
     slug: "copyright-policy",
   },
   {
     href: "/enforcement-policy",
-    label: "Enforcement",
+    labelKey: "enforcement",
     slug: "enforcement-policy",
   },
 ];
@@ -34,6 +44,8 @@ interface LegalPageProps {
 }
 
 export function LegalPage({ document }: LegalPageProps) {
+  const t = useTranslations("landing");
+
   return (
     <div className="cz-page legal-page" data-testid="legal-page">
       <div className="wallpaper-bg" />
@@ -43,14 +55,14 @@ export function LegalPage({ document }: LegalPageProps) {
         <Link className="landing-logo" href="/">
           Capsule Zero
         </Link>
-        <nav className="legal-header-links" aria-label="Legal documents">
+        <nav className="legal-header-links" aria-label={t("legalDocuments")}>
           {legalNavigation.map((item) => (
             <Link
               className={document.slug === item.slug ? "legal-link-active" : ""}
               href={item.href}
               key={item.slug}
             >
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           ))}
         </nav>
@@ -87,7 +99,10 @@ export function LegalPage({ document }: LegalPageProps) {
             <section className="legal-section" id={section.id} key={section.id}>
               <h2>{section.title}</h2>
               {section.blocks.map((block, index) => (
-                <LegalBlockRenderer block={block} key={`${section.id}-${index}`} />
+                <LegalBlockRenderer
+                  block={block}
+                  key={`${section.id}-${index}`}
+                />
               ))}
             </section>
           ))}

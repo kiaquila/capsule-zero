@@ -54,25 +54,33 @@ the three incorporated policy names; and the landing footer had no safety-policy
 The earlier symlink-based attempt was discarded because Turbopack rejected external
 `node_modules` symlinks before application behavior ran.
 
-| # | Acceptance criterion | Evidence |
-|---|---|---|
-| 1 | New EN/RU routes render with legal-page structure | Combined focused Chromium + WebKit/iPhone suite: 6/6 passed with CI's two-worker posture; production build emitted all six static policy routes |
-| 2 | Terms incorporates the policy stack and protective clauses | Focused Terms assertions passed; source audit confirmed responsibility, rights warranty, intermediary, report, third-party, disclaimer, retention, enforcement, indemnity, liability-cap, consumer, and survival clauses |
-| 3 | Community content/risk matrix is complete | `rg` matrix audit covered IP/counterfeit, intimate/child/privacy, hate/harassment/self-harm, dangerous/regulated/violent, scams/misinformation/impersonation, spam/commercial, security, reporting, and enforcement sections |
-| 4 | Copyright notice, counter-notice, restoration, and repeat-infringer rules are complete | Focused assertions passed for `10 to 14 business days`, `repeat-infringer policy`, `standard technical measures`, and `misrepresentation`; source audit covered all notice/counter-notice elements |
-| 5 | Automated/manual/hybrid enforcement and appeals are disclosed | Focused assertions passed for review modes, distribution limits, statements of reasons, and report/appeal abuse; source audit covered action and redress paths |
-| 6 | Landing/legal navigation is discoverable and mobile-usable | Combined focused Chromium + WebKit/iPhone suite: 6/6 passed, including three footer navigations with no dead anchor |
-| 7 | Shared-import and legal-registration gates remain honest | Negative Playwright assertions and copy scan found no ownership transfer or current-feature claim; Copyright Policy expressly disclaims completed agent registration/legal review |
-| 8 | Repository and app gates pass | `git diff --check`, feature memory, repo baseline, API contract, app/e2e lint, CSS lint, both typechecks, app unit hook, Go vet/tests, and production build passed; full CI-shaped browser suite: 84 passed / 8 environment-dependent skipped; lint gates retained the repository's warning-only baseline |
-| 9 | Current PR head is merge-ready | PR #98 is open and ready for review; required GitHub checks and human review remain pending |
+Review follow-up RED: after Codex review identified that legal navigation on `/ru/*`
+still used English labels, commit `dea4a5e` added the locale assertion first. The focused
+Chromium run failed on `/ru/community-guidelines` with received text
+`TermsPrivacyCommunityCopyrightEnforcement`, then passed after the navigation began
+resolving the existing EN/RU message catalog. The same review's DRY finding is handled
+by one `PublicLegalFooter` shared by the landing and standalone-auth pages.
+
+| #   | Acceptance criterion                                                                   | Evidence                                                                                                                                                                                                                                                                                                                                                                 |
+| --- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | New EN/RU routes render with legal-page structure                                      | Combined focused Chromium + WebKit/iPhone suite: 6/6 passed with CI's two-worker posture; production build emitted all six static policy routes                                                                                                                                                                                                                          |
+| 2   | Terms incorporates the policy stack and protective clauses                             | Focused Terms assertions passed; source audit confirmed responsibility, rights warranty, intermediary, report, third-party, disclaimer, retention, enforcement, indemnity, liability-cap, consumer, and survival clauses                                                                                                                                                 |
+| 3   | Community content/risk matrix is complete                                              | `rg` matrix audit covered IP/counterfeit, intimate/child/privacy, hate/harassment/self-harm, dangerous/regulated/violent, scams/misinformation/impersonation, spam/commercial, security, reporting, and enforcement sections                                                                                                                                             |
+| 4   | Copyright notice, counter-notice, restoration, and repeat-infringer rules are complete | Focused assertions passed for `10 to 14 business days`, `repeat-infringer policy`, `standard technical measures`, and `misrepresentation`; source audit covered all notice/counter-notice elements                                                                                                                                                                       |
+| 5   | Automated/manual/hybrid enforcement and appeals are disclosed                          | Focused assertions passed for review modes, distribution limits, statements of reasons, and report/appeal abuse; source audit covered action and redress paths                                                                                                                                                                                                           |
+| 6   | Shared footer/legal navigation is discoverable, localized, and mobile-usable           | `PublicLegalFooter` is the sole landing/auth footer implementation; focused Chromium navigation/localization suite passed 5/5, and the RU-label plus footer-navigation follow-up passed 4/4 across Chromium + WebKit/iPhone, including three destinations with no dead anchor                                                                                            |
+| 7   | Shared-import and legal-registration gates remain honest                               | Negative Playwright assertions and copy scan found no ownership transfer or current-feature claim; Copyright Policy expressly disclaims completed agent registration/legal review                                                                                                                                                                                        |
+| 8   | Repository and app gates pass                                                          | `git diff --check`, feature memory, repo baseline, API contract, app/e2e lint, CSS lint, both typechecks, app unit hook, Go vet/tests, and production build passed; full CI-shaped browser suite: 84 passed / 8 environment-dependent skipped; lint gates retained the repository's warning-only baseline |
+| 9   | Current PR head is merge-ready                                                         | PR #98 is open and ready for review; required GitHub checks and human review remain pending                                                                                                                                                                                                                                                                              |
 
 ## Reuse Check
 
-Checked `app/src/lib/legal-content.ts`, `app/src/components/legal/LegalPage.tsx`, and the
-existing legal routes. The renderer, data model, and route shape are reused. A separate
-policy-content module is required because Terms/Privacy already occupy more than 900
-lines and the three new documents have distinct policy ownership; duplicating the
-renderer or app layout would not fit the established responsibility.
+Checked `app/src/lib/legal-content.ts`, `app/src/components/legal/LegalPage.tsx`, the
+existing legal routes, and both prior landing/auth footer implementations. The renderer,
+data model, route shape, message catalog, and one new `PublicLegalFooter` abstraction are
+reused. A separate policy-content module is required because Terms/Privacy already occupy
+more than 900 lines and the three new documents have distinct policy ownership;
+duplicating the renderer or app layout would not fit the established responsibility.
 
 The existing `legal-content.ts` remains above the TypeScript module-size soft trigger;
 this change limits its growth to the Terms clauses that must live in the binding core

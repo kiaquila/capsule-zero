@@ -2,9 +2,8 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { Link } from "@/i18n/navigation";
 import { AuthPanel } from "@/components/auth/AuthPanel";
-import { openCookieSettings } from "@/lib/cookie-consent";
+import { PublicLegalFooter } from "@/components/legal/PublicLegalFooter";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { CookieBanner } from "./CookieBanner";
 import { LandingSlidesStub } from "./LandingSlidesStub";
@@ -88,40 +87,7 @@ export function LandingPage() {
 
       <LandingSlidesStub />
 
-      <footer className="landing-footer">
-        <Link href="/terms-of-use" data-testid="footer-terms-link">
-          {t("terms")}
-        </Link>
-        <span aria-hidden="true">·</span>
-        <Link href="/privacy-policy" data-testid="footer-privacy-link">
-          {t("privacy")}
-        </Link>
-        <span aria-hidden="true">·</span>
-        <Link href="/community-guidelines" data-testid="footer-community-link">
-          {t("community")}
-        </Link>
-        <span aria-hidden="true">·</span>
-        <Link
-          href="/copyright-policy"
-          data-testid="footer-copyright-policy-link"
-        >
-          {t("copyrightPolicy")}
-        </Link>
-        <span aria-hidden="true">·</span>
-        <Link href="/enforcement-policy" data-testid="footer-enforcement-link">
-          {t("enforcement")}
-        </Link>
-        <span aria-hidden="true">·</span>
-        <button
-          className="landing-footer-button"
-          onClick={openCookieSettings}
-          type="button"
-        >
-          {t("cookieSettings")}
-        </button>
-        <span aria-hidden="true">·</span>
-        <span>{t("copyright")}</span>
-      </footer>
+      <PublicLegalFooter showCookieSettings />
 
       {authMode ? (
         <div className="landing-auth-popover" data-testid="auth-popover">

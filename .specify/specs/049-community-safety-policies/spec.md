@@ -70,8 +70,9 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
 - **AC-005**: Enforcement Policy describes automated, manual, and hybrid detection and
   proportionate actions, notice and appeal where appropriate, report-abuse controls,
   and the distinction between illegal-content action and policy action.
-- **AC-006**: The landing footer and legal-document navigation make all policies
-  discoverable without dead anchors and remain usable at mobile width.
+- **AC-006**: A shared public legal footer and the legal-document navigation make all
+  policies discoverable without dead anchors, use the active locale for navigation
+  labels, and remain usable at mobile width.
 - **AC-007**: No policy represents the gated shared-import pool, affiliate program,
   marketplace, or payment flow as currently available, and no page claims completed
   external legal review or DMCA-agent registration.
@@ -94,5 +95,7 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
 ## TDD Posture
 
 The new route, navigation, and required-copy assertions are committed and run red before
-implementation. Policy drafting and feature-memory changes are documentation work, but
-the public Next.js route behavior follows the application-code TDD contract.
+implementation. The follow-up RU legal-navigation regression assertion is likewise
+committed red before its implementation. Policy drafting and feature-memory changes are
+documentation work, but the public Next.js route behavior follows the application-code
+TDD contract.
