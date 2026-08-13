@@ -166,7 +166,7 @@ incident review.
 
 ## Local development
 
-The compose stack runs on the laptop against the **same `nginx:1.27-alpine`
+The compose stack runs on the laptop against the **same `nginx:1.31-alpine`
 and `web` images that ship to prod**. Only three things differ from the
 droplet:
 

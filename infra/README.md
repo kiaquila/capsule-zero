@@ -2,7 +2,7 @@
 
 Implementation in [`.specify/specs/024-production-stack-runtime/`](../.specify/specs/024-production-stack-runtime/).
 
-Reverse proxy / API gateway is nginx 1.27 (not Traefik — see ADR-001). The
+Reverse proxy / API gateway is nginx 1.31 (not Traefik — see ADR-001). The
 live production edge is a host (systemd) nginx in `nginx-host/`; the in-container
 `nginx/` config is profile-gated for rollback and used by local dev.
 

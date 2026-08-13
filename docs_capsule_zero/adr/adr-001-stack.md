@@ -46,7 +46,7 @@ Adopt the following production stack:
 | Mobile                   | React Native (iOS + Android), sharing the same Go API contract                                                                                                    |
 | Styling                  | Tailwind CSS v4 with Capsule Zero glass tokens                                                                                                                    |
 | Backend                  | Go modular monolith (single binary; active bounded contexts are added slice by slice). Merchant-catalog search and moderation remain Q8-blocked design until both gates land |
-| API gateway              | nginx 1.27 with Let's Encrypt TLS (certbot on host), rate-limit (`limit_req_zone`), `auth_request` into Ory Kratos                                                |
+| API gateway              | nginx 1.31 with Let's Encrypt TLS (certbot on host), rate-limit (`limit_req_zone`), `auth_request` into Ory Kratos                                                |
 | Database                 | PostgreSQL 16 with Postgres FTS in v0.1; pgvector and PgBouncer are deferred by ADR-007. Shared merchant semantic search additionally requires both Q8 gates before any schema or migration |
 | Cache / sessions / queue | Redis 7 with a Redis-based job queue (River or asynq) — Kafka is deferred until services split                                                                    |
 | Auth                     | Ory Kratos email/password in v0.1; Google OAuth and Apple Sign-In in Stage 2                                                                                      |
@@ -130,7 +130,7 @@ The pivot ADR originally accepted Traefik v3, then revisited the choice when Pha
 - **Traefik** shines when many services are discovered through Docker labels and you want one process to do DNS-01 ACME, forward-auth, and rate-limit. It also wants `docker.sock` on the edge container, which we did not want exposed.
 - **nginx** is universally understood, has the smallest mental tax for ops engineers joining later, and its first-class directives (`limit_req_zone`, `auth_request`, `proxy_pass`, `proxy_cache`) cover everything we need for the Go API + Kratos forward-auth in one config file we own. Cert lifecycle moves to `certbot` on the host (the certbot apt package already ships a renewal timer) and a deploy hook reloads nginx in-place.
 
-We chose nginx 1.27 for v0.1. Reconsider if and when we add per-service routing for more than ~10 containers, at which point Traefik's label-driven model would start paying off.
+We chose nginx for v0.1 (originally 1.27; the maintained rollback image is now 1.31). Reconsider if and when we add per-service routing for more than ~10 containers, at which point Traefik's label-driven model would start paying off.
 
 ### Implementation rules
 
