@@ -32,6 +32,8 @@
 - [x] T015 Add a red-first full-RU-policy regression; publish substantive Russian
       Community, Copyright/IP, and Enforcement documents with localized shared chrome,
       and fix the CI module-loader boundary exposed by the same test commit.
+- [x] T016 Replace the cross-workspace TypeScript boundary with one Node-20-safe ESM
+      module and derive RU policy display dates from the shared ISO revision values.
 
 ## Process Memory
 
@@ -76,10 +78,13 @@
   serves the July 24 substantive contract with August 13 administrative corrections;
   from that instant it serves the September 15 version. The preview stays available at
   its versioned URL during the notice window, and the same boundary hides the notice.
-- Playwright's TypeScript loader treated the app-alias import of `legal/revisions.ts` as
-  CommonJS in CI even though local collection succeeded. The boundary test now uses a
-  direct cross-workspace path and the helper exposes a default object in addition to the
-  named exports used by application code, so both loaders execute the same pure logic.
+- Playwright under Node 20 treated a direct cross-workspace `.ts` import as CommonJS,
+  even though Node 22 collected it locally. Terms switchover logic therefore lives in
+  an actual `.mjs` module with a `.d.mts` declaration: Node 20 can execute it directly,
+  while Next.js and TypeScript consume the same named exports without a wrapper.
+- Policy revision dates have one ISO source. The Russian policy modules format that
+  source for display instead of duplicating date literals that could drift on the next
+  revision.
 
 ### Known Issues
 
