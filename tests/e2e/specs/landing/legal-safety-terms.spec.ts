@@ -109,6 +109,30 @@ test.describe("Landing — Terms safety-policy contract", () => {
     );
   });
 
+  test("expires the notice while the protected layout stays mounted", async ({
+    page,
+    landing,
+  }) => {
+    const dashboard = new DashboardPage(page);
+    await page.clock.install({
+      time: new Date("2026-08-13T20:00:00.000Z"),
+    });
+
+    await landing.goto();
+    await landing.dismissCookieBannerIfPresent();
+    await landing.openAuth();
+    await landing.auth.signIn(uniqueEmail("terms-live-cutoff"), PASSWORDS.initial);
+    await page.waitForURL(/\/en\/dashboard/, { timeout: 25_000 });
+    await expect(dashboard.termsUpdateNotice).toBeVisible();
+
+    for (let step = 0; step < 3; step += 1) {
+      await page.clock.fastForward(20 * 24 * 60 * 60 * 1_000);
+    }
+
+    await expect(dashboard.termsUpdateNotice).toBeHidden();
+    await expect(page).toHaveURL(/\/en\/dashboard/);
+  });
+
   test("uses server time and covers direct authenticated entry routes", async ({
     page,
     landing,
