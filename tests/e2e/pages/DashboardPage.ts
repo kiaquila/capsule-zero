@@ -17,6 +17,8 @@ export class DashboardPage extends BasePage {
   readonly oprValue: Locator;
   readonly layeringCoverage: Locator;
   readonly layeringDiagnostics: Locator;
+  readonly termsUpdateNotice: Locator;
+  readonly termsUpdateLink: Locator;
 
   constructor(page: Page, locale: Locale = "en") {
     super(page);
@@ -30,6 +32,8 @@ export class DashboardPage extends BasePage {
     this.layeringDiagnostics = page.getByTestId(
       "dashboard-layering-diagnostics",
     );
+    this.termsUpdateNotice = page.getByTestId("terms-update-notice");
+    this.termsUpdateLink = page.getByTestId("terms-update-link");
   }
 
   /**

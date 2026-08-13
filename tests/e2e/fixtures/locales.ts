@@ -56,6 +56,11 @@ export const journeyCopy = {
 export const legalCopy = {
   contactDomain: "@capsulezero.app",
   retiredContactDomain: "@capsulezero.com",
+  incorporationClause:
+    "These Terms include and incorporate by reference our Community Guidelines, Copyright & Intellectual Property Policy, and Enforcement & Appeals Policy.",
+  termsLastUpdated: "August 13, 2026",
+  termsEffectiveDate: "September 15, 2026",
+  privacyLastUpdated: "August 13, 2026",
   termsMarketplaceImportGate:
     "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification and an external legal review are complete and all required launch controls are in place.",
   privacyMarketplaceImportGate:
@@ -79,6 +84,21 @@ export const legalCopy = {
     "Best-effort parsing of product URLs into structured item data",
   ],
 } as const;
+
+export const termsUpdateCopy = {
+  en: {
+    title: "Terms update takes effect September 15",
+    description:
+      "We published updated Terms and user-content policies on August 13, 2026. They take effect September 15, 2026.",
+    action: "Review updated Terms",
+  },
+  ru: {
+    title: "Обновлённые условия вступят в силу 15 сентября",
+    description:
+      "Мы опубликовали обновлённые Условия и правила пользовательского контента 13 августа 2026 года. Они вступят в силу 15 сентября 2026 года.",
+    action: "Открыть обновлённые Условия",
+  },
+} as const satisfies Record<Locale, Record<string, string>>;
 
 export const legalNavigationCopy = {
   en: [

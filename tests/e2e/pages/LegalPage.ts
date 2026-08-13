@@ -24,6 +24,9 @@ export class LegalPage extends BasePage {
   readonly root: Locator;
   readonly heading: Locator;
   readonly navigation: Locator;
+  readonly article: Locator;
+  readonly lastUpdated: Locator;
+  readonly effectiveDate: Locator;
   readonly backToHome: Locator;
 
   constructor(
@@ -36,6 +39,15 @@ export class LegalPage extends BasePage {
     this.root = page.getByTestId("legal-page");
     this.heading = this.root.getByRole("heading", { level: 1 });
     this.navigation = this.root.locator("header nav");
+    this.article = this.root.locator("article");
+    this.lastUpdated = this.root
+      .locator(".legal-meta div")
+      .filter({ hasText: "Last updated" })
+      .locator("dd");
+    this.effectiveDate = this.root
+      .locator(".legal-meta div")
+      .filter({ hasText: "Status" })
+      .locator("dd");
     this.backToHome = page.getByTestId("legal-back-home");
   }
 }
