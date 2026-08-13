@@ -54,6 +54,8 @@ export const journeyCopy = {
 // The live legal documents are currently shared across EN/RU routes. Keep
 // unavoidable legal-copy assertions here so policy edits have one test source.
 export const legalCopy = {
+  contactDomain: "@capsulezero.app",
+  retiredContactDomain: "@capsulezero.com",
   termsMarketplaceImportGate:
     "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification and an external legal review are complete and all required launch controls are in place.",
   privacyMarketplaceImportGate:
