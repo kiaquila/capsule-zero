@@ -26,7 +26,7 @@ jobs:
       # image as local verification instead of an unpinned setup-go action.
       - name: Go vet + test (api)
         run: |
-          docker run --rm -v "$PWD/api:/src" -w /src golang:1.25.12-bookworm \
+          docker run --rm -v "$PWD/api:/src" -w /src golang:1.26.6-bookworm \
             sh -c 'go vet ./... && go test ./...'
 
       - name: Setup Node

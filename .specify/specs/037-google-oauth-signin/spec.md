@@ -77,9 +77,11 @@ edge posture (browser never talks to Kratos; sessions stay token-based).
   identifier and the user lands back on `/auth` with the standard localized
   Google-error message ("sign in with your password"). Linking via the
   settings flow is a follow-up (Known Issues).
-- Auto-marking the Google email as verified in Kratos. OSS Kratos v1.3 has no
-  mapper hook for `verifiable_addresses`; Google users get the existing
-  non-blocking verify-email banner (Known Issues; founder may waive later).
+- Auto-marking the Google email as verified in Kratos. The retained mapper does
+  not set `verifiable_addresses`; Google users get the existing non-blocking
+  verify-email banner (Known Issues; founder may waive later). The v26.2
+  runtime upgrade does not change that mapper and does not claim a live Google
+  revalidation while the provider remains disabled.
 - Mobile (React Native) Google SDK `id_token` flow — same Kratos provider
   config will serve it when `/mobile` ships.
 

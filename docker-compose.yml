@@ -61,7 +61,7 @@ services:
   # exits. Idempotent: Kratos tracks applied migrations in its own database, so a
   # repeat run on an up-to-date schema is a no-op (negative scenario 6).
   kratos-migrate:
-    image: oryd/kratos:v1.3.1
+    image: oryd/kratos:v26.2.0
     restart: "no"
     depends_on:
       postgres:
@@ -78,11 +78,11 @@ services:
   # which owns duplicate-identifier sanitization + the auth rate limit.
   # Recovery/verification run as code-method API flows (spec 035); the emailed
   # verification link lands on the app's /verify-email route (custom courier
-  # template), so /self-service/* stays fully 404 at the edge. v1.3.1: native
-  # code recovery needs the continue_with session hand-off (kratos.yml
-  # feature_flags), which v1.1 did not support.
+  # template), so /self-service/* stays fully 404 at the edge. Native code
+  # recovery needs the continue_with session hand-off (kratos.yml feature
+  # flags), retained and smoke-tested against v26.2.0.
   kratos:
-    image: oryd/kratos:v1.3.1
+    image: oryd/kratos:v26.2.0
     restart: unless-stopped
     depends_on:
       postgres:
@@ -142,7 +142,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
       args:
-        GO_VERSION: ${GO_VERSION_API:-1.25.12}
+        GO_VERSION: ${GO_VERSION_API:-1.26.6}
     restart: unless-stopped
     depends_on:
       postgres:

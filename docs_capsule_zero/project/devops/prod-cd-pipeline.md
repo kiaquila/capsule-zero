@@ -131,6 +131,9 @@ Do **not** add `deploy` to the `docker` group and do **not** grant broad passwor
 sudo. CI may run only the root-owned deployment wrapper:
 
 ```bash
+install -d -m 755 -o root -g root /usr/local/libexec/capsule-zero
+install -m 755 -o root -g root scripts/check-kratos-rollback-boundary.sh \
+  /usr/local/libexec/capsule-zero/check-kratos-rollback-boundary
 install -m 755 -o root -g root infra/scripts/capsule-zero-deploy /usr/local/sbin/capsule-zero-deploy
 tee /etc/sudoers.d/capsule-zero-deploy >/dev/null <<'EOF'
 deploy ALL=(root) NOPASSWD: /usr/local/sbin/capsule-zero-deploy
@@ -139,8 +142,8 @@ chmod 440 /etc/sudoers.d/capsule-zero-deploy
 visudo -cf /etc/sudoers.d/capsule-zero-deploy
 ```
 
-When `infra/scripts/capsule-zero-deploy` changes in a future PR, update the installed
-`/usr/local/sbin/capsule-zero-deploy` copy as root before relying on that change in CD.
+When either deployment script changes in a future PR, update both root-owned installed
+copies as shown above before relying on that change in CD.
 
 ### 3. Root-owned checkout + GHCR pull auth + runtime env
 
@@ -360,6 +363,17 @@ Every build is tagged immutably by commit SHA. Run **CD Prod** via **workflow_di
 with `image_sha = sha-<previous-gitsha>` — it skips the build, checks out the matching
 commit, and redeploys those images (host-nginx sync is skipped on rollback). List tags in
 **Packages → capsule-zero-web / capsule-zero-api**.
+
+This automated path is deliberately limited to commits with the **same pinned Kratos
+image** as current `origin/main`. The workflow runs the repository checker; the root-owned
+deploy wrapper runs its separately installed copy at
+`/usr/local/libexec/capsule-zero/check-kratos-rollback-boundary`. A target from another
+Kratos runtime epoch is rejected before Compose touches the live stack. This prevents an
+old Kratos binary from opening the already-upgraded schema. Prefer a forward fix. A
+cross-runtime rollback is a separate maintenance incident: stop writes, restore a database
+snapshot made for the target runtime under the database-backup restore runbook, verify
+that restored state, and only then deploy its matching application images. It is not an
+automated CD action and the guard must not be bypassed against the live upgraded database.
 
 The deploy job's implicit `environment: production` deployment is always bound to the
 workflow run's own `github.sha` — during a rollback that would mark the *current* main

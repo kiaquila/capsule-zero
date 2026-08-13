@@ -11,7 +11,7 @@
 # The Go API drives Kratos self-service via the API flow (server-side); the web
 # UI is the existing /app forms, not Kratos's own UI.
 
-version: v1.3.1
+version: v26.2.0
 
 dsn: "postgres://kratos:placeholder-kratos-db-password@postgres:5432/kratos?sslmode=disable"
 
@@ -126,11 +126,10 @@ secrets:
 ciphers:
   algorithm: xchacha20-poly1305
 
-# Kratos v1.3: native (API-flow) code recovery hands the session back via
-# continue_with set_ory_session_token only behind this flag; without it the
-# flow dead-ends in a browser redirect the Go API cannot follow (v1.1 had no
-# supported native path at all — the reason for the v1.1.0 → v1.3.1 bump,
-# spec 035).
+# Native (API-flow) code recovery hands the session back via continue_with
+# set_ory_session_token only behind this still-supported v26.2 flag; without it
+# the flow dead-ends in a browser redirect the Go API cannot follow. This was
+# originally the reason for the v1.1.0 → v1.3.1 bump (spec 035).
 feature_flags:
   use_continue_with_transitions: true
 
