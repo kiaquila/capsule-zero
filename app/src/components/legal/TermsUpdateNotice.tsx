@@ -92,10 +92,12 @@ export function TermsUpdateNotice({
       }
     };
     const handlePageShow = () => void revalidateExpiry();
+    const handleOnline = () => void revalidateExpiry();
 
     armExpiry(serverNow);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("pageshow", handlePageShow);
+    window.addEventListener("online", handleOnline);
 
     return () => {
       cancelled = true;
@@ -103,6 +105,7 @@ export function TermsUpdateNotice({
       cancelExpiry();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pageshow", handlePageShow);
+      window.removeEventListener("online", handleOnline);
     };
   }, [effectiveAt, serverNow, visible]);
 
