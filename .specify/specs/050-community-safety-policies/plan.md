@@ -70,6 +70,16 @@ ambiguity. Commit `a8ab2f7` therefore asserts one production-domain contract acr
 five legal documents and failed against the `.com` copy before implementation. The
 implementation centralizes every address in `legal/contacts.ts` and uses `.app` only.
 
+Legal-rollout follow-up RED: Codex review found that the Terms incorporation paragraph
+existed in `document.intro` but the shared renderer never displayed it, that the material
+Terms update was already effective rather than announced in advance, and that the
+Privacy Policy retained its old revision date after the privacy/DPO contact change.
+Commit `29f85f5` added the regression first. The focused Chromium run failed exactly on
+the missing incorporation paragraph, stale July 24 Privacy date, and absent signed-in
+notice. It then passed 3/3 after the renderer exposed the introduction, the shared
+revision source set publication to August 13 and effectiveness to September 15, and the
+dashboard reused the existing notification-banner pattern for localized advance notice.
+
 | #   | Acceptance criterion                                                                   | Evidence                                                                                                                                                                                                                                                                                                                                                                 |
 | --- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 1   | New EN/RU routes render with legal-page structure                                      | Combined focused Chromium + WebKit/iPhone suite: 6/6 passed with CI's two-worker posture; production build emitted all six static policy routes                                                                                                                                                                                                                          |
@@ -81,7 +91,10 @@ implementation centralizes every address in `legal/contacts.ts` and uses `.app` 
 | 7   | Shared-import and legal-registration gates remain honest                               | Negative Playwright assertions and copy scan found no ownership transfer or current-feature claim; Copyright Policy expressly disclaims completed agent registration/legal review                                                                                                                                                                                        |
 | 8   | Repository and app gates pass                                                          | Final rebased `CI=1 npm run preflight` passed: feature memory, repo baseline, API contract, app/e2e lint, CSS lint, both typechecks, production build (39 routes), and browser suite (87 passed, 8 environment-dependent skipped, 1 unrelated profile test passed on retry); Go vet/tests passed in the earlier validation; lint gates retained the repository's warning-only baseline |
 | 9   | Public legal contacts use one production-domain source                                 | Focused Chromium contact-domain scenario passed across Terms, Privacy, Community, Copyright/IP, and Enforcement after first failing on `.com`; source scan finds no public legal address outside `legal/contacts.ts`                                                                                                                                                     |
-| 10  | Current PR head is merge-ready                                                         | PR #98 is open and ready for review; required GitHub checks and human review remain pending                                                                                                                                                                                                                                                                              |
+| 10  | Incorporated policy terms are visible to users                                        | Review-follow-up Chromium assertion first failed because `document.intro` was not rendered, then passed after `LegalPage` exposed the introduction inside the legal article                                                                                                                                                                                              |
+| 11  | Material Terms update receives advance notice                                         | Terms display publication date August 13, 2026 and future effective date September 15, 2026; focused signed-in Chromium flow passed for the localized dashboard notice and Terms link; copy preserves the July 24 version until effectiveness                                                                                                                             |
+| 12  | Privacy contact revision is dated                                                     | Focused Chromium assertion first received July 24, then passed with August 13, 2026 as both last-updated and effective dates                                                                                                                                                                                                                                             |
+| 13  | Current PR head is merge-ready                                                         | PR #98 is open and ready for review; required GitHub checks and human review remain pending                                                                                                                                                                                                                                                                              |
 
 ## Reuse Check
 
@@ -90,6 +103,9 @@ existing legal routes, and both prior landing/auth footer implementations. The r
 data model, route shape, message catalog, and one new `PublicLegalFooter` abstraction are
 reused. The duplicated legal contact literals were replaced with one `legal/contacts.ts`
 source because neither prior content module can safely own values consumed by the other.
+A new `TermsUpdateNotice` composes the existing `NotificationBanner` and dashboard ghost
+action rather than creating a second alert or CTA pattern. One `legal/revisions.ts`
+source prevents effective dates from drifting between Terms and incorporated policies.
 A separate policy-content module is required because Terms/Privacy already occupy more
 than 900 lines and the three new documents have distinct policy ownership; duplicating
 the renderer or app layout would not fit the established responsibility.

@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { VerifyEmailBanner } from "@/components/auth/VerifyEmailBanner";
+import { TermsUpdateNotice } from "@/components/legal/TermsUpdateNotice";
 import { signOutAction } from "@/features/auth/actions";
 import { Link } from "@/i18n/navigation";
 import { formatLayeringCoverage } from "@/lib/outfit-productivity";
@@ -62,6 +63,7 @@ export function DashboardShell({ snapshot, verifyEmail }: DashboardShellProps) {
         </header>
 
         <div className="dashboard-content">
+          <TermsUpdateNotice />
           {verifyEmail ? (
             <VerifyEmailBanner
               email={verifyEmail.email}

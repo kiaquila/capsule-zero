@@ -95,6 +95,17 @@ export function LegalPage({ document }: LegalPageProps) {
         </section>
 
         <article className="legal-article dashboard-glass">
+          {document.intro.length > 0 ? (
+            <section
+              aria-label="Introduction"
+              className="legal-section legal-intro"
+              data-testid="legal-intro"
+            >
+              {document.intro.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </section>
+          ) : null}
           {document.sections.map((section) => (
             <section className="legal-section" id={section.id} key={section.id}>
               <h2>{section.title}</h2>

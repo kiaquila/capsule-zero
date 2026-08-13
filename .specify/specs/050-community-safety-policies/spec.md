@@ -38,6 +38,11 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
 - One canonical contact source for all public policy, privacy, support, DPO, and IP
   mailboxes on the production `capsulezero.app` domain; no policy may publish a
   `capsulezero.com` mailbox.
+- A visible Terms introduction that incorporates the policy stack, a future effective
+  date for this material update, and an in-product advance-notice banner for signed-in
+  users throughout the notice period. The previously effective Terms remain binding
+  until the new date.
+- A current Privacy Policy revision date for the public privacy/DPO contact change.
 - Removal of the obsolete European Commission ODR-platform link from the existing
   Terms while preserving applicable local-court and alternative-redress rights.
 - Source-grounded policy notes and a launch/legal-review checklist in feature memory.
@@ -84,6 +89,13 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
 - **AC-009**: Terms, Privacy, Community, Copyright/IP, and Enforcement publish only
   `@capsulezero.app` contact points from one shared source and contain no
   `@capsulezero.com` address.
+- **AC-010**: The Terms incorporation paragraph is visible in the rendered legal
+  article rather than existing only in the document data model.
+- **AC-011**: The material Terms update is published on August 13, 2026, takes effect
+  on September 15, 2026, preserves the July 24, 2026 Terms until then, and gives
+  signed-in users localized in-product advance notice with a link to the updated Terms.
+- **AC-012**: The Privacy Policy identifies August 13, 2026 as its last-updated and
+  effective date after the public privacy/DPO contact revision.
 
 ## Negative Scenarios
 
@@ -102,6 +114,8 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
 
 The new route, navigation, and required-copy assertions are committed and run red before
 implementation. The follow-up RU legal-navigation and production-contact-domain
-regression assertions are likewise committed red before their implementations. Policy
-drafting and feature-memory changes are documentation work, but the public Next.js route
-behavior follows the application-code TDD contract.
+regression assertions are likewise committed red before their implementations. The
+review-driven legal-rollout regression is also committed red before implementation: it
+covers the invisible incorporation paragraph, stale Privacy revision date, and missing
+signed-in Terms notice. Policy drafting and feature-memory changes are documentation
+work, but the public Next.js route behavior follows the application-code TDD contract.

@@ -23,6 +23,9 @@
       `.app` domain with a red-first regression covering all five legal documents.
 - [x] T012 Renumber this feature memory from 049 to 050 after fresh `origin/main`
       introduced the already-merged spec 049 dependency-remediation slice.
+- [x] T013 Add a red-first legal-rollout regression, render the incorporated policy
+      introduction, announce the material Terms revision before its effective date,
+      and date the Privacy Policy contact revision.
 
 ## Process Memory
 
@@ -56,6 +59,12 @@
   prove recipient-level delivery, so the actual aliases still require an operator smoke.
 - Feature memory moved to spec 050 because spec 049 landed independently on `main` while
   this PR was under review; keeping both at 049 would violate the spec sequence.
+- The updated Terms are published August 13, 2026 and take effect September 15, 2026.
+  The July 24 Terms remain effective during the notice period, while every signed-in
+  dashboard exposes a localized, non-dismissed notice linked to the updated Terms.
+- Privacy contact changes are recorded as an August 13 Privacy Policy revision. Shared
+  dates live in `legal/revisions.ts` so the Terms and incorporated policy stack cannot
+  advertise conflicting effective dates.
 
 ### Known Issues
 
@@ -65,3 +74,7 @@
 - Before policy publication, an operator must verify inbound delivery and monitored
   ownership for `support@`, `legal@`, `privacy@`, `dpo@`, and `ip@capsulezero.app`;
   the repository and DNS MX record alone cannot prove recipient-level delivery.
+- Keep the signed-in Terms notice visible through September 15, 2026. Any later removal
+  or replacement must preserve evidence of the notice period and the applicable Terms
+  version; external counsel should confirm whether explicit reacceptance is required in
+  any launch jurisdiction before the effective date.
