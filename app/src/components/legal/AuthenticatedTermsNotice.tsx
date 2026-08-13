@@ -14,9 +14,9 @@ export function AuthenticatedTermsNotice({
   const visible = shouldShowTermsUpdateNotice(new Date());
 
   return (
-    <>
+    <div className="authenticated-route">
       <TermsUpdateNotice visible={visible} />
       {children}
-    </>
+    </div>
   );
 }

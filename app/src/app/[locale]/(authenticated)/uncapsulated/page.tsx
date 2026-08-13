@@ -1,19 +1,20 @@
 import { setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { ForRepairShell } from "@/components/for-repair/ForRepairShell";
-import { buildForRepairSnapshot } from "@/components/for-repair/for-repair-data";
-import { AuthenticatedTermsNotice } from "@/components/legal/AuthenticatedTermsNotice";
+import { UncapsulatedShell } from "@/components/uncapsulated/UncapsulatedShell";
+import { buildUncapsulatedSnapshot } from "@/components/uncapsulated/uncapsulated-data";
 import { readMockSession } from "@/features/auth/session";
 import type { AppLocale } from "@/i18n/routing";
 import { createProviderRegistry } from "@/lib/providers";
 
-interface ForRepairRouteProps {
+interface UncapsulatedRouteProps {
   params: Promise<{
     locale: string;
   }>;
 }
 
-export default async function ForRepairRoute({ params }: ForRepairRouteProps) {
+export default async function UncapsulatedRoute({
+  params,
+}: UncapsulatedRouteProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -24,15 +25,11 @@ export default async function ForRepairRoute({ params }: ForRepairRouteProps) {
   }
 
   const registry = createProviderRegistry();
-  const snapshot = await buildForRepairSnapshot({
+  const snapshot = await buildUncapsulatedSnapshot({
     registry,
     session,
     locale: locale as AppLocale,
   });
 
-  return (
-    <AuthenticatedTermsNotice>
-      <ForRepairShell snapshot={snapshot} />
-    </AuthenticatedTermsNotice>
-  );
+  return <UncapsulatedShell snapshot={snapshot} />;
 }

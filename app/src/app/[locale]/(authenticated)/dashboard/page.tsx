@@ -2,7 +2,6 @@ import { setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { buildDashboardSnapshot } from "@/components/dashboard/dashboard-data";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
-import { AuthenticatedTermsNotice } from "@/components/legal/AuthenticatedTermsNotice";
 import { readMockSession } from "@/features/auth/session";
 import type { AppLocale } from "@/i18n/routing";
 import { createProviderRegistry } from "@/lib/providers";
@@ -39,9 +38,5 @@ export default async function DashboardRoute({ params }: DashboardRouteProps) {
       ? { email: session.email, flowId: session.verificationFlowId }
       : undefined;
 
-  return (
-    <AuthenticatedTermsNotice>
-      <DashboardShell snapshot={snapshot} verifyEmail={verifyEmail} />
-    </AuthenticatedTermsNotice>
-  );
+  return <DashboardShell snapshot={snapshot} verifyEmail={verifyEmail} />;
 }

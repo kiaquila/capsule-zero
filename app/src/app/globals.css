@@ -1401,12 +1401,28 @@ textarea {
   font-size: 14px;
 }
 
+.authenticated-route {
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+}
+
 .authenticated-terms-notice {
-  position: fixed;
-  z-index: calc(var(--z-nav) + 1);
-  top: 24px;
-  right: 24px;
-  width: min(420px, calc(100vw - 48px));
+  position: relative;
+  z-index: var(--z-base);
+  width: min(720px, calc(100% - 48px));
+  flex: 0 0 auto;
+  align-self: flex-end;
+  margin: 16px 24px 0;
+}
+
+.authenticated-route > .dashboard-page {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.authenticated-route .dashboard-app {
+  height: 100%;
 }
 
 .verify-email-form {

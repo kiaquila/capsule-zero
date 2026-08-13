@@ -1,22 +1,20 @@
 import { setRequestLocale } from "next-intl/server";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { CapsuleResultShell } from "@/components/capsule-result/CapsuleResultShell";
 import { buildCapsuleResultSnapshot } from "@/components/capsule-result/capsule-result-data";
-import { AuthenticatedTermsNotice } from "@/components/legal/AuthenticatedTermsNotice";
 import { readMockSession } from "@/features/auth/session";
 import type { AppLocale } from "@/i18n/routing";
 import { createProviderRegistry } from "@/lib/providers";
 
-interface CapsuleResultRouteProps {
+interface CapsuleRouteProps {
   params: Promise<{
+    id: string;
     locale: string;
   }>;
 }
 
-export default async function CapsuleResultRoute({
-  params,
-}: CapsuleResultRouteProps) {
-  const { locale } = await params;
+export default async function CapsuleRoute({ params }: CapsuleRouteProps) {
+  const { id, locale } = await params;
   setRequestLocale(locale);
 
   const session = await readMockSession();
@@ -32,9 +30,13 @@ export default async function CapsuleResultRoute({
     locale: locale as AppLocale,
   });
 
-  return (
-    <AuthenticatedTermsNotice>
-      <CapsuleResultShell snapshot={snapshot} />
-    </AuthenticatedTermsNotice>
-  );
+  if (!snapshot.capsule) {
+    notFound();
+  }
+
+  if (id !== snapshot.capsule.id && id !== "mock-active") {
+    notFound();
+  }
+
+  return <CapsuleResultShell snapshot={snapshot} />;
 }

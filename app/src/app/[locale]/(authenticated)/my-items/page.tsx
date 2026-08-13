@@ -1,19 +1,18 @@
 import { setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { ProfileShell } from "@/components/profile/ProfileShell";
-import { buildProfileSnapshot } from "@/components/profile/profile-data";
-import { AuthenticatedTermsNotice } from "@/components/legal/AuthenticatedTermsNotice";
+import { MyItemsShell } from "@/components/my-items/MyItemsShell";
+import { buildMyItemsSnapshot } from "@/components/my-items/my-items-data";
 import { readMockSession } from "@/features/auth/session";
 import type { AppLocale } from "@/i18n/routing";
 import { createProviderRegistry } from "@/lib/providers";
 
-interface ProfileRouteProps {
+interface MyItemsRouteProps {
   params: Promise<{
     locale: string;
   }>;
 }
 
-export default async function ProfileRoute({ params }: ProfileRouteProps) {
+export default async function MyItemsRoute({ params }: MyItemsRouteProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -24,15 +23,11 @@ export default async function ProfileRoute({ params }: ProfileRouteProps) {
   }
 
   const registry = createProviderRegistry();
-  const snapshot = await buildProfileSnapshot({
+  const snapshot = await buildMyItemsSnapshot({
     registry,
     session,
     locale: locale as AppLocale,
   });
 
-  return (
-    <AuthenticatedTermsNotice>
-      <ProfileShell snapshot={snapshot} />
-    </AuthenticatedTermsNotice>
-  );
+  return <MyItemsShell snapshot={snapshot} />;
 }
