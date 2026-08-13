@@ -141,5 +141,15 @@ test.describe("Landing — Terms safety-policy contract", () => {
       await page.goto(path);
       await expect(dashboard.termsUpdateNotice).toBeVisible();
     }
+
+    for (const path of ["/en/guided-journey", "/en/capsule-result"]) {
+      await page.goto(path);
+      const { scrollHeight, viewportHeight } =
+        await dashboard.documentRoot.evaluate((root) => ({
+          scrollHeight: root.scrollHeight,
+          viewportHeight: window.innerHeight,
+        }));
+      expect(scrollHeight).toBeLessThanOrEqual(viewportHeight + 1);
+    }
   });
 });
