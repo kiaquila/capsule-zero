@@ -1,48 +1,84 @@
 import { expect, test } from "../../fixtures/base";
-import { LOCALES } from "../../fixtures/locales";
+import { LOCALES, type Locale } from "../../fixtures/locales";
 import { LegalPage, type LegalSlug } from "../../pages/LegalPage";
 
-const policyDocuments: ReadonlyArray<{
+interface PolicyExpectation {
   slug: LegalSlug;
   title: string;
   requiredCopy: readonly string[];
-}> = [
-  {
-    slug: "community-guidelines",
-    title: "Community Guidelines",
-    requiredCopy: [
-      "AI-generated or manipulated content",
-      "Child safety",
-      "Intellectual property, counterfeit items, and other rights",
-      "Spam, manipulation, and deceptive commercial behavior",
-    ],
-  },
-  {
-    slug: "copyright-policy",
-    title: "Copyright & Intellectual Property Policy",
-    requiredCopy: [
-      "10 to 14 business days",
-      "repeat-infringer policy",
-      "standard technical measures",
-      "misrepresentation",
-    ],
-  },
-  {
-    slug: "enforcement-policy",
-    title: "Enforcement & Appeals Policy",
-    requiredCopy: [
-      "automated tools, manual review, and hybrid review",
-      "limit distribution",
-      "statement of reasons",
-      "abuse of reports or appeals",
-    ],
-  },
-];
+}
+
+const policyDocuments = {
+  en: [
+    {
+      slug: "community-guidelines",
+      title: "Community Guidelines",
+      requiredCopy: [
+        "AI-generated or manipulated content",
+        "Child safety",
+        "Intellectual property, counterfeit items, and other rights",
+        "Spam, manipulation, and deceptive commercial behavior",
+      ],
+    },
+    {
+      slug: "copyright-policy",
+      title: "Copyright & Intellectual Property Policy",
+      requiredCopy: [
+        "10 to 14 business days",
+        "repeat-infringer policy",
+        "standard technical measures",
+        "misrepresentation",
+      ],
+    },
+    {
+      slug: "enforcement-policy",
+      title: "Enforcement & Appeals Policy",
+      requiredCopy: [
+        "automated tools, manual review, and hybrid review",
+        "limit distribution",
+        "statement of reasons",
+        "abuse of reports or appeals",
+      ],
+    },
+  ],
+  ru: [
+    {
+      slug: "community-guidelines",
+      title: "Правила сообщества",
+      requiredCopy: [
+        "Материалы, созданные или изменённые с помощью ИИ",
+        "Безопасность детей",
+        "Интеллектуальная собственность, контрафактные товары и иные права",
+        "Спам, манипуляции и вводящее в заблуждение коммерческое поведение",
+      ],
+    },
+    {
+      slug: "copyright-policy",
+      title: "Политика в области авторских и иных интеллектуальных прав",
+      requiredCopy: [
+        "10–14 рабочих дней",
+        "политики в отношении повторных нарушителей",
+        "стандартным техническим мерам",
+        "существенное искажение",
+      ],
+    },
+    {
+      slug: "enforcement-policy",
+      title: "Политика модерации и обжалования",
+      requiredCopy: [
+        "автоматизированной проверки, ручной проверки и их сочетания",
+        "ограничить распространение",
+        "изложение причин",
+        "злоупотребления жалобами или апелляциями",
+      ],
+    },
+  ],
+} as const satisfies Record<Locale, readonly PolicyExpectation[]>;
 
 test.describe("Landing — community safety policy routes", () => {
   test("all safety policies render in each active locale", async ({ page }) => {
     for (const locale of LOCALES) {
-      for (const policy of policyDocuments) {
+      for (const policy of policyDocuments[locale]) {
         const legal = new LegalPage(page, policy.slug, locale);
         await legal.goto();
 
@@ -60,6 +96,10 @@ test.describe("Landing — community safety policy routes", () => {
         await expect(legal.root).not.toContainText(
           "Capsule Zero owns Your Content",
         );
+
+        if (locale === "ru") {
+          await expect(legal.root).not.toContainText("Community Guidelines");
+        }
       }
     }
   });
