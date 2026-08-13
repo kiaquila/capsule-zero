@@ -1403,8 +1403,10 @@ textarea {
 
 .authenticated-route {
   display: flex;
+  height: 100svh;
   min-height: 100svh;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .authenticated-terms-notice {
@@ -1416,12 +1418,14 @@ textarea {
   margin: 16px 24px 0;
 }
 
-.authenticated-route > .dashboard-page {
+.authenticated-route
+  > :is(.dashboard-page, .journey-page, .capsule-result-page) {
   min-height: 0;
-  flex: 1 1 auto;
+  flex: 1 1 0;
 }
 
-.authenticated-route .dashboard-app {
+.authenticated-route
+  :is(.dashboard-app, .journey-main, .capsule-result-app, .capsule-result-main) {
   height: 100%;
 }
 
