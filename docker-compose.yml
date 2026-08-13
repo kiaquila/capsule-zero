@@ -28,7 +28,7 @@ services:
   # Kratos container attaches to an already-prepared data tier. Published on
   # loopback only — nothing outside the droplet talks to Postgres directly.
   postgres:
-    image: postgres:18
+    image: postgres:16
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in the env file}
