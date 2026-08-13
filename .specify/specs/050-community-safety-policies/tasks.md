@@ -40,6 +40,8 @@
       under one protected route-group layout and reserve non-overlapping notice space.
 - [x] T019 Add a red-first document-height regression; contain full-height dashboard,
       guided-journey, and capsule-result shells inside the protected viewport.
+- [x] T020 Add a red-first persistent-layout expiry regression; pass the authoritative
+      server/effective instants to a client timer that retires the notice without reload.
 
 ## Process Memory
 
@@ -106,6 +108,10 @@
   Its direct dashboard, journey, and capsule children may shrink below their historical
   `100vh`/`100svh` sizes, keeping scrolling inside the product shell and preventing a
   second document scrollbar while the advance notice is visible.
+- Initial notice visibility remains server-only, but the persistent client layout also
+  receives the server render instant and canonical effective instant. A monotonic timer
+  chunks delays at the browser maximum so the banner retires at the same boundary
+  without depending on another server render or trusting the device wall clock.
 
 ### Known Issues
 

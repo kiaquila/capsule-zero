@@ -106,7 +106,9 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
   `/terms-of-use/2026-09-15` exposes the complete future policy stack and the signup
   consent link continues to target the applicable canonical route.
 - **AC-014**: At `2026-09-15T00:00:00Z`, the canonical Terms resolver switches to the
-  new version and the signed-in advance-notice component stops rendering.
+  new version and the signed-in advance-notice component stops rendering, including
+  when a user keeps the persistent protected layout open across that instant without
+  reloading or navigating away.
 - **AC-015**: The advance notice is mounted once by the protected-route layout and
   occupies reserved document flow space, so it cannot cover authenticated navigation,
   language, or primary-action controls at desktop or mobile widths. Dashboard,
@@ -146,5 +148,10 @@ The subsequent full-height-shell regression first measured a document height of 
 inside a 720px viewport on `/en/guided-journey`. The protected layout now owns the
 viewport height and lets dashboard, journey, and capsule shells shrink into its
 remaining flex space; the same bound passes in Chromium and mobile WebKit.
+The persistent-layout expiry regression then kept an authenticated dashboard mounted,
+advanced its controlled clock by 60 days, and first observed that the notice remained
+visible. The server now passes both its render instant and the authoritative effective
+instant to a client expiry timer, so the notice retires without a reload in both
+browser engines while initial visibility remains a server decision.
 Policy drafting and feature-memory changes are documentation work, but the public
 Next.js route behavior follows the application-code TDD contract.
