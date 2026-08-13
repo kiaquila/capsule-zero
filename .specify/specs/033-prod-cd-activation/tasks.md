@@ -59,6 +59,14 @@
   `infra/scripts/capsule-zero-deploy` was extended for server-side enforcement and calls
   a separately installed root-owned checker under `/usr/local/libexec`; the standalone
   source is also necessary so the GitHub workflow can enforce the same policy before SSH.
+- **2026-08-13 PR #101 activation:** installed the committed wrapper and checker on `cz`
+  as `root:root` mode `755`; their SHA-256 values matched the PR source and the former
+  wrapper was retained as `/usr/local/sbin/capsule-zero-deploy.pre-pr101-20260813`.
+  Without restarting services, the installed checker accepted the live v1.3.1 checkout
+  against itself, rejected the fetched v26.2.0 PR head as cross-runtime, and the public
+  `/api/health` response remained all-ok. This closes the activation gap before merge;
+  after rollout, the comparison direction becomes v26.2.0 → older v1.3.1 and remains
+  equally fail-closed.
 - **2026-07-02 hosting migrated DigitalOcean → Hetzner CX23; dev environment
   decommissioned.** Founder decision: cheaper capacity that actually clears the Phase-0
   gate (2 vCPU / 4 GB / 40 GB vs the unresized 458 MiB droplet), and a single production
