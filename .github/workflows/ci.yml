@@ -43,6 +43,9 @@ jobs:
       - name: Validate rollback nginx container
         run: npm run check:nginx-container
 
+      - name: Validate Kratos migration and auth flow
+        run: npm run check:kratos-container
+
       - name: Run API contract checks
         run: npm run check:api-contract
 

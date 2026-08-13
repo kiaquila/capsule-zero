@@ -78,9 +78,9 @@ services:
   # which owns duplicate-identifier sanitization + the auth rate limit.
   # Recovery/verification run as code-method API flows (spec 035); the emailed
   # verification link lands on the app's /verify-email route (custom courier
-  # template), so /self-service/* stays fully 404 at the edge. v1.3.1: native
-  # code recovery needs the continue_with session hand-off (kratos.yml
-  # feature_flags), which v1.1 did not support.
+  # template), so /self-service/* stays fully 404 at the edge. Native code
+  # recovery needs the continue_with session hand-off (kratos.yml feature
+  # flags), retained and smoke-tested against v26.2.0.
   kratos:
     image: oryd/kratos:v26.2.0
     restart: unless-stopped
