@@ -165,6 +165,12 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
 - The first expanded migration/recovery run reached code delivery but received an HTTP 400 during password rotation; command substitution hid the response body. The smoke now reuses the established full-stack password fixtures (`SuperSecret123` → `NewSecret456`) and routes every JSON POST through a helper that prints the status and response body on failure, so a policy or protocol regression remains diagnosable in required CI.
 - The diagnostic rerun showed `INVALID_CODE`: the shell extractor had accepted the first six adjacent digits anywhere in the multipart body and could select a MIME-boundary fragment instead of the one-time code. It now anchors extraction to the case-insensitive `recovery code:` label, matching the semantic filter in the existing MailHog full-stack fixture.
 - The v26.2 version update initially left spec 037's Google email-verification limitation attributed to v1.3 and still listed a generic Kratos upgrade as a remedy. Spec 037 and its runbook now state the actual boundary: the retained mapper does not mark the address verified, this runtime upgrade neither changes the mapper nor enables/live-probes Google, and the provider-enable operator smoke must revalidate the banner.
+- The deploy pipeline previously allowed an explicit `workflow_dispatch` to check out a
+  pre-upgrade image while retaining the already-migrated database volume, which could run
+  Kratos v1.3.1 against the v26.2.0 schema. PR #101 now makes rollback fail closed across
+  an exact pinned-Kratos-image boundary in both the workflow and deploy wrapper. A
+  same-runtime application rollback stays automatic; crossing the runtime/schema boundary
+  requires an operator-approved restoration of a snapshot compatible with the target.
 
 ### Known Issues
 

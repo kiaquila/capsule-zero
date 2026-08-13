@@ -361,6 +361,16 @@ with `image_sha = sha-<previous-gitsha>` — it skips the build, checks out the 
 commit, and redeploys those images (host-nginx sync is skipped on rollback). List tags in
 **Packages → capsule-zero-web / capsule-zero-api**.
 
+This automated path is deliberately limited to commits with the **same pinned Kratos
+image** as current `origin/main`. Both the workflow and the root-owned deploy wrapper run
+`scripts/check-kratos-rollback-boundary.sh`; a target from another Kratos runtime epoch is
+rejected before Compose touches the live stack. This prevents an old Kratos binary from
+opening the already-upgraded schema. Prefer a forward fix. A cross-runtime rollback is a
+separate maintenance incident: stop writes, restore a database snapshot made for the
+target runtime under the database-backup restore runbook, verify that restored state, and
+only then deploy its matching application images. It is not an automated CD action and
+the guard must not be bypassed against the live upgraded database.
+
 The deploy job's implicit `environment: production` deployment is always bound to the
 workflow run's own `github.sha` — during a rollback that would mark the *current* main
 tip Active while prod actually serves the older commit. The `record-rollback-release`

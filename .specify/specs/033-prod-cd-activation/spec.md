@@ -39,7 +39,9 @@ environment is reintroduced.
   deploy-relevant paths; buildx builds of `app/Dockerfile` (`--target runner`) and
   `api/Dockerfile`; push `ghcr.io/kiaquila/capsule-zero-{web,api}:sha-<gitsha>` + moving
   `:prod` tags; SSH deploy as `deploy` running only
-  `/usr/local/sbin/capsule-zero-deploy`; `workflow_dispatch` rollback by `image_sha`.
+  `/usr/local/sbin/capsule-zero-deploy`; `workflow_dispatch` rollback by `image_sha`
+  within the current pinned-Kratos runtime epoch. Cross-runtime rollback is fail-closed
+  because an older binary cannot safely reuse an already-upgraded auth schema.
 - **`infra/scripts/capsule-zero-deploy`** (replaces `capsule-zero-dev-deploy`): validates
   both immutable image refs + SHA, updates `/opt/capsule-zero`, `pull web api` +
   `up -d --no-build` (never builds on the server), waits for `api` and `web` health,
@@ -76,6 +78,10 @@ environment is reintroduced.
 - **A non-allowlisted image ref is rejected.** The wrapper refuses any argument that is
   not an immutable `ghcr.io/kiaquila/capsule-zero-{web,api}:sha-<40hex>` ref, and any SHA
   not reachable from `origin/main`.
+- **A cross-Kratos-runtime rollback is rejected.** The workflow and deploy wrapper compare
+  the pinned `kratos-migrate` image at current `origin/main` and the requested target;
+  mismatched versions fail before the live stack changes. Such a recovery needs a
+  separately approved restore of a database snapshot compatible with the target runtime.
 - **Unhealthy deploy fails loudly.** If `api` or `web` never reaches `healthy`, the
   wrapper dumps service logs and exits non-zero — the workflow run goes red.
 - **Bad nginx sync self-heals.** If the synced host-nginx config fails `nginx -t` or the

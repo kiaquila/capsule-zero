@@ -176,6 +176,11 @@ jobs:
       name: production
       url: https://capsulezero.app
     steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
       - name: Resolve image refs
         id: ref
         env:
@@ -191,10 +196,13 @@ jobs:
               echo "::error::image_sha must match sha-<40 lowercase hex characters>"
               exit 1
             fi
+            deploy_sha="${ROLLBACK_IMAGE_SHA#sha-}"
+            git fetch --no-tags origin main
+            bash scripts/check-kratos-rollback-boundary.sh origin/main "$deploy_sha"
             {
               echo "image_web=${IMAGE_WEB}:${ROLLBACK_IMAGE_SHA}"
               echo "image_api=${IMAGE_API}:${ROLLBACK_IMAGE_SHA}"
-              echo "deploy_sha=${ROLLBACK_IMAGE_SHA#sha-}"
+              echo "deploy_sha=${deploy_sha}"
               echo "sync_host_nginx=false"
             } >> "$GITHUB_OUTPUT"
           else
