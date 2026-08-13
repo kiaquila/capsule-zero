@@ -17,7 +17,9 @@ test.describe("Legal policies — public contact domain", () => {
       await legal.goto();
 
       await expect(legal.root).toContainText(legalCopy.contactDomain);
-      await expect(legal.root).not.toContainText(legalCopy.retiredContactDomain);
+      await expect(legal.root).not.toContainText(
+        legalCopy.retiredContactDomain,
+      );
     }
   });
 });

@@ -1,4 +1,4 @@
-# Plan 049 — Community Safety Policies
+# Plan 050 — Community Safety Policies
 
 ## Approach
 
@@ -55,11 +55,20 @@ The earlier symlink-based attempt was discarded because Turbopack rejected exter
 `node_modules` symlinks before application behavior ran.
 
 Review follow-up RED: after Codex review identified that legal navigation on `/ru/*`
-still used English labels, commit `dea4a5e` added the locale assertion first. The focused
+still used English labels, commit `a125571` added the locale assertion first. The focused
 Chromium run failed on `/ru/community-guidelines` with received text
 `TermsPrivacyCommunityCopyrightEnforcement`, then passed after the navigation began
 resolving the existing EN/RU message catalog. The same review's DRY finding is handled
 by one `PublicLegalFooter` shared by the landing and standalone-auth pages.
+
+Contact-domain follow-up RED: Codex review found that public reporting addresses used
+`capsulezero.com` while the repository's production and verified sender identity uses
+`capsulezero.app`. DNS inspection on 2026-08-13 found MX records for both domains, so
+the review's implied absence of `.com` mail routing was not independently established;
+nevertheless, publishing a second domain creates avoidable identity and operations
+ambiguity. Commit `a8ab2f7` therefore asserts one production-domain contract across all
+five legal documents and failed against the `.com` copy before implementation. The
+implementation centralizes every address in `legal/contacts.ts` and uses `.app` only.
 
 | #   | Acceptance criterion                                                                   | Evidence                                                                                                                                                                                                                                                                                                                                                                 |
 | --- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -71,16 +80,19 @@ by one `PublicLegalFooter` shared by the landing and standalone-auth pages.
 | 6   | Shared footer/legal navigation is discoverable, localized, and mobile-usable           | `PublicLegalFooter` is the sole landing/auth footer implementation; focused Chromium navigation/localization suite passed 5/5, and the RU-label plus footer-navigation follow-up passed 4/4 across Chromium + WebKit/iPhone, including three destinations with no dead anchor                                                                                            |
 | 7   | Shared-import and legal-registration gates remain honest                               | Negative Playwright assertions and copy scan found no ownership transfer or current-feature claim; Copyright Policy expressly disclaims completed agent registration/legal review                                                                                                                                                                                        |
 | 8   | Repository and app gates pass                                                          | `git diff --check`, feature memory, repo baseline, API contract, app/e2e lint, CSS lint, both typechecks, app unit hook, Go vet/tests, and production build passed; full CI-shaped browser suite: 84 passed / 8 environment-dependent skipped; lint gates retained the repository's warning-only baseline |
-| 9   | Current PR head is merge-ready                                                         | PR #98 is open and ready for review; required GitHub checks and human review remain pending                                                                                                                                                                                                                                                                              |
+| 9   | Public legal contacts use one production-domain source                                 | Focused Chromium contact-domain scenario passed across Terms, Privacy, Community, Copyright/IP, and Enforcement after first failing on `.com`; source scan finds no public legal address outside `legal/contacts.ts`                                                                                                                                                     |
+| 10  | Current PR head is merge-ready                                                         | PR #98 is open and ready for review; required GitHub checks and human review remain pending                                                                                                                                                                                                                                                                              |
 
 ## Reuse Check
 
 Checked `app/src/lib/legal-content.ts`, `app/src/components/legal/LegalPage.tsx`, the
 existing legal routes, and both prior landing/auth footer implementations. The renderer,
 data model, route shape, message catalog, and one new `PublicLegalFooter` abstraction are
-reused. A separate policy-content module is required because Terms/Privacy already occupy
-more than 900 lines and the three new documents have distinct policy ownership;
-duplicating the renderer or app layout would not fit the established responsibility.
+reused. The duplicated legal contact literals were replaced with one `legal/contacts.ts`
+source because neither prior content module can safely own values consumed by the other.
+A separate policy-content module is required because Terms/Privacy already occupy more
+than 900 lines and the three new documents have distinct policy ownership; duplicating
+the renderer or app layout would not fit the established responsibility.
 
 The existing `legal-content.ts` remains above the TypeScript module-size soft trigger;
 this change limits its growth to the Terms clauses that must live in the binding core

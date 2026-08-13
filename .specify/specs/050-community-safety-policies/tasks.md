@@ -1,4 +1,4 @@
-# Tasks 049 — Community Safety Policies
+# Tasks 050 — Community Safety Policies
 
 ## Tasks
 
@@ -19,6 +19,10 @@
       the SENAR Done Gate and external-legal-review warning.
 - [x] T010 Address Codex review by extracting the duplicated landing/auth policy footer
       and localizing legal-header labels through the active EN/RU message catalog.
+- [x] T011 Address Codex review by centralizing public legal contacts on the production
+      `.app` domain with a red-first regression covering all five legal documents.
+- [x] T012 Renumber this feature memory from 049 to 050 after fresh `origin/main`
+      introduced the already-merged spec 049 dependency-remediation slice.
 
 ## Process Memory
 
@@ -44,9 +48,17 @@
 - The legal header reuses the existing `landing` message catalog. The authoritative
   policy body remains English on both locale routes until a separately reviewed legal
   translation exists, as declared in Scope.
+- All public legal/reporting mailboxes use the canonical production domain and one source
+  of truth. Both domains currently publish MX records, but domain-level routing does not
+  prove recipient-level delivery, so the actual aliases still require an operator smoke.
+- Feature memory moved to spec 050 because spec 049 landed independently on `main` while
+  this PR was under review; keeping both at 049 would violate the spec sequence.
 
 ### Known Issues
 
 - External counsel must validate governing-law, consumer, DSA applicability,
   indemnity, and DMCA eligibility/agent-registration posture before the shared-import
   feature launches.
+- Before policy publication, an operator must verify inbound delivery and monitored
+  ownership for `support@`, `legal@`, `privacy@`, `dpo@`, and `ip@capsulezero.app`;
+  the repository and DNS MX record alone cannot prove recipient-level delivery.

@@ -1,4 +1,4 @@
-# Spec 049 — Community Safety Policies
+# Spec 050 — Community Safety Policies
 
 ## Goal
 
@@ -35,6 +35,9 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
   distribution limits; account/domain restrictions; reports; statements of reasons;
   appeals; and action against abusive reports or appeals.
 - Discoverable legal navigation and landing-footer links in EN and RU.
+- One canonical contact source for all public policy, privacy, support, DPO, and IP
+  mailboxes on the production `capsulezero.app` domain; no policy may publish a
+  `capsulezero.com` mailbox.
 - Removal of the obsolete European Commission ODR-platform link from the existing
   Terms while preserving applicable local-court and alternative-redress rights.
 - Source-grounded policy notes and a launch/legal-review checklist in feature memory.
@@ -78,6 +81,9 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
   external legal review or DMCA-agent registration.
 - **AC-008**: The app lint, CSS lint, TypeScript checks, production build, focused
   Playwright suite, repository baseline, and feature-memory guard pass.
+- **AC-009**: Terms, Privacy, Community, Copyright/IP, and Enforcement publish only
+  `@capsulezero.app` contact points from one shared source and contain no
+  `@capsulezero.com` address.
 
 ## Negative Scenarios
 
@@ -95,7 +101,7 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
 ## TDD Posture
 
 The new route, navigation, and required-copy assertions are committed and run red before
-implementation. The follow-up RU legal-navigation regression assertion is likewise
-committed red before its implementation. Policy drafting and feature-memory changes are
-documentation work, but the public Next.js route behavior follows the application-code
-TDD contract.
+implementation. The follow-up RU legal-navigation and production-contact-domain
+regression assertions are likewise committed red before their implementations. Policy
+drafting and feature-memory changes are documentation work, but the public Next.js route
+behavior follows the application-code TDD contract.

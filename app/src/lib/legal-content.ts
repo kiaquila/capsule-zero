@@ -1,3 +1,5 @@
+import { legalContacts } from "./legal/contacts";
+
 export type LegalDocumentSlug =
   | "privacy-policy"
   | "terms-of-use"
@@ -50,12 +52,14 @@ const effectiveDate = "July 24, 2026";
 const operatingEntity = "Capsule Zero S.A.S.";
 const registeredOffice =
   "Ciudad Autónoma de Buenos Aires, Argentina";
-const productDomain = "capsulezero.com";
-const privacyEmail = "privacy@capsulezero.com";
-const legalEmail = "legal@capsulezero.com";
-const supportEmail = "support@capsulezero.com";
-const dpoEmail = "dpo@capsulezero.com";
-const ipNoticeEmail = "ip@capsulezero.com";
+const {
+  productDomain,
+  privacyEmail,
+  legalEmail,
+  supportEmail,
+  dpoEmail,
+  ipEmail: ipNoticeEmail,
+} = legalContacts;
 
 export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
   "terms-of-use": {
