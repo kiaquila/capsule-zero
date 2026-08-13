@@ -41,6 +41,26 @@ wait_for_ready() {
   return 1
 }
 
+post_json() {
+  local url=$1
+  local payload response_file status
+  payload=$(cat)
+  response_file="$validation_dir/response-$RANDOM.json"
+  status=$(curl --silent --show-error \
+    --output "$response_file" \
+    --write-out '%{http_code}' \
+    -H 'Content-Type: application/json' \
+    --data-binary "$payload" \
+    "$url")
+  if [[ ! "$status" =~ ^2[0-9][0-9]$ ]]; then
+    printf 'POST %s returned HTTP %s: ' "$url" "$status" >&2
+    cat "$response_file" >&2
+    printf '\n' >&2
+    return 1
+  fi
+  cat "$response_file"
+}
+
 register_identity() {
   local public_url=$1
   local email=$2
@@ -53,10 +73,7 @@ register_identity() {
       --arg email "$email" \
       --arg password "$password" \
       '{method:"password", password:$password, traits:{email:$email, name:{first:"Kratos Smoke"}, locale:"en"}}' | \
-      curl --fail-with-body --silent --show-error \
-        -H 'Content-Type: application/json' \
-        --data-binary @- \
-        "$public_url/self-service/registration?flow=$flow"
+      post_json "$public_url/self-service/registration?flow=$flow"
   )
   token=$(jq -er '.session_token' <<<"$response")
   test "$email" = "$(
@@ -78,10 +95,7 @@ login_identity() {
       --arg email "$email" \
       --arg password "$password" \
       '{method:"password", identifier:$email, password:$password}' | \
-      curl --fail-with-body --silent --show-error \
-        -H 'Content-Type: application/json' \
-        --data-binary @- \
-        "$public_url/self-service/login?flow=$flow"
+      post_json "$public_url/self-service/login?flow=$flow"
   )
   token=$(jq -er '.session_token' <<<"$response")
   test "$email" = "$(
@@ -119,8 +133,8 @@ old_public_url="http://127.0.0.1:$old_port"
 wait_for_ready "$old_public_url"
 
 email="kratos-smoke-$$@example.com"
-old_password='KratosSmoke-old-pass'
-new_password='KratosSmoke-new-pass'
+old_password='SuperSecret123'
+new_password='NewSecret456'
 register_identity "$old_public_url" "$email" "$old_password"
 docker rm -f "$old_container" >/dev/null
 
@@ -137,10 +151,7 @@ login_identity "$public_url" "$email" "$old_password"
 api_url=http://127.0.0.1:8080
 recovery_response=$(
   jq -nc --arg email "$email" '{email:$email}' | \
-    curl --fail-with-body --silent --show-error \
-      -H 'Content-Type: application/json' \
-      --data-binary @- \
-      "$api_url/api/auth/recovery"
+    post_json "$api_url/api/auth/recovery"
 )
 recovery_flow=$(jq -er '.flowId' <<<"$recovery_response")
 
@@ -165,10 +176,7 @@ recovery_complete=$(
     --arg code "$recovery_code" \
     --arg password "$new_password" \
     '{flowId:$flow, code:$code, newPassword:$password}' | \
-    curl --fail-with-body --silent --show-error \
-      -H 'Content-Type: application/json' \
-      --data-binary @- \
-      "$api_url/api/auth/recovery/complete"
+    post_json "$api_url/api/auth/recovery/complete"
 )
 test "$email" = "$(jq -er '.user.email' <<<"$recovery_complete")"
 test -n "$(jq -er '.session.token' <<<"$recovery_complete")"
@@ -176,10 +184,7 @@ test -n "$(jq -er '.session.token' <<<"$recovery_complete")"
 api_login=$(
   jq -nc --arg email "$email" --arg password "$new_password" \
     '{email:$email, password:$password}' | \
-    curl --fail-with-body --silent --show-error \
-      -H 'Content-Type: application/json' \
-      --data-binary @- \
-      "$api_url/api/auth/login"
+    post_json "$api_url/api/auth/login"
 )
 test "$email" = "$(jq -er '.user.email' <<<"$api_login")"
 
