@@ -161,7 +161,7 @@ for _ in {1..30}; do
     curl --fail-with-body --silent --show-error \
       --get --data-urlencode 'kind=to' --data-urlencode "query=$email" \
       'http://127.0.0.1:8025/api/v2/search' | \
-      jq -r '[.items[] | select(((.Content.Headers.Subject // []) | join(" ")) | test("recover"; "i")) | .Content.Body | capture("(?<code>[0-9]{6})").code][0] // empty'
+      jq -r '[.items[] | select(((.Content.Headers.Subject // []) | join(" ")) | test("recover"; "i")) | .Content.Body | capture("recovery code: [^0-9]*(?<code>[0-9]{6})"; "i").code][0] // empty'
   )
   if [[ -n "$recovery_code" ]]; then
     break
