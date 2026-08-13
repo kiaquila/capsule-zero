@@ -1,7 +1,10 @@
 import "server-only";
 
 import type { ReactNode } from "react";
-import { shouldShowTermsUpdateNotice } from "@/lib/legal/terms-boundary.mjs";
+import {
+  safetyPolicyEffectiveAt,
+  shouldShowTermsUpdateNotice,
+} from "@/lib/legal/terms-boundary.mjs";
 import { TermsUpdateNotice } from "./TermsUpdateNotice";
 
 interface AuthenticatedTermsNoticeProps {
@@ -11,11 +14,16 @@ interface AuthenticatedTermsNoticeProps {
 export function AuthenticatedTermsNotice({
   children,
 }: AuthenticatedTermsNoticeProps) {
-  const visible = shouldShowTermsUpdateNotice(new Date());
+  const serverNow = new Date();
+  const visible = shouldShowTermsUpdateNotice(serverNow);
 
   return (
     <div className="authenticated-route">
-      <TermsUpdateNotice visible={visible} />
+      <TermsUpdateNotice
+        effectiveAt={safetyPolicyEffectiveAt}
+        serverNow={serverNow.toISOString()}
+        visible={visible}
+      />
       {children}
     </div>
   );
