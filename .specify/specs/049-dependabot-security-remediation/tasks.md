@@ -46,6 +46,9 @@
   until a dedicated migration spec supplies a tested upgrade/rollback/restore procedure.
   Minor and patch grouping remains unchanged. The V2 command asserts both the exact
   exception and the absence of any other ignore entries, so policy drift fails closed.
+- The V7 merge-readiness evidence now targets PR #100, so its SHA, required checks,
+  merge state, and review-thread assertions cover the policy change being merged rather
+  than the already merged PR #97 that originally introduced spec 049.
 
 ### Known Issues
 
