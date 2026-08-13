@@ -29,6 +29,9 @@
 - [x] T014 Add a red-first Terms-version regression; keep the governing July 24 Terms
       accessible to signup and footer users, expose the September 15 preview, and use
       one effective-instant boundary for canonical switchover and notice retirement.
+- [x] T015 Add a red-first full-RU-policy regression; publish substantive Russian
+      Community, Copyright/IP, and Enforcement documents with localized shared chrome,
+      and fix the CI module-loader boundary exposed by the same test commit.
 
 ## Process Memory
 
@@ -54,9 +57,10 @@
   redress link; the Terms preserve mandatory local court and available ADR rights.
 - The landing and standalone-auth entry points now share one legal-footer component;
   policy labels, destinations, order, and test IDs therefore cannot drift between them.
-- The legal header reuses the existing `landing` message catalog. The authoritative
-  policy body remains English on both locale routes until a separately reviewed legal
-  translation exists, as declared in Scope.
+- The legal header reuses the existing `landing` message catalog, and generic legal-page
+  controls use the `legalPage` namespace. Each of the three new policies has a full
+  Russian document module selected by locale; keeping large legal versions outside the
+  general UI catalog makes revisions auditable and prevents partial-string fallback.
 - All public legal/reporting mailboxes use the canonical production domain and one source
   of truth. Both domains currently publish MX records, but domain-level routing does not
   prove recipient-level delivery, so the actual aliases still require an operator smoke.
@@ -72,6 +76,10 @@
   serves the July 24 substantive contract with August 13 administrative corrections;
   from that instant it serves the September 15 version. The preview stays available at
   its versioned URL during the notice window, and the same boundary hides the notice.
+- Playwright's TypeScript loader treated the app-alias import of `legal/revisions.ts` as
+  CommonJS in CI even though local collection succeeded. The boundary test now uses a
+  direct cross-workspace path and the helper exposes a default object in addition to the
+  named exports used by application code, so both loaders execute the same pure logic.
 
 ### Known Issues
 
@@ -84,3 +92,6 @@
 - External counsel should confirm whether explicit reacceptance is required in any
   launch jurisdiction before the September 15 effective instant. Versioned routes and
   automated notice retirement preserve which document applies on either side of it.
+- A qualified Russian legal linguist should review the RU safety-policy translations
+  together with counsel before publication; the tests establish completeness and route
+  selection, not jurisdiction-specific equivalence of legal effect.

@@ -18,8 +18,9 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
 
 ### In
 
-- Localized static routes for `/community-guidelines`, `/copyright-policy`, and
-  `/enforcement-policy`, rendered by the existing legal-document component.
+- Complete English and Russian documents at `/community-guidelines`,
+  `/copyright-policy`, and `/enforcement-policy`, rendered by the existing
+  legal-document component with localized metadata and page chrome.
 - Terms of Use updates that incorporate those policies, retain user ownership,
   require rights and lawful-content warranties, describe Capsule Zero as an
   intermediary for user-submitted content, and reserve moderation, retention,
@@ -60,14 +61,15 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
 - Building the report form, moderation console, hash blacklist, CDN purge, provenance
   ledger, or appeal workflow. Those operational controls remain prerequisites for the
   future shared-import implementation.
-- Translating the full legal documents. As with the existing legal pages, both active
-  locale routes expose the same authoritative English text while navigation labels are
-  localized.
+- Translating the pre-existing July 24 Terms or Privacy Policy. This scope delivers
+  complete EN/RU versions of the three newly introduced safety-policy documents;
+  translation of the pre-existing core contracts remains a separate legal-review task.
 
 ## Acceptance Criteria
 
-- **AC-001**: Each of the three new legal routes renders in EN and RU with a unique H1,
-  metadata, table of contents, and links to the other policy documents.
+- **AC-001**: Each of the three new legal routes renders a complete locale-specific EN
+  or RU document with a unique H1, metadata, table of contents, status labels, and links
+  to the other policy documents.
 - **AC-002**: Terms expressly incorporates Community, Copyright/IP, and Enforcement
   policies and contains the user responsibility, rights warranty, intermediary,
   reporting, third-party-link, user-content disclaimer, retention, enforcement,
@@ -127,5 +129,9 @@ regression assertions are likewise committed red before their implementations. T
 review-driven legal-rollout regressions are also committed red before implementation:
 they cover the invisible incorporation paragraph, stale Privacy revision date, missing
 signed-in Terms notice, unavailable governing version, and unbounded notice lifetime.
+The latest review-follow-up regression requires substantive RU text in all three new
+policies and first failed when `/ru/community-guidelines` still rendered the English
+H1. The same red commit reproduced the CI-only ESM/CommonJS loader failure in the Terms
+boundary test before the helper exposed a compatible module entry point.
 Policy drafting and feature-memory changes are documentation work, but the public
 Next.js route behavior follows the application-code TDD contract.
