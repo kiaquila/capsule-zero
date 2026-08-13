@@ -176,5 +176,10 @@ GitHub Actions then supplied the red Node 20 evidence on head `e30e4ee`: Playwri
 could not collect that test because it imported the server TypeScript adapter as a
 CommonJS module. The test now imports the existing ESM boundary, which exposes the same
 locale-and-version selection consumed by the application adapter.
+The protected-session follow-up regression in commit `7ab1112` then required one
+module-scoped React `cache` wrapper and first failed because the session module had no
+such import or shared export. The implementation now lets the protected layout and its
+page consume the same verified-session result within a Server Component request while
+React resets the cache for the next request.
 Policy drafting and feature-memory changes are documentation work, but the public
 Next.js route behavior follows the application-code TDD contract.

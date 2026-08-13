@@ -50,6 +50,8 @@
       selection from the existing ESM module and consuming that boundary in the test.
 - [x] T024 Add a red-first reconnect regression and revalidate the authoritative Terms
       cutoff when an authenticated browser regains connectivity after a failed probe.
+- [x] T025 Add a red-first protected-session deduplication regression and share the
+      verified session lookup across the protected layout and page within one request.
 
 ## Process Memory
 
@@ -138,6 +140,11 @@
 - A failed resume probe keeps the monotonic timer as a safe fallback, but the browser's
   `online` event immediately retries the same no-store authenticated HEAD request. This
   closes the offline-to-online gap without consulting the device wall clock.
+- `readVerifiedAppSession` is one module-scoped React `cache` export. React invalidates
+  that cache between Server Component requests, so a protected layout and its page share
+  one live `/api/auth/whoami` result without sharing session data between users. Calls
+  outside a Server Component request remain uncached, preserving the existing action
+  and test behavior.
 
 ### Known Issues
 
