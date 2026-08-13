@@ -73,6 +73,10 @@
   Dockerfile, root compose build arg default, canonical compose env example, and
   test workflow container image. This is a security/CI hygiene follow-up, not a
   behavior change to the Go API.
+- **Historical supersession, 2026-08-13:** Newly published stdlib advisories moved the
+  live patch pin to 1.25.13 in the spec-050 merge-readiness follow-up. The 1.25.12
+  commands below remain evidence for the earlier spec-038 PR head, not current runtime
+  configuration.
 
 ### Dead Ends
 

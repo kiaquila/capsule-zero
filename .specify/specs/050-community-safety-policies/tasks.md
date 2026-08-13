@@ -52,6 +52,8 @@
       cutoff when an authenticated browser regains connectivity after a failed probe.
 - [x] T025 Add a red-first protected-session deduplication regression and share the
       verified session lookup across the protected layout and page within one request.
+- [x] T026 Repair the newly disclosed Go stdlib OSV gate by updating every live API
+      toolchain pin to 1.25.13 and time-boxing one verified upstream package mismatch.
 
 ## Process Memory
 
@@ -73,6 +75,10 @@
   Terms test imported the server TypeScript adapter directly; Node 20 exposed it to
   Playwright as CommonJS and could not provide the named export. The application route
   itself was not the failing surface.
+- The local Docker daemon was unavailable during the Go 1.25.13 follow-up, so the
+  pinned-container test and image build could not run locally. The public image manifest
+  exists, local Go 1.26.4 passed `go vet` and `go test`, Compose config passed, and the
+  required GitHub `test` job remains the canonical pinned-container/build evidence.
 
 ### Decisions
 
@@ -145,6 +151,11 @@
   one live `/api/auth/whoami` result without sharing session data between users. Calls
   outside a Server Component request remain uncached, preserving the existing action
   and test behavior.
+- The 2026-08-13 Go advisories supersede the prior 1.25.12 security pin. All five live
+  module/build/CI/deploy declarations move together to 1.25.13. OSV also temporarily
+  misattributes the `golang.org/x/net`-only `GO-2026-5942` advisory to stdlib even though
+  the API module neither requires nor imports `x/net`; the API-local exception expires
+  on 2026-08-20 and does not suppress any other advisory.
 
 ### Known Issues
 
@@ -160,3 +171,5 @@
 - A qualified Russian legal linguist should review the RU safety-policy and future-Terms
   translations together with counsel before publication; the tests establish
   completeness and route selection, not jurisdiction-specific equivalence of legal effect.
+- Remove the API-local `GO-2026-5942` OSV exception as soon as the upstream package-
+  matching correction propagates, and no later than its 2026-08-20 expiry.

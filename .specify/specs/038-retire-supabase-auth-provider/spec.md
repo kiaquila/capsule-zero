@@ -107,7 +107,9 @@ disturbing the modes that actually run.
 8. `test` (Playwright e2e) green — api/mock auth flows are unchanged, proving no
    live-mode regression.
 9. `osv-scan` green on PR head — the Go stdlib pin is at the fixed `1.25.12`
-   level everywhere the API image/runtime/test version is declared.
+   level everywhere the API image/runtime/test version is declared. This is historical
+   spec-038 evidence; the 2026-08-13 advisories superseded that patch with 1.25.13 in
+   the spec-050 merge-readiness follow-up.
 
 ## Negative scenario
 
