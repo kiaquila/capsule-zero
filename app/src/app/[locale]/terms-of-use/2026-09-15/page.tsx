@@ -9,12 +9,17 @@ interface LegalRouteProps {
   }>;
 }
 
-const document = getTermsDocument("2026-09-15");
+export async function generateMetadata({
+  params,
+}: LegalRouteProps): Promise<Metadata> {
+  const { locale } = await params;
+  const document = getTermsDocument("2026-09-15", locale);
 
-export const metadata: Metadata = {
-  title: `${document.title} | Capsule Zero`,
-  description: document.summary,
-};
+  return {
+    title: `${document.title} | Capsule Zero`,
+    description: document.summary,
+  };
+}
 
 export default async function FutureTermsOfUseRoute({
   params,
@@ -22,5 +27,5 @@ export default async function FutureTermsOfUseRoute({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <LegalPage document={document} />;
+  return <LegalPage document={getTermsDocument("2026-09-15", locale)} />;
 }
