@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { LegalPage } from "@/components/legal/LegalPage";
-import { legalDocuments } from "@/lib/legal-content";
-import { getApplicableTermsDocument } from "@/lib/legal/terms-versions";
+import { getTermsDocument } from "@/lib/legal/terms-versions";
 
 interface LegalRouteProps {
   params: Promise<{
@@ -10,18 +9,18 @@ interface LegalRouteProps {
   }>;
 }
 
-const document = legalDocuments["terms-of-use"];
-
-export const dynamic = "force-dynamic";
+const document = getTermsDocument("2026-09-15");
 
 export const metadata: Metadata = {
   title: `${document.title} | Capsule Zero`,
   description: document.summary,
 };
 
-export default async function TermsOfUseRoute({ params }: LegalRouteProps) {
+export default async function FutureTermsOfUseRoute({
+  params,
+}: LegalRouteProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <LegalPage document={getApplicableTermsDocument()} />;
+  return <LegalPage document={document} />;
 }

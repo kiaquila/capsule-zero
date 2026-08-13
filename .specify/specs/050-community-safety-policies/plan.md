@@ -80,6 +80,16 @@ notice. It then passed 3/3 after the renderer exposed the introduction, the shar
 revision source set publication to August 13 and effectiveness to September 15, and the
 dashboard reused the existing notification-banner pattern for localized advance notice.
 
+Terms-versioning follow-up RED: the next Codex review found that the future Terms had
+replaced the still-governing July 24 contract at the canonical/signup URL and that the
+advance notice had no expiry. Commit `d9afc4e` added route, consent-link, version-resolver,
+and notice-window assertions first; the focused run failed before collecting tests
+because the required version APIs did not exist. The implementation preserves the
+current substantive contract in a dedicated version module, keeps its corrected
+administrative contacts/domain and obsolete-ODR statement current, exposes the future
+version at `/terms-of-use/2026-09-15`, and uses one UTC resolver for both the canonical
+route switchover and the notice cutoff.
+
 | #   | Acceptance criterion                                                                   | Evidence                                                                                                                                                                                                                                                                                                                                                                 |
 | --- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 1   | New EN/RU routes render with legal-page structure                                      | Combined focused Chromium + WebKit/iPhone suite: 6/6 passed with CI's two-worker posture; production build emitted all six static policy routes                                                                                                                                                                                                                          |
@@ -94,7 +104,9 @@ dashboard reused the existing notification-banner pattern for localized advance 
 | 10  | Incorporated policy terms are visible to users                                        | Review-follow-up Chromium assertion first failed because `document.intro` was not rendered, then passed after `LegalPage` exposed the introduction inside the legal article                                                                                                                                                                                              |
 | 11  | Material Terms update receives advance notice                                         | Terms display publication date August 13, 2026 and future effective date September 15, 2026; focused signed-in Chromium flow passed for the localized dashboard notice and Terms link; copy preserves the July 24 version until effectiveness                                                                                                                             |
 | 12  | Privacy contact revision is dated                                                     | Focused Chromium assertion first received July 24, then passed with August 13, 2026 as both last-updated and effective dates                                                                                                                                                                                                                                             |
-| 13  | Current PR head is merge-ready                                                         | PR #98 is open and ready for review; required GitHub checks and human review remain pending                                                                                                                                                                                                                                                                              |
+| 13  | Governing and future Terms remain separately accessible                               | Focused Chromium flow passed for July 24 effectiveness at the canonical route, September 15 effectiveness at the versioned preview, signup consent targeting the canonical applicable route, and the dashboard notice targeting the preview                                                                                                                            |
+| 14  | Canonical Terms and notice switch at effectiveness                                     | Deterministic boundary assertions pass immediately before and at `2026-09-15T00:00:00Z`: the resolver changes from `2026-07-24` to `2026-09-15` and the advance-notice predicate changes from true to false                                                                                                                                                                |
+| 15  | Current PR head is merge-ready                                                         | PR #98 is open and ready for review; required GitHub checks and human review remain pending                                                                                                                                                                                                                                                                              |
 
 ## Reuse Check
 
@@ -106,6 +118,10 @@ source because neither prior content module can safely own values consumed by th
 A new `TermsUpdateNotice` composes the existing `NotificationBanner` and dashboard ghost
 action rather than creating a second alert or CTA pattern. One `legal/revisions.ts`
 source prevents effective dates from drifting between Terms and incorporated policies.
+A dedicated July 24 Terms module is required to preserve the contract that governs the
+notice period; it is 437 lines because a legal version must remain immutable and
+auditable rather than being synthesized from the future contract at runtime. Shared
+version selection stays in the small `terms-versions.ts` adapter.
 A separate policy-content module is required because Terms/Privacy already occupy more
 than 900 lines and the three new documents have distinct policy ownership; duplicating
 the renderer or app layout would not fit the established responsibility.

@@ -3,9 +3,14 @@
 import { useTranslations } from "next-intl";
 import { NotificationBanner } from "@/components/common/NotificationBanner";
 import { Link } from "@/i18n/navigation";
+import { shouldShowTermsUpdateNotice } from "@/lib/legal/revisions";
 
 export function TermsUpdateNotice() {
   const t = useTranslations("termsUpdate");
+
+  if (!shouldShowTermsUpdateNotice()) {
+    return null;
+  }
 
   return (
     <NotificationBanner
@@ -16,7 +21,7 @@ export function TermsUpdateNotice() {
       <Link
         className="dashboard-ghost-action terms-update-link"
         data-testid="terms-update-link"
-        href="/terms-of-use"
+        href="/terms-of-use/2026-09-15"
       >
         {t("action")}
       </Link>

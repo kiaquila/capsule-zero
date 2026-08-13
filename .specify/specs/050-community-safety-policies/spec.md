@@ -42,6 +42,9 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
   date for this material update, and an in-product advance-notice banner for signed-in
   users throughout the notice period. The previously effective Terms remain binding
   until the new date.
+- Explicit Terms versioning: the canonical consent/footer route resolves to the July 24
+  governing version before September 15 and to the new version from that UTC effective
+  instant; the future version remains directly reviewable during the notice period.
 - A current Privacy Policy revision date for the public privacy/DPO contact change.
 - Removal of the obsolete European Commission ODR-platform link from the existing
   Terms while preserving applicable local-court and alternative-redress rights.
@@ -96,6 +99,12 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
   signed-in users localized in-product advance notice with a link to the updated Terms.
 - **AC-012**: The Privacy Policy identifies August 13, 2026 as its last-updated and
   effective date after the public privacy/DPO contact revision.
+- **AC-013**: Before September 15, `/terms-of-use` displays the July 24 governing Terms
+  (with August 13 administrative contact/domain/obsolete-ODR corrections), while
+  `/terms-of-use/2026-09-15` exposes the complete future policy stack and the signup
+  consent link continues to target the applicable canonical route.
+- **AC-014**: At `2026-09-15T00:00:00Z`, the canonical Terms resolver switches to the
+  new version and the signed-in advance-notice component stops rendering.
 
 ## Negative Scenarios
 
@@ -115,7 +124,8 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
 The new route, navigation, and required-copy assertions are committed and run red before
 implementation. The follow-up RU legal-navigation and production-contact-domain
 regression assertions are likewise committed red before their implementations. The
-review-driven legal-rollout regression is also committed red before implementation: it
-covers the invisible incorporation paragraph, stale Privacy revision date, and missing
-signed-in Terms notice. Policy drafting and feature-memory changes are documentation
-work, but the public Next.js route behavior follows the application-code TDD contract.
+review-driven legal-rollout regressions are also committed red before implementation:
+they cover the invisible incorporation paragraph, stale Privacy revision date, missing
+signed-in Terms notice, unavailable governing version, and unbounded notice lifetime.
+Policy drafting and feature-memory changes are documentation work, but the public
+Next.js route behavior follows the application-code TDD contract.

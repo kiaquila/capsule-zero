@@ -26,6 +26,9 @@
 - [x] T013 Add a red-first legal-rollout regression, render the incorporated policy
       introduction, announce the material Terms revision before its effective date,
       and date the Privacy Policy contact revision.
+- [x] T014 Add a red-first Terms-version regression; keep the governing July 24 Terms
+      accessible to signup and footer users, expose the September 15 preview, and use
+      one effective-instant boundary for canonical switchover and notice retirement.
 
 ## Process Memory
 
@@ -65,6 +68,10 @@
 - Privacy contact changes are recorded as an August 13 Privacy Policy revision. Shared
   dates live in `legal/revisions.ts` so the Terms and incorporated policy stack cannot
   advertise conflicting effective dates.
+- Terms consent is version-aware. Before `2026-09-15T00:00:00Z`, the canonical route
+  serves the July 24 substantive contract with August 13 administrative corrections;
+  from that instant it serves the September 15 version. The preview stays available at
+  its versioned URL during the notice window, and the same boundary hides the notice.
 
 ### Known Issues
 
@@ -74,7 +81,6 @@
 - Before policy publication, an operator must verify inbound delivery and monitored
   ownership for `support@`, `legal@`, `privacy@`, `dpo@`, and `ip@capsulezero.app`;
   the repository and DNS MX record alone cannot prove recipient-level delivery.
-- Keep the signed-in Terms notice visible through September 15, 2026. Any later removal
-  or replacement must preserve evidence of the notice period and the applicable Terms
-  version; external counsel should confirm whether explicit reacceptance is required in
-  any launch jurisdiction before the effective date.
+- External counsel should confirm whether explicit reacceptance is required in any
+  launch jurisdiction before the September 15 effective instant. Versioned routes and
+  automated notice retirement preserve which document applies on either side of it.
