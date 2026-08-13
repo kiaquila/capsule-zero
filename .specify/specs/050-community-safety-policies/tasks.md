@@ -34,6 +34,8 @@
       and fix the CI module-loader boundary exposed by the same test commit.
 - [x] T016 Replace the cross-workspace TypeScript boundary with one Node-20-safe ESM
       module and derive RU policy display dates from the shared ISO revision values.
+- [x] T017 Add a red-first authenticated-route notice regression; use server time for
+      the cutoff and mount one shared notice wrapper across every verified-session route.
 
 ## Process Memory
 
@@ -85,6 +87,9 @@
 - Policy revision dates have one ISO source. The Russian policy modules format that
   source for display instead of duplicating date literals that could drift on the next
   revision.
+- Advance-notice visibility is resolved in a server-only wrapper after each route has
+  verified the session. The client banner receives only the resulting boolean, so a
+  stale device clock cannot disagree with the server's canonical Terms switchover.
 
 ### Known Issues
 
