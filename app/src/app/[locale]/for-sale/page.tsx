@@ -2,6 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { ForSaleShell } from "@/components/for-sale/ForSaleShell";
 import { buildForSaleSnapshot } from "@/components/for-sale/for-sale-data";
+import { AuthenticatedTermsNotice } from "@/components/legal/AuthenticatedTermsNotice";
 import { readMockSession } from "@/features/auth/session";
 import type { AppLocale } from "@/i18n/routing";
 import { createProviderRegistry } from "@/lib/providers";
@@ -29,5 +30,9 @@ export default async function ForSaleRoute({ params }: ForSaleRouteProps) {
     locale: locale as AppLocale,
   });
 
-  return <ForSaleShell snapshot={snapshot} />;
+  return (
+    <AuthenticatedTermsNotice>
+      <ForSaleShell snapshot={snapshot} />
+    </AuthenticatedTermsNotice>
+  );
 }

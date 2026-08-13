@@ -2,6 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound, redirect } from "next/navigation";
 import { CapsuleResultShell } from "@/components/capsule-result/CapsuleResultShell";
 import { buildCapsuleResultSnapshot } from "@/components/capsule-result/capsule-result-data";
+import { AuthenticatedTermsNotice } from "@/components/legal/AuthenticatedTermsNotice";
 import { readMockSession } from "@/features/auth/session";
 import type { AppLocale } from "@/i18n/routing";
 import { createProviderRegistry } from "@/lib/providers";
@@ -38,5 +39,9 @@ export default async function CapsuleRoute({ params }: CapsuleRouteProps) {
     notFound();
   }
 
-  return <CapsuleResultShell snapshot={snapshot} />;
+  return (
+    <AuthenticatedTermsNotice>
+      <CapsuleResultShell snapshot={snapshot} />
+    </AuthenticatedTermsNotice>
+  );
 }

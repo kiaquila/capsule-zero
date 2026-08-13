@@ -1401,6 +1401,14 @@ textarea {
   font-size: 14px;
 }
 
+.authenticated-terms-notice {
+  position: fixed;
+  z-index: calc(var(--z-nav) + 1);
+  top: 24px;
+  right: 24px;
+  width: min(420px, calc(100vw - 48px));
+}
+
 .verify-email-form {
   display: flex;
   flex-wrap: wrap;

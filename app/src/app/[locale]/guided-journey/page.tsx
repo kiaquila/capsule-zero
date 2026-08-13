@@ -2,6 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { GuidedJourneyShell } from "@/components/guided-journey/GuidedJourneyShell";
 import { buildGuidedJourneySnapshot } from "@/components/guided-journey/guided-journey-data";
+import { AuthenticatedTermsNotice } from "@/components/legal/AuthenticatedTermsNotice";
 import { readMockSession } from "@/features/auth/session";
 import type { AppLocale } from "@/i18n/routing";
 import { createProviderRegistry } from "@/lib/providers";
@@ -35,5 +36,9 @@ export default async function GuidedJourneyRoute({
     locale: locale as AppLocale,
   });
 
-  return <GuidedJourneyShell snapshot={snapshot} />;
+  return (
+    <AuthenticatedTermsNotice>
+      <GuidedJourneyShell snapshot={snapshot} />
+    </AuthenticatedTermsNotice>
+  );
 }
