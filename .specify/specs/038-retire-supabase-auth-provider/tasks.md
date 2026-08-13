@@ -73,6 +73,11 @@
   Dockerfile, root compose build arg default, canonical compose env example, and
   test workflow container image. This is a security/CI hygiene follow-up, not a
   behavior change to the Go API.
+- **2026-08-13 PR #101:** the now-required `osv-scan` found later Go stdlib
+  advisories while all active pins were still `1.25.12`; OSV reports `1.25.13`
+  as the fixed patch level. Updated the same module/build/Compose/env/CI pin set
+  to `1.25.13`. Historical 2026-07-09 commands below remain evidence for the
+  earlier `1.25.12` transition, not current operator instructions.
 
 ### Dead Ends
 
