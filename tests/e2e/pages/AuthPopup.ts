@@ -35,6 +35,8 @@ export class AuthPopup {
   readonly recoveryResend: Locator;
   /** Server-reported message area shared by every auth mode. */
   readonly serverMessage: Locator;
+  /** Consent link must always target the Terms that currently govern signup. */
+  readonly termsLink: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -68,6 +70,7 @@ export class AuthPopup {
     this.recoverySubmit = this.container.getByTestId("recovery-submit");
     this.recoveryResend = this.container.getByTestId("recovery-resend");
     this.serverMessage = this.container.locator(".auth-server-message");
+    this.termsLink = this.container.locator('.auth-terms-note a[href*="terms-of-use"]');
   }
 
   async clickModeSwitch(): Promise<void> {

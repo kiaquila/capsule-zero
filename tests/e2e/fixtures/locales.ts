@@ -58,6 +58,8 @@ export const legalCopy = {
   retiredContactDomain: "@capsulezero.com",
   incorporationClause:
     "These Terms include and incorporate by reference our Community Guidelines, Copyright & Intellectual Property Policy, and Enforcement & Appeals Policy.",
+  currentTermsLastUpdated: "August 13, 2026",
+  currentTermsEffectiveDate: "July 24, 2026",
   termsLastUpdated: "August 13, 2026",
   termsEffectiveDate: "September 15, 2026",
   privacyLastUpdated: "August 13, 2026",
