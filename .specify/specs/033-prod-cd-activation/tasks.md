@@ -56,9 +56,9 @@
   the root-owned wrapper fail closed on a mismatch before Compose runs. Same-runtime app
   rollbacks remain available; a cross-runtime recovery requires a separately approved
   restore of a database snapshot compatible with the target runtime. Reuse check:
-  `infra/scripts/capsule-zero-deploy` was extended for server-side enforcement, while a
-  standalone checker was necessary so the GitHub workflow can enforce the same policy
-  before SSH.
+  `infra/scripts/capsule-zero-deploy` was extended for server-side enforcement and calls
+  a separately installed root-owned checker under `/usr/local/libexec`; the standalone
+  source is also necessary so the GitHub workflow can enforce the same policy before SSH.
 - **2026-07-02 hosting migrated DigitalOcean → Hetzner CX23; dev environment
   decommissioned.** Founder decision: cheaper capacity that actually clears the Phase-0
   gate (2 vCPU / 4 GB / 40 GB vs the unresized 458 MiB droplet), and a single production

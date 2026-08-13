@@ -182,6 +182,12 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
   second identity through `POST /api/auth/registration` after the upgrade, asserts the
   Go adapter's user/session response, and verifies that token through the real
   `/api/auth/whoami` path before continuing with recovery of the migrated identity.
+- A subsequent P1 caught the deployment activation gap: CD invokes a separately installed
+  root-owned wrapper, so changing only the repository copy would not enable the
+  server-side guard. The wrapper now calls a separately installed root-owned checker in
+  `/usr/local/libexec/capsule-zero`, the runbook installs both files as one operator step,
+  and PR #101 records checksum plus same-runtime/cross-runtime production-host probes
+  before relying on this defense-in-depth layer.
 
 ### Known Issues
 

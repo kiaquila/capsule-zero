@@ -78,7 +78,7 @@ git merge-base --is-ancestor "$deploy_sha" origin/main \
   || die "deploy SHA must be reachable from origin/main"
 
 if [ "$sync_host_nginx" = "false" ]; then
-  rollback_boundary_script="scripts/check-kratos-rollback-boundary.sh"
+  rollback_boundary_script="/usr/local/libexec/capsule-zero/check-kratos-rollback-boundary"
   [ -x "$rollback_boundary_script" ] \
     || die "$rollback_boundary_script is missing or not executable"
   "$rollback_boundary_script" HEAD "$deploy_sha" \
