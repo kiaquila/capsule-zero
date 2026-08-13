@@ -108,7 +108,7 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
 - **AC-014**: At `2026-09-15T00:00:00Z`, the canonical Terms resolver switches to the
   new version and the signed-in advance-notice component stops rendering, including
   when a user keeps the persistent protected layout open across that instant without
-  reloading or navigating away.
+  reloading or navigating away, or resumes a suspended tab after the instant.
 - **AC-015**: The advance notice is mounted once by the protected-route layout and
   occupies reserved document flow space, so it cannot cover authenticated navigation,
   language, or primary-action controls at desktop or mobile widths. Dashboard,
@@ -153,5 +153,9 @@ advanced its controlled clock by 60 days, and first observed that the notice rem
 visible. The server now passes both its render instant and the authoritative effective
 instant to a client expiry timer, so the notice retires without a reload in both
 browser engines while initial visibility remains a server decision.
+The suspend/resume follow-up regression then supplied an after-cutoff server `Date`
+when the visible tab resumed and first observed that the notice remained visible. The
+client now revalidates against that authoritative response on `visibilitychange` and
+`pageshow`; both notice spec files were also split to stay below five cases each.
 Policy drafting and feature-memory changes are documentation work, but the public
 Next.js route behavior follows the application-code TDD contract.

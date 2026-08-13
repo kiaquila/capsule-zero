@@ -42,6 +42,8 @@
       guided-journey, and capsule-result shells inside the protected viewport.
 - [x] T020 Add a red-first persistent-layout expiry regression; pass the authoritative
       server/effective instants to a client timer that retires the notice without reload.
+- [x] T021 Add a red-first suspended-tab expiry regression; split the Terms browser
+      scenarios below five cases per file and revalidate server time when the tab resumes.
 
 ## Process Memory
 
@@ -112,6 +114,10 @@
   receives the server render instant and canonical effective instant. A monotonic timer
   chunks delays at the browser maximum so the banner retires at the same boundary
   without depending on another server render or trusting the device wall clock.
+- Because monotonic time may pause during device sleep, `visibilitychange` and
+  `pageshow` trigger a no-store same-origin `HEAD` to the current authenticated route.
+  Its server `Date` expires or re-arms the existing timer; a failed probe leaves the
+  monotonic fallback active rather than trusting the device wall clock.
 
 ### Known Issues
 
