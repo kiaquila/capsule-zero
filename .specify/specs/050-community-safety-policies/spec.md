@@ -169,5 +169,9 @@ The localized-future-Terms follow-up regression then opened the September 15 RU 
 and first received the English `Terms of Use` H1. The implementation adds a complete
 immutable Russian contract, locale-aware metadata, and locale-aware version selection;
 the same test exercises the canonical resolver exactly at the effective instant.
+GitHub Actions then supplied the red Node 20 evidence on head `e30e4ee`: Playwright
+could not collect that test because it imported the server TypeScript adapter as a
+CommonJS module. The test now imports the existing ESM boundary, which exposes the same
+locale-and-version selection consumed by the application adapter.
 Policy drafting and feature-memory changes are documentation work, but the public
 Next.js route behavior follows the application-code TDD contract.

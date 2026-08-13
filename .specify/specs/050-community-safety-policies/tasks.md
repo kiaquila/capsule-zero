@@ -46,6 +46,8 @@
       scenarios below five cases per file and revalidate server time when the tab resumes.
 - [x] T022 Add a red-first Russian future-Terms regression; publish all 22 sections in
       Russian and select the localized preview and post-cutoff contract by locale.
+- [x] T023 Repair the Node 20 CI collection boundary by exposing locale plus version
+      selection from the existing ESM module and consuming that boundary in the test.
 
 ## Process Memory
 
@@ -63,6 +65,10 @@
 - The final CI-shaped preflight had one unrelated Chromium timeout waiting for the
   existing profile password form. Playwright's configured retry passed the same
   scenario; all policy scenarios passed without a retry and the suite exited zero.
+- GitHub Actions on head `e30e4ee` failed before browser execution because the new RU
+  Terms test imported the server TypeScript adapter directly; Node 20 exposed it to
+  Playwright as CommonJS and could not provide the named export. The application route
+  itself was not the failing surface.
 
 ### Decisions
 
@@ -124,6 +130,9 @@
   and canonical route ask the same small version adapter for the active locale, including
   metadata, so the RU route cannot silently fall back to the authoritative English body
   after the cutoff.
+- Cross-workspace Playwright tests import only the Node-safe `.mjs` Terms boundary, not
+  the server TypeScript adapter. That boundary now returns both normalized locale and
+  applicable version, while the adapter consumes the same selection for route content.
 
 ### Known Issues
 
