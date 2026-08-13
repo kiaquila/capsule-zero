@@ -33,6 +33,9 @@
   produced unrelated 500 responses. Moving the disposable cache aside and rerunning
   serially made the same Chromium and WebKit/iPhone matrix pass. The production webpack
   build also generated all routes successfully.
+- The final CI-shaped preflight had one unrelated Chromium timeout waiting for the
+  existing profile password form. Playwright's configured retry passed the same
+  scenario; all policy scenarios passed without a retry and the suite exited zero.
 
 ### Decisions
 
