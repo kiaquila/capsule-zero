@@ -177,6 +177,11 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
   1.26.6 as the first fixed stable toolchain. The module, API Dockerfile, Compose build
   default, canonical env example, and required Go test image therefore move together to
   `1.26.6`; this is a toolchain security update with no intended API behavior change.
+- A later Codex P1 correctly noted that migrated-user login and recovery did not prove
+  fresh signup remained compatible with v26.2.0. The required smoke now registers a
+  second identity through `POST /api/auth/registration` after the upgrade, asserts the
+  Go adapter's user/session response, and verifies that token through the real
+  `/api/auth/whoami` path before continuing with recovery of the migrated identity.
 
 ### Known Issues
 

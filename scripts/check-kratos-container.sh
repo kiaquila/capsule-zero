@@ -149,6 +149,26 @@ login_identity "$public_url" "$email" "$old_password"
 # the real Go adapter. This is the path guarded by use_continue_with_transitions.
 "${compose[@]}" up -d --build --wait api
 api_url=http://127.0.0.1:8080
+
+# Exercise a fresh sign-up through the real Go adapter after the runtime and
+# schema upgrade. Migrated-user login alone cannot catch registration response
+# or session-hook incompatibilities introduced by the new Kratos version.
+new_email="kratos-smoke-new-$$@example.com"
+registration_response=$(
+  jq -nc \
+    --arg email "$new_email" \
+    --arg password "$old_password" \
+    '{email:$email, password:$password, name:"New Kratos Smoke", locale:"en"}' | \
+    post_json "$api_url/api/auth/registration"
+)
+test "$new_email" = "$(jq -er '.user.email' <<<"$registration_response")"
+registration_token=$(jq -er '.session.token' <<<"$registration_response")
+test "$new_email" = "$(
+  curl --fail-with-body --silent --show-error \
+    -H "Authorization: Bearer $registration_token" \
+    "$api_url/api/auth/whoami" | jq -er '.user.email'
+)"
+
 recovery_response=$(
   jq -nc --arg email "$email" '{email:$email}' | \
     post_json "$api_url/api/auth/recovery"
@@ -189,5 +209,5 @@ api_login=$(
 test "$email" = "$(jq -er '.user.email' <<<"$api_login")"
 
 kratos_image=$("${compose[@]}" config --images | awk '/^oryd\/kratos:/{ print; exit }')
-printf 'kratos-upgrade=%s->%s migrated-identity=ok repeat-migration=ok recovery=ok login=ok whoami=ok\n' \
+printf 'kratos-upgrade=%s->%s migrated-identity=ok repeat-migration=ok new-registration=ok recovery=ok login=ok whoami=ok\n' \
   "$old_image" "$kratos_image"
