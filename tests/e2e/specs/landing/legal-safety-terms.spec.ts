@@ -98,4 +98,37 @@ test.describe("Landing — Terms safety-policy contract", () => {
       "/en/terms-of-use/2026-09-15",
     );
   });
+
+  test("uses server time and covers direct authenticated entry routes", async ({
+    page,
+    landing,
+  }) => {
+    await page.addInitScript(() => {
+      const browserNow = Date.parse("2026-10-01T00:00:00.000Z");
+      const BrowserDate = new Proxy(Date, {
+        construct(target, args) {
+          return Reflect.construct(
+            target,
+            args.length === 0 ? [browserNow] : args,
+          );
+        },
+      });
+      BrowserDate.now = () => browserNow;
+      window.Date = BrowserDate;
+    });
+
+    await landing.goto();
+    await landing.dismissCookieBannerIfPresent();
+    await landing.openAuth();
+    await landing.auth.signIn(uniqueEmail("terms-server-time"), PASSWORDS.initial);
+    await page.waitForURL(/\/en\/dashboard/, { timeout: 25_000 });
+
+    const notice = page.getByTestId("terms-update-notice");
+    await expect(notice).toBeVisible();
+
+    for (const path of ["/en/my-items", "/en/profile", "/en/capsule-result"]) {
+      await page.goto(path);
+      await expect(notice).toBeVisible();
+    }
+  });
 });
