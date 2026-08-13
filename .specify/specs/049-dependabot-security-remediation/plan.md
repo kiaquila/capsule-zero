@@ -13,7 +13,7 @@ the corresponding lockfile records.
 | # | Acceptance criterion | Evidence |
 |---|---|---|
 | 1 | Dependabot covers every active ecosystem and directory | [V1 — ecosystem coverage](#v1--ecosystem-coverage) |
-| 2 | Minor/patch updates are grouped and majors remain separate | [V2 — grouping policy](#v2--grouping-policy) |
+| 2 | Minor/patch updates are grouped; majors remain separate except for the explicit PostgreSQL migration gate | [V2 — grouping policy](#v2--grouping-policy) |
 | 3 | GitHub Actions cooldown uses only `default-days` | [V3 — cooldown shape](#v3--cooldown-shape) |
 | 4 | GitHub dependency security features are enabled | [V4 — repository security settings](#v4--repository-security-settings) |
 | 5 | Vulnerability remediation is complete without suppression | `go run github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.3.5 --recursive .` returns `No issues found`; `npm audit --json` returns zero vulnerabilities in `/`, `/app`, and `/tests/e2e` |
@@ -29,7 +29,7 @@ ruby -ryaml -e 'u=YAML.safe_load(File.read(".github/dependabot.yml")).fetch("upd
 ### V2 — Grouping policy
 
 ```sh
-ruby -ryaml -e 'u=YAML.safe_load(File.read(".github/dependabot.yml")).fetch("updates"); abort "group mismatch" unless u.all? { |entry| entry.fetch("groups").values.all? { |group| group.fetch("update-types")==["minor","patch"] } }; puts "minor/patch grouping passed; major remains unmatched"'
+ruby -ryaml -e 'u=YAML.safe_load(File.read(".github/dependabot.yml")).fetch("updates"); abort "group mismatch" unless u.all? { |entry| entry.fetch("groups").values.all? { |group| group.fetch("update-types")==["minor","patch"] } }; compose=u.find { |entry| entry.fetch("package-ecosystem")=="docker-compose" }; expected=[{"dependency-name"=>"postgres","update-types"=>["version-update:semver-major"]}]; abort "PostgreSQL major ignore mismatch" unless compose.fetch("ignore")==expected && u.reject { |entry| entry.equal?(compose) }.none? { |entry| entry.key?("ignore") }; puts "minor/patch grouping passed; majors remain unmatched except PostgreSQL majors"'
 ```
 
 ### V3 — Cooldown shape
@@ -57,8 +57,8 @@ review thread remains unresolved.
 
 ```sh
 head_sha="$(git rev-parse HEAD)"
-test "$(gh pr view 97 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
-gh pr checks 97 --repo kiaquila/capsule-zero --required
-test "$(gh pr view 97 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
-test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:97) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
+test "$(gh pr view 100 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
+gh pr checks 100 --repo kiaquila/capsule-zero --required
+test "$(gh pr view 100 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
+test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:100) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
 ```

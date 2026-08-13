@@ -55,6 +55,12 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # Production pgdata is a PostgreSQL 16 physical data directory. A major
+      # bump needs a separately tested pg_upgrade or dump/restore rollout.
+      - dependency-name: "postgres"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: "github-actions"
     directory: "/"
