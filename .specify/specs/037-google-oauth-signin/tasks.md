@@ -201,14 +201,17 @@
   has a password identity is rejected by Kratos (duplicate identifier); the
   user is told to sign in with the password. Settings-flow linking is a
   follow-up slice.
-- **Google emails still get the verify-email banner:** OSS Kratos v1.3
-  mappers cannot mark `verifiable_addresses` verified, so a Google sign-up
-  receives the standard non-blocking verification code email despite
-  `email_verified=true` from Google. Acceptable for v0.1; candidates:
-  admin-API patch after exchange, or a Kratos upgrade if the option lands.
+- **Google emails still get the verify-email banner:** the retained mapper does
+  not mark `verifiable_addresses` verified, so a Google sign-up receives the
+  standard non-blocking verification code email despite `email_verified=true`
+  from Google. The v26.2 runtime upgrade does not change that mapper and, with
+  Google disabled, does not claim a new live-provider validation. Acceptable
+  for v0.1; candidate remedy: a separately specified admin-API patch after
+  exchange or a future documented mapper/identity capability.
   The mock provider sets `emailVerified=true`, so provider-agnostic e2e does
   not reproduce the banner — prod-shape divergence is covered only by the
-  operator smoke (architect review, 2026-07-07).
+  operator smoke (architect review, 2026-07-07; v26.2 carry-forward clarified
+  in PR #101, 2026-08-13).
 - **Feature flags can drift (Go vs Kratos):** `AUTH_GOOGLE_ENABLED` and
   `KRATOS_OIDC_ENABLED`/`KRATOS_OIDC_PROVIDERS` are independent; with Go on
   and Kratos off the button renders but `google/start` → 502. No config
