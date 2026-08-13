@@ -49,8 +49,61 @@ export function TermsUpdateNotice({
     if (!visible) {
       return;
     }
-    const delayMs = Date.parse(effectiveAt) - Date.parse(serverNow);
-    return scheduleExpiry(delayMs, () => setExpired(true));
+
+    const controller = new AbortController();
+    let cancelled = false;
+    let cancelExpiry = () => {};
+
+    const armExpiry = (authoritativeNow: string) => {
+      const delayMs = Date.parse(effectiveAt) - Date.parse(authoritativeNow);
+      if (!Number.isFinite(delayMs)) {
+        return;
+      }
+      cancelExpiry();
+      cancelExpiry = scheduleExpiry(delayMs, () => {
+        if (!cancelled) {
+          setExpired(true);
+        }
+      });
+    };
+
+    const revalidateExpiry = async () => {
+      try {
+        const response = await fetch(window.location.href, {
+          cache: "no-store",
+          credentials: "same-origin",
+          method: "HEAD",
+          signal: controller.signal,
+        });
+        const authoritativeNow = response.headers.get("date");
+        if (response.ok && authoritativeNow && !cancelled) {
+          armExpiry(authoritativeNow);
+        }
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          // Keep the existing monotonic fallback if the server-time probe fails.
+        }
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void revalidateExpiry();
+      }
+    };
+    const handlePageShow = () => void revalidateExpiry();
+
+    armExpiry(serverNow);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pageshow", handlePageShow);
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+      cancelExpiry();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
   }, [effectiveAt, serverNow, visible]);
 
   if (!visible || expired) {
