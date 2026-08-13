@@ -45,6 +45,7 @@ interface LegalPageProps {
 
 export function LegalPage({ document }: LegalPageProps) {
   const t = useTranslations("landing");
+  const legal = useTranslations("legalPage");
 
   return (
     <div className="cz-page legal-page" data-testid="legal-page">
@@ -74,16 +75,16 @@ export function LegalPage({ document }: LegalPageProps) {
           <h1>{document.title}</h1>
           <dl className="legal-meta">
             <div>
-              <dt>Last updated</dt>
+              <dt>{legal("lastUpdated")}</dt>
               <dd>{document.lastUpdated}</dd>
             </div>
             <div>
-              <dt>Status</dt>
+              <dt>{legal("status")}</dt>
               <dd>{document.effectiveDate}</dd>
             </div>
           </dl>
-          <div className="legal-toc" aria-label="Contents">
-            <p>Contents</p>
+          <div className="legal-toc" aria-label={legal("contents")}>
+            <p>{legal("contents")}</p>
             <nav>
               {document.sections.map((section) => (
                 <a href={`#${section.id}`} key={section.id}>
@@ -97,7 +98,7 @@ export function LegalPage({ document }: LegalPageProps) {
         <article className="legal-article dashboard-glass">
           {document.intro.length > 0 ? (
             <section
-              aria-label="Introduction"
+              aria-label={legal("introduction")}
               className="legal-section legal-intro"
               data-testid="legal-intro"
             >
@@ -120,10 +121,12 @@ export function LegalPage({ document }: LegalPageProps) {
 
           <footer className="legal-article-footer">
             <Link href={document.relatedDocument.href}>
-              Read the {document.relatedDocument.label}
+              {legal("readRelated", {
+                document: document.relatedDocument.label,
+              })}
             </Link>
             <Link href="/" data-testid="legal-back-home">
-              Back to Capsule Zero
+              {legal("backHome")}
             </Link>
           </footer>
         </article>

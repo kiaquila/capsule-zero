@@ -23,3 +23,10 @@ export const privacyPolicyRevision = {
   lastUpdated: "August 13, 2026",
   effectiveDate: "August 13, 2026",
 } as const;
+
+const legalRevisions = {
+  resolveApplicableTermsVersion,
+  shouldShowTermsUpdateNotice,
+};
+
+export default legalRevisions;

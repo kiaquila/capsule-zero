@@ -50,6 +50,14 @@
       }
     }
   },
+  "legalPage": {
+    "lastUpdated": "Last updated",
+    "status": "Status",
+    "contents": "Contents",
+    "introduction": "Introduction",
+    "readRelated": "Read the {document}",
+    "backHome": "Back to Capsule Zero"
+  },
   "termsUpdate": {
     "title": "Terms update takes effect September 15",
     "description": "We published updated Terms and user-content policies on August 13, 2026. They take effect September 15, 2026. Please review them before continuing to use Capsule Zero after that date.",

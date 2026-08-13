@@ -3,6 +3,7 @@ import { LOCALES, type Locale } from "../../fixtures/locales";
 import { LegalPage, type LegalSlug } from "../../pages/LegalPage";
 
 interface PolicyExpectation {
+  forbiddenCopy: readonly string[];
   slug: LegalSlug;
   title: string;
   requiredCopy: readonly string[];
@@ -11,6 +12,7 @@ interface PolicyExpectation {
 const policyDocuments = {
   en: [
     {
+      forbiddenCopy: ["Capsule Zero owns Your Content"],
       slug: "community-guidelines",
       title: "Community Guidelines",
       requiredCopy: [
@@ -21,6 +23,7 @@ const policyDocuments = {
       ],
     },
     {
+      forbiddenCopy: ["Capsule Zero owns Your Content"],
       slug: "copyright-policy",
       title: "Copyright & Intellectual Property Policy",
       requiredCopy: [
@@ -31,6 +34,7 @@ const policyDocuments = {
       ],
     },
     {
+      forbiddenCopy: ["Capsule Zero owns Your Content"],
       slug: "enforcement-policy",
       title: "Enforcement & Appeals Policy",
       requiredCopy: [
@@ -43,6 +47,10 @@ const policyDocuments = {
   ],
   ru: [
     {
+      forbiddenCopy: [
+        "Capsule Zero owns Your Content",
+        "Community Guidelines",
+      ],
       slug: "community-guidelines",
       title: "Правила сообщества",
       requiredCopy: [
@@ -53,6 +61,10 @@ const policyDocuments = {
       ],
     },
     {
+      forbiddenCopy: [
+        "Capsule Zero owns Your Content",
+        "Community Guidelines",
+      ],
       slug: "copyright-policy",
       title: "Политика в области авторских и иных интеллектуальных прав",
       requiredCopy: [
@@ -63,6 +75,10 @@ const policyDocuments = {
       ],
     },
     {
+      forbiddenCopy: [
+        "Capsule Zero owns Your Content",
+        "Community Guidelines",
+      ],
       slug: "enforcement-policy",
       title: "Политика модерации и обжалования",
       requiredCopy: [
@@ -93,12 +109,8 @@ test.describe("Landing — community safety policy routes", () => {
         await expect(legal.root).not.toContainText(
           "shared user-import pool is currently available",
         );
-        await expect(legal.root).not.toContainText(
-          "Capsule Zero owns Your Content",
-        );
-
-        if (locale === "ru") {
-          await expect(legal.root).not.toContainText("Community Guidelines");
+        for (const copy of policy.forbiddenCopy) {
+          await expect(legal.root).not.toContainText(copy);
         }
       }
     }
