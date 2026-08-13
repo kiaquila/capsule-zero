@@ -1,6 +1,6 @@
 import { expect, test } from "../../fixtures/base";
 import { LegalPage } from "../../pages/LegalPage";
-import { getApplicableTermsDocument } from "../../../../app/src/lib/legal/terms-versions";
+import { resolveApplicableTermsSelection } from "../../../../app/src/lib/legal/terms-boundary.mjs";
 
 test.describe("Landing — Russian future Terms", () => {
   test("publishes the new binding user-content protections in Russian", async ({
@@ -26,13 +26,13 @@ test.describe("Landing — Russian future Terms", () => {
       "You retain all ownership and intellectual property rights",
     );
 
-    const applicableAtCutoff = getApplicableTermsDocument(
+    const applicableAtCutoff = resolveApplicableTermsSelection(
       "ru",
       new Date("2026-09-15T00:00:00.000Z"),
     );
-    expect(applicableAtCutoff.title).toBe("Условия использования");
-    expect(JSON.stringify(applicableAtCutoff)).toContain(
-      "Вы сохраняете все права собственности",
-    );
+    expect(applicableAtCutoff).toEqual({
+      version: "2026-09-15",
+      locale: "ru",
+    });
   });
 });
