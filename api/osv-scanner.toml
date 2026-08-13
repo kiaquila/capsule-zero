@@ -1,0 +1,4 @@
+[[IgnoredVulns]]
+id = "GO-2026-5942"
+ignoreUntil = 2026-08-20
+reason = "OSV currently returns this golang.org/x/net advisory for the stdlib package; the API module neither requires nor imports golang.org/x/net. Remove after the upstream package-matching correction propagates."

@@ -1,6 +1,6 @@
 module github.com/kiaquila/capsule-zero/api
 
-go 1.25.12
+go 1.25.13
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.42.1
