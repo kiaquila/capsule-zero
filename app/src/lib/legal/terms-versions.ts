@@ -2,7 +2,7 @@ import { legalDocuments, type LegalDocument } from "../legal-content";
 import {
   resolveApplicableTermsVersion,
   type TermsVersion,
-} from "./revisions";
+} from "./terms-boundary.mjs";
 import { currentTermsDocument } from "./terms-2026-07-24";
 
 const termsByVersion: Record<TermsVersion, LegalDocument> = {

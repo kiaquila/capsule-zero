@@ -3,10 +3,10 @@ import { PASSWORDS, uniqueEmail } from "../../fixtures/accounts";
 import { legalCopy, termsUpdateCopy } from "../../fixtures/locales";
 import { DashboardPage } from "../../pages/DashboardPage";
 import { LegalPage } from "../../pages/LegalPage";
-import legalRevisions from "../../../../app/src/lib/legal/revisions";
-
-const { resolveApplicableTermsVersion, shouldShowTermsUpdateNotice } =
-  legalRevisions;
+import {
+  resolveApplicableTermsVersion,
+  shouldShowTermsUpdateNotice,
+} from "../../../../app/src/lib/legal/terms-boundary.mjs";
 
 test.describe("Landing — Terms safety-policy contract", () => {
   test("Terms incorporates the complete community safety policy stack", async ({

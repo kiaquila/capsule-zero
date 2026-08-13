@@ -1,9 +1,12 @@
 import type { LegalDocument } from "../legal-content";
 import {
   policyLegalEmail,
+  policyRevisionDates,
   policySupportEmail,
   relatedPolicy,
 } from "./policy-shared";
+
+const revision = policyRevisionDates("ru");
 
 export const enforcementPolicyRu: LegalDocument = {
   slug: "enforcement-policy",
@@ -11,8 +14,8 @@ export const enforcementPolicyRu: LegalDocument = {
   eyebrow: "Процедура",
   summary:
     "Как Capsule Zero выявляет возможные нарушения, принимает соразмерные меры, объясняет решения и рассматривает апелляции.",
-  lastUpdated: "13 августа 2026 г.",
-  effectiveDate: "15 сентября 2026 г.",
+  lastUpdated: revision.lastUpdated,
+  effectiveDate: revision.effectiveDate,
   relatedDocument: relatedPolicy(
     "/copyright-policy",
     "Политика в области авторских и иных интеллектуальных прав",

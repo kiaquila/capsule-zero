@@ -1,5 +1,11 @@
 import type { LegalDocument } from "../legal-content";
-import { policyLegalEmail, relatedPolicy } from "./policy-shared";
+import {
+  policyLegalEmail,
+  policyRevisionDates,
+  relatedPolicy,
+} from "./policy-shared";
+
+const revision = policyRevisionDates("ru");
 
 export const communityGuidelinesRu: LegalDocument = {
   slug: "community-guidelines",
@@ -7,8 +13,8 @@ export const communityGuidelinesRu: LegalDocument = {
   eyebrow: "Безопасность",
   summary:
     "Правила в отношении контента и поведения в гардеробе, каталоге, поиске, ссылках и будущих функциях публикации Capsule Zero.",
-  lastUpdated: "13 августа 2026 г.",
-  effectiveDate: "15 сентября 2026 г.",
+  lastUpdated: revision.lastUpdated,
+  effectiveDate: revision.effectiveDate,
   relatedDocument: relatedPolicy(
     "/enforcement-policy",
     "Политика модерации и обжалования",

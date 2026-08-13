@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { NotificationBanner } from "@/components/common/NotificationBanner";
 import { Link } from "@/i18n/navigation";
-import { shouldShowTermsUpdateNotice } from "@/lib/legal/revisions";
+import { shouldShowTermsUpdateNotice } from "@/lib/legal/terms-boundary.mjs";
 
 export function TermsUpdateNotice() {
   const t = useTranslations("termsUpdate");
