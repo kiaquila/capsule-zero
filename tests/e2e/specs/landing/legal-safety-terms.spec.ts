@@ -90,6 +90,16 @@ test.describe("Landing — Terms safety-policy contract", () => {
     await expect(dashboard.termsUpdateNotice).toContainText(
       termsUpdateCopy.en.description,
     );
+    await expect(dashboard.topbarActions).toBeVisible();
+
+    const noticeBounds = await dashboard.termsUpdateNotice.boundingBox();
+    const actionBounds = await dashboard.topbarActions.boundingBox();
+    expect(noticeBounds).not.toBeNull();
+    expect(actionBounds).not.toBeNull();
+    expect(noticeBounds!.y + noticeBounds!.height).toBeLessThanOrEqual(
+      actionBounds!.y,
+    );
+
     await expect(dashboard.termsUpdateLink).toHaveText(
       termsUpdateCopy.en.action,
     );
