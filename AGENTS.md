@@ -294,7 +294,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 | **Auth**                | Ory Kratos with email/password + Google sign-in in v0.1 (spec 037, native-flow OIDC); Apple Sign-In deferred to Stage 2             |
 | **File Storage**        | Hetzner Object Storage (S3-compatible; no built-in CDN in v0.1; public catalog CDN deferred to Stage 2)                              |
 | **Image processing**    | Self-hosted Capsule Zero model behind a worker (deferred — first ship core wardrobe flows with manual/placeholder behavior)         |
-| **API gateway**         | nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos                        |
+| **API gateway**         | Host-managed nginx 1.28 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, and `auth_request` into Kratos; nginx 1.31 container for rollback/local dev |
 | **Hosting**             | Single Hetzner Cloud server (CX23: 2 vCPU / 4 GB / 40 GB, Ubuntu 26.04) running docker-compose — migrated from DigitalOcean 2026-07-02; active Cloudflare front-door and Tailscale-only SSH since 2026-07-22 (spec 047) |
 | **Email**               | Resend for transactional email (verification, password reset, security notifications)                                               |
 | **Observability**       | syslog file logs + tracing in v0.1; Grafana dashboards, Sentry, and Prometheus deferred                                             |

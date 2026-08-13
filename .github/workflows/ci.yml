@@ -40,6 +40,9 @@ jobs:
       - name: Run repository baseline
         run: npm run check:repo
 
+      - name: Validate rollback nginx container
+        run: npm run check:nginx-container
+
       - name: Run API contract checks
         run: npm run check:api-contract
 

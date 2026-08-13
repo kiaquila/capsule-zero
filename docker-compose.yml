@@ -188,7 +188,7 @@ services:
   # docs_capsule_zero/project/devops/prod-cd-pipeline.md. Kept (profile-gated) for rollback:
   #   docker compose --profile docker-edge up -d nginx
   nginx:
-    image: nginx:1.27-alpine
+    image: nginx:1.31-alpine
     restart: unless-stopped
     profiles: ["docker-edge"]
     depends_on:
