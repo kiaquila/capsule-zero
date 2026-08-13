@@ -97,6 +97,54 @@ test.describe("Landing — Terms update notice", () => {
     await expect(page).toHaveURL(/\/en\/dashboard/);
   });
 
+  test("rechecks authoritative server time when connectivity returns", async ({
+    page,
+    landing,
+  }) => {
+    const dashboard = new DashboardPage(page);
+    await landing.goto();
+    await landing.dismissCookieBannerIfPresent();
+    await landing.openAuth();
+    await landing.auth.signIn(
+      uniqueEmail("terms-reconnect-cutoff"),
+      PASSWORDS.initial,
+    );
+    await page.waitForURL(/\/en\/dashboard/, { timeout: 25_000 });
+    await expect(dashboard.termsUpdateNotice).toBeVisible();
+
+    let headRequests = 0;
+    await page.route("**/en/dashboard", async (route) => {
+      if (route.request().method() === "HEAD") {
+        headRequests += 1;
+        if (headRequests === 1) {
+          await route.abort("internetdisconnected");
+          return;
+        }
+        await route.fulfill({
+          status: 204,
+          headers: {
+            date: "Tue, 15 Sep 2026 00:00:01 GMT",
+          },
+        });
+        return;
+      }
+      await route.fallback();
+    });
+
+    await page.evaluate(() => {
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    await expect.poll(() => headRequests).toBe(1);
+    await expect(dashboard.termsUpdateNotice).toBeVisible();
+
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("online"));
+    });
+
+    await expect(dashboard.termsUpdateNotice).toBeHidden();
+    await expect.poll(() => headRequests).toBe(2);
+  });
+
   test("uses server time and covers direct authenticated entry routes", async ({
     page,
     landing,
