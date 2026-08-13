@@ -103,6 +103,8 @@ test.describe("Landing — Terms safety-policy contract", () => {
     page,
     landing,
   }) => {
+    const dashboard = new DashboardPage(page);
+
     await page.addInitScript(() => {
       const browserNow = Date.parse("2026-10-01T00:00:00.000Z");
       const BrowserDate = new Proxy(Date, {
@@ -123,12 +125,11 @@ test.describe("Landing — Terms safety-policy contract", () => {
     await landing.auth.signIn(uniqueEmail("terms-server-time"), PASSWORDS.initial);
     await page.waitForURL(/\/en\/dashboard/, { timeout: 25_000 });
 
-    const notice = page.getByTestId("terms-update-notice");
-    await expect(notice).toBeVisible();
+    await expect(dashboard.termsUpdateNotice).toBeVisible();
 
     for (const path of ["/en/my-items", "/en/profile", "/en/capsule-result"]) {
       await page.goto(path);
-      await expect(notice).toBeVisible();
+      await expect(dashboard.termsUpdateNotice).toBeVisible();
     }
   });
 });
