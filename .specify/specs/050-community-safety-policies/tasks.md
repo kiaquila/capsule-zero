@@ -36,6 +36,8 @@
       module and derive RU policy display dates from the shared ISO revision values.
 - [x] T017 Add a red-first authenticated-route notice regression; use server time for
       the cutoff and mount one shared notice wrapper across every verified-session route.
+- [x] T018 Add a red-first control-overlap regression; move verified-session routes
+      under one protected route-group layout and reserve non-overlapping notice space.
 
 ## Process Memory
 
@@ -46,6 +48,10 @@
   produced unrelated 500 responses. Moving the disposable cache aside and rerunning
   serially made the same Chromium and WebKit/iPhone matrix pass. The production webpack
   build also generated all routes successfully.
+- After the protected-route refactor, Turbopack reused a disposable `.next/dev` CSS
+  artifact that still contained the removed fixed-position rule. Moving only the
+  generated `app/.next` cache aside and rebuilding made the same Chromium/WebKit
+  geometry regression pass; the webpack production build also used the new layout.
 - The final CI-shaped preflight had one unrelated Chromium timeout waiting for the
   existing profile password form. Playwright's configured retry passed the same
   scenario; all policy scenarios passed without a retry and the suite exited zero.
@@ -88,8 +94,12 @@
   source for display instead of duplicating date literals that could drift on the next
   revision.
 - Advance-notice visibility is resolved in a server-only wrapper after each route has
-  verified the session. The client banner receives only the resulting boolean, so a
-  stale device clock cannot disagree with the server's canonical Terms switchover.
+  entered the shared protected-route layout. The client banner receives only the
+  resulting boolean, so a stale device clock cannot disagree with the server's
+  canonical Terms switchover.
+- All ten verified-session pages live in one URL-transparent `(authenticated)` route
+  group. Its layout owns authentication and the cross-cutting notice once; normal-flow
+  reserved space keeps the non-dismissible legal notice from covering page controls.
 
 ### Known Issues
 
