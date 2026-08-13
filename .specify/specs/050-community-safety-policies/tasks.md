@@ -48,6 +48,8 @@
       Russian and select the localized preview and post-cutoff contract by locale.
 - [x] T023 Repair the Node 20 CI collection boundary by exposing locale plus version
       selection from the existing ESM module and consuming that boundary in the test.
+- [x] T024 Add a red-first reconnect regression and revalidate the authoritative Terms
+      cutoff when an authenticated browser regains connectivity after a failed probe.
 
 ## Process Memory
 
@@ -133,6 +135,9 @@
 - Cross-workspace Playwright tests import only the Node-safe `.mjs` Terms boundary, not
   the server TypeScript adapter. That boundary now returns both normalized locale and
   applicable version, while the adapter consumes the same selection for route content.
+- A failed resume probe keeps the monotonic timer as a safe fallback, but the browser's
+  `online` event immediately retries the same no-store authenticated HEAD request. This
+  closes the offline-to-online gap without consulting the device wall clock.
 
 ### Known Issues
 

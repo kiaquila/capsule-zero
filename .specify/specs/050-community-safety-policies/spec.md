@@ -165,6 +165,9 @@ The suspend/resume follow-up regression then supplied an after-cutoff server `Da
 when the visible tab resumed and first observed that the notice remained visible. The
 client now revalidates against that authoritative response on `visibilitychange` and
 `pageshow`; both notice spec files were also split to stay below five cases each.
+The reconnect follow-up then made that resume probe fail, dispatched `online`, and
+first observed that the notice still remained visible. Connectivity recovery now
+retries the same authoritative probe, while the spec remains at the five-case limit.
 The localized-future-Terms follow-up regression then opened the September 15 RU route
 and first received the English `Terms of Use` H1. The implementation adds a complete
 immutable Russian contract, locale-aware metadata, and locale-aware version selection;
