@@ -59,8 +59,9 @@ of spec 024).
   `docker-compose.yml`, `deploy/compose.env.example`, and
   `.github/workflows/test.yml` to clear OSV `GO-2026-5856` for the stdlib. No
   API behavior changes. **Superseded 2026-08-13:** the same five active pins are
-  now `1.25.13` after later stdlib advisories made `1.25.12` fail the required
-  `osv-scan` gate on PR #101.
+  now `1.26.6`. Go 1.25.13 fixed five later advisories but `GO-2026-5942` has no
+  fixed 1.25.x release; the Go vulnerability database identifies 1.26.6 as the
+  first fixed stable toolchain.
 - Docs actualized in the same PR (AGENTS §9): frontend-docs provider-mode
   wording; rollback runbook; this spec folder.
 
@@ -108,7 +109,7 @@ disturbing the modes that actually run.
    `lint`, `lint:css`, `typecheck`, `build`, Docker build, `npm test` (no-op).
 8. `test` (Playwright e2e) green — api/mock auth flows are unchanged, proving no
    live-mode regression.
-9. `osv-scan` green on PR head — the Go stdlib pin is at the fixed `1.25.13`
+9. `osv-scan` green on PR head — the Go stdlib pin is at the fixed `1.26.6`
    level everywhere the API image/runtime/test version is declared.
 
 ## Negative scenario

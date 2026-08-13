@@ -172,10 +172,11 @@ One slice to a **working** end-to-end auth flow on the existing `/app` UI (which
   same-runtime application rollback stays automatic; crossing the runtime/schema boundary
   requires an operator-approved restoration of a snapshot compatible with the target.
 - The required `osv-scan` on PR #101 then found newly published Go stdlib advisories
-  against the active `1.25.12` pin, with OSV identifying `1.25.13` as the fixed patch
-  level. The module, API Dockerfile, Compose build default, canonical env example, and
-  required Go test image move together to `1.25.13`; this is a toolchain security patch
-  with no API behavior change.
+  against the active `1.25.12` pin. Go 1.25.13 fixed five of them, but
+  `GO-2026-5942` remained with no fixed 1.25.x release; the vulnerability database names
+  1.26.6 as the first fixed stable toolchain. The module, API Dockerfile, Compose build
+  default, canonical env example, and required Go test image therefore move together to
+  `1.26.6`; this is a toolchain security update with no intended API behavior change.
 
 ### Known Issues
 
