@@ -21,6 +21,10 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
 - Complete English and Russian documents at `/community-guidelines`,
   `/copyright-policy`, and `/enforcement-policy`, rendered by the existing
   legal-document component with localized metadata and page chrome.
+- A complete Russian version of the September 15 future Terms, including the same
+  incorporated policies and material user-content protections as the English version,
+  selected by locale at the versioned preview and by the canonical resolver after the
+  effective instant.
 - Terms of Use updates that incorporate those policies, retain user ownership,
   require rights and lawful-content warranties, describe Capsule Zero as an
   intermediary for user-submitted content, and reserve moderation, retention,
@@ -114,6 +118,10 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
   language, or primary-action controls at desktop or mobile widths. Dashboard,
   guided-journey, and capsule-result shells fit the remaining viewport instead of
   creating a second document scrollbar around their existing internal scrollers.
+- **AC-016**: `/ru/terms-of-use/2026-09-15` renders a complete Russian future contract,
+  including the incorporated policies, user-content license, intermediary allocation,
+  user-content disclaimer, liability cap, and indemnity. The canonical version resolver
+  selects that Russian document at the effective instant when the active locale is RU.
 
 ## Negative Scenarios
 
@@ -157,5 +165,9 @@ The suspend/resume follow-up regression then supplied an after-cutoff server `Da
 when the visible tab resumed and first observed that the notice remained visible. The
 client now revalidates against that authoritative response on `visibilitychange` and
 `pageshow`; both notice spec files were also split to stay below five cases each.
+The localized-future-Terms follow-up regression then opened the September 15 RU route
+and first received the English `Terms of Use` H1. The implementation adds a complete
+immutable Russian contract, locale-aware metadata, and locale-aware version selection;
+the same test exercises the canonical resolver exactly at the effective instant.
 Policy drafting and feature-memory changes are documentation work, but the public
 Next.js route behavior follows the application-code TDD contract.

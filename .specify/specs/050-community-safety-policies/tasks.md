@@ -44,6 +44,8 @@
       server/effective instants to a client timer that retires the notice without reload.
 - [x] T021 Add a red-first suspended-tab expiry regression; split the Terms browser
       scenarios below five cases per file and revalidate server time when the tab resumes.
+- [x] T022 Add a red-first Russian future-Terms regression; publish all 22 sections in
+      Russian and select the localized preview and post-cutoff contract by locale.
 
 ## Process Memory
 
@@ -118,6 +120,10 @@
   `pageshow` trigger a no-store same-origin `HEAD` to the current authenticated route.
   Its server `Date` expires or re-arms the existing timer; a failed probe leaves the
   monotonic fallback active rather than trusting the device wall clock.
+- The September 15 Terms are immutable locale-specific contract versions. The preview
+  and canonical route ask the same small version adapter for the active locale, including
+  metadata, so the RU route cannot silently fall back to the authoritative English body
+  after the cutoff.
 
 ### Known Issues
 
@@ -130,6 +136,6 @@
 - External counsel should confirm whether explicit reacceptance is required in any
   launch jurisdiction before the September 15 effective instant. Versioned routes and
   automated notice retirement preserve which document applies on either side of it.
-- A qualified Russian legal linguist should review the RU safety-policy translations
-  together with counsel before publication; the tests establish completeness and route
-  selection, not jurisdiction-specific equivalence of legal effect.
+- A qualified Russian legal linguist should review the RU safety-policy and future-Terms
+  translations together with counsel before publication; the tests establish
+  completeness and route selection, not jurisdiction-specific equivalence of legal effect.
