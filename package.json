@@ -10,6 +10,7 @@
   "scripts": {
     "check:feature-memory": "node scripts/check-feature-memory.mjs",
     "check:api-contract": "node scripts/check-api-contract.mjs && node scripts/generate-api-clients.mjs --check",
+    "check:nginx-container": "bash scripts/check-nginx-container.sh",
     "check:repo": "node scripts/check-repo-baseline.mjs",
     "check:runtime-env": "node scripts/check-runtime-env.mjs",
     "check:runtime-tooling": "node scripts/check-runtime-tooling.mjs",

@@ -20,7 +20,7 @@ Each active v0.1 service is declared as a separate `services:` entry in one root
 
 | Service    | Image                 | Purpose                                                                | Default host exposure                                 |
 | ---------- | --------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------- |
-| `nginx`    | `nginx:1.27-alpine`   | Rollback compose edge: TLS, rate-limit, `auth_request` into Kratos     | profile-gated `80`, `443` via `--profile docker-edge` |
+| `nginx`    | `nginx:1.31-alpine`   | Rollback compose edge: TLS, rate-limit, `auth_request` into Kratos     | profile-gated `80`, `443` via `--profile docker-edge` |
 | `web`      | local build of `/app` | Next.js App Router web frontend                                        | `127.0.0.1:3000` for host nginx                       |
 | `api`      | local build of `/api` | Go modular monolith: auth/profile plus storage/upload foundation       | internal only (behind nginx)                          |
 | `kratos-migrate` | `oryd/kratos`   | One-shot Kratos schema migration                                      | internal one-shot job                                 |

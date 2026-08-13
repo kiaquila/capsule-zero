@@ -4,7 +4,7 @@ GitHub is the control plane for pull requests, required checks, deployments, and
 
 ## Required Workflows
 
-- `ci.yml`: runs repository baseline validation, app typecheck, app build, and optional app tests as the required `baseline-checks` job.
+- `ci.yml`: runs repository baseline validation, a Compose-selected rollback-nginx config/health smoke, app lint/typecheck/build, and optional app tests as the required `baseline-checks` job.
 - `pr-guard.yml`: enforces feature-memory coverage for product-root changes (`app/`, `api/`, `worker/`, `web/`, `mobile/`) and validates baseline files as the required `guard` job.
 - `ai-review.yml`: runs on GitHub-hosted `ubuntu-latest` and validates native Codex review for the current PR head as the required `AI Review` job.
 - `test.yml`: runs e2e lint, e2e typecheck, `/app` build, and Playwright browser tests as the required `test` job.

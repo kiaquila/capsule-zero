@@ -153,7 +153,7 @@ The platform guides the user through methodology without imposing. It suggests, 
 - **Mobile:** React Native (iOS + Android) sharing the same Go API contract
 - **Styling:** Tailwind CSS v4 with custom @theme tokens
 - **Backend:** Go modular monolith (single binary, bounded contexts inside the same process) served behind nginx
-- **API gateway:** nginx 1.27 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, `auth_request` into Kratos
+- **API gateway:** Host-managed nginx 1.28 with Let's Encrypt TLS (certbot on host), `limit_req_zone` rate-limit, and `auth_request` into Kratos; nginx 1.31 container for rollback/local dev
 - **Auth:** Ory Kratos (email/password and Google sign-in in v0.1 — spec 037, native-flow OIDC; Apple Sign-In in Stage 2)
 - **Database:** PostgreSQL 16 with Postgres FTS in v0.1; pgvector and PgBouncer are deferred by ADR-007 until the semantic-search and connection-pressure triggers fire
 - **Cache / queue:** Redis 7 (cache, sessions, Redis-based job queue)

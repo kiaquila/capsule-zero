@@ -30,7 +30,7 @@ Each phase ships as its own PR with feature-memory updates against this folder. 
 ### In scope across all phases
 
 - A single root `docker-compose.yml` with every active v0.1 container declared as a separate `services:` block.
-- A reverse-proxy / API-gateway tier owned by nginx 1.27 (see ADR-001 § "Why nginx and not Traefik or Caddy").
+- A reverse-proxy / API-gateway tier owned by nginx: host-managed 1.28 on the live edge and a 1.31 container for rollback/local dev (see ADR-001 § "Why nginx and not Traefik or Caddy").
 - TLS via Let's Encrypt with certbot on the host. The certificate lives at `/etc/letsencrypt/live/capsulezero.app/` and is mounted read-only into the nginx container.
 - Service stubs for our own code:
   - `/api` Go skeleton: `cmd/api/main.go` boots an HTTP server with `GET /api/health` reporting reachability of Postgres, Redis, Kratos, Object Storage, Resend, and starts the v0.1 Redis queue consumer goroutines (Phase 3)
@@ -38,7 +38,7 @@ Each phase ships as its own PR with feature-memory updates against this folder. 
   - The web frontend is the existing `/app` Next.js project (built on the provider port/adapter abstraction); it stays and is served from `/app/Dockerfile`. The unused `/web` placeholder is dropped when the Supabase provider is fully retired. No `/app` → `/web` rename.
   - `/mobile` React Native scaffold (Expo project; ships builds locally; deploy to TestFlight/Google Play remains a Stage 2 follow-up)
 - Infrastructure configs under `/infra/`:
-  - `infra/nginx/` — nginx 1.27 config (Phase 1)
+  - `infra/nginx/` — nginx 1.31 rollback/local-container config (Phase 1)
   - `infra/kratos/` — identity schema, courier (Resend SMTP) configuration, self-service flow config (Phase 2)
   - `infra/postgres/` — init scripts: provision the Kratos database + role and the app database (Phase 2). pgvector is deferred by ADR-007 to the semantic catalog-search slice.
 - `api/migrations/` — SQL migrations applied at boot by the embedded migrator. The auth slice ships `0001_initial_auth.sql` (`profiles`); the wardrobe/capsule/catalog schema plus methodology seed (`color_catalog`, `category_catalog`, `compatibility_rules`) arrive with their domain slices.
