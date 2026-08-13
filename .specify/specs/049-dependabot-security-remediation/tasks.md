@@ -41,6 +41,14 @@
   an exact executable verification command instead of a prose-only evidence summary.
 - After the second native review, the external merge-readiness row gained a command that
   binds GitHub check, merge-state, and unresolved-thread evidence to `git rev-parse HEAD`.
+- PR #100 keeps the populated production database on PostgreSQL 16 and adds the sole
+  version-policy exception: Docker Compose `postgres` semver-major updates are ignored
+  until a dedicated migration spec supplies a tested upgrade/rollback/restore procedure.
+  Minor and patch grouping remains unchanged. The V2 command asserts both the exact
+  exception and the absence of any other ignore entries, so policy drift fails closed.
+- The V7 merge-readiness evidence now targets PR #100, so its SHA, required checks,
+  merge state, and review-thread assertions cover the policy change being merged rather
+  than the already merged PR #97 that originally introduced spec 049.
 
 ### Known Issues
 
