@@ -38,6 +38,8 @@
       the cutoff and mount one shared notice wrapper across every verified-session route.
 - [x] T018 Add a red-first control-overlap regression; move verified-session routes
       under one protected route-group layout and reserve non-overlapping notice space.
+- [x] T019 Add a red-first document-height regression; contain full-height dashboard,
+      guided-journey, and capsule-result shells inside the protected viewport.
 
 ## Process Memory
 
@@ -100,6 +102,10 @@
 - All ten verified-session pages live in one URL-transparent `(authenticated)` route
   group. Its layout owns authentication and the cross-cutting notice once; normal-flow
   reserved space keeps the non-dismissible legal notice from covering page controls.
+- The protected layout, not each legacy full-height page, owns the viewport boundary.
+  Its direct dashboard, journey, and capsule children may shrink below their historical
+  `100vh`/`100svh` sizes, keeping scrolling inside the product shell and preventing a
+  second document scrollbar while the advance notice is visible.
 
 ### Known Issues
 

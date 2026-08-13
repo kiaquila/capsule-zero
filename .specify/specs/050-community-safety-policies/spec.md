@@ -109,7 +109,9 @@ and it does not replace the external legal review required by PRODUCT-PLAN D5/D6
   new version and the signed-in advance-notice component stops rendering.
 - **AC-015**: The advance notice is mounted once by the protected-route layout and
   occupies reserved document flow space, so it cannot cover authenticated navigation,
-  language, or primary-action controls at desktop or mobile widths.
+  language, or primary-action controls at desktop or mobile widths. Dashboard,
+  guided-journey, and capsule-result shells fit the remaining viewport instead of
+  creating a second document scrollbar around their existing internal scrollers.
 
 ## Negative Scenarios
 
@@ -140,5 +142,9 @@ The final review-follow-up regression first failed because the fixed advance not
 ended at vertical position 268 while the dashboard actions began at position 30. The
 implementation then moved the notice into one protected-route layout and reserved
 layout space above every authenticated page.
+The subsequent full-height-shell regression first measured a document height of 914px
+inside a 720px viewport on `/en/guided-journey`. The protected layout now owns the
+viewport height and lets dashboard, journey, and capsule shells shrink into its
+remaining flex space; the same bound passes in Chromium and mobile WebKit.
 Policy drafting and feature-memory changes are documentation work, but the public
 Next.js route behavior follows the application-code TDD contract.
