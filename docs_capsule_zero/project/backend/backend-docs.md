@@ -20,7 +20,7 @@ Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | API process              | Go monolith (`/api`) — single binary with bounded contexts                                                          |
 | Background worker        | Not landed; a future Redis consumer may run inside `/api`, while a standalone `/worker` remains deferred by ADR-007 |
-| API gateway / TLS        | nginx 1.31 with host-managed Let's Encrypt certbot, rate-limit middleware, `auth_request` into Ory Kratos           |
+| API gateway / TLS        | Host-managed nginx 1.28 with Let's Encrypt certbot, rate-limit middleware, `auth_request` into Ory Kratos; nginx 1.31 container for rollback/local dev |
 | Auth                     | Ory Kratos email/password + Google sign-in (spec 037, native-flow OIDC); Apple Sign-In in Stage 2                                      |
 | Database                 | PostgreSQL 16 with Postgres FTS; API connects directly in v0.1 as the least-privilege `capsule_app` role (spec 034), PgBouncer and pgvector are deferred by ADR-007 |
 | Cache / sessions / queue | Redis 7 planned for a later spec-024 phase; no Redis service or queue consumer is active in the current slice       |
