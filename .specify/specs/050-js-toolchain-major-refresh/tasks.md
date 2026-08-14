@@ -24,7 +24,13 @@
       `@types/node` 22.20.1.
 - [x] Regenerate and clean-install the app lockfile with CI-aligned npm 10.9.4 after
       npm 11 omitted Linux-only optional dependency records on macOS.
-- [ ] Trigger and clear PR #111's head-bound native Codex review and required checks.
+- [x] Trigger and clear PR #111's head-bound native Codex review and required checks;
+      address and resolve its portable-lock thread, then merge after the stability window.
+- [x] Rebase PR #112 and verify the e2e TypeScript and Playwright lint plugins declare
+      ESLint 10 support.
+- [x] Upgrade the imported `@eslint/js` config to 10.0.1, align the e2e Node floor, and
+      pass npm 10 clean install, dependency-tree, lint, and typecheck verification.
+- [ ] Trigger and clear PR #112's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -54,6 +60,9 @@
   omitted root `@emnapi/core` and `@emnapi/runtime` records required by Linux npm 10.
   The first PR #111 baseline run caught the mismatch immediately; regenerating with
   npm 10.9.4 restored both portable optional-dependency records.
+- Treating the generated PR #112 as an isolated `eslint` package replacement leaves the
+  imported `@eslint/js` recommended config on major 9. It runs, but does not represent a
+  complete ESLint 10 core-config migration.
 
 ### Decisions
 
@@ -75,10 +84,13 @@
 - Keep `@types/node` aligned to the deployed runtime major. PR #111 advances 20.19.33 to
   22.20.1 rather than accepting 26.2.0; Node 26 types resume with a deliberate runtime
   upgrade, not as an isolated declaration-only change.
+- Accept ESLint 10 in the e2e workspace only: its smaller plugin graph declares support.
+  Move `@eslint/js` with it and reuse the repository Node `>=22.22.1` floor rather than
+  retaining the e2e workspace's broader, now-inaccurate `>=20` promise.
 
 ### Known Issues
 
-- PRs #112-#114 remain isolated major upgrades and need their own compatibility evidence
+- PRs #113-#114 remain isolated major upgrades and need their own compatibility evidence
   before their checkboxes can be completed here.
 - App ESLint 10 remains deferred until every plugin in the resolved Next lint graph
   declares support; Dependabot may reopen the update when upstream metadata changes.
