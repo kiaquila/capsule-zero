@@ -12,6 +12,10 @@
 - [x] Pass the full local preflight in CI mode.
 - [x] Record the required GitHub checks and head-bound native Codex review as the
   external merge-readiness criteria in the verification plan.
+- [x] Rebase PR #107 on the latest `origin/main`, inventory every direct npm delta, and
+  remove the frozen Supabase update from its manifest and lockfile subgraph.
+- [x] Run clean installs, the frozen-Supabase structural comparison, and full preflight
+  for PR #107 before requesting the head-bound Codex review.
 
 ## Process Memory
 
@@ -27,6 +31,14 @@
 - An unconstrained local Playwright run timed out while waiting for two existing UI
   elements. Both scenarios passed immediately in isolated runs, and the full preflight
   then passed with the CI worker/retry policy (78 passed, 8 intentionally skipped).
+- Dependabot's PR #107 grouped the frozen `@supabase/supabase-js` package with active
+  minor/patch dependencies. Accepting the generated branch unchanged would have
+  extended the retired provider, so its complete npm subgraph was restored from
+  `origin/main` before verification.
+- The first post-upgrade local suite lacked Playwright 1.62's browser binaries and all
+  browser launches failed immediately. After installing the matching Chromium/WebKit
+  revisions, 77 tests passed and one WebKit profile test exposed the same pre-hydration
+  lost-click race already handled by the cookie-banner page object.
 
 ### Decisions
 
@@ -49,8 +61,23 @@
 - The V7 merge-readiness evidence now targets PR #100, so its SHA, required checks,
   merge state, and review-thread assertions cover the policy change being merged rather
   than the already merged PR #97 that originally introduced spec 049.
+- PR #107 keeps the grouped active npm refresh but excludes every `@supabase/*` lockfile
+  entry. Context7 confirms Next.js 16.3 remains compatible with the repository's CI
+  Node 20, production Node 22, and React 19 runtime boundaries.
+- Next.js 16.3 intentionally generates version-matched `app/AGENTS.md` and
+  `app/CLAUDE.md` when an agent runs `next dev`; upstream documentation recommends
+  tracking them, so the generated files are committed instead of disabling the feature
+  or accepting a permanently dirty worktree.
+- The profile page object reuses the established cookie-banner two-attempt hydration
+  retry instead of creating a second helper abstraction. The previously flaky WebKit
+  scenario passed five concurrent repetitions after the change.
+- Final CI-mode preflight completed with 77 passed and 8 intentionally skipped browser
+  scenarios. The existing productivity-metrics scenario timed out once and passed on
+  its configured retry; no dependency-refresh failure remained.
+- V7 now targets PR #107 because it is the current head using this feature memory; the
+  original policy implementation in PR #100 is already merged.
 
 ### Known Issues
 
-- Dependabot may open version-update pull requests only after this configuration reaches
-  the default branch; repository security updates are already enabled independently.
+- Major npm updates remain separate PRs and require their own compatibility evidence;
+  they are not covered by the PR #107 minor/patch refresh.
