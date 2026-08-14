@@ -31,12 +31,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@typescript/native": "npm:typescript@^7.0.2",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.3.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "stylelint": "^17.14.1",
     "tailwindcss": "^4",
-    "typescript": "^7"
+    "typescript": "npm:@typescript/typescript6@^6.0.2"
   },
   "overrides": {
     "@babel/core": "7.29.6",

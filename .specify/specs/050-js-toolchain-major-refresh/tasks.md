@@ -10,7 +10,13 @@
       checks; merge after the two-minute stability window.
 - [x] Rebase PR #109, reproduce its clean-install peer conflict, verify current upstream
       compatibility metadata, and remove the unsupported ESLint 10 update.
-- [ ] Trigger and clear PR #109's head-bound native Codex review and required checks.
+- [x] Trigger and clear PR #109's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
+- [x] Rebase PR #110 and reproduce the direct TypeScript 7 incompatibility with
+      `typescript-eslint` before selecting the upstream side-by-side migration layout.
+- [x] Keep the TypeScript 7 CLI and TypeScript 6 API consumer paths explicit, and pass
+      clean install, lint, TypeScript 7 typecheck, and the production app build.
+- [ ] Trigger and clear PR #110's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -26,6 +32,13 @@
   peer ranges end at ESLint 9: `eslint-plugin-jsx-a11y@6.10.2`,
   `eslint-plugin-import@2.32.0`, and `eslint-plugin-react@7.37.5`. Peer-ignore flags
   would conceal, not resolve, those unsupported plugin/runtime boundaries.
+- PR #110's direct TypeScript 7 package passes the Next.js CLI-mode build but crashes
+  the lint path because TypeScript 7 deliberately ships no compiler API and
+  `typescript-eslint` must load `typescript`. The documented side-by-side aliases fix
+  lint, but Next.js 16.3's default CLI-mode config discovery then sees no `tsc` binary
+  on the aliased TypeScript 6 wrapper and ignores `tsconfig.json`, breaking every `@/*`
+  webpack alias. Setting Next.js to its supported API mode makes it load the TypeScript
+  6 API package and preserves the existing path mappings.
 
 ### Decisions
 
@@ -40,10 +53,14 @@
 - Defer app ESLint 10 and keep ESLint 9.39.4 unchanged in PR #109. Context7 confirms
   ESLint 10 removes deprecated plugin context APIs, so forcing a plugin whose peer range
   excludes v10 is not an acceptable merge-ready state.
+- Follow TypeScript's official side-by-side migration layout for PR #110. The app's
+  `tsc` command is TypeScript 7.0.2, `tsc6` and `require("typescript")` remain on the
+  compatible TypeScript 6 line, and Next.js is pinned to its compiler-API mode until
+  its CLI-mode package discovery recognizes the side-by-side wrapper.
 
 ### Known Issues
 
-- PRs #110-#114 remain isolated major upgrades and need their own compatibility evidence
+- PRs #111-#114 remain isolated major upgrades and need their own compatibility evidence
   before their checkboxes can be completed here.
 - App ESLint 10 remains deferred until every plugin in the resolved Next lint graph
   declares support; Dependabot may reopen the update when upstream metadata changes.
