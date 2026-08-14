@@ -15,6 +15,7 @@ and request a fresh native Codex review before the guarded merge.
 | 2   | Existing staged-file contract remains executable | `npm run precommit` with the feature-memory changes staged; existing `lint-staged.config.mjs` and `.husky/pre-commit` are reused               |
 | 3   | Repository installs and verifies cleanly         | `npm ci --ignore-scripts`; `npm --prefix app ci --ignore-scripts`; `npm --prefix tests/e2e ci --ignore-scripts`; `CI=1 npm run preflight`      |
 | 4   | Current PR head is merge-ready                   | Head SHA equals GitHub PR head; `gh pr checks <PR> --required`; merge state `MERGEABLE/CLEAN`; unresolved review-thread count is zero          |
+| 5   | Unsupported major updates are not forced        | `npm view` peer metadata, clean-install result, and manifest/lockfile diff against `origin/main`                                               |
 
 ## Compatibility Notes
 
@@ -27,3 +28,10 @@ and request a fresh native Codex review before the guarded merge.
   the existing staged-file configuration successfully; `CI=1 npm run preflight` passed
   repository/API checks, both lint/typecheck paths, the production build, and 78 browser
   scenarios with 8 intentional skips.
+- PR #109 disposition: ESLint 10 itself supports the repository's Node 22 line and flat
+  config, but three plugins in `eslint-config-next` 16.3's resolved graph declare peers
+  only through ESLint 9: `eslint-plugin-jsx-a11y@6.10.2`,
+  `eslint-plugin-import@2.32.0`, and `eslint-plugin-react@7.37.5`. The generated update
+  failed clean `npm ci` with `ERESOLVE`; app manifest and lockfile are therefore kept
+  identical to `origin/main`. Resume only after the complete resolved Next lint graph
+  declares ESLint 10 compatibility and the existing 93-warning lint baseline passes.
