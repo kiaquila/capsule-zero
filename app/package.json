@@ -12,19 +12,19 @@
     "ci:check": "npm run lint && npm run lint:css && npm run typecheck && npm run build"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
+    "@hookform/resolvers": "^5.7.1",
     "@supabase/supabase-js": "^2.108.2",
     "@swc/helpers": "^0.5.23",
     "clsx": "^2.1.1",
-    "next": "16.2.11",
-    "next-intl": "^4.13.0",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "react-hook-form": "^7.71.2",
+    "next": "16.3.0",
+    "next-intl": "^4.13.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-hook-form": "^7.85.0",
     "server-only": "^0.0.1",
-    "tailwind-merge": "^3.5.0",
-    "zod": "^4.3.6",
-    "zustand": "^5.0.11"
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -32,9 +32,9 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9.39.4",
-    "eslint-config-next": "^16.2.6",
+    "eslint-config-next": "^16.3.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
-    "stylelint": "^17.14.0",
+    "stylelint": "^17.14.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
