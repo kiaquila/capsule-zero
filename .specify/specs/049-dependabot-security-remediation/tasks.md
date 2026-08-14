@@ -16,6 +16,15 @@
       remove the frozen Supabase update from its manifest and lockfile subgraph.
 - [x] Run clean installs, the frozen-Supabase structural comparison, and full preflight
       for PR #107 before requesting the head-bound Codex review.
+- [x] Rebase PR #115 on the latest `origin/main` and review every AWS SDK, Smithy, and
+      pgx v5 direct and transitive version delta.
+- [x] Verify current AWS S3 presign/custom-endpoint and pgxpool API contracts through
+      Context7, including the pgx 5.10 `BeforeAcquire` deprecation boundary.
+- [x] Pass Go module tidiness, vet, all package tests, and targeted storage/database
+      race tests on the refreshed graph.
+- [x] Pass module-integrity verification and the full repository preflight (78 browser
+      scenarios passed, 8 intentionally skipped) on the rebased PR #115 head.
+- [ ] Trigger and clear PR #115's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -39,6 +48,10 @@
   browser launches failed immediately. After installing the matching Chromium/WebKit
   revisions, 77 tests passed and one WebKit profile test exposed the same pre-hydration
   lost-click race already handled by the cookie-banner page object.
+- Treating green compilation alone as sufficient for PR #115 would miss two relevant
+  compatibility boundaries: S3-compatible endpoint/presign behavior and pgx 5.10's
+  deprecation of `BeforeAcquire`. Source and repository searches confirmed the current
+  APIs remain supported and the deprecated hook is unused.
 
 ### Decisions
 
@@ -74,8 +87,11 @@
 - Final CI-mode preflight completed with 77 passed and 8 intentionally skipped browser
   scenarios. The existing productivity-metrics scenario timed out once and passed on
   its configured retry; no dependency-refresh failure remained.
-- V7 now targets PR #107 because it is the current head using this feature memory; the
-  original policy implementation in PR #100 is already merged.
+- V7 now targets PR #115 because it is the current head using this feature memory; the
+  earlier policy and npm-refresh pull requests are already merged.
+- Accept the PR #115 group as a coordinated module graph: AWS core/config/credentials,
+  S3, Smithy, and generated indirect modules move together, while pgx stays within the
+  semver-stable v5 API and contributes protocol/security hardening.
 
 ### Known Issues
 

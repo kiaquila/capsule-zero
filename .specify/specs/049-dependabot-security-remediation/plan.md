@@ -25,6 +25,7 @@ the complete repository verification chain before merge.
 | 6   | Dependency metadata remains installable and the application is unchanged behaviorally                     | Clean `npm ci` in `/`, `/app`, and `/tests/e2e`; `npm run preflight`                                                                                                                       |
 | 7   | Current PR head is merge-ready                                                                            | [V7 — head-bound merge readiness](#v7--head-bound-merge-readiness)                                                                                                                         |
 | 8   | PR #107 refreshes the reviewed npm minor/patch set without advancing frozen Supabase packages             | [V8 — grouped npm refresh](#v8--grouped-npm-refresh)                                                                                                                                       |
+| 9   | PR #115 refreshes the reviewed Go minor/patch set without breaking storage or database contracts          | [V9 — grouped Go refresh](#v9--grouped-go-refresh)                                                                                                                                         |
 
 ### V1 — Ecosystem coverage
 
@@ -63,10 +64,10 @@ review thread remains unresolved.
 
 ```sh
 head_sha="$(git rev-parse HEAD)"
-test "$(gh pr view 107 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
-gh pr checks 107 --repo kiaquila/capsule-zero --required
-test "$(gh pr view 107 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
-test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:107) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
+test "$(gh pr view 115 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
+gh pr checks 115 --repo kiaquila/capsule-zero --required
+test "$(gh pr view 115 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
+test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:115) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
 ```
 
 ### V8 — Grouped npm refresh
@@ -112,3 +113,30 @@ The final `CI=1 npm run preflight` exited successfully with 77 passed and 8 inte
 skipped browser scenarios; one unrelated existing productivity-metrics scenario timed
 out on its first attempt and passed under the repository's CI retry policy. The GitHub
 `test` job remains the head-bound external suite evidence.
+
+### V9 — Grouped Go refresh
+
+```sh
+cd api
+go mod tidy
+git diff --exit-code -- go.mod go.sum
+go mod verify
+go vet ./...
+go test ./...
+go test -race ./internal/storage ./internal/db
+go list -m github.com/aws/aws-sdk-go-v2 github.com/aws/aws-sdk-go-v2/config github.com/aws/aws-sdk-go-v2/credentials github.com/aws/aws-sdk-go-v2/service/s3 github.com/aws/smithy-go github.com/jackc/pgx/v5
+cd ..
+CI=1 npm run preflight
+```
+
+Context7's current AWS SDK v2 sources retain `LoadDefaultConfig`, S3 `BaseEndpoint`,
+`UsePathStyle`, and `NewPresignClient`; the repository exercises those paths in the
+storage package tests. Current pgx v5.10 documentation preserves `pgxpool.New` while
+deprecating `BeforeAcquire` in favor of `PrepareConn`; the repository uses neither hook.
+The release also adds PostgreSQL protocol hardening without requiring a pool API change.
+
+Local evidence on rebased PR #115: `go mod tidy` produced no diff; `go mod verify`,
+`go vet ./...`, all API package tests, and race-enabled storage/database tests passed
+with Go 1.26.6. The resolved direct module versions are AWS SDK core 1.43.5, config
+1.32.36, credentials 1.19.35, S3 1.107.1, Smithy 1.27.7, and pgx 5.10.0. The full
+CI-mode repository preflight also passed with 78 browser scenarios passed and 8 skipped.
