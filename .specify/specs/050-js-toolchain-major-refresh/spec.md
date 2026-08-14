@@ -44,6 +44,9 @@ silently weakening lint/type checks, or changing product behavior.
    production images and required CI workflows.
 8. The e2e ESLint 10 runtime, core recommended config, TypeScript adapter, and Playwright
    plugin resolve a mutually supported graph under the repository Node floor.
+9. The e2e TypeScript 7 compiler runs typecheck while ESLint retains a supported
+   TypeScript 6 compiler API, and the existing app-source alias resolves without the
+   removed `baseUrl` option.
 
 ## Negative Scenarios
 
@@ -59,6 +62,8 @@ silently weakening lint/type checks, or changing product behavior.
   CI npm client must validate all cross-platform optional dependency records.
 - ESLint 10 is not paired with the previous major of `@eslint/js`, because the e2e flat
   config imports that package as the source of its core recommended rules.
+- TypeScript 7 is not installed directly under the `typescript` package name in e2e:
+  doing so violates `typescript-eslint`'s `<6.1.0` peer contract and breaks clean CI.
 - The frozen Supabase provider graph remains outside this toolchain refresh.
 
 TDD posture: this is development-tooling and CI support work without product behavior

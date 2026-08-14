@@ -30,7 +30,13 @@
       ESLint 10 support.
 - [x] Upgrade the imported `@eslint/js` config to 10.0.1, align the e2e Node floor, and
       pass npm 10 clean install, dependency-tree, lint, and typecheck verification.
-- [ ] Trigger and clear PR #112's head-bound native Codex review and required checks.
+- [x] Trigger and clear PR #112's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
+- [x] Rebase PR #113, reproduce the direct TypeScript 7 peer failure, and reuse the
+      official side-by-side TypeScript 7 CLI / TypeScript 6 API layout.
+- [x] Replace removed e2e `baseUrl` semantics with an equivalent relative path mapping;
+      pass npm 10 clean install, dependency-tree, lint, and TypeScript 7 typecheck.
+- [ ] Trigger and clear PR #113's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -63,6 +69,10 @@
 - Treating the generated PR #112 as an isolated `eslint` package replacement leaves the
   imported `@eslint/js` recommended config on major 9. It runs, but does not represent a
   complete ESLint 10 core-config migration.
+- PR #113's generated direct TypeScript 7 update fails `npm ci`: `typescript-eslint`
+  8.67 requires TypeScript `<6.1.0`. After separating CLI and API packages, TypeScript 7
+  correctly rejects the removed `baseUrl` option, so its path alias must be expressed
+  as a relative replacement instead.
 
 ### Decisions
 
@@ -87,10 +97,14 @@
 - Accept ESLint 10 in the e2e workspace only: its smaller plugin graph declares support.
   Move `@eslint/js` with it and reuse the repository Node `>=22.22.1` floor rather than
   retaining the e2e workspace's broader, now-inaccurate `>=20` promise.
+- Reuse the app's official TypeScript side-by-side package layout in e2e: native
+  TypeScript 7 owns `tsc`, while TypeScript 6 remains available to `typescript-eslint`
+  through the standard `typescript` package name. Replace `baseUrl`, without weakening
+  the existing `@/*` alias or enabling peer-ignore installation flags.
 
 ### Known Issues
 
-- PRs #113-#114 remain isolated major upgrades and need their own compatibility evidence
+- PR #114 remains an isolated major upgrade and needs its own compatibility evidence
   before their checkboxes can be completed here.
 - App ESLint 10 remains deferred until every plugin in the resolved Next lint graph
   declares support; Dependabot may reopen the update when upstream metadata changes.
