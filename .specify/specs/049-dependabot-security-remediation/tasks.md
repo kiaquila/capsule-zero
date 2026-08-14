@@ -6,16 +6,16 @@
 - [x] Enable Dependency Graph, Dependabot Alerts, and Dependabot Security Updates.
 - [x] Add and validate the complete Dependabot version-update configuration.
 - [x] Reproduce the required OSV failure and identify the vulnerable npm transitive
-  packages and fixed versions.
+      packages and fixed versions.
 - [x] Update only the affected app overrides and the corresponding npm lockfile records.
 - [x] Prove clean npm installs, zero npm audit findings, and a clean OSV v2.3.5 scan.
 - [x] Pass the full local preflight in CI mode.
 - [x] Record the required GitHub checks and head-bound native Codex review as the
-  external merge-readiness criteria in the verification plan.
+      external merge-readiness criteria in the verification plan.
 - [x] Rebase PR #107 on the latest `origin/main`, inventory every direct npm delta, and
-  remove the frozen Supabase update from its manifest and lockfile subgraph.
+      remove the frozen Supabase update from its manifest and lockfile subgraph.
 - [x] Run clean installs, the frozen-Supabase structural comparison, and full preflight
-  for PR #107 before requesting the head-bound Codex review.
+      for PR #107 before requesting the head-bound Codex review.
 
 ## Process Memory
 
@@ -63,7 +63,7 @@
   than the already merged PR #97 that originally introduced spec 049.
 - PR #107 keeps the grouped active npm refresh but excludes every `@supabase/*` lockfile
   entry. Context7 confirms Next.js 16.3 remains compatible with the repository's CI
-  Node 20, production Node 22, and React 19 runtime boundaries.
+  Node 22 and React 19 runtime boundaries.
 - Next.js 16.3 intentionally generates version-matched `app/AGENTS.md` and
   `app/CLAUDE.md` when an agent runs `next dev`; upstream documentation recommends
   tracking them, so the generated files are committed instead of disabling the feature

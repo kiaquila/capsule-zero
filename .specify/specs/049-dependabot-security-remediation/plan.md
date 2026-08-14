@@ -15,16 +15,16 @@ the complete repository verification chain before merge.
 
 ## Verification
 
-| # | Acceptance criterion | Evidence |
-|---|---|---|
-| 1 | Dependabot covers every active ecosystem and directory | [V1 — ecosystem coverage](#v1--ecosystem-coverage) |
-| 2 | Minor/patch updates are grouped; majors remain separate except for the explicit PostgreSQL migration gate | [V2 — grouping policy](#v2--grouping-policy) |
-| 3 | GitHub Actions cooldown uses only `default-days` | [V3 — cooldown shape](#v3--cooldown-shape) |
-| 4 | GitHub dependency security features are enabled | [V4 — repository security settings](#v4--repository-security-settings) |
-| 5 | Vulnerability remediation is complete without suppression | `go run github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.3.5 --recursive .` returns `No issues found`; `npm audit --json` returns zero vulnerabilities in `/`, `/app`, and `/tests/e2e` |
-| 6 | Dependency metadata remains installable and the application is unchanged behaviorally | Clean `npm ci` in `/`, `/app`, and `/tests/e2e`; `npm run preflight` |
-| 7 | Current PR head is merge-ready | [V7 — head-bound merge readiness](#v7--head-bound-merge-readiness) |
-| 8 | PR #107 refreshes the reviewed npm minor/patch set without advancing frozen Supabase packages | [V8 — grouped npm refresh](#v8--grouped-npm-refresh) |
+| #   | Acceptance criterion                                                                                      | Evidence                                                                                                                                                                                   |
+| --- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Dependabot covers every active ecosystem and directory                                                    | [V1 — ecosystem coverage](#v1--ecosystem-coverage)                                                                                                                                         |
+| 2   | Minor/patch updates are grouped; majors remain separate except for the explicit PostgreSQL migration gate | [V2 — grouping policy](#v2--grouping-policy)                                                                                                                                               |
+| 3   | GitHub Actions cooldown uses only `default-days`                                                          | [V3 — cooldown shape](#v3--cooldown-shape)                                                                                                                                                 |
+| 4   | GitHub dependency security features are enabled                                                           | [V4 — repository security settings](#v4--repository-security-settings)                                                                                                                     |
+| 5   | Vulnerability remediation is complete without suppression                                                 | `go run github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.3.5 --recursive .` returns `No issues found`; `npm audit --json` returns zero vulnerabilities in `/`, `/app`, and `/tests/e2e` |
+| 6   | Dependency metadata remains installable and the application is unchanged behaviorally                     | Clean `npm ci` in `/`, `/app`, and `/tests/e2e`; `npm run preflight`                                                                                                                       |
+| 7   | Current PR head is merge-ready                                                                            | [V7 — head-bound merge readiness](#v7--head-bound-merge-readiness)                                                                                                                         |
+| 8   | PR #107 refreshes the reviewed npm minor/patch set without advancing frozen Supabase packages             | [V8 — grouped npm refresh](#v8--grouped-npm-refresh)                                                                                                                                       |
 
 ### V1 — Ecosystem coverage
 
@@ -98,7 +98,7 @@ rm "$base_lock"
 ```
 
 Context7's current Next.js package documentation records Node.js `>=20.9.0` and React
-`^19.0.0` support. CI runs Node 20, the production image uses Node 22, and PR #107 keeps
+`^19.0.0` support. CI and the production image use Node 22, and PR #107 keeps
 React/React DOM within 19.2, so the 16.3 refresh stays inside the documented runtime
 boundary.
 
