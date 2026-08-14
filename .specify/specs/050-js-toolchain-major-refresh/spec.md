@@ -34,6 +34,9 @@ silently weakening lint/type checks, or changing product behavior.
 3. Each JavaScript workspace installs cleanly and the full repository preflight passes.
 4. Each PR receives a native Codex review for its final head, has zero unresolved review
    threads, and passes all five required GitHub checks.
+5. If an upstream peer dependency still excludes the proposed major, the generated
+   version change is removed and the PR records the exact blocker and a testable resume
+   condition instead of forcing an unsupported install.
 
 ## Negative Scenarios
 
