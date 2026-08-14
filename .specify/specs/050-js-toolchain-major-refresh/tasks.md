@@ -36,7 +36,13 @@
       official side-by-side TypeScript 7 CLI / TypeScript 6 API layout.
 - [x] Replace removed e2e `baseUrl` semantics with an equivalent relative path mapping;
       pass npm 10 clean install, dependency-tree, lint, and TypeScript 7 typecheck.
-- [ ] Trigger and clear PR #113's head-bound native Codex review and required checks.
+- [x] Trigger and clear PR #113's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
+- [x] Rebase PR #114 and reject Node 26 ambient declarations against Node 22 e2e, CI,
+      and production runtime contracts.
+- [x] Align e2e `@types/node` to 22.20.1 and pass npm 10 clean install, lint, and
+      TypeScript 7 typecheck.
+- [ ] Trigger and clear PR #114's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -73,6 +79,9 @@
   8.67 requires TypeScript `<6.1.0`. After separating CLI and API packages, TypeScript 7
   correctly rejects the removed `baseUrl` option, so its path alias must be expressed
   as a relative replacement instead.
+- PR #114's generated Node 26 declarations compile under the current toolchain, but a
+  green compiler cannot prove APIs will exist on the Node 22 process that executes e2e,
+  CI, and the production web application.
 
 ### Decisions
 
@@ -101,10 +110,11 @@
   TypeScript 7 owns `tsc`, while TypeScript 6 remains available to `typescript-eslint`
   through the standard `typescript` package name. Replace `baseUrl`, without weakening
   the existing `@/*` alias or enabling peer-ignore installation flags.
+- Align e2e Node declarations with the same 22.20.1 line as the app. Resume Node 26
+  declarations only alongside a deliberate runtime and required-workflow upgrade.
 
 ### Known Issues
 
-- PR #114 remains an isolated major upgrade and needs its own compatibility evidence
-  before their checkboxes can be completed here.
+- Node 26 declarations remain deferred until executable runtime contracts move together.
 - App ESLint 10 remains deferred until every plugin in the resolved Next lint graph
   declares support; Dependabot may reopen the update when upstream metadata changes.
