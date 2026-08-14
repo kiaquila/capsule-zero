@@ -47,6 +47,8 @@ silently weakening lint/type checks, or changing product behavior.
 9. The e2e TypeScript 7 compiler runs typecheck while ESLint retains a supported
    TypeScript 6 compiler API, and the existing app-source alias resolves without the
    removed `baseUrl` option.
+10. The e2e Node.js ambient types expose only the Node 22 API line used by its declared
+    engine, required test workflow, and production web runtime.
 
 ## Negative Scenarios
 
@@ -64,6 +66,8 @@ silently weakening lint/type checks, or changing product behavior.
   config imports that package as the source of its core recommended rules.
 - TypeScript 7 is not installed directly under the `typescript` package name in e2e:
   doing so violates `typescript-eslint`'s `<6.1.0` peer contract and breaks clean CI.
+- A passing e2e typecheck does not justify Node 26 declarations while all executable
+  runtime contracts remain on Node 22.
 - The frozen Supabase provider graph remains outside this toolchain refresh.
 
 TDD posture: this is development-tooling and CI support work without product behavior

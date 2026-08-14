@@ -20,6 +20,7 @@ and request a fresh native Codex review before the guarded merge.
 | 7   | Node ambient types match the runtime line        | Production Dockerfile and required workflows use Node 22; installed `@types/node` reports 22.20.1; app typecheck and production build pass     |
 | 8   | E2e ESLint 10 graph is internally compatible     | npm peer/engine metadata; npm 10.9.4 clean install; `npm ls`; e2e lint and typecheck; unchanged three-warning Playwright baseline              |
 | 9   | E2e TypeScript 7/6 boundary remains supported    | failed direct-install CI evidence; npm 10.9.4 clean install; CLI/API versions; e2e lint, TypeScript 7 typecheck, and full preflight            |
+| 10  | E2e Node ambient types match runtime             | Node engine, required workflow, and production image stay on Node 22; installed declarations report 22.20.1; e2e lint/typecheck and preflight  |
 
 ## Compatibility Notes
 
@@ -70,4 +71,10 @@ and request a fresh native Codex review before the guarded merge.
   under the `typescript` name. TypeScript 7 also removes `baseUrl`; replacing it with
   the equivalent relative `@/*` path preserves app-source resolution. npm 10.9.4 clean
   install, the CLI/API version boundary, e2e lint, and TypeScript 7 typecheck all pass;
+  `CI=1 npm run preflight` completes with 78 browser scenarios passed and 8 skipped.
+- PR #114's generated Node 26 declarations compile but are newer than every executable
+  Node contract in scope. The e2e package requires Node `>=22.22.1`, both required
+  workflows select Node 22, and the production image is Node 22. The final update moves
+  e2e declarations from 20.19.43 to the same 22.20.1 line already verified for the app;
+  npm 10.9.4 clean install, e2e lint, and TypeScript 7 typecheck pass;
   `CI=1 npm run preflight` completes with 78 browser scenarios passed and 8 skipped.
