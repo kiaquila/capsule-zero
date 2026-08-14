@@ -207,7 +207,7 @@ Dashboard и Capsule Result не продолжали показывать по�
    capsule без shoes сохраняет `outfitCount=0`, а валидная top+bottom+shoes база — `1`, тем же
    calculator, который обслуживает preview.
 10. **Regression проходит локально только на Node 25** — прямые импорты app `.ts` не полагаются на
-    встроенное type stripping: тот же focused suite обязан проходить на CI Node 20.
+    встроенное type stripping: тот же focused suite обязан проходить на CI Node 22.
 11. **`A_max` реализован как `Math.min(count, 3)` без selection** — отвергнуто: при четырёх и более
     canonical candidates calculator обязан выполнить documented farthest-first и сохранить
     representative item IDs, а не только обрезать анонимное число.

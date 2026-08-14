@@ -134,7 +134,7 @@ As any agent or human writing product code, I want TDD enforcement to be quotabl
 
 ### Key Entities
 
-- **`test` job**: GitHub Actions job that owns the e2e gate. Inputs: PR head SHA, Ubuntu runner, Node 20, Playwright cache. Outputs: green/red check, `playwright-report/` artifact on failure.
+- **`test` job**: GitHub Actions job that owns the e2e gate. Inputs: PR head SHA, Ubuntu runner, Node 22, Playwright cache. Outputs: green/red check, `playwright-report/` artifact on failure.
 - **Page Object**: TypeScript class in `tests/e2e/pages/` that exposes named Locators for one logical UI surface and subclasses `BasePage`.
 
 ## Success Criteria _(mandatory)_
