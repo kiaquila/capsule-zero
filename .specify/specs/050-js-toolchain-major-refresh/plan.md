@@ -52,3 +52,5 @@ and request a fresh native Codex review before the guarded merge.
   type major only when the production image and CI runtime move to Node 26; clean app
   install, TypeScript 7 typecheck, and production build pass on the aligned line, and
   the full CI-mode preflight completes with 78 browser scenarios passed and 8 skipped.
+  The final cross-platform lockfile is generated and clean-installed with npm 10.9.4,
+  matching the Node 22 CI client, so Linux optional dependencies remain represented.

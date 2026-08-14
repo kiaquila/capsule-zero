@@ -22,6 +22,8 @@
       runtime, and update the app to the latest Node 22 type line instead.
 - [x] Pass clean app install, TypeScript 7 typecheck, and the production build with
       `@types/node` 22.20.1.
+- [x] Regenerate and clean-install the app lockfile with CI-aligned npm 10.9.4 after
+      npm 11 omitted Linux-only optional dependency records on macOS.
 - [ ] Trigger and clear PR #111's head-bound native Codex review and required checks.
 
 ## Process Memory
@@ -48,6 +50,10 @@
 - PR #111's generated Node 26 type update also passes the current compiler and build,
   but that is insufficient evidence: ambient declarations can expose Node 26-only APIs
   while every deployed and required workflow runtime remains Node 22.
+- The local npm 11.6.2 client produced a lockfile that clean-installed on macOS but
+  omitted root `@emnapi/core` and `@emnapi/runtime` records required by Linux npm 10.
+  The first PR #111 baseline run caught the mismatch immediately; regenerating with
+  npm 10.9.4 restored both portable optional-dependency records.
 
 ### Decisions
 

@@ -53,6 +53,8 @@ silently weakening lint/type checks, or changing product behavior.
   so ESLint and Next.js must not load it through `require("typescript")`.
 - A green typecheck with `@types/node` newer than the deployed runtime is not accepted:
   it could compile calls that fail only after deployment.
+- A lockfile that installs only on the maintainer platform is not accepted; the Node 22
+  CI npm client must validate all cross-platform optional dependency records.
 - The frozen Supabase provider graph remains outside this toolchain refresh.
 
 TDD posture: this is development-tooling and CI support work without product behavior
