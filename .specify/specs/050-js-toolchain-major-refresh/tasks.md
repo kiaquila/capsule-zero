@@ -21,9 +21,11 @@
   from `origin/main` and regenerating only lint-staged preserved the merged graph.
 - npm can install lint-staged 17 under an unsupported Node version with only an engine
   warning. A green install alone therefore is not compatibility evidence.
-- PR #109's generated ESLint 10 lockfile cannot install cleanly: npm reports `ERESOLVE`
-  because latest `eslint-plugin-jsx-a11y@6.10.2` declares support only through ESLint 9.
-  Peer-ignore flags would conceal, not resolve, the unsupported plugin/runtime boundary.
+- PR #109's generated ESLint 10 lockfile cannot install cleanly: npm reports `ERESOLVE`.
+  Inspection of the complete resolved Next lint graph found three packages whose current
+  peer ranges end at ESLint 9: `eslint-plugin-jsx-a11y@6.10.2`,
+  `eslint-plugin-import@2.32.0`, and `eslint-plugin-react@7.37.5`. Peer-ignore flags
+  would conceal, not resolve, those unsupported plugin/runtime boundaries.
 
 ### Decisions
 
@@ -43,5 +45,5 @@
 
 - PRs #110-#114 remain isolated major upgrades and need their own compatibility evidence
   before their checkboxes can be completed here.
-- App ESLint 10 remains deferred until the accessibility plugin/Next lint stack declares
-  support; Dependabot may reopen the update when upstream metadata changes.
+- App ESLint 10 remains deferred until every plugin in the resolved Next lint graph
+  declares support; Dependabot may reopen the update when upstream metadata changes.

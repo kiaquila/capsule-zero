@@ -29,8 +29,9 @@ and request a fresh native Codex review before the guarded merge.
   repository/API checks, both lint/typecheck paths, the production build, and 78 browser
   scenarios with 8 intentional skips.
 - PR #109 disposition: ESLint 10 itself supports the repository's Node 22 line and flat
-  config, but the latest `eslint-plugin-jsx-a11y` (6.10.2), required directly and by
-  `eslint-config-next` 16.3, declares peers only through ESLint 9. The generated update
+  config, but three plugins in `eslint-config-next` 16.3's resolved graph declare peers
+  only through ESLint 9: `eslint-plugin-jsx-a11y@6.10.2`,
+  `eslint-plugin-import@2.32.0`, and `eslint-plugin-react@7.37.5`. The generated update
   failed clean `npm ci` with `ERESOLVE`; app manifest and lockfile are therefore kept
-  identical to `origin/main`. Resume after that plugin or a supported Next lint stack
+  identical to `origin/main`. Resume only after the complete resolved Next lint graph
   declares ESLint 10 compatibility and the existing 93-warning lint baseline passes.
