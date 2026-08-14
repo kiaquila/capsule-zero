@@ -42,6 +42,8 @@ silently weakening lint/type checks, or changing product behavior.
    package, and the unchanged production application still builds successfully.
 7. Node.js ambient types do not advertise APIs newer than the Node 22 runtime used by
    production images and required CI workflows.
+8. The e2e ESLint 10 runtime, core recommended config, TypeScript adapter, and Playwright
+   plugin resolve a mutually supported graph under the repository Node floor.
 
 ## Negative Scenarios
 
@@ -55,6 +57,8 @@ silently weakening lint/type checks, or changing product behavior.
   it could compile calls that fail only after deployment.
 - A lockfile that installs only on the maintainer platform is not accepted; the Node 22
   CI npm client must validate all cross-platform optional dependency records.
+- ESLint 10 is not paired with the previous major of `@eslint/js`, because the e2e flat
+  config imports that package as the source of its core recommended rules.
 - The frozen Supabase provider graph remains outside this toolchain refresh.
 
 TDD posture: this is development-tooling and CI support work without product behavior

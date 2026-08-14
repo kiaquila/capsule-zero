@@ -18,6 +18,7 @@ and request a fresh native Codex review before the guarded merge.
 | 5   | Unsupported major updates are not forced         | `npm view` peer metadata, clean-install result, and manifest/lockfile diff against `origin/main`                                               |
 | 6   | TypeScript 7/6 boundary is explicit              | `tsc --version`; `tsc6 --version`; `require("typescript").version`; `npm run lint`; `npm run typecheck`; `npm run build`                       |
 | 7   | Node ambient types match the runtime line        | Production Dockerfile and required workflows use Node 22; installed `@types/node` reports 22.20.1; app typecheck and production build pass     |
+| 8   | E2e ESLint 10 graph is internally compatible     | npm peer/engine metadata; npm 10.9.4 clean install; `npm ls`; e2e lint and typecheck; unchanged three-warning Playwright baseline              |
 
 ## Compatibility Notes
 
@@ -54,3 +55,10 @@ and request a fresh native Codex review before the guarded merge.
   the full CI-mode preflight completes with 78 browser scenarios passed and 8 skipped.
   The final cross-platform lockfile is generated and clean-installed with npm 10.9.4,
   matching the Node 22 CI client, so Linux optional dependencies remain represented.
+- PR #112 can take ESLint 10 independently from the blocked app graph:
+  `typescript-eslint` 8.67 explicitly peers with ESLint 10 and
+  `eslint-plugin-playwright` 2.11 accepts ESLint `>=8.40.0`. The final graph also moves
+  the imported `@eslint/js` recommended config to 10.0.1 and aligns the e2e engine with
+  the repository `>=22.22.1` floor. npm 10.9.4 clean install, `npm ls`, lint, and
+  typecheck pass with the existing three intentional skipped-test warnings unchanged;
+  `CI=1 npm run preflight` completes with 78 browser scenarios passed and 8 skipped.
