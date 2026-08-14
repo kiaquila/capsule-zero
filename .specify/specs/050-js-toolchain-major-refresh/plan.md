@@ -15,7 +15,8 @@ and request a fresh native Codex review before the guarded merge.
 | 2   | Existing staged-file contract remains executable | `npm run precommit` with the feature-memory changes staged; existing `lint-staged.config.mjs` and `.husky/pre-commit` are reused               |
 | 3   | Repository installs and verifies cleanly         | `npm ci --ignore-scripts`; `npm --prefix app ci --ignore-scripts`; `npm --prefix tests/e2e ci --ignore-scripts`; `CI=1 npm run preflight`      |
 | 4   | Current PR head is merge-ready                   | Head SHA equals GitHub PR head; `gh pr checks <PR> --required`; merge state `MERGEABLE/CLEAN`; unresolved review-thread count is zero          |
-| 5   | Unsupported major updates are not forced        | `npm view` peer metadata, clean-install result, and manifest/lockfile diff against `origin/main`                                               |
+| 5   | Unsupported major updates are not forced         | `npm view` peer metadata, clean-install result, and manifest/lockfile diff against `origin/main`                                               |
+| 6   | TypeScript 7/6 boundary is explicit              | `tsc --version`; `tsc6 --version`; `require("typescript").version`; `npm run lint`; `npm run typecheck`; `npm run build`                       |
 
 ## Compatibility Notes
 
@@ -35,3 +36,12 @@ and request a fresh native Codex review before the guarded merge.
   failed clean `npm ci` with `ERESOLVE`; app manifest and lockfile are therefore kept
   identical to `origin/main`. Resume only after the complete resolved Next lint graph
   declares ESLint 10 compatibility and the existing 93-warning lint baseline passes.
+- PR #110 uses TypeScript's documented side-by-side migration layout:
+  `@typescript/native` supplies the TypeScript 7 CLI, while the `typescript` package
+  name resolves `@typescript/typescript6` for API consumers. `typescript-eslint` 8.67
+  declares TypeScript `<6.1.0`, and Next.js 16.3 defaults to CLI-mode configuration
+  loading. Explicitly disabling `experimental.useTypeScriptCli` keeps Next.js on the
+  TypeScript 6 API; the repository's `typecheck` script still resolves the native
+  TypeScript 7 `tsc` binary. Clean install, lint, TypeScript 7 typecheck, and the
+  production webpack build all pass with this boundary; the full CI-mode preflight
+  completed with 78 browser scenarios passed and 8 intentionally skipped.

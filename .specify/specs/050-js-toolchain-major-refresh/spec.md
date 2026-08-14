@@ -37,6 +37,9 @@ silently weakening lint/type checks, or changing product behavior.
 5. If an upstream peer dependency still excludes the proposed major, the generated
    version change is removed and the PR records the exact blocker and a testable resume
    condition instead of forcing an unsupported install.
+6. The app's TypeScript 7 compiler CLI runs the standalone typecheck while tools that
+   still require the compiler API resolve the official TypeScript 6 compatibility
+   package, and the unchanged production application still builds successfully.
 
 ## Negative Scenarios
 
@@ -44,6 +47,8 @@ silently weakening lint/type checks, or changing product behavior.
   engine is not treated as supported merely because npm emits only a warning.
 - A major tool update that drops rules, hides type errors, or requires product-code
   changes is not merged as an unreviewed lockfile-only bump.
+- TypeScript 7 is not exposed to an API consumer: it intentionally has no compiler API,
+  so ESLint and Next.js must not load it through `require("typescript")`.
 - The frozen Supabase provider graph remains outside this toolchain refresh.
 
 TDD posture: this is development-tooling and CI support work without product behavior
