@@ -40,6 +40,8 @@ silently weakening lint/type checks, or changing product behavior.
 6. The app's TypeScript 7 compiler CLI runs the standalone typecheck while tools that
    still require the compiler API resolve the official TypeScript 6 compatibility
    package, and the unchanged production application still builds successfully.
+7. Node.js ambient types do not advertise APIs newer than the Node 22 runtime used by
+   production images and required CI workflows.
 
 ## Negative Scenarios
 
@@ -49,6 +51,10 @@ silently weakening lint/type checks, or changing product behavior.
   changes is not merged as an unreviewed lockfile-only bump.
 - TypeScript 7 is not exposed to an API consumer: it intentionally has no compiler API,
   so ESLint and Next.js must not load it through `require("typescript")`.
+- A green typecheck with `@types/node` newer than the deployed runtime is not accepted:
+  it could compile calls that fail only after deployment.
+- A lockfile that installs only on the maintainer platform is not accepted; the Node 22
+  CI npm client must validate all cross-platform optional dependency records.
 - The frozen Supabase provider graph remains outside this toolchain refresh.
 
 TDD posture: this is development-tooling and CI support work without product behavior

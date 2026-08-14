@@ -16,7 +16,15 @@
       `typescript-eslint` before selecting the upstream side-by-side migration layout.
 - [x] Keep the TypeScript 7 CLI and TypeScript 6 API consumer paths explicit, and pass
       clean install, lint, TypeScript 7 typecheck, and the production app build.
-- [ ] Trigger and clear PR #110's head-bound native Codex review and required checks.
+- [x] Trigger and clear PR #110's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
+- [x] Rebase PR #111, reject ambient Node 26 APIs against the Node 22 production
+      runtime, and update the app to the latest Node 22 type line instead.
+- [x] Pass clean app install, TypeScript 7 typecheck, and the production build with
+      `@types/node` 22.20.1.
+- [x] Regenerate and clean-install the app lockfile with CI-aligned npm 10.9.4 after
+      npm 11 omitted Linux-only optional dependency records on macOS.
+- [ ] Trigger and clear PR #111's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -39,6 +47,13 @@
   on the aliased TypeScript 6 wrapper and ignores `tsconfig.json`, breaking every `@/*`
   webpack alias. Setting Next.js to its supported API mode makes it load the TypeScript
   6 API package and preserves the existing path mappings.
+- PR #111's generated Node 26 type update also passes the current compiler and build,
+  but that is insufficient evidence: ambient declarations can expose Node 26-only APIs
+  while every deployed and required workflow runtime remains Node 22.
+- The local npm 11.6.2 client produced a lockfile that clean-installed on macOS but
+  omitted root `@emnapi/core` and `@emnapi/runtime` records required by Linux npm 10.
+  The first PR #111 baseline run caught the mismatch immediately; regenerating with
+  npm 10.9.4 restored both portable optional-dependency records.
 
 ### Decisions
 
@@ -57,10 +72,13 @@
   `tsc` command is TypeScript 7.0.2, `tsc6` and `require("typescript")` remain on the
   compatible TypeScript 6 line, and Next.js is pinned to its compiler-API mode until
   its CLI-mode package discovery recognizes the side-by-side wrapper.
+- Keep `@types/node` aligned to the deployed runtime major. PR #111 advances 20.19.33 to
+  22.20.1 rather than accepting 26.2.0; Node 26 types resume with a deliberate runtime
+  upgrade, not as an isolated declaration-only change.
 
 ### Known Issues
 
-- PRs #111-#114 remain isolated major upgrades and need their own compatibility evidence
+- PRs #112-#114 remain isolated major upgrades and need their own compatibility evidence
   before their checkboxes can be completed here.
 - App ESLint 10 remains deferred until every plugin in the resolved Next lint graph
   declares support; Dependabot may reopen the update when upstream metadata changes.

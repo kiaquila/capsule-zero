@@ -17,6 +17,7 @@ and request a fresh native Codex review before the guarded merge.
 | 4   | Current PR head is merge-ready                   | Head SHA equals GitHub PR head; `gh pr checks <PR> --required`; merge state `MERGEABLE/CLEAN`; unresolved review-thread count is zero          |
 | 5   | Unsupported major updates are not forced         | `npm view` peer metadata, clean-install result, and manifest/lockfile diff against `origin/main`                                               |
 | 6   | TypeScript 7/6 boundary is explicit              | `tsc --version`; `tsc6 --version`; `require("typescript").version`; `npm run lint`; `npm run typecheck`; `npm run build`                       |
+| 7   | Node ambient types match the runtime line        | Production Dockerfile and required workflows use Node 22; installed `@types/node` reports 22.20.1; app typecheck and production build pass     |
 
 ## Compatibility Notes
 
@@ -45,3 +46,11 @@ and request a fresh native Codex review before the guarded merge.
   TypeScript 7 `tsc` binary. Clean install, lint, TypeScript 7 typecheck, and the
   production webpack build all pass with this boundary; the full CI-mode preflight
   completed with 78 browser scenarios passed and 8 intentionally skipped.
+- PR #111 generated `@types/node` 26.2.0, which compiles but is newer than the Node 22
+  production image and required workflow runtime. The final update therefore advances
+  the app from 20.19.33 to the current Node 22 type line, 22.20.1. Resume the Node 26
+  type major only when the production image and CI runtime move to Node 26; clean app
+  install, TypeScript 7 typecheck, and production build pass on the aligned line, and
+  the full CI-mode preflight completes with 78 browser scenarios passed and 8 skipped.
+  The final cross-platform lockfile is generated and clean-installed with npm 10.9.4,
+  matching the Node 22 CI client, so Linux optional dependencies remain represented.
