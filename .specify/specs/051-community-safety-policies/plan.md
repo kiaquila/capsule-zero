@@ -1,4 +1,4 @@
-# Plan 050 — Community Safety Policies
+# Plan 051 — Community Safety Policies
 
 ## Approach
 
@@ -187,13 +187,11 @@ passed 2/2 across Chromium and mobile WebKit, and both TypeScript checks passed.
 OSV merge-readiness follow-up: the required scan on head `5897b92` began after five new
 Go stdlib advisories were published and correctly rejected the former 1.25.12 pin. The
 module, Dockerfile, Compose default, canonical env example, and required-test container
-now pin the fixed 1.25.13 patch. OSV also returned the `golang.org/x/net`-only
-`GO-2026-5942` advisory for stdlib; `go list -m all` and `go list -deps ./...` confirmed
-that the API neither requires nor imports `x/net`, so one API-local exception documents
-that upstream mismatch and expires 2026-08-20. OSV Scanner v2.3.5 then reported `No
-issues found`; `go vet ./...`, `go test ./...`, and Compose config passed. The official
-1.25.13 download and Docker manifests exist; the local Docker daemon was unavailable,
-so GitHub's required `test` job supplies the pinned-container/build evidence.
+now pin the first fixed stable toolchain, 1.26.6. OSV Scanner v2.3.5 then reported `No
+issues found` without an advisory-wide suppression; `go vet ./...`, `go test ./...`, and
+Compose config passed. The official 1.26.6 download and Docker manifests exist; the
+local Docker daemon was unavailable, so GitHub's required `test` job supplies the
+pinned-container/build evidence.
 
 | #   | Acceptance criterion                                                                   | Evidence                                                                                                                                                                                                                                                                                                                                                                 |
 | --- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

@@ -1,4 +1,4 @@
-# Spec 050 — Community Safety Policies
+# Spec 051 — Community Safety Policies
 
 ## Goal
 
@@ -181,8 +181,8 @@ module-scoped React `cache` wrapper and first failed because the session module 
 such import or shared export. The implementation now lets the protected layout and its
 page consume the same verified-session result within a Server Component request while
 React resets the cache for the next request.
-The Go 1.25.13 and OSV configuration follow-up changes only build, CI, and delivery
-wiring. Under the repository TDD contract it is verified by scanner, config, module-test,
-and required-check evidence rather than a failing application test.
+The Go 1.26.6 toolchain follow-up changes only build, CI, and delivery wiring. Under
+the repository TDD contract it is verified by scanner, config, module-test, and
+required-check evidence rather than a failing application test.
 Policy drafting and feature-memory changes are documentation work, but the public
 Next.js route behavior follows the application-code TDD contract.
