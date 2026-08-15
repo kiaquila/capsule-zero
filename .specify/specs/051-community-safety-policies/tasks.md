@@ -157,6 +157,9 @@
 - The post-`main` Codex review found that the former `GO-2026-5942` advisory-wide
   exception was obsolete after the 1.26.6 update. It was deleted rather than retained
   as a time-limited bypass, so the required scan stays fail-closed for every advisory.
+- The same review found that the Terms notice spec had reached the five-case threshold;
+  its authenticated-route scenario is now isolated in a focused companion spec so both
+  files remain below the repository's five-case limit.
 
 ### Known Issues
 
