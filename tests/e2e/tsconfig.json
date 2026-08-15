@@ -3,9 +3,8 @@
     "target": "ES2022",
     "module": "ES2022",
     "moduleResolution": "Bundler",
-    "baseUrl": "../../app",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["../../app/src/*"]
     },
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,

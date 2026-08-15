@@ -45,7 +45,7 @@ jobs:
       run: ${{ steps.decide.outputs.run }}
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -98,7 +98,7 @@ jobs:
       image_api: ${{ steps.meta.outputs.image_api }}
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Compute image refs
         id: meta
@@ -176,6 +176,11 @@ jobs:
       name: production
       url: https://capsulezero.app
     steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
       - name: Resolve image refs
         id: ref
         env:
@@ -191,10 +196,13 @@ jobs:
               echo "::error::image_sha must match sha-<40 lowercase hex characters>"
               exit 1
             fi
+            deploy_sha="${ROLLBACK_IMAGE_SHA#sha-}"
+            git fetch --no-tags origin main
+            bash scripts/check-kratos-rollback-boundary.sh origin/main "$deploy_sha"
             {
               echo "image_web=${IMAGE_WEB}:${ROLLBACK_IMAGE_SHA}"
               echo "image_api=${IMAGE_API}:${ROLLBACK_IMAGE_SHA}"
-              echo "deploy_sha=${ROLLBACK_IMAGE_SHA#sha-}"
+              echo "deploy_sha=${deploy_sha}"
               echo "sync_host_nginx=false"
             } >> "$GITHUB_OUTPUT"
           else
@@ -215,7 +223,7 @@ jobs:
           fi
 
       - name: Connect deploy runner to Tailscale
-        uses: tailscale/github-action@306e68a486fd2350f2bfc3b19fcd143891a4a2d8 # v4
+        uses: tailscale/github-action@780049a30b6ff5c378a9e7b389d15ece7a204888 # v4.1.3
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           audience: ${{ secrets.TS_AUDIENCE }}

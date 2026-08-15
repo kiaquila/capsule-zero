@@ -8,7 +8,7 @@ Stand up a Playwright e2e harness under `tests/e2e/` (POM, OOP, ESLint with `esl
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.x, Node.js 20
+**Language/Version**: TypeScript 5.x, Node.js 22
 **Primary Dependencies**: `@playwright/test` ^1.51, `eslint-plugin-playwright` ^2.x, `typescript-eslint` ^8.x, `@eslint/js` ^9.x
 **Storage**: none
 **Testing**: Playwright (e2e)

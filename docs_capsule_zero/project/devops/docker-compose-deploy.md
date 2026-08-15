@@ -23,8 +23,8 @@ Each active v0.1 service is declared as a separate `services:` entry in one root
 | `nginx`    | `nginx:1.31-alpine`   | Rollback compose edge: TLS, rate-limit, `auth_request` into Kratos     | profile-gated `80`, `443` via `--profile docker-edge` |
 | `web`      | local build of `/app` | Next.js App Router web frontend                                        | `127.0.0.1:3000` for host nginx                       |
 | `api`      | local build of `/api` | Go modular monolith: auth/profile plus storage/upload foundation       | internal only (behind nginx)                          |
-| `kratos-migrate` | `oryd/kratos`   | One-shot Kratos schema migration                                      | internal one-shot job                                 |
-| `kratos`   | `oryd/kratos`         | Identity provider (email/password Stage 1)                             | internal only (behind nginx)                          |
+| `kratos-migrate` | `oryd/kratos:v26.2.0` | One-shot Kratos schema migration                                 | internal one-shot job                                 |
+| `kratos`   | `oryd/kratos:v26.2.0` | Identity provider (email/password Stage 1)                             | internal only (behind nginx)                          |
 | `postgres` | `postgres:16`         | App database + Kratos database (separate logical DBs)                  | internal only                                         |
 | `mailhog`  | `mailhog/mailhog`     | Dev-only courier sink; replaced by Resend in prod                      | `127.0.0.1:8025` (dev only)                           |
 

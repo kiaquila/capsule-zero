@@ -48,6 +48,25 @@
 
 ### Decisions
 
+- **2026-08-13 PR #101 review fix: automated rollback is fenced to one Kratos runtime
+  epoch.** The previous `workflow_dispatch` path could check out a pre-upgrade commit and
+  run Kratos v1.3.1 against a database already migrated by v26.2.0. The shared
+  `scripts/check-kratos-rollback-boundary.sh` now compares the exact pinned
+  `kratos-migrate` image at current `origin/main` and the requested target. Both CD and
+  the root-owned wrapper fail closed on a mismatch before Compose runs. Same-runtime app
+  rollbacks remain available; a cross-runtime recovery requires a separately approved
+  restore of a database snapshot compatible with the target runtime. Reuse check:
+  `infra/scripts/capsule-zero-deploy` was extended for server-side enforcement and calls
+  a separately installed root-owned checker under `/usr/local/libexec`; the standalone
+  source is also necessary so the GitHub workflow can enforce the same policy before SSH.
+- **2026-08-13 PR #101 activation:** installed the committed wrapper and checker on `cz`
+  as `root:root` mode `755`; their SHA-256 values matched the PR source and the former
+  wrapper was retained as `/usr/local/sbin/capsule-zero-deploy.pre-pr101-20260813`.
+  Without restarting services, the installed checker accepted the live v1.3.1 checkout
+  against itself, rejected the fetched v26.2.0 PR head as cross-runtime, and the public
+  `/api/health` response remained all-ok. This closes the activation gap before merge;
+  after rollout, the comparison direction becomes v26.2.0 → older v1.3.1 and remains
+  equally fail-closed.
 - **2026-07-02 hosting migrated DigitalOcean → Hetzner CX23; dev environment
   decommissioned.** Founder decision: cheaper capacity that actually clears the Phase-0
   gate (2 vCPU / 4 GB / 40 GB vs the unresized 458 MiB droplet), and a single production

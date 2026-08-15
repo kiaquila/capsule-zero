@@ -73,10 +73,13 @@
   Dockerfile, root compose build arg default, canonical compose env example, and
   test workflow container image. This is a security/CI hygiene follow-up, not a
   behavior change to the Go API.
-- **Historical supersession, 2026-08-13:** Newly published stdlib advisories moved the
-  live patch pin to 1.25.13 in the spec-050 merge-readiness follow-up. The 1.25.12
-  commands below remain evidence for the earlier spec-038 PR head, not current runtime
-  configuration.
+- **2026-08-13 PR #101:** the now-required `osv-scan` found later Go stdlib
+  advisories while all active pins were still `1.25.12`. A first update to
+  `1.25.13` fixed five findings, but `GO-2026-5942` remained and has no fixed
+  1.25.x release. Updated the same module/build/Compose/env/CI pin set to the
+  first fixed stable toolchain, `1.26.6`. Historical 2026-07-09 commands below
+  remain evidence for the earlier `1.25.12` transition, not current operator
+  instructions.
 
 ### Dead Ends
 

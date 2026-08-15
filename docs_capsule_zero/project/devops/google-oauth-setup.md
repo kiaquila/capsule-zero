@@ -88,8 +88,10 @@ ADR-002.
 
 - **No account linking:** a Google sign-in whose email already has a password
   identity is rejected; the user is pointed back to password login.
-- **Verify-email banner still appears** for Google sign-ups (OSS Kratos v1.3
-  cannot mark the address verified from the mapper).
+- **Verify-email banner still appears** for Google sign-ups: the retained
+  mapper does not mark `verifiable_addresses` verified. The v26.2 runtime
+  upgrade does not change that mapper and did not enable or live-probe Google;
+  confirm the banner in the operator smoke when the provider is enabled.
 - **Rotation:** to rotate the client secret, create a new secret in the same
   OAuth client, update `KRATOS_OIDC_PROVIDERS`, `docker compose up -d kratos`.
 - **Kill switch:** set `KRATOS_OIDC_ENABLED=false` + `AUTH_GOOGLE_ENABLED=false`

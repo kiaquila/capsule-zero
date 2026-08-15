@@ -4,12 +4,13 @@
   "type": "module",
   "packageManager": "npm@10.9.2",
   "engines": {
-    "node": ">=20",
+    "node": ">=22.22.1",
     "npm": ">=10"
   },
   "scripts": {
     "check:feature-memory": "node scripts/check-feature-memory.mjs",
     "check:api-contract": "node scripts/check-api-contract.mjs && node scripts/generate-api-clients.mjs --check",
+    "check:kratos-container": "bash scripts/check-kratos-container.sh",
     "check:nginx-container": "bash scripts/check-nginx-container.sh",
     "check:repo": "node scripts/check-repo-baseline.mjs",
     "check:runtime-env": "node scripts/check-runtime-env.mjs",
@@ -33,8 +34,8 @@
   },
   "devDependencies": {
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
-    "prettier": "^3.8.3",
-    "yaml": "^2.8.3"
+    "lint-staged": "^17.3.0",
+    "prettier": "^3.9.6",
+    "yaml": "^2.9.0"
   }
 }

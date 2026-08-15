@@ -36,7 +36,21 @@ export class ProfilePage extends BasePage {
 
   /** Open the form and submit a password change. */
   async changePassword(current: string, next: string): Promise<void> {
-    await this.changePasswordButton.click();
+    // Match the existing cookie-banner POM retry: Next dev can expose SSR
+    // markup a moment before React attaches the click handler in WebKit.
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      await this.changePasswordButton.click();
+
+      try {
+        await this.passwordForm.waitFor({ state: "visible", timeout: 5_000 });
+        break;
+      } catch (error) {
+        if (attempt === 1) {
+          throw error;
+        }
+      }
+    }
+
     await this.currentPasswordInput.fill(current);
     await this.newPasswordInput.fill(next);
     await this.confirmPasswordInput.fill(next);
