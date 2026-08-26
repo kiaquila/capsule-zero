@@ -51,6 +51,10 @@ the compatible minor/patch pull requests produced by that policy.
 7. The grouped Go refresh in PR #115 advances the AWS SDK/S3 and pgx v5 minor/patch
    lines together, preserves the existing S3-compatible presign and pgxpool APIs, and
    passes module-tidiness, vet, package tests, and targeted race tests.
+8. The grouped npm refresh in PR #117 advances only the reviewed active app packages
+   (`next`, `eslint-config-next`, `@hookform/resolvers`, `zustand`); the frozen
+   `@supabase/supabase-js` manifest entry and its complete lockfile subgraph remain
+   byte-identical to `origin/main`, and lint, CSS lint, typecheck, and build stay green.
 
 ## Negative Scenarios
 
@@ -65,6 +69,10 @@ the compatible minor/patch pull requests produced by that policy.
   remediation.
 - No deprecated pgxpool acquisition hook or removed AWS endpoint resolver is introduced
   while accepting the grouped Go dependency refresh.
+- PR #117 must not ship the generated `@supabase/*` 2.112.3 bump: reverting the manifest
+  entry alone is insufficient, because `^2.108.2` still resolves forward, so the seven
+  `node_modules/@supabase/*` lockfile records are restored from `origin/main` and the
+  restored graph is proven by a clean `npm ci` resolving `@supabase/supabase-js@2.108.2`.
 
 TDD posture: these changes update repository automation and dependency metadata without
 changing application behavior. The infrastructure/support-change waiver applies; the

@@ -26,6 +26,7 @@ the complete repository verification chain before merge.
 | 7   | Current PR head is merge-ready                                                                            | [V7 — head-bound merge readiness](#v7--head-bound-merge-readiness)                                                                                                                         |
 | 8   | PR #107 refreshes the reviewed npm minor/patch set without advancing frozen Supabase packages             | [V8 — grouped npm refresh](#v8--grouped-npm-refresh)                                                                                                                                       |
 | 9   | PR #115 refreshes the reviewed Go minor/patch set without breaking storage or database contracts          | [V9 — grouped Go refresh](#v9--grouped-go-refresh)                                                                                                                                         |
+| 10  | PR #117 refreshes the reviewed app npm minor/patch set with the frozen Supabase subgraph held at `main`   | [V10 — grouped app npm refresh](#v10--grouped-app-npm-refresh)                                                                                                                             |
 
 ### V1 — Ecosystem coverage
 
@@ -64,10 +65,10 @@ review thread remains unresolved.
 
 ```sh
 head_sha="$(git rev-parse HEAD)"
-test "$(gh pr view 115 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
-gh pr checks 115 --repo kiaquila/capsule-zero --required
-test "$(gh pr view 115 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
-test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:115) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
+test "$(gh pr view 117 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
+gh pr checks 117 --repo kiaquila/capsule-zero --required
+test "$(gh pr view 117 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
+test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:117) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
 ```
 
 ### V8 — Grouped npm refresh
@@ -140,3 +141,28 @@ Local evidence on rebased PR #115: `go mod tidy` produced no diff; `go mod verif
 with Go 1.26.6. The resolved direct module versions are AWS SDK core 1.43.5, config
 1.32.36, credentials 1.19.35, S3 1.107.1, Smithy 1.27.7, and pgx 5.10.0. The full
 CI-mode repository preflight also passed with 78 browser scenarios passed and 8 skipped.
+
+### V10 — Grouped app npm refresh
+
+```sh
+git diff origin/main -- app/package-lock.json | grep -E '^[-+].*supabase'   # must print nothing
+npm ci --ignore-scripts
+npm ci --prefix app
+node -p "require('./app/node_modules/@supabase/supabase-js/package.json').version"   # 2.108.2
+npm run check:repo
+npm run lint
+npm run lint:css
+npm run typecheck
+npm run build
+```
+
+Direct deltas accepted on PR #117: `next` 16.3.0 -> 16.3.1, `eslint-config-next`
+^16.3.0 -> ^16.3.1, `@hookform/resolvers` ^5.7.1 -> ^5.9.0, `zustand` ^5.0.14 ->
+^5.0.15. The generated `@supabase/supabase-js` ^2.108.2 -> ^2.112.3 bump is reverted in
+both the manifest and the lockfile under the frozen-provider rule.
+
+Local evidence on rebased PR #117: the Supabase grep printed nothing, both clean
+installs succeeded, the installed Supabase runtime resolved to 2.108.2, and the
+repository baseline, ESLint, Stylelint, typecheck, and Next.js production build all
+passed. The GitHub `baseline-checks`, `test`, and `osv-scan` jobs remain the head-bound
+external evidence.

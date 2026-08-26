@@ -24,7 +24,14 @@
       race tests on the refreshed graph.
 - [x] Pass module-integrity verification and the full repository preflight (78 browser
       scenarios passed, 8 intentionally skipped) on the rebased PR #115 head.
-- [ ] Trigger and clear PR #115's head-bound native Codex review and required checks.
+- [x] Trigger and clear PR #115's head-bound native Codex review and required checks.
+- [x] Rebase PR #117 on the latest `origin/main` and inventory every direct npm delta in
+      the generated app minor/patch group.
+- [x] Restore the frozen `@supabase/*` manifest entry and all seven lockfile records
+      from `origin/main`, then prove the restored graph with a clean `npm ci`.
+- [x] Pass the repository baseline, ESLint, Stylelint, typecheck, and production build
+      on the rebased PR #117 head.
+- [ ] Trigger and clear PR #117's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -48,6 +55,11 @@
   browser launches failed immediately. After installing the matching Chromium/WebKit
   revisions, 77 tests passed and one WebKit profile test exposed the same pre-hydration
   lost-click race already handled by the cookie-banner page object.
+- Reverting only the `@supabase/supabase-js` manifest entry on PR #117 does not undo the
+  bump: the surviving `^2.108.2` range still resolves to 2.112.3, and regenerating the
+  lockfile re-applies it. Replacing the seven `node_modules/@supabase/*` records in place
+  from `origin/main` was required; deleting and re-appending them first produced a
+  correct but needlessly reordered lockfile diff.
 - Treating green compilation alone as sufficient for PR #115 would miss two relevant
   compatibility boundaries: S3-compatible endpoint/presign behavior and pgx 5.10's
   deprecation of `BeforeAcquire`. Source and repository searches confirmed the current
@@ -87,11 +99,15 @@
 - Final CI-mode preflight completed with 77 passed and 8 intentionally skipped browser
   scenarios. The existing productivity-metrics scenario timed out once and passed on
   its configured retry; no dependency-refresh failure remained.
-- V7 now targets PR #115 because it is the current head using this feature memory; the
-  earlier policy and npm-refresh pull requests are already merged.
+- V7 now targets PR #117 because it is the current head using this feature memory; the
+  earlier policy, npm-refresh, and Go-refresh pull requests are already merged.
 - Accept the PR #115 group as a coordinated module graph: AWS core/config/credentials,
   S3, Smithy, and generated indirect modules move together, while pgx stays within the
   semver-stable v5 API and contributes protocol/security hardening.
+
+- PR #117 keeps the grouped active app refresh (`next` 16.3.1, `eslint-config-next`
+  ^16.3.1, `@hookform/resolvers` ^5.9.0, `zustand` ^5.0.15) and applies the same
+  frozen-provider exclusion first established for PR #107.
 
 ### Known Issues
 
