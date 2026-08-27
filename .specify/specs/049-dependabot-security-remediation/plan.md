@@ -27,6 +27,7 @@ the complete repository verification chain before merge.
 | 8   | PR #107 refreshes the reviewed npm minor/patch set without advancing frozen Supabase packages             | [V8 — grouped npm refresh](#v8--grouped-npm-refresh)                                                                                                                                       |
 | 9   | PR #115 refreshes the reviewed Go minor/patch set without breaking storage or database contracts          | [V9 — grouped Go refresh](#v9--grouped-go-refresh)                                                                                                                                         |
 | 10  | PR #121 advances the Go patch set within the already-reviewed AWS SDK minor lines                         | [V10 — follow-on Go patch refresh](#v10--follow-on-go-patch-refresh)                                                                                                                       |
+| 11  | PR #123 refreshes the reviewed app npm minor/patch set with the frozen Supabase subgraph held at `main`   | [V11 — grouped app npm refresh](#v11--grouped-app-npm-refresh)                                                                                                                             |
 
 ### V1 — Ecosystem coverage
 
@@ -65,10 +66,10 @@ review thread remains unresolved.
 
 ```sh
 head_sha="$(git rev-parse HEAD)"
-test "$(gh pr view 121 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
-gh pr checks 121 --repo kiaquila/capsule-zero --required
-test "$(gh pr view 121 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
-test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:121) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
+test "$(gh pr view 123 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
+gh pr checks 123 --repo kiaquila/capsule-zero --required
+test "$(gh pr view 123 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
+test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:123) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
 ```
 
 ### V8 — Grouped npm refresh
@@ -174,3 +175,29 @@ Local evidence on rebased PR #121 with Go 1.26.6: `go mod tidy` produced no diff
 package test passed, and the race-enabled `internal/storage` and `internal/db` runs
 passed. The GitHub `baseline-checks`, `test`, and `osv-scan` jobs remain the head-bound
 external evidence.
+
+### V11 — Grouped app npm refresh
+
+```sh
+git diff origin/main -- app/package.json app/package-lock.json | grep -E '^[-+].*supabase'   # must print nothing
+npm ci --ignore-scripts
+npm ci --prefix app
+node -p "require('./app/node_modules/@supabase/supabase-js/package.json').version"   # 2.108.2
+npm run check:repo
+npm run lint
+npm run lint:css
+npm run typecheck
+npm run build
+```
+
+Direct deltas accepted on PR #123: `next` 16.3.0 -> 16.3.2, `eslint-config-next`
+^16.3.0 -> ^16.3.2, `next-intl` ^4.13.6 -> ^4.13.7, `@hookform/resolvers` ^5.7.1 ->
+^5.9.1, `react-hook-form` ^7.85.0 -> ^7.86.0, `zustand` ^5.0.14 -> ^5.0.15. The
+generated `@supabase/supabase-js` ^2.108.2 -> ^2.112.3 bump is reverted in both the
+manifest and the lockfile under the frozen-provider rule.
+
+Local evidence on rebased PR #123: the Supabase grep printed nothing, both clean
+installs succeeded, the installed Supabase runtime resolved to 2.108.2, and the
+repository baseline, ESLint (0 errors), Stylelint (0 errors), typecheck, and the
+Next.js production build all passed. The GitHub `baseline-checks`, `test`, and
+`osv-scan` jobs remain the head-bound external evidence.
