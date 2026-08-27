@@ -26,6 +26,7 @@ the complete repository verification chain before merge.
 | 7   | Current PR head is merge-ready                                                                            | [V7 — head-bound merge readiness](#v7--head-bound-merge-readiness)                                                                                                                         |
 | 8   | PR #107 refreshes the reviewed npm minor/patch set without advancing frozen Supabase packages             | [V8 — grouped npm refresh](#v8--grouped-npm-refresh)                                                                                                                                       |
 | 9   | PR #115 refreshes the reviewed Go minor/patch set without breaking storage or database contracts          | [V9 — grouped Go refresh](#v9--grouped-go-refresh)                                                                                                                                         |
+| 10  | PR #121 advances the Go patch set within the already-reviewed AWS SDK minor lines                         | [V10 — follow-on Go patch refresh](#v10--follow-on-go-patch-refresh)                                                                                                                       |
 
 ### V1 — Ecosystem coverage
 
@@ -64,10 +65,10 @@ review thread remains unresolved.
 
 ```sh
 head_sha="$(git rev-parse HEAD)"
-test "$(gh pr view 115 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
-gh pr checks 115 --repo kiaquila/capsule-zero --required
-test "$(gh pr view 115 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
-test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:115) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
+test "$(gh pr view 121 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
+gh pr checks 121 --repo kiaquila/capsule-zero --required
+test "$(gh pr view 121 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
+test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:121) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
 ```
 
 ### V8 — Grouped npm refresh
@@ -140,3 +141,36 @@ Local evidence on rebased PR #115: `go mod tidy` produced no diff; `go mod verif
 with Go 1.26.6. The resolved direct module versions are AWS SDK core 1.43.5, config
 1.32.36, credentials 1.19.35, S3 1.107.1, Smithy 1.27.7, and pgx 5.10.0. The full
 CI-mode repository preflight also passed with 78 browser scenarios passed and 8 skipped.
+
+### V10 — Follow-on Go patch refresh
+
+```sh
+cd api
+go mod tidy
+git diff --exit-code -- go.mod go.sum
+go mod verify
+go vet ./...
+go test ./...
+go test -race ./internal/storage ./internal/db
+go list -m github.com/aws/aws-sdk-go-v2 github.com/aws/aws-sdk-go-v2/config github.com/aws/aws-sdk-go-v2/credentials github.com/aws/aws-sdk-go-v2/service/s3 github.com/aws/smithy-go github.com/jackc/pgx/v5
+```
+
+Every direct delta on PR #121 is a patch step inside the minor lines V9 already reviewed:
+AWS SDK core 1.43.5 -> 1.43.6, config 1.32.36 -> 1.32.37, credentials 1.19.35 -> 1.19.36,
+S3 1.107.1 -> 1.107.2, Smithy 1.27.7 -> 1.27.8, with all thirteen generated indirect
+AWS modules moving in step: `aws/protocol/eventstream` 1.7.18, `feature/ec2/imds`
+1.18.37, `internal/configsources` 1.4.37, `internal/endpoints/v2` 2.7.37,
+`internal/v4a` 1.4.38, `service/internal/accept-encoding` 1.13.17,
+`service/internal/checksum` 1.9.30, `service/internal/presigned-url` 1.13.37,
+`service/internal/s3shared` 1.19.38, `service/signin` 1.5.6, `service/sso` 1.33.6,
+`service/ssooidc` 1.38.6, and `service/sts` 1.45.6. `pgx/v5` stays at 5.10.0, so the pgxpool boundary examined for
+PR #115 — including the 5.10 `BeforeAcquire` deprecation the repository does not use —
+is untouched. No AWS release in this window changes `LoadDefaultConfig`, S3
+`BaseEndpoint`, `UsePathStyle`, or `NewPresignClient`, the four APIs the storage package
+depends on.
+
+Local evidence on rebased PR #121 with Go 1.26.6: `go mod tidy` produced no diff,
+`go mod verify` reported `all modules verified`, `go vet ./...` was clean, every API
+package test passed, and the race-enabled `internal/storage` and `internal/db` runs
+passed. The GitHub `baseline-checks`, `test`, and `osv-scan` jobs remain the head-bound
+external evidence.
