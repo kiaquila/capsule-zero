@@ -55,6 +55,12 @@ the compatible minor/patch pull requests produced by that policy.
    lines already reviewed for PR #115, leaves pgx v5 pinned at 5.10.0, and passes
    module-tidiness, module integrity, vet, all package tests, and targeted race tests.
 
+9. The grouped app npm refresh in PR #123 advances only the reviewed active packages
+   (`next`, `eslint-config-next`, `next-intl`, `@hookform/resolvers`, `react-hook-form`,
+   `zustand`); the frozen `@supabase/supabase-js` manifest entry and its complete
+   lockfile subgraph stay byte-identical to `origin/main`, and lint, CSS lint,
+   typecheck, and build stay green.
+
 ## Negative Scenarios
 
 - `docker-compose.legacy-supabase.yml` is excluded so version updates cannot extend the
@@ -71,6 +77,11 @@ the compatible minor/patch pull requests produced by that policy.
 - PR #121 must not be accepted on compilation alone: `go mod tidy` has to leave `go.mod`
   and `go.sum` unchanged and `go mod verify` has to pass, so a partially applied or
   tampered module graph fails instead of merging quietly.
+
+- PR #123 must not ship the generated `@supabase/*` 2.112.3 bump. Reverting the manifest
+  range alone is insufficient, because `^2.108.2` still resolves forward, so the seven
+  `node_modules/@supabase/*` lockfile records are restored from `origin/main` and the
+  restored graph is proven by a clean `npm ci` resolving `@supabase/supabase-js@2.108.2`.
 
 TDD posture: these changes update repository automation and dependency metadata without
 changing application behavior. The infrastructure/support-change waiver applies; the
