@@ -29,6 +29,7 @@ export default async function ArchivedTermsOfUseRoute({
     <LegalPage
       archiveContactEmail={legalContacts.legalEmail}
       document={getArchivedTermsDocument()}
+      renderIntro={false}
     />
   );
 }

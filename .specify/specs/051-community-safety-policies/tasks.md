@@ -25,6 +25,8 @@
       the founder account.
 - [x] T013 Preserve the superseded Terms as an exact immutable snapshot and render the
       current founder contact separately in the archive route.
+- [x] T014 Suppress intro text that the July renderer never published and remove the
+      stale Privacy claim that EU/UK representatives are already appointed.
 
 ## Process Memory
 
@@ -51,6 +53,8 @@
 - Capsule Zero identifies a privacy controller/contact but does not claim a DPO
   appointment. A future statutory need can be addressed when scale, processing, or
   jurisdiction makes it applicable.
+- Capsule Zero does not claim an EU/UK representative appointment; if one becomes
+  legally required, it must be appointed and published before the relevant activity.
 - The policy stack is current immediately. Canonical EN/RU Terms carry the September 3
   revision; the previously effective English Terms have the permanent dated archive.
 - The app no longer carries future-boundary or notice lifecycle code. Authenticated

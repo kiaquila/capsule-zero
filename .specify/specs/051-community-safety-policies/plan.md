@@ -54,6 +54,7 @@ shared third-party-content feature launches.
 |---|---|
 | Red-first solo-founder contract | Commit `b45e2e6`; the focused Chromium run failed 5/5 before implementation for the intended route, content, contact, date, and localization gaps. |
 | Immutable archive regression | Commit `ea26e19`; the archive scenario failed red because the page reported an August rewrite instead of the July 24 publication snapshot. |
+| Final legal review regressions | Commit `b01a176`; focused tests failed red because the archive rendered previously unpublished intro copy and Privacy retained a contradictory representative claim. |
 | One monitored legal contact, no DPO claim | `legal-contact-domain.spec.ts` passed in Chromium and mobile WebKit; a source audit found no legacy address or DPO designation in `app/src`. |
 | Current EN/RU Terms and permanent July archive | Focused Chromium legal suite passed 13/13; the full suite exercised the same routes in mobile WebKit. |
 | Policy completeness and gated-feature negatives | Full Playwright run passed 94 tests with 8 intentional full-stack skips across Chromium and mobile WebKit. |
@@ -76,3 +77,5 @@ auditable and must not be synthesized from current clauses at runtime. The dedic
 RU current Terms module is retained because the binding translation is too large for
 the general UI message catalog. The scheduled-boundary modules and notice components
 are deleted because their responsibilities no longer exist after immediate publication.
+The existing `LegalPage` renderer takes an archive-only `renderIntro` flag because the
+July renderer did not publish that data; current documents keep the shared default.

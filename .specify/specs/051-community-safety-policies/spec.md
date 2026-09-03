@@ -81,8 +81,9 @@ DMCA-agent registration, or completed external legal review.
   Protection Officer; Privacy identifies a controller/contact instead.
 - **AC-010**: Canonical EN and RU Terms display the current incorporated policy stack,
   with September 3, 2026 as both effective and last-updated date.
-- **AC-011**: `/terms-of-use/2026-07-24` permanently renders the previous July 24, 2026
-  English contract exactly as published, while a separate localized archive notice
+- **AC-011**: `/terms-of-use/2026-07-24` permanently renders only the previous July 24,
+  2026 English contract content that was actually visible when published, while a
+  separate localized archive notice
   points current correspondence to `ks@ks-design.art`; signup and footer links target
   the current canonical Terms.
 - **AC-012**: The current Privacy Policy displays September 3, 2026 as both effective
@@ -120,3 +121,6 @@ surface rather than preserving machinery for a rollout date that no longer exist
 Commit `ea26e19` adds the red-first regression for Codex's immutable-archive finding:
 the archive still showed an August administrative rewrite and did not preserve the
 published July domain and contact constants before the fix.
+Commit `b01a176` adds red-first coverage for the final review: before implementation,
+the archive exposed intro copy absent from the July renderer and Privacy still claimed
+that EU/UK representatives had already been appointed.

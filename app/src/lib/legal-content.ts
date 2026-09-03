@@ -518,7 +518,7 @@ export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
           },
           {
             type: "paragraph",
-            text: "Where required, Capsule Zero appoints local representatives to handle requests from data subjects and supervisory authorities under the EU GDPR (Article 27) and the UK GDPR. The current EU representative and UK representative contact details are published at " + productDomain + "/privacy-policy and are also available on request at " + privacyEmail + ".",
+            text: "Capsule Zero has not appointed an EU or UK representative. If applicable law requires either appointment before the relevant processing or service begins, we will appoint the representative and publish the contact details at " + productDomain + "/privacy-policy. Until then, contact the data controller directly at " + privacyEmail + ".",
           },
         ],
       },

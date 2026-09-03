@@ -42,9 +42,14 @@ const legalNavigation: ReadonlyArray<{
 interface LegalPageProps {
   archiveContactEmail?: string;
   document: LegalDocument;
+  renderIntro?: boolean;
 }
 
-export function LegalPage({ archiveContactEmail, document }: LegalPageProps) {
+export function LegalPage({
+  archiveContactEmail,
+  document,
+  renderIntro = true,
+}: LegalPageProps) {
   const t = useTranslations("landing");
   const legal = useTranslations("legalPage");
 
@@ -102,7 +107,7 @@ export function LegalPage({ archiveContactEmail, document }: LegalPageProps) {
         </section>
 
         <article className="legal-article dashboard-glass">
-          {document.intro.length > 0 ? (
+          {renderIntro && document.intro.length > 0 ? (
             <section
               aria-label={legal("introduction")}
               className="legal-section legal-intro"
