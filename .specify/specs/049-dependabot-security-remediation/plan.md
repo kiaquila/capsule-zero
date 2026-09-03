@@ -28,6 +28,7 @@ the complete repository verification chain before merge.
 | 9   | PR #115 refreshes the reviewed Go minor/patch set without breaking storage or database contracts          | [V9 — grouped Go refresh](#v9--grouped-go-refresh)                                                                                                                                         |
 | 10  | PR #121 advances the Go patch set within the already-reviewed AWS SDK minor lines                         | [V10 — follow-on Go patch refresh](#v10--follow-on-go-patch-refresh)                                                                                                                       |
 | 11  | PR #123 refreshes the reviewed app npm minor/patch set with the frozen Supabase subgraph held at `main`   | [V11 — grouped app npm refresh](#v11--grouped-app-npm-refresh)                                                                                                                             |
+| 12  | PR #122 upgrades the OSV action and remediates every finding it newly exposes                              | [V12 — OSV action refresh](#v12--osv-action-refresh)                                                                                                                                      |
 
 ### V1 — Ecosystem coverage
 
@@ -66,10 +67,10 @@ review thread remains unresolved.
 
 ```sh
 head_sha="$(git rev-parse HEAD)"
-test "$(gh pr view 123 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
-gh pr checks 123 --repo kiaquila/capsule-zero --required
-test "$(gh pr view 123 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
-test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:123) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
+test "$(gh pr view 122 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
+gh pr checks 122 --repo kiaquila/capsule-zero --required
+test "$(gh pr view 122 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
+test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:122) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
 ```
 
 ### V8 — Grouped npm refresh
@@ -201,3 +202,18 @@ installs succeeded, the installed Supabase runtime resolved to 2.108.2, and the
 repository baseline, ESLint (0 errors), Stylelint (0 errors), typecheck, and the
 Next.js production build all passed. The GitHub `baseline-checks`, `test`, and
 `osv-scan` jobs remain the head-bound external evidence.
+
+### V12 — OSV action refresh
+
+```sh
+npm ci --ignore-scripts --prefix app
+node -e 'const p=require("./app/package-lock.json").packages; if (p["node_modules/browserslist"].version !== "4.28.7" || p["node_modules/fast-uri"].version !== "3.1.6") process.exit(1)'
+```
+
+PR #122 advances `google/osv-scanner-action` from 2.5.0 to 2.5.1. That scanner version
+reports six high-severity advisories in the prior `browserslist@4.28.2` and
+`fast-uri@3.1.5` records; `app/package.json` therefore extends the pre-existing override
+boundary to fixed `browserslist@4.28.7` and `fast-uri@3.1.6`. No ignore rule, scanner
+downgrade, or frozen Supabase package update is used. Local npm 10.9.8 clean install,
+ESLint, and TypeScript checks passed; the required GitHub OSV job is the head-bound
+scanner evidence.

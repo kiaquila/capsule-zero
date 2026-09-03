@@ -61,7 +61,7 @@ shared third-party-content feature launches.
 | Production compilation | Next.js webpack production build passed and generated all 41 static pages, including canonical EN/RU Terms and the dated archive. |
 | Repository/process gates | Feature-memory, repository-baseline, and API-contract/client-generation checks passed. `git diff --check` passed. |
 | Backend regression | `go vet ./... && go test ./...` passed for the API module. |
-| Dependency security | The first final-head OSV run exposed fixed-version updates for dev-only `browserslist` and `fast-uri`; exact overrides now select 4.28.8 and 3.1.6. npm 10 clean-install validation and `npm audit` pass with zero vulnerabilities; the required GitHub `osv-scan` is green. |
+| Dependency security | The first final-head OSV run exposed fixed-version updates for dev-only `browserslist` and `fast-uri`; the refreshed `main` now supplies tested exact overrides at 4.28.7 and 3.1.6. npm 10 clean-install validation and `npm audit` pass with zero vulnerabilities; the required GitHub `osv-scan` is green. |
 | Merge readiness | Pending required GitHub checks and Codex AI Review on the final PR head. |
 
 ## Reuse Check

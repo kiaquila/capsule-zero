@@ -62,9 +62,9 @@
   the rules and Capsule Zero can revise each responsibility without duplicating its
   renderer or navigation.
 - Legal contacts and revision dates remain centralized sources of truth.
-- The required OSV gate disclosed new advisories in two dev-only transitive packages
-  inherited from `main`. Exact package overrides select fixed `browserslist 4.28.8` and
-  `fast-uri 3.1.6`; no advisory suppression was added.
+- The required OSV gate disclosed new advisories in two dev-only transitive packages.
+  The refreshed `main` supplies the final tested overrides at fixed `browserslist
+  4.28.7` and `fast-uri 3.1.6`; no advisory suppression was added.
 
 ### Known Issues
 
