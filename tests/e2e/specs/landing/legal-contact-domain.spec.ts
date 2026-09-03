@@ -10,16 +10,17 @@ const legalDocuments: readonly LegalSlug[] = [
   "enforcement-policy",
 ];
 
-test.describe("Legal policies — public contact domain", () => {
-  test("publishes only the production-domain mailboxes", async ({ page }) => {
+test.describe("Legal policies — solo-founder contact", () => {
+  test("publishes one monitored contact for every legal question", async ({ page }) => {
     for (const slug of legalDocuments) {
       const legal = new LegalPage(page, slug);
       await legal.goto();
 
-      await expect(legal.root).toContainText(legalCopy.contactDomain);
-      await expect(legal.root).not.toContainText(
-        legalCopy.retiredContactDomain,
-      );
+      await expect(legal.root).toContainText(legalCopy.contactEmail);
+      for (const retiredEmail of legalCopy.retiredContactEmails) {
+        await expect(legal.root).not.toContainText(retiredEmail);
+      }
+      await expect(legal.root).not.toContainText("Data Protection Officer");
     }
   });
 });

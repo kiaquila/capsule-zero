@@ -8,7 +8,7 @@ import type { Locale } from "../fixtures/locales";
  */
 export type LegalSlug =
   | "terms-of-use"
-  | "terms-of-use/2026-09-15"
+  | "terms-of-use/2026-07-24"
   | "privacy-policy"
   | "community-guidelines"
   | "copyright-policy"

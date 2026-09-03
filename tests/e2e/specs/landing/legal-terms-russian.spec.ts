@@ -1,12 +1,11 @@
 import { expect, test } from "../../fixtures/base";
 import { LegalPage } from "../../pages/LegalPage";
-import { resolveApplicableTermsSelection } from "../../../../app/src/lib/legal/terms-boundary.mjs";
 
-test.describe("Landing — Russian future Terms", () => {
-  test("publishes the new binding user-content protections in Russian", async ({
+test.describe("Landing — Russian Terms", () => {
+  test("publishes the current binding user-content protections in Russian", async ({
     page,
   }) => {
-    const terms = new LegalPage(page, "terms-of-use/2026-09-15", "ru");
+    const terms = new LegalPage(page, "terms-of-use", "ru");
     await terms.goto();
 
     await expect(terms.heading).toHaveText("Условия использования");
@@ -26,13 +25,5 @@ test.describe("Landing — Russian future Terms", () => {
       "You retain all ownership and intellectual property rights",
     );
 
-    const applicableAtCutoff = resolveApplicableTermsSelection(
-      "ru",
-      new Date("2026-09-15T00:00:00.000Z"),
-    );
-    expect(applicableAtCutoff).toEqual({
-      version: "2026-09-15",
-      locale: "ru",
-    });
   });
 });

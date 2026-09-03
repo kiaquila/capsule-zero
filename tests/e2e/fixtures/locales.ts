@@ -54,15 +54,22 @@ export const journeyCopy = {
 // The live legal documents are currently shared across EN/RU routes. Keep
 // unavoidable legal-copy assertions here so policy edits have one test source.
 export const legalCopy = {
-  contactDomain: "@capsulezero.app",
-  retiredContactDomain: "@capsulezero.com",
+  contactEmail: "ks@ks-design.art",
+  retiredContactEmails: [
+    "support@capsulezero.app",
+    "legal@capsulezero.app",
+    "privacy@capsulezero.app",
+    "dpo@capsulezero.app",
+    "ip@capsulezero.app",
+    "@capsulezero.com",
+  ],
   incorporationClause:
     "These Terms include and incorporate by reference our Community Guidelines, Copyright & Intellectual Property Policy, and Enforcement & Appeals Policy.",
-  currentTermsLastUpdated: "August 13, 2026",
-  currentTermsEffectiveDate: "July 24, 2026",
-  termsLastUpdated: "August 13, 2026",
-  termsEffectiveDate: "September 15, 2026",
-  privacyLastUpdated: "August 13, 2026",
+  archivedTermsLastUpdated: "August 13, 2026",
+  archivedTermsEffectiveDate: "July 24, 2026",
+  termsLastUpdated: "September 3, 2026",
+  termsEffectiveDate: "September 3, 2026",
+  privacyLastUpdated: "September 3, 2026",
   termsMarketplaceImportGate:
     "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification and an external legal review are complete and all required launch controls are in place.",
   privacyMarketplaceImportGate:
@@ -86,21 +93,6 @@ export const legalCopy = {
     "Best-effort parsing of product URLs into structured item data",
   ],
 } as const;
-
-export const termsUpdateCopy = {
-  en: {
-    title: "Terms update takes effect September 15",
-    description:
-      "We published updated Terms and user-content policies on August 13, 2026. They take effect September 15, 2026.",
-    action: "Review updated Terms",
-  },
-  ru: {
-    title: "Обновлённые условия вступят в силу 15 сентября",
-    description:
-      "Мы опубликовали обновлённые Условия и правила пользовательского контента 13 августа 2026 года. Они вступят в силу 15 сентября 2026 года.",
-    action: "Открыть обновлённые Условия",
-  },
-} as const satisfies Record<Locale, Record<string, string>>;
 
 export const legalNavigationCopy = {
   en: [
