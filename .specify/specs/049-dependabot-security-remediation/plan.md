@@ -235,3 +235,17 @@ node scripts/check-feature-memory.mjs --worktree
 PR #124 keeps the `@supabase/supabase-js` manifest entry and all
 `@supabase/*` lockfile records equal to `origin/main`; it also retains the glibc/musl
 selectors in Next and SWC optional native-package records.
+
+### V14 — Follow-on grouped Go refresh
+
+```sh
+cd api
+go mod tidy && git diff --exit-code -- go.mod go.sum
+go mod verify
+go vet ./...
+go test ./...
+```
+
+PR #128 moves AWS SDK core/config/credentials/S3 and Smithy together within their
+compatible minor lines. `go mod verify`, vet, and all API package tests passed with Go
+1.26.6 on the rebased module graph.

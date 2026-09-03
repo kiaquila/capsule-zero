@@ -91,6 +91,8 @@ the compatible minor/patch pull requests produced by that policy.
   restored graph is proven by a clean `npm ci` resolving `@supabase/supabase-js@2.108.2`.
 - PR #122 must not suppress the findings revealed by OSV Scanner 2.5.1 or downgrade the
   scanner action; both affected packages must resolve to their published fixed versions.
+- PR #128 must not merge a partial AWS module graph: module verification, vet, and all
+  API package tests must pass on its rebased head.
 
 TDD posture: these changes update repository automation and dependency metadata without
 changing application behavior. The infrastructure/support-change waiver applies; the
