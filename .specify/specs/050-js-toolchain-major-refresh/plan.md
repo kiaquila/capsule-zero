@@ -23,6 +23,7 @@ guarded merge.
 | 9   | E2e TypeScript 7/6 boundary remains supported    | failed direct-install CI evidence; npm 10.9.4 clean install; CLI/API versions; e2e lint, TypeScript 7 typecheck, and full preflight            |
 | 10  | E2e Node ambient types match runtime             | Node engine, required workflow, and production image stay on Node 22; installed declarations report 22.20.1; e2e lint/typecheck and preflight  |
 | 11  | PR #125 leaves the unsupported app ESLint major deferred | current upstream peer metadata; app npm 10 clean install, lint, typecheck, and build                                                  |
+| 12  | PR #126 leaves the unsupported app Node type major deferred | Node 22 runtime/workflow evidence; app npm 10 clean install, typecheck, build, and full preflight                                 |
 
 ## Compatibility Notes
 
@@ -97,3 +98,20 @@ an ESLint peer range only through `^9`. The resolved `eslint-config-next` graph 
 that plugin, so PR #125 restores the app manifest and lockfile to the already verified
 ESLint 9.39.4 graph. This is a deferral, not a peer-ignore workaround; resume only when
 the complete resolved Next lint graph declares ESLint 10 compatibility.
+
+### V12 — App Node 26 declaration deferral
+
+```sh
+rg -n 'node-version: "22"|ARG NODE_VERSION=22-bookworm-slim' .github/workflows api/Dockerfile app/Dockerfile
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix tests/e2e
+npx --prefix tests/e2e playwright install --with-deps chromium webkit
+npx --yes --package=npm@10.9.8 npm run typecheck --prefix app
+npx --yes --package=npm@10.9.8 npm run build --prefix app
+PORT=3001 E2E_BASE_URL=http://localhost:3001 CI=1 npm run preflight
+```
+
+PR #126 restores `@types/node` to 22.20.1. Node 26 declarations can make code compile
+against APIs absent from the Node 22 production image and required workflows, so the
+type major remains deferred until those executable runtime contracts move together.

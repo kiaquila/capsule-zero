@@ -46,6 +46,9 @@
 - [x] Rebase PR #125, verify the current `eslint-plugin-jsx-a11y` peer metadata, and
       omit the unsupported app ESLint 10 update without peer-ignore flags.
 - [ ] Trigger and clear PR #125's head-bound native Codex review and required checks.
+- [x] Rebase PR #126 and revert Node 26 declarations because production and required CI
+      remain on Node 22.
+- [ ] Trigger and clear PR #126's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -118,6 +121,9 @@
 - Keep the app on ESLint 9.39.4 for PR #125. The latest `eslint-plugin-jsx-a11y` still
   ends its peer range at ESLint 9, so merging the generated major would make clean CI
   installation fail; revisit only when the full resolved Next lint graph supports 10.
+- Keep app `@types/node` on 22.20.1 for PR #126. The ambient API line must match the
+  Node 22 production/required-CI runtime; resume Node 26 declarations only with that
+  runtime upgrade.
 
 ### Known Issues
 

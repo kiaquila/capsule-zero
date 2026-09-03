@@ -52,6 +52,9 @@ silently weakening lint/type checks, or changing product behavior.
 11. PR #125 does not force ESLint 10 while the current resolved Next lint plugins still
     exclude it: the app remains on ESLint 9.39.4 until upstream peer metadata supports
     the full graph, with no peer-ignore installation flag.
+12. PR #126 does not expose Node 26 ambient APIs while production and required CI use
+    Node 22: the app remains on the verified Node 22 declaration line until the runtime
+    contracts are deliberately upgraded together.
 
 ## Negative Scenarios
 
