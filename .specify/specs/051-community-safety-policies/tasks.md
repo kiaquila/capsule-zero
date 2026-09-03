@@ -38,6 +38,9 @@
 - Prior local focused runs exposed disposable Next development-cache races. Generated
   `.next` state may be removed and rebuilt; production compilation is the authoritative
   route-generation check.
+- The local npm 11 lockfile writer removed optional bundled entries still validated by
+  CI's npm 10, causing `npm ci` to report two missing `@emnapi` packages. Regenerating
+  the lock with npm 10 preserved the fixed overrides and restored clean-install parity.
 
 ### Decisions
 
