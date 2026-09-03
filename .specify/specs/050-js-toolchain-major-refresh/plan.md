@@ -106,6 +106,7 @@ rg -n 'node-version: "22"|ARG NODE_VERSION=22-bookworm-slim' .github/workflows a
 npx --yes --package=npm@10.9.8 npm ci --ignore-scripts
 npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
 npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix tests/e2e
+npx --prefix tests/e2e playwright install --with-deps chromium webkit
 npx --yes --package=npm@10.9.8 npm run typecheck --prefix app
 npx --yes --package=npm@10.9.8 npm run build --prefix app
 PORT=3001 E2E_BASE_URL=http://localhost:3001 CI=1 npm run preflight
