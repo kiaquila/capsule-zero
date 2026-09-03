@@ -69,9 +69,13 @@ export const legalCopy = {
   archivedTermsHistoricalDomain: "capsulezero.com",
   archivedTermsHistoricalContact: "legal@capsulezero.com",
   archivedTermsCurrentContact: "ks@ks-design.art",
+  archivedTermsUnpublishedIntro:
+    'These Terms of Use ("Terms") form a binding contract between you and Capsule Zero S.A.S.',
   termsLastUpdated: "September 3, 2026",
   termsEffectiveDate: "September 3, 2026",
   privacyLastUpdated: "September 3, 2026",
+  retiredRepresentativeClaim:
+    "Capsule Zero appoints local representatives to handle requests",
   termsMarketplaceImportGate: {
     en: "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification and an external legal review are complete and all required launch controls are in place.",
     ru: "Импорт по ссылке с маркетплейса и общий каталог пользовательского импорта сейчас недоступны. Мы не запустим их до завершения отдельной спецификации compliance-схемы, внешней юридической проверки и внедрения всех обязательных мер.",

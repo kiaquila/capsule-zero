@@ -44,6 +44,9 @@ test.describe("Landing — Terms safety-policy contract", () => {
     await expect(archivedTerms.article).toContainText(
       legalCopy.archivedTermsHistoricalContact,
     );
+    await expect(archivedTerms.article).not.toContainText(
+      legalCopy.archivedTermsUnpublishedIntro,
+    );
     await expect(archivedTerms.root).toContainText(
       legalCopy.archivedTermsCurrentContact,
     );
@@ -64,5 +67,8 @@ test.describe("Landing — Terms safety-policy contract", () => {
     await privacy.goto();
 
     await expect(privacy.lastUpdated).toHaveText(legalCopy.privacyLastUpdated);
+    await expect(privacy.article).not.toContainText(
+      legalCopy.retiredRepresentativeClaim,
+    );
   });
 });
