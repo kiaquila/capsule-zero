@@ -1,11 +1,24 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { LegalBlock, LegalDocument } from "@/lib/legal-content";
+import { legalNavigationItems } from "@/lib/legal/navigation";
 
 interface LegalPageProps {
+  archiveContactEmail?: string;
+  archivedTermsHref?: "/terms-of-use/2026-07-24";
   document: LegalDocument;
+  renderIntro?: boolean;
 }
 
-export function LegalPage({ document }: LegalPageProps) {
+export function LegalPage({
+  archiveContactEmail,
+  archivedTermsHref,
+  document,
+  renderIntro = true,
+}: LegalPageProps) {
+  const t = useTranslations("landing");
+  const legal = useTranslations("legalPage");
+
   return (
     <div className="cz-page legal-page" data-testid="legal-page">
       <div className="wallpaper-bg" />
@@ -15,40 +28,40 @@ export function LegalPage({ document }: LegalPageProps) {
         <Link className="landing-logo" href="/">
           Capsule Zero
         </Link>
-        <nav className="legal-header-links" aria-label="Legal documents">
-          <Link
-            className={document.slug === "terms-of-use" ? "legal-link-active" : ""}
-            href="/terms-of-use"
-          >
-            Terms
-          </Link>
-          <Link
-            className={
-              document.slug === "privacy-policy" ? "legal-link-active" : ""
-            }
-            href="/privacy-policy"
-          >
-            Privacy
-          </Link>
+        <nav className="legal-header-links" aria-label={t("legalDocuments")}>
+          {legalNavigationItems.map((item) => (
+            <Link
+              className={document.slug === item.slug ? "legal-link-active" : ""}
+              href={item.href}
+              key={item.slug}
+            >
+              {t(item.labelKey)}
+            </Link>
+          ))}
         </nav>
       </header>
 
       <main className="legal-main">
+        {archiveContactEmail ? (
+          <aside className="legal-index dashboard-glass">
+            <p>{legal("archiveNotice", { email: archiveContactEmail })}</p>
+          </aside>
+        ) : null}
         <section className="legal-index dashboard-glass">
           <p className="legal-eyebrow">{document.eyebrow}</p>
           <h1>{document.title}</h1>
           <dl className="legal-meta">
             <div>
-              <dt>Last updated</dt>
+              <dt>{legal("lastUpdated")}</dt>
               <dd>{document.lastUpdated}</dd>
             </div>
             <div>
-              <dt>Status</dt>
+              <dt>{legal("status")}</dt>
               <dd>{document.effectiveDate}</dd>
             </div>
           </dl>
-          <div className="legal-toc" aria-label="Contents">
-            <p>Contents</p>
+          <div className="legal-toc" aria-label={legal("contents")}>
+            <p>{legal("contents")}</p>
             <nav>
               {document.sections.map((section) => (
                 <a href={`#${section.id}`} key={section.id}>
@@ -60,21 +73,45 @@ export function LegalPage({ document }: LegalPageProps) {
         </section>
 
         <article className="legal-article dashboard-glass">
+          {renderIntro && document.intro.length > 0 ? (
+            <section
+              aria-label={legal("introduction")}
+              className="legal-section legal-intro"
+              data-testid="legal-intro"
+            >
+              {document.intro.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </section>
+          ) : null}
           {document.sections.map((section) => (
             <section className="legal-section" id={section.id} key={section.id}>
               <h2>{section.title}</h2>
               {section.blocks.map((block, index) => (
-                <LegalBlockRenderer block={block} key={`${section.id}-${index}`} />
+                <LegalBlockRenderer
+                  block={block}
+                  key={`${section.id}-${index}`}
+                />
               ))}
             </section>
           ))}
 
           <footer className="legal-article-footer">
+            {archivedTermsHref ? (
+              <Link
+                data-testid="legal-terms-archive"
+                href={archivedTermsHref}
+              >
+                {legal("readArchivedTerms")}
+              </Link>
+            ) : null}
             <Link href={document.relatedDocument.href}>
-              Read the {document.relatedDocument.label}
+              {legal("readRelated", {
+                document: document.relatedDocument.label,
+              })}
             </Link>
             <Link href="/" data-testid="legal-back-home">
-              Back to Capsule Zero
+              {legal("backHome")}
             </Link>
           </footer>
         </article>

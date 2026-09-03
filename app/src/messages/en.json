@@ -14,6 +14,10 @@
     "authCta": "Log In",
     "terms": "Terms of Use",
     "privacy": "Privacy Policy",
+    "community": "Community Guidelines",
+    "copyrightPolicy": "Copyright & IP",
+    "enforcement": "Enforcement & Appeals",
+    "legalDocuments": "Legal documents",
     "copyright": "© 2026 Capsule Zero",
     "cookie": "We use cookies to make Capsule Zero work, to remember your preferences, and — only with your consent — to measure usage and tailor marketing. Choose what you allow.",
     "cookieAccept": "Accept all",
@@ -45,6 +49,16 @@
         "description": "Allow tailored messages and measurement of campaigns. Off unless you opt in."
       }
     }
+  },
+  "legalPage": {
+    "lastUpdated": "Last updated",
+    "status": "Status",
+    "contents": "Contents",
+    "introduction": "Introduction",
+    "archiveNotice": "Archived contract shown exactly as published. For current correspondence, contact {email}.",
+    "readArchivedTerms": "Read the Terms effective July 24, 2026",
+    "readRelated": "Read the {document}",
+    "backHome": "Back to Capsule Zero"
   },
   "auth": {
     "signInTitle": "Log In",

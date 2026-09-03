@@ -1,10 +1,10 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { useLocale } from "next-intl";
 import { AuthPanel, type RecoveryDeepLink } from "./AuthPanel";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { CookieBanner } from "@/components/landing/CookieBanner";
+import { PublicLegalFooter } from "@/components/legal/PublicLegalFooter";
 
 interface AuthPageProps {
   /** Recovery flow carried by /auth?flow=…&code=… URL params. */
@@ -15,7 +15,11 @@ interface AuthPageProps {
   googleError?: boolean;
 }
 
-export function AuthPage({ recovery, googleSignIn, googleError }: AuthPageProps) {
+export function AuthPage({
+  recovery,
+  googleSignIn,
+  googleError,
+}: AuthPageProps) {
   const locale = useLocale();
 
   return (
@@ -39,26 +43,8 @@ export function AuthPage({ recovery, googleSignIn, googleError }: AuthPageProps)
         />
       </main>
 
-      <Footer />
+      <PublicLegalFooter />
       <CookieBanner />
     </div>
-  );
-}
-
-function Footer() {
-  const t = useTranslations("landing");
-
-  return (
-    <footer className="landing-footer">
-      <Link href="/terms-of-use" data-testid="footer-terms-link">
-        {t("terms")}
-      </Link>
-      <span aria-hidden="true">·</span>
-      <Link href="/privacy-policy" data-testid="footer-privacy-link">
-        {t("privacy")}
-      </Link>
-      <span aria-hidden="true">·</span>
-      <span>{t("copyright")}</span>
-    </footer>
   );
 }

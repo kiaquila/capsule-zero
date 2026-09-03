@@ -6,11 +6,17 @@ import type { Locale } from "../fixtures/locales";
  * Slugs of the static legal documents. Mirror the route folders under
  * /app/src/app/[locale]/.
  */
-export type LegalSlug = "terms-of-use" | "privacy-policy";
+export type LegalSlug =
+  | "terms-of-use"
+  | "terms-of-use/2026-07-24"
+  | "privacy-policy"
+  | "community-guidelines"
+  | "copyright-policy"
+  | "enforcement-policy";
 
 /**
- * Page Object for a static legal document page (Terms of Use / Privacy
- * Policy). These pages are reached by navigation from the landing/auth
+ * Page Object for a static legal document page. These pages are reached by
+ * navigation from the landing/auth
  * footer, so specs usually click into them rather than `goto()` directly;
  * `path` is still provided for completeness and direct-load checks.
  */
@@ -18,6 +24,11 @@ export class LegalPage extends BasePage {
   readonly path: string;
   readonly root: Locator;
   readonly heading: Locator;
+  readonly navigation: Locator;
+  readonly article: Locator;
+  readonly lastUpdated: Locator;
+  readonly effectiveDate: Locator;
+  readonly archivedTermsLink: Locator;
   readonly backToHome: Locator;
 
   constructor(
@@ -29,6 +40,17 @@ export class LegalPage extends BasePage {
     this.path = `/${locale}/${slug}`;
     this.root = page.getByTestId("legal-page");
     this.heading = this.root.getByRole("heading", { level: 1 });
+    this.navigation = this.root.locator("header nav");
+    this.article = this.root.locator("article");
+    this.lastUpdated = this.root
+      .locator(".legal-meta div")
+      .filter({ hasText: "Last updated" })
+      .locator("dd");
+    this.effectiveDate = this.root
+      .locator(".legal-meta div")
+      .filter({ hasText: "Status" })
+      .locator("dd");
+    this.archivedTermsLink = this.root.getByTestId("legal-terms-archive");
     this.backToHome = page.getByTestId("legal-back-home");
   }
 }

@@ -51,13 +51,46 @@ export const journeyCopy = {
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 
-// The live legal documents are currently shared across EN/RU routes. Keep
-// unavoidable legal-copy assertions here so policy edits have one test source.
+// Keep unavoidable legal-copy assertions here so policy edits have one test source.
 export const legalCopy = {
-  termsMarketplaceImportGate:
-    "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification and an external legal review are complete and all required launch controls are in place.",
-  privacyMarketplaceImportGate:
-    "Capsule Zero does not currently collect or process marketplace URLs, parsed item candidates, or marketplace source-site metadata because marketplace link import is disabled.",
+  contactEmail: "ks@ks-design.art",
+  retiredContactEmails: [
+    "support@capsulezero.app",
+    "legal@capsulezero.app",
+    "privacy@capsulezero.app",
+    "dpo@capsulezero.app",
+    "ip@capsulezero.app",
+    "@capsulezero.com",
+  ],
+  incorporationClause:
+    "These Terms include and incorporate by reference our Community Guidelines, Copyright & Intellectual Property Policy, and Enforcement & Appeals Policy.",
+  archivedTermsLastUpdated: "July 24, 2026",
+  archivedTermsEffectiveDate: "July 24, 2026",
+  archivedTermsHistoricalDomain: "capsulezero.com",
+  archivedTermsHistoricalContact: "legal@capsulezero.com",
+  archivedTermsCurrentContact: "ks@ks-design.art",
+  archivedTermsUnpublishedIntro:
+    'These Terms of Use ("Terms") form a binding contract between you and Capsule Zero S.A.S.',
+  termsLastUpdated: "September 3, 2026",
+  termsEffectiveDate: "September 3, 2026",
+  privacyLastUpdated: "September 3, 2026",
+  retiredRepresentativeClaim:
+    "Capsule Zero appoints local representatives to handle requests",
+  privacyRussianTitle: "Политика конфиденциальности",
+  privacyRussianRepresentativeStatus:
+    "Capsule Zero не назначила представителя в ЕС или Великобритании",
+  retiredRlsClaims: {
+    en: "row-level security",
+    ru: "row-level security",
+  },
+  termsMarketplaceImportGate: {
+    en: "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification and an external legal review are complete and all required launch controls are in place.",
+    ru: "Импорт по ссылке с маркетплейса и общий каталог пользовательского импорта сейчас недоступны. Мы не запустим их до завершения отдельной спецификации compliance-схемы, внешней юридической проверки и внедрения всех обязательных мер.",
+  },
+  privacyMarketplaceImportGate: {
+    en: "Capsule Zero does not currently collect or process marketplace URLs, parsed item candidates, or marketplace source-site metadata because marketplace link import is disabled.",
+    ru: "Импорт по ссылкам отключён, поэтому URL маркетплейсов, распознанные кандидаты и метаданные источников не собираются.",
+  },
   termsMonetizationHold:
     "Capsule Zero does not currently sell subscriptions, coins, credits, or other paid digital features, and no payment provider is active for the Service.",
   privacyMonetizationHold:
@@ -77,3 +110,20 @@ export const legalCopy = {
     "Best-effort parsing of product URLs into structured item data",
   ],
 } as const;
+
+export const legalNavigationCopy = {
+  en: [
+    "Terms of Use",
+    "Privacy Policy",
+    "Community Guidelines",
+    "Copyright & IP",
+    "Enforcement & Appeals",
+  ],
+  ru: [
+    "Условия использования",
+    "Политика конфиденциальности",
+    "Правила сообщества",
+    "Авторские и иные права",
+    "Модерация и обжалование",
+  ],
+} as const satisfies Record<Locale, readonly string[]>;

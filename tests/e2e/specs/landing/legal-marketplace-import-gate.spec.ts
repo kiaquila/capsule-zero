@@ -4,15 +4,15 @@ import { LegalPage, type LegalSlug } from "../../pages/LegalPage";
 
 const documents: ReadonlyArray<{
   slug: LegalSlug;
-  requiredCopy: string;
+  requiredCopy: (locale: (typeof LOCALES)[number]) => string;
 }> = [
   {
     slug: "terms-of-use",
-    requiredCopy: legalCopy.termsMarketplaceImportGate,
+    requiredCopy: (locale) => legalCopy.termsMarketplaceImportGate[locale],
   },
   {
     slug: "privacy-policy",
-    requiredCopy: legalCopy.privacyMarketplaceImportGate,
+    requiredCopy: (locale) => legalCopy.privacyMarketplaceImportGate[locale],
   },
 ];
 
@@ -24,7 +24,7 @@ test("live legal documents disclose the Q8 implementation gate", async ({
       const legal = new LegalPage(page, slug, locale);
       await legal.goto();
 
-      await expect(legal.root).toContainText(requiredCopy);
+      await expect(legal.root).toContainText(requiredCopy(locale));
 
       // Negative scenario: neither active locale may represent the disabled
       // import path or its dormant adapters as an operating service.
