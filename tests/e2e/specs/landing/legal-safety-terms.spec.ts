@@ -1,8 +1,16 @@
 import { expect, test } from "../../fixtures/base";
 import { legalCopy } from "../../fixtures/locales";
 import { LegalPage } from "../../pages/LegalPage";
+import { privacyRevisionDates } from "@/lib/legal/policy-shared";
 
 test.describe("Landing — Terms safety-policy contract", () => {
+  test("keeps RU Privacy dates coupled to the Privacy revision", () => {
+    expect(privacyRevisionDates("ru")).toEqual({
+      effectiveDate: "3 сентября 2026 г.",
+      lastUpdated: "3 сентября 2026 г.",
+    });
+  });
+
   test("Terms incorporates the complete community safety policy stack", async ({
     page,
   }) => {
