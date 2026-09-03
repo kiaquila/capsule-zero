@@ -60,6 +60,10 @@ the compatible minor/patch pull requests produced by that policy.
    `zustand`); the frozen `@supabase/supabase-js` manifest entry and its complete
    lockfile subgraph stay byte-identical to `origin/main`, and lint, CSS lint,
    typecheck, and build stay green.
+10. The GitHub Actions OSV Scanner update in PR #122 uses the current scanner image
+    without masking findings: the newly reported `browserslist` and `fast-uri`
+    transitive vulnerabilities are fixed through the existing app override boundary,
+    and a clean install remains reproducible.
 
 ## Negative Scenarios
 
@@ -82,6 +86,8 @@ the compatible minor/patch pull requests produced by that policy.
   range alone is insufficient, because `^2.108.2` still resolves forward, so the seven
   `node_modules/@supabase/*` lockfile records are restored from `origin/main` and the
   restored graph is proven by a clean `npm ci` resolving `@supabase/supabase-js@2.108.2`.
+- PR #122 must not suppress the findings revealed by OSV Scanner 2.5.1 or downgrade the
+  scanner action; both affected packages must resolve to their published fixed versions.
 
 TDD posture: these changes update repository automation and dependency metadata without
 changing application behavior. The infrastructure/support-change waiver applies; the

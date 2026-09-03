@@ -37,6 +37,11 @@
 - [x] Pass the repository baseline, ESLint, Stylelint, typecheck, and production build
       on the rebased PR #123 head.
 - [ ] Trigger and clear PR #123's head-bound native Codex review and required checks.
+- [x] Update the OSV Scanner action in PR #122 and reproduce its newly surfaced
+      transitive npm findings.
+- [x] Remediate `browserslist` and `fast-uri` only through the existing app override
+      boundary, then prove npm 10.9.8 clean-install, lint, and typecheck compatibility.
+- [ ] Trigger and clear PR #122's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -109,8 +114,9 @@
 - Final CI-mode preflight completed with 77 passed and 8 intentionally skipped browser
   scenarios. The existing productivity-metrics scenario timed out once and passed on
   its configured retry; no dependency-refresh failure remained.
-- V7 now targets PR #123 because it is the current head using this feature memory; the
-  earlier policy, npm-refresh, and Go-refresh pull requests are already merged.
+- V7 targets the active Dependabot PR currently using this feature memory. It now binds
+  the SHA, checks, merge state, and review threads to PR #122; earlier policy,
+  npm-refresh, and Go-refresh pull requests are already merged.
 - Accept the PR #115 group as a coordinated module graph: AWS core/config/credentials,
   S3, Smithy, and generated indirect modules move together, while pgx stays within the
   semver-stable v5 API and contributes protocol/security hardening.
@@ -118,6 +124,10 @@
 - Treat PR #121 as a continuation of the PR #115 group rather than a new compatibility
   review: it moves no minor line and leaves pgx at 5.10.0, so V9's API findings still
   hold and V10 only has to prove graph integrity and green tests.
+
+- OSV Scanner action 2.5.1 legitimately reports advisories not emitted by 2.5.0. Keep
+  the newer scanner and repair the resolved graph; an ignore entry or a rollback would
+  make the security gate less effective.
 
 - The first draft of V10 stated "twelve generated indirect modules" while the `go.mod`
   diff advances thirteen. Native Codex review caught the miscount (P3); the record now
