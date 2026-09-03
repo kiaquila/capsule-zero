@@ -76,6 +76,9 @@ export const legalCopy = {
   privacyLastUpdated: "September 3, 2026",
   retiredRepresentativeClaim:
     "Capsule Zero appoints local representatives to handle requests",
+  privacyRussianTitle: "Политика конфиденциальности",
+  privacyRussianRepresentativeStatus:
+    "Capsule Zero не назначила представителя в ЕС или Великобритании",
   termsMarketplaceImportGate: {
     en: "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification and an external legal review are complete and all required launch controls are in place.",
     ru: "Импорт по ссылке с маркетплейса и общий каталог пользовательского импорта сейчас недоступны. Мы не запустим их до завершения отдельной спецификации compliance-схемы, внешней юридической проверки и внедрения всех обязательных мер.",

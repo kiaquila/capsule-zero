@@ -71,4 +71,18 @@ test.describe("Landing — Terms safety-policy contract", () => {
       legalCopy.retiredRepresentativeClaim,
     );
   });
+
+  test("publishes the current Privacy revision in Russian", async ({ page }) => {
+    const privacy = new LegalPage(page, "privacy-policy", "ru");
+    await privacy.goto();
+
+    await expect(privacy.heading).toHaveText(legalCopy.privacyRussianTitle);
+    await expect(privacy.article).toContainText(
+      legalCopy.privacyRussianRepresentativeStatus,
+    );
+    await expect(privacy.article).toContainText(legalCopy.contactEmail);
+    await expect(privacy.article).not.toContainText(
+      "Capsule Zero appoints local representatives",
+    );
+  });
 });
