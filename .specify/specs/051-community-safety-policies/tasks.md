@@ -21,10 +21,8 @@
       route wrapper, session deduplication, timer/probe styles, messages, and tests.
 - [x] T011 Run focused and full local verification and record final evidence in
       `plan.md`.
-- [ ] T012 Push the final head, update the PR description, and request Codex review from
+- [x] T012 Push the implementation head, update the PR description, and request Codex review from
       the founder account.
-- [ ] T013 Resolve every blocking review/check result, wait two minutes after the final
-      green state, and merge PR #98.
 
 ## Process Memory
 
@@ -59,6 +57,9 @@
   the rules and Capsule Zero can revise each responsibility without duplicating its
   renderer or navigation.
 - Legal contacts and revision dates remain centralized sources of truth.
+- The required OSV gate disclosed new advisories in two dev-only transitive packages
+  inherited from `main`. Exact package overrides select fixed `browserslist 4.28.8` and
+  `fast-uri 3.1.6`; no advisory suppression was added.
 
 ### Known Issues
 

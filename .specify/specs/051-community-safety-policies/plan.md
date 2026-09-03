@@ -58,7 +58,7 @@ shared third-party-content feature launches.
 | Production compilation | Next.js webpack production build passed and generated all 41 static pages, including canonical EN/RU Terms and the dated archive. |
 | Repository/process gates | Feature-memory, repository-baseline, and API-contract/client-generation checks passed. `git diff --check` passed. |
 | Backend regression | `go vet ./... && go test ./...` passed for the API module. |
-| Dependency security | Local `osv-scanner` is unavailable; the required GitHub `osv-scan` check remains the authoritative evidence. |
+| Dependency security | The first final-head OSV run exposed fixed-version updates for dev-only `browserslist` and `fast-uri`; exact overrides now select 4.28.8 and 3.1.6. `npm audit` reports zero vulnerabilities; the rerun required GitHub `osv-scan` remains the authoritative OSV evidence. |
 | Merge readiness | Pending required GitHub checks and Codex AI Review on the final PR head. |
 
 ## Reuse Check
