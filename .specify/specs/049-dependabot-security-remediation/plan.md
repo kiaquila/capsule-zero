@@ -29,6 +29,7 @@ the complete repository verification chain before merge.
 | 10  | PR #121 advances the Go patch set within the already-reviewed AWS SDK minor lines                         | [V10 — follow-on Go patch refresh](#v10--follow-on-go-patch-refresh)                                                                                                                       |
 | 11  | PR #123 refreshes the reviewed app npm minor/patch set with the frozen Supabase subgraph held at `main`   | [V11 — grouped app npm refresh](#v11--grouped-app-npm-refresh)                                                                                                                             |
 | 12  | PR #122 upgrades the OSV action and remediates every finding it newly exposes                              | [V12 — OSV action refresh](#v12--osv-action-refresh)                                                                                                                                      |
+| 13  | PR #124 preserves frozen and platform-specific lockfile invariants during its npm refresh                  | [V13 — follow-on npm refresh](#v13--follow-on-npm-refresh)                                                                                                                                |
 
 ### V1 — Ecosystem coverage
 
@@ -217,3 +218,20 @@ boundary to fixed `browserslist@4.28.7` and `fast-uri@3.1.6`. No ignore rule, sc
 downgrade, or frozen Supabase package update is used. Local npm 10.9.8 clean install,
 ESLint, and TypeScript checks passed; the required GitHub OSV job is the head-bound
 scanner evidence.
+
+### V13 — Follow-on npm refresh
+
+```sh
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix tests/e2e
+npx --yes --package=npm@10.9.8 npm run lint --prefix app
+npx --yes --package=npm@10.9.8 npm run typecheck --prefix app
+npx --yes --package=npm@10.9.8 npm run lint --prefix tests/e2e
+npx --yes --package=npm@10.9.8 npm run typecheck --prefix tests/e2e
+node scripts/check-feature-memory.mjs --worktree
+```
+
+PR #124 keeps the `@supabase/supabase-js` manifest entry and all
+`@supabase/*` lockfile records equal to `origin/main`; it also retains the glibc/musl
+selectors in Next and SWC optional native-package records.

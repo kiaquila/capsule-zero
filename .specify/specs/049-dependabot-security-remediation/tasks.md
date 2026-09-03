@@ -42,6 +42,9 @@
 - [x] Remediate `browserslist` and `fast-uri` only through the existing app override
       boundary, then prove npm 10.9.8 clean-install, lint, and typecheck compatibility.
 - [ ] Trigger and clear PR #122's head-bound native Codex review and required checks.
+- [x] Rebase PR #124 on the merged OSV remediation and preserve the frozen Supabase
+      graph plus native-package libc selectors.
+- [ ] Trigger and clear PR #124's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -128,6 +131,10 @@
 - OSV Scanner action 2.5.1 legitimately reports advisories not emitted by 2.5.0. Keep
   the newer scanner and repair the resolved graph; an ignore entry or a rollback would
   make the security gate less effective.
+
+- Dependabot automatically rebases its branches when `main` advances. Reapply only
+  policy-required corrections to that refreshed head; regenerating this lockfile with
+  local npm removes Linux libc selectors, so preserve those records in place.
 
 - The first draft of V10 stated "twelve generated indirect modules" while the `go.mod`
   diff advances thirteen. Native Codex review caught the miscount (P3); the record now
