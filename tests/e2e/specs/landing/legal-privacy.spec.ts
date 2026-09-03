@@ -43,6 +43,9 @@ test.describe("Landing — current Privacy policy", () => {
     await expect(privacy.article).not.toContainText(
       legalCopy.retiredRepresentativeClaim,
     );
+    await expect(privacy.article).not.toContainText(
+      legalCopy.retiredRlsClaims.en,
+    );
   });
 
   test("publishes the current Privacy revision in Russian", async ({ page }) => {
@@ -56,6 +59,9 @@ test.describe("Landing — current Privacy policy", () => {
     await expect(privacy.article).toContainText(legalCopy.contactEmail);
     await expect(privacy.article).not.toContainText(
       "Capsule Zero appoints local representatives",
+    );
+    await expect(privacy.article).not.toContainText(
+      legalCopy.retiredRlsClaims.ru,
     );
   });
 });
