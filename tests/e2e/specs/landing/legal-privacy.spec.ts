@@ -1,9 +1,31 @@
 import { expect, test } from "../../fixtures/base";
 import { legalCopy } from "../../fixtures/locales";
 import { LegalPage } from "../../pages/LegalPage";
-import { privacyRevisionDates } from "@/lib/legal/policy-shared";
+import {
+  policyRevisionDates,
+  privacyRevisionDates,
+} from "@/lib/legal/policy-shared";
+import {
+  privacyPolicyRevision,
+  safetyPolicyRevision,
+} from "@/lib/legal/revisions";
 
 test.describe("Landing — current Privacy policy", () => {
+  test("derives every display date from canonical ISO revisions", () => {
+    expect(safetyPolicyRevision).toEqual({
+      effectiveOn: "2026-09-03",
+      publishedOn: "2026-09-03",
+    });
+    expect(privacyPolicyRevision).toEqual({
+      effectiveOn: "2026-09-03",
+      publishedOn: "2026-09-03",
+    });
+    expect(policyRevisionDates("en")).toEqual({
+      effectiveDate: "September 3, 2026",
+      lastUpdated: "September 3, 2026",
+    });
+  });
+
   test("keeps RU Privacy dates coupled to the Privacy revision", () => {
     expect(privacyRevisionDates("ru")).toEqual({
       effectiveDate: "3 сентября 2026 г.",
