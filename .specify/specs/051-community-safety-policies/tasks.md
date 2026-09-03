@@ -27,6 +27,8 @@
       current founder contact separately in the archive route.
 - [x] T014 Suppress intro text that the July renderer never published and remove the
       stale Privacy claim that EU/UK representatives are already appointed.
+- [x] T015 Publish the complete current Privacy Policy in Russian and add all new legal
+      navigation labels to the canonical UI-copy document.
 
 ## Process Memory
 

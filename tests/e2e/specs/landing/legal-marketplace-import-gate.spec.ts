@@ -12,7 +12,7 @@ const documents: ReadonlyArray<{
   },
   {
     slug: "privacy-policy",
-    requiredCopy: () => legalCopy.privacyMarketplaceImportGate,
+    requiredCopy: (locale) => legalCopy.privacyMarketplaceImportGate[locale],
   },
 ];
 

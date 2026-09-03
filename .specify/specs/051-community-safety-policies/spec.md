@@ -24,6 +24,7 @@ DMCA-agent registration, or completed external legal review.
 - Permanent access to the previously effective July 24, 2026 English Terms at
   `/terms-of-use/2026-07-24`.
 - A September 3, 2026 Privacy Policy revision that uses the same public contact.
+- Complete locale-specific EN and RU Privacy Policy content at the canonical route.
 - One public contact source for support, privacy, legal, copyright, notices, and
   appeals: `ks@ks-design.art`.
 - Community rules covering IP and counterfeit material; sexual and intimate content;
@@ -86,8 +87,8 @@ DMCA-agent registration, or completed external legal review.
   separate localized archive notice
   points current correspondence to `ks@ks-design.art`; signup and footer links target
   the current canonical Terms.
-- **AC-012**: The current Privacy Policy displays September 3, 2026 as both effective
-  and last-updated date.
+- **AC-012**: The current EN and RU Privacy Policy displays September 3, 2026 as both
+  effective and last-updated date, with locale-specific substantive content.
 - **AC-013**: App lint, CSS lint, TypeScript checks, production build, focused
   Playwright coverage, repository baseline, feature-memory guard, and required GitHub
   checks pass at the final PR head.
@@ -124,3 +125,5 @@ published July domain and contact constants before the fix.
 Commit `b01a176` adds red-first coverage for the final review: before implementation,
 the archive exposed intro copy absent from the July renderer and Privacy still claimed
 that EU/UK representatives had already been appointed.
+Commit `0c099f5` adds the red-first RU Privacy contract: the Russian route still rendered
+the English title and body before the locale-specific document was wired.

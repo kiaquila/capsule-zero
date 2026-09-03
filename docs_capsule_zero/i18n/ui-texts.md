@@ -94,6 +94,9 @@
 | Stub card | Reserved: step {n} | Reservado: paso {n} | Зарезервировано: шаг {n} |
 | Footer: Terms | Terms of Use | Términos de Uso | Условия использования |
 | Footer: Privacy | Privacy Policy | Política de Privacidad | Политика конфиденциальности |
+| Footer / legal nav: Community | Community Guidelines | — | Правила сообщества |
+| Footer / legal nav: Copyright policy | Copyright & IP | — | Авторские и иные права |
+| Footer / legal nav: Enforcement | Enforcement & Appeals | — | Модерация и обжалование |
 | Footer: Copyright | © 2026 Capsule Zero | © 2026 Capsule Zero | © 2026 Capsule Zero |
 | Cookie banner | We use cookies to improve your experience. By continuing you accept our Cookie Policy. | Usamos cookies para mejorar tu experiencia. Al continuar, aceptás nuestra Política de Cookies. | Мы используем куки для улучшения работы сервиса. Продолжая использование, вы принимаете нашу Политику куки. |
 | Cookie: Accept | Accept | Aceptar | Принять |

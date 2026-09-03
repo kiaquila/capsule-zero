@@ -83,8 +83,10 @@ export const legalCopy = {
     en: "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification and an external legal review are complete and all required launch controls are in place.",
     ru: "Импорт по ссылке с маркетплейса и общий каталог пользовательского импорта сейчас недоступны. Мы не запустим их до завершения отдельной спецификации compliance-схемы, внешней юридической проверки и внедрения всех обязательных мер.",
   },
-  privacyMarketplaceImportGate:
-    "Capsule Zero does not currently collect or process marketplace URLs, parsed item candidates, or marketplace source-site metadata because marketplace link import is disabled.",
+  privacyMarketplaceImportGate: {
+    en: "Capsule Zero does not currently collect or process marketplace URLs, parsed item candidates, or marketplace source-site metadata because marketplace link import is disabled.",
+    ru: "Импорт по ссылкам отключён, поэтому URL маркетплейсов, распознанные кандидаты и метаданные источников не собираются.",
+  },
   termsMonetizationHold:
     "Capsule Zero does not currently sell subscriptions, coins, credits, or other paid digital features, and no payment provider is active for the Service.",
   privacyMonetizationHold:
