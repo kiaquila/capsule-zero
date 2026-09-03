@@ -48,7 +48,11 @@
 - [ ] Trigger and clear PR #125's head-bound native Codex review and required checks.
 - [x] Rebase PR #126 and revert Node 26 declarations because production and required CI
       remain on Node 22.
-- [ ] Trigger and clear PR #126's head-bound native Codex review and required checks.
+- [x] Trigger and clear PR #126's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
+- [x] Rebase PR #127 and revert e2e Node 26 declarations because e2e, required CI, and
+      production runtime contracts remain on Node 22.
+- [ ] Trigger and clear PR #127's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -124,6 +128,7 @@
 - Keep app `@types/node` on 22.20.1 for PR #126. The ambient API line must match the
   Node 22 production/required-CI runtime; resume Node 26 declarations only with that
   runtime upgrade.
+- Keep e2e `@types/node` on 22.20.1 for PR #127 for the same Node 22 runtime boundary.
 
 ### Known Issues
 
