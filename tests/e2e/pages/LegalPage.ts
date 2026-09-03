@@ -28,6 +28,7 @@ export class LegalPage extends BasePage {
   readonly article: Locator;
   readonly lastUpdated: Locator;
   readonly effectiveDate: Locator;
+  readonly archivedTermsLink: Locator;
   readonly backToHome: Locator;
 
   constructor(
@@ -49,6 +50,7 @@ export class LegalPage extends BasePage {
       .locator(".legal-meta div")
       .filter({ hasText: "Status" })
       .locator("dd");
+    this.archivedTermsLink = this.root.getByTestId("legal-terms-archive");
     this.backToHome = page.getByTestId("legal-back-home");
   }
 }

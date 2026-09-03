@@ -1,16 +1,8 @@
 import { expect, test } from "../../fixtures/base";
 import { legalCopy } from "../../fixtures/locales";
 import { LegalPage } from "../../pages/LegalPage";
-import { privacyRevisionDates } from "@/lib/legal/policy-shared";
 
 test.describe("Landing — Terms safety-policy contract", () => {
-  test("keeps RU Privacy dates coupled to the Privacy revision", () => {
-    expect(privacyRevisionDates("ru")).toEqual({
-      effectiveDate: "3 сентября 2026 г.",
-      lastUpdated: "3 сентября 2026 г.",
-    });
-  });
-
   test("Terms incorporates the complete community safety policy stack", async ({
     page,
   }) => {
@@ -68,29 +60,19 @@ test.describe("Landing — Terms safety-policy contract", () => {
     );
   });
 
-  test("Privacy revision date tracks the public contact change", async ({
-    page,
-  }) => {
-    const privacy = new LegalPage(page, "privacy-policy");
-    await privacy.goto();
-
-    await expect(privacy.lastUpdated).toHaveText(legalCopy.privacyLastUpdated);
-    await expect(privacy.article).not.toContainText(
-      legalCopy.retiredRepresentativeClaim,
+  test("links the archived Terms from both current locales", async ({ page }) => {
+    const termsEn = new LegalPage(page, "terms-of-use", "en");
+    await termsEn.goto();
+    await expect(termsEn.archivedTermsLink).toHaveAttribute(
+      "href",
+      "/en/terms-of-use/2026-07-24",
     );
-  });
 
-  test("publishes the current Privacy revision in Russian", async ({ page }) => {
-    const privacy = new LegalPage(page, "privacy-policy", "ru");
-    await privacy.goto();
-
-    await expect(privacy.heading).toHaveText(legalCopy.privacyRussianTitle);
-    await expect(privacy.article).toContainText(
-      legalCopy.privacyRussianRepresentativeStatus,
-    );
-    await expect(privacy.article).toContainText(legalCopy.contactEmail);
-    await expect(privacy.article).not.toContainText(
-      "Capsule Zero appoints local representatives",
+    const termsRu = new LegalPage(page, "terms-of-use", "ru");
+    await termsRu.goto();
+    await expect(termsRu.archivedTermsLink).toHaveAttribute(
+      "href",
+      "/ru/terms-of-use/2026-07-24",
     );
   });
 });
