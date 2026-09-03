@@ -64,6 +64,9 @@ the compatible minor/patch pull requests produced by that policy.
     without masking findings: the newly reported `browserslist` and `fast-uri`
     transitive vulnerabilities are fixed through the existing app override boundary,
     and a clean install remains reproducible.
+11. The compatible root, app, and e2e npm refresh in PR #124 retains the frozen
+    `@supabase/*` provider graph, the prior OSV remediations, and the Linux native
+    package libc selectors while its dependency updates are applied.
 
 ## Negative Scenarios
 
