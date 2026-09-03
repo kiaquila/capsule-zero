@@ -40,10 +40,11 @@ const legalNavigation: ReadonlyArray<{
 ];
 
 interface LegalPageProps {
+  archiveContactEmail?: string;
   document: LegalDocument;
 }
 
-export function LegalPage({ document }: LegalPageProps) {
+export function LegalPage({ archiveContactEmail, document }: LegalPageProps) {
   const t = useTranslations("landing");
   const legal = useTranslations("legalPage");
 
@@ -70,6 +71,11 @@ export function LegalPage({ document }: LegalPageProps) {
       </header>
 
       <main className="legal-main">
+        {archiveContactEmail ? (
+          <aside className="legal-index dashboard-glass">
+            <p>{legal("archiveNotice", { email: archiveContactEmail })}</p>
+          </aside>
+        ) : null}
         <section className="legal-index dashboard-glass">
           <p className="legal-eyebrow">{document.eyebrow}</p>
           <h1>{document.title}</h1>

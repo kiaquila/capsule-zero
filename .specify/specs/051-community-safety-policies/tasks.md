@@ -23,6 +23,8 @@
       `plan.md`.
 - [x] T012 Push the implementation head, update the PR description, and request Codex review from
       the founder account.
+- [x] T013 Preserve the superseded Terms as an exact immutable snapshot and render the
+      current founder contact separately in the archive route.
 
 ## Process Memory
 
@@ -73,4 +75,7 @@
   operational moderation/reporting tooling are not claimed or implemented.
 - The archived July 24 Terms are English-only; the current binding Terms and all new
   safety policies are available in EN and RU.
+- Historical addresses remain inside that immutable archive because they were part of
+  the published contract. A separate localized notice routes all current correspondence
+  to `ks@ks-design.art`; current legal documents contain no retired mailbox.
 - The founder must keep `ks@ks-design.art` monitored while it is the published contact.

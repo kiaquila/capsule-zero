@@ -82,7 +82,9 @@ DMCA-agent registration, or completed external legal review.
 - **AC-010**: Canonical EN and RU Terms display the current incorporated policy stack,
   with September 3, 2026 as both effective and last-updated date.
 - **AC-011**: `/terms-of-use/2026-07-24` permanently renders the previous July 24, 2026
-  English contract; signup and footer links target the current canonical Terms.
+  English contract exactly as published, while a separate localized archive notice
+  points current correspondence to `ks@ks-design.art`; signup and footer links target
+  the current canonical Terms.
 - **AC-012**: The current Privacy Policy displays September 3, 2026 as both effective
   and last-updated date.
 - **AC-013**: App lint, CSS lint, TypeScript checks, production build, focused
@@ -115,3 +117,6 @@ July contract, the archive route did not exist, current documents exposed legacy
 mailboxes and DPO wording, dates were stale, and canonical RU Terms remained English.
 The implementation removes the now-obsolete scheduled-notice tests and application
 surface rather than preserving machinery for a rollout date that no longer exists.
+Commit `ea26e19` adds the red-first regression for Codex's immutable-archive finding:
+the archive still showed an August administrative rewrite and did not preserve the
+published July domain and contact constants before the fix.

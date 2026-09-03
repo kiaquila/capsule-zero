@@ -55,6 +55,7 @@
     "status": "Status",
     "contents": "Contents",
     "introduction": "Introduction",
+    "archiveNotice": "Archived contract shown exactly as published. For current correspondence, contact {email}.",
     "readRelated": "Read the {document}",
     "backHome": "Back to Capsule Zero"
   },

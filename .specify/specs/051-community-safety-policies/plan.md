@@ -22,8 +22,10 @@ has appointed a DPO or separate legal organization.
    counter-notice, report, and appeal request.
 2. Do not create role mailboxes for the MVP and do not describe the founder as a DPO.
 3. Publish the current legal stack immediately with September 3, 2026 revision dates.
-4. Preserve the July 24 Terms at `/terms-of-use/2026-07-24`; do not keep a scheduled
-   switchover, notification banner, timer, or authenticated-layout complexity.
+4. Preserve the July 24 Terms exactly as published at
+   `/terms-of-use/2026-07-24`; show the current correspondence address outside the
+   archived contract, and do not keep a scheduled switchover, notification banner,
+   timer, or authenticated-layout complexity.
 5. Keep the shared-import/public third-party-content surface disabled. Its future
    compliance-scheme spec and external legal review remain release gates for that
    feature, not for the current MVP.
@@ -51,6 +53,7 @@ shared third-party-content feature launches.
 | Contract | Evidence |
 |---|---|
 | Red-first solo-founder contract | Commit `b45e2e6`; the focused Chromium run failed 5/5 before implementation for the intended route, content, contact, date, and localization gaps. |
+| Immutable archive regression | Commit `ea26e19`; the archive scenario failed red because the page reported an August rewrite instead of the July 24 publication snapshot. |
 | One monitored legal contact, no DPO claim | `legal-contact-domain.spec.ts` passed in Chromium and mobile WebKit; a source audit found no legacy address or DPO designation in `app/src`. |
 | Current EN/RU Terms and permanent July archive | Focused Chromium legal suite passed 13/13; the full suite exercised the same routes in mobile WebKit. |
 | Policy completeness and gated-feature negatives | Full Playwright run passed 94 tests with 8 intentional full-stack skips across Chromium and mobile WebKit. |

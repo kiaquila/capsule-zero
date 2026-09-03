@@ -1,18 +1,15 @@
 import type { LegalDocument } from "../legal-content";
-import { legalContacts } from "./contacts";
 
-const lastUpdated = "August 13, 2026";
+const lastUpdated = "July 24, 2026";
 const effectiveDate = "July 24, 2026";
 const operatingEntity = "Capsule Zero S.A.S.";
 const registeredOffice =
   "Ciudad Autónoma de Buenos Aires, Argentina";
-const {
-  productDomain,
-  privacyEmail,
-  legalEmail,
-  supportEmail,
-  ipEmail: ipNoticeEmail,
-} = legalContacts;
+const productDomain = "capsulezero.com";
+const privacyEmail = "privacy@capsulezero.com";
+const legalEmail = "legal@capsulezero.com";
+const supportEmail = "support@capsulezero.com";
+const ipNoticeEmail = "ip@capsulezero.com";
 
 const termsEffectiveJuly24: LegalDocument = {
     slug: "terms-of-use",
@@ -400,7 +397,7 @@ const termsEffectiveJuly24: LegalDocument = {
           },
           {
             type: "paragraph",
-            text: "Nothing in this section deprives you of the protection of mandatory consumer-protection rules that apply where you live. If you are a consumer in the EEA, UK, Switzerland, Brazil, or another jurisdiction with mandatory protective rules, you keep those rights, and you may also be entitled to bring proceedings in your local courts or use an available competent alternative-dispute-resolution body. The former European Commission online dispute-resolution platform was discontinued in 2025 and is not presented as an available redress channel.",
+            text: "Nothing in this section deprives you of the protection of mandatory consumer-protection rules that apply where you live. If you are a consumer in the EEA, UK, Switzerland, Brazil, or another jurisdiction with mandatory protective rules, you keep those rights, and you may also be entitled to bring proceedings in your local courts. EU consumers may also access the European Commission's online dispute-resolution platform at https://ec.europa.eu/consumers/odr.",
           },
         ],
       },
@@ -427,10 +424,4 @@ const termsEffectiveJuly24: LegalDocument = {
     ],
   };
 
-export const currentTermsDocument: LegalDocument = {
-  ...termsEffectiveJuly24,
-  intro: [
-    ...termsEffectiveJuly24.intro,
-    "Administrative contact points, the product domain, and the discontinued EU online-dispute-resolution reference were corrected on August 13, 2026 without changing the substantive Terms effective July 24, 2026.",
-  ],
-};
+export const currentTermsDocument: LegalDocument = termsEffectiveJuly24;
