@@ -43,6 +43,9 @@
 - [x] Align e2e `@types/node` to 22.20.1 and pass npm 10 clean install, lint, and
       TypeScript 7 typecheck.
 - [ ] Trigger and clear PR #114's head-bound native Codex review and required checks.
+- [x] Rebase PR #125, verify the current `eslint-plugin-jsx-a11y` peer metadata, and
+      omit the unsupported app ESLint 10 update without peer-ignore flags.
+- [ ] Trigger and clear PR #125's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -112,6 +115,9 @@
   the existing `@/*` alias or enabling peer-ignore installation flags.
 - Align e2e Node declarations with the same 22.20.1 line as the app. Resume Node 26
   declarations only alongside a deliberate runtime and required-workflow upgrade.
+- Keep the app on ESLint 9.39.4 for PR #125. The latest `eslint-plugin-jsx-a11y` still
+  ends its peer range at ESLint 9, so merging the generated major would make clean CI
+  installation fail; revisit only when the full resolved Next lint graph supports 10.
 
 ### Known Issues
 
