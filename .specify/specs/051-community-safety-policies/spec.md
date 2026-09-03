@@ -133,3 +133,5 @@ Commit `9225935` adds the red-first current-Terms link contract and moves Privac
 coverage into its own focused spec before the localized archive link is rendered.
 Commit `ea448e3` adds red-first contracts for one shared legal-navigation definition
 and ISO-only revision records before the footer/header and date sources are unified.
+Commit `01c5b0f` adds red-first EN/RU Privacy assertions rejecting the unimplemented
+row-level-security claim before the security disclosure is aligned to the Go API.

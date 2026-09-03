@@ -35,6 +35,8 @@
       Privacy coverage into its own focused e2e spec.
 - [x] T018 Share legal navigation across footer/header, derive display dates from ISO
       revisions, and synchronize canonical landing feature/screen docs.
+- [x] T019 Align EN/RU Privacy security disclosures with Go API ownership enforcement,
+      signed private-media URLs, and encrypted database backups; do not claim RLS.
 
 ## Process Memory
 
@@ -76,6 +78,8 @@
 - Legal contacts and revision dates remain centralized sources of truth.
 - Revision records store ISO dates only; every EN/RU display date is formatted from
   those values, preventing locale drift.
+- Privacy describes the implemented application-level authorization boundary and does
+  not claim Postgres RLS or universal media encryption at rest.
 - Current Terms expose a localized link to the permanent July 24 archive; the archive
   remains immutable and keeps its separate current-contact notice.
 - The required OSV gate disclosed new advisories in two dev-only transitive packages.

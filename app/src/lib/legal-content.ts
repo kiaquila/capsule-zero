@@ -853,8 +853,9 @@ export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
           {
             type: "list",
             items: [
-              "encryption in transit (TLS 1.2 or higher) and encryption at rest for personal data and uploaded media;",
-              "row-level security and granular access controls on our database and storage layer;",
+              "encryption in transit (TLS 1.2 or higher) and encrypted database backups;",
+              "application-level ownership checks in the Go API before authenticated data access, together with granular database and storage permissions;",
+              "short-lived signed URLs for private media access and upload;",
               "principle-of-least-privilege access management for staff, with role-based access controls and audit logging;",
               "subprocessor due diligence and contractual data-protection commitments;",
               "logging, monitoring, and alerting on security events;",
