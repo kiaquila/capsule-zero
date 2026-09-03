@@ -49,6 +49,9 @@ silently weakening lint/type checks, or changing product behavior.
    removed `baseUrl` option.
 10. The e2e Node.js ambient types expose only the Node 22 API line used by its declared
     engine, required test workflow, and production web runtime.
+11. PR #125 does not force ESLint 10 while the current resolved Next lint plugins still
+    exclude it: the app remains on ESLint 9.39.4 until upstream peer metadata supports
+    the full graph, with no peer-ignore installation flag.
 
 ## Negative Scenarios
 

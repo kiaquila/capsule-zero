@@ -2,10 +2,11 @@
 
 ## Approach
 
-Process PRs #108-#114 strictly in order. Rebase one PR at a time on the latest merged
-`origin/main`, confirm its upstream compatibility contract through Context7, make the
-smallest required configuration/doc adjustment, run the full local verification chain,
-and request a fresh native Codex review before the guarded merge.
+Process PRs #108-#114 and their later Dependabot replacements strictly in order. Rebase
+one PR at a time on the latest merged `origin/main`, confirm its upstream compatibility
+contract through Context7, make the smallest required configuration/doc adjustment, run
+the full local verification chain, and request a fresh native Codex review before the
+guarded merge.
 
 ## Verification
 
@@ -21,6 +22,7 @@ and request a fresh native Codex review before the guarded merge.
 | 8   | E2e ESLint 10 graph is internally compatible     | npm peer/engine metadata; npm 10.9.4 clean install; `npm ls`; e2e lint and typecheck; unchanged three-warning Playwright baseline              |
 | 9   | E2e TypeScript 7/6 boundary remains supported    | failed direct-install CI evidence; npm 10.9.4 clean install; CLI/API versions; e2e lint, TypeScript 7 typecheck, and full preflight            |
 | 10  | E2e Node ambient types match runtime             | Node engine, required workflow, and production image stay on Node 22; installed declarations report 22.20.1; e2e lint/typecheck and preflight  |
+| 11  | PR #125 leaves the unsupported app ESLint major deferred | current upstream peer metadata; app npm 10 clean install, lint, typecheck, and build                                                  |
 
 ## Compatibility Notes
 
@@ -78,3 +80,20 @@ and request a fresh native Codex review before the guarded merge.
   e2e declarations from 20.19.43 to the same 22.20.1 line already verified for the app;
   npm 10.9.4 clean install, e2e lint, and TypeScript 7 typecheck pass;
   `CI=1 npm run preflight` completes with 78 browser scenarios passed and 8 skipped.
+
+### V11 — App ESLint 10 deferral
+
+```sh
+npm view eslint-plugin-jsx-a11y@latest peerDependencies --json
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
+npx --yes --package=npm@10.9.8 npm run lint --prefix app
+npx --yes --package=npm@10.9.8 npm run typecheck --prefix app
+npx --yes --package=npm@10.9.8 npm run build --prefix app
+CI=1 npm run preflight
+```
+
+At review time, `eslint-plugin-jsx-a11y@6.10.2` remains the latest release and declares
+an ESLint peer range only through `^9`. The resolved `eslint-config-next` graph requires
+that plugin, so PR #125 restores the app manifest and lockfile to the already verified
+ESLint 9.39.4 graph. This is a deferral, not a peer-ignore workaround; resume only when
+the complete resolved Next lint graph declares ESLint 10 compatibility.
