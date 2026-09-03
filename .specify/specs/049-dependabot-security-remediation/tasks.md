@@ -145,6 +145,9 @@
   app minor/patch group with newer `next`, `next-intl`, and `react-hook-form` targets and
   closed #117 as "updatable in another way". The frozen-provider exclusion first
   established for PR #107 is re-applied unchanged.
+- [x] Rebase PR #128 and verify the grouped AWS module graph with Go module verification,
+  vet, and all API package tests.
+- [ ] Trigger and clear PR #128's head-bound native Codex review and required checks.
 
 ### Known Issues
 
