@@ -58,8 +58,9 @@ shared third-party-content feature launches.
 | RU Privacy and canonical UI copy | Commit `0c099f5`; the RU route failed red with the English Privacy document. The localized 20-section document and the canonical landing-copy rows close the review findings. |
 | Independent Privacy revision | Commit `38fe42d`; e2e TypeScript compilation failed red until a Privacy-specific date formatter was exported and consumed by RU Privacy. |
 | Discoverable Terms archive and focused specs | Commit `9225935`; current EN/RU Terms failed red because no localized archive link was rendered. Privacy cases moved to a dedicated three-case spec to preserve the repository's under-five-case rule. |
+| Shared navigation and ISO-only revisions | Commit `ea448e3`; e2e compilation failed red before the shared navigation module existed, and the focused Privacy test failed while revision records still duplicated display dates. |
 | One monitored legal contact, no DPO claim | `legal-contact-domain.spec.ts` passed in Chromium and mobile WebKit; a source audit found no legacy address or DPO designation in `app/src`. |
-| Current EN/RU legal stack and permanent July archive | Focused Chromium legal suite passed 16/16, including the localized archive link, complete RU Privacy content, and its independent revision source; the earlier full suite exercised the remaining routes in mobile WebKit. |
+| Current EN/RU legal stack and permanent July archive | Focused Chromium legal suite passed 18/18, including the shared navigation contract, ISO-derived EN/RU dates, localized archive link, and complete RU Privacy content; the earlier full suite exercised the remaining routes in mobile WebKit. |
 | Policy completeness and gated-feature negatives | Full Playwright run passed 94 tests with 8 intentional full-stack skips across Chromium and mobile WebKit. |
 | Static quality | App lint passed with 95 existing soft warnings; CSS lint passed with 99 existing soft warnings; app and e2e TypeScript checks passed; e2e lint passed with 3 intentional skip warnings. |
 | Production compilation | Next.js webpack production build passed and generated all 41 static pages, including canonical EN/RU Terms and the dated archive. |
@@ -72,8 +73,11 @@ shared third-party-content feature launches.
 
 Checked `app/src/lib/legal-content.ts`, `app/src/components/legal/LegalPage.tsx`, the
 existing legal routes, message catalogs, `PublicLegalFooter`, and shared policy modules.
-The implementation reuses those units. `legal/contacts.ts` remains the one contact
-source and `legal/revisions.ts` remains the one revision source.
+The implementation reuses those units. The two previously duplicated navigation arrays
+could not remain authoritative independently, so `legal/navigation.ts` now owns their
+shared descriptors while the footer keeps only test metadata. `legal/contacts.ts`
+remains the one contact source and `legal/revisions.ts` remains the one ISO revision
+source.
 
 The dated July Terms module is retained because an archived contract must stay
 auditable and must not be synthesized from current clauses at runtime. The dedicated

@@ -5,8 +5,6 @@ import {
   safetyPolicyRevision,
 } from "./revisions";
 
-export const policyLastUpdated = safetyPolicyRevision.lastUpdated;
-export const policyEffectiveDate = safetyPolicyRevision.effectiveDate;
 export const policySupportEmail = legalContacts.supportEmail;
 export const policyLegalEmail = legalContacts.legalEmail;
 export const policyIpEmail = legalContacts.ipEmail;
@@ -52,6 +50,15 @@ export function formatPolicyDate(
     ? `${day} ${monthName} ${year} г.`
     : `${monthName} ${day}, ${year}`;
 }
+
+export const policyLastUpdated = formatPolicyDate(
+  safetyPolicyRevision.publishedOn,
+  "en",
+);
+export const policyEffectiveDate = formatPolicyDate(
+  safetyPolicyRevision.effectiveOn,
+  "en",
+);
 
 export function policyRevisionDates(locale: "en" | "ru") {
   return formatRevisionDates(safetyPolicyRevision, locale);

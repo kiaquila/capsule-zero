@@ -1,43 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import type {
-  LegalBlock,
-  LegalDocument,
-  LegalDocumentSlug,
-} from "@/lib/legal-content";
-
-const legalNavigation: ReadonlyArray<{
-  href: `/${LegalDocumentSlug}`;
-  labelKey:
-    | "terms"
-    | "privacy"
-    | "community"
-    | "copyrightPolicy"
-    | "enforcement";
-  slug: LegalDocumentSlug;
-}> = [
-  { href: "/terms-of-use", labelKey: "terms", slug: "terms-of-use" },
-  {
-    href: "/privacy-policy",
-    labelKey: "privacy",
-    slug: "privacy-policy",
-  },
-  {
-    href: "/community-guidelines",
-    labelKey: "community",
-    slug: "community-guidelines",
-  },
-  {
-    href: "/copyright-policy",
-    labelKey: "copyrightPolicy",
-    slug: "copyright-policy",
-  },
-  {
-    href: "/enforcement-policy",
-    labelKey: "enforcement",
-    slug: "enforcement-policy",
-  },
-];
+import type { LegalBlock, LegalDocument } from "@/lib/legal-content";
+import { legalNavigationItems } from "@/lib/legal/navigation";
 
 interface LegalPageProps {
   archiveContactEmail?: string;
@@ -65,7 +29,7 @@ export function LegalPage({
           Capsule Zero
         </Link>
         <nav className="legal-header-links" aria-label={t("legalDocuments")}>
-          {legalNavigation.map((item) => (
+          {legalNavigationItems.map((item) => (
             <Link
               className={document.slug === item.slug ? "legal-link-active" : ""}
               href={item.href}

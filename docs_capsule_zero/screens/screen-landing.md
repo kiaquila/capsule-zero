@@ -46,7 +46,7 @@ Prototype: `html-prototypes/landing-v2/v1c-final.html` (утверждён фа�
 - **Language Switcher:** существующий компонент (EN/RU в v0.1; ES-AR отложен на v0.2), рядом с «Войти»
 - **Scroll cue:** «▾» с мягкой анимацией, aria-hidden; статичен при `prefers-reduced-motion: reduce`
 - **Slides stub:** секция-заглушка «Как это работает» (контент — post-MVP), строго под фолдом; `data-testid="slides-stub"`
-- **Footer:** Условия · Конфиденциальность · Настройки cookie · © 2026 (testid'ы сохранены)
+- **Footer:** Условия · Конфиденциальность · Правила сообщества · Авторские и иные права · Модерация и обжалование · Настройки cookie · © 2026 (testid'ы сохранены)
 - **Cookie Banner:** существующий glass-компонент
 
 ## Interactivity

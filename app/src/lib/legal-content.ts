@@ -1,8 +1,8 @@
 import { legalContacts } from "./legal/contacts";
 import {
-  privacyPolicyRevision,
-  safetyPolicyRevision,
-} from "./legal/revisions";
+  policyRevisionDates,
+  privacyRevisionDates,
+} from "./legal/policy-shared";
 
 export type LegalDocumentSlug =
   | "privacy-policy"
@@ -60,6 +60,8 @@ const {
   supportEmail,
   ipEmail: ipNoticeEmail,
 } = legalContacts;
+const termsRevision = policyRevisionDates("en");
+const privacyRevision = privacyRevisionDates("en");
 
 export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
   "terms-of-use": {
@@ -68,8 +70,8 @@ export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
     eyebrow: "Legal",
     summary:
       "The binding contract between you and Capsule Zero S.A.S. governing accounts, wardrobe content, AI-assisted recommendations, semantic search, mobile apps, current free access, gated future features, and your statutory consumer rights.",
-    lastUpdated: safetyPolicyRevision.lastUpdated,
-    effectiveDate: safetyPolicyRevision.effectiveDate,
+    lastUpdated: termsRevision.lastUpdated,
+    effectiveDate: termsRevision.effectiveDate,
     relatedDocument: {
       href: "/privacy-policy",
       label: "Privacy Policy",
@@ -78,7 +80,7 @@ export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
       `These Terms of Use ("Terms") form a binding contract between you and ${operatingEntity}, a company incorporated under the laws of the Argentine Republic with registered office in ${registeredOffice} ("Capsule Zero", "we", "us", "our"). They govern your access to and use of the Capsule Zero website at ${productDomain}, the Capsule Zero web application, our iOS and Android mobile applications, account features, wardrobe and capsule tools, photo upload and image-processing flows, semantic search, the Capsule Zero preset catalog, support, and any related services we provide (together, the "Service"). Section 7 separately identifies a future feature that is not part of the current Service.`,
       "By creating an account, signing in, uploading content, or using the Service, you confirm that you have read these Terms, that you accept them, and that you have the legal capacity to enter into this contract. If you use the Service on behalf of another person, organization, or legal entity, you confirm that you have authority to accept these Terms on their behalf, and references to \"you\" include both you and that person or entity.",
       "These Terms include and incorporate by reference our Community Guidelines, Copyright & Intellectual Property Policy, and Enforcement & Appeals Policy. They also apply with our separate Privacy Policy, product-specific notices we surface in the Service (for example, age gates or content-moderation notices), and mandatory consumer-protection rules that apply where you live. You may not use the Service to do, submit, link to, or share anything contrary to those policies, and you may not attempt to circumvent them.",
-      `This version was published and took effect on ${safetyPolicyRevision.effectiveDate}. The previously effective Terms remain available at a permanent dated archive URL.`,
+      `This version was published and took effect on ${termsRevision.effectiveDate}. The previously effective Terms remain available at a permanent dated archive URL.`,
     ],
     highlights: [
       "You keep ownership of your wardrobe photos and content; we receive a limited license needed to operate, secure, and improve the Service.",
@@ -490,8 +492,8 @@ export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
     eyebrow: "Privacy",
     summary:
       "How Capsule Zero S.A.S. collects, uses, shares, stores, and protects personal data across the website, web app, mobile apps, wardrobe tools, uploads, AI-assisted recommendations, support, and analytics — and how you can exercise your privacy rights.",
-    lastUpdated: privacyPolicyRevision.lastUpdated,
-    effectiveDate: privacyPolicyRevision.effectiveDate,
+    lastUpdated: privacyRevision.lastUpdated,
+    effectiveDate: privacyRevision.effectiveDate,
     relatedDocument: {
       href: "/terms-of-use",
       label: "Terms of Use",

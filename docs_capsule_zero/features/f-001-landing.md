@@ -15,7 +15,7 @@
 2. First screen = exactly one viewport: gold logo, language switcher + ghost Log In (top-right), centered hero (H1 two lines, subtitle, gold CTA «Попробовать бесплатно» / "Try for free"), scroll cue
 3. CTA click → auth popup in **sign-up** mode — *interim route* (founder decision 2026-07-17) until the guest tool ships (PRODUCT-PLAN Q1/Q2/Q3/Q6); then the CTA re-targets to guest onboarding
 4. Ghost Log In click → auth popup in sign-in mode (see f-002-auth.md)
-5. Scroll → "How it works" stub (content post-MVP), footer (Terms · Privacy · Cookie settings · ©)
+5. Scroll → "How it works" stub (content post-MVP), footer (Terms · Privacy · Community Guidelines · Copyright & IP · Enforcement & Appeals · Cookie settings · ©)
 
 ## Interface States
 
@@ -40,6 +40,7 @@
 - **LandingPage** — fold (header + hero) + slides stub + footer; reuses `AuthPanel` (popup, `initialMode`), `LanguageSwitcher`, `CookieBanner`
 - **Hero CTA** — the single gold signal accent (constitution §III v1.5); never used for statuses/errors
 - **Ghost Log In** — transparent 34px pill (`--color-white-a24` border, `--btn-ghost-bg` hover)
+- **PublicLegalFooter** — единая EN/RU-навигация по Terms, Privacy и трём safety-политикам; cookie settings остаются отдельным действием
 
 ## Edge Cases
 - Already authenticated → redirect to Dashboard

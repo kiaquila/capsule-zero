@@ -131,3 +131,5 @@ Commit `38fe42d` adds a compile-red contract requiring RU Privacy dates to come 
 dedicated Privacy revision rather than the independently versioned safety-policy dates.
 Commit `9225935` adds the red-first current-Terms link contract and moves Privacy
 coverage into its own focused spec before the localized archive link is rendered.
+Commit `ea448e3` adds red-first contracts for one shared legal-navigation definition
+and ISO-only revision records before the footer/header and date sources are unified.

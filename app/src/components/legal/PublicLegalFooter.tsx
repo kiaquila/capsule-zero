@@ -4,34 +4,16 @@ import { Fragment } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { openCookieSettings } from "@/lib/cookie-consent";
+import type { LegalDocumentSlug } from "@/lib/legal-content";
+import { legalNavigationItems } from "@/lib/legal/navigation";
 
-const policyLinks = [
-  {
-    href: "/terms-of-use",
-    labelKey: "terms",
-    testId: "footer-terms-link",
-  },
-  {
-    href: "/privacy-policy",
-    labelKey: "privacy",
-    testId: "footer-privacy-link",
-  },
-  {
-    href: "/community-guidelines",
-    labelKey: "community",
-    testId: "footer-community-link",
-  },
-  {
-    href: "/copyright-policy",
-    labelKey: "copyrightPolicy",
-    testId: "footer-copyright-policy-link",
-  },
-  {
-    href: "/enforcement-policy",
-    labelKey: "enforcement",
-    testId: "footer-enforcement-link",
-  },
-] as const;
+const footerTestIds = {
+  "terms-of-use": "footer-terms-link",
+  "privacy-policy": "footer-privacy-link",
+  "community-guidelines": "footer-community-link",
+  "copyright-policy": "footer-copyright-policy-link",
+  "enforcement-policy": "footer-enforcement-link",
+} as const satisfies Record<LegalDocumentSlug, string>;
 
 interface PublicLegalFooterProps {
   showCookieSettings?: boolean;
@@ -44,10 +26,10 @@ export function PublicLegalFooter({
 
   return (
     <footer className="landing-footer">
-      {policyLinks.map((policy, index) => (
+      {legalNavigationItems.map((policy, index) => (
         <Fragment key={policy.href}>
           {index > 0 ? <span aria-hidden="true">·</span> : null}
-          <Link href={policy.href} data-testid={policy.testId}>
+          <Link href={policy.href} data-testid={footerTestIds[policy.slug]}>
             {t(policy.labelKey)}
           </Link>
         </Fragment>
