@@ -102,7 +102,7 @@ the complete resolved Next lint graph declares ESLint 10 compatibility.
 ### V12 — App Node 26 declaration deferral
 
 ```sh
-rg -n 'node-version: 22|FROM node:22' .github/workflows api/Dockerfile app/Dockerfile
+rg -n 'node-version: "22"|ARG NODE_VERSION=22-bookworm-slim' .github/workflows api/Dockerfile app/Dockerfile
 npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
 npx --yes --package=npm@10.9.8 npm run typecheck --prefix app
 npx --yes --package=npm@10.9.8 npm run build --prefix app
