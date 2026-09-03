@@ -2,10 +2,11 @@
 
 ## Approach
 
-Process PRs #108-#114 strictly in order. Rebase one PR at a time on the latest merged
-`origin/main`, confirm its upstream compatibility contract through Context7, make the
-smallest required configuration/doc adjustment, run the full local verification chain,
-and request a fresh native Codex review before the guarded merge.
+Process PRs #108-#114 and their later Dependabot replacements strictly in order. Rebase
+one PR at a time on the latest merged `origin/main`, confirm its upstream compatibility
+contract through Context7, make the smallest required configuration/doc adjustment, run
+the full local verification chain, and request a fresh native Codex review before the
+guarded merge.
 
 ## Verification
 
@@ -88,6 +89,7 @@ npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
 npx --yes --package=npm@10.9.8 npm run lint --prefix app
 npx --yes --package=npm@10.9.8 npm run typecheck --prefix app
 npx --yes --package=npm@10.9.8 npm run build --prefix app
+CI=1 npm run preflight
 ```
 
 At review time, `eslint-plugin-jsx-a11y@6.10.2` remains the latest release and declares
