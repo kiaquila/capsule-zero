@@ -2,187 +2,116 @@
 
 ## Goal
 
-Publish a coherent user-content policy layer for Capsule Zero before any shared
-user-import surface can launch. The Terms of Use must incorporate dedicated
-Community Guidelines, Copyright & Intellectual Property Policy, and Enforcement &
-Appeals Policy. Together they must allocate responsibility for user content, reserve
-the moderation and account-enforcement rights needed to protect Capsule Zero and its
-users, and expose notice, counter-notice, appeal, and repeat-infringer rules.
+Publish the smallest coherent legal-policy foundation needed for the Capsule Zero MVP.
+The Terms of Use incorporate dedicated Community Guidelines, Copyright & Intellectual
+Property Policy, and Enforcement & Appeals Policy. The stack must protect Capsule Zero
+and its users without implying that the gated shared-import surface, a marketplace, or
+affiliate monetization is already available.
 
-The policy language is adapted to Capsule Zero's wardrobe, image-upload, catalog,
-semantic-search, and future shared-import context. It must not imply that the gated
-shared user-import pool, affiliate monetization, or a marketplace is operating today,
-and it does not replace the external legal review required by PRODUCT-PLAN D5/D6.
+The operating model is intentionally suitable for a one-person team: one monitored
+contact address, `ks@ks-design.art`, handles every public support, privacy, legal, and
+IP request. Capsule Zero does not claim to have a Data Protection Officer, completed
+DMCA-agent registration, or completed external legal review.
 
 ## Scope
 
 ### In
 
-- Complete English and Russian documents at `/community-guidelines`,
-  `/copyright-policy`, and `/enforcement-policy`, rendered by the existing
-  legal-document component with localized metadata and page chrome.
-- A complete Russian version of the September 15 future Terms, including the same
-  incorporated policies and material user-content protections as the English version,
-  selected by locale at the versioned preview and by the canonical resolver after the
-  effective instant.
-- Terms of Use updates that incorporate those policies, retain user ownership,
-  require rights and lawful-content warranties, describe Capsule Zero as an
-  intermediary for user-submitted content, and reserve moderation, retention,
-  third-party-link, disclaimer, liability, indemnity, and termination protections.
+- Complete English and Russian Community Guidelines, Copyright & IP Policy, and
+  Enforcement & Appeals Policy using the existing legal-document renderer.
+- Current English and Russian Terms at the canonical `/terms-of-use` route, effective
+  immediately on September 3, 2026 and incorporating the three policy documents.
+- Permanent access to the previously effective July 24, 2026 English Terms at
+  `/terms-of-use/2026-07-24`.
+- A September 3, 2026 Privacy Policy revision that uses the same public contact.
+- One public contact source for support, privacy, legal, copyright, notices, and
+  appeals: `ks@ks-design.art`.
 - Community rules covering IP and counterfeit material; sexual and intimate content;
   child safety; private information; hate, harassment, self-harm, violence and violent
   actors; regulated or dangerous goods; scams and harmful misinformation;
   impersonation; spam and manipulation; commercial disclosures; and platform security.
-- Copyright/IP notice requirements, counter-notice requirements, a 10–14-business-day
-  restoration window where the DMCA applies, a reasonably implemented repeat-infringer
-  policy, and support for matching or standard technical measures where applicable.
-- Enforcement disclosure for automated, manual, and hybrid review; removal and
-  distribution limits; account/domain restrictions; reports; statements of reasons;
-  appeals; and action against abusive reports or appeals.
+- Copyright/IP notice and counter-notice requirements, conditional restoration,
+  repeat-infringer rules, and matching or standard technical measures where applicable.
+- Enforcement disclosures for automated, manual, and hybrid review; removal and
+  distribution limits; account restrictions; reasons; appeals; and abusive reports.
 - Discoverable legal navigation and landing-footer links in EN and RU.
-- One canonical contact source for all public policy, privacy, support, DPO, and IP
-  mailboxes on the production `capsulezero.app` domain; no policy may publish a
-  `capsulezero.com` mailbox.
-- A visible Terms introduction that incorporates the policy stack, a future effective
-  date for this material update, and an in-product advance-notice banner for signed-in
-  users throughout the notice period. The previously effective Terms remain binding
-  until the new date.
-- Explicit Terms versioning: the canonical consent/footer route resolves to the July 24
-  governing version before September 15 and to the new version from that UTC effective
-  instant; the future version remains directly reviewable during the notice period.
-- A current Privacy Policy revision date for the public privacy/DPO contact change.
-- Removal of the obsolete European Commission ODR-platform link from the existing
-  Terms while preserving applicable local-court and alternative-redress rights.
-- Source-grounded policy notes and a launch/legal-review checklist in feature memory.
+- An explicit statement that the policies are a foundation only: the shared-import
+  surface remains disabled until its compliance-scheme spec and external legal review
+  are complete.
 
 ### Out
 
 - Activating marketplace-link import, the shared user-import pool, public user uploads,
-  affiliate links, payments, or any new schema/API/storage surface.
-- Claiming that Capsule Zero has completed U.S. Copyright Office DMCA-agent
-  registration, EU/UK representative appointment, or external legal approval unless
-  separately verified.
-- Building the report form, moderation console, hash blacklist, CDN purge, provenance
-  ledger, or appeal workflow. Those operational controls remain prerequisites for the
-  future shared-import implementation.
-- Translating the pre-existing July 24 Terms or Privacy Policy. This scope delivers
-  complete EN/RU versions of the three newly introduced safety-policy documents;
-  translation of the pre-existing core contracts remains a separate legal-review task.
+  affiliate links, payments, or any related schema, API, or storage surface.
+- A separate mailbox, alias, or operational queue for each legal topic.
+- Designating the founder or Capsule Zero as a Data Protection Officer.
+- A future-dated Terms release, countdown, authenticated notice banner, client timer,
+  server-time probe, or reacceptance flow for this already-published revision.
+- Claiming completed external legal review, U.S. Copyright Office DMCA-agent
+  registration, or EU/UK representative appointment.
+- Building reporting, moderation, hash matching, CDN purge, provenance, or appeal tools.
+  Those operational controls are reconsidered with the gated shared-import feature.
+- Russian translation of the archived July 24 Terms; that historical version was
+  English-only and remains available as an immutable English record.
 
 ## Acceptance Criteria
 
-- **AC-001**: Each of the three new legal routes renders a complete locale-specific EN
-  or RU document with a unique H1, metadata, table of contents, status labels, and links
-  to the other policy documents.
-- **AC-002**: Terms expressly incorporates Community, Copyright/IP, and Enforcement
-  policies and contains the user responsibility, rights warranty, intermediary,
-  reporting, third-party-link, user-content disclaimer, retention, enforcement,
-  indemnity, liability-cap, consumer-rights, and survival protections in scope.
+- **AC-001**: Each new policy route renders a complete locale-specific EN or RU
+  document with unique metadata, H1, table of contents, status labels, and related links.
+- **AC-002**: Current Terms incorporate all three policies and include user ownership,
+  rights warranties, intermediary status, reporting, third-party links, user-content
+  disclaimer, retention, enforcement, indemnity, liability, consumer-rights, and
+  survival protections.
 - **AC-003**: Community Guidelines cover every prohibited-content and prohibited-
-  behavior category listed in Scope and apply to private, public, linked, metadata,
-  comment, message, and AI-generated or manipulated content.
-- **AC-004**: Copyright/IP Policy publishes complete notice and counter-notice elements,
-  explains expeditious removal, the conditional 10–14-business-day restoration period,
-  repeat-infringer strikes/termination, and good-faith/false-report consequences.
-- **AC-005**: Enforcement Policy describes automated, manual, and hybrid detection and
-  proportionate actions, notice and appeal where appropriate, report-abuse controls,
-  and the distinction between illegal-content action and policy action.
-- **AC-006**: A shared public legal footer and the legal-document navigation make all
-  policies discoverable without dead anchors, use the active locale for navigation
-  labels, and remain usable at mobile width.
-- **AC-007**: No policy represents the gated shared-import pool, affiliate program,
-  marketplace, or payment flow as currently available, and no page claims completed
-  external legal review or DMCA-agent registration.
-- **AC-008**: The app lint, CSS lint, TypeScript checks, production build, focused
-  Playwright suite, repository baseline, and feature-memory guard pass.
-- **AC-009**: Terms, Privacy, Community, Copyright/IP, and Enforcement publish only
-  `@capsulezero.app` contact points from one shared source and contain no
-  `@capsulezero.com` address.
-- **AC-010**: The Terms incorporation paragraph is visible in the rendered legal
-  article rather than existing only in the document data model.
-- **AC-011**: The material Terms update is published on August 13, 2026, takes effect
-  on September 15, 2026, preserves the July 24, 2026 Terms until then, and gives
-  signed-in users localized in-product advance notice with a link to the updated Terms.
-- **AC-012**: The Privacy Policy identifies August 13, 2026 as its last-updated and
-  effective date after the public privacy/DPO contact revision.
-- **AC-013**: Before September 15, `/terms-of-use` displays the July 24 governing Terms
-  (with August 13 administrative contact/domain/obsolete-ODR corrections), while
-  `/terms-of-use/2026-09-15` exposes the complete future policy stack and the signup
-  consent link continues to target the applicable canonical route.
-- **AC-014**: At `2026-09-15T00:00:00Z`, the canonical Terms resolver switches to the
-  new version and the signed-in advance-notice component stops rendering, including
-  when a user keeps the persistent protected layout open across that instant without
-  reloading or navigating away, or resumes a suspended tab after the instant.
-- **AC-015**: The advance notice is mounted once by the protected-route layout and
-  occupies reserved document flow space, so it cannot cover authenticated navigation,
-  language, or primary-action controls at desktop or mobile widths. Dashboard,
-  guided-journey, and capsule-result shells fit the remaining viewport instead of
-  creating a second document scrollbar around their existing internal scrollers.
-- **AC-016**: `/ru/terms-of-use/2026-09-15` renders a complete Russian future contract,
-  including the incorporated policies, user-content license, intermediary allocation,
-  user-content disclaimer, liability cap, and indemnity. The canonical version resolver
-  selects that Russian document at the effective instant when the active locale is RU.
+  behavior category listed in Scope, including AI-generated or manipulated content.
+- **AC-004**: Copyright/IP Policy states complete notice and counter-notice elements,
+  expeditious removal, conditional restoration, repeat-infringer consequences, and
+  false-report consequences without claiming completed DMCA registration.
+- **AC-005**: Enforcement Policy describes automated, manual, and hybrid detection,
+  proportionate actions, notice and appeal where appropriate, and abuse controls.
+- **AC-006**: The shared legal footer and legal-page navigation expose all policy routes
+  in the active locale without dead links and remain usable at mobile width.
+- **AC-007**: No policy represents the shared-import pool, affiliate program,
+  marketplace, or payments as available; no implementation contract for those features
+  is added.
+- **AC-008**: Every current public legal document displays only `ks@ks-design.art` for
+  support, privacy, legal, IP, copyright, report, notice, counter-notice, and appeal
+  contact purposes. No legacy Capsule Zero mailbox remains.
+- **AC-009**: No current public legal document calls Capsule Zero or the founder a Data
+  Protection Officer; Privacy identifies a controller/contact instead.
+- **AC-010**: Canonical EN and RU Terms display the current incorporated policy stack,
+  with September 3, 2026 as both effective and last-updated date.
+- **AC-011**: `/terms-of-use/2026-07-24` permanently renders the previous July 24, 2026
+  English contract; signup and footer links target the current canonical Terms.
+- **AC-012**: The current Privacy Policy displays September 3, 2026 as both effective
+  and last-updated date.
+- **AC-013**: App lint, CSS lint, TypeScript checks, production build, focused
+  Playwright coverage, repository baseline, feature-memory guard, and required GitHub
+  checks pass at the final PR head.
 
 ## Negative Scenarios
 
 - A policy must not say that Capsule Zero owns user content merely because it is
   uploaded or shared.
-- A policy must not promise that all content is reviewed before or after publication,
-  or restrict human review to complaints only.
+- A policy must not promise universal content review or imply that the gated
+  shared-import surface is active.
 - A counter-notice must not trigger restoration when the reporting party timely shows
-  that it has filed the applicable court or Copyright Claims Board action.
+  an applicable court or Copyright Claims Board action.
 - Consumer rights and liabilities that cannot lawfully be excluded must remain carved
   out from disclaimers, indemnity, governing-law, and liability limitations.
-- The policy routes must not activate or create implementation contracts for the gated
-  shared-import feature.
+- A request concerning one legal topic must not be routed to an unmonitored specialist
+  mailbox or to a person described as a DPO.
 
 ## TDD Posture
 
-The new route, navigation, and required-copy assertions are committed and run red before
-implementation. The follow-up RU legal-navigation and production-contact-domain
-regression assertions are likewise committed red before their implementations. The
-review-driven legal-rollout regressions are also committed red before implementation:
-they cover the invisible incorporation paragraph, stale Privacy revision date, missing
-signed-in Terms notice, unavailable governing version, and unbounded notice lifetime.
-The latest review-follow-up regression requires substantive RU text in all three new
-policies and first failed when `/ru/community-guidelines` still rendered the English
-H1. The same red commit reproduced the CI-only ESM/CommonJS loader failure in the Terms
-boundary test before the helper exposed a compatible module entry point.
-The final review-follow-up regression first failed because the fixed advance notice
-ended at vertical position 268 while the dashboard actions began at position 30. The
-implementation then moved the notice into one protected-route layout and reserved
-layout space above every authenticated page.
-The subsequent full-height-shell regression first measured a document height of 914px
-inside a 720px viewport on `/en/guided-journey`. The protected layout now owns the
-viewport height and lets dashboard, journey, and capsule shells shrink into its
-remaining flex space; the same bound passes in Chromium and mobile WebKit.
-The persistent-layout expiry regression then kept an authenticated dashboard mounted,
-advanced its controlled clock by 60 days, and first observed that the notice remained
-visible. The server now passes both its render instant and the authoritative effective
-instant to a client expiry timer, so the notice retires without a reload in both
-browser engines while initial visibility remains a server decision.
-The suspend/resume follow-up regression then supplied an after-cutoff server `Date`
-when the visible tab resumed and first observed that the notice remained visible. The
-client now revalidates against that authoritative response on `visibilitychange` and
-`pageshow`; both notice spec files were also split to stay below five cases each.
-The reconnect follow-up then made that resume probe fail, dispatched `online`, and
-first observed that the notice still remained visible. Connectivity recovery now
-retries the same authoritative probe, while the spec remains at the five-case limit.
-The localized-future-Terms follow-up regression then opened the September 15 RU route
-and first received the English `Terms of Use` H1. The implementation adds a complete
-immutable Russian contract, locale-aware metadata, and locale-aware version selection;
-the same test exercises the canonical resolver exactly at the effective instant.
-GitHub Actions then supplied the red Node 20 evidence on head `e30e4ee`: Playwright
-could not collect that test because it imported the server TypeScript adapter as a
-CommonJS module. The test now imports the existing ESM boundary, which exposes the same
-locale-and-version selection consumed by the application adapter.
-The protected-session follow-up regression in commit `7ab1112` then required one
-module-scoped React `cache` wrapper and first failed because the session module had no
-such import or shared export. The implementation now lets the protected layout and its
-page consume the same verified-session result within a Server Component request while
-React resets the cache for the next request.
-The Go 1.26.6 toolchain follow-up changes only build, CI, and delivery wiring. Under
-the repository TDD contract it is verified by scanner, config, module-test, and
-required-check evidence rather than a failing application test.
-Policy drafting and feature-memory changes are documentation work, but the public
-Next.js route behavior follows the application-code TDD contract.
+The original policy routes and policy-content assertions were committed red before
+implementation. Review follow-ups likewise introduced red-first coverage for localized
+navigation, production contacts, visible incorporation, Terms versioning, complete RU
+documents, and authenticated-notice behavior.
+
+The solo-founder simplification is covered by commit `b45e2e6`: before implementation,
+five focused Chromium scenarios failed because the canonical Terms still served the
+July contract, the archive route did not exist, current documents exposed legacy
+mailboxes and DPO wording, dates were stale, and canonical RU Terms remained English.
+The implementation removes the now-obsolete scheduled-notice tests and application
+surface rather than preserving machinery for a rollout date that no longer exists.

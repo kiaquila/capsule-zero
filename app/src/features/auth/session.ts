@@ -1,7 +1,6 @@
 import "server-only";
 
 import { cookies } from "next/headers";
-import { cache } from "react";
 import type { Session } from "@/lib/providers";
 import {
   parseLegacySession,
@@ -58,7 +57,7 @@ export async function readAppSession(): Promise<PersistedAppSession | null> {
   return readVerifiedAppSession();
 }
 
-async function resolveVerifiedAppSession(): Promise<PersistedAppSession | null> {
+export async function readVerifiedAppSession(): Promise<PersistedAppSession | null> {
   const persisted = await readSignedAppSession();
   if (!persisted) {
     return null;
@@ -84,8 +83,6 @@ async function resolveVerifiedAppSession(): Promise<PersistedAppSession | null> 
     emailVerified: live.emailVerified ?? persisted.emailVerified,
   };
 }
-
-export const readVerifiedAppSession = cache(resolveVerifiedAppSession);
 
 export async function clearAppSession() {
   const cookieStore = await cookies();

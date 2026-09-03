@@ -1401,34 +1401,6 @@ textarea {
   font-size: 14px;
 }
 
-.authenticated-route {
-  display: flex;
-  height: 100svh;
-  min-height: 100svh;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.authenticated-terms-notice {
-  position: relative;
-  z-index: var(--z-base);
-  width: min(720px, calc(100% - 48px));
-  flex: 0 0 auto;
-  align-self: flex-end;
-  margin: 16px 24px 0;
-}
-
-.authenticated-route
-  > :is(.dashboard-page, .journey-page, .capsule-result-page) {
-  min-height: 0;
-  flex: 1 1 0;
-}
-
-.authenticated-route
-  :is(.dashboard-app, .journey-main, .capsule-result-app, .capsule-result-main) {
-  height: 100%;
-}
-
 .verify-email-form {
   display: flex;
   flex-wrap: wrap;

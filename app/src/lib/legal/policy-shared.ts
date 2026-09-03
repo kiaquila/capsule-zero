@@ -53,7 +53,7 @@ export function formatPolicyDate(
 export function policyRevisionDates(locale: "en" | "ru") {
   return {
     effectiveDate: formatPolicyDate(
-      safetyPolicyRevision.effectiveAt.slice(0, 10),
+      safetyPolicyRevision.effectiveOn,
       locale,
     ),
     lastUpdated: formatPolicyDate(safetyPolicyRevision.publishedOn, locale),

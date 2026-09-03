@@ -51,8 +51,7 @@ export const journeyCopy = {
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 
-// The live legal documents are currently shared across EN/RU routes. Keep
-// unavoidable legal-copy assertions here so policy edits have one test source.
+// Keep unavoidable legal-copy assertions here so policy edits have one test source.
 export const legalCopy = {
   contactEmail: "ks@ks-design.art",
   retiredContactEmails: [
@@ -70,8 +69,10 @@ export const legalCopy = {
   termsLastUpdated: "September 3, 2026",
   termsEffectiveDate: "September 3, 2026",
   privacyLastUpdated: "September 3, 2026",
-  termsMarketplaceImportGate:
-    "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification and an external legal review are complete and all required launch controls are in place.",
+  termsMarketplaceImportGate: {
+    en: "Marketplace link import and the shared user-import catalog are not currently available. We will not activate them unless and until a dedicated compliance-scheme specification and an external legal review are complete and all required launch controls are in place.",
+    ru: "Импорт по ссылке с маркетплейса и общий каталог пользовательского импорта сейчас недоступны. Мы не запустим их до завершения отдельной спецификации compliance-схемы, внешней юридической проверки и внедрения всех обязательных мер.",
+  },
   privacyMarketplaceImportGate:
     "Capsule Zero does not currently collect or process marketplace URLs, parsed item candidates, or marketplace source-site metadata because marketplace link import is disabled.",
   termsMonetizationHold:

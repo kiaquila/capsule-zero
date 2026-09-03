@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { LegalPage } from "@/components/legal/LegalPage";
-import { getApplicableTermsDocument } from "@/lib/legal/terms-versions";
+import { getTermsDocument } from "@/lib/legal/terms-versions";
 
 interface LegalRouteProps {
   params: Promise<{
@@ -9,13 +9,11 @@ interface LegalRouteProps {
   }>;
 }
 
-export const dynamic = "force-dynamic";
-
 export async function generateMetadata({
   params,
 }: LegalRouteProps): Promise<Metadata> {
   const { locale } = await params;
-  const document = getApplicableTermsDocument(locale);
+  const document = getTermsDocument(locale);
 
   return {
     title: `${document.title} | Capsule Zero`,
@@ -27,5 +25,5 @@ export default async function TermsOfUseRoute({ params }: LegalRouteProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <LegalPage document={getApplicableTermsDocument(locale)} />;
+  return <LegalPage document={getTermsDocument(locale)} />;
 }

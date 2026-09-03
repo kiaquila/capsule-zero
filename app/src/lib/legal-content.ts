@@ -58,7 +58,6 @@ const {
   privacyEmail,
   legalEmail,
   supportEmail,
-  dpoEmail,
   ipEmail: ipNoticeEmail,
 } = legalContacts;
 
@@ -79,7 +78,7 @@ export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
       `These Terms of Use ("Terms") form a binding contract between you and ${operatingEntity}, a company incorporated under the laws of the Argentine Republic with registered office in ${registeredOffice} ("Capsule Zero", "we", "us", "our"). They govern your access to and use of the Capsule Zero website at ${productDomain}, the Capsule Zero web application, our iOS and Android mobile applications, account features, wardrobe and capsule tools, photo upload and image-processing flows, semantic search, the Capsule Zero preset catalog, support, and any related services we provide (together, the "Service"). Section 7 separately identifies a future feature that is not part of the current Service.`,
       "By creating an account, signing in, uploading content, or using the Service, you confirm that you have read these Terms, that you accept them, and that you have the legal capacity to enter into this contract. If you use the Service on behalf of another person, organization, or legal entity, you confirm that you have authority to accept these Terms on their behalf, and references to \"you\" include both you and that person or entity.",
       "These Terms include and incorporate by reference our Community Guidelines, Copyright & Intellectual Property Policy, and Enforcement & Appeals Policy. They also apply with our separate Privacy Policy, product-specific notices we surface in the Service (for example, age gates or content-moderation notices), and mandatory consumer-protection rules that apply where you live. You may not use the Service to do, submit, link to, or share anything contrary to those policies, and you may not attempt to circumvent them.",
-      `This version was published on ${safetyPolicyRevision.lastUpdated} and takes effect on ${safetyPolicyRevision.effectiveDate}. Until then, the Terms effective ${safetyPolicyRevision.priorEffectiveDate} remain in effect. Signed-in users receive an in-product notice throughout the advance-notice period and can review this version before continuing to use Capsule Zero after the effective date.`,
+      `This version was published and took effect on ${safetyPolicyRevision.effectiveDate}. The previously effective Terms remain available at a permanent dated archive URL.`,
     ],
     highlights: [
       "You keep ownership of your wardrobe photos and content; we receive a limited license needed to operate, secure, and improve the Service.",
@@ -500,7 +499,7 @@ export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
     intro: [
       `This Privacy Policy ("Policy") explains how ${operatingEntity} ("Capsule Zero", "we", "us") processes personal data when you visit ${productDomain}, create an account, use our web or mobile applications, upload wardrobe content, search Capsule Zero preset items, contact support, receive product communications, or otherwise interact with us.`,
       "Capsule Zero is a premium digital fashion-tech product. We aim to process personal data in a privacy-conscious way: private wardrobe content is private by default, AI-Assisted Output should be explainable, and optional features collect only what they need.",
-      `This Policy applies in addition to the Terms of Use. For questions about this Policy, or to exercise any of the rights described below, contact our Privacy team at ${privacyEmail}. Our Data Protection Officer can be reached at ${dpoEmail}.`,
+      `This Policy applies in addition to the Terms of Use. For questions about this Policy, or to exercise any of the rights described below, contact us at ${privacyEmail}.`,
     ],
     highlights: [
       "We are the data controller for personal data processed to provide the Service.",
@@ -511,11 +510,11 @@ export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
     sections: [
       {
         id: "controller",
-        title: "1. Controller, Data Protection Officer, and Representatives",
+        title: "1. Controller and Privacy Contact",
         blocks: [
           {
             type: "paragraph",
-            text: `Data controller: ${operatingEntity}, with registered office in ${registeredOffice}. For all data-protection matters, contact ${privacyEmail}. Our Data Protection Officer can be reached at ${dpoEmail}.`,
+            text: `Data controller: ${operatingEntity}, with registered office in ${registeredOffice}. For all data-protection matters, contact ${privacyEmail}.`,
           },
           {
             type: "paragraph",
@@ -926,7 +925,7 @@ export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: "European Economic Area, United Kingdom, and Switzerland. The data controller is " + operatingEntity + ". Processing of personal data is carried out in accordance with the EU GDPR, the UK GDPR, the UK Data Protection Act 2018, and the Swiss Federal Act on Data Protection. You may contact our Data Protection Officer at " + dpoEmail + " and you have the right to lodge a complaint with your national supervisory authority. Our EU and UK representatives are listed at " + productDomain + "/privacy-policy.",
+            text: "European Economic Area, United Kingdom, and Switzerland. The data controller is " + operatingEntity + ". Processing of personal data is carried out in accordance with the EU GDPR, the UK GDPR, the UK Data Protection Act 2018, and the Swiss Federal Act on Data Protection. Contact us at " + privacyEmail + " and you have the right to lodge a complaint with your national supervisory authority. Any required EU or UK representative details will be published at " + productDomain + "/privacy-policy before they apply.",
           },
           {
             type: "paragraph",
@@ -934,7 +933,7 @@ export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
           },
           {
             type: "paragraph",
-            text: "Brazil. Processing is carried out in accordance with Lei Geral de Proteção de Dados (LGPD). Our data-protection officer (encarregado) can be reached at " + dpoEmail + ". The competent supervisory authority is the Autoridade Nacional de Proteção de Dados (ANPD).",
+            text: "Brazil. Processing is carried out in accordance with Lei Geral de Proteção de Dados (LGPD). Data-protection questions can be sent to " + privacyEmail + ". The competent supervisory authority is the Autoridade Nacional de Proteção de Dados (ANPD).",
           },
           {
             type: "paragraph",
@@ -982,7 +981,7 @@ export const legalDocuments: Record<CoreLegalDocumentSlug, LegalDocument> = {
         blocks: [
           {
             type: "paragraph",
-            text: `Data controller: ${operatingEntity}. Registered office: ${registeredOffice}. Privacy contact: ${privacyEmail}. Data Protection Officer: ${dpoEmail}. Legal contact: ${legalEmail}. Support: ${supportEmail}.`,
+            text: `Data controller: ${operatingEntity}. Registered office: ${registeredOffice}. Privacy, legal, and support contact: ${privacyEmail}.`,
           },
         ],
       },

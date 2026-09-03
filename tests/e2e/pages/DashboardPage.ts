@@ -12,15 +12,11 @@ export class DashboardPage extends BasePage {
   readonly signOutButton: Locator;
   readonly mobileMoreToggle: Locator;
   readonly mobileSignOutButton: Locator;
-  readonly documentRoot: Locator;
   /** Stats row below the hero — readiness signal for visual snapshots (CSS class — no testid yet). */
   readonly statsRow: Locator;
   readonly oprValue: Locator;
   readonly layeringCoverage: Locator;
   readonly layeringDiagnostics: Locator;
-  readonly topbarActions: Locator;
-  readonly termsUpdateNotice: Locator;
-  readonly termsUpdateLink: Locator;
 
   constructor(page: Page, locale: Locale = "en") {
     super(page);
@@ -28,16 +24,12 @@ export class DashboardPage extends BasePage {
     this.signOutButton = page.getByTestId("nav-sign-out");
     this.mobileMoreToggle = page.getByTestId("nav-more-toggle");
     this.mobileSignOutButton = page.getByTestId("nav-sign-out-mobile");
-    this.documentRoot = page.locator("html");
     this.statsRow = page.locator(".dashboard-stats-row");
     this.oprValue = page.getByTestId("dashboard-opr-value");
     this.layeringCoverage = page.getByTestId("dashboard-layering-coverage");
     this.layeringDiagnostics = page.getByTestId(
       "dashboard-layering-diagnostics",
     );
-    this.topbarActions = page.locator(".dashboard-topbar-actions");
-    this.termsUpdateNotice = page.getByTestId("terms-update-notice");
-    this.termsUpdateLink = page.getByTestId("terms-update-link");
   }
 
   /**

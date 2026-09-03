@@ -1,8 +1,7 @@
 export const legalContacts = {
   productDomain: "capsulezero.app",
-  privacyEmail: "privacy@capsulezero.app",
-  legalEmail: "legal@capsulezero.app",
-  supportEmail: "support@capsulezero.app",
-  dpoEmail: "dpo@capsulezero.app",
-  ipEmail: "ip@capsulezero.app",
+  privacyEmail: "ks@ks-design.art",
+  legalEmail: "ks@ks-design.art",
+  supportEmail: "ks@ks-design.art",
+  ipEmail: "ks@ks-design.art",
 } as const;
