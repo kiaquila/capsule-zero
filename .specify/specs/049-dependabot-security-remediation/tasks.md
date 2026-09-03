@@ -24,7 +24,19 @@
       race tests on the refreshed graph.
 - [x] Pass module-integrity verification and the full repository preflight (78 browser
       scenarios passed, 8 intentionally skipped) on the rebased PR #115 head.
-- [ ] Trigger and clear PR #115's head-bound native Codex review and required checks.
+- [x] Trigger and clear PR #115's head-bound native Codex review and required checks.
+- [x] Rebase PR #121 on the latest `origin/main` and confirm every direct delta is a
+      patch step inside the AWS SDK minor lines already reviewed for PR #115.
+- [x] Pass module tidiness, module integrity, vet, all package tests, and targeted
+      storage/database race tests on the refreshed graph.
+- [x] Trigger and clear PR #121's head-bound native Codex review and required checks.
+- [x] Rebase PR #123 on the latest `origin/main` and inventory every direct npm delta in
+      the regenerated app minor/patch group.
+- [x] Restore the frozen `@supabase/*` manifest entry and all seven lockfile records
+      from `origin/main`, then prove the restored graph with a clean `npm ci`.
+- [x] Pass the repository baseline, ESLint, Stylelint, typecheck, and production build
+      on the rebased PR #123 head.
+- [ ] Trigger and clear PR #123's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -52,6 +64,16 @@
   compatibility boundaries: S3-compatible endpoint/presign behavior and pgx 5.10's
   deprecation of `BeforeAcquire`. Source and repository searches confirmed the current
   APIs remain supported and the deprecated hook is unused.
+
+- Accepting PR #121 on `go build` alone would not detect a partially applied module
+  graph. `go mod tidy` leaving no diff plus `go mod verify` is what actually proves the
+  committed `go.mod`/`go.sum` match the resolved, checksum-verified graph.
+
+- Reverting only the `@supabase/supabase-js` manifest entry does not undo the bump: the
+  surviving `^2.108.2` range still resolves to 2.112.3, and regenerating the lockfile
+  re-applies it. The seven `node_modules/@supabase/*` records must be replaced in place
+  from `origin/main`; deleting and re-appending them instead produces a correct but
+  needlessly reordered lockfile diff.
 
 ### Decisions
 
@@ -87,11 +109,25 @@
 - Final CI-mode preflight completed with 77 passed and 8 intentionally skipped browser
   scenarios. The existing productivity-metrics scenario timed out once and passed on
   its configured retry; no dependency-refresh failure remained.
-- V7 now targets PR #115 because it is the current head using this feature memory; the
-  earlier policy and npm-refresh pull requests are already merged.
+- V7 now targets PR #123 because it is the current head using this feature memory; the
+  earlier policy, npm-refresh, and Go-refresh pull requests are already merged.
 - Accept the PR #115 group as a coordinated module graph: AWS core/config/credentials,
   S3, Smithy, and generated indirect modules move together, while pgx stays within the
   semver-stable v5 API and contributes protocol/security hardening.
+
+- Treat PR #121 as a continuation of the PR #115 group rather than a new compatibility
+  review: it moves no minor line and leaves pgx at 5.10.0, so V9's API findings still
+  hold and V10 only has to prove graph integrity and green tests.
+
+- The first draft of V10 stated "twelve generated indirect modules" while the `go.mod`
+  diff advances thirteen. Native Codex review caught the miscount (P3); the record now
+  enumerates every indirect module and version so the claim is checkable against the
+  diff instead of resting on a hand-counted total.
+
+- PR #123 supersedes the closed PR #117: Dependabot's scheduled run regenerated the same
+  app minor/patch group with newer `next`, `next-intl`, and `react-hook-form` targets and
+  closed #117 as "updatable in another way". The frozen-provider exclusion first
+  established for PR #107 is re-applied unchanged.
 
 ### Known Issues
 
