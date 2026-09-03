@@ -64,8 +64,11 @@ export const legalCopy = {
   ],
   incorporationClause:
     "These Terms include and incorporate by reference our Community Guidelines, Copyright & Intellectual Property Policy, and Enforcement & Appeals Policy.",
-  archivedTermsLastUpdated: "August 13, 2026",
+  archivedTermsLastUpdated: "July 24, 2026",
   archivedTermsEffectiveDate: "July 24, 2026",
+  archivedTermsHistoricalDomain: "capsulezero.com",
+  archivedTermsHistoricalContact: "legal@capsulezero.com",
+  archivedTermsCurrentContact: "ks@ks-design.art",
   termsLastUpdated: "September 3, 2026",
   termsEffectiveDate: "September 3, 2026",
   privacyLastUpdated: "September 3, 2026",

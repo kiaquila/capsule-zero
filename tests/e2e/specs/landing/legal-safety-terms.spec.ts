@@ -38,6 +38,15 @@ test.describe("Landing — Terms safety-policy contract", () => {
     await expect(archivedTerms.article).not.toContainText(
       legalCopy.incorporationClause,
     );
+    await expect(archivedTerms.article).toContainText(
+      legalCopy.archivedTermsHistoricalDomain,
+    );
+    await expect(archivedTerms.article).toContainText(
+      legalCopy.archivedTermsHistoricalContact,
+    );
+    await expect(archivedTerms.root).toContainText(
+      legalCopy.archivedTermsCurrentContact,
+    );
 
     await landing.goto();
     await landing.dismissCookieBannerIfPresent();
