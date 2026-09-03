@@ -1,6 +1,9 @@
 import type { LegalDocumentSlug } from "../legal-content";
 import { legalContacts } from "./contacts";
-import { safetyPolicyRevision } from "./revisions";
+import {
+  privacyPolicyRevision,
+  safetyPolicyRevision,
+} from "./revisions";
 
 export const policyLastUpdated = safetyPolicyRevision.lastUpdated;
 export const policyEffectiveDate = safetyPolicyRevision.effectiveDate;
@@ -51,12 +54,20 @@ export function formatPolicyDate(
 }
 
 export function policyRevisionDates(locale: "en" | "ru") {
+  return formatRevisionDates(safetyPolicyRevision, locale);
+}
+
+export function privacyRevisionDates(locale: "en" | "ru") {
+  return formatRevisionDates(privacyPolicyRevision, locale);
+}
+
+function formatRevisionDates(
+  revision: { effectiveOn: string; publishedOn: string },
+  locale: "en" | "ru",
+) {
   return {
-    effectiveDate: formatPolicyDate(
-      safetyPolicyRevision.effectiveOn,
-      locale,
-    ),
-    lastUpdated: formatPolicyDate(safetyPolicyRevision.publishedOn, locale),
+    effectiveDate: formatPolicyDate(revision.effectiveOn, locale),
+    lastUpdated: formatPolicyDate(revision.publishedOn, locale),
   };
 }
 

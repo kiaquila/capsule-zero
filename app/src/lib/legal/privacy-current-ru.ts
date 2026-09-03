@@ -1,11 +1,11 @@
 import type { LegalDocument } from "../legal-content";
 import { legalContacts } from "./contacts";
-import { policyRevisionDates } from "./policy-shared";
+import { privacyRevisionDates } from "./policy-shared";
 
 const operatingEntity = "Capsule Zero S.A.S.";
 const registeredOffice =
   "Автономный город Буэнос-Айрес, Аргентинская Республика";
-const revision = policyRevisionDates("ru");
+const revision = privacyRevisionDates("ru");
 const { productDomain, privacyEmail, supportEmail } = legalContacts;
 
 export const currentPrivacyDocumentRu: LegalDocument = {

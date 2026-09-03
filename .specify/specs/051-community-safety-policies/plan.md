@@ -56,8 +56,9 @@ shared third-party-content feature launches.
 | Immutable archive regression | Commit `ea26e19`; the archive scenario failed red because the page reported an August rewrite instead of the July 24 publication snapshot. |
 | Final legal review regressions | Commit `b01a176`; focused tests failed red because the archive rendered previously unpublished intro copy and Privacy retained a contradictory representative claim. |
 | RU Privacy and canonical UI copy | Commit `0c099f5`; the RU route failed red with the English Privacy document. The localized 20-section document and the canonical landing-copy rows close the review findings. |
+| Independent Privacy revision | Commit `38fe42d`; e2e TypeScript compilation failed red until a Privacy-specific date formatter was exported and consumed by RU Privacy. |
 | One monitored legal contact, no DPO claim | `legal-contact-domain.spec.ts` passed in Chromium and mobile WebKit; a source audit found no legacy address or DPO designation in `app/src`. |
-| Current EN/RU legal stack and permanent July archive | Focused Chromium legal suite passed 14/14, including the complete RU Privacy route; the earlier full suite exercised the remaining routes in mobile WebKit. |
+| Current EN/RU legal stack and permanent July archive | Focused Chromium legal suite passed 15/15, including complete RU Privacy content and its independent revision source; the earlier full suite exercised the remaining routes in mobile WebKit. |
 | Policy completeness and gated-feature negatives | Full Playwright run passed 94 tests with 8 intentional full-stack skips across Chromium and mobile WebKit. |
 | Static quality | App lint passed with 95 existing soft warnings; CSS lint passed with 99 existing soft warnings; app and e2e TypeScript checks passed; e2e lint passed with 3 intentional skip warnings. |
 | Production compilation | Next.js webpack production build passed and generated all 41 static pages, including canonical EN/RU Terms and the dated archive. |

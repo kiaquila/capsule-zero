@@ -127,3 +127,5 @@ the archive exposed intro copy absent from the July renderer and Privacy still c
 that EU/UK representatives had already been appointed.
 Commit `0c099f5` adds the red-first RU Privacy contract: the Russian route still rendered
 the English title and body before the locale-specific document was wired.
+Commit `38fe42d` adds a compile-red contract requiring RU Privacy dates to come from the
+dedicated Privacy revision rather than the independently versioned safety-policy dates.

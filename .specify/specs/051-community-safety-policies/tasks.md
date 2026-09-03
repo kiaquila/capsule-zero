@@ -29,6 +29,8 @@
       stale Privacy claim that EU/UK representatives are already appointed.
 - [x] T015 Publish the complete current Privacy Policy in Russian and add all new legal
       navigation labels to the canonical UI-copy document.
+- [x] T016 Couple RU Privacy dates to `privacyPolicyRevision`, independently of safety-
+      policy revision dates.
 
 ## Process Memory
 
