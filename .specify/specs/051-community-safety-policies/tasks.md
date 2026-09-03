@@ -31,6 +31,8 @@
       navigation labels to the canonical UI-copy document.
 - [x] T016 Couple RU Privacy dates to `privacyPolicyRevision`, independently of safety-
       policy revision dates.
+- [x] T017 Link the permanent July Terms archive from current EN/RU Terms and split
+      Privacy coverage into its own focused e2e spec.
 
 ## Process Memory
 
@@ -70,6 +72,8 @@
   the rules and Capsule Zero can revise each responsibility without duplicating its
   renderer or navigation.
 - Legal contacts and revision dates remain centralized sources of truth.
+- Current Terms expose a localized link to the permanent July 24 archive; the archive
+  remains immutable and keeps its separate current-contact notice.
 - The required OSV gate disclosed new advisories in two dev-only transitive packages.
   The refreshed `main` supplies the final tested overrides at fixed `browserslist
   4.28.7` and `fast-uri 3.1.6`; no advisory suppression was added.

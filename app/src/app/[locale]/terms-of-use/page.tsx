@@ -25,5 +25,10 @@ export default async function TermsOfUseRoute({ params }: LegalRouteProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <LegalPage document={getTermsDocument(locale)} />;
+  return (
+    <LegalPage
+      archivedTermsHref="/terms-of-use/2026-07-24"
+      document={getTermsDocument(locale)}
+    />
+  );
 }

@@ -41,12 +41,14 @@ const legalNavigation: ReadonlyArray<{
 
 interface LegalPageProps {
   archiveContactEmail?: string;
+  archivedTermsHref?: "/terms-of-use/2026-07-24";
   document: LegalDocument;
   renderIntro?: boolean;
 }
 
 export function LegalPage({
   archiveContactEmail,
+  archivedTermsHref,
   document,
   renderIntro = true,
 }: LegalPageProps) {
@@ -131,6 +133,14 @@ export function LegalPage({
           ))}
 
           <footer className="legal-article-footer">
+            {archivedTermsHref ? (
+              <Link
+                data-testid="legal-terms-archive"
+                href={archivedTermsHref}
+              >
+                {legal("readArchivedTerms")}
+              </Link>
+            ) : null}
             <Link href={document.relatedDocument.href}>
               {legal("readRelated", {
                 document: document.relatedDocument.label,

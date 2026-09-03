@@ -86,7 +86,7 @@ DMCA-agent registration, or completed external legal review.
   2026 English contract content that was actually visible when published, while a
   separate localized archive notice
   points current correspondence to `ks@ks-design.art`; signup and footer links target
-  the current canonical Terms.
+  the current canonical Terms, and current EN/RU Terms link back to the archive.
 - **AC-012**: The current EN and RU Privacy Policy displays September 3, 2026 as both
   effective and last-updated date, with locale-specific substantive content.
 - **AC-013**: App lint, CSS lint, TypeScript checks, production build, focused
@@ -129,3 +129,5 @@ Commit `0c099f5` adds the red-first RU Privacy contract: the Russian route still
 the English title and body before the locale-specific document was wired.
 Commit `38fe42d` adds a compile-red contract requiring RU Privacy dates to come from the
 dedicated Privacy revision rather than the independently versioned safety-policy dates.
+Commit `9225935` adds the red-first current-Terms link contract and moves Privacy
+coverage into its own focused spec before the localized archive link is rendered.
