@@ -55,6 +55,8 @@ silently weakening lint/type checks, or changing product behavior.
 12. PR #126 does not expose Node 26 ambient APIs while production and required CI use
     Node 22: the app remains on the verified Node 22 declaration line until the runtime
     contracts are deliberately upgraded together.
+13. PR #127 applies the same Node 22 declaration boundary to e2e: its type package stays
+    on 22.20.1 until the executable runtime contracts are upgraded together.
 
 ## Negative Scenarios
 

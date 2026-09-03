@@ -24,6 +24,7 @@ guarded merge.
 | 10  | E2e Node ambient types match runtime             | Node engine, required workflow, and production image stay on Node 22; installed declarations report 22.20.1; e2e lint/typecheck and preflight  |
 | 11  | PR #125 leaves the unsupported app ESLint major deferred | current upstream peer metadata; app npm 10 clean install, lint, typecheck, and build                                                  |
 | 12  | PR #126 leaves the unsupported app Node type major deferred | Node 22 runtime/workflow evidence; app npm 10 clean install, typecheck, build, and full preflight                                 |
+| 13  | PR #127 leaves the unsupported e2e Node type major deferred | Node 22 runtime/workflow evidence; clean e2e install, lint, typecheck, and full preflight                                      |
 
 ## Compatibility Notes
 
@@ -115,3 +116,20 @@ PORT=3001 E2E_BASE_URL=http://localhost:3001 CI=1 npm run preflight
 PR #126 restores `@types/node` to 22.20.1. Node 26 declarations can make code compile
 against APIs absent from the Node 22 production image and required workflows, so the
 type major remains deferred until those executable runtime contracts move together.
+
+### V13 — E2e Node 26 declaration deferral
+
+```sh
+rg -n 'node-version: "22"|ARG NODE_VERSION=22-bookworm-slim' .github/workflows api/Dockerfile app/Dockerfile
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix tests/e2e
+npx --prefix tests/e2e playwright install --with-deps chromium webkit
+npx --yes --package=npm@10.9.8 npm run lint --prefix tests/e2e
+npx --yes --package=npm@10.9.8 npm run typecheck --prefix tests/e2e
+PORT=3002 E2E_BASE_URL=http://localhost:3002 CI=1 npm run preflight
+```
+
+PR #127 restores e2e `@types/node` to 22.20.1. The e2e process and required workflows
+remain on Node 22, so the Node 26 declaration line remains deferred with the app until
+those executable contracts move together.
