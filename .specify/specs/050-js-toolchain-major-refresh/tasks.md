@@ -59,6 +59,14 @@
       and the full CI-mode preflight for PR #130.
 - [ ] Trigger and clear PR #130's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
+- [x] Refresh PR #131 on the latest `origin/main`, reproduce the reopened ESLint 10
+      peer conflict, and verify current registry metadata for all blocking plugins.
+- [x] Restore the app manifest and lockfile to the verified ESLint 9.39.4 graph without
+      peer-ignore flags.
+- [x] Pass app clean install, installed-version assertion, lint, typecheck/build, and
+      the full CI-mode preflight for PR #131.
+- [ ] Trigger and clear PR #131's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
 
 ## Process Memory
 
@@ -100,6 +108,8 @@
   CI, and the production web application.
 - PR #130 repeats the app Node 26 declaration update after PR #126 already established
   the Node 22 boundary. A newer generated version does not remove the runtime mismatch.
+- PR #131 repeats the app ESLint 10 update, but all three blocking plugin releases are
+  unchanged and clean npm 10 resolution still fails with `ERESOLVE`.
 
 ### Decisions
 
@@ -139,6 +149,8 @@
 - Keep e2e `@types/node` on 22.20.1 for PR #127 for the same Node 22 runtime boundary.
 - Keep app `@types/node` on 22.20.1 for PR #130. Treat repeated Dependabot major PRs as
   deferred until production and required CI advance their executable Node contract.
+- Keep app ESLint on 9.39.4 for PR #131 without peer-ignore flags. A newer ESLint 10
+  patch does not change the resume condition established for PR #125.
 
 ### Known Issues
 
