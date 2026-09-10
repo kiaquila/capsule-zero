@@ -26,6 +26,7 @@ guarded merge.
 | 12  | PR #126 leaves the unsupported app Node type major deferred | Node 22 runtime/workflow evidence; app npm 10 clean install, typecheck, build, and full preflight                                 |
 | 13  | PR #127 leaves the unsupported e2e Node type major deferred | Node 22 runtime/workflow evidence; clean e2e install, lint, typecheck, and full preflight                                      |
 | 14  | PR #130 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; app npm 10 clean install, installed-version assertion, typecheck, build, and full preflight          |
+| 15  | PR #131 preserves the supported app ESLint graph | current registry peer metadata; expected ESLint 10 `ERESOLVE`; restored npm 10 clean install, lint, typecheck, build, and full preflight |
 
 ## Compatibility Notes
 
@@ -154,3 +155,26 @@ Resume this major only when the production image and required CI workflows delib
 move from Node 22 in the same change. npm 10.9.8 clean-installed all three workspaces,
 the installed declaration package reported 22.20.1, app typecheck/build passed, and the
 full CI-mode preflight completed with 104 browser scenarios passed and 8 skipped.
+
+### V15 — Reopened app ESLint 10 deferral
+
+```sh
+npx --yes --package=npm@10.9.8 npm view eslint-plugin-jsx-a11y@latest version peerDependencies --json
+npx --yes --package=npm@10.9.8 npm view eslint-plugin-import@latest version peerDependencies --json
+npx --yes --package=npm@10.9.8 npm view eslint-plugin-react@latest version peerDependencies --json
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
+node -p "require('./app/node_modules/eslint/package.json').version"
+npx --yes --package=npm@10.9.8 npm run lint --prefix app
+npx --yes --package=npm@10.9.8 npm run typecheck --prefix app
+npx --yes --package=npm@10.9.8 npm run build --prefix app
+PORT=3004 E2E_BASE_URL=http://localhost:3004 CI=1 npm run preflight
+```
+
+PR #131's generated ESLint 10.10.0 graph fails clean npm 10 resolution with
+`ERESOLVE`. At review time the latest `eslint-plugin-jsx-a11y` 6.10.2,
+`eslint-plugin-import` 2.32.0, and `eslint-plugin-react` 7.37.5 releases all end their
+peer ranges at ESLint 9. The app manifest and lockfile therefore remain identical to
+the verified ESLint 9.39.4 base. Resume only after the complete Next lint graph
+declares ESLint 10 support. The restored graph clean-installed with npm 10.9.8,
+reported ESLint 9.39.4, and passed app lint, typecheck, production build, and the full
+CI-mode preflight with 104 browser scenarios passed and 8 skipped.
