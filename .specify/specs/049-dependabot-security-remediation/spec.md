@@ -67,6 +67,10 @@ the compatible minor/patch pull requests produced by that policy.
 11. The compatible root, app, and e2e npm refresh in PR #124 retains the frozen
     `@supabase/*` provider graph, the prior OSV remediations, and the Linux native
     package libc selectors while its dependency updates are applied.
+12. The follow-on root, app, and e2e npm refresh in PR #129 retains the frozen
+    `@supabase/*` provider graph, advances the active minor/patch dependencies, and
+    resolves the newly reported `js-yaml` and `sharp` advisories at their first fixed
+    versions without adding an OSV suppression.
 
 ## Negative Scenarios
 
@@ -93,6 +97,10 @@ the compatible minor/patch pull requests produced by that policy.
   scanner action; both affected packages must resolve to their published fixed versions.
 - PR #128 must not merge a partial AWS module graph: module verification, vet, and all
   API package tests must pass on its rebased head.
+- PR #129 must not accept Dependabot's generated `@supabase/supabase-js@2.115.0`
+  refresh or leave the vulnerable `js-yaml@4.3.1` / `sharp@0.35.3` overrides in
+  place. The complete frozen provider graph must match `origin/main`, while both
+  vulnerable packages resolve to their published fixed versions.
 
 TDD posture: these changes update repository automation and dependency metadata without
 changing application behavior. The infrastructure/support-change waiver applies; the
