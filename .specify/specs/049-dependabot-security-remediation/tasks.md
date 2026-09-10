@@ -36,15 +36,22 @@
       from `origin/main`, then prove the restored graph with a clean `npm ci`.
 - [x] Pass the repository baseline, ESLint, Stylelint, typecheck, and production build
       on the rebased PR #123 head.
-- [ ] Trigger and clear PR #123's head-bound native Codex review and required checks.
+- [x] Trigger and clear PR #123's head-bound native Codex review and required checks.
 - [x] Update the OSV Scanner action in PR #122 and reproduce its newly surfaced
       transitive npm findings.
 - [x] Remediate `browserslist` and `fast-uri` only through the existing app override
       boundary, then prove npm 10.9.8 clean-install, lint, and typecheck compatibility.
-- [ ] Trigger and clear PR #122's head-bound native Codex review and required checks.
+- [x] Trigger and clear PR #122's head-bound native Codex review and required checks.
 - [x] Rebase PR #124 on the merged OSV remediation and preserve the frozen Supabase
       graph plus native-package libc selectors.
-- [ ] Trigger and clear PR #124's head-bound native Codex review and required checks.
+- [x] Trigger and clear PR #124's head-bound native Codex review and required checks.
+- [x] Rebase and review PR #129's root, app, and e2e minor/patch dependency set.
+- [x] Restore the frozen `@supabase/*` manifest and lockfile graph, then remediate the
+      newly reported `js-yaml` and `sharp` advisories through the existing override
+      boundary.
+- [x] Pass clean npm 10.9.8 installs, audit, repository/contract checks, app/e2e static
+      checks, the Next.js production build, and the full browser suite on PR #129.
+- [ ] Trigger and clear PR #129's head-bound native Codex review and required checks.
 
 ## Process Memory
 
@@ -82,6 +89,9 @@
   re-applies it. The seven `node_modules/@supabase/*` records must be replaced in place
   from `origin/main`; deleting and re-appending them instead produces a correct but
   needlessly reordered lockfile diff.
+- PR #129's Next.js 16.3.4 graph requires `sharp@^0.35.4`, while the repository override
+  still forced vulnerable 0.35.3. Updating Next alone therefore left OSV red; the
+  existing `sharp` and `js-yaml` overrides had to move to their first fixed releases.
 
 ### Decisions
 
@@ -146,8 +156,11 @@
   closed #117 as "updatable in another way". The frozen-provider exclusion first
   established for PR #107 is re-applied unchanged.
 - [x] Rebase PR #128 and verify the grouped AWS module graph with Go module verification,
-  vet, and all API package tests.
-- [ ] Trigger and clear PR #128's head-bound native Codex review and required checks.
+      vet, and all API package tests.
+- [x] Trigger and clear PR #128's head-bound native Codex review and required checks.
+- PR #129 follows the same frozen-provider boundary as PRs #107, #123, and #124:
+  active tooling updates may advance, but every `@supabase/*` manifest and lockfile
+  record stays byte-equivalent to `origin/main` until that provider is deleted.
 
 ### Known Issues
 

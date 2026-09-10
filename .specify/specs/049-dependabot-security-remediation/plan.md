@@ -28,8 +28,10 @@ the complete repository verification chain before merge.
 | 9   | PR #115 refreshes the reviewed Go minor/patch set without breaking storage or database contracts          | [V9 — grouped Go refresh](#v9--grouped-go-refresh)                                                                                                                                         |
 | 10  | PR #121 advances the Go patch set within the already-reviewed AWS SDK minor lines                         | [V10 — follow-on Go patch refresh](#v10--follow-on-go-patch-refresh)                                                                                                                       |
 | 11  | PR #123 refreshes the reviewed app npm minor/patch set with the frozen Supabase subgraph held at `main`   | [V11 — grouped app npm refresh](#v11--grouped-app-npm-refresh)                                                                                                                             |
-| 12  | PR #122 upgrades the OSV action and remediates every finding it newly exposes                              | [V12 — OSV action refresh](#v12--osv-action-refresh)                                                                                                                                      |
-| 13  | PR #124 preserves frozen and platform-specific lockfile invariants during its npm refresh                  | [V13 — follow-on npm refresh](#v13--follow-on-npm-refresh)                                                                                                                                |
+| 12  | PR #122 upgrades the OSV action and remediates every finding it newly exposes                             | [V12 — OSV action refresh](#v12--osv-action-refresh)                                                                                                                                       |
+| 13  | PR #124 preserves frozen and platform-specific lockfile invariants during its npm refresh                 | [V13 — follow-on npm refresh](#v13--follow-on-npm-refresh)                                                                                                                                 |
+| 14  | PR #128 advances the reviewed grouped Go modules with a verified, tested graph                            | [V14 — follow-on grouped Go refresh](#v14--follow-on-grouped-go-refresh)                                                                                                                   |
+| 15  | PR #129 advances active npm dependencies, preserves frozen Supabase, and clears current OSV findings      | [V15 — secure follow-on npm refresh](#v15--secure-follow-on-npm-refresh)                                                                                                                   |
 
 ### V1 — Ecosystem coverage
 
@@ -68,10 +70,10 @@ review thread remains unresolved.
 
 ```sh
 head_sha="$(git rev-parse HEAD)"
-test "$(gh pr view 122 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
-gh pr checks 122 --repo kiaquila/capsule-zero --required
-test "$(gh pr view 122 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
-test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:122) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
+test "$(gh pr view 129 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
+gh pr checks 129 --repo kiaquila/capsule-zero --required
+test "$(gh pr view 129 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
+test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:129) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
 ```
 
 ### V8 — Grouped npm refresh
@@ -249,3 +251,34 @@ go test ./...
 PR #128 moves AWS SDK core/config/credentials/S3 and Smithy together within their
 compatible minor lines. `go mod verify`, vet, and all API package tests passed with Go
 1.26.6 on the rebased module graph.
+
+### V15 — Secure follow-on npm refresh
+
+```sh
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix tests/e2e
+node - <<'NODE'
+const lock = require("./app/package-lock.json");
+if (lock.packages["node_modules/js-yaml"].version !== "4.3.2") process.exit(1);
+if (lock.packages["node_modules/sharp"].version !== "0.35.4") process.exit(1);
+NODE
+npm run preflight
+```
+
+PR #129 keeps the root `lint-staged` refresh; the app `next`, `next-intl`,
+`@types/react-dom`, `eslint-config-next`, and `stylelint` refreshes; and the e2e
+`eslint`, Playwright, and `typescript-eslint` refreshes. Dependabot's generated
+`@supabase/supabase-js@2.115.0` change is removed from the manifest and all seven
+`@supabase/*` lockfile records. The existing override boundary moves `js-yaml` to
+4.3.2 and `sharp` to 0.35.4, the first fixed versions reported by the required OSV
+Scanner 2.5.1 run.
+
+Local evidence on the corrected PR #129 head with npm 10.9.8: all three clean installs
+completed with zero npm audit findings; the structural comparison reported `frozen
+Supabase graph unchanged (7 records)`; `js-yaml` and `sharp` resolved to 4.3.2 and
+0.35.4; and all ten existing glibc/musl selectors were retained on the native Next/SWC
+records. Repository/contract checks, app lint, CSS lint, both typechecks, and the Next
+16.3.4 production build passed. After installing Playwright 1.63's matching browser
+revisions, the full CI-mode e2e run completed with 103 passed, 8 intentionally skipped,
+and the existing WebKit productivity-metrics scenario passing on its configured retry.
