@@ -57,6 +57,11 @@ silently weakening lint/type checks, or changing product behavior.
     contracts are deliberately upgraded together.
 13. PR #127 applies the same Node 22 declaration boundary to e2e: its type package stays
     on 22.20.1 until the executable runtime contracts are upgraded together.
+14. PR #130 preserves the app's verified 22.20.1 declaration line when Dependabot
+    reopens the isolated Node 26 update while production and required CI remain on
+    Node 22.
+15. PR #131 preserves ESLint 9.39.4 when Dependabot reopens the app ESLint 10 update
+    while the current Next lint plugin graph still excludes ESLint 10.
 
 ## Negative Scenarios
 
@@ -76,6 +81,10 @@ silently weakening lint/type checks, or changing product behavior.
   doing so violates `typescript-eslint`'s `<6.1.0` peer contract and breaks clean CI.
 - A passing e2e typecheck does not justify Node 26 declarations while all executable
   runtime contracts remain on Node 22.
+- A reopened Dependabot PR does not supersede the runtime-alignment decision: app
+  Node 26 declarations remain rejected until the runtime contracts move together.
+- A repeated ESLint 10 proposal is not installed with `--force`,
+  `--legacy-peer-deps`, or another flag that suppresses the unresolved plugin peers.
 - The frozen Supabase provider graph remains outside this toolchain refresh.
 
 TDD posture: this is development-tooling and CI support work without product behavior
