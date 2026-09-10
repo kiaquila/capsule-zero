@@ -57,7 +57,7 @@
       declaration update while production and required CI remain on Node 22.
 - [x] Pass npm 10 clean installs, the installed-version assertion, app typecheck/build,
       and the full CI-mode preflight for PR #130.
-- [ ] Trigger and clear PR #130's head-bound native Codex review and required checks;
+- [x] Trigger and clear PR #130's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
 - [x] Refresh PR #131 on the latest `origin/main`, reproduce the reopened ESLint 10
       peer conflict, and verify current registry metadata for all blocking plugins.
@@ -65,7 +65,13 @@
       peer-ignore flags.
 - [x] Pass app clean install, installed-version assertion, lint, typecheck/build, and
       the full CI-mode preflight for PR #131.
-- [ ] Trigger and clear PR #131's head-bound native Codex review and required checks;
+- [x] Trigger and clear PR #131's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
+- [x] Refresh PR #132 on the latest `origin/main` and reject its reopened e2e Node 26
+      declaration update while all executable contracts remain on Node 22.
+- [x] Pass npm 10 clean installs, the e2e installed-version assertion, lint, typecheck,
+      and the full CI-mode preflight for PR #132.
+- [ ] Trigger and clear PR #132's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
 
 ## Process Memory
@@ -110,6 +116,8 @@
   the Node 22 boundary. A newer generated version does not remove the runtime mismatch.
 - PR #131 repeats the app ESLint 10 update, but all three blocking plugin releases are
   unchanged and clean npm 10 resolution still fails with `ERESOLVE`.
+- PR #132 repeats the e2e Node 26 declaration update after PR #127 established the
+  Node 22 boundary; a compiler-only pass still cannot prove runtime API availability.
 
 ### Decisions
 
@@ -151,6 +159,8 @@
   deferred until production and required CI advance their executable Node contract.
 - Keep app ESLint on 9.39.4 for PR #131 without peer-ignore flags. A newer ESLint 10
   patch does not change the resume condition established for PR #125.
+- Keep e2e `@types/node` on 22.20.1 for PR #132. Revisit only alongside the e2e engine,
+  required workflow, and production runtime transition to Node 26.
 
 ### Known Issues
 

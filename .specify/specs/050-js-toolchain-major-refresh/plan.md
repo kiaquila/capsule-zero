@@ -27,6 +27,7 @@ guarded merge.
 | 13  | PR #127 leaves the unsupported e2e Node type major deferred | Node 22 runtime/workflow evidence; clean e2e install, lint, typecheck, and full preflight                                      |
 | 14  | PR #130 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; app npm 10 clean install, installed-version assertion, typecheck, build, and full preflight          |
 | 15  | PR #131 preserves the supported app ESLint graph | current registry peer metadata; expected ESLint 10 `ERESOLVE`; restored npm 10 clean install, lint, typecheck, build, and full preflight |
+| 16  | PR #132 preserves the e2e Node 22 declaration boundary | Node 22 engine/runtime evidence; e2e npm 10 clean install, installed-version assertion, lint, typecheck, and full preflight          |
 
 ## Compatibility Notes
 
@@ -178,3 +179,23 @@ the verified ESLint 9.39.4 base. Resume only after the complete Next lint graph
 declares ESLint 10 support. The restored graph clean-installed with npm 10.9.8,
 reported ESLint 9.39.4, and passed app lint, typecheck, production build, and the full
 CI-mode preflight with 104 browser scenarios passed and 8 skipped.
+
+### V16 — Reopened e2e Node 26 declaration deferral
+
+```sh
+rg -n '"node": ">=22.22.1"|node-version: "22"|ARG NODE_VERSION=22-bookworm-slim' tests/e2e/package.json .github/workflows api/Dockerfile app/Dockerfile
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix tests/e2e
+node -p "require('./tests/e2e/node_modules/@types/node/package.json').version"
+npx --yes --package=npm@10.9.8 npm run lint --prefix tests/e2e
+npx --yes --package=npm@10.9.8 npm run typecheck --prefix tests/e2e
+PORT=3005 E2E_BASE_URL=http://localhost:3005 CI=1 npm run preflight
+```
+
+PR #132 again proposes Node 26 declarations without advancing any executable runtime.
+The e2e manifest and lockfile therefore remain on 22.20.1, matching the workspace
+engine, required CI workflows, and production web image. Resume this major only when
+those Node runtime contracts move together. npm 10.9.8 clean-installed all workspaces,
+the installed e2e declaration package reported 22.20.1, e2e lint/typecheck passed, and
+the full CI-mode preflight completed with 104 browser scenarios passed and 8 skipped.
