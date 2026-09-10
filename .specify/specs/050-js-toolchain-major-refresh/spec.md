@@ -62,6 +62,9 @@ silently weakening lint/type checks, or changing product behavior.
     Node 22.
 15. PR #131 preserves ESLint 9.39.4 when Dependabot reopens the app ESLint 10 update
     while the current Next lint plugin graph still excludes ESLint 10.
+16. PR #132 preserves the e2e workspace's verified 22.20.1 declaration line when
+    Dependabot reopens the isolated Node 26 update without changing its Node 22 engine,
+    the required CI runtime, or the production web runtime.
 
 ## Negative Scenarios
 
@@ -85,6 +88,8 @@ silently weakening lint/type checks, or changing product behavior.
   Node 26 declarations remain rejected until the runtime contracts move together.
 - A repeated ESLint 10 proposal is not installed with `--force`,
   `--legacy-peer-deps`, or another flag that suppresses the unresolved plugin peers.
+- A reopened e2e Node type update is not accepted merely because typecheck passes;
+  ambient declarations must remain bounded by the executable runtime major.
 - The frozen Supabase provider graph remains outside this toolchain refresh.
 
 TDD posture: this is development-tooling and CI support work without product behavior
