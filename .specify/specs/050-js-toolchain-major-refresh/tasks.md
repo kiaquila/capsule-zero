@@ -53,6 +53,12 @@
 - [x] Rebase PR #127 and revert e2e Node 26 declarations because e2e, required CI, and
       production runtime contracts remain on Node 22.
 - [ ] Trigger and clear PR #127's head-bound native Codex review and required checks.
+- [x] Refresh PR #130 on the latest `origin/main` and reject its reopened app Node 26
+      declaration update while production and required CI remain on Node 22.
+- [x] Pass npm 10 clean installs, the installed-version assertion, app typecheck/build,
+      and the full CI-mode preflight for PR #130.
+- [ ] Trigger and clear PR #130's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
 
 ## Process Memory
 
@@ -92,6 +98,8 @@
 - PR #114's generated Node 26 declarations compile under the current toolchain, but a
   green compiler cannot prove APIs will exist on the Node 22 process that executes e2e,
   CI, and the production web application.
+- PR #130 repeats the app Node 26 declaration update after PR #126 already established
+  the Node 22 boundary. A newer generated version does not remove the runtime mismatch.
 
 ### Decisions
 
@@ -129,6 +137,8 @@
   Node 22 production/required-CI runtime; resume Node 26 declarations only with that
   runtime upgrade.
 - Keep e2e `@types/node` on 22.20.1 for PR #127 for the same Node 22 runtime boundary.
+- Keep app `@types/node` on 22.20.1 for PR #130. Treat repeated Dependabot major PRs as
+  deferred until production and required CI advance their executable Node contract.
 
 ### Known Issues
 
