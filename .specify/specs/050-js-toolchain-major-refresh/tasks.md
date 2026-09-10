@@ -71,7 +71,7 @@
       declaration update while all executable contracts remain on Node 22.
 - [x] Pass npm 10 clean installs, the e2e installed-version assertion, lint, typecheck,
       and the full CI-mode preflight for PR #132.
-- [ ] Trigger and clear PR #132's head-bound native Codex review and required checks;
+- [x] Trigger and clear PR #132's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
 
 ## Process Memory

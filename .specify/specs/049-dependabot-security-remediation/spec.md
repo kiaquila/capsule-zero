@@ -71,6 +71,10 @@ the compatible minor/patch pull requests produced by that policy.
     `@supabase/*` provider graph, advances the active minor/patch dependencies, and
     resolves the newly reported `js-yaml` and `sharp` advisories at their first fixed
     versions without adding an OSV suppression.
+13. The follow-on grouped Go refresh in PR #133 advances AWS SDK core, config,
+    credentials, S3, and their generated indirect modules as one tidy graph; preserves
+    the repository's custom-endpoint and presign APIs; and passes module verification,
+    vet, all package tests, and targeted storage/database race tests.
 
 ## Negative Scenarios
 
@@ -101,6 +105,10 @@ the compatible minor/patch pull requests produced by that policy.
   refresh or leave the vulnerable `js-yaml@4.3.1` / `sharp@0.35.3` overrides in
   place. The complete frozen provider graph must match `origin/main`, while both
   vulnerable packages resolve to their published fixed versions.
+- PR #133 must not merge a partially regenerated AWS module graph or rely on
+  compilation alone. `go mod tidy` must leave both module files unchanged, checksum
+  verification must pass, and the exercised S3 custom-endpoint/presign boundary must
+  remain available on the resolved SDK versions.
 
 TDD posture: these changes update repository automation and dependency metadata without
 changing application behavior. The infrastructure/support-change waiver applies; the

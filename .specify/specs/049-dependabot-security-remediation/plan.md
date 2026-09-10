@@ -32,6 +32,7 @@ the complete repository verification chain before merge.
 | 13  | PR #124 preserves frozen and platform-specific lockfile invariants during its npm refresh                 | [V13 — follow-on npm refresh](#v13--follow-on-npm-refresh)                                                                                                                                 |
 | 14  | PR #128 advances the reviewed grouped Go modules with a verified, tested graph                            | [V14 — follow-on grouped Go refresh](#v14--follow-on-grouped-go-refresh)                                                                                                                   |
 | 15  | PR #129 advances active npm dependencies, preserves frozen Supabase, and clears current OSV findings      | [V15 — secure follow-on npm refresh](#v15--secure-follow-on-npm-refresh)                                                                                                                   |
+| 16  | PR #133 advances the coordinated AWS SDK graph without breaking storage or database contracts             | [V16 — coordinated AWS SDK refresh](#v16--coordinated-aws-sdk-refresh)                                                                                                                     |
 
 ### V1 — Ecosystem coverage
 
@@ -70,10 +71,10 @@ review thread remains unresolved.
 
 ```sh
 head_sha="$(git rev-parse HEAD)"
-test "$(gh pr view 129 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
-gh pr checks 129 --repo kiaquila/capsule-zero --required
-test "$(gh pr view 129 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
-test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:129) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
+test "$(gh pr view 133 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
+gh pr checks 133 --repo kiaquila/capsule-zero --required
+test "$(gh pr view 133 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
+test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:133) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
 ```
 
 ### V8 — Grouped npm refresh
@@ -282,3 +283,27 @@ records. Repository/contract checks, app lint, CSS lint, both typechecks, and th
 16.3.4 production build passed. After installing Playwright 1.63's matching browser
 revisions, the full CI-mode e2e run completed with 103 passed, 8 intentionally skipped,
 and the existing WebKit productivity-metrics scenario passing on its configured retry.
+
+### V16 — Coordinated AWS SDK refresh
+
+```sh
+cd api
+go mod tidy && git diff --exit-code -- go.mod go.sum
+go mod verify
+go vet ./...
+go test ./...
+go test -race ./internal/storage ./internal/db
+go list -m github.com/aws/aws-sdk-go-v2 github.com/aws/aws-sdk-go-v2/config github.com/aws/aws-sdk-go-v2/credentials github.com/aws/aws-sdk-go-v2/service/s3 github.com/aws/smithy-go github.com/jackc/pgx/v5
+```
+
+PR #133 advances AWS SDK core 1.45.1 -> 1.46.0, config 1.33.1 -> 1.33.3,
+credentials 1.20.1 -> 1.20.3, and S3 1.109.1 -> 1.111.0. Eleven generated AWS
+modules move with that graph; Smithy remains 1.28.1 and pgx remains 5.10.0. The
+resolved SDK still exposes `LoadDefaultConfig`, S3 `BaseEndpoint`, and
+`NewPresignClient`, which are the compatibility boundaries exercised by the storage
+package.
+
+Local evidence on the refreshed PR #133 worktree with Go 1.26.6: `go mod tidy`
+produced no diff, `go mod verify` reported `all modules verified`, vet and every API
+package test passed, and the race-enabled storage/database tests passed. The resolved
+direct versions match the four targets above while Smithy and pgx remain unchanged.
