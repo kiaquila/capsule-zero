@@ -25,6 +25,7 @@ guarded merge.
 | 11  | PR #125 leaves the unsupported app ESLint major deferred | current upstream peer metadata; app npm 10 clean install, lint, typecheck, and build                                                  |
 | 12  | PR #126 leaves the unsupported app Node type major deferred | Node 22 runtime/workflow evidence; app npm 10 clean install, typecheck, build, and full preflight                                 |
 | 13  | PR #127 leaves the unsupported e2e Node type major deferred | Node 22 runtime/workflow evidence; clean e2e install, lint, typecheck, and full preflight                                      |
+| 14  | PR #130 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; app npm 10 clean install, installed-version assertion, typecheck, build, and full preflight          |
 
 ## Compatibility Notes
 
@@ -133,3 +134,23 @@ PORT=3002 E2E_BASE_URL=http://localhost:3002 CI=1 npm run preflight
 PR #127 restores e2e `@types/node` to 22.20.1. The e2e process and required workflows
 remain on Node 22, so the Node 26 declaration line remains deferred with the app until
 those executable contracts move together.
+
+### V14 — Reopened app Node 26 declaration deferral
+
+```sh
+rg -n 'node-version: "22"|ARG NODE_VERSION=22-bookworm-slim' .github/workflows api/Dockerfile app/Dockerfile
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix tests/e2e
+node -p "require('./app/node_modules/@types/node/package.json').version"
+npx --yes --package=npm@10.9.8 npm run typecheck --prefix app
+npx --yes --package=npm@10.9.8 npm run build --prefix app
+PORT=3003 E2E_BASE_URL=http://localhost:3003 CI=1 npm run preflight
+```
+
+PR #130 again proposes Node 26 declarations without changing an executable runtime.
+The app manifest and lockfile therefore remain on the already verified 22.20.1 line.
+Resume this major only when the production image and required CI workflows deliberately
+move from Node 22 in the same change. npm 10.9.8 clean-installed all three workspaces,
+the installed declaration package reported 22.20.1, app typecheck/build passed, and the
+full CI-mode preflight completed with 104 browser scenarios passed and 8 skipped.
