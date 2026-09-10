@@ -51,7 +51,13 @@
       boundary.
 - [x] Pass clean npm 10.9.8 installs, audit, repository/contract checks, app/e2e static
       checks, the Next.js production build, and the full browser suite on PR #129.
-- [ ] Trigger and clear PR #129's head-bound native Codex review and required checks.
+- [x] Trigger and clear PR #129's head-bound native Codex review and required checks.
+- [x] Refresh PR #133 on the latest `origin/main` and inventory all direct and generated
+      AWS SDK module deltas.
+- [x] Pass module tidiness, checksum verification, vet, all API package tests, and
+      targeted storage/database race tests on PR #133.
+- [ ] Trigger and clear PR #133's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
 
 ## Process Memory
 
@@ -161,6 +167,10 @@
 - PR #129 follows the same frozen-provider boundary as PRs #107, #123, and #124:
   active tooling updates may advance, but every `@supabase/*` manifest and lockfile
   record stays byte-equivalent to `origin/main` until that provider is deleted.
+- Accept PR #133 as one coordinated AWS module graph: core, config, credentials, S3,
+  and eleven generated indirect modules advance together. Smithy and pgx remain
+  unchanged, while local API documentation and storage tests confirm that
+  `LoadDefaultConfig`, S3 `BaseEndpoint`, and `NewPresignClient` remain supported.
 
 ### Known Issues
 
