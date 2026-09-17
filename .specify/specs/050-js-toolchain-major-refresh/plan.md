@@ -222,13 +222,13 @@ The required GitHub `test` job remains the head-bound full-suite evidence.
 ### V18 — Current app ESLint 10 deferral
 
 ```sh
-npx --yes npm@10.9.8 ci --ignore-scripts --no-audit --no-fund # expected ERESOLVE on generated graph
+npx --yes npm@10.9.8 --prefix app ci --ignore-scripts --no-audit --no-fund # expected ERESOLVE on generated graph
 git diff --exit-code origin/main -- app/package.json app/package-lock.json
-npx --yes npm@10.9.8 ci --ignore-scripts --no-audit --no-fund
-node -p "require('./node_modules/eslint/package.json').version"
-npm run lint
-npm run typecheck
-npm run build
+npx --yes npm@10.9.8 --prefix app ci --ignore-scripts --no-audit --no-fund
+node -p "require('./app/node_modules/eslint/package.json').version"
+npm --prefix app run lint
+npm --prefix app run typecheck
+npm --prefix app run build
 ```
 
 PR #136's generated ESLint 10.10.0 graph again fails clean npm 10 resolution because
