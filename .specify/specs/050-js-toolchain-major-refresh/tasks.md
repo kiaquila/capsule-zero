@@ -73,6 +73,12 @@
       and the full CI-mode preflight for PR #132.
 - [x] Trigger and clear PR #132's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
+- [x] Refresh PR #135 on the latest `origin/main` and reject its reopened app Node 26
+      declaration update while production and required CI remain on Node 22.
+- [x] Restore the app manifest and lockfile byte-for-byte to the verified Node 22 type
+      graph and pass npm 10 clean install, typecheck, and production build.
+- [ ] Trigger and clear PR #135's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
 
 ## Process Memory
 
@@ -118,6 +124,9 @@
   unchanged and clean npm 10 resolution still fails with `ERESOLVE`.
 - PR #132 repeats the e2e Node 26 declaration update after PR #127 established the
   Node 22 boundary; a compiler-only pass still cannot prove runtime API availability.
+- PR #135 repeats the app Node 26 declaration update at 26.5.1 after PRs #126 and #130
+  established the Node 22 boundary; another declaration patch does not remove the
+  production and required-CI runtime mismatch.
 
 ### Decisions
 
@@ -161,6 +170,8 @@
   patch does not change the resume condition established for PR #125.
 - Keep e2e `@types/node` on 22.20.1 for PR #132. Revisit only alongside the e2e engine,
   required workflow, and production runtime transition to Node 26.
+- Keep app `@types/node` on 22.20.1 for PR #135. Repeated Dependabot declaration-only
+  PRs remain deferred until the production image and required workflows move together.
 
 ### Known Issues
 
