@@ -65,6 +65,15 @@ silently weakening lint/type checks, or changing product behavior.
 16. PR #132 preserves the e2e workspace's verified 22.20.1 declaration line when
     Dependabot reopens the isolated Node 26 update without changing its Node 22 engine,
     the required CI runtime, or the production web runtime.
+17. PR #135 preserves the app's verified 22.20.1 declaration line when Dependabot
+    reopens the isolated Node 26 update at 26.5.1 while production and required CI
+    continue to execute Node 22.
+18. PR #136 preserves ESLint 9.39.4 when Dependabot reopens the app ESLint 10.10.0
+    update while `eslint-plugin-jsx-a11y` in the current Next lint graph still excludes
+    ESLint 10 and clean npm 10 resolution fails.
+19. PR #137 preserves the e2e workspace's verified 22.20.1 declaration line when
+    Dependabot reopens the isolated Node 26 update at 26.5.1 without changing the
+    workspace engine, required CI runtime, or production web runtime from Node 22.
 
 ## Negative Scenarios
 
@@ -90,6 +99,12 @@ silently weakening lint/type checks, or changing product behavior.
   `--legacy-peer-deps`, or another flag that suppresses the unresolved plugin peers.
 - A reopened e2e Node type update is not accepted merely because typecheck passes;
   ambient declarations must remain bounded by the executable runtime major.
+- A Node 26.5.1 declaration patch does not change the runtime-alignment decision; it
+  remains deferred until the app image and required workflows move majors together.
+- A newly rebased ESLint 10.10.0 proposal is not treated as compatible while clean npm
+  10 resolution still reports the same `eslint-plugin-jsx-a11y` peer conflict.
+- A Node 26.5.1 declaration patch in e2e is not accepted without the corresponding
+  executable runtime transition, even when lint and typecheck would otherwise pass.
 - The frozen Supabase provider graph remains outside this toolchain refresh.
 
 TDD posture: this is development-tooling and CI support work without product behavior

@@ -33,6 +33,7 @@ the complete repository verification chain before merge.
 | 14  | PR #128 advances the reviewed grouped Go modules with a verified, tested graph                            | [V14 — follow-on grouped Go refresh](#v14--follow-on-grouped-go-refresh)                                                                                                                   |
 | 15  | PR #129 advances active npm dependencies, preserves frozen Supabase, and clears current OSV findings      | [V15 — secure follow-on npm refresh](#v15--secure-follow-on-npm-refresh)                                                                                                                   |
 | 16  | PR #133 advances the coordinated AWS SDK graph without breaking storage or database contracts             | [V16 — coordinated AWS SDK refresh](#v16--coordinated-aws-sdk-refresh)                                                                                                                     |
+| 17  | PR #134 advances active npm dependencies while preserving frozen and platform-specific lockfile invariants | [V17 — current grouped npm refresh](#v17--current-grouped-npm-refresh)                                                                                                                     |
 
 ### V1 — Ecosystem coverage
 
@@ -71,10 +72,10 @@ review thread remains unresolved.
 
 ```sh
 head_sha="$(git rev-parse HEAD)"
-test "$(gh pr view 133 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
-gh pr checks 133 --repo kiaquila/capsule-zero --required
-test "$(gh pr view 133 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
-test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:133) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
+test "$(gh pr view 134 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
+gh pr checks 134 --repo kiaquila/capsule-zero --required
+test "$(gh pr view 134 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
+test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:134) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
 ```
 
 ### V8 — Grouped npm refresh
@@ -307,3 +308,38 @@ Local evidence on the refreshed PR #133 worktree with Go 1.26.6: `go mod tidy`
 produced no diff, `go mod verify` reported `all modules verified`, vet and every API
 package test passed, and the race-enabled storage/database tests passed. The resolved
 direct versions match the four targets above while Smithy and pgx remain unchanged.
+
+### V17 — Current grouped npm refresh
+
+```sh
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix tests/e2e
+node - <<'NODE'
+const base = JSON.parse(require("node:child_process").execFileSync(
+  "git", ["show", "origin/main:app/package-lock.json"], {encoding: "utf8"},
+));
+const head = require("./app/package-lock.json");
+const keys = Object.keys(base.packages).filter((key) => key.startsWith("node_modules/@supabase/"));
+if (head.packages[""].dependencies["@supabase/supabase-js"] !== base.packages[""].dependencies["@supabase/supabase-js"] ||
+    keys.some((key) => JSON.stringify(head.packages[key]) !== JSON.stringify(base.packages[key]))) process.exit(1);
+NODE
+npm run check:repo
+npm run lint --prefix app
+npm run lint:css --prefix app
+npm run typecheck --prefix app
+npm run build --prefix app
+npm run lint --prefix tests/e2e
+npm run typecheck --prefix tests/e2e
+```
+
+PR #134 keeps the root `lint-staged` and `yaml` patches; advances the active Next.js,
+React, next-intl, react-hook-form, tailwind-merge, Zod, and TypeScript ESLint lines; and
+removes Dependabot's generated `@supabase/supabase-js@2.116.0` change from the manifest
+and all seven `@supabase/*` lockfile records. The targeted restoration starts from the
+Dependabot lockfile rather than regenerating it, so its Linux `libc` selectors remain.
+
+Local evidence with npm 10.9.8: all three clean installs completed with zero audit
+findings; the frozen Supabase graph resolved to 2.108.2; repository checks, app/e2e
+lint and typechecks, CSS lint, and the Next.js 16.3.5 production build passed. The
+required GitHub `test` job remains the head-bound browser-suite evidence.

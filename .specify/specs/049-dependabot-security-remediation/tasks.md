@@ -56,7 +56,13 @@
       AWS SDK module deltas.
 - [x] Pass module tidiness, checksum verification, vet, all API package tests, and
       targeted storage/database race tests on PR #133.
-- [ ] Trigger and clear PR #133's head-bound native Codex review and required checks;
+- [x] Trigger and clear PR #133's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
+- [x] Review PR #134's root, app, and e2e dependency deltas and restore the frozen
+      `@supabase/*` graph without altering platform-specific lockfile selectors.
+- [x] Pass clean npm 10.9.8 installs, repository checks, app/e2e static checks, and the
+      Next.js production build on the corrected PR #134 graph.
+- [ ] Trigger and clear PR #134's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
 
 ## Process Memory
@@ -98,6 +104,10 @@
 - PR #129's Next.js 16.3.4 graph requires `sharp@^0.35.4`, while the repository override
   still forced vulnerable 0.35.3. Updating Next alone therefore left OSV red; the
   existing `sharp` and `js-yaml` overrides had to move to their first fixed releases.
+- Regenerating PR #134's entire app lockfile after restoring Supabase removed Linux
+  `libc` selectors from optional native-package records. Restoring only the seven
+  `@supabase/*` records from `origin/main` into Dependabot's original lockfile preserves
+  both invariants and remains reproducible under npm 10.9.8.
 
 ### Decisions
 
@@ -171,6 +181,10 @@
   and eleven generated indirect modules advance together. Smithy and pgx remain
   unchanged, while local API documentation and storage tests confirm that
   `LoadDefaultConfig`, S3 `BaseEndpoint`, and `NewPresignClient` remain supported.
+- PR #134 accepts the active grouped npm refresh, including React 19.3 and Next.js
+  16.3.5, because clean installs, TypeScript, lint, and the production build pass while
+  the required GitHub test suite remains mandatory. The frozen Supabase graph is not
+  part of that acceptance and stays at 2.108.2.
 
 ### Known Issues
 

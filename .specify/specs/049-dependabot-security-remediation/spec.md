@@ -75,6 +75,10 @@ the compatible minor/patch pull requests produced by that policy.
     credentials, S3, and their generated indirect modules as one tidy graph; preserves
     the repository's custom-endpoint and presign APIs; and passes module verification,
     vet, all package tests, and targeted storage/database race tests.
+14. The follow-on root, app, and e2e npm refresh in PR #134 advances only the reviewed
+    active dependency set, keeps the frozen `@supabase/*` provider graph identical to
+    `origin/main`, preserves platform-specific lockfile selectors, and passes clean
+    installs, static checks, the production build, and required GitHub tests.
 
 ## Negative Scenarios
 
@@ -109,6 +113,10 @@ the compatible minor/patch pull requests produced by that policy.
   compilation alone. `go mod tidy` must leave both module files unchanged, checksum
   verification must pass, and the exercised S3 custom-endpoint/presign boundary must
   remain available on the resolved SDK versions.
+- PR #134 must not ship Dependabot's generated `@supabase/supabase-js@2.116.0`
+  refresh or regenerate away Linux `libc` selectors from optional native packages.
+  The seven frozen provider records are restored from `origin/main`, while the active
+  dependency updates remain covered by clean installs and the full required test gate.
 
 TDD posture: these changes update repository automation and dependency metadata without
 changing application behavior. The infrastructure/support-change waiver applies; the
