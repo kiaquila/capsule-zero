@@ -62,7 +62,13 @@
       `@supabase/*` graph without altering platform-specific lockfile selectors.
 - [x] Pass clean npm 10.9.8 installs, repository checks, app/e2e static checks, and the
       Next.js production build on the corrected PR #134 graph.
-- [ ] Trigger and clear PR #134's head-bound native Codex review and required checks;
+- [x] Trigger and clear PR #134's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
+- [x] Refresh PR #138 on the latest `origin/main` and inventory its direct AWS SDK,
+      S3, pgx, and generated indirect module deltas.
+- [x] Pass module tidiness, checksum verification, vet, all API package tests, and
+      targeted storage/database race tests on PR #138.
+- [ ] Trigger and clear PR #138's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
 
 ## Process Memory
@@ -108,6 +114,10 @@
   `libc` selectors from optional native-package records. Restoring only the seven
   `@supabase/*` records from `origin/main` into Dependabot's original lockfile preserves
   both invariants and remains reproducible under npm 10.9.8.
+- Treating pgx 5.11 as compilation-only evidence would miss its new `Rows.TypeMap`
+  interface method and date/time behavior hardening. The API defines no custom
+  `pgx.Rows`, and the full database package plus targeted race tests exercise the
+  repository's actual `pgxpool` boundary.
 
 ### Decisions
 
@@ -185,6 +195,10 @@
   16.3.5, because clean installs, TypeScript, lint, and the production build pass while
   the required GitHub test suite remains mandatory. The frozen Supabase graph is not
   part of that acceptance and stays at 2.108.2.
+- Accept PR #138 as one coordinated module graph: AWS core/config/credentials/S3 and
+  their generated indirect modules move together with pgx 5.11.0. The repository's
+  Go 1.26.6 contract exceeds pgx's Go 1.25 floor, and local docs plus tests confirm the
+  used S3 custom-endpoint/presign and pgxpool constructor APIs remain supported.
 
 ### Known Issues
 
