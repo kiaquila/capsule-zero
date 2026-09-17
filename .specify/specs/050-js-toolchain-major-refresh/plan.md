@@ -29,6 +29,7 @@ guarded merge.
 | 15  | PR #131 preserves the supported app ESLint graph | current registry peer metadata; expected ESLint 10 `ERESOLVE`; restored npm 10 clean install, lint, typecheck, build, and full preflight |
 | 16  | PR #132 preserves the e2e Node 22 declaration boundary | Node 22 engine/runtime evidence; e2e npm 10 clean install, installed-version assertion, lint, typecheck, and full preflight          |
 | 17  | PR #135 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; app npm 10 clean install, installed-version assertion, typecheck, build, and required GitHub tests |
+| 18  | PR #136 preserves the supported app ESLint graph | expected ESLint 10 `ERESOLVE`; restored npm 10 clean install, installed-version assertion, lint, typecheck, build, and required GitHub tests |
 
 ## Compatibility Notes
 
@@ -217,3 +218,22 @@ app image and required Node workflows remain on major 22, the app manifest and l
 stay byte-identical to `origin/main` at `@types/node` 22.20.1. Resume the declaration
 major only in the same change that deliberately upgrades those executable contracts.
 The required GitHub `test` job remains the head-bound full-suite evidence.
+
+### V18 — Current app ESLint 10 deferral
+
+```sh
+npx --yes npm@10.9.8 ci --ignore-scripts --no-audit --no-fund # expected ERESOLVE on generated graph
+git diff --exit-code origin/main -- app/package.json app/package-lock.json
+npx --yes npm@10.9.8 ci --ignore-scripts --no-audit --no-fund
+node -p "require('./node_modules/eslint/package.json').version"
+npm run lint
+npm run typecheck
+npm run build
+```
+
+PR #136's generated ESLint 10.10.0 graph again fails clean npm 10 resolution because
+`eslint-plugin-jsx-a11y@6.10.2`, required both directly and by
+`eslint-config-next@16.3.5`, ends its peer range at ESLint 9. The app manifest and
+lockfile therefore stay byte-identical to `origin/main` at ESLint 9.39.4. Resume only
+after the complete resolved Next lint graph declares ESLint 10 support; the required
+GitHub `test` job remains the head-bound full-suite evidence.

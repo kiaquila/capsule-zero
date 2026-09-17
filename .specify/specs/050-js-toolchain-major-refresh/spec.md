@@ -68,6 +68,9 @@ silently weakening lint/type checks, or changing product behavior.
 17. PR #135 preserves the app's verified 22.20.1 declaration line when Dependabot
     reopens the isolated Node 26 update at 26.5.1 while production and required CI
     continue to execute Node 22.
+18. PR #136 preserves ESLint 9.39.4 when Dependabot reopens the app ESLint 10.10.0
+    update while `eslint-plugin-jsx-a11y` in the current Next lint graph still excludes
+    ESLint 10 and clean npm 10 resolution fails.
 
 ## Negative Scenarios
 
@@ -95,6 +98,8 @@ silently weakening lint/type checks, or changing product behavior.
   ambient declarations must remain bounded by the executable runtime major.
 - A Node 26.5.1 declaration patch does not change the runtime-alignment decision; it
   remains deferred until the app image and required workflows move majors together.
+- A newly rebased ESLint 10.10.0 proposal is not treated as compatible while clean npm
+  10 resolution still reports the same `eslint-plugin-jsx-a11y` peer conflict.
 - The frozen Supabase provider graph remains outside this toolchain refresh.
 
 TDD posture: this is development-tooling and CI support work without product behavior
