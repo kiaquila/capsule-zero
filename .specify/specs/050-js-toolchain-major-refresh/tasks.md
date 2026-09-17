@@ -83,7 +83,13 @@
       conflict under npm 10, and reject the unsupported update without peer-ignore flags.
 - [x] Restore the app manifest and lockfile byte-for-byte to the verified ESLint 9.39.4
       graph and pass clean install, installed-version, lint, typecheck, and build checks.
-- [ ] Trigger and clear PR #136's head-bound native Codex review and required checks;
+- [x] Trigger and clear PR #136's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
+- [x] Refresh PR #137 on the latest `origin/main` and reject its reopened e2e Node 26
+      declaration update while all executable contracts remain on Node 22.
+- [x] Restore the e2e manifest and lockfile byte-for-byte to the verified Node 22 type
+      graph and pass clean install, installed-version, lint, and typecheck checks.
+- [ ] Trigger and clear PR #137's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
 
 ## Process Memory
@@ -136,6 +142,9 @@
 - PR #136 repeats the app ESLint 10.10.0 update after PRs #125 and #131 established the
   peer-compatibility blocker. Clean npm 10 resolution still fails on
   `eslint-plugin-jsx-a11y@6.10.2`, so rebasing the proposal does not make it supported.
+- PR #137 repeats the e2e Node 26 declaration update at 26.5.1 after PRs #127 and #132
+  established the Node 22 boundary. Another declaration patch does not advance any
+  executable runtime and therefore cannot prove those APIs exist when the tests run.
 
 ### Decisions
 
@@ -183,6 +192,8 @@
   PRs remain deferred until the production image and required workflows move together.
 - Keep app ESLint on 9.39.4 for PR #136 without peer-ignore flags. Resume only when the
   complete resolved Next lint graph accepts ESLint 10 and clean installation succeeds.
+- Keep e2e `@types/node` on 22.20.1 for PR #137. Resume only alongside the e2e engine,
+  required workflow, and production runtime transition to Node 26.
 
 ### Known Issues
 
