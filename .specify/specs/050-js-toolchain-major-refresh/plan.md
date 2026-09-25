@@ -32,6 +32,7 @@ guarded merge.
 | 18  | PR #136 preserves the supported app ESLint graph | expected ESLint 10 `ERESOLVE`; restored npm 10 clean install, installed-version assertion, lint, typecheck, build, and required GitHub tests |
 | 19  | PR #137 preserves the e2e Node 22 declaration boundary | Node 22 engine/runtime evidence; clean e2e install, installed-version assertion, lint, typecheck, and required GitHub tests |
 | 20  | PR #141 preserves the supported app ESLint graph | expected ESLint 10 `ERESOLVE`; current plugin peer metadata; restored npm 10 clean install, installed-version assertion, lint, typecheck, build, and required GitHub tests |
+| 21  | PR #142 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; app manifest/lock diff against `origin/main`; clean install, installed-version assertion, typecheck, build, and required GitHub tests |
 
 ## Compatibility Notes
 
@@ -284,3 +285,22 @@ ESLint 10 support.
 Local evidence with npm 10.9.8: the restored graph clean-installed, reported ESLint
 9.39.4, and passed app lint, TypeScript 7 typecheck, and the Next.js 16.3.5 production
 build. The required GitHub `test` job remains the head-bound full-suite evidence.
+
+### V21 — Current app Node 26.6 declaration deferral
+
+```sh
+rg -n 'node-version: "22"|ARG NODE_VERSION=22-bookworm-slim' .github/workflows api/Dockerfile app/Dockerfile
+git diff --exit-code origin/main -- app/package.json app/package-lock.json
+npx --yes npm@10.9.8 --prefix app ci --ignore-scripts --no-audit --no-fund
+node -p "require('./app/node_modules/@types/node/package.json').version"
+npm --prefix app run typecheck
+npm --prefix app run build
+```
+
+PR #142 repeats the isolated app declaration update at 26.6.2. Because the production
+app image and required Node workflows remain on major 22, the app manifest and lockfile
+stay byte-identical to `origin/main` at `@types/node` 22.20.1. Resume the declaration
+major only in the same change that deliberately upgrades those executable contracts.
+Local npm 10.9.8 evidence clean-installed the restored graph, reported
+`@types/node` 22.20.1, and passed app typecheck and the Next.js 16.3.5 production build.
+The required GitHub `test` job remains the head-bound full-suite evidence.

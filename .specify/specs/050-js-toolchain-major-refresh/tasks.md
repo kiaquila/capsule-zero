@@ -99,6 +99,14 @@
       checks on the restored PR #141 graph.
 - [x] Trigger and clear PR #141's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
+- [x] Refresh PR #142 on the latest `origin/main` and reject its reopened app Node 26
+      declaration update while production and required CI remain on Node 22.
+- [x] Restore the app manifest and lockfile byte-for-byte to the verified Node 22 type
+      graph.
+- [x] Pass clean install, installed-version, typecheck, and production-build checks on
+      the restored PR #142 graph.
+- [x] Trigger and clear PR #142's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
 
 ## Process Memory
 
@@ -156,6 +164,9 @@
 - PR #141 repeats the app ESLint major at 10.11.0, but clean npm 10 resolution still
   fails on `eslint-plugin-jsx-a11y@6.10.2`; the latest import and React lint plugins
   also continue to cap their peer ranges at ESLint 9.
+- PR #142 repeats the app Node 26 declaration update at 26.6.2 after the Node 22
+  runtime boundary was already established. A declaration patch does not advance the
+  production image or required CI runtime and cannot prove those APIs exist there.
 
 ### Decisions
 
@@ -208,6 +219,8 @@
 - Keep app ESLint on 9.39.4 for PR #141 without peer-ignore flags. ESLint 10's removed
   rule-context APIs make declared plugin compatibility a real requirement; resume only
   when the complete resolved Next lint graph accepts ESLint 10.
+- Keep app `@types/node` on 22.20.1 for PR #142. Resume Node 26 declarations only with
+  the deliberate production-image and required-workflow runtime upgrade.
 
 ### Known Issues
 

@@ -77,6 +77,9 @@ silently weakening lint/type checks, or changing product behavior.
 20. PR #141 preserves ESLint 9.39.4 when Dependabot reopens the app ESLint 10 update
     at 10.11.0 while the current Next lint plugin graph still excludes ESLint 10 and
     clean npm 10 resolution fails.
+21. PR #142 preserves the app's verified 22.20.1 declaration line when Dependabot
+    reopens the isolated Node 26 update at 26.6.2 while production and required CI
+    continue to execute Node 22.
 
 ## Negative Scenarios
 
@@ -111,6 +114,8 @@ silently weakening lint/type checks, or changing product behavior.
 - A newer ESLint 10.11.0 patch is not forced into the app while the latest
   `eslint-plugin-jsx-a11y`, `eslint-plugin-import`, and `eslint-plugin-react` releases
   still declare peer support only through ESLint 9.
+- A Node 26.6.2 declaration patch does not supersede the executable Node 22 boundary;
+  it remains deferred until the app image and required workflows move majors together.
 - The frozen Supabase provider graph remains outside this toolchain refresh.
 
 TDD posture: this is development-tooling and CI support work without product behavior
