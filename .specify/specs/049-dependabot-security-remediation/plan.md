@@ -35,6 +35,7 @@ the complete repository verification chain before merge.
 | 16  | PR #133 advances the coordinated AWS SDK graph without breaking storage or database contracts             | [V16 — coordinated AWS SDK refresh](#v16--coordinated-aws-sdk-refresh)                                                                                                                     |
 | 17  | PR #134 advances active npm dependencies while preserving frozen and platform-specific lockfile invariants | [V17 — current grouped npm refresh](#v17--current-grouped-npm-refresh)                                                                                                                     |
 | 18  | PR #138 advances the coordinated AWS SDK and pgx graph without breaking storage or database contracts      | [V18 — current grouped Go refresh](#v18--current-grouped-go-refresh)                                                                                                                       |
+| 19  | PR #140 advances active npm dependencies while preserving the frozen Supabase provider graph               | [V19 — follow-on grouped npm refresh](#v19--follow-on-grouped-npm-refresh)                                                                                                                 |
 
 ### V1 — Ecosystem coverage
 
@@ -73,10 +74,10 @@ review thread remains unresolved.
 
 ```sh
 head_sha="$(git rev-parse HEAD)"
-test "$(gh pr view 138 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
-gh pr checks 138 --repo kiaquila/capsule-zero --required
-test "$(gh pr view 138 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
-test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:138) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
+test "$(gh pr view 140 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
+gh pr checks 140 --repo kiaquila/capsule-zero --required
+test "$(gh pr view 140 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
+test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:140) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
 ```
 
 ### V8 — Grouped npm refresh
@@ -370,3 +371,37 @@ no diff, `go mod verify` reported `all modules verified`, vet and every API pack
 test passed, and race-enabled storage/database tests passed. The five resolved direct
 versions match the targets above; the required GitHub `test` job remains the head-bound
 full-suite evidence.
+
+### V19 — Follow-on grouped npm refresh
+
+```sh
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix tests/e2e
+node - <<'NODE'
+const base = JSON.parse(require("node:child_process").execFileSync(
+  "git", ["show", "origin/main:app/package-lock.json"], {encoding: "utf8"},
+));
+const head = require("./app/package-lock.json");
+const keys = Object.keys(base.packages).filter((key) => key.startsWith("node_modules/@supabase/"));
+if (head.packages[""].dependencies["@supabase/supabase-js"] !== base.packages[""].dependencies["@supabase/supabase-js"] ||
+    keys.some((key) => JSON.stringify(head.packages[key]) !== JSON.stringify(base.packages[key]))) process.exit(1);
+NODE
+npm run check:repo
+npm run lint --prefix app
+npm run lint:css --prefix app
+npm run typecheck --prefix app
+npm run build --prefix app
+npm run lint --prefix tests/e2e
+npm run typecheck --prefix tests/e2e
+```
+
+PR #140 keeps the root Prettier patch, advances active `next-intl` and Zod patches,
+and advances the e2e ESLint and Playwright lint-plugin lines. Dependabot's repeated
+`@supabase/supabase-js@2.116.0` proposal is removed from the manifest and all seven
+`@supabase/*` lockfile records, preserving the frozen provider at 2.108.2.
+
+Local evidence with npm 10.9.8: all three clean installs passed; the frozen Supabase
+comparison reported seven unchanged lockfile records; repository checks, app/e2e lint
+and typechecks, CSS lint, and the Next.js 16.3.5 production build passed. The required
+GitHub `test` job remains the head-bound browser-suite evidence.

@@ -83,6 +83,10 @@ the compatible minor/patch pull requests produced by that policy.
     credentials, S3, pgx v5, and their tidy indirect graph together; preserves the
     existing S3 custom-endpoint/presign and pgxpool APIs; and passes module integrity,
     vet, all package tests, and targeted storage/database race tests.
+16. The follow-on root, app, and e2e npm refresh in PR #140 advances only the reviewed
+    active dependency set, keeps the frozen `@supabase/*` provider graph identical to
+    `origin/main`, and passes clean installs, static checks, the production build, and
+    required GitHub tests.
 
 ## Negative Scenarios
 
@@ -124,6 +128,10 @@ the compatible minor/patch pull requests produced by that policy.
 - PR #138 must not merge on compilation alone: `go mod tidy` must leave both module
   files unchanged, checksum verification must pass, and the storage/database packages
   must pass their ordinary and race-enabled tests on the resolved AWS/pgx graph.
+- PR #140 must not ship Dependabot's repeated `@supabase/supabase-js@2.116.0` refresh.
+  The manifest entry and all seven `@supabase/*` lockfile records stay identical to
+  `origin/main` while the five active dependency updates remain covered by clean
+  installs and the full required test gate.
 
 TDD posture: these changes update repository automation and dependency metadata without
 changing application behavior. The infrastructure/support-change waiver applies; the
