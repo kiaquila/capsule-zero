@@ -70,6 +70,12 @@
       targeted storage/database race tests on PR #138.
 - [ ] Trigger and clear PR #138's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
+- [x] Refresh PR #140 on the latest `origin/main`, review its root/app/e2e dependency
+      deltas, and restore the frozen `@supabase/*` graph from `origin/main`.
+- [x] Pass clean npm 10.9.8 installs, repository checks, app/e2e static checks, and the
+      Next.js production build on the corrected PR #140 graph.
+- [x] Trigger and clear PR #140's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
 
 ## Process Memory
 
@@ -114,6 +120,9 @@
   `libc` selectors from optional native-package records. Restoring only the seven
   `@supabase/*` records from `origin/main` into Dependabot's original lockfile preserves
   both invariants and remains reproducible under npm 10.9.8.
+- PR #140 repeats the same frozen-provider bump already removed from PR #134. Restoring
+  only the manifest entry is insufficient because the generated lockfile contains the
+  2.116.0 subgraph; all seven `@supabase/*` records must be restored together.
 - Treating pgx 5.11 as compilation-only evidence would miss its new `Rows.TypeMap`
   interface method and date/time behavior hardening. The API defines no custom
   `pgx.Rows`, and the full database package plus targeted race tests exercise the
@@ -199,6 +208,8 @@
   their generated indirect modules move together with pgx 5.11.0. The repository's
   Go 1.26.6 contract exceeds pgx's Go 1.25 floor, and local docs plus tests confirm the
   used S3 custom-endpoint/presign and pgxpool constructor APIs remain supported.
+- PR #140 accepts the five active root/app/e2e updates but keeps the frozen Supabase
+  provider and its complete lockfile subgraph at the `origin/main` versions.
 
 ### Known Issues
 
