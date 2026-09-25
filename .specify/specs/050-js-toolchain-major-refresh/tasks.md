@@ -107,6 +107,14 @@
       the restored PR #142 graph.
 - [x] Trigger and clear PR #142's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
+- [x] Refresh PR #143 on the latest `origin/main` and reject its reopened e2e Node 26
+      declaration update while all executable contracts remain on Node 22.
+- [x] Restore the e2e manifest and lockfile byte-for-byte to the verified Node 22 type
+      graph.
+- [x] Pass clean install, installed-version, lint, and typecheck checks on the restored
+      PR #143 graph.
+- [x] Trigger and clear PR #143's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
 
 ## Process Memory
 
@@ -167,6 +175,8 @@
 - PR #142 repeats the app Node 26 declaration update at 26.6.2 after the Node 22
   runtime boundary was already established. A declaration patch does not advance the
   production image or required CI runtime and cannot prove those APIs exist there.
+- PR #143 repeats the e2e Node 26 declaration update at 26.6.2 without advancing the
+  workspace engine, production image, or required CI runtime beyond Node 22.
 
 ### Decisions
 
@@ -221,6 +231,8 @@
   when the complete resolved Next lint graph accepts ESLint 10.
 - Keep app `@types/node` on 22.20.1 for PR #142. Resume Node 26 declarations only with
   the deliberate production-image and required-workflow runtime upgrade.
+- Keep e2e `@types/node` on 22.20.1 for PR #143. Resume only alongside the workspace
+  engine, required workflow, and production runtime transition to Node 26.
 
 ### Known Issues
 
