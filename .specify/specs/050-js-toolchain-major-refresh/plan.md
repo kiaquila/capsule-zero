@@ -33,6 +33,7 @@ guarded merge.
 | 19  | PR #137 preserves the e2e Node 22 declaration boundary | Node 22 engine/runtime evidence; clean e2e install, installed-version assertion, lint, typecheck, and required GitHub tests |
 | 20  | PR #141 preserves the supported app ESLint graph | expected ESLint 10 `ERESOLVE`; current plugin peer metadata; restored npm 10 clean install, installed-version assertion, lint, typecheck, build, and required GitHub tests |
 | 21  | PR #142 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; app manifest/lock diff against `origin/main`; clean install, installed-version assertion, typecheck, build, and required GitHub tests |
+| 22  | PR #143 preserves the e2e Node 22 declaration boundary | Node 22 engine/runtime evidence; e2e manifest/lock diff against `origin/main`; clean install, installed-version assertion, lint, typecheck, and required GitHub tests |
 
 ## Compatibility Notes
 
@@ -221,6 +222,26 @@ app image and required Node workflows remain on major 22, the app manifest and l
 stay byte-identical to `origin/main` at `@types/node` 22.20.1. Resume the declaration
 major only in the same change that deliberately upgrades those executable contracts.
 The required GitHub `test` job remains the head-bound full-suite evidence.
+
+### V22 — Current e2e Node 26.6 declaration deferral
+
+```sh
+rg -n '"node": ">=22.22.1"|node-version: "22"|ARG NODE_VERSION=22-bookworm-slim' tests/e2e/package.json .github/workflows api/Dockerfile app/Dockerfile
+git diff --exit-code origin/main -- tests/e2e/package.json tests/e2e/package-lock.json
+npx --yes npm@10.9.8 --prefix tests/e2e ci --ignore-scripts --no-audit --no-fund
+node -p "require('./tests/e2e/node_modules/@types/node/package.json').version"
+npm --prefix tests/e2e run lint
+npm --prefix tests/e2e run typecheck
+```
+
+PR #143 repeats the isolated e2e declaration update at 26.6.2. Because the workspace
+engine, required Node workflows, and production web image remain on major 22, the e2e
+manifest and lockfile stay byte-identical to `origin/main` at `@types/node` 22.20.1.
+Resume the declaration major only in the same change that deliberately moves those
+executable contracts. Local npm 10.9.8 evidence clean-installed the restored graph,
+reported `@types/node` 22.20.1, and passed e2e lint with the unchanged three-warning
+baseline plus typecheck. The required GitHub `test` job remains the head-bound
+full-suite evidence.
 
 ### V18 — Current app ESLint 10 deferral
 
