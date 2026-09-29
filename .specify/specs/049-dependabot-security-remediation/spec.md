@@ -87,6 +87,10 @@ the compatible minor/patch pull requests produced by that policy.
     active dependency set, keeps the frozen `@supabase/*` provider graph identical to
     `origin/main`, and passes clean installs, static checks, the production build, and
     required GitHub tests.
+17. The follow-on grouped Go refresh in PR #144 advances the AWS config, credentials,
+    Smithy, and generated STS patch lines together; preserves the existing S3
+    custom-endpoint and presign APIs; and passes module integrity, vet, all package
+    tests, and targeted storage/database race tests.
 
 ## Negative Scenarios
 
@@ -132,6 +136,10 @@ the compatible minor/patch pull requests produced by that policy.
   The manifest entry and all seven `@supabase/*` lockfile records stay identical to
   `origin/main` while the five active dependency updates remain covered by clean
   installs and the full required test gate.
+- PR #144 must not merge a partially regenerated AWS module graph or rely on
+  compilation alone. `go mod tidy` must leave both module files unchanged, checksum
+  verification must pass, and the exercised S3 custom-endpoint/presign boundary must
+  remain available on the resolved patch versions.
 
 TDD posture: these changes update repository automation and dependency metadata without
 changing application behavior. The infrastructure/support-change waiver applies; the

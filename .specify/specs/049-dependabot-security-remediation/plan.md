@@ -36,6 +36,7 @@ the complete repository verification chain before merge.
 | 17  | PR #134 advances active npm dependencies while preserving frozen and platform-specific lockfile invariants | [V17 — current grouped npm refresh](#v17--current-grouped-npm-refresh)                                                                                                                     |
 | 18  | PR #138 advances the coordinated AWS SDK and pgx graph without breaking storage or database contracts      | [V18 — current grouped Go refresh](#v18--current-grouped-go-refresh)                                                                                                                       |
 | 19  | PR #140 advances active npm dependencies while preserving the frozen Supabase provider graph               | [V19 — follow-on grouped npm refresh](#v19--follow-on-grouped-npm-refresh)                                                                                                                 |
+| 20  | PR #144 advances the coordinated AWS config, credentials, Smithy, and STS patch graph                       | [V20 — follow-on grouped Go patch refresh](#v20--follow-on-grouped-go-patch-refresh)                                                                                                       |
 
 ### V1 — Ecosystem coverage
 
@@ -74,10 +75,10 @@ review thread remains unresolved.
 
 ```sh
 head_sha="$(git rev-parse HEAD)"
-test "$(gh pr view 140 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
-gh pr checks 140 --repo kiaquila/capsule-zero --required
-test "$(gh pr view 140 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
-test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:140) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
+test "$(gh pr view 144 --repo kiaquila/capsule-zero --json headRefOid --jq .headRefOid)" = "$head_sha"
+gh pr checks 144 --repo kiaquila/capsule-zero --required
+test "$(gh pr view 144 --repo kiaquila/capsule-zero --json mergeable,mergeStateStatus --jq '.mergeable + "/" + .mergeStateStatus')" = "MERGEABLE/CLEAN"
+test "$(gh api graphql -f query='query { repository(owner:"kiaquila",name:"capsule-zero") { pullRequest(number:144) { reviewThreads(first:100) { nodes { isResolved } } } } }' --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)] | length')" = "0"
 ```
 
 ### V8 — Grouped npm refresh
@@ -405,3 +406,29 @@ Local evidence with npm 10.9.8: all three clean installs passed; the frozen Supa
 comparison reported seven unchanged lockfile records; repository checks, app/e2e lint
 and typechecks, CSS lint, and the Next.js 16.3.5 production build passed. The required
 GitHub `test` job remains the head-bound browser-suite evidence.
+
+### V20 — Follow-on grouped Go patch refresh
+
+```sh
+cd api
+go version
+go mod tidy && git diff --exit-code -- go.mod go.sum
+go mod verify
+go vet ./...
+go test ./...
+go test -race ./internal/storage ./internal/db
+go list -m github.com/aws/aws-sdk-go-v2 github.com/aws/aws-sdk-go-v2/config github.com/aws/aws-sdk-go-v2/credentials github.com/aws/aws-sdk-go-v2/service/s3 github.com/aws/aws-sdk-go-v2/service/sts github.com/aws/smithy-go github.com/jackc/pgx/v5
+```
+
+PR #144 advances config 1.33.4 -> 1.33.5, credentials 1.20.4 -> 1.20.5,
+Smithy 1.28.1 -> 1.28.2, and generated STS 1.50.0 -> 1.51.0. AWS SDK core,
+S3, and pgx remain pinned at the versions already verified in PR #138. Current AWS
+SDK for Go v2 documentation still demonstrates `LoadDefaultConfig`, S3
+`Options.BaseEndpoint`, and `NewPresignClient`, matching the repository's storage
+adapter boundary.
+
+Local evidence on the rebased PR #144 worktree with Go 1.26.6: `go mod tidy` produced
+no diff, `go mod verify` reported `all modules verified`, vet and every API package
+test passed, and race-enabled storage/database tests passed. The eight resolved module
+versions match the targets above; the required GitHub `test` job remains the head-bound
+full-suite evidence.
