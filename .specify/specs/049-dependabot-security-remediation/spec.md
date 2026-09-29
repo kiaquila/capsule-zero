@@ -90,7 +90,9 @@ the compatible minor/patch pull requests produced by that policy.
 17. The follow-on grouped Go refresh in PR #144 advances the AWS config, credentials,
     Smithy, and generated STS patch lines together; preserves the existing S3
     custom-endpoint and presign APIs; and passes module integrity, vet, all package
-    tests, and targeted storage/database race tests.
+    tests, and targeted storage/database race tests. The same head updates the existing
+    app `fast-uri` override to 3.1.7, the first release that clears both newly reported
+    high-severity advisories, without adding a scanner suppression.
 
 ## Negative Scenarios
 
@@ -140,6 +142,8 @@ the compatible minor/patch pull requests produced by that policy.
   compilation alone. `go mod tidy` must leave both module files unchanged, checksum
   verification must pass, and the exercised S3 custom-endpoint/presign boundary must
   remain available on the resolved patch versions.
+- PR #144 must not suppress the two new `fast-uri@3.1.6` findings or regenerate the
+  frozen Supabase lockfile subgraph while applying the existing override at 3.1.7.
 
 TDD posture: these changes update repository automation and dependency metadata without
 changing application behavior. The infrastructure/support-change waiver applies; the

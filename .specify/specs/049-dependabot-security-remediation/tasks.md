@@ -80,6 +80,8 @@
       credentials, Smithy, and generated STS patch deltas.
 - [x] Pass module tidiness, checksum verification, vet, all API package tests, and
       targeted storage/database race tests on PR #144.
+- [x] Remediate the newly reported `fast-uri@3.1.6` advisories through the existing
+      app override and prove clean-install, lint, typecheck, and OSV compatibility.
 - [ ] Trigger and clear PR #144's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
 
@@ -139,7 +141,8 @@
 - The frozen `docker-compose.legacy-supabase.yml` is explicitly excluded from the
   Docker Compose update block; active root compose files remain covered.
 - Existing app overrides for `fast-uri`, `js-yaml`, and `postcss` move only to their
-  first safe compatible releases. `brace-expansion` and `nanoid` are updated within
+  first safe compatible releases; `fast-uri` advances again to 3.1.7 when 3.1.6 gains
+  two high-severity advisories. `brace-expansion` and `nanoid` are updated within
   their existing parent ranges in the lockfiles.
 - No OSV ignore or audit suppression is added. The security gate must pass on the real
   dependency graph.
@@ -220,6 +223,9 @@
   generated STS module advance together, while AWS SDK core, S3, and pgx remain on the
   already verified PR #138 versions. Current AWS documentation and local tests confirm
   the used default-config, custom-endpoint, and presign APIs remain supported.
+- The required OSV job on PR #144 newly reports two high-severity findings in
+  `fast-uri@3.1.6`. Reuse the existing app override at the first fixed release, 3.1.7;
+  do not add an ignore rule or regenerate unrelated lockfile records.
 
 ### Known Issues
 

@@ -215,13 +215,14 @@ Next.js production build all passed. The GitHub `baseline-checks`, `test`, and
 
 ```sh
 npm ci --ignore-scripts --prefix app
-node -e 'const p=require("./app/package-lock.json").packages; if (p["node_modules/browserslist"].version !== "4.28.7" || p["node_modules/fast-uri"].version !== "3.1.6") process.exit(1)'
+node -e 'const p=require("./app/package-lock.json").packages; if (p["node_modules/browserslist"].version !== "4.28.7" || p["node_modules/fast-uri"].version !== "3.1.7") process.exit(1)'
 ```
 
 PR #122 advances `google/osv-scanner-action` from 2.5.0 to 2.5.1. That scanner version
 reports six high-severity advisories in the prior `browserslist@4.28.2` and
 `fast-uri@3.1.5` records; `app/package.json` therefore extends the pre-existing override
-boundary to fixed `browserslist@4.28.7` and `fast-uri@3.1.6`. No ignore rule, scanner
+boundary to fixed `browserslist@4.28.7` and, after two additional advisories were
+published, `fast-uri@3.1.7`. No ignore rule, scanner
 downgrade, or frozen Supabase package update is used. Local npm 10.9.8 clean install,
 ESLint, and TypeScript checks passed; the required GitHub OSV job is the head-bound
 scanner evidence.
@@ -418,6 +419,12 @@ go vet ./...
 go test ./...
 go test -race ./internal/storage ./internal/db
 go list -m github.com/aws/aws-sdk-go-v2 github.com/aws/aws-sdk-go-v2/config github.com/aws/aws-sdk-go-v2/credentials github.com/aws/aws-sdk-go-v2/service/s3 github.com/aws/aws-sdk-go-v2/service/sts github.com/aws/smithy-go github.com/jackc/pgx/v5
+cd ..
+npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --no-audit --no-fund --prefix app
+node -e 'if (require("./app/node_modules/fast-uri/package.json").version !== "3.1.7") process.exit(1)'
+npm run lint --prefix app
+npm run typecheck --prefix app
+go run github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.6.0 --recursive .
 ```
 
 PR #144 advances config 1.33.4 -> 1.33.5, credentials 1.20.4 -> 1.20.5,
@@ -430,5 +437,9 @@ adapter boundary.
 Local evidence on the rebased PR #144 worktree with Go 1.26.6: `go mod tidy` produced
 no diff, `go mod verify` reported `all modules verified`, vet and every API package
 test passed, and race-enabled storage/database tests passed. The eight resolved module
-versions match the targets above; the required GitHub `test` job remains the head-bound
-full-suite evidence.
+versions match the targets above. The new OSV run then reported two high-severity
+findings in `fast-uri@3.1.6`; the existing app override and its single lockfile record
+advance to the first fixed release, 3.1.7, without touching the frozen Supabase graph.
+The clean app install resolves 3.1.7 and app lint plus typecheck pass; the required
+local OSV Scanner 2.6.0 run reports `No issues found`. The required GitHub `osv-scan`
+and `test` jobs remain the head-bound full-suite evidence.
