@@ -77,7 +77,7 @@
 - [x] Trigger and clear PR #140's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
 - [x] Refresh PR #144 on the latest `origin/main` and inventory its AWS config,
-      credentials, Smithy, and generated STS patch deltas.
+      credentials, Smithy, and generated STS minor/patch deltas.
 - [x] Pass module tidiness, checksum verification, vet, all API package tests, and
       targeted storage/database race tests on PR #144.
 - [x] Remediate the newly reported `fast-uri@3.1.6` advisories through the existing
@@ -219,7 +219,7 @@
   used S3 custom-endpoint/presign and pgxpool constructor APIs remain supported.
 - PR #140 accepts the five active root/app/e2e updates but keeps the frozen Supabase
   provider and its complete lockfile subgraph at the `origin/main` versions.
-- Accept PR #144 as a coordinated patch graph: config, credentials, Smithy, and the
+- Accept PR #144 as a coordinated minor/patch graph: config, credentials, Smithy, and the
   generated STS module advance together, while AWS SDK core, S3, and pgx remain on the
   already verified PR #138 versions. Current AWS documentation and local tests confirm
   the used default-config, custom-endpoint, and presign APIs remain supported.

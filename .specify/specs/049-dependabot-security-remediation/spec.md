@@ -88,7 +88,7 @@ the compatible minor/patch pull requests produced by that policy.
     `origin/main`, and passes clean installs, static checks, the production build, and
     required GitHub tests.
 17. The follow-on grouped Go refresh in PR #144 advances the AWS config, credentials,
-    Smithy, and generated STS patch lines together; preserves the existing S3
+    Smithy, and generated STS minor/patch lines together; preserves the existing S3
     custom-endpoint and presign APIs; and passes module integrity, vet, all package
     tests, and targeted storage/database race tests. The same head updates the existing
     app `fast-uri` override to 3.1.7, the first release that clears both newly reported

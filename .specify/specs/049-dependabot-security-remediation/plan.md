@@ -36,7 +36,7 @@ the complete repository verification chain before merge.
 | 17  | PR #134 advances active npm dependencies while preserving frozen and platform-specific lockfile invariants | [V17 — current grouped npm refresh](#v17--current-grouped-npm-refresh)                                                                                                                     |
 | 18  | PR #138 advances the coordinated AWS SDK and pgx graph without breaking storage or database contracts      | [V18 — current grouped Go refresh](#v18--current-grouped-go-refresh)                                                                                                                       |
 | 19  | PR #140 advances active npm dependencies while preserving the frozen Supabase provider graph               | [V19 — follow-on grouped npm refresh](#v19--follow-on-grouped-npm-refresh)                                                                                                                 |
-| 20  | PR #144 advances the coordinated AWS config, credentials, Smithy, and STS patch graph                       | [V20 — follow-on grouped Go patch refresh](#v20--follow-on-grouped-go-patch-refresh)                                                                                                       |
+| 20  | PR #144 advances the coordinated AWS config, credentials, Smithy, and STS minor/patch graph                 | [V20 — follow-on grouped Go minor/patch refresh](#v20--follow-on-grouped-go-minorpatch-refresh)                                                                                             |
 
 ### V1 — Ecosystem coverage
 
@@ -408,7 +408,7 @@ comparison reported seven unchanged lockfile records; repository checks, app/e2e
 and typechecks, CSS lint, and the Next.js 16.3.5 production build passed. The required
 GitHub `test` job remains the head-bound browser-suite evidence.
 
-### V20 — Follow-on grouped Go patch refresh
+### V20 — Follow-on grouped Go minor/patch refresh
 
 ```sh
 cd api
@@ -436,7 +436,7 @@ adapter boundary.
 
 Local evidence on the rebased PR #144 worktree with Go 1.26.6: `go mod tidy` produced
 no diff, `go mod verify` reported `all modules verified`, vet and every API package
-test passed, and race-enabled storage/database tests passed. The eight resolved module
+test passed, and race-enabled storage/database tests passed. The seven resolved module
 versions match the targets above. The new OSV run then reported two high-severity
 findings in `fast-uri@3.1.6`; the existing app override and its single lockfile record
 advance to the first fixed release, 3.1.7, without touching the frozen Supabase graph.
