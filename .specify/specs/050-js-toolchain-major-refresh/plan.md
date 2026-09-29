@@ -31,6 +31,9 @@ guarded merge.
 | 17  | PR #135 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; app npm 10 clean install, installed-version assertion, typecheck, build, and required GitHub tests |
 | 18  | PR #136 preserves the supported app ESLint graph | expected ESLint 10 `ERESOLVE`; restored npm 10 clean install, installed-version assertion, lint, typecheck, build, and required GitHub tests |
 | 19  | PR #137 preserves the e2e Node 22 declaration boundary | Node 22 engine/runtime evidence; clean e2e install, installed-version assertion, lint, typecheck, and required GitHub tests |
+| 20  | PR #141 preserves the supported app ESLint graph | expected ESLint 10 `ERESOLVE`; current plugin peer metadata; restored npm 10 clean install, installed-version assertion, lint, typecheck, build, and required GitHub tests |
+| 21  | PR #142 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; app manifest/lock diff against `origin/main`; clean install, installed-version assertion, typecheck, build, and required GitHub tests |
+| 22  | PR #143 preserves the e2e Node 22 declaration boundary | Node 22 engine/runtime evidence; e2e manifest/lock diff against `origin/main`; clean install, installed-version assertion, lint, typecheck, and required GitHub tests |
 
 ## Compatibility Notes
 
@@ -220,6 +223,26 @@ stay byte-identical to `origin/main` at `@types/node` 22.20.1. Resume the declar
 major only in the same change that deliberately upgrades those executable contracts.
 The required GitHub `test` job remains the head-bound full-suite evidence.
 
+### V22 — Current e2e Node 26.6 declaration deferral
+
+```sh
+rg -n '"node": ">=22.22.1"|node-version: "22"|ARG NODE_VERSION=22-bookworm-slim' tests/e2e/package.json .github/workflows api/Dockerfile app/Dockerfile
+git diff --exit-code origin/main -- tests/e2e/package.json tests/e2e/package-lock.json
+npx --yes npm@10.9.8 --prefix tests/e2e ci --ignore-scripts --no-audit --no-fund
+node -p "require('./tests/e2e/node_modules/@types/node/package.json').version"
+npm --prefix tests/e2e run lint
+npm --prefix tests/e2e run typecheck
+```
+
+PR #143 repeats the isolated e2e declaration update at 26.6.2. Because the workspace
+engine, required Node workflows, and production web image remain on major 22, the e2e
+manifest and lockfile stay byte-identical to `origin/main` at `@types/node` 22.20.1.
+Resume the declaration major only in the same change that deliberately moves those
+executable contracts. Local npm 10.9.8 evidence clean-installed the restored graph,
+reported `@types/node` 22.20.1, and passed e2e lint with the unchanged three-warning
+baseline plus typecheck. The required GitHub `test` job remains the head-bound
+full-suite evidence.
+
 ### V18 — Current app ESLint 10 deferral
 
 ```sh
@@ -256,3 +279,49 @@ e2e manifest and lockfile stay byte-identical to `origin/main` at `@types/node`
 22.20.1. Resume the declaration major only in the same change that deliberately moves
 those executable contracts; the required GitHub `test` job remains the head-bound
 full-suite evidence.
+
+### V20 — Reopened app ESLint 10.11 deferral
+
+```sh
+npm view eslint-plugin-jsx-a11y@latest version peerDependencies --json
+npm view eslint-plugin-import@latest version peerDependencies --json
+npm view eslint-plugin-react@latest version peerDependencies --json
+git diff --exit-code origin/main -- app/package.json app/package-lock.json
+npx --yes npm@10.9.8 --prefix app ci --ignore-scripts --no-audit --no-fund
+node -p "require('./app/node_modules/eslint/package.json').version"
+npm --prefix app run lint
+npm --prefix app run typecheck
+npm --prefix app run build
+```
+
+PR #141's generated ESLint 10.11.0 graph fails clean npm 10 resolution on
+`eslint-plugin-jsx-a11y@6.10.2`. Current registry metadata also leaves
+`eslint-plugin-import@2.32.0` and `eslint-plugin-react@7.37.5` capped at ESLint 9.
+Context7's ESLint 10 migration guidance confirms removed rule-context APIs require
+compatible plugins; peer-ignore flags would conceal the unsupported graph rather than
+fix it. The app manifest and lockfile therefore stay byte-identical to `origin/main`
+at ESLint 9.39.4. Resume only after the complete resolved Next lint graph declares
+ESLint 10 support.
+
+Local evidence with npm 10.9.8: the restored graph clean-installed, reported ESLint
+9.39.4, and passed app lint, TypeScript 7 typecheck, and the Next.js 16.3.5 production
+build. The required GitHub `test` job remains the head-bound full-suite evidence.
+
+### V21 — Current app Node 26.6 declaration deferral
+
+```sh
+rg -n 'node-version: "22"|ARG NODE_VERSION=22-bookworm-slim' .github/workflows api/Dockerfile app/Dockerfile
+git diff --exit-code origin/main -- app/package.json app/package-lock.json
+npx --yes npm@10.9.8 --prefix app ci --ignore-scripts --no-audit --no-fund
+node -p "require('./app/node_modules/@types/node/package.json').version"
+npm --prefix app run typecheck
+npm --prefix app run build
+```
+
+PR #142 repeats the isolated app declaration update at 26.6.2. Because the production
+app image and required Node workflows remain on major 22, the app manifest and lockfile
+stay byte-identical to `origin/main` at `@types/node` 22.20.1. Resume the declaration
+major only in the same change that deliberately upgrades those executable contracts.
+Local npm 10.9.8 evidence clean-installed the restored graph, reported
+`@types/node` 22.20.1, and passed app typecheck and the Next.js 16.3.5 production build.
+The required GitHub `test` job remains the head-bound full-suite evidence.
