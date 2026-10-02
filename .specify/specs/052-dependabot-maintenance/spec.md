@@ -41,3 +41,9 @@ quality, review, or documentation gates.
 Waiver: dependency manifests, generated lockfiles, and process memory are maintenance
 artifacts and introduce no application behavior, so the failing-test-first loop does
 not apply. Existing repository checks provide regression coverage.
+
+## Sequence Coverage
+
+- PR #145: grouped npm minor/patch maintenance plus fixed transitive security releases.
+- PR #146: app development types move from `@types/node` 22.20.1 to 26.6.3 with no
+  runtime dependency or application-behavior change.
