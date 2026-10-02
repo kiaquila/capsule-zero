@@ -22,8 +22,12 @@
   product tests or application behavior.
 - Vulnerable transitive packages are upgraded to fixed releases; OSV ignores are not
   added.
+- The grouped Dependabot update does not advance the frozen Supabase package graph;
+  those manifest and lockfile records stay identical to `origin/main`.
+- Linux Next/SWC native records retain their `libc` selectors so npm installs only the
+  binary compatible with the target image.
 
 ### Known Issues
 
-- Final GitHub checks and native Codex review remain pending until the maintenance
-  commit is pushed to the Dependabot branch.
+- A fresh native Codex review and required GitHub checks remain pending until the two
+  first-review fixes are pushed to the Dependabot branch.

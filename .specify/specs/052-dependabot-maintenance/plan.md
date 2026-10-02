@@ -15,6 +15,8 @@ green.
 | Manifest and lockfile consistency | `npm@10.9.2 ci --ignore-scripts` passed in the root, `/app`, and `/tests/e2e` workspaces. |
 | Dependency security | npm 10.9.2 audit passed with zero vulnerabilities in `/app` and `/tests/e2e`; pending required `osv-scan` on the final PR head. |
 | Repository regression checks | Repository baseline, API contract/client generation, app lint, CSS lint, app/e2e TypeScript, e2e lint, production build, feature-memory guard, and `git diff --check` passed locally; pending required GitHub checks. |
+| Frozen provider boundary | Codex P1 follow-up restored `@supabase/supabase-js` and its complete lockfile graph to the `origin/main` versions. |
+| Native package targeting | Codex P2 follow-up restored the `glibc`/`musl` selectors for every affected Next/SWC Linux package. |
 | Native AI review | Pending Codex review on the final PR head. |
 | Merge readiness | Pending GitHub mergeability and unresolved-thread audit. |
 
