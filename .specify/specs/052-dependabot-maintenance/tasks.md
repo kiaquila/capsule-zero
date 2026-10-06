@@ -11,7 +11,9 @@
 - [x] T007 Sync PR #146 with the sequentially merged #145 baseline.
 - [x] T008 Reject the isolated app `@types/node` 26 update, restore the Node 22
       declaration graph, and verify clean install, typecheck, and production build.
-- [ ] T009 Complete required GitHub checks and native Codex review for PR #146.
+- [x] T009 Replace vulnerable `sharp` and `source-map-js` releases and document the
+      exact, expiring no-fix `braces` exception.
+- [ ] T010 Complete required GitHub checks and native Codex review for PR #146.
 
 ## Process Memory
 
@@ -32,8 +34,15 @@
   binary compatible with the target image.
 - PR #146 keeps development declarations on Node 22 because a compiler-only pass with
   Node 26 types cannot prove those APIs exist in the deployed Node 22 runtime.
+- PR #146 updates `sharp` and `source-map-js` to the first patched releases reported by
+  their current GitHub advisories instead of suppressing those findings.
+- `braces` 3.0.3 is dev-only through stylelint/micromatch, receives only
+  repository-controlled glob input, and has no patched npm release as of 2026-10-06;
+  its exact exception expires on 2026-11-06.
 
 ### Known Issues
 
 - PR #146 required GitHub checks and native Codex review remain pending on the restored
   Node 22 declaration graph.
+- The dev-only `braces` exception must be removed or renewed with fresh upstream
+  evidence by 2026-11-06.
