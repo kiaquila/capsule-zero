@@ -35,9 +35,19 @@ quality, review, or documentation gates.
 - A dependency PR must not merge while a required check is failing or a blocking
   review thread is unresolved.
 - A security finding must not be hidden through an OSV ignore entry.
+- A no-fix advisory may use only an exact package/version exception with documented
+  reachability, a short review date, and fresh evidence that no patched release exists.
 
 ## TDD Posture
 
 Waiver: dependency manifests, generated lockfiles, and process memory are maintenance
 artifacts and introduce no application behavior, so the failing-test-first loop does
 not apply. Existing repository checks provide regression coverage.
+
+## Sequence Coverage
+
+- PR #145: grouped npm minor/patch maintenance plus fixed transitive security releases.
+- PR #146: app development types remain on `@types/node` 22.20.1 because production
+  and required CI still execute Node 22; Node 26 declarations remain deferred. Current
+  fixable app advisories move to patched releases, while the no-fix dev-only `braces`
+  advisory receives an exact, expiring exception.
