@@ -37,6 +37,8 @@ quality, review, or documentation gates.
 - A security finding must not be hidden through an OSV ignore entry.
 - A no-fix advisory may use only an exact package/version exception with documented
   reachability, a short review date, and fresh evidence that no patched release exists.
+- A grouped Go update must not retain a partial or inconsistent transitive AWS module
+  graph; `go mod tidy`, module verification, vet, tests, and security scan must agree.
 
 ## TDD Posture
 
@@ -55,3 +57,5 @@ not apply. Existing repository checks provide regression coverage.
   still rejects ESLint 10.11.0 during clean npm 10 resolution.
 - PR #148: e2e development types remain on `@types/node` 22.20.1 because its engine,
   required CI, and production web runtime still execute Node 22.
+- PR #149: the API accepts the coordinated AWS SDK/Smithy patch group after the direct
+  and transitive module graph passes tidy, verification, vet, package tests, and OSV.

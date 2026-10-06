@@ -19,7 +19,10 @@
 - [x] T012 Complete required GitHub checks and native Codex review for PR #147.
 - [x] T013 Reject PR #148's isolated e2e Node 26 declarations and restore the verified
       Node 22 manifest and lockfile graph.
-- [ ] T014 Complete required GitHub checks and native Codex review for PR #148.
+- [x] T014 Complete required GitHub checks and native Codex review for PR #148.
+- [x] T015 Sync PR #149 with the sequentially merged baseline and verify the coordinated
+      AWS SDK/Smithy patch module graph through tidy, verify, vet, tests, and OSV.
+- [ ] T016 Complete required GitHub checks and native Codex review for PR #149.
 
 ## Process Memory
 
@@ -50,10 +53,12 @@
   an acceptable compatibility strategy.
 - PR #148 keeps e2e declarations on Node 22 because its engine and every executable
   runtime contract remain on Node 22.
+- PR #149 keeps the Dependabot-generated AWS SDK/Smithy patch set together because Go
+  resolves matching direct and transitive modules as one verified graph.
 
 ### Known Issues
 
-- PR #148 required GitHub checks and native Codex review remain pending on the restored
-  e2e Node 22 declaration graph.
+- PR #149 required GitHub checks and native Codex review remain pending on the verified
+  AWS SDK/Smithy patch graph.
 - The dev-only `braces` exception must be removed or renewed with fresh upstream
   evidence by 2026-11-06.
