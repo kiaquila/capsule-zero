@@ -83,6 +83,15 @@ silently weakening lint/type checks, or changing product behavior.
 22. PR #143 preserves the e2e workspace's verified 22.20.1 declaration line when
     Dependabot reopens the isolated Node 26 update at 26.6.2 without advancing its
     Node 22 engine, required CI runtime, or production web runtime.
+23. PR #146 preserves the app's verified 22.20.1 declaration line when Dependabot
+    reopens the isolated Node 26 update at 26.6.3 while production and required CI
+    continue to execute Node 22.
+24. PR #147 preserves ESLint 9.39.4 when Dependabot reopens the app ESLint 10.11.0
+    update while the current Next lint plugin graph still excludes ESLint 10 and
+    clean npm 10 resolution fails.
+25. PR #148 preserves the e2e workspace's verified 22.20.1 declaration line when
+    Dependabot reopens the isolated Node 26 update at 26.6.3 without advancing its
+    Node 22 engine, required CI runtime, or production web runtime.
 
 ## Negative Scenarios
 
@@ -117,10 +126,16 @@ silently weakening lint/type checks, or changing product behavior.
 - A newer ESLint 10.11.0 patch is not forced into the app while the latest
   `eslint-plugin-jsx-a11y`, `eslint-plugin-import`, and `eslint-plugin-react` releases
   still declare peer support only through ESLint 9.
+- A repeated ESLint 10.11.0 proposal is not accepted with `--force` or
+  `--legacy-peer-deps` while the same declared plugin incompatibility remains.
 - A Node 26.6.2 declaration patch does not supersede the executable Node 22 boundary;
   it remains deferred until the app image and required workflows move majors together.
+- A Node 26.6.3 declaration patch is not accepted on compiler success alone while the
+  deployed app image and required workflows remain on Node 22.
 - The same Node 26.6.2 patch is not accepted in e2e while its engine and every runtime
   that executes the suite remain on Node 22.
+- The same Node 26.6.3 patch is not accepted in e2e on compiler success alone while
+  its workspace engine and every executable runtime contract remain on Node 22.
 - The frozen Supabase provider graph remains outside this toolchain refresh.
 
 TDD posture: this is development-tooling and CI support work without product behavior
