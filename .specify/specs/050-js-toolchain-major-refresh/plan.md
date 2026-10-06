@@ -34,7 +34,7 @@ guarded merge.
 | 20  | PR #141 preserves the supported app ESLint graph | expected ESLint 10 `ERESOLVE`; current plugin peer metadata; restored npm 10 clean install, installed-version assertion, lint, typecheck, build, and required GitHub tests |
 | 21  | PR #142 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; app manifest/lock diff against `origin/main`; clean install, installed-version assertion, typecheck, build, and required GitHub tests |
 | 22  | PR #143 preserves the e2e Node 22 declaration boundary | Node 22 engine/runtime evidence; e2e manifest/lock diff against `origin/main`; clean install, installed-version assertion, lint, typecheck, and required GitHub tests |
-| 23  | PR #146 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; app manifest/lock diff against `origin/main`; clean install, installed-version assertion, typecheck, build, and required GitHub tests |
+| 23  | PR #146 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; targeted manifest/lock assertions; clean install, installed-version assertion, typecheck, build, and required GitHub tests |
 
 ## Compatibility Notes
 
@@ -211,7 +211,7 @@ the full CI-mode preflight completed with 104 browser scenarios passed and 8 ski
 
 ```sh
 rg -n 'node-version: "22"|ARG NODE_VERSION=22-bookworm-slim' .github/workflows api/Dockerfile app/Dockerfile
-git diff --exit-code origin/main -- app/package.json app/package-lock.json
+node -e "const m=require('./app/package.json'),l=require('./app/package-lock.json'); if(m.devDependencies['@types/node']!=='^22.20.1'||l.packages[''].devDependencies['@types/node']!=='^22.20.1'||l.packages['node_modules/@types/node'].version!=='22.20.1') process.exit(1)"
 npx --yes --package=npm@10.9.8 npm ci --ignore-scripts --prefix app
 node -p "require('./app/node_modules/@types/node/package.json').version"
 npx --yes --package=npm@10.9.8 npm run typecheck --prefix app
@@ -219,8 +219,8 @@ npx --yes --package=npm@10.9.8 npm run build --prefix app
 ```
 
 PR #135 repeats the isolated declaration-only update at 26.5.1. Because the production
-app image and required Node workflows remain on major 22, the app manifest and lockfile
-stay byte-identical to `origin/main` at `@types/node` 22.20.1. Resume the declaration
+app image and required Node workflows remain on major 22, the manifest declaration and
+both lockfile declaration entries stay at `@types/node` 22.20.1. Resume the declaration
 major only in the same change that deliberately upgrades those executable contracts.
 The required GitHub `test` job remains the head-bound full-suite evidence.
 

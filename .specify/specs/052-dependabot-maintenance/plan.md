@@ -19,7 +19,7 @@ green.
 | Native package targeting | Codex P2 follow-up restored the `glibc`/`musl` selectors for every affected Next/SWC Linux package. |
 | Native AI review | Pending Codex review on the final PR head. |
 | Merge readiness | Pending GitHub mergeability and unresolved-thread audit. |
-| PR #146 Node type compatibility | Node 22 runtime/workflow evidence; app manifest/lock diff against `origin/main`; clean npm 10.9.8 install, installed-version assertion, typecheck, and production build. |
+| PR #146 Node type compatibility | Node 22 runtime/workflow evidence; targeted `@types/node` manifest/lock assertions; clean npm 10.9.8 install, installed-version assertion, typecheck, and production build. |
 | PR #146 advisory refresh | GitHub advisories GHSA-wq5f-xc86-pv6w and GHSA-68fv-2mgg-jv7q identify fixed releases; GHSA-vfj7-8cjw-p6xm has no patched npm release and is reachable only through dev-only stylelint/micromatch on repository-controlled globs. |
 
 ## Reuse Check
