@@ -353,7 +353,11 @@ The required GitHub `test` job remains the head-bound full-suite evidence.
 npm view eslint-plugin-jsx-a11y@latest version peerDependencies --json
 npm view eslint-plugin-import@latest version peerDependencies --json
 npm view eslint-plugin-react@latest version peerDependencies --json
-npx --yes npm@10.9.8 --prefix app ci --ignore-scripts --no-audit --no-fund # expected ERESOLVE on generated graph
+PR147_ESLINT10_TREE="$(mktemp -d /tmp/capsule-zero-pr147-eslint10.XXXXXX)"
+rmdir "$PR147_ESLINT10_TREE"
+git worktree add --detach "$PR147_ESLINT10_TREE" a0c07836358a74eec23a7ad8f27b0010bccaa612
+npx --yes npm@10.9.8 --prefix "$PR147_ESLINT10_TREE/app" ci --ignore-scripts --no-audit --no-fund # expected ERESOLVE
+git worktree remove "$PR147_ESLINT10_TREE"
 git diff --exit-code origin/main -- app/package.json app/package-lock.json
 npx --yes npm@10.9.8 --prefix app ci --ignore-scripts --no-audit --no-fund
 node -p "require('./app/node_modules/eslint/package.json').version"
