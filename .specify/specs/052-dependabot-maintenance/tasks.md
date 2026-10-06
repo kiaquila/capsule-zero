@@ -16,7 +16,10 @@
 - [x] T010 Complete required GitHub checks and native Codex review for PR #146.
 - [x] T011 Reproduce PR #147's ESLint 10 peer conflict and restore the supported
       ESLint 9.39.4 manifest and lockfile graph.
-- [ ] T012 Complete required GitHub checks and native Codex review for PR #147.
+- [x] T012 Complete required GitHub checks and native Codex review for PR #147.
+- [x] T013 Reject PR #148's isolated e2e Node 26 declarations and restore the verified
+      Node 22 manifest and lockfile graph.
+- [ ] T014 Complete required GitHub checks and native Codex review for PR #148.
 
 ## Process Memory
 
@@ -45,10 +48,12 @@
 - PR #147 keeps ESLint 9.39.4 because the latest JSX accessibility, import, and React
   plugins still declare peer support only through ESLint 9; peer-ignore flags are not
   an acceptable compatibility strategy.
+- PR #148 keeps e2e declarations on Node 22 because its engine and every executable
+  runtime contract remain on Node 22.
 
 ### Known Issues
 
-- PR #147 required GitHub checks and native Codex review remain pending on the restored
-  ESLint 9.39.4 graph.
+- PR #148 required GitHub checks and native Codex review remain pending on the restored
+  e2e Node 22 declaration graph.
 - The dev-only `braces` exception must be removed or renewed with fresh upstream
   evidence by 2026-11-06.

@@ -22,6 +22,7 @@ green.
 | PR #146 Node type compatibility | Node 22 runtime/workflow evidence; targeted `@types/node` manifest/lock assertions; clean npm 10.9.8 install, installed-version assertion, typecheck, and production build. |
 | PR #146 advisory refresh | GitHub advisories GHSA-wq5f-xc86-pv6w and GHSA-68fv-2mgg-jv7q identify fixed releases; GHSA-vfj7-8cjw-p6xm has no patched npm release and is reachable only through dev-only stylelint/micromatch on repository-controlled globs. |
 | PR #147 ESLint compatibility | Expected ESLint 10.11.0 `ERESOLVE`; current plugin peer metadata and Context7 migration guidance; app manifest/lock equality with `origin/main`; clean npm 10.9.8 install, installed-version assertion, lint, typecheck, and build. |
+| PR #148 Node type compatibility | Node 22 engine/runtime evidence; e2e manifest/lock equality with `origin/main`; clean npm 10.9.8 install, installed-version assertion, lint, and typecheck. |
 
 ## Reuse Check
 
