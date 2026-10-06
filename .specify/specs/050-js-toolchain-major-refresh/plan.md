@@ -35,6 +35,7 @@ guarded merge.
 | 21  | PR #142 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; app manifest/lock diff against `origin/main`; clean install, installed-version assertion, typecheck, build, and required GitHub tests |
 | 22  | PR #143 preserves the e2e Node 22 declaration boundary | Node 22 engine/runtime evidence; e2e manifest/lock diff against `origin/main`; clean install, installed-version assertion, lint, typecheck, and required GitHub tests |
 | 23  | PR #146 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; targeted manifest/lock assertions; clean install, installed-version assertion, typecheck, build, and required GitHub tests |
+| 24  | PR #147 preserves the supported app ESLint graph | expected ESLint 10 `ERESOLVE`; current plugin peer metadata and Context7 migration guidance; restored manifest/lock equality, clean install, lint, typecheck, build, and required GitHub tests |
 
 ## Compatibility Notes
 
@@ -331,7 +332,7 @@ The required GitHub `test` job remains the head-bound full-suite evidence.
 
 ```sh
 rg -n 'node-version: "22"|ARG NODE_VERSION=22-bookworm-slim' .github/workflows api/Dockerfile app/Dockerfile
-git diff --exit-code origin/main -- app/package.json app/package-lock.json
+node -e "const m=require('./app/package.json'),l=require('./app/package-lock.json'); if(m.devDependencies['@types/node']!=='^22.20.1'||l.packages[''].devDependencies['@types/node']!=='^22.20.1'||l.packages['node_modules/@types/node'].version!=='22.20.1') process.exit(1)"
 npx --yes npm@10.9.8 --prefix app ci --ignore-scripts --no-audit --no-fund
 node -p "require('./app/node_modules/@types/node/package.json').version"
 npm --prefix app run typecheck
@@ -339,9 +340,36 @@ npm --prefix app run build
 ```
 
 PR #146 repeats the isolated app declaration update at 26.6.3. Because the production
-app image and required Node workflows remain on major 22, the app manifest and lockfile
-stay byte-identical to `origin/main` at `@types/node` 22.20.1. Resume the declaration
+app image and required Node workflows remain on major 22, the manifest declaration and
+both lockfile declaration entries stay at `@types/node` 22.20.1. Resume the declaration
 major only in the same change that deliberately upgrades those executable contracts.
 Local npm 10.9.8 evidence clean-installed the restored graph, reported
 `@types/node` 22.20.1, and passed app typecheck and the Next.js 16.3.6 production build.
 The required GitHub `test` job remains the head-bound full-suite evidence.
+
+### V24 — Reopened app ESLint 10.11 deferral
+
+```sh
+npm view eslint-plugin-jsx-a11y@latest version peerDependencies --json
+npm view eslint-plugin-import@latest version peerDependencies --json
+npm view eslint-plugin-react@latest version peerDependencies --json
+PR147_ESLINT10_FIXTURE="$(mktemp -d /tmp/capsule-zero-pr147-eslint10.XXXXXX)"
+cp app/package.json app/package-lock.json "$PR147_ESLINT10_FIXTURE/"
+npm pkg set --prefix "$PR147_ESLINT10_FIXTURE" 'devDependencies.eslint=10.11.0'
+npx --yes npm@10.9.8 --prefix "$PR147_ESLINT10_FIXTURE" install --package-lock-only --legacy-peer-deps --ignore-scripts --no-audit --no-fund # construct the proposed graph only
+npx --yes npm@10.9.8 --prefix "$PR147_ESLINT10_FIXTURE" ci --ignore-scripts --no-audit --no-fund # expected ERESOLVE without peer bypass
+git diff --exit-code origin/main -- app/package.json app/package-lock.json
+npx --yes npm@10.9.8 --prefix app ci --ignore-scripts --no-audit --no-fund
+node -p "require('./app/node_modules/eslint/package.json').version"
+npm --prefix app run lint
+npm --prefix app run typecheck
+npm --prefix app run build
+```
+
+PR #147 repeats the isolated ESLint 10.11.0 update. Clean npm 10 resolution still
+fails on `eslint-plugin-jsx-a11y@6.10.2`; current registry metadata also leaves
+`eslint-plugin-import@2.32.0` and `eslint-plugin-react@7.37.5` capped at ESLint 9.
+Context7's ESLint 10 migration guide confirms removed rule-context APIs require plugin
+migration. The app manifest and lockfile therefore remain byte-identical to
+`origin/main` at ESLint 9.39.4, with no peer-ignore flags. The required GitHub `test`
+job remains the head-bound full-suite evidence.

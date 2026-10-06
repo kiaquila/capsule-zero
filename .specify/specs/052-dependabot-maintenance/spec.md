@@ -51,3 +51,5 @@ not apply. Existing repository checks provide regression coverage.
   and required CI still execute Node 22; Node 26 declarations remain deferred. Current
   fixable app advisories move to patched releases, while the no-fix dev-only `braces`
   advisory receives an exact, expiring exception.
+- PR #147: app ESLint remains on 9.39.4 because the resolved Next lint plugin graph
+  still rejects ESLint 10.11.0 during clean npm 10 resolution.

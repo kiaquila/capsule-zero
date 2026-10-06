@@ -13,7 +13,10 @@
       declaration graph, and verify clean install, typecheck, and production build.
 - [x] T009 Replace vulnerable `sharp` and `source-map-js` releases and document the
       exact, expiring no-fix `braces` exception.
-- [ ] T010 Complete required GitHub checks and native Codex review for PR #146.
+- [x] T010 Complete required GitHub checks and native Codex review for PR #146.
+- [x] T011 Reproduce PR #147's ESLint 10 peer conflict and restore the supported
+      ESLint 9.39.4 manifest and lockfile graph.
+- [ ] T012 Complete required GitHub checks and native Codex review for PR #147.
 
 ## Process Memory
 
@@ -39,10 +42,13 @@
 - `braces` 3.0.3 is dev-only through stylelint/micromatch, receives only
   repository-controlled glob input, and has no patched npm release as of 2026-10-06;
   its exact exception expires on 2026-11-06.
+- PR #147 keeps ESLint 9.39.4 because the latest JSX accessibility, import, and React
+  plugins still declare peer support only through ESLint 9; peer-ignore flags are not
+  an acceptable compatibility strategy.
 
 ### Known Issues
 
-- PR #146 required GitHub checks and native Codex review remain pending on the restored
-  Node 22 declaration graph.
+- PR #147 required GitHub checks and native Codex review remain pending on the restored
+  ESLint 9.39.4 graph.
 - The dev-only `braces` exception must be removed or renewed with fresh upstream
   evidence by 2026-11-06.
