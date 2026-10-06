@@ -36,6 +36,7 @@ guarded merge.
 | 22  | PR #143 preserves the e2e Node 22 declaration boundary | Node 22 engine/runtime evidence; e2e manifest/lock diff against `origin/main`; clean install, installed-version assertion, lint, typecheck, and required GitHub tests |
 | 23  | PR #146 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; targeted manifest/lock assertions; clean install, installed-version assertion, typecheck, build, and required GitHub tests |
 | 24  | PR #147 preserves the supported app ESLint graph | expected ESLint 10 `ERESOLVE`; current plugin peer metadata and Context7 migration guidance; restored manifest/lock equality, clean install, lint, typecheck, build, and required GitHub tests |
+| 25  | PR #148 preserves the e2e Node 22 declaration boundary | Node 22 engine/runtime evidence; restored e2e manifest/lock equality; clean install, installed-version assertion, lint, typecheck, and required GitHub tests |
 
 ## Compatibility Notes
 
@@ -373,3 +374,20 @@ Context7's ESLint 10 migration guide confirms removed rule-context APIs require 
 migration. The app manifest and lockfile therefore remain byte-identical to
 `origin/main` at ESLint 9.39.4, with no peer-ignore flags. The required GitHub `test`
 job remains the head-bound full-suite evidence.
+
+### V25 — Reopened e2e Node 26.6.3 declaration deferral
+
+```sh
+rg -n 'node-version: "22"|ARG NODE_VERSION=22-bookworm-slim|"node": ">=22' .github/workflows api/Dockerfile app/Dockerfile tests/e2e/package.json package.json
+git diff --exit-code origin/main -- tests/e2e/package.json tests/e2e/package-lock.json
+npx --yes npm@10.9.8 --prefix tests/e2e ci --ignore-scripts --no-audit --no-fund
+node -p "require('./tests/e2e/node_modules/@types/node/package.json').version"
+npm --prefix tests/e2e run lint
+npm --prefix tests/e2e run typecheck
+```
+
+PR #148 repeats the isolated e2e declaration update at 26.6.3. The workspace engine,
+required workflows, and production web image still execute Node 22, so the e2e manifest
+and lockfile remain byte-identical to `origin/main` at `@types/node` 22.20.1. Resume the
+declaration major only with the deliberate executable runtime transition. The required
+GitHub `test` job remains the head-bound full-suite evidence.

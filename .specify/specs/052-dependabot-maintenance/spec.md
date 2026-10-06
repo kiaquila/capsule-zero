@@ -53,3 +53,5 @@ not apply. Existing repository checks provide regression coverage.
   advisory receives an exact, expiring exception.
 - PR #147: app ESLint remains on 9.39.4 because the resolved Next lint plugin graph
   still rejects ESLint 10.11.0 during clean npm 10 resolution.
+- PR #148: e2e development types remain on `@types/node` 22.20.1 because its engine,
+  required CI, and production web runtime still execute Node 22.

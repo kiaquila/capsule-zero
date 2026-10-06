@@ -125,7 +125,13 @@
       conflict, and verify current registry and Context7 compatibility evidence.
 - [x] Restore the app manifest and lockfile byte-for-byte to the supported ESLint
       9.39.4 graph without peer-ignore flags.
-- [ ] Trigger and clear PR #147's head-bound native Codex review and required checks;
+- [x] Trigger and clear PR #147's head-bound native Codex review and required checks;
+      merge after the two-minute stability window.
+- [x] Refresh PR #148 on the latest `origin/main` and reject its reopened e2e Node 26
+      declaration update while the workspace and required CI remain on Node 22.
+- [x] Restore the e2e manifest and lockfile byte-for-byte to the verified Node 22 type
+      graph and pass clean install, installed-version, lint, and typecheck checks.
+- [ ] Trigger and clear PR #148's head-bound native Codex review and required checks;
       merge after the two-minute stability window.
 
 ## Process Memory
@@ -195,6 +201,8 @@
 - PR #147 repeats the app ESLint 10.11.0 update, but clean npm 10 resolution still
   fails on `eslint-plugin-jsx-a11y@6.10.2`; the latest import and React plugins also
   continue to cap their peer ranges at ESLint 9.
+- PR #148 repeats the e2e Node 26 declaration update at 26.6.3 without advancing the
+  workspace engine, production image, or required CI runtime beyond Node 22.
 
 ### Decisions
 
@@ -255,6 +263,8 @@
   the deliberate production-image and required-workflow runtime upgrade.
 - Keep app ESLint on 9.39.4 for PR #147 without peer-ignore flags. Resume only when the
   complete resolved Next lint graph declares ESLint 10 support.
+- Keep e2e `@types/node` on 22.20.1 for PR #148. Resume only alongside the workspace
+  engine, required workflow, and production runtime transition to Node 26.
 
 ### Known Issues
 
