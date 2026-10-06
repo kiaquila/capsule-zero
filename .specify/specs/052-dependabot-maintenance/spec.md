@@ -45,5 +45,5 @@ not apply. Existing repository checks provide regression coverage.
 ## Sequence Coverage
 
 - PR #145: grouped npm minor/patch maintenance plus fixed transitive security releases.
-- PR #146: app development types move from `@types/node` 22.20.1 to 26.6.3 with no
-  runtime dependency or application-behavior change.
+- PR #146: app development types remain on `@types/node` 22.20.1 because production
+  and required CI still execute Node 22; Node 26 declarations remain deferred.

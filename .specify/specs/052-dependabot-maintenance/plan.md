@@ -19,7 +19,7 @@ green.
 | Native package targeting | Codex P2 follow-up restored the `glibc`/`musl` selectors for every affected Next/SWC Linux package. |
 | Native AI review | Pending Codex review on the final PR head. |
 | Merge readiness | Pending GitHub mergeability and unresolved-thread audit. |
-| PR #146 Node type compatibility | Clean npm 10.9.2 app/e2e installs, zero-vulnerability app audit, repository/API checks, app/e2e lint and TypeScript, CSS lint, production build, and `git diff --check` passed locally; required GitHub checks remain pending on the final head. |
+| PR #146 Node type compatibility | Node 22 runtime/workflow evidence; app manifest/lock diff against `origin/main`; clean npm 10.9.8 install, installed-version assertion, typecheck, and production build. |
 
 ## Reuse Check
 

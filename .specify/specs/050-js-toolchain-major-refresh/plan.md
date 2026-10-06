@@ -34,6 +34,7 @@ guarded merge.
 | 20  | PR #141 preserves the supported app ESLint graph | expected ESLint 10 `ERESOLVE`; current plugin peer metadata; restored npm 10 clean install, installed-version assertion, lint, typecheck, build, and required GitHub tests |
 | 21  | PR #142 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; app manifest/lock diff against `origin/main`; clean install, installed-version assertion, typecheck, build, and required GitHub tests |
 | 22  | PR #143 preserves the e2e Node 22 declaration boundary | Node 22 engine/runtime evidence; e2e manifest/lock diff against `origin/main`; clean install, installed-version assertion, lint, typecheck, and required GitHub tests |
+| 23  | PR #146 preserves the app Node 22 declaration boundary | Node 22 runtime/workflow evidence; app manifest/lock diff against `origin/main`; clean install, installed-version assertion, typecheck, build, and required GitHub tests |
 
 ## Compatibility Notes
 
@@ -324,4 +325,23 @@ stay byte-identical to `origin/main` at `@types/node` 22.20.1. Resume the declar
 major only in the same change that deliberately upgrades those executable contracts.
 Local npm 10.9.8 evidence clean-installed the restored graph, reported
 `@types/node` 22.20.1, and passed app typecheck and the Next.js 16.3.5 production build.
+The required GitHub `test` job remains the head-bound full-suite evidence.
+
+### V23 — Reopened app Node 26.6.3 declaration deferral
+
+```sh
+rg -n 'node-version: "22"|ARG NODE_VERSION=22-bookworm-slim' .github/workflows api/Dockerfile app/Dockerfile
+git diff --exit-code origin/main -- app/package.json app/package-lock.json
+npx --yes npm@10.9.8 --prefix app ci --ignore-scripts --no-audit --no-fund
+node -p "require('./app/node_modules/@types/node/package.json').version"
+npm --prefix app run typecheck
+npm --prefix app run build
+```
+
+PR #146 repeats the isolated app declaration update at 26.6.3. Because the production
+app image and required Node workflows remain on major 22, the app manifest and lockfile
+stay byte-identical to `origin/main` at `@types/node` 22.20.1. Resume the declaration
+major only in the same change that deliberately upgrades those executable contracts.
+Local npm 10.9.8 evidence clean-installed the restored graph, reported
+`@types/node` 22.20.1, and passed app typecheck and the Next.js 16.3.6 production build.
 The required GitHub `test` job remains the head-bound full-suite evidence.
