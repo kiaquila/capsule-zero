@@ -5,3 +5,11 @@ ecosystem = "npm"
 vulnerability.ignore = true
 effectiveUntil = 2026-08-08
 reason = "Dev-only ESLint/minimatch@3 dependency; no compatible patched 1.x release exists. Remove when upstream leaves minimatch@3 or a patched 1.x is published."
+
+[[PackageOverrides]]
+name = "braces"
+version = "3.0.3"
+ecosystem = "npm"
+vulnerability.ignore = true
+effectiveUntil = 2026-11-06
+reason = "Dev-only stylelint/micromatch dependency used on repository-controlled glob patterns; GHSA-vfj7-8cjw-p6xm has no patched npm release. Remove when a patched braces release or compatible upstream graph is available."
