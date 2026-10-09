@@ -61,3 +61,7 @@ not apply. Existing repository checks provide regression coverage.
   and transitive module graph passes tidy, verification, vet, package tests, and OSV.
 - PR #150: supported npm minor/patch updates advance while the frozen Supabase graph
   stays unchanged, and the fixable `golang.org/x/text` advisory is remediated.
+- PR #151: the S3 client advances to 1.114.0 after module integrity, API tests, and
+  security verification on the sequentially merged baseline.
+- PR #152: app ESLint remains on 9.39.4 because `eslint-plugin-jsx-a11y` 6.10.2
+  rejects ESLint 10.12.0 during the repository-pinned clean npm install.
