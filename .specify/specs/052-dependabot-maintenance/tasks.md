@@ -22,7 +22,10 @@
 - [x] T014 Complete required GitHub checks and native Codex review for PR #148.
 - [x] T015 Sync PR #149 with the sequentially merged baseline and verify the coordinated
       AWS SDK/Smithy patch module graph through tidy, verify, vet, tests, and OSV.
-- [ ] T016 Complete required GitHub checks and native Codex review for PR #149.
+- [x] T016 Complete required GitHub checks and native Codex review for PR #149.
+- [x] T017 Sync PR #150 with the sequential baseline, preserve the frozen Supabase
+      graph, and remediate the fixable `golang.org/x/text` advisory.
+- [ ] T018 Complete required GitHub checks and native Codex review for PR #150.
 
 ## Process Memory
 
@@ -55,10 +58,14 @@
   runtime contract remain on Node 22.
 - PR #149 keeps the Dependabot-generated AWS SDK/Smithy patch set together because Go
   resolves matching direct and transitive modules as one verified graph.
+- PR #150 accepts the supported Next, next-intl, stylelint, ESLint, and typescript-eslint
+  maintenance updates while leaving the frozen Supabase dependency graph unchanged.
+- PR #150 updates `golang.org/x/text` to the first OSV-reported fixed release instead
+  of suppressing GO-2026-6629.
 
 ### Known Issues
 
-- PR #149 required GitHub checks and native Codex review remain pending on the verified
-  AWS SDK/Smithy patch graph.
+- PR #150 required GitHub checks and native Codex review remain pending on the verified
+  npm and Go security maintenance graph.
 - The dev-only `braces` exception must be removed or renewed with fresh upstream
   evidence by 2026-11-06.
