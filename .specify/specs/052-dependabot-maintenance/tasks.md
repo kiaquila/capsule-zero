@@ -25,7 +25,10 @@
 - [x] T016 Complete required GitHub checks and native Codex review for PR #149.
 - [x] T017 Sync PR #150 with the sequential baseline, preserve the frozen Supabase
       graph, and remediate the fixable `golang.org/x/text` advisory.
-- [ ] T018 Complete required GitHub checks and native Codex review for PR #150.
+- [x] T018 Complete required GitHub checks and native Codex review for PR #150.
+- [x] T019 Sync PR #151 with the sequential baseline and verify the S3 client update
+      through tidy, module verification, vet, tests, and OSV.
+- [ ] T020 Complete required GitHub checks and native Codex review for PR #151.
 
 ## Process Memory
 
@@ -62,10 +65,12 @@
   maintenance updates while leaving the frozen Supabase dependency graph unchanged.
 - PR #150 updates `golang.org/x/text` to the first OSV-reported fixed release instead
   of suppressing GO-2026-6629.
+- PR #151 accepts the isolated S3 client minor update because the resolved AWS module
+  graph remains internally consistent and passes API regression coverage.
 
 ### Known Issues
 
-- PR #150 required GitHub checks and native Codex review remain pending on the verified
-  npm and Go security maintenance graph.
+- PR #151 required GitHub checks and native Codex review remain pending on the verified
+  S3 client module graph.
 - The dev-only `braces` exception must be removed or renewed with fresh upstream
   evidence by 2026-11-06.
