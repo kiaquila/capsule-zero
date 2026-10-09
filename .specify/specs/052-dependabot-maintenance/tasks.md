@@ -25,7 +25,16 @@
 - [x] T016 Complete required GitHub checks and native Codex review for PR #149.
 - [x] T017 Sync PR #150 with the sequential baseline, preserve the frozen Supabase
       graph, and remediate the fixable `golang.org/x/text` advisory.
-- [ ] T018 Complete required GitHub checks and native Codex review for PR #150.
+- [x] T018 Complete required GitHub checks and native Codex review for PR #150.
+- [x] T019 Sync PR #151 with the sequential baseline and verify the S3 client update
+      through tidy, module verification, vet, tests, and OSV.
+- [x] T020 Complete required GitHub checks and native Codex review for PR #151.
+- [x] T021 Reproduce PR #152's ESLint 10 peer conflict and restore the supported
+      ESLint 9.39.4 manifest and lockfile graph.
+- [x] T022 Complete required GitHub checks and native Codex review for PR #152.
+- [x] T023 Reject PR #153's isolated app Node 26 declarations and restore the verified
+      Node 22 manifest and lockfile graph.
+- [ ] T024 Complete required GitHub checks and native Codex review for PR #153.
 
 ## Process Memory
 
@@ -62,10 +71,16 @@
   maintenance updates while leaving the frozen Supabase dependency graph unchanged.
 - PR #150 updates `golang.org/x/text` to the first OSV-reported fixed release instead
   of suppressing GO-2026-6629.
+- PR #151 accepts the isolated S3 client minor update because the resolved AWS module
+  graph remains internally consistent and passes API regression coverage.
+- PR #152 keeps ESLint 9.39.4 because `eslint-plugin-jsx-a11y` 6.10.2 rejects
+  ESLint 10.12.0; bypassing peer resolution would leave an unsupported lint graph.
+- PR #153 keeps app declarations on Node 22 because the repository engine and every
+  required executable workflow still use Node 22.
 
 ### Known Issues
 
-- PR #150 required GitHub checks and native Codex review remain pending on the verified
-  npm and Go security maintenance graph.
+- PR #153 required GitHub checks and native Codex review remain pending on the
+  restored Node 22 declaration graph.
 - The dev-only `braces` exception must be removed or renewed with fresh upstream
   evidence by 2026-11-06.
