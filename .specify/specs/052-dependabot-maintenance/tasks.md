@@ -31,7 +31,10 @@
 - [x] T020 Complete required GitHub checks and native Codex review for PR #151.
 - [x] T021 Reproduce PR #152's ESLint 10 peer conflict and restore the supported
       ESLint 9.39.4 manifest and lockfile graph.
-- [ ] T022 Complete required GitHub checks and native Codex review for PR #152.
+- [x] T022 Complete required GitHub checks and native Codex review for PR #152.
+- [x] T023 Reject PR #153's isolated app Node 26 declarations and restore the verified
+      Node 22 manifest and lockfile graph.
+- [ ] T024 Complete required GitHub checks and native Codex review for PR #153.
 
 ## Process Memory
 
@@ -72,10 +75,12 @@
   graph remains internally consistent and passes API regression coverage.
 - PR #152 keeps ESLint 9.39.4 because `eslint-plugin-jsx-a11y` 6.10.2 rejects
   ESLint 10.12.0; bypassing peer resolution would leave an unsupported lint graph.
+- PR #153 keeps app declarations on Node 22 because the repository engine and every
+  required executable workflow still use Node 22.
 
 ### Known Issues
 
-- PR #152 required GitHub checks and native Codex review remain pending on the
-  restored supported ESLint graph.
+- PR #153 required GitHub checks and native Codex review remain pending on the
+  restored Node 22 declaration graph.
 - The dev-only `braces` exception must be removed or renewed with fresh upstream
   evidence by 2026-11-06.

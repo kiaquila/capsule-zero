@@ -65,3 +65,5 @@ not apply. Existing repository checks provide regression coverage.
   security verification on the sequentially merged baseline.
 - PR #152: app ESLint remains on 9.39.4 because `eslint-plugin-jsx-a11y` 6.10.2
   rejects ESLint 10.12.0 during the repository-pinned clean npm install.
+- PR #153: app development types remain on `@types/node` 22.20.1 because the
+  production and required CI runtime contract remains Node 22.
