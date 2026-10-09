@@ -59,3 +59,7 @@ not apply. Existing repository checks provide regression coverage.
   required CI, and production web runtime still execute Node 22.
 - PR #149: the API accepts the coordinated AWS SDK/Smithy patch group after the direct
   and transitive module graph passes tidy, verification, vet, package tests, and OSV.
+- PR #150: supported npm minor/patch updates advance while the frozen Supabase graph
+  stays unchanged, and the fixable `golang.org/x/text` advisory is remediated.
+- PR #151: the S3 client advances to 1.114.0 after module integrity, API tests, and
+  security verification on the sequentially merged baseline.

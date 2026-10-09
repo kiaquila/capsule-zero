@@ -24,6 +24,8 @@ green.
 | PR #147 ESLint compatibility | Expected ESLint 10.11.0 `ERESOLVE`; current plugin peer metadata and Context7 migration guidance; app manifest/lock equality with `origin/main`; clean npm 10.9.8 install, installed-version assertion, lint, typecheck, and build. |
 | PR #148 Node type compatibility | Node 22 engine/runtime evidence; e2e manifest/lock equality with `origin/main`; clean npm 10.9.8 install, installed-version assertion, lint, and typecheck. |
 | PR #149 Go AWS patch group | `go mod tidy` and `go mod verify`; `go vet ./...`; full API package tests; official OSV Scanner v2.6.0 recursive source scan; required GitHub tests. |
+| PR #150 npm maintenance and Go security fix | Frozen Supabase manifest/lock equality with `origin/main`; clean npm 10.9.2 installs, lint, typecheck, and build; `go mod tidy`/`verify`, vet, tests, and OSV coverage for `golang.org/x/text` 0.41.0. |
+| PR #151 S3 client update | `go mod tidy` and `go mod verify`; `go vet ./...`; full API package tests; official OSV Scanner v2.6.0 recursive source scan; required GitHub tests. |
 
 ## Reuse Check
 
