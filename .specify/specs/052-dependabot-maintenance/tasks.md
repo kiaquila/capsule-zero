@@ -28,7 +28,10 @@
 - [x] T018 Complete required GitHub checks and native Codex review for PR #150.
 - [x] T019 Sync PR #151 with the sequential baseline and verify the S3 client update
       through tidy, module verification, vet, tests, and OSV.
-- [ ] T020 Complete required GitHub checks and native Codex review for PR #151.
+- [x] T020 Complete required GitHub checks and native Codex review for PR #151.
+- [x] T021 Reproduce PR #152's ESLint 10 peer conflict and restore the supported
+      ESLint 9.39.4 manifest and lockfile graph.
+- [ ] T022 Complete required GitHub checks and native Codex review for PR #152.
 
 ## Process Memory
 
@@ -67,10 +70,12 @@
   of suppressing GO-2026-6629.
 - PR #151 accepts the isolated S3 client minor update because the resolved AWS module
   graph remains internally consistent and passes API regression coverage.
+- PR #152 keeps ESLint 9.39.4 because `eslint-plugin-jsx-a11y` 6.10.2 rejects
+  ESLint 10.12.0; bypassing peer resolution would leave an unsupported lint graph.
 
 ### Known Issues
 
-- PR #151 required GitHub checks and native Codex review remain pending on the verified
-  S3 client module graph.
+- PR #152 required GitHub checks and native Codex review remain pending on the
+  restored supported ESLint graph.
 - The dev-only `braces` exception must be removed or renewed with fresh upstream
   evidence by 2026-11-06.
