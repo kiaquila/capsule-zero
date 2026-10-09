@@ -67,3 +67,5 @@ not apply. Existing repository checks provide regression coverage.
   rejects ESLint 10.12.0 during the repository-pinned clean npm install.
 - PR #153: app development types remain on `@types/node` 22.20.1 because the
   production and required CI runtime contract remains Node 22.
+- PR #154: e2e development types remain on `@types/node` 22.20.1 because the e2e
+  engine and required test workflow continue to execute Node 22.

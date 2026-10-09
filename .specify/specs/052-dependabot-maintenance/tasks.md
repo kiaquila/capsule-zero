@@ -34,7 +34,10 @@
 - [x] T022 Complete required GitHub checks and native Codex review for PR #152.
 - [x] T023 Reject PR #153's isolated app Node 26 declarations and restore the verified
       Node 22 manifest and lockfile graph.
-- [ ] T024 Complete required GitHub checks and native Codex review for PR #153.
+- [x] T024 Complete required GitHub checks and native Codex review for PR #153.
+- [x] T025 Reject PR #154's isolated e2e Node 26 declarations and restore the verified
+      Node 22 manifest and lockfile graph.
+- [ ] T026 Complete required GitHub checks and native Codex review for PR #154.
 
 ## Process Memory
 
@@ -77,10 +80,12 @@
   ESLint 10.12.0; bypassing peer resolution would leave an unsupported lint graph.
 - PR #153 keeps app declarations on Node 22 because the repository engine and every
   required executable workflow still use Node 22.
+- PR #154 keeps e2e declarations on Node 22 because its engine and required test
+  workflow continue to execute Node 22.
 
 ### Known Issues
 
-- PR #153 required GitHub checks and native Codex review remain pending on the
-  restored Node 22 declaration graph.
+- PR #154 required GitHub checks and native Codex review remain pending on the
+  restored e2e Node 22 declaration graph.
 - The dev-only `braces` exception must be removed or renewed with fresh upstream
   evidence by 2026-11-06.

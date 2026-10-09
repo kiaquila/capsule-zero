@@ -28,6 +28,7 @@ green.
 | PR #151 S3 client update | `go mod tidy` and `go mod verify`; `go vet ./...`; full API package tests; official OSV Scanner v2.6.0 recursive source scan; required GitHub tests. |
 | PR #152 ESLint compatibility | Expected npm 10.9.2 `ERESOLVE` from `eslint-plugin-jsx-a11y` 6.10.2 rejecting ESLint 10.12.0; app manifest/lock equality with `origin/main`; clean install, lint, typecheck, and production build. |
 | PR #153 Node type compatibility | Node 22 engine and required-workflow evidence; app manifest/lock equality with `origin/main`; clean npm 10.9.2 install, installed-version assertion, typecheck, and production build. |
+| PR #154 e2e Node type compatibility | Node 22 e2e engine and required-test-workflow evidence; e2e manifest/lock equality with `origin/main`; clean npm 10.9.2 install, installed-version assertion, lint, and typecheck. |
 
 ## Reuse Check
 
