@@ -165,6 +165,9 @@ for (const code of requiredErrorCodes) {
   if (!errorEnum.includes(code)) {
     errors.push(`ErrorCode enum must include ${code}.`);
   }
+  if (!apiSpec.includes("`" + code + "`")) {
+    errors.push(`api-spec.md error taxonomy must document ${code}.`);
+  }
 }
 
 // Cross-repository configuration belongs to this contract gate, not the

@@ -28,3 +28,5 @@
 Local output logs: `/tmp/cz-validation-final-go.log`, `/tmp/cz-validation-green-browser-2.log`, `/tmp/cz-validation-fullstack-browser-2.log`, `/tmp/cz-validation-build.log`, `/tmp/cz-validation-full-suite-3.log`. These commands are reproducible; temporary runtimes use disposable local identities and databases.
 
 Native review P2 verification: `go test ./internal/auth -run TestPasswordPolicyFeedbackAcrossHandlers -count=1` passes against unchanged implementation `54313b8`. The real adapter → handler table returns 400 with the expected safe code for registration and settings-policy rejection; `ErrPasswordRejected` already wraps `ErrFlowRejected`. This is additional coverage of existing behavior, not a claimed red → green application fix.
+
+API taxonomy review evidence: the existing required-code loop now checks `api-spec.md` as well as OpenAPI. `npm run check:api-contract` failed for six missing PASSWORD_* rows, then passed once the Error Contract table was completed. This support/documentation change does not require the application TDD loop.
