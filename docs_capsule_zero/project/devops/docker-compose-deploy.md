@@ -64,9 +64,9 @@ Object storage and email leave the droplet:
 | `infra/nginx/`               | rollback compose nginx config used only with `--profile docker-edge`     |
 | `infra/kratos/`              | Kratos identity schema, courier (Resend SMTP), self-service flow config  |
 | `infra/postgres/`            | Postgres init scripts (role grants, Kratos DB creation)                  |
-| `api/Dockerfile`             | Go API multi-stage build (distroless runtime image)                      |
+| `api/Dockerfile`             | ECR Public Go builder + GCR distroless runtime image (spec 053)           |
 | `worker/Dockerfile`          | Go worker multi-stage build, introduced when ADR-007 promotes the worker |
-| `app/Dockerfile`             | Next.js standalone production image                                      |
+| `app/Dockerfile`             | Next.js standalone image using ECR Public Node (spec 053)                 |
 | `api/migrations/`            | Embedded SQL migration files; applied at API boot                          |
 | `deploy/object-storage/`     | Redacted policy templates and exact production CORS documents              |
 | `deploy/compose.env.example` | Env template for compose interpolation; copy to `.env` and fill secrets  |

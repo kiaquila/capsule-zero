@@ -48,6 +48,10 @@
 
 ### Decisions
 
+- **2026-10-12, spec 053:** web/API builds use ECR Public official bases and the
+  runner's embedded Docker builder with containerd caching. Manual `build_only`
+  isolates verification images/cache writes and skips deployment. Server-side pull,
+  credentials, runtime and merge authority are unchanged; see spec 053 evidence.
 - **2026-08-13 PR #101 review fix: automated rollback is fenced to one Kratos runtime
   epoch.** The previous `workflow_dispatch` path could check out a pre-upgrade commit and
   run Kratos v1.3.1 against a database already migrated by v26.2.0. The shared

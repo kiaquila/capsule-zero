@@ -40,6 +40,9 @@ jobs:
       - name: Run repository baseline
         run: npm run check:repo
 
+      - name: Set up embedded Docker builder
+        run: bash scripts/setup-ci-docker-builder.sh
+
       - name: Validate rollback nginx container
         run: npm run check:nginx-container
 
@@ -61,8 +64,14 @@ jobs:
       - name: Run build
         run: npm run build
 
-      - name: Build Docker image
-        run: docker build --target runner -t capsule-zero-web:ci ./app
+      - name: Build production Docker images
+        run: |
+          docker buildx build --builder default --target runner --load \
+            --cache-to "type=local,dest=${RUNNER_TEMP}/web-buildcache,mode=max" \
+            -t capsule-zero-web:ci ./app
+          docker buildx build --builder default --target runner --load \
+            --cache-to "type=local,dest=${RUNNER_TEMP}/api-buildcache,mode=max" \
+            -t capsule-zero-api:ci ./api
 
       - name: Run tests if present
         run: npm test

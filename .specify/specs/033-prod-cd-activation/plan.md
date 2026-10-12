@@ -6,6 +6,12 @@
 
 ## Approach
 
+Spec 053 hardens the same build/pull model against Docker Hub rate limits: ECR
+Public Node/Go bases, embedded Docker builder + containerd registry caches, and
+isolated manual `build_only` verification. Current evidence belongs to
+`.specify/specs/053-docker-hub-independent-build/plan.md`; historic evidence below
+remains attached to its original deployed SHA.
+
 Same delivery model as spec 026's dev pipeline, retargeted at production and widened to
 the full stack: **build-in-CI, pull-on-server**. GitHub Actions builds the web and api
 images and pushes them to GHCR; the server only pulls SHA-pinned images and rolls the

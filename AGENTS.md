@@ -228,6 +228,11 @@ When assigned to implement a specific feature, read in this order:
 
 ## Delivery Workflow
 
+- Web/API image builds use Docker Official Images from `public.ecr.aws/docker/library`
+  and the GitHub runner's embedded Docker builder with containerd registry caches
+  (spec 053). Do not restore Docker Hub base-image or builder-bootstrap pulls.
+  `scripts/setup-ci-docker-builder.sh` is runner-only; never run it on production.
+  Manual `cd-prod.yml` verification uses `build_only=true` and never deploys.
 - Product code lands through pull requests only.
 - Required GitHub checks are `baseline-checks`, `guard`, `AI Review`, `test`, and `osv-scan`.
 - `AI Review` runs on GitHub-hosted `ubuntu-latest` and validates native Codex review for the current PR head; it must never depend on a local or self-hosted runner.

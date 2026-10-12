@@ -1,6 +1,6 @@
 ARG NODE_VERSION=22-bookworm-slim
 
-FROM node:${NODE_VERSION} AS base
+FROM public.ecr.aws/docker/library/node:${NODE_VERSION} AS base
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
