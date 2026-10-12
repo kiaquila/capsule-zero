@@ -8,6 +8,11 @@
 
 ## Goal
 
+> **Build-source hardening (2026-10-12, spec 053):** Node/Go build bases now use
+> Docker Official Images on ECR Public, and CI/CD use the runner's embedded Docker
+> builder with containerd caches. Manual `build_only` verifies builds without
+> deployment or production-tag/cache writes; server runtime configuration is unchanged.
+
 Every merge to `main` that changes deploy-relevant code automatically builds the **web**
 and **api** images in CI, pushes them to GHCR, and deploys the **full production stack**
 (Postgres + Kratos + Go API + Next.js web behind the host-nginx edge) to

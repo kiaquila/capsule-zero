@@ -93,23 +93,68 @@ function requireFileExcludes(path, forbiddenText) {
 
 requireFileContains(".github/workflows/ci.yml", "name: baseline-checks");
 requireFileContains(".github/workflows/pr-guard.yml", "name: guard");
-requireFileContains(".github/workflows/pr-guard.yml", "Checkout trusted gate scripts");
+requireFileContains(
+  ".github/workflows/pr-guard.yml",
+  "Checkout trusted gate scripts",
+);
 requireFileContains(".github/workflows/ai-review.yml", "name: AI Review");
-requireFileContains(".github/workflows/ai-review.yml", "runs-on: ubuntu-latest");
+requireFileContains(
+  ".github/workflows/ai-review.yml",
+  "runs-on: ubuntu-latest",
+);
 requireFileContains(".github/workflows/ai-review.yml", "pull_request_review:");
-requireFileContains(".github/workflows/ai-review.yml", "Checkout trusted gate scripts");
+requireFileContains(
+  ".github/workflows/ai-review.yml",
+  "Checkout trusted gate scripts",
+);
 requireFileContains(".github/workflows/ai-review.yml", "AI_REVIEW_HEAD_SHA");
 requireFileContains(".github/workflows/ai-review-wakeup.yml", "issue_comment:");
 requireFileContains(".github/workflows/ai-review-wakeup.yml", "actions: write");
-requireFileContains(".github/workflows/ai-review-wakeup.yml", "restart-ai-review.mjs");
+requireFileContains(
+  ".github/workflows/ai-review-wakeup.yml",
+  "restart-ai-review.mjs",
+);
 requireFileContains(
   ".github/workflows/ai-review-wakeup.yml",
   "ref: ${{ github.event.repository.default_branch }}",
 );
 requireFileExcludes(".github/workflows/ai-review-wakeup.yml", "bootstrap_root");
 requireFileContains(".github/workflows/osv-scan.yml", "name: osv-scan");
-requireFileContains(".github/workflows/osv-scan.yml", "google/osv-scanner-action");
+requireFileContains(
+  ".github/workflows/osv-scan.yml",
+  "google/osv-scanner-action",
+);
 requireFileContains(".github/workflows/test.yml", "name: test");
+
+// Production builds must not bootstrap or resolve base images through Docker Hub.
+requirePath("scripts/lib/cd-prod-tags.test.mjs");
+requireFileContains(
+  "app/Dockerfile",
+  "FROM public.ecr.aws/docker/library/node:",
+);
+requireFileContains(
+  "api/Dockerfile",
+  "FROM public.ecr.aws/docker/library/golang:",
+);
+requireFileContains(
+  ".github/workflows/test.yml",
+  "public.ecr.aws/docker/library/golang:",
+);
+requireFileExcludes(".github/workflows/test.yml", "-w /src golang:");
+for (const workflow of ["ci.yml", "cd-prod.yml"]) {
+  const path = `.github/workflows/${workflow}`;
+  requireFileContains(path, "bash scripts/setup-ci-docker-builder.sh");
+  requireFileContains(path, "--builder default");
+  requireFileExcludes(path, "--driver docker-container");
+}
+requireFileContains(
+  "scripts/setup-ci-docker-builder.sh",
+  "containerd-snapshotter",
+);
+requireFileContains(
+  "scripts/setup-ci-docker-builder.sh",
+  "docker buildx use default",
+);
 
 if (missing.length === 0 && existsSync(fullPath("package.json"))) {
   const packageJson = readJson("package.json");

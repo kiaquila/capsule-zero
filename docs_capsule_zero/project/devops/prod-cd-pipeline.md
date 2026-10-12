@@ -42,7 +42,8 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
 
 1. Merge to `main` triggers `.github/workflows/cd-prod.yml`.
 2. **gate** — deploys only if a deploy-relevant path changed (`app/** api/** worker/**
-   infra/** docker-compose.yml`, lockfiles, the workflow itself). Docs/tests/`.specify`-only
+   infra/** docker-compose.yml`, lockfiles, the workflow itself and
+   `scripts/setup-ci-docker-builder.sh`). Docs/tests/`.specify`-only
    merges are skipped (green, no deploy).
 3. **build** — `docker buildx` builds `app/Dockerfile` (`--target runner`) and
    `api/Dockerfile`, pushes `ghcr.io/kiaquila/capsule-zero-web:sha-<gitsha>` and
@@ -50,6 +51,12 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
    builds get `--build-arg GIT_SHA=<gitsha>` (api also `BUILD_TIME`): the api binary is
    stamped via `-ldflags -X main.commit/main.buildTime` and both images set the OCI
    `org.opencontainers.image.revision` label (spec 036).
+   Node and Go are Docker Official Images pulled explicitly from
+   `public.ecr.aws/docker/library`; the API runtime stays on GCR distroless.
+   `scripts/setup-ci-docker-builder.sh` enables the containerd image store only on
+   the ephemeral Linux GitHub runner and selects Docker's embedded default builder.
+   This preserves the GHCR registry cache without pulling a separate BuildKit image
+   from Docker Hub. Both CI and CD explicitly select `--builder default` (spec 053).
 4. **deploy** — the GitHub-hosted runner obtains a short-lived Tailscale identity through
    GitHub OIDC, joins as `tag:ci`, and is permitted to reach only `cz:22`. It then connects
    over SSH as the unprivileged `deploy` user and runs the root-owned wrapper
@@ -82,6 +89,32 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
    posts `inactive` to every prior success record (GitHub's auto-inactivation skips
    production environments), so the Environments page always shows exactly one Active
    production deployment — the verified live release.
+
+### Verifying a build without deployment (spec 053)
+
+Run the existing workflow against a review branch:
+
+```bash
+gh workflow run cd-prod.yml --ref <review-branch> -f build_only=true
+```
+
+This builds both production images and exercises GHCR cache import/export. It
+publishes only `:verify-<commit>` image tags and separate
+`:verify-cache-<commit>` caches. It never replaces release `:sha-<commit>`, `:prod`
+or `:buildcache` tags, including when verifying an already deployed commit. It does not enter
+the production environment, request Tailscale/SSH credentials, create a deployment
+or run the server wrapper. Verification concurrency is separate from releases.
+`build_only=true` cannot be combined with `image_sha`.
+
+Normal merges and manual deploys keep the existing production tags/cache behavior.
+The server's Docker daemon and GHCR login are unchanged. The required Go vet/test workflow uses the same ECR toolchain. ECR Public pulls
+require no AWS account or new token. Registry unavailability fails the build; no Docker Hub
+fallback is configured. Docker Hub can still be used by Compose-service provisioning
+and container smoke checks; spec 053 covers web/API image builds, not every service.
+
+The registry cache requirements and runner configuration follow
+[Docker's cache documentation](https://docs.docker.com/build/cache/backends/registry/)
+and [containerd setup](https://docs.docker.com/engine/storage/containerd/).
 
 ### Checking the live release
 

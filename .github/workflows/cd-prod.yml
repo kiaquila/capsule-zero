@@ -23,9 +23,14 @@ on:
         description: "Existing image tag to redeploy without rebuilding (e.g. sha-<40hex>). Leave blank to build HEAD."
         required: false
         default: ""
+      build_only:
+        description: "Build and push verification images without deploying or changing prod tags/caches."
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
-  group: cd-prod
+  group: ${{ github.event.inputs.build_only == 'true' && format('cd-prod-verify-{0}', github.ref) || 'cd-prod' }}
   cancel-in-progress: false
 
 permissions:
@@ -55,10 +60,16 @@ jobs:
           EVENT: ${{ github.event_name }}
           BEFORE: ${{ github.event.before }}
           AFTER: ${{ github.sha }}
+          BUILD_ONLY: ${{ github.event.inputs.build_only }}
+          IMAGE_SHA: ${{ github.event.inputs.image_sha }}
         run: |
           set -euo pipefail
 
           if [ "$EVENT" = "workflow_dispatch" ]; then
+            if [ "${BUILD_ONLY:-}" = "true" ] && [ -n "${IMAGE_SHA:-}" ]; then
+              echo "::error::build_only cannot be combined with image_sha"
+              exit 1
+            fi
             echo "manual dispatch -> deploy"
             echo "run=true" >> "$GITHUB_OUTPUT"
             exit 0
@@ -76,7 +87,7 @@ jobs:
           changed="$(git diff --name-only "$BEFORE" "$AFTER")"
           echo "$changed"
 
-          deploy_path_pattern='^(app/|api/|worker/|infra/|docker-compose\.yml$|package-lock\.json$|app/package-lock\.json$|\.github/workflows/cd-prod\.yml$)'
+          deploy_path_pattern='^(app/|api/|worker/|infra/|docker-compose\.yml$|package-lock\.json$|app/package-lock\.json$|\.github/workflows/cd-prod\.yml$|scripts/setup-ci-docker-builder\.sh$)'
           if grep -E "$deploy_path_pattern" <<< "$changed" >/dev/null; then
             echo "deploy-relevant paths changed -> deploy"
             echo "run=true" >> "$GITHUB_OUTPUT"
@@ -102,44 +113,68 @@ jobs:
 
       - name: Compute image refs
         id: meta
+        env:
+          BUILD_ONLY: ${{ github.event.inputs.build_only }}
         run: |
+          image_tag="sha-${GITHUB_SHA}"
+          cache_tag=buildcache
+          if [ "${BUILD_ONLY:-}" = "true" ]; then
+            image_tag="verify-${GITHUB_SHA}"
+            cache_tag="verify-cache-${GITHUB_SHA}"
+          fi
           {
-            echo "image_web=${IMAGE_WEB}:sha-${GITHUB_SHA}"
-            echo "image_api=${IMAGE_API}:sha-${GITHUB_SHA}"
+            echo "image_web=${IMAGE_WEB}:${image_tag}"
+            echo "image_api=${IMAGE_API}:${image_tag}"
             echo "build_time=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "cache_tag=${cache_tag}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
-      - name: Set up Buildx (container driver for registry cache)
-        run: docker buildx create --use --name czbuilder --driver docker-container
+      - name: Set up embedded Docker builder
+        run: bash scripts/setup-ci-docker-builder.sh
 
       - name: Build and push web image
+        env:
+          IMAGE_REF: ${{ steps.meta.outputs.image_web }}
+          BUILD_ONLY: ${{ github.event.inputs.build_only }}
+          CACHE_TAG: ${{ steps.meta.outputs.cache_tag }}
         run: |
           set -euo pipefail
+          tag_args=(--tag "$IMAGE_REF")
+          if [ "${BUILD_ONLY:-}" != "true" ]; then
+            tag_args+=(--tag "${IMAGE_WEB}:prod")
+          fi
           docker buildx build \
+            --builder default \
             --target runner \
             --build-arg "GIT_SHA=${GITHUB_SHA}" \
-            --tag "${IMAGE_WEB}:sha-${GITHUB_SHA}" \
-            --tag "${IMAGE_WEB}:prod" \
+            "${tag_args[@]}" \
             --cache-from "type=registry,ref=${IMAGE_WEB}:buildcache" \
-            --cache-to   "type=registry,ref=${IMAGE_WEB}:buildcache,mode=max" \
+            --cache-to   "type=registry,ref=${IMAGE_WEB}:${CACHE_TAG},mode=max" \
             --push \
             ./app
 
       - name: Build and push api image
         env:
           BUILD_TIME: ${{ steps.meta.outputs.build_time }}
+          IMAGE_REF: ${{ steps.meta.outputs.image_api }}
+          BUILD_ONLY: ${{ github.event.inputs.build_only }}
+          CACHE_TAG: ${{ steps.meta.outputs.cache_tag }}
         run: |
           set -euo pipefail
+          tag_args=(--tag "$IMAGE_REF")
+          if [ "${BUILD_ONLY:-}" != "true" ]; then
+            tag_args+=(--tag "${IMAGE_API}:prod")
+          fi
           docker buildx build \
+            --builder default \
             --build-arg "GIT_SHA=${GITHUB_SHA}" \
             --build-arg "BUILD_TIME=${BUILD_TIME}" \
-            --tag "${IMAGE_API}:sha-${GITHUB_SHA}" \
-            --tag "${IMAGE_API}:prod" \
+            "${tag_args[@]}" \
             --cache-from "type=registry,ref=${IMAGE_API}:buildcache" \
-            --cache-to   "type=registry,ref=${IMAGE_API}:buildcache,mode=max" \
+            --cache-to   "type=registry,ref=${IMAGE_API}:${CACHE_TAG},mode=max" \
             --push \
             ./api
 
@@ -151,6 +186,7 @@ jobs:
     if: >-
       always() &&
       needs.gate.outputs.run == 'true' &&
+      !(github.event_name == 'workflow_dispatch' && github.event.inputs.build_only == 'true') &&
       needs.build.result != 'failure' &&
       needs.build.result != 'cancelled'
     runs-on: ubuntu-latest

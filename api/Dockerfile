@@ -1,7 +1,7 @@
 # Capsule Zero Go API — multi-stage build.
 ARG GO_VERSION=1.26.6
 
-FROM golang:${GO_VERSION}-bookworm AS builder
+FROM public.ecr.aws/docker/library/golang:${GO_VERSION}-bookworm AS builder
 WORKDIR /src
 
 # Cache dependencies first.

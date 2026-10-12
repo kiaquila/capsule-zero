@@ -91,4 +91,10 @@ POM/selector rules, and run commands.
 
 ## Delivery
 
+Web/API Docker builds use Docker Official Images on ECR Public and the runner's
+embedded Docker builder with containerd caches (spec 053). Reuse
+`scripts/setup-ci-docker-builder.sh` only on Linux GitHub Actions runners; do not
+restore Docker Hub bootstrap/base pulls. `cd-prod.yml`'s `build_only=true` manual
+mode verifies build/push without touching production.
+
 Product code lands through pull requests only. Required checks: `baseline-checks`, `guard`, `AI Review`, `test`, and `osv-scan`. `AI Review` is GitHub-hosted and validates native Codex review; it is not a local-runner workflow. A human remains the final review and merge authority. Full workflow: AGENTS.md → "Delivery Workflow" and `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md`.
