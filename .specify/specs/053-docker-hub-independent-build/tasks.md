@@ -5,8 +5,9 @@
 - [x] Reuse Dockerfiles and existing CI/CD steps; isolate verification publishing.
 - [x] Add shared runner-only setup and extend the existing baseline guard.
 - [x] Actualize the production build documentation.
-- [ ] Validate syntax, negative scenarios and real runner builds/cache exports.
-- [ ] Publish ready PR; resolve review findings and verify required head checks.
+- [x] Validate syntax, negative scenarios and real runner builds/cache exports.
+- [x] Publish ready PR #155 with linked hosted build evidence.
+- [ ] Resolve review findings and verify all required final-head checks.
 - [ ] Human merge and normal production activation.
 
 ## Process Memory
@@ -38,5 +39,7 @@
   Docker Hub does not promise immunity to every registry outage.
 - Compose service pulls in provisioning/container-smoke checks are outside the
   production web/API build change; this is not a repository-wide Hub migration.
-- Required PR checks and full verification build are pending; production changes
-  take effect only after human merge.
+- Production verification run 38299019567 succeeded: both images and registry
+  caches published; deploy jobs skipped; live SHA and Deployment record unchanged.
+- Required final-head checks/native review remain the merge gate; production
+  changes take effect only after human merge.
