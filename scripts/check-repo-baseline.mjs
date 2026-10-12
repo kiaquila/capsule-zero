@@ -127,6 +127,7 @@ requireFileContains(
 requireFileContains(".github/workflows/test.yml", "name: test");
 
 // Production builds must not bootstrap or resolve base images through Docker Hub.
+requirePath("scripts/lib/cd-prod-tags.test.mjs");
 requireFileContains(
   "app/Dockerfile",
   "FROM public.ecr.aws/docker/library/node:",

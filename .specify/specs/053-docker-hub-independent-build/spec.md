@@ -26,7 +26,7 @@ Hub, and deployment or branch-protection bypasses.
   containerd enabled only on ephemeral Linux GitHub Actions runners. No builder
   container image is downloaded. Multi-stage cache export still works.
 - **AC-003:** Full production verification builds both images and exports caches
-  to GHCR without using deployment credentials, changing `:prod` or production
+  to GHCR without using deployment credentials, changing release `:sha-<commit>`, `:prod` or production
   buildcache tags, creating a production deployment, or touching the server.
 - **AC-004:** Normal merge deployment retains SHA refs, moving production tags,
   GHCR registry caches, release metadata and server-side verified deployment.
@@ -40,7 +40,7 @@ Hub, and deployment or branch-protection bypasses.
   inspecting or modifying the Docker daemon.
 - Combining `build_only=true` with an existing `image_sha` fails at the gate.
 - Verification builds skip SSH/deployment and cannot replace production tags or
-  shared caches. No fallback to Docker Hub is configured when ECR is unavailable.
+  shared caches, including verification on an already released SHA. No fallback to Docker Hub is configured when ECR is unavailable.
 - Reintroducing the old base references or container-driver setup fails the
   existing repository baseline guard.
 

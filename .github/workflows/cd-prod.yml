@@ -116,17 +116,16 @@ jobs:
         env:
           BUILD_ONLY: ${{ github.event.inputs.build_only }}
         run: |
-          tag_suffix=prod
+          image_tag="sha-${GITHUB_SHA}"
           cache_tag=buildcache
           if [ "${BUILD_ONLY:-}" = "true" ]; then
-            tag_suffix="verify-${GITHUB_SHA}"
+            image_tag="verify-${GITHUB_SHA}"
             cache_tag="verify-cache-${GITHUB_SHA}"
           fi
           {
-            echo "image_web=${IMAGE_WEB}:sha-${GITHUB_SHA}"
-            echo "image_api=${IMAGE_API}:sha-${GITHUB_SHA}"
+            echo "image_web=${IMAGE_WEB}:${image_tag}"
+            echo "image_api=${IMAGE_API}:${image_tag}"
             echo "build_time=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            echo "tag_suffix=${tag_suffix}"
             echo "cache_tag=${cache_tag}"
           } >> "$GITHUB_OUTPUT"
 
@@ -138,16 +137,20 @@ jobs:
 
       - name: Build and push web image
         env:
-          TAG_SUFFIX: ${{ steps.meta.outputs.tag_suffix }}
+          IMAGE_REF: ${{ steps.meta.outputs.image_web }}
+          BUILD_ONLY: ${{ github.event.inputs.build_only }}
           CACHE_TAG: ${{ steps.meta.outputs.cache_tag }}
         run: |
           set -euo pipefail
+          tag_args=(--tag "$IMAGE_REF")
+          if [ "${BUILD_ONLY:-}" != "true" ]; then
+            tag_args+=(--tag "${IMAGE_WEB}:prod")
+          fi
           docker buildx build \
             --builder default \
             --target runner \
             --build-arg "GIT_SHA=${GITHUB_SHA}" \
-            --tag "${IMAGE_WEB}:sha-${GITHUB_SHA}" \
-            --tag "${IMAGE_WEB}:${TAG_SUFFIX}" \
+            "${tag_args[@]}" \
             --cache-from "type=registry,ref=${IMAGE_WEB}:buildcache" \
             --cache-to   "type=registry,ref=${IMAGE_WEB}:${CACHE_TAG},mode=max" \
             --push \
@@ -156,16 +159,20 @@ jobs:
       - name: Build and push api image
         env:
           BUILD_TIME: ${{ steps.meta.outputs.build_time }}
-          TAG_SUFFIX: ${{ steps.meta.outputs.tag_suffix }}
+          IMAGE_REF: ${{ steps.meta.outputs.image_api }}
+          BUILD_ONLY: ${{ github.event.inputs.build_only }}
           CACHE_TAG: ${{ steps.meta.outputs.cache_tag }}
         run: |
           set -euo pipefail
+          tag_args=(--tag "$IMAGE_REF")
+          if [ "${BUILD_ONLY:-}" != "true" ]; then
+            tag_args+=(--tag "${IMAGE_API}:prod")
+          fi
           docker buildx build \
             --builder default \
             --build-arg "GIT_SHA=${GITHUB_SHA}" \
             --build-arg "BUILD_TIME=${BUILD_TIME}" \
-            --tag "${IMAGE_API}:sha-${GITHUB_SHA}" \
-            --tag "${IMAGE_API}:${TAG_SUFFIX}" \
+            "${tag_args[@]}" \
             --cache-from "type=registry,ref=${IMAGE_API}:buildcache" \
             --cache-to   "type=registry,ref=${IMAGE_API}:${CACHE_TAG},mode=max" \
             --push \

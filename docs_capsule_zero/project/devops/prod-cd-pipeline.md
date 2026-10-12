@@ -99,8 +99,9 @@ gh workflow run cd-prod.yml --ref <review-branch> -f build_only=true
 ```
 
 This builds both production images and exercises GHCR cache import/export. It
-publishes `:sha-<commit>` plus `:verify-<commit>` image tags and separate
-`:verify-cache-<commit>` caches. It does not replace `:prod` or `:buildcache`, enter
+publishes only `:verify-<commit>` image tags and separate
+`:verify-cache-<commit>` caches. It never replaces release `:sha-<commit>`, `:prod`
+or `:buildcache` tags, including when verifying an already deployed commit. It does not enter
 the production environment, request Tailscale/SSH credentials, create a deployment
 or run the server wrapper. Verification concurrency is separate from releases.
 `build_only=true` cannot be combined with `image_sha`.

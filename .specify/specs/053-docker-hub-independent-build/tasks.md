@@ -7,7 +7,9 @@
 - [x] Actualize the production build documentation.
 - [x] Validate syntax, negative scenarios and real runner builds/cache exports.
 - [x] Publish ready PR #155 with linked hosted build evidence.
-- [ ] Resolve review findings and verify all required final-head checks.
+- [x] Fix native-review P1: verification must never overwrite release SHA tags.
+- [x] Add behavioral workflow-shell regression coverage for all three build modes.
+- [ ] Verify fresh hosted build, native review and all required final-head checks.
 - [ ] Human merge and normal production activation.
 
 ## Process Memory
@@ -32,6 +34,14 @@
 - Verification mode runs the same production steps with isolated tags/cache writes
   and no production environment or SSH. It never overwrites shared `:buildcache`.
 - Production Docker configuration and existing GHCR credentials are untouched.
+- Native review P1 on `38a47b8`: changing only the secondary tag left a SHA-tag
+  write in verification, risking rollback-artifact mutation on existing releases.
+  Resolve refs to `verify-<commit>` in that mode and add `:prod` only for releases.
+- Reuse check: `scripts/lib/github-actions.test.mjs` tests AI-review rerun selection,
+  not build publishing; `rg` found no tag tests. New `cd-prod-tags.test.mjs` runs the
+  actual workflow shell with stub Docker through the existing CI test glob. The
+  original code fails exactly the verification test, and the corrected code passes
+  it while preserving both production modes.
 - Final dependency scan found the same Go image in the required test workflow;
   use ECR there too and guard against reintroducing its implicit Hub reference.
 
@@ -41,7 +51,8 @@
   Docker Hub does not promise immunity to every registry outage.
 - Compose service pulls in provisioning/container-smoke checks are outside the
   production web/API build change; this is not a repository-wide Hub migration.
-- Production verification run 38299019567 succeeded: both images and registry
-  caches published; deploy jobs skipped; live SHA and Deployment record unchanged.
+- Initial verification run 38299019567 proved successful image/cache publishing
+  and skipped deploy jobs; the subsequent SHA-tag finding supersedes its tag
+  isolation evidence. Corrected hosted run is linked in PR #155 Validation.
 - Required final-head checks/native review remain the merge gate; production
   changes take effect only after human merge.
