@@ -106,8 +106,8 @@ or run the server wrapper. Verification concurrency is separate from releases.
 `build_only=true` cannot be combined with `image_sha`.
 
 Normal merges and manual deploys keep the existing production tags/cache behavior.
-The server's Docker daemon and GHCR login are unchanged. ECR Public pulls require
-no AWS account or new token. Registry unavailability fails the build; no Docker Hub
+The server's Docker daemon and GHCR login are unchanged. The required Go vet/test workflow uses the same ECR toolchain. ECR Public pulls
+require no AWS account or new token. Registry unavailability fails the build; no Docker Hub
 fallback is configured. Docker Hub can still be used by Compose-service provisioning
 and container smoke checks; spec 053 covers web/API image builds, not every service.
 

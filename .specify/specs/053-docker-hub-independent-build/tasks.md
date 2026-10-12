@@ -32,6 +32,8 @@
 - Verification mode runs the same production steps with isolated tags/cache writes
   and no production environment or SSH. It never overwrites shared `:buildcache`.
 - Production Docker configuration and existing GHCR credentials are untouched.
+- Final dependency scan found the same Go image in the required test workflow;
+  use ECR there too and guard against reintroducing its implicit Hub reference.
 
 ### Known Issues
 

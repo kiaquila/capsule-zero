@@ -135,6 +135,11 @@ requireFileContains(
   "api/Dockerfile",
   "FROM public.ecr.aws/docker/library/golang:",
 );
+requireFileContains(
+  ".github/workflows/test.yml",
+  "public.ecr.aws/docker/library/golang:",
+);
+requireFileExcludes(".github/workflows/test.yml", "-w /src golang:");
 for (const workflow of ["ci.yml", "cd-prod.yml"]) {
   const path = `.github/workflows/${workflow}`;
   requireFileContains(path, "bash scripts/setup-ci-docker-builder.sh");

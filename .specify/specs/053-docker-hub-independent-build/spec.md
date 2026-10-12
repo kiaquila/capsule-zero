@@ -9,7 +9,8 @@ resolving `node:22-bookworm-slim`; the existing-image deployment succeeded.
 ## Scope
 
 In: existing web/API Dockerfiles, shared GitHub-runner builder setup, required CI
-image builds, production workflow verification mode, baseline guard, delivery docs.
+image builds, Go test toolchain image, production workflow verification mode,
+baseline guard, delivery docs.
 
 Out: application behavior, runtime versions, production Docker daemon settings,
 Compose service images (Postgres/Kratos/nginx), new credentials, retries to Docker
@@ -19,7 +20,8 @@ Hub, and deployment or branch-protection bypasses.
 
 - **AC-001:** Node 22 Bookworm Slim and Go 1.26.6 Bookworm come from Docker's
   official `public.ecr.aws/docker/library` distribution. API runtime remains the
-  existing GCR distroless image. No production-build source uses Docker Hub.
+  existing GCR distroless image. The required Go test toolchain uses the same ECR
+  Go version. No production-build source uses Docker Hub.
 - **AC-002:** CI and CD use Docker's embedded default BuildKit driver, with
   containerd enabled only on ephemeral Linux GitHub Actions runners. No builder
   container image is downloaded. Multi-stage cache export still works.

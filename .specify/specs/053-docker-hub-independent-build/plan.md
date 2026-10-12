@@ -4,7 +4,8 @@
 
 Reuse `app/Dockerfile`, `api/Dockerfile`, the CI image-build step and CD's existing
 build/push/cache steps. Change only the Node/Go registry prefix; retain version
-arguments, build metadata and the distroless runtime.
+arguments, build metadata and the distroless runtime. The required Go vet/test
+workflow resolves that same Go toolchain from ECR Public.
 
 Share ephemeral-runner setup through `scripts/setup-ci-docker-builder.sh`: preserve
 the existing daemon JSON, enable containerd if necessary, restart only that runner
@@ -37,11 +38,13 @@ and `buildx inspect default`; no restart. The exact jq merge preserved an existi
 
 Temporary mutations, restored immediately, changed the Node prefix to `FROM node:`,
 Go to `FROM golang:`, and CD builder to `--driver docker-container`: the actual
-`node scripts/check-repo-baseline.mjs` rejected all three (nonzero exit). Executing
+`node scripts/check-repo-baseline.mjs` rejected all three (nonzero exit). A further mutation of the required Go test
+image back to implicit `golang:` also exited nonzero. Executing
 the actual workflow gate shell with `EVENT=workflow_dispatch BUILD_ONLY=true
 IMAGE_SHA=sha-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` exited 1 with
 `build_only cannot be combined with image_sha`.
 
-The linked hosted build tests the implementation commit; later evidence-only
-commits do not alter Dockerfiles, workflows, or the setup helper. Required checks
-must still pass for the final PR head. Production activation requires human merge.
+The linked hosted build tests the implementation commit; the follow-up changes
+only the Go test image registry prefix, adds its baseline guard and records
+evidence. Dockerfiles/CD workflow/setup remain identical to the tested
+implementation. Required checks must still pass for the final PR head. Production activation requires human merge.

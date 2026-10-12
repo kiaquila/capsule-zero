@@ -7,7 +7,7 @@ GitHub is the control plane for pull requests, required checks, deployments, and
 - `ci.yml`: runs repository baseline validation, a Compose-selected rollback-nginx config/health smoke, app lint/typecheck/build, both production Docker image builds with embedded-builder cache export, and optional app tests as the required `baseline-checks` job. Web/API base images come from ECR Public (spec 053).
 - `pr-guard.yml`: enforces feature-memory coverage for product-root changes (`app/`, `api/`, `worker/`, `web/`, `mobile/`) and validates baseline files as the required `guard` job.
 - `ai-review.yml`: runs on GitHub-hosted `ubuntu-latest` and validates native Codex review for the current PR head as the required `AI Review` job.
-- `test.yml`: runs e2e lint, e2e typecheck, `/app` build, and Playwright browser tests as the required `test` job.
+- `test.yml`: runs Go vet/package tests with the pinned ECR Public toolchain, e2e lint, e2e typecheck, `/app` build, and Playwright browser tests as the required `test` job.
 - `osv-scan.yml`: scans dependencies for known vulnerabilities on pull requests, pushes to `main`, weekly schedule, and manual dispatch as the required `osv-scan` job.
 
 ## Required Checks
