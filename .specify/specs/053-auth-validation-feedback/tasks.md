@@ -5,7 +5,7 @@
 - [x] Reproduce pinned Kratos rejection and underscore acceptance.
 - [x] Commit red regressions (`eb68194`).
 - [x] Implement, document and verify focused mock/full-stack scenarios, full browser suite (112 passed / 12 opt-in skips) and static/build checks.
-- [ ] Publish ready-for-review PR and trigger native review as human.
+- [x] Publish ready-for-review [PR #156](https://github.com/kiaquila/capsule-zero/pull/156) and trigger native review as verified human `kiaquila`.
 - [ ] Resolve findings and verify all current-head gates.
 
 ## Process Memory
@@ -18,6 +18,8 @@
 - A full-suite profile click arrived before React attached the handler. Reuse the existing ProfilePage retry in `openPasswordForm` before editing SSR inputs; do not add a timing sleep.
 - A cold full-stack run timed out while other validation work overlapped; the isolated rerun passed all eight cases. Keep build and browser server verification sequential.
 
+- The initial CI Go container mounted only `api/`, so a Go test could not read sibling infra configuration. Move cross-repository name agreement into the existing API contract gate rather than widen the Go module/runtime mounts.
+
 ### Decisions
 
 - Use stable Kratos UI message IDs, never parse localized English reasons or expose submitted credentials.
@@ -27,4 +29,4 @@
 ### Known Issues
 
 - Historical production logs are unavailable; cause is reproduced from the screenshot inputs on the committed runtime.
-- Native review and CI must still be verified on final head before merge readiness.
+- Current-head CI/native-review evidence is maintained in the [PR #156 SENAR checklist](https://github.com/kiaquila/capsule-zero/pull/156); the gate must be reverified after every head update. The first implementation review found no issues ([anchored evidence](https://github.com/kiaquila/capsule-zero/pull/156#issuecomment-6134632121)); the initial test-container failure was fixed as recorded above.

@@ -6,7 +6,7 @@ Explain password-policy failures in EN/RU and protect valid short personal names
 
 ## Scope
 
-In scope: existing auth forms, shared schemas/actions and error-code map, Go auth and Kratos adapter, optional registration name contract, identity schema, profile regressions and affected documentation.
+In scope: existing auth forms, shared schemas/actions and error-code map, Go auth and Kratos adapter, optional registration name contract, identity schema and existing API contract gate, profile regressions and affected documentation.
 Out of scope: username policy changes, additional Telegram feedback, production account creation, password-policy weakening, frozen Supabase provider, monetization and import surfaces.
 
 ## Acceptance Criteria

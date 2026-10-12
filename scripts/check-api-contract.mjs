@@ -28,6 +28,12 @@ const requiredErrorCodes = [
   "NOT_FOUND",
   "IDEMPOTENCY_CONFLICT",
   "SEMANTIC_VALIDATION_FAILED",
+  "PASSWORD_TOO_SIMILAR",
+  "PASSWORD_TOO_SHORT",
+  "PASSWORD_TOO_LONG",
+  "PASSWORD_COMPROMISED",
+  "PASSWORD_UNCHANGED",
+  "PASSWORD_POLICY_REJECTED",
 ];
 
 const standardErrorResponses = new Set([
@@ -161,6 +167,32 @@ for (const code of requiredErrorCodes) {
   }
 }
 
+// Cross-repository configuration belongs to this contract gate, not the
+// isolated api/ Go module used by the required test container (spec 053).
+const identitySchema = JSON.parse(
+  readFileSync(resolve(root, "infra/kratos/identity.schema.json"), "utf8"),
+);
+const identityName =
+  identitySchema.properties?.traits?.properties?.name?.properties?.first;
+const registration = openApi.components?.schemas?.AuthRegistrationRequest;
+const registrationName = registration?.properties?.name;
+for (const key of ["type", "minLength", "maxLength", "pattern"]) {
+  if (
+    identityName?.[key] === undefined ||
+    identityName[key] !== registrationName?.[key]
+  ) {
+    errors.push(
+      `Kratos name.first and AuthRegistrationRequest.name must agree on ${key}.`,
+    );
+  }
+}
+if (
+  registration?.required?.includes("name") ||
+  identitySchema.properties?.traits?.required?.includes("name")
+) {
+  errors.push("Registration name must remain optional in OpenAPI and Kratos.");
+}
+
 const statusEnum = openApi.components?.schemas?.ItemStatus?.enum || [];
 for (const status of ["active", "uncapsulated", "for_sale", "for_repair"]) {
   if (!statusEnum.includes(status)) {
@@ -206,9 +238,7 @@ if (sourceTypeEnum.includes("marketplace")) {
   errors.push("SourceType marketplace is blocked by PRODUCT-PLAN Q8.");
 }
 
-if (
-  openApi.components?.schemas?.CreateItemRequest?.properties?.catalogItemId
-) {
+if (openApi.components?.schemas?.CreateItemRequest?.properties?.catalogItemId) {
   errors.push("CreateItemRequest.catalogItemId is blocked by PRODUCT-PLAN Q8.");
 }
 
@@ -239,7 +269,9 @@ if (!providerUploadJobType) {
 } else {
   for (const jobType of ["marketplace_parse", "item_embedding"]) {
     if (providerUploadJobType.includes(`"${jobType}"`)) {
-      errors.push(`Provider UploadJobType ${jobType} is blocked by PRODUCT-PLAN Q8.`);
+      errors.push(
+        `Provider UploadJobType ${jobType} is blocked by PRODUCT-PLAN Q8.`,
+      );
     }
   }
 }
