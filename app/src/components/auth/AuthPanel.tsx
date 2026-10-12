@@ -589,6 +589,7 @@ export function AuthPanel({
             <AuthField
               autoComplete="new-password"
               error={signUpForm.formState.errors.password?.message}
+              hint={t("passwordRequirements")}
               name="password"
               placeholder={t("password")}
               register={signUpForm.register("password")}

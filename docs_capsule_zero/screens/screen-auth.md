@@ -72,3 +72,7 @@ already editable. The panel header titles the active mode ("Log In" /
   fades out (mask); the scrollbar stays hidden
 - While the landing popup is open the page body scroll is locked and the panel
   uses `overscroll-behavior: contain`, so touch scrolling stays inside the form
+
+## Password feedback (spec 053)
+
+The registration password field links through `aria-describedby` to a visible EN/RU hint describing the eight-character minimum, allowed symbols (including `_`) and email-similarity rule. Field errors continue to explain invalid email, short password and confirmation mismatch. Known Kratos password-policy errors appear in the existing localized server-message area, with no upstream text or submitted values.

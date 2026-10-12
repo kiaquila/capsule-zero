@@ -75,6 +75,53 @@ var ErrIdentifierExists = fmt.Errorf("%w: identifier already exists", ErrFlowRej
 // id keeps the classification locale-independent.
 const kratosMsgIdentifierExists = 4000007
 
+// passwordRejection retains a stable UI message ID across wrapped recovery
+// errors. Raw text is diagnostic only; handlers use the allowlisted code.
+type passwordRejection struct {
+	cause   error
+	message string
+	code    string
+}
+
+func (e *passwordRejection) Error() string { return fmt.Sprintf("%s: %s", e.cause, e.message) }
+func (e *passwordRejection) Unwrap() error { return e.cause }
+
+// PasswordValidationCode classifies only known password-policy messages.
+// Unknown flow errors remain generic; never classify by English text.
+func PasswordValidationCode(err error) string {
+	var rejected *passwordRejection
+	if errors.As(err, &rejected) {
+		return rejected.code
+	}
+	return ""
+}
+
+func passwordMessageCode(id int) string {
+	switch id {
+	case 4000031:
+		return "PASSWORD_TOO_SIMILAR"
+	case 4000032:
+		return "PASSWORD_TOO_SHORT"
+	case 4000033:
+		return "PASSWORD_TOO_LONG"
+	case 4000034:
+		return "PASSWORD_COMPROMISED"
+	case 4000039:
+		return "PASSWORD_UNCHANGED"
+	case 4000005:
+		return "PASSWORD_POLICY_REJECTED"
+	default:
+		return ""
+	}
+}
+
+func rejectedFlow(id int, message string, cause error) error {
+	if code := passwordMessageCode(id); code != "" {
+		return &passwordRejection{cause: cause, message: message, code: code}
+	}
+	return fmt.Errorf("%w: %s", cause, message)
+}
+
 // Client talks to the Kratos public and admin APIs.
 type Client struct {
 	publicURL string
@@ -417,8 +464,8 @@ func (c *Client) SettingsPassword(ctx context.Context, token, newPassword string
 	case http.StatusOK:
 		return nil
 	case http.StatusBadRequest, http.StatusUnprocessableEntity:
-		if _, msg := firstError(raw); msg != "" {
-			return fmt.Errorf("%w: %s", ErrPasswordRejected, msg)
+		if id, msg := firstError(raw); msg != "" {
+			return rejectedFlow(id, msg, ErrPasswordRejected)
 		}
 		return ErrPasswordRejected
 	case http.StatusForbidden:
@@ -591,7 +638,7 @@ func (c *Client) submitForSession(ctx context.Context, action string, body map[s
 			return nil, ErrIdentifierExists
 		}
 		if msg != "" {
-			return nil, fmt.Errorf("%w: %s", ErrFlowRejected, msg)
+			return nil, rejectedFlow(id, msg, ErrFlowRejected)
 		}
 		return nil, ErrFlowRejected
 	}

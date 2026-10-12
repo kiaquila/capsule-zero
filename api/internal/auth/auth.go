@@ -100,12 +100,13 @@ type authResponse struct {
 // Registration: POST /api/auth/registration
 func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 	var in struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-		Name     string `json:"name"`
-		Locale   string `json:"locale"`
+		Email    string  `json:"email"`
+		Password string  `json:"password"`
+		Name     *string `json:"name"`
+		Locale   string  `json:"locale"`
 	}
-	if err := httpx.DecodeJSON(r, &in); err != nil {
+	raw, decodeErr := httpx.DecodeJSONObject(r, &in)
+	if decodeErr != nil {
 		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Malformed request body.")
 		return
 	}
@@ -114,22 +115,27 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Unsupported locale.")
 		return
 	}
-	// Name is optional (AuthRegistrationRequest), but when provided it is trimmed
-	// and must be a non-blank string of at most 80 runes — matching the profile
-	// display-name rules. The Kratos identity schema permits up to 256 and
-	// EnsureForIdentity persists the trait as display_name, so an unbounded or
-	// whitespace-only name would otherwise back-door an invalid profile field.
-	name := strings.TrimSpace(in.Name)
-	if in.Name != "" && name == "" {
-		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Name cannot be only whitespace.")
+	if utf8.RuneCountInString(in.Password) < minPasswordRunes {
+		httpx.WriteError(w, http.StatusBadRequest, "PASSWORD_TOO_SHORT", "Password must be at least 8 characters.")
 		return
 	}
-	if utf8.RuneCountInString(name) > maxProfileFieldRunes {
-		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Name must be 80 characters or fewer.")
+	// Omitted names remain optional; explicitly supplied names obey the
+	// same nonblank 1–80-character contract as profile updates and OpenAPI.
+	name := trimOptional(in.Name)
+	if value, present := raw["name"]; present && httpx.IsJSONNull(value) {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Name cannot be null; omit it instead.")
 		return
+	}
+	if msg, ok := validateProfileUpdate(name, nil, nil, nil, nil); !ok {
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", msg)
+		return
+	}
+	registrationName := ""
+	if name != nil {
+		registrationName = *name
 	}
 
-	session, err := h.Kratos.Register(r.Context(), in.Email, in.Password, name, locale)
+	session, err := h.Kratos.Register(r.Context(), in.Email, in.Password, registrationName, locale)
 	if err != nil {
 		if errors.Is(err, kratos.ErrIdentifierExists) {
 			// Do not echo Kratos's "an account already exists" text: that would
@@ -137,11 +143,11 @@ func (h *Handler) Registration(w http.ResponseWriter, r *http.Request) {
 			// Return the same generic validation shape as any other rejected
 			// field so an existing address is indistinguishable from a typo.
 			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR",
-				"We couldn't complete your registration. Please check your details and try again.")
+				"We couldn't complete your request. Please check your details and try again.")
 			return
 		}
 		if errors.Is(err, kratos.ErrFlowRejected) {
-			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err))
+			writePasswordValidationError(w, err, nil)
 			return
 		}
 		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Registration is temporarily unavailable.")
@@ -239,7 +245,7 @@ func (h *Handler) RecoveryComplete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if utf8.RuneCountInString(in.NewPassword) < minPasswordRunes {
-		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Password must be at least 8 characters.")
+		httpx.WriteError(w, http.StatusBadRequest, "PASSWORD_TOO_SHORT", "Password must be at least 8 characters.")
 		return
 	}
 	if in.RecoveryContinuationID != "" {
@@ -318,7 +324,7 @@ func (h *Handler) writeRecoveryPasswordRejected(w http.ResponseWriter, err error
 	if continuationID != "" {
 		details = map[string]any{"recoveryContinuationId": continuationID}
 	}
-	httpx.WriteErrorDetails(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err), details)
+	writePasswordValidationError(w, err, details)
 }
 
 // VerificationStart: POST /api/auth/verification — starts (or resends) a
@@ -398,7 +404,7 @@ func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if utf8.RuneCountInString(in.NewPassword) < minPasswordRunes {
-		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Password must be at least 8 characters.")
+		httpx.WriteError(w, http.StatusBadRequest, "PASSWORD_TOO_SHORT", "Password must be at least 8 characters.")
 		return
 	}
 
@@ -414,7 +420,7 @@ func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.Kratos.SettingsPassword(r.Context(), fresh.Token, in.NewPassword); err != nil {
 		if errors.Is(err, kratos.ErrFlowRejected) {
-			httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", kratosMessage(err))
+			writePasswordValidationError(w, err, nil)
 			return
 		}
 		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Password change is temporarily unavailable.")
@@ -674,4 +680,24 @@ func writeProfileError(w http.ResponseWriter, err error) {
 	default:
 		httpx.WriteError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Profile storage is temporarily unavailable.")
 	}
+}
+
+// writePasswordValidationError emits only fixed messages and known codes.
+// Recovery continuation details are kept, but upstream credential text is not.
+func writePasswordValidationError(w http.ResponseWriter, err error, details map[string]any) {
+	code := kratos.PasswordValidationCode(err)
+	messages := map[string]string{
+		"PASSWORD_TOO_SIMILAR":     "Choose a password that is different from your email address.",
+		"PASSWORD_TOO_SHORT":       "Password must be at least 8 characters.",
+		"PASSWORD_TOO_LONG":        "Choose a shorter password.",
+		"PASSWORD_COMPROMISED":     "This password has appeared in a data breach. Choose another password.",
+		"PASSWORD_UNCHANGED":       "Choose a password different from your current password.",
+		"PASSWORD_POLICY_REJECTED": "This password does not meet the security requirements. Choose another password.",
+	}
+	message, known := messages[code]
+	if !known {
+		code = "VALIDATION_ERROR"
+		message = "We couldn't complete your request. Please check your details and try again."
+	}
+	httpx.WriteErrorDetails(w, http.StatusBadRequest, code, message, details)
 }

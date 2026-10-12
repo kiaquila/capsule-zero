@@ -46,3 +46,7 @@
 ## Related Features
 - f-002-auth.md — Account creation
 - f-012-i18n.md — Language preference in profile
+
+## Personal-name validation (spec 053)
+
+First name and surname accept 1–40 Unicode characters after trimming, including `Ян` and a one-character name; the joined display name is limited to 80 characters. Empty/whitespace values are rejected. The separate Latin username remains 3–30 letters, digits or underscores; its localized error explicitly says "username"/"nickname" to avoid implying a minimum for personal names. The shared schema validates both the form and server action; Go accepts a nonblank display name of 1–80 Unicode characters.

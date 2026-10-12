@@ -3,8 +3,8 @@
 - [x] Fetch origin; verify GitHub and human actor; create isolated worktree.
 - [x] Read repository, frontend and test instructions; inspect reuse candidates.
 - [x] Reproduce pinned Kratos rejection and underscore acceptance.
-- [ ] Commit red regressions.
-- [ ] Implement, document and verify.
+- [x] Commit red regressions (`eb68194`).
+- [x] Implement, document and verify focused mock/full-stack scenarios, full browser suite (112 passed / 12 opt-in skips) and static/build checks.
 - [ ] Publish ready-for-review PR and trigger native review as human.
 - [ ] Resolve findings and verify all current-head gates.
 
@@ -14,6 +14,9 @@
 
 - Suspected underscore ban disproved by pinned Kratos reproduction.
 - Personal-name minimum of three is absent on current main. The username minimum is a separate justified constraint and remains unchanged.
+
+- A full-suite profile click arrived before React attached the handler. Reuse the existing ProfilePage retry in `openPasswordForm` before editing SSR inputs; do not add a timing sleep.
+- A cold full-stack run timed out while other validation work overlapped; the isolated rerun passed all eight cases. Keep build and browser server verification sequential.
 
 ### Decisions
 

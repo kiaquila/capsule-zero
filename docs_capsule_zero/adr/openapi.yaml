@@ -148,6 +148,12 @@ components:
         - VALIDATION_ERROR
         - INVALID_CODE
         - INVALID_CURRENT_PASSWORD
+        - PASSWORD_TOO_SIMILAR
+        - PASSWORD_TOO_SHORT
+        - PASSWORD_TOO_LONG
+        - PASSWORD_COMPROMISED
+        - PASSWORD_UNCHANGED
+        - PASSWORD_POLICY_REJECTED
         - UNAUTHENTICATED
         - FORBIDDEN
         - NOT_FOUND
@@ -340,10 +346,13 @@ components:
         password:
           type: string
           minLength: 8
+          description: All characters, including underscores, are allowed. Kratos rejects passwords too similar to the email identifier.
         name:
           type: string
           minLength: 1
           maxLength: 80
+          pattern: '\S'
+          description: Optional; omit when unknown. If supplied, trimmed nonblank names including one- or two-character Unicode names are accepted.
         locale:
           $ref: "#/components/schemas/Locale"
     AuthLoginRequest:
@@ -1075,7 +1084,7 @@ paths:
         Submits the one-time code against its flow, sets the new password, and
         signs the user in (spec 035). A wrong or expired code is a validation
         error and never issues a session. If Kratos accepts the code but rejects
-        the password policy, the `400 VALIDATION_ERROR` response includes
+        the password policy, the `400 PASSWORD_*` response includes
         `error.details.recoveryContinuationId`; clients retry with that id and
         a different `newPassword` instead of resubmitting the consumed code.
       requestBody:

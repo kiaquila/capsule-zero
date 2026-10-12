@@ -379,3 +379,9 @@ Seed data must include:
 - Production-first posture ADR: `docs_capsule_zero/adr/adr-006-mock-first-mvp-stage-one.md`
 - API spec: `docs_capsule_zero/adr/api-spec.md`
 - Production runtime spec: `.specify/specs/024-production-stack-runtime/`
+
+## Auth validation feedback (spec 053)
+
+Kratos UI IDs 4000031/32/33/34/39 and 4000005 map to `PASSWORD_TOO_SIMILAR`, `PASSWORD_TOO_SHORT`, `PASSWORD_TOO_LONG`, `PASSWORD_COMPROMISED`, `PASSWORD_UNCHANGED` and `PASSWORD_POLICY_REJECTED`. The adapter retains the stable classification across settings/recovery wrappers. HTTP messages are fixed safe strings; the web localizes codes. Unknown/duplicate registration errors remain generic. Recovery retry continuation details survive policy rejection. HIBP remains disabled in current config; the breach code handles deployments where it is enabled without changing policy.
+
+Registration's optional `name` may be omitted. A supplied name must be a non-null, trimmed nonblank string of 1–80 Unicode characters, matching OpenAPI and the Kratos identity schema. Profile PATCH keeps its existing nonblank 1–80 limit. Names have no three-character minimum; the profile username is a separate form-only constraint.

@@ -167,8 +167,8 @@ func TestRegistrationPreservesValidationFeedback(t *testing.T) {
 	if err := json.NewDecoder(recorder.Body).Decode(&body); err != nil {
 		t.Fatalf("decode error body: %v", err)
 	}
-	if body.Error.Message != "password is too short" {
-		t.Fatalf("message = %q, want genuine validation feedback preserved", body.Error.Message)
+	if body.Error.Code != "PASSWORD_TOO_SHORT" || body.Error.Message != "Password must be at least 8 characters." {
+		t.Fatalf("body = %+v, want specific safe short-password feedback", body.Error)
 	}
 }
 

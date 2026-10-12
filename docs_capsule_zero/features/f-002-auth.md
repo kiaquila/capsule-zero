@@ -75,3 +75,7 @@
 - f-001-landing.md — Auth popup triggered from landing
 - f-003-dashboard.md — Redirect destination after auth
 - f-004-profile.md — Profile management post-auth
+
+## Validation contract (spec 053)
+
+Registration shows an accessible password-requirements hint: at least eight Unicode characters, all symbols including `_` allowed, and sufficient difference from the email identifier. Kratos remains authoritative for identifier similarity. Stable password error codes are localized in EN/RU; unknown/duplicate-identity failures stay generic and never echo raw upstream text. Credentials-only registration does not ask for a name. An optional API name may be omitted, but when supplied must be trimmed, nonblank and at most 80 Unicode characters.

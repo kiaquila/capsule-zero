@@ -5,6 +5,14 @@
 // shown to the user.
 
 const KNOWN_AUTH_ERROR_CODES = [
+  "PASSWORD_TOO_SIMILAR",
+  "PASSWORD_TOO_SHORT",
+  "PASSWORD_TOO_LONG",
+  "PASSWORD_COMPROMISED",
+  "PASSWORD_UNCHANGED",
+  "PASSWORD_POLICY_REJECTED",
+  "INVALID_EMAIL",
+  "PASSWORDS_MISMATCH",
   "INVALID_CODE",
   "INVALID_CURRENT_PASSWORD",
   "UNAUTHENTICATED",
@@ -31,9 +39,7 @@ export function authActionFailure(error: unknown): AuthActionFailure {
     raw.replace(/^[A-Z_]+:\s*/, "").trim() ||
     "Authentication failed. Please try again.";
   const details =
-    error instanceof Error &&
-    "details" in error &&
-    isRecord(error.details)
+    error instanceof Error && "details" in error && isRecord(error.details)
       ? error.details
       : undefined;
   return { code: match?.[1], message, details };
@@ -48,10 +54,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * or missing codes collapse to the generic localized message.
  */
 export function authErrorMessageKey(code?: string): string {
-  if (
-    code &&
-    (KNOWN_AUTH_ERROR_CODES as readonly string[]).includes(code)
-  ) {
+  if (code && (KNOWN_AUTH_ERROR_CODES as readonly string[]).includes(code)) {
     return `errors.${code}`;
   }
   return "errors.default";

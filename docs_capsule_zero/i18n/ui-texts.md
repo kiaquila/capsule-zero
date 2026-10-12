@@ -255,3 +255,20 @@
 | Language label | Language | Idioma | Язык |
 | Save CTA | Save Changes | Guardar cambios | Сохранить изменения |
 | Log out | Log Out | Cerrar sesión | Выйти |
+
+## Validation additions — spec 053
+
+| Key | EN | RU |
+|---|---|---|
+| auth.passwordRequirements | Use at least 8 characters. Symbols, including _, are allowed. Choose a password that is different from your email. | Минимум 8 символов. Можно использовать любые символы, включая _. Пароль не должен быть похож на ваш email. |
+| auth.errors.PASSWORD_TOO_SIMILAR | Choose a password that is different from your email address. | Пароль слишком похож на ваш email. Придумайте другой пароль. |
+| auth.errors.PASSWORD_TOO_SHORT | Password must be at least 8 characters. | Пароль должен содержать минимум 8 символов. |
+| auth.errors.PASSWORD_TOO_LONG | Choose a shorter password. | Выберите более короткий пароль. |
+| auth.errors.PASSWORD_COMPROMISED | This password has appeared in a data breach. Choose another password. | Этот пароль найден в утечках данных. Придумайте другой пароль. |
+| auth.errors.PASSWORD_UNCHANGED | Choose a password different from your current password. | Новый пароль должен отличаться от текущего. |
+| auth.errors.PASSWORD_POLICY_REJECTED | This password does not meet the security requirements. Choose another password. | Этот пароль не соответствует требованиям безопасности. Придумайте другой пароль. |
+| auth.errors.INVALID_EMAIL | Please enter a valid email. | Введите корректный email. |
+| auth.errors.PASSWORDS_MISMATCH | Passwords don't match. | Пароли не совпадают. |
+| profile.validation.usernameLength | Username must be 3–30 characters. | Никнейм должен содержать от 3 до 30 символов. |
+
+Personal-name min(1) and existing required-name messages remain unchanged; EN/RU are the only active locales. Unknown auth codes continue to use the generic localized message.

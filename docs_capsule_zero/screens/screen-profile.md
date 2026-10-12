@@ -55,3 +55,7 @@ Prototype: `html-prototypes/profile.html`
 - Change language → instant UI update (no page reload)
 - Click [Save Changes] → persist to backend
 - Click [Log Out] → clear session, redirect to landing
+
+## Name validation (spec 053)
+
+Personal name fields accept short Unicode names, including `Ян`, with trim + 1–40-character bounds and an 80-character joined display-name limit. Empty/whitespace values show the existing localized field errors. The independent 3–30-character username rule remains; its message names the username explicitly.
