@@ -6,7 +6,7 @@ Explain password-policy failures in EN/RU and protect valid short personal names
 
 ## Scope
 
-In scope: existing auth forms, shared schemas/actions and error-code map, Go auth and Kratos adapter, optional registration name contract, identity schema and existing API contract gate, profile regressions and affected documentation.
+In scope: existing registration/recovery/password-change paths and auth forms, shared schemas/actions and error-code map, Go auth and Kratos adapter, optional registration name contract, identity schema and existing API contract gate, profile regressions and affected documentation.
 Out of scope: username policy changes, additional Telegram feedback, production account creation, password-policy weakening, frozen Supabase provider, monetization and import surfaces.
 
 ## Acceptance Criteria
@@ -25,3 +25,5 @@ Identifier-matching password, short password, mismatched confirmation, invalid e
 On fresh origin/main `2a1862d`, no three-character minimum exists for personal names. The only such rule in active profile code is the separate Latin username (3–30). First/last names already use trim + min(1). Preserve that rule and add regression coverage rather than relax username policy.
 
 Isolated in-memory `oryd/kratos:v26.2.0`, using committed config: screenshot-shaped identifier/password rejected with HTTP 400 and UI message ID 4000031 (identifier similarity); an unrelated underscore password with name `Ян` returned HTTP 200. No production account or credential was used. The screenshot itself establishes the identifier match; historical production logs are unavailable, so the reproduced cause is distinguished from a forensic claim about the historical request.
+
+Review verification: `ErrPasswordRejected` wraps `ErrFlowRejected`; settings-policy errors already enter the localized change-password branch. The extended real-adapter handler table verifies this without altering password policy or fabricating a behavior change.

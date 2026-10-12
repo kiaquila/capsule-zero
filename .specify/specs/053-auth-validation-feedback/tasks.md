@@ -20,6 +20,8 @@
 
 - The initial CI Go container mounted only `api/`, so a Go test could not read sibling infra configuration. Move cross-repository name agreement into the existing API contract gate rather than widen the Go module/runtime mounts.
 
+- Native review P2 assumed ErrPasswordRejected was independent of ErrFlowRejected. The existing sentinel explicitly wraps ErrFlowRejected, and extended real-adapter tests pass on unchanged implementation `54313b8` (400/PASSWORD_*). Keep that regression coverage and explain the wrapper in the handler; do not fabricate a red phase or add a redundant behavioral change.
+
 ### Decisions
 
 - Use stable Kratos UI message IDs, never parse localized English reasons or expose submitted credentials.

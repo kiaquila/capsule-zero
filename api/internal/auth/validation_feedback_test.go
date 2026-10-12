@@ -1,20 +1,18 @@
 package auth
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/kiaquila/capsule-zero/api/internal/httpx"
 	"github.com/kiaquila/capsule-zero/api/internal/kratos"
 )
 
 // Exercise the real adapter -> handler boundary; arbitrary upstream text must
 // never become the user-visible validation message or determine classification.
-func TestRegistrationPasswordFeedback(t *testing.T) {
+func TestPasswordPolicyFeedbackAcrossHandlers(t *testing.T) {
 	for _, tc := range []struct {
 		id   int
 		code string
@@ -24,31 +22,48 @@ func TestRegistrationPasswordFeedback(t *testing.T) {
 		{4000039, "PASSWORD_UNCHANGED"}, {4000005, "PASSWORD_POLICY_REJECTED"},
 		{4000007, "VALIDATION_ERROR"}, {4999999, "VALIDATION_ERROR"},
 	} {
-		t.Run(tc.code, func(t *testing.T) {
-			upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set("Content-Type", "application/json")
-				if r.Method == http.MethodGet {
-					fmt.Fprint(w, `{"id":"registration-flow"}`)
-					return
+		for _, endpoint := range []string{"registration", "password"} {
+			t.Run(tc.code+"/"+endpoint, func(t *testing.T) {
+				upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", "application/json")
+					if r.URL.Path == "/sessions/whoami" {
+						fmt.Fprint(w, `{"id":"session-1","active":true,"identity":{"id":"identity-1","traits":{"email":"person@example.net"}}}`)
+						return
+					}
+					if r.Method == http.MethodGet {
+						fmt.Fprint(w, `{"id":"policy-flow"}`)
+						return
+					}
+					if r.URL.Path == "/self-service/login" {
+						fmt.Fprint(w, `{"session_token":"fresh-test-token","session":{"id":"session-1","active":true,"identity":{"id":"identity-1","traits":{"email":"person@example.net"}}}}`)
+						return
+					}
+					w.WriteHeader(http.StatusBadRequest)
+					fmt.Fprintf(w, `{"ui":{"nodes":[{"messages":[{"id":%d,"type":"error","text":"sensitive upstream echo"}]}]}}`, tc.id)
+				}))
+				defer upstream.Close()
+				handler := Handler{Kratos: kratos.New(upstream.URL, upstream.URL)}
+				recorder := httptest.NewRecorder()
+				body := `{"email":"person@example.net","password":"Violet_73!Cedar","locale":"ru"}`
+				if endpoint == "password" {
+					body = `{"currentPassword":"Current_73!Cedar","newPassword":"Violet_73!Cedar"}`
 				}
-				w.WriteHeader(http.StatusBadRequest)
-				fmt.Fprintf(w, `{"ui":{"nodes":[{"messages":[{"id":%d,"type":"error","text":"sensitive upstream echo"}]}]}}`, tc.id)
-			}))
-			defer upstream.Close()
-			handler := Handler{Kratos: kratos.New(upstream.URL, upstream.URL)}
-			recorder := httptest.NewRecorder()
-			handler.Registration(recorder, httptest.NewRequest(http.MethodPost, "/api/auth/registration", strings.NewReader(`{"email":"person@example.net","password":"Violet_73!Cedar","locale":"ru"}`)))
-			var body httpx.ErrorBody
-			if err := json.Unmarshal(recorder.Body.Bytes(), &body); err != nil {
-				t.Fatal(err)
-			}
-			if recorder.Code != 400 || body.Error.Code != tc.code {
-				t.Fatalf("status/code = %d/%s, want 400/%s", recorder.Code, body.Error.Code, tc.code)
-			}
-			if strings.Contains(recorder.Body.String(), "sensitive upstream echo") {
-				t.Fatal("upstream text leaked")
-			}
-		})
+				request := httptest.NewRequest(http.MethodPost, "/api/auth/"+endpoint, strings.NewReader(body))
+				request.Header.Set("Authorization", "Bearer test-session")
+				if endpoint == "password" {
+					handler.ChangePassword(recorder, request)
+				} else {
+					handler.Registration(recorder, request)
+				}
+				errorBody := decodeErrorBody(t, recorder)
+				if recorder.Code != 400 || errorBody.Error.Code != tc.code {
+					t.Fatalf("status/code = %d/%s, want 400/%s", recorder.Code, errorBody.Error.Code, tc.code)
+				}
+				if strings.Contains(recorder.Body.String(), "sensitive upstream echo") {
+					t.Fatal("upstream text leaked")
+				}
+			})
+		}
 	}
 }
 

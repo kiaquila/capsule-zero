@@ -419,6 +419,8 @@ func (h *Handler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.Kratos.SettingsPassword(r.Context(), fresh.Token, in.NewPassword); err != nil {
+		// ErrPasswordRejected wraps ErrFlowRejected, so this branch includes
+		// both password-policy rejection and settings-flow validation failures.
 		if errors.Is(err, kratos.ErrFlowRejected) {
 			writePasswordValidationError(w, err, nil)
 			return
