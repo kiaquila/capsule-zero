@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 // Canonical strings sourced from /app/src/messages/{en,ru}.json.
 // Use these in specs instead of inline string literals so a copy edit in
 // /app does not cascade into many test files.
@@ -127,3 +129,13 @@ export const legalNavigationCopy = {
     "Модерация и обжалование",
   ],
 } as const satisfies Record<Locale, readonly string[]>;
+
+// Validation assertions read the active catalogs so EN/RU copy has one source.
+export const validationCopy = Object.fromEntries(
+  LOCALES.map((locale) => [locale, JSON.parse(readFileSync(
+    new URL(`../../../app/src/messages/${locale}.json`, import.meta.url), "utf8",
+  ))]),
+) as Record<Locale, {
+  auth: { invalidEmail: string; weakPassword: string; passwordsMismatch: string; passwordRequirements: string; errors: Record<string, string> };
+  profile: { notice: { saved: string }; validation: { firstName: string; lastName: string } };
+}>;

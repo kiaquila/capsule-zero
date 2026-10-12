@@ -18,9 +18,19 @@ export class ProfilePage extends BasePage {
   readonly passwordError: Locator;
   /** Transient status toast shared by every profile action. */
   readonly toast: Locator;
+  readonly firstName: Locator;
+  readonly lastName: Locator;
+  readonly save: Locator;
+  readonly nameErrors: Locator;
+  readonly displayName: Locator;
 
   constructor(page: Page, locale: Locale = "en") {
     super(page);
+    this.firstName = page.locator('input[name="firstName"]');
+    this.lastName = page.locator('input[name="lastName"]');
+    this.save = page.locator('button.profile-save-button');
+    this.displayName = page.locator(".profile-header-info h2");
+    this.nameErrors = page.locator('.profile-field-error');
     this.path = `/${locale}/profile`;
     this.changePasswordButton = page.getByTestId(
       "profile-change-password-button",
