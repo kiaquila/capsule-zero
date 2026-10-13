@@ -85,7 +85,7 @@ no dormant plumbing and no dead-end email links remain in production.
 1. Recovery completion with a wrong/expired code → `400 INVALID_CODE`,
    no session issued, password unchanged, localized message in the UI.
 2. Recovery completion with a valid code but Kratos password-policy
-   rejection → `400 VALIDATION_ERROR`, no session issued, password unchanged,
+   rejection → `400 PASSWORD_*` (spec 053; unknown reasons remain `VALIDATION_ERROR`), no session issued, password unchanged,
    and the UI must not tell the user the code is invalid.
 3. Password change with a wrong current password → `400
    INVALID_CURRENT_PASSWORD` (no oracle beyond what login already exposes),

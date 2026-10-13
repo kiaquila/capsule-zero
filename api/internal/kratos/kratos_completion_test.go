@@ -182,6 +182,9 @@ func TestRecoveryCompleteDistinguishesSettingsPasswordPolicyRejection(t *testing
 	if !errors.Is(err, ErrFlowRejected) {
 		t.Fatalf("err = %v, want ErrFlowRejected compatibility", err)
 	}
+	if code := PasswordValidationCode(err); code != "PASSWORD_POLICY_REJECTED" {
+		t.Fatalf("wrapped password code = %q, want PASSWORD_POLICY_REJECTED", code)
+	}
 	token, ok := RecoverySessionToken(err)
 	if !ok || token != "recovered-token" {
 		t.Fatalf("recovery token = %q, %v; want recovered-token, true", token, ok)

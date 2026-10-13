@@ -113,7 +113,16 @@ export async function signUpWithPasswordAction(
   const parsed = createSignUpSchema(serverValidationMessages).safeParse(input);
 
   if (!parsed.success) {
-    return { ok: false, message: parsed.error.issues[0]?.message };
+    const issue = parsed.error.issues[0];
+    const code =
+      issue?.path[0] === "email"
+        ? "INVALID_EMAIL"
+        : issue?.code === "too_small"
+          ? "PASSWORD_TOO_SHORT"
+          : issue?.code === "custom"
+            ? "PASSWORDS_MISMATCH"
+            : "VALIDATION_ERROR";
+    return { ok: false, code };
   }
 
   const providers = createProviderRegistry();
@@ -137,7 +146,9 @@ export async function signUpWithPasswordAction(
 export async function requestPasswordRecoveryAction(
   input: RecoveryInput,
 ): Promise<AuthActionResult> {
-  const parsed = createRecoverySchema(serverValidationMessages).safeParse(input);
+  const parsed = createRecoverySchema(serverValidationMessages).safeParse(
+    input,
+  );
 
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message };
@@ -160,8 +171,9 @@ export async function completePasswordRecoveryAction(
     recoveryContinuationId?: string;
   },
 ): Promise<AuthActionResult> {
-  const parsed =
-    createRecoveryCompleteSchema(serverValidationMessages).safeParse(input);
+  const parsed = createRecoveryCompleteSchema(
+    serverValidationMessages,
+  ).safeParse(input);
 
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message };
@@ -203,7 +215,9 @@ function recoveryContinuationIdFromDetails(
 export async function startEmailVerificationAction(
   input: RecoveryInput,
 ): Promise<AuthActionResult> {
-  const parsed = createRecoverySchema(serverValidationMessages).safeParse(input);
+  const parsed = createRecoverySchema(serverValidationMessages).safeParse(
+    input,
+  );
 
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message };
@@ -223,8 +237,9 @@ export async function startEmailVerificationAction(
 export async function completeEmailVerificationAction(
   input: VerificationCodeInput & { flowId: string },
 ): Promise<AuthActionResult> {
-  const parsed =
-    createVerificationCodeSchema(serverValidationMessages).safeParse(input);
+  const parsed = createVerificationCodeSchema(
+    serverValidationMessages,
+  ).safeParse(input);
 
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message };
@@ -250,8 +265,9 @@ export async function completeEmailVerificationAction(
 export async function changePasswordAction(
   input: PasswordChangeInput,
 ): Promise<AuthActionResult> {
-  const parsed =
-    createPasswordChangeSchema(serverValidationMessages).safeParse(input);
+  const parsed = createPasswordChangeSchema(serverValidationMessages).safeParse(
+    input,
+  );
 
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message };

@@ -18,9 +18,19 @@ export class ProfilePage extends BasePage {
   readonly passwordError: Locator;
   /** Transient status toast shared by every profile action. */
   readonly toast: Locator;
+  readonly firstName: Locator;
+  readonly lastName: Locator;
+  readonly save: Locator;
+  readonly nameErrors: Locator;
+  readonly displayName: Locator;
 
   constructor(page: Page, locale: Locale = "en") {
     super(page);
+    this.firstName = page.locator('input[name="firstName"]');
+    this.lastName = page.locator('input[name="lastName"]');
+    this.save = page.locator('button.profile-save-button[type="submit"]');
+    this.displayName = page.locator(".profile-header-info h2");
+    this.nameErrors = page.locator(".profile-field-error");
     this.path = `/${locale}/profile`;
     this.changePasswordButton = page.getByTestId(
       "profile-change-password-button",
@@ -34,8 +44,8 @@ export class ProfilePage extends BasePage {
     this.toast = page.locator(".profile-toast");
   }
 
-  /** Open the form and submit a password change. */
-  async changePassword(current: string, next: string): Promise<void> {
+  /** Wait for the existing client interaction before editing SSR fields. */
+  async openPasswordForm(): Promise<void> {
     // Match the existing cookie-banner POM retry: Next dev can expose SSR
     // markup a moment before React attaches the click handler in WebKit.
     for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -51,6 +61,11 @@ export class ProfilePage extends BasePage {
       }
     }
 
+  }
+
+  /** Open the form and submit a password change. */
+  async changePassword(current: string, next: string): Promise<void> {
+    await this.openPasswordForm();
     await this.currentPasswordInput.fill(current);
     await this.newPasswordInput.fill(next);
     await this.confirmPasswordInput.fill(next);

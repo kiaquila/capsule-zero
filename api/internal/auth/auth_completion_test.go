@@ -95,8 +95,8 @@ func TestRecoveryCompleteRejectsWeakPassword(t *testing.T) {
 	if recorder.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want 400", recorder.Code)
 	}
-	if body := decodeErrorBody(t, recorder); body.Error.Code != "VALIDATION_ERROR" {
-		t.Fatalf("code = %q, want VALIDATION_ERROR", body.Error.Code)
+	if body := decodeErrorBody(t, recorder); body.Error.Code != "PASSWORD_TOO_SHORT" {
+		t.Fatalf("code = %q, want PASSWORD_TOO_SHORT", body.Error.Code)
 	}
 }
 

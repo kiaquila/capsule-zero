@@ -34,7 +34,9 @@
             "first": {
               "type": "string",
               "title": "First name",
-              "maxLength": 256
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "\\S"
             }
           }
         },

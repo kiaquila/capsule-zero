@@ -17,7 +17,7 @@ const serverValidationMessages: ProfileValidationMessages = {
   lastName: "Enter your last name.",
   nameLength: "Keep names under 40 characters.",
   displayNameLength: "Keep the combined name under 80 characters.",
-  usernameLength: "Use 3-30 characters.",
+  usernameLength: "Username must be 3–30 characters.",
   usernamePattern: "Use lowercase letters, numbers, and underscores only.",
   email: "Enter a valid email.",
   phoneLength: "Keep the phone number under 40 characters.",

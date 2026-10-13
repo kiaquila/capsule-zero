@@ -120,6 +120,12 @@ Every REST operation returns the common `ErrorResponse` shape for failures. The 
 |  400 | `VALIDATION_ERROR`           | Request syntax, shape, enum, file metadata, or query validation failed                                     |
 |  400 | `INVALID_CODE`               | Recovery/verification one-time code is wrong, expired, or already used (spec 035)                          |
 |  400 | `INVALID_CURRENT_PASSWORD`   | Password change rejected because the presented current password is wrong (spec 035)                        |
+|  400 | `PASSWORD_TOO_SIMILAR` | Password is too similar to the email identifier (spec 053) |
+|  400 | `PASSWORD_TOO_SHORT` | Password has fewer than eight characters (spec 053) |
+|  400 | `PASSWORD_TOO_LONG` | Password exceeds the identity service's supported length (spec 053) |
+|  400 | `PASSWORD_COMPROMISED` | Password appears in known data breaches (spec 053) |
+|  400 | `PASSWORD_UNCHANGED` | New password must differ from the current password (spec 053) |
+|  400 | `PASSWORD_POLICY_REJECTED` | Another recognized password-policy rejection requires a different password (spec 053) |
 |  401 | `UNAUTHENTICATED`            | Kratos session is missing, expired, or invalid                                                             |
 |  403 | `FORBIDDEN`                  | Authenticated user cannot access the requested resource                                                     |
 |  404 | `NOT_FOUND`                  | Resource does not exist or is intentionally hidden by ownership rules                                      |
@@ -134,6 +140,8 @@ Every REST operation returns the common `ErrorResponse` shape for failures. The 
 |  503 | `STORAGE_UNAVAILABLE`        | Object Storage is unreachable or signing/readiness failed; no upload target or partial completion is returned |
 
 Server logs may include safe provider error classifications, but must never include credentials, presigned URLs, or secret-bearing raw payloads. Client responses keep messages safe for end users; the only provider target returned by this slice is the explicit short-lived presigned URL capability.
+
+Known password-policy failures in registration, recovery completion and password change use the fixed `PASSWORD_*` codes above, mapped to EN/RU copy by clients. Unknown policy/flow failures and duplicate-identity registration retain generic `VALIDATION_ERROR` without upstream text. Recovery continuation details survive password-policy failures (spec 053).
 
 ## Auth
 

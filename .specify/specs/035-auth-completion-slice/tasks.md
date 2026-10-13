@@ -262,3 +262,5 @@
   self-service links and verification email links land on app routes. Branded
   email design remains a follow-up.
 - Coins/billing untouched; session management UI untouched.
+
+Spec 053 supersedes password-policy `VALIDATION_ERROR` feedback with allowlisted `PASSWORD_*` codes, retaining opaque recovery continuations and generic unknown-error fallback. Current evidence lives in `.specify/specs/053-auth-validation-feedback/plan.md`.

@@ -323,6 +323,12 @@ export const API_ERROR_CODES = [
   "VALIDATION_ERROR",
   "INVALID_CODE",
   "INVALID_CURRENT_PASSWORD",
+  "PASSWORD_TOO_SIMILAR",
+  "PASSWORD_TOO_SHORT",
+  "PASSWORD_TOO_LONG",
+  "PASSWORD_COMPROMISED",
+  "PASSWORD_UNCHANGED",
+  "PASSWORD_POLICY_REJECTED",
   "UNAUTHENTICATED",
   "FORBIDDEN",
   "NOT_FOUND",
@@ -338,7 +344,7 @@ export const API_ERROR_CODES = [
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
-export type ErrorCode = "VALIDATION_ERROR" | "INVALID_CODE" | "INVALID_CURRENT_PASSWORD" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "IDEMPOTENCY_CONFLICT" | "SEMANTIC_VALIDATION_FAILED" | "RATE_LIMITED" | "FEATURE_UNAVAILABLE" | "STORAGE_UNAVAILABLE" | "UPLOAD_INCOMPLETE" | "UPLOAD_MISMATCH" | "INTERNAL_ERROR";
+export type ErrorCode = "VALIDATION_ERROR" | "INVALID_CODE" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_TOO_SIMILAR" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_COMPROMISED" | "PASSWORD_UNCHANGED" | "PASSWORD_POLICY_REJECTED" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "IDEMPOTENCY_CONFLICT" | "SEMANTIC_VALIDATION_FAILED" | "RATE_LIMITED" | "FEATURE_UNAVAILABLE" | "STORAGE_UNAVAILABLE" | "UPLOAD_INCOMPLETE" | "UPLOAD_MISMATCH" | "INTERNAL_ERROR";
 
 export type ErrorResponse = {
   error: {
@@ -1420,6 +1426,12 @@ export const API_SCHEMAS = {
       "VALIDATION_ERROR",
       "INVALID_CODE",
       "INVALID_CURRENT_PASSWORD",
+      "PASSWORD_TOO_SIMILAR",
+      "PASSWORD_TOO_SHORT",
+      "PASSWORD_TOO_LONG",
+      "PASSWORD_COMPROMISED",
+      "PASSWORD_UNCHANGED",
+      "PASSWORD_POLICY_REJECTED",
       "UNAUTHENTICATED",
       "FORBIDDEN",
       "NOT_FOUND",
@@ -1752,12 +1764,15 @@ export const API_SCHEMAS = {
       },
       "password": {
         "type": "string",
-        "minLength": 8
+        "minLength": 8,
+        "description": "All characters, including underscores, are allowed. Kratos rejects passwords too similar to the email identifier."
       },
       "name": {
         "type": "string",
         "minLength": 1,
-        "maxLength": 80
+        "maxLength": 80,
+        "pattern": "\\S",
+        "description": "Optional; omit when unknown. If supplied, trimmed nonblank names including one- or two-character Unicode names are accepted."
       },
       "locale": {
         "$ref": "#/components/schemas/Locale"
