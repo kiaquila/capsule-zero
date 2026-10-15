@@ -136,10 +136,16 @@ requireFileContains(
   "api/Dockerfile",
   "FROM public.ecr.aws/docker/library/golang:",
 );
+requirePath("scripts/lib/go-test-workflow.test.mjs");
+requireFileContains(".github/workflows/test.yml", "actions/setup-go@");
 requireFileContains(
   ".github/workflows/test.yml",
-  "public.ecr.aws/docker/library/golang:",
+  "go-version-file: api/go.mod",
 );
+requireFileContains(".github/workflows/test.yml", "working-directory: api");
+requireFileContains(".github/workflows/test.yml", "GOTOOLCHAIN: local");
+requireFileContains(".github/workflows/test.yml", "go vet ./...");
+requireFileContains(".github/workflows/test.yml", "go test ./...");
 requireFileExcludes(".github/workflows/test.yml", "-w /src golang:");
 for (const workflow of ["ci.yml", "cd-prod.yml"]) {
   const path = `.github/workflows/${workflow}`;

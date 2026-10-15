@@ -8,7 +8,8 @@ reviewer identity, current-head binding, branch rules or workflow permissions.
 ## Scope
 
 In scope: the existing summary parser, its regression coverage, an owner-labeled
-reviewed-SHA recovery path, and the canonical review contract and runbook.
+reviewed-SHA recovery path, the canonical review contract/runbook, and direct
+installation of the unchanged Go test toolchain after the ECR-quota blocker.
 Out of scope: product behavior, review generation, dependency versions, branch-rule
 changes, admin overrides, deployment changes and personal maintenance scheduling.
 
@@ -23,6 +24,9 @@ changes, admin overrides, deployment changes and personal maintenance scheduling
   full-SHA structured state: completed with both finding flags explicitly false.
 - **AC-004**: Normal PR events keep default-branch gate code; recovery keeps the same
   read-only permissions, GitHub-hosted execution and required merge checks.
+
+- **AC-005**: Required API vet/tests run with the exact `api/go.mod` Go version
+  without a registry pull or automatic toolchain upgrade; vet failure fails the job.
 
 ## Negative Scenarios
 

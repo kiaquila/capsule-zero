@@ -42,7 +42,7 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
 
 1. Merge to `main` triggers `.github/workflows/cd-prod.yml`.
 2. **gate** — deploys only if a deploy-relevant path changed (`app/** api/** worker/**
-   infra/** docker-compose.yml`, lockfiles, the workflow itself and
+infra/** docker-compose.yml`, lockfiles, the workflow itself and
    `scripts/setup-ci-docker-builder.sh`). Docs/tests/`.specify`-only
    merges are skipped (green, no deploy).
 3. **build** — `docker buildx` builds `app/Dockerfile` (`--target runner`) and
@@ -64,7 +64,7 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
    The wrapper validates the immutable image refs and SHA, updates the root-owned
    `/opt/capsule-zero` checkout, runs
    `docker compose --env-file .env -p capsule-zero -f docker-compose.yml pull web api &&
-   up -d --no-build` (never builds on the server), waits for `api` and `web` healthchecks
+up -d --no-build` (never builds on the server), waits for `api` and `web` healthchecks
    (generous timeouts — first boot runs Postgres init + Kratos migrations), installs/reloads
    host nginx only when `infra/nginx-host/**` changed since the last successful sync marker
    (`/var/lib/capsule-zero/last-host-nginx-sync-sha`), rolls nginx back to its previous
@@ -74,9 +74,9 @@ rollback path (`--profile docker-edge`) and is not used in normal operation.
 5. **verify (spec 036)** — the `deploy` job runs under a job-level
    `environment: production`, so GitHub records a **Deployment** for the merged commit
    (visible in the repo's Environments widget and the **Deployments** page). A final
-   *Verify live release* step polls `https://capsulezero.app/api/health` and compares its
+   _Verify live release_ step polls `https://capsulezero.app/api/health` and compares its
    `commit` field to the deployed SHA: a concrete mismatch fails the job (the production
-   deployment is marked *failure*), so an active production deployment means prod was
+   deployment is marked _failure_), so an active production deployment means prod was
    verified against the running server — not merely that `compose up` returned 0. An
    `"unknown"` commit is tolerated (warning, defer to the wrapper's own `/api/health`
    smoke) **only on an explicit `workflow_dispatch` rollback** to a pre-036 image; on a
@@ -107,7 +107,10 @@ or run the server wrapper. Verification concurrency is separate from releases.
 `build_only=true` cannot be combined with `image_sha`.
 
 Normal merges and manual deploys keep the existing production tags/cache behavior.
-The server's Docker daemon and GHCR login are unchanged. The required Go vet/test workflow uses the same ECR toolchain. ECR Public pulls
+The server's Docker daemon and GHCR login are unchanged. The required Go vet/test
+workflow installs the exact `api/go.mod` version through SHA-pinned `actions/setup-go`
+with automatic toolchain switching disabled; its checks do not pull an ECR image.
+Production image builds still use the pinned ECR bases. ECR Public pulls
 require no AWS account or new token. Registry unavailability fails the build; no Docker Hub
 fallback is configured. Docker Hub can still be used by Compose-service provisioning
 and container smoke checks; spec 053 covers web/API image builds, not every service.
@@ -125,7 +128,7 @@ and [containerd setup](https://docs.docker.com/engine/storage/containerd/).
   Compare `commit` to `git rev-parse origin/main` to see whether the latest merge landed.
 - **On the host:** `ssh cz "docker ps --format '{{.Names}}\t{{.Image}}'"` (image tag) or
   `docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}'
-  capsule-zero-api-1`.
+capsule-zero-api-1`.
 
 ## One-time operator setup (performed 2026-07-02; documented for rebuild)
 
@@ -386,6 +389,7 @@ PIN="$(docker compose -p capsule-zero ps -a --format '{{.Image}}' api)"
 case "$PIN" in ""|capsule-zero-api:local) echo "abort: no CD-pinned api image found"; exit 1;; esac
 CAPSULE_API_IMAGE="$PIN" docker compose --env-file .env -p capsule-zero -f docker-compose.yml up -d --no-build api
 ```
+
 Migration files from `0002` on must stay runnable by this non-superuser owner role —
 plain DDL on owned objects only (`pgcrypto` is a trusted extension in PG16, so its
 `IF NOT EXISTS` re-run is safe).
@@ -409,7 +413,7 @@ that restored state, and only then deploy its matching application images. It is
 automated CD action and the guard must not be bypassed against the live upgraded database.
 
 The deploy job's implicit `environment: production` deployment is always bound to the
-workflow run's own `github.sha` — during a rollback that would mark the *current* main
+workflow run's own `github.sha` — during a rollback that would mark the _current_ main
 tip Active while prod actually serves the older commit. The `record-rollback-release`
 job closes that gap: it runs only after a successful (health-verified) rollback deploy,
 creates an explicit Deployment + success status for the rolled-back SHA via the REST
