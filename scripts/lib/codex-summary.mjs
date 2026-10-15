@@ -2,12 +2,19 @@
 // than a formal GitHub review. These helpers decide which of those comments
 // count as a verdict for the commit currently under gate.
 
+// The native integration now prefixes its anchored no-findings receipt with
+// this service marker. Strip only that known prefix, not arbitrary HTML/text.
+const summaryText = (body) =>
+  (body || "").trim().replace(/^<!-- codex-review-receipt:v1 -->\s*/, "");
+
 export const matchesCodexSummaryComment = (comment, codexReviewerLogins) =>
   codexReviewerLogins.has(comment.user?.login || "") &&
-  /^Codex Review:/i.test((comment.body || "").trim());
+  /^Codex Review:/i.test(summaryText(comment.body));
 
 export const extractCodexReviewedCommit = (body) => {
-  const match = (body || "").match(/\*\*Reviewed commit:\*\*\s*`?([0-9a-fA-F]{7,40})`?/);
+  const match = (body || "").match(
+    /\*\*Reviewed commit:\*\*\s*`?([0-9a-fA-F]{7,40})`?/,
+  );
   if (!match) {
     return null;
   }
@@ -44,7 +51,9 @@ export const pickLatestCodexSummaryComment = async ({
         continue;
       }
 
-      if (await validateReviewedCommitAnchor(reviewedCommit, normalizedHeadSha)) {
+      if (
+        await validateReviewedCommitAnchor(reviewedCommit, normalizedHeadSha)
+      ) {
         matchingComments.push(comment);
       }
       continue;
@@ -54,7 +63,8 @@ export const pickLatestCodexSummaryComment = async ({
   return (
     matchingComments.sort(
       (left, right) =>
-        new Date(right.created_at).getTime() - new Date(left.created_at).getTime(),
+        new Date(right.created_at).getTime() -
+        new Date(left.created_at).getTime(),
     )[0] || null
   );
 };
