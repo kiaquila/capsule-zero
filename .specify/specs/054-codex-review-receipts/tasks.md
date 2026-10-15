@@ -27,6 +27,9 @@ checks and resolved threads. The post-merge Dependabot pilot is a separate live 
 
 ### Decisions
 
+- Ordinary label events execute the normal required validator. Skipping its job
+  would report success and could cancel a genuine in-progress check.
+
 - Strip only the observed v1 prefix; do not relax author or reviewed-commit checks.
 - Require native clean review before selecting immutable recovery gate code.
 - Keep normal events on default-branch helpers and preserve all merge protection.

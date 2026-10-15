@@ -32,8 +32,7 @@ jobs:
     name: AI Review
     if: >
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' && github.event.pull_request.draft == false &&
-        (github.event.action != 'labeled' || github.event.label.name == 'codex-gate-repair')) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
       github.event_name == 'pull_request_review'
     runs-on: ubuntu-latest
     timeout-minutes: 30

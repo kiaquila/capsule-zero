@@ -79,6 +79,13 @@ test("actual workflow repair guard accepts owner, exact head and prior native cl
     "github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'codex-gate-repair'",
   );
   assert.equal(workflow.permissions.contents, "read");
+  // Every ordinary label must execute the required validator, never skip it
+  // into a successful required-check result or cancel it without replacement.
+  assert.ok(workflow.on.pull_request.types.includes("labeled"));
+  assert.equal(
+    workflow.jobs["ai-review"].if.replace(/\s+/g, " ").trim(),
+    "github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false) || github.event_name == 'pull_request_review'",
+  );
   assert.equal(workflow.permissions["pull-requests"], "read");
   assert.equal(
     workflow.jobs["ai-review"].steps.find(
