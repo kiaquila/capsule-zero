@@ -101,6 +101,7 @@ test("fails closed when no PR-linked run exists for the head", async () => {
         jsonResponse({
           workflow_runs: [
             { ...baseRun, event: "issue_comment" },
+            { ...baseRun, event: "workflow_dispatch" },
             { ...baseRun, head_sha: "def5678" },
           ],
         }),

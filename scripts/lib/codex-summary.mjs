@@ -1,6 +1,5 @@
 // Native receipt parsing is shared by the gate and its comment-event router.
 const receiptMarker = "<!-- codex-review-receipt:v1 -->";
-const stateMarker = "<!-- codex-pull-request-review-summary -->";
 export const codexCommentTime = (comment) =>
   Date.parse(comment.updated_at || comment.created_at || 0);
 
@@ -41,7 +40,10 @@ export const classifyCodexSummaryComment = (comment) => {
     );
   return {
     outcome:
-      clean && validFooter && extractCodexReviewedCommit(text)
+      clean &&
+      validFooter &&
+      extractCodexReviewedCommit(text) &&
+      !/\bP[0-3]\b/i.test(text)
         ? "pass"
         : "fail",
     reason:

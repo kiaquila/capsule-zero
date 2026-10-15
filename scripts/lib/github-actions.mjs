@@ -7,11 +7,7 @@ const activeStatuses = new Set([
   "requested",
   "waiting",
 ]);
-const prLinkedEvents = new Set([
-  "pull_request",
-  "pull_request_review",
-  "workflow_dispatch",
-]);
+const prLinkedEvents = new Set(["pull_request", "pull_request_review"]);
 
 const request = async ({ token, url, init = {}, fetchImpl, sleepImpl }) => {
   const response = await fetchWithRetry(

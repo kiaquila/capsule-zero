@@ -32,8 +32,7 @@ jobs:
     name: AI Review
     if: >
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' && github.event.pull_request.draft == false &&
-        (github.event.action != 'labeled' || github.event.label.name == 'codex-gate-repair')) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
       github.event_name == 'pull_request_review'
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -83,7 +82,7 @@ jobs:
             const markers = (c.body.match(/<!--\s*codex-review-receipt:/g) || []).length;
             return c.user?.login === "chatgpt-codex-connector[bot]" &&
               Date.parse(c.updated_at || c.created_at) > requested &&
-              positive && footer && markers <= 1 &&
+              positive && footer && markers <= 1 && !/\bP[0-3]\b/i.test(text) &&
               anchor && sha.startsWith(anchor) && JSON.parse(execFileSync("gh", ["api", `repos/${repository}/commits/${anchor}`], {encoding:"utf8"})).sha === sha;
           });
           if (!requests.length || !receipt) throw new Error("Gate repair needs a prior native clean review of this SHA");

@@ -6,7 +6,7 @@
 - [x] Extend the existing helper while preserving trusted-author and SHA checks.
 - [x] Test owner-triggered PR-label recovery and its negative authorization scenarios.
 - [x] Update the canonical contract, recovery runbook and feature memory.
-- [x] Run the 44 library/workflow tests and repository baseline checks.
+- [x] Run the 46 library/workflow tests and repository baseline checks.
 
 Final delivery is controlled by PR #163's current-head native review, five required
 checks and resolved threads. The post-merge Dependabot pilot is a separate live check.

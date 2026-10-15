@@ -115,3 +115,14 @@ test("receipt classification requires an explicit, isolated positive verdict", (
   ])
     assert.equal(classifyCodexSummaryComment({ body }).outcome, "fail", body);
 });
+
+test("priority findings inside a footer cannot turn into clean evidence", () => {
+  assert.equal(
+    classifyCodexSummaryComment({
+      body:
+        receipt +
+        "\n<details><summary>About Codex in GitHub</summary>\nP1: blocker\n</details>",
+    }).outcome,
+    "fail",
+  );
+});

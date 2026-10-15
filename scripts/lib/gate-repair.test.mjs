@@ -184,3 +184,21 @@ test("repair guard rejects conflicting or duplicate receipt content", () => {
     assert.notEqual(runGuard(data).status, 0);
   }
 });
+
+test("unrelated labels cannot publish a skipped required AI Review", () => {
+  const condition = new Function(
+    "github",
+    `return ${workflow.jobs["ai-review"].if}`,
+  );
+  assert.equal(
+    condition({
+      event_name: "pull_request",
+      event: {
+        action: "labeled",
+        pull_request: { draft: false },
+        label: { name: "unrelated" },
+      },
+    }),
+    true,
+  );
+});
