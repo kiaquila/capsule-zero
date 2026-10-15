@@ -16,6 +16,11 @@ on:
         description: Pull request number to validate
         required: true
         type: string
+      trusted_gate_sha:
+        description: Owner-only gate repair; full SHA already reviewed by Codex
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -37,6 +42,49 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: Authorize reviewed gate repair
+        if: github.event_name == 'workflow_dispatch' && inputs.trusted_gate_sha != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          OWNER: ${{ github.repository_owner }}
+          WORKFLOW_SHA: ${{ github.sha }}
+          GATE_SHA: ${{ inputs.trusted_gate_sha }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$ACTOR" != "$OWNER" || ! "$GATE_SHA" =~ ^[a-f0-9]{40}$ || "$GATE_SHA" != "$WORKFLOW_SHA" || ! "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+            echo "::error::Gate repair requires the owner, the workflow's full SHA, and a numeric PR number."
+            exit 1
+          fi
+          gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" > "$RUNNER_TEMP/gate-repair-pr.json"
+          gh api --paginate --slurp "repos/$REPOSITORY/issues/$PR_NUMBER/comments?per_page=100" > "$RUNNER_TEMP/gate-repair-comments.json"
+          node --input-type=module <<'JS'
+          import { readFileSync } from "node:fs";
+          const { RUNNER_TEMP: tmp, GATE_SHA: sha, REPOSITORY: repository } = process.env;
+          const pull = JSON.parse(readFileSync(`${tmp}/gate-repair-pr.json`, "utf8"));
+          if (pull.state !== "open" || pull.draft || pull.head.sha !== sha ||
+              pull.head.repo.full_name !== repository || pull.base.repo.full_name !== repository) {
+            throw new Error("Gate repair must use this same-repository PR's exact open head");
+          }
+          const comments = JSON.parse(readFileSync(`${tmp}/gate-repair-comments.json`, "utf8")).flat();
+          const requests = comments.filter(c => c.user?.type !== "Bot" &&
+            ["OWNER", "MEMBER", "COLLABORATOR"].includes(c.author_association) &&
+            new RegExp(`@codex\\s+review\\s+${sha}(?![a-f0-9])`, "i").test(c.body || ""));
+          const requested = Math.max(...requests.map(c => Date.parse(c.updated_at || c.created_at)));
+          const receipt = comments.some(c => {
+            const text = (c.body || "").trim().replace(/^<!-- codex-review-receipt:v1 -->\s*/, "");
+            const anchor = text.match(/\*\*Reviewed commit:\*\*\s*`([a-f0-9]{10,40})`/i)?.[1];
+            return c.user?.login === "chatgpt-codex-connector[bot]" &&
+              Date.parse(c.updated_at || c.created_at) > requested &&
+              /^Codex Review:/i.test(text) && /did(?:\s+not|\s*n['’]?t)\s+find\s+any\s+major\s+issues/i.test(text) &&
+              anchor && (anchor === sha || anchor === sha.slice(0, 10));
+          });
+          if (!requests.length || !receipt) throw new Error("Gate repair needs a prior native clean review of this SHA");
+          JS
+
       - name: Checkout PR content
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -46,7 +94,7 @@ jobs:
       - name: Checkout trusted gate scripts
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: ${{ inputs.trusted_gate_sha || github.event.repository.default_branch }}
           path: .gate-trusted
           fetch-depth: 1
 
