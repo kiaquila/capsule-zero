@@ -48,6 +48,12 @@
 
 ### Decisions
 
+- PR #161 preserves Node 22 e2e declarations after clean install, lint and typecheck.
+  Compiler success with Node 26 types cannot prove those APIs exist on Node 22.
+  Gate compatibility is repaired separately in spec 054 / PR #163; the dependency
+  PR leaves gate code and merge checks intact. The controller enforces final-head
+  review, atomic SHA-conditional merge and a post-merge review-timestamp audit.
+
 - Dependency-only maintenance uses the existing repository checks instead of adding
   product tests or application behavior.
 - Vulnerable transitive packages are upgraded to fixed releases; OSV ignores are not

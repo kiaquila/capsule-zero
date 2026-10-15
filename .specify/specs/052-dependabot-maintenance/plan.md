@@ -29,6 +29,7 @@ green.
 | PR #152 ESLint compatibility | Expected npm 10.9.2 `ERESOLVE` from `eslint-plugin-jsx-a11y` 6.10.2 rejecting ESLint 10.12.0; app manifest/lock equality with `origin/main`; clean install, lint, typecheck, and production build. |
 | PR #153 Node type compatibility | Node 22 engine and required-workflow evidence; app manifest/lock equality with `origin/main`; clean npm 10.9.2 install, installed-version assertion, typecheck, and production build. |
 | PR #154 e2e Node type compatibility | Node 22 e2e engine and required-test-workflow evidence; e2e manifest/lock equality with `origin/main`; clean npm 10.9.2 install, installed-version assertion, lint, and typecheck. |
+| PR #161 e2e Node type compatibility | Node 22 engine and required-test-workflow evidence; manifest/lock equality with `origin/main`; clean npm 10.9.2 install on Node 22.22.1 (zero vulnerabilities), installed-version assertion, `npm run lint:e2e` (zero errors; four existing warnings), and `npm run typecheck:e2e` passed. Final-head GitHub CI and native review remain merge conditions. |
 
 ## Reuse Check
 
