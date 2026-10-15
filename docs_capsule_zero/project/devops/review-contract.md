@@ -19,8 +19,10 @@ different commit, or an anchorless summary, is rejected.
 Codex may publish:
 
 - a GitHub pull-request review with inline findings;
-- or a top-level comment beginning with `Codex Review:` and containing the reviewed
-  commit anchor.
+- or a top-level comment beginning with `Codex Review:` after whitespace trimming
+  and optional removal of the exact leading `<!-- codex-review-receipt:v1 -->`
+  service marker, and containing the reviewed commit anchor. Unknown marker versions,
+  arbitrary prefixes and running summary tables are not accepted verdicts.
 
 ## Result Mapping
 
@@ -41,3 +43,14 @@ target an existing PR-linked `AI Review` run for the resolved head SHA; it never
 the default-branch event SHA and never creates a second status context with the same
 name. If the PR head changes between context resolution and validation, the gate fails
 closed instead of transferring evidence between commits.
+
+## Owner-Dispatched Gate Repair
+
+Normal PR events use default-branch gate scripts. To recover an incompatible parser,
+the repository owner may dispatch the workflow on an already-reviewed, immutable
+`trusted_gate_sha`. It must equal the workflow SHA and the current open, non-draft,
+same-repository PR head. A trusted full-SHA request and subsequent clean native bot
+receipt are required before selecting that gate code. The repaired gate then performs
+its normal evidence validation with a read-only token on GitHub-hosted runners.
+All required checks and review-thread rules still apply. See the
+[recovery runbook](github-hosted-ai-review.md#recovering-an-incompatible-gate).
