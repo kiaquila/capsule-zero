@@ -10,8 +10,11 @@ This runbook owns Capsule Zero's required `AI Review` check.
 4. `.github/workflows/ai-review.yml` validates PR and submitted-review events. A
    PR-open/update run also polls for evidence.
 5. `.github/workflows/ai-review-wakeup.yml` handles the human command and anchored
-   Codex summary comments. If the PR-linked check has ended without success, it reruns
-   that same check on the resolved PR head SHA.
+   Codex receipts and structured-summary updates (`created` and `edited`). The runtime
+   router checks the trusted actor and current SHA. Structured summaries only wake
+   evaluation; they cannot satisfy the gate. A newer evidence update can rerun the
+   same unsuccessful PR-linked check once on the resolved PR head SHA. The wake-up
+   briefly waits for an active check to avoid losing an update at completion.
 6. Every validation runs on GitHub-hosted `ubuntu-latest`.
 7. The repository gate validates the reviewer, head SHA, and finding severities.
 8. Branch rules require the single resulting `AI Review` check before merge.
@@ -40,8 +43,9 @@ credential is part of this flow.
   collaborator, or an anchored Codex summary from the trusted bot. Submitted review
   events wake validation, but only trusted Codex evidence can satisfy the gate.
 - Reviewer evidence must identify the current PR head SHA.
-- After bootstrap, helper scripts are loaded from the trusted default branch so a PR
-  cannot weaken its own required gate.
+- Automatic PR validation loads helper scripts from the trusted default branch.
+- An owner-triggered PR-label gate repair can select an immutable, already-reviewed SHA
+  under the recovery procedure below. It receives the same read-only token.
 - The first-install fallback exists only while the helpers are absent from `main`;
   it receives no write-capable token.
 
@@ -63,6 +67,34 @@ The exact machine-readable rules live in
 4. A submitted Codex review starts a fresh PR-linked validation. An anchored summary
    comment starts the trusted wake-up, which reruns a failed or timed-out PR-linked
    check on the same head SHA.
-5. Manually dispatch `AI Review` only for first-install bootstrap or a failed GitHub
-   event delivery.
+5. If event delivery failed, rerun the existing PR-linked check. A manual dispatch
+   can diagnose evidence but cannot satisfy required PR checks.
 6. Merge only after all required checks are green and all blocking threads are resolved.
+
+## Recovering an incompatible gate
+
+The native integration prefixes anchored no-findings receipts with
+`<!-- codex-review-receipt:v1 -->`. The parser strips only that exact leading
+marker; the trusted reviewer, reviewed-commit anchor and short-SHA uniqueness
+checks still apply. Duplicate markers/anchors and conflicting or unfinished verdicts
+fail closed. Unknown prefixes and running summary tables are not verdicts. Unresolved
+native Codex findings veto a pass across all heads.
+
+When the old default-branch parser cannot validate its own repair PR:
+
+1. Review the repair diff and run `node --test scripts/lib/*.test.mjs`.
+2. Request `@codex review <full-head-sha>` once. Wait for the native bot's clean
+   receipt on that exact final head and resolve every blocking thread.
+3. As the repository owner, apply the `codex-gate-repair` label. The
+   `pull_request: labeled` event creates a PR-evaluated required check. Do not use
+   `workflow_dispatch` for recovery: GitHub does not evaluate those checks for PR rules.
+   For another reviewed head, remove and reapply the label after its native review.
+4. The workflow refuses any other actor, a different workflow/PR SHA, a fork,
+   a closed/draft PR, or a missing prior trusted request and clean bot receipt.
+   It then runs the repaired gate with a read-only token on GitHub-hosted runners.
+5. Merge after all five required checks pass. Rerun affected Dependabot PR
+   checks from the repaired default branch; review each new head after updating
+   the branch. Scheduling and external controllers are outside this repair.
+
+This recovery does not change branch rules or grant a check bypass. Normal PR
+events continue to select default-branch helpers.

@@ -7,6 +7,7 @@ on:
       - synchronize
       - reopened
       - ready_for_review
+      - labeled
   pull_request_review:
     types:
       - submitted
@@ -31,12 +32,63 @@ jobs:
     name: AI Review
     if: >
       github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' && github.event.pull_request.draft == false) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.draft == false &&
+        (github.event.action != 'labeled' || github.event.label.name == 'codex-gate-repair')) ||
       github.event_name == 'pull_request_review'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
+      - name: Authorize reviewed gate repair
+        if: github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'codex-gate-repair'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          OWNER: ${{ github.repository_owner }}
+          WORKFLOW_SHA: ${{ github.event.pull_request.head.sha }}
+          GATE_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$ACTOR" != "$OWNER" || ! "$GATE_SHA" =~ ^[a-f0-9]{40}$ || "$GATE_SHA" != "$WORKFLOW_SHA" || ! "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+            echo "::error::Gate repair requires the owner, the workflow's full SHA, and a numeric PR number."
+            exit 1
+          fi
+          gh api "repos/$REPOSITORY/pulls/$PR_NUMBER" > "$RUNNER_TEMP/gate-repair-pr.json"
+          gh api --paginate --slurp "repos/$REPOSITORY/issues/$PR_NUMBER/comments?per_page=100" > "$RUNNER_TEMP/gate-repair-comments.json"
+          node --input-type=module <<'JS'
+          import { readFileSync } from "node:fs";
+          import { execFileSync } from "node:child_process";
+          const { RUNNER_TEMP: tmp, GATE_SHA: sha, REPOSITORY: repository } = process.env;
+          const pull = JSON.parse(readFileSync(`${tmp}/gate-repair-pr.json`, "utf8"));
+          if (pull.state !== "open" || pull.draft || pull.head.sha !== sha ||
+              pull.head.repo.full_name !== repository || pull.base.repo.full_name !== repository) {
+            throw new Error("Gate repair must use this same-repository PR's exact open head");
+          }
+          const comments = JSON.parse(readFileSync(`${tmp}/gate-repair-comments.json`, "utf8")).flat();
+          const requests = comments.filter(c => c.user?.type !== "Bot" &&
+            ["OWNER", "MEMBER", "COLLABORATOR"].includes(c.author_association) &&
+            new RegExp(`@codex\\s+review\\s+${sha}(?![a-f0-9])`, "i").test(c.body || ""));
+          const requested = Math.max(...requests.map(c => Date.parse(c.updated_at || c.created_at)));
+          const receipt = comments.some(c => {
+            const text = (c.body || "").trim().replace(/^<!-- codex-review-receipt:v1 -->\s*/, "");
+            const anchors = [...text.matchAll(/\*\*Reviewed commit:\*\*\s*`([a-f0-9]{10,40})`/gi)];
+            const anchor = anchors.length === 1 ? anchors[0][1] : null;
+            const content = text.split(/<details>/i)[0].trim();
+            const positive = /^Codex Review: did(?: not|n't|n’t) find any major issues\.(?:\s*(?::rocket:|🚀|Chef's kiss\.))?\s+\*\*Reviewed commit:\*\*\s*`[a-f0-9]{10,40}`\s*$/i.test(content);
+            const suffix = text.slice(content.length).trim();
+            const footer = !suffix || /^<details>\s*<summary>[^\n]*About Codex in GitHub[^\n]*<\/summary>[\s\S]*<\/details>$/i.test(suffix);
+            const markers = (c.body.match(/<!--\s*codex-review-receipt:/g) || []).length;
+            return c.user?.login === "chatgpt-codex-connector[bot]" &&
+              Date.parse(c.updated_at || c.created_at) > requested &&
+              positive && footer && markers <= 1 &&
+              anchor && sha.startsWith(anchor) && JSON.parse(execFileSync("gh", ["api", `repos/${repository}/commits/${anchor}`], {encoding:"utf8"})).sha === sha;
+          });
+          if (!requests.length || !receipt) throw new Error("Gate repair needs a prior native clean review of this SHA");
+          JS
+
       - name: Checkout PR content
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -46,7 +98,7 @@ jobs:
       - name: Checkout trusted gate scripts
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'codex-gate-repair' && github.event.pull_request.head.sha || github.event.repository.default_branch }}
           path: .gate-trusted
           fetch-depth: 1
 
@@ -76,7 +128,7 @@ jobs:
         id: pr
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          AI_REVIEW_PR_NUMBER: ${{ inputs.pr_number }}
+          AI_REVIEW_PR_NUMBER: ${{ github.event.pull_request.number }}
         run: node "${{ steps.gate.outputs.root }}/scripts/resolve-pr-context.mjs"
 
       - name: Validate native Codex review
@@ -84,7 +136,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           AI_REVIEW_AGENT: codex
           AI_REVIEW_PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
-          AI_REVIEW_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          AI_REVIEW_HEAD_SHA: ${{ github.event.pull_request.head.sha || steps.pr.outputs.head_sha }}
           AI_REVIEW_TRIGGER_MODE: skip
           AI_REVIEW_WAIT_MS: "1200000"
           AI_REVIEW_POLL_MS: "15000"

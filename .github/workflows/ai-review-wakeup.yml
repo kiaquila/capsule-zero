@@ -4,6 +4,7 @@ on:
   issue_comment:
     types:
       - created
+      - edited
 
 permissions:
   actions: write
@@ -13,7 +14,7 @@ permissions:
 
 concurrency:
   group: ai-review-wakeup-${{ github.event.issue.number || github.run_id }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   wake-up:
@@ -22,7 +23,8 @@ jobs:
       ((contains(github.event.comment.body, '@codex review') &&
         contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
         (github.event.comment.user.login == 'chatgpt-codex-connector[bot]' &&
-          contains(github.event.comment.body, 'Codex Review:')))
+          (contains(github.event.comment.body, 'Codex Review:') ||
+           contains(github.event.comment.body, '<!-- codex-pull-request-review-summary -->'))))
     name: AI Review wake-up
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -44,4 +46,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           AI_REVIEW_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          AI_REVIEW_PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
         run: node scripts/restart-ai-review.mjs
