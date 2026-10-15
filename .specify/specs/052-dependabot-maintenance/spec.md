@@ -69,3 +69,5 @@ not apply. Existing repository checks provide regression coverage.
   production and required CI runtime contract remains Node 22.
 - PR #154: e2e development types remain on `@types/node` 22.20.1 because the e2e
   engine and required test workflow continue to execute Node 22.
+- PR #161: e2e development types remain on `@types/node` 22.20.1; accepting the
+  isolated 26.6.5 declaration update would expose APIs absent from required Node 22.
