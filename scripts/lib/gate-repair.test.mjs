@@ -46,7 +46,7 @@ function runGuard(data, overrides = {}) {
     writeFileSync(dataPath, JSON.stringify(data));
     writeFileSync(
       join(directory, "gh"),
-      `#!${process.execPath}\nconst fs = require('node:fs');\nconst data = JSON.parse(fs.readFileSync(process.env.GATE_REPAIR_FIXTURE));\nprocess.stdout.write(JSON.stringify(process.argv.includes('--paginate') ? [data.comments] : data.pull));\n`,
+      `#!${process.execPath}\nconst fs = require('node:fs');\nconst data = JSON.parse(fs.readFileSync(process.env.GATE_REPAIR_FIXTURE));\nprocess.stdout.write(JSON.stringify(process.argv.some(a => a.includes('/commits/')) ? {sha: process.env.GATE_SHA} : process.argv.includes('--paginate') ? [data.comments] : data.pull));\n`,
       { mode: 0o700 },
     );
     return spawnSync("bash", ["-euo", "pipefail", "-c", guard.run], {
@@ -56,11 +56,11 @@ function runGuard(data, overrides = {}) {
         GH_TOKEN: "unused",
         PATH: `${directory}:${process.env.PATH}`,
         RUNNER_TEMP: directory,
+        GITHUB_OUTPUT: join(directory, "output"),
         GATE_REPAIR_FIXTURE: dataPath,
         REPOSITORY: repository,
         ACTOR: "owner",
         OWNER: "owner",
-        WORKFLOW_SHA: sha,
         GATE_SHA: sha,
         PR_NUMBER: "163",
         ...overrides,
@@ -76,7 +76,7 @@ test("actual workflow repair guard accepts owner, exact head and prior native cl
   assert.equal(result.status, 0, result.stderr);
   assert.equal(
     guard.if,
-    "github.event_name == 'workflow_dispatch' && inputs.trusted_gate_sha != ''",
+    "github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'codex-gate-repair'",
   );
   assert.equal(workflow.permissions.contents, "read");
   assert.equal(workflow.permissions["pull-requests"], "read");
@@ -84,14 +84,14 @@ test("actual workflow repair guard accepts owner, exact head and prior native cl
     workflow.jobs["ai-review"].steps.find(
       (s) => s.name === "Checkout trusted gate scripts",
     ).with.ref,
-    "${{ inputs.trusted_gate_sha || github.event.repository.default_branch }}",
+    "${{ steps.repair.outputs.gate_sha || github.event.repository.default_branch }}",
   );
 });
 
-test("repair guard rejects another actor, moved workflow SHA and malformed inputs", () => {
+test("repair guard rejects another actor, moved event head and malformed inputs", () => {
   for (const overrides of [
     { ACTOR: "collaborator" },
-    { WORKFLOW_SHA: "b".repeat(40) },
+    { GATE_SHA: "b".repeat(40) },
     { GATE_SHA: "a".repeat(10) },
     { PR_NUMBER: "1/../../other" },
   ]) {
@@ -153,6 +153,24 @@ test("repair guard rejects missing, untrusted, stale and pre-request review evid
     (data) => {
       data.comments[1].body = "Codex Review Summary: Running";
     },
+  ]) {
+    const data = fixture();
+    change(data);
+    assert.notEqual(runGuard(data).status, 0);
+  }
+});
+
+test("repair guard rejects conflicting or duplicate receipt content", () => {
+  for (const change of [
+    (data) => (data.comments[1].body += "\nP1: unresolved issue"),
+    (data) => (data.comments[1].body += `\n**Reviewed commit:** \`${sha}\``),
+    (data) =>
+      (data.comments[1].body = `<!-- codex-review-receipt:v1 -->\n${data.comments[1].body}`),
+    (data) =>
+      (data.comments[1].body = data.comments[1].body.replace(
+        "Didn't find any major issues.",
+        "Review in progress.",
+      )),
   ]) {
     const data = fixture();
     change(data);

@@ -44,13 +44,15 @@ the default-branch event SHA and never creates a second status context with the 
 name. If the PR head changes between context resolution and validation, the gate fails
 closed instead of transferring evidence between commits.
 
-## Owner-Dispatched Gate Repair
+## Owner-Labeled Gate Repair
 
 Normal PR events use default-branch gate scripts. To recover an incompatible parser,
-the repository owner may dispatch the workflow on an already-reviewed, immutable
-`trusted_gate_sha`. It must equal the workflow SHA and the current open, non-draft,
-same-repository PR head. A trusted full-SHA request and subsequent clean native bot
+the repository owner may add `codex-gate-repair` to an already-reviewed PR. The
+`pull_request: labeled` event provides the immutable SHA, which must equal the
+current open, non-draft, same-repository PR head. A trusted full-SHA request and subsequent clean native bot
 receipt are required before selecting that gate code. The repaired gate then performs
 its normal evidence validation with a read-only token on GitHub-hosted runners.
+This PR-evaluated event can satisfy required ruleset checks; `workflow_dispatch`
+cannot. Subsequent pushes use the default gate even if the label remains present.
 All required checks and review-thread rules still apply. See the
 [recovery runbook](github-hosted-ai-review.md#recovering-an-incompatible-gate).

@@ -7,7 +7,7 @@ reviewer identity, current-head binding, branch rules or workflow permissions.
 
 ## Scope
 
-In scope: the existing summary parser, its regression coverage, an owner-dispatched
+In scope: the existing summary parser, its regression coverage, an owner-labeled
 reviewed-SHA recovery path, and the canonical review contract and runbook.
 Out of scope: product behavior, review generation, dependency versions, branch-rule
 changes, admin overrides, deployment changes and personal maintenance scheduling.
@@ -18,8 +18,8 @@ changes, admin overrides, deployment changes and personal maintenance scheduling
   `Codex Review:` summary from the trusted bot.
 - **AC-002**: Preserve trusted-author, current-head and short-SHA uniqueness checks;
   reject unknown prefixes, anchorless receipts, stale heads and running summaries.
-- **AC-003**: Gate recovery requires the owner, a numeric PR, matching full workflow
-  and PR SHAs, an open same-repository non-draft PR, and prior native clean review.
+- **AC-003**: Gate recovery requires the owner, a numeric PR, matching full PR-event
+  and live PR SHAs, an open same-repository non-draft PR, and prior native clean review.
 - **AC-004**: Normal PR events keep default-branch gate code; recovery keeps the same
   read-only permissions, GitHub-hosted execution and required merge checks.
 
