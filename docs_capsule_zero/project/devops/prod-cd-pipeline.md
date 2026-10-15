@@ -109,7 +109,8 @@ or run the server wrapper. Verification concurrency is separate from releases.
 Normal merges and manual deploys keep the existing production tags/cache behavior.
 The server's Docker daemon and GHCR login are unchanged. The required Go vet/test
 workflow installs the exact `api/go.mod` version through SHA-pinned `actions/setup-go`
-with automatic toolchain switching disabled; its checks do not pull an ECR image.
+with automatic toolchain switching disabled; its normal path does not pull an ECR image. If setup-go is unavailable,
+the same-version pinned ECR image remains an actual fallback running both checks.
 Production image builds still use the pinned ECR bases. ECR Public pulls
 require no AWS account or new token. Registry unavailability fails the build; no Docker Hub
 fallback is configured. Docker Hub can still be used by Compose-service provisioning

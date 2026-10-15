@@ -136,6 +136,11 @@ requireFileContains(
   "api/Dockerfile",
   "FROM public.ecr.aws/docker/library/golang:",
 );
+// Retain the exact ECR toolchain as a genuine fallback if setup-go is unavailable.
+requireFileContains(
+  ".github/workflows/test.yml",
+  "public.ecr.aws/docker/library/golang:",
+);
 requirePath("scripts/lib/go-test-workflow.test.mjs");
 requireFileContains(".github/workflows/test.yml", "actions/setup-go@");
 requireFileContains(

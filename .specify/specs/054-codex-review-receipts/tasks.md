@@ -6,7 +6,7 @@
 - [x] Extend the existing helper while preserving trusted-author and SHA checks.
 - [x] Test owner-labeled recovery and its negative authorization scenarios.
 - [x] Update the canonical contract, recovery runbook and feature memory.
-- [x] Run the 35 library/workflow tests and repository baseline checks.
+- [x] Run the 36 library/workflow tests and repository baseline checks.
 
 Final delivery is controlled by PR #163's current-head native review, five required
 checks and resolved threads. The post-merge Dependabot pilot is a separate live check.
@@ -18,7 +18,9 @@ checks and resolved threads. The post-merge Dependabot pilot is a separate live 
 - ECR rejected the same pinned Go test image in three successive hosted attempts
   with `toomanyrequests: Data limit exceeded`. Stop rerunning the unchanged failure;
   use SHA-pinned official setup-go with the exact go.mod version, keeping vet/tests
-  and production ECR builds intact.
+  and production ECR builds intact. The default-branch guard also requires the
+  ECR test reference: retain it as a genuine same-version fallback if setup-go fails,
+  with behavioral tests for both paths; do not satisfy the guard with inert text.
 
 - A fixed praise whitelist rejected a genuine "Bravo." receipt. A prose denylist
   then failed review because arbitrary contradictory text could pass. Recovery now

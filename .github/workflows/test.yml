@@ -22,6 +22,8 @@ jobs:
 
       # Install the exact api/go.mod toolchain without a container registry pull.
       - name: Setup Go
+        id: go
+        continue-on-error: true
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: api/go.mod
@@ -31,9 +33,15 @@ jobs:
         working-directory: api
         env:
           GOTOOLCHAIN: local
+          GO_SETUP_OUTCOME: ${{ steps.go.outcome }}
         run: |
-          go vet ./...
-          go test ./...
+          if [[ "$GO_SETUP_OUTCOME" == "success" ]]; then
+            go vet ./...
+            go test ./...
+          else
+            docker run --rm -e GOTOOLCHAIN=local -v "$PWD:/src" -w /src public.ecr.aws/docker/library/golang:1.26.6-bookworm \
+              sh -c 'go vet ./... && go test ./...'
+          fi
 
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0

@@ -26,7 +26,8 @@ changes, admin overrides, deployment changes and personal maintenance scheduling
   read-only permissions, GitHub-hosted execution and required merge checks.
 
 - **AC-005**: Required API vet/tests run with the exact `api/go.mod` Go version
-  without a registry pull or automatic toolchain upgrade; vet failure fails the job.
+  directly when setup-go succeeds, retaining a real same-version ECR fallback
+  if setup fails. Toolchain switching is disabled and vet failure fails either path.
 
 ## Negative Scenarios
 

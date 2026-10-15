@@ -7,7 +7,8 @@ build/push/cache steps. Change only the Node/Go registry prefix; retain version
 arguments, build metadata and the distroless runtime. The required Go vet/test
 workflow now installs that same Go version from `api/go.mod` using SHA-pinned
 `actions/setup-go` (spec 054), preserving vet/tests while avoiding ECR quotas
-for the test toolchain. Production image bases remain on ECR Public.
+for the normal test path, with the same ECR toolchain as a real fallback
+if setup-go fails. Production image bases remain on ECR Public.
 
 Share ephemeral-runner setup through `scripts/setup-ci-docker-builder.sh`: preserve
 the existing daemon JSON, enable containerd if necessary, restart only that runner
