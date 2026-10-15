@@ -78,13 +78,16 @@ checks still apply. Unknown prefixes and running summary tables are not verdicts
 When the old default-branch parser cannot validate its own repair PR:
 
 1. Review the repair diff and run `node --test scripts/lib/*.test.mjs`.
-2. Request `@codex review <full-head-sha>` once. Wait for the native bot's clean
-   receipt on that exact final head and resolve every blocking thread.
+2. Request `@codex review <full-head-sha>` once. Wait for the native bot's latest
+   structured summary on that full SHA: `code_review.status` must be `completed`
+   and both finding flags must be explicitly `false`. Resolve every blocking thread.
 3. As the repository owner, add the `codex-gate-repair` label to that repair PR.
    This starts a `pull_request: labeled` run, whose checks GitHub evaluates for
    branch rules. Manual `workflow_dispatch` checks cannot satisfy these rules.
 4. The workflow refuses any other actor, a changed PR/event head SHA, a fork,
-   a closed/draft PR, or a missing prior trusted request and clean bot receipt.
+   a closed/draft PR, a missing trusted request, or a stale/running/ambiguous native
+   state. Unknown schemas, duplicate markers, missing flags and prose-only receipts
+   cannot authorize recovery. A newer non-clean state overrides an older clean one.
    It then runs the repaired gate with a read-only token on GitHub-hosted runners.
 5. Merge after all five required checks pass. Rerun affected Dependabot PR
    checks from the repaired default branch; review each new head after updating

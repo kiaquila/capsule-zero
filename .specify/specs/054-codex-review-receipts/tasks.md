@@ -15,9 +15,10 @@ checks and resolved threads. The post-merge Dependabot pilot is a separate live 
 
 ### Dead Ends
 
-- A fixed whitelist of praise rejected a real clean native receipt ending in
-  "Bravo.". Accept variable same-line praise while rejecting conflicting findings,
-  extra verdict paragraphs and duplicate anchors.
+- A fixed praise whitelist rejected a genuine "Bravo." receipt. A prose denylist
+  then failed review because arbitrary contradictory text could pass. Recovery now
+  requires the latest exact full-SHA native JSON state with explicit clean flags;
+  receipt wording cannot authorize selection of PR gate code.
 
 - Rerunning the old default-branch gate cannot recognize the new native receipt.
 - A bare compound Bash test with `set -e` did not reliably stop invalid inputs in

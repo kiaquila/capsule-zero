@@ -19,7 +19,8 @@ changes, admin overrides, deployment changes and personal maintenance scheduling
 - **AC-002**: Preserve trusted-author, current-head and short-SHA uniqueness checks;
   reject unknown prefixes, anchorless receipts, stale heads and running summaries.
 - **AC-003**: Gate recovery requires the owner, a numeric PR, matching full PR-event
-  and live PR SHAs, an open same-repository non-draft PR, and prior native clean review.
+  and live PR SHAs, an open same-repository non-draft PR, and the latest native
+  full-SHA structured state: completed with both finding flags explicitly false.
 - **AC-004**: Normal PR events keep default-branch gate code; recovery keeps the same
   read-only permissions, GitHub-hosted execution and required merge checks.
 

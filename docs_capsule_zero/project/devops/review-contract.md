@@ -49,8 +49,12 @@ closed instead of transferring evidence between commits.
 Normal PR events use default-branch gate scripts. To recover an incompatible parser,
 the repository owner may add `codex-gate-repair` to an already-reviewed PR. The
 `pull_request: labeled` event provides the immutable SHA, which must equal the
-current open, non-draft, same-repository PR head. A trusted full-SHA request and subsequent clean native bot
-receipt are required before selecting that gate code. The repaired gate then performs
+current open, non-draft, same-repository PR head. After a trusted full-SHA request,
+the latest native bot summary must contain exactly one `codex-review-state:v1`
+JSON marker with `code_review.commit_sha` equal to that full SHA, status
+`completed`, and both `has_any_findings` and `has_unresolved_findings` explicitly
+`false`. Receipt prose, unknown schemas, missing flags and older clean states
+cannot authorize recovery. The repaired gate then performs
 its normal evidence validation with a read-only token on GitHub-hosted runners.
 This PR-evaluated event can satisfy required ruleset checks; `workflow_dispatch`
 cannot. Subsequent pushes use the default gate even if the label remains present.

@@ -17,6 +17,18 @@ const guard = workflow.jobs["ai-review"].steps.find(
 );
 const sha = "a".repeat(40);
 const repository = "owner/repo";
+const nativeState = (overrides = {}) =>
+  `<!-- codex-pull-request-review-summary -->\n<!-- codex-review-state:v1 ${JSON.stringify(
+    {
+      code_review: {
+        commit_sha: sha,
+        status: "completed",
+        has_any_findings: false,
+        has_unresolved_findings: false,
+        ...overrides,
+      },
+    },
+  )} -->\n\n## Codex Review Summary`;
 const fixture = () => ({
   pull: {
     state: "open",
@@ -32,9 +44,10 @@ const fixture = () => ({
       created_at: "2026-10-15T20:00:00Z",
     },
     {
+      id: 2,
       user: { login: "chatgpt-codex-connector[bot]" },
       created_at: "2026-10-15T20:01:00Z",
-      body: `<!-- codex-review-receipt:v1 -->\n\nCodex Review: Didn't find any major issues.\n**Reviewed commit:** \`${sha.slice(0, 10)}\``,
+      body: nativeState(),
     },
   ],
 });
@@ -71,25 +84,9 @@ function runGuard(data, overrides = {}) {
   }
 }
 
-test("actual workflow repair guard accepts owner, exact head and prior native clean receipt", () => {
-  // The native service varies its praise; the verdict and reviewed anchor stay fixed.
-  for (const praise of [
-    "",
-    " Bravo.",
-    " Chef's kiss.",
-    " :rocket:",
-    " Looks good!",
-  ]) {
-    const data = fixture();
-    data.comments[1].body = data.comments[1].body.replace(
-      "Didn't find any major issues.",
-      `Didn't find any major issues.${praise}`,
-    );
-    data.comments[1].body +=
-      "\n\n<details> <summary>ℹ️ About Codex in GitHub</summary>\nNative service information.\n</details>";
-    const result = runGuard(data);
-    assert.equal(result.status, 0, `${praise}: ${result.stderr}`);
-  }
+test("actual workflow repair guard accepts owner, exact head and completed native state", () => {
+  const result = runGuard(fixture());
+  assert.equal(result.status, 0, result.stderr);
   assert.equal(
     guard.if,
     "github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'codex-gate-repair'",
@@ -166,8 +163,8 @@ test("repair guard rejects missing, untrusted, stale and pre-request review evid
     },
     (data) => {
       data.comments[1].body = data.comments[1].body.replace(
-        sha.slice(0, 10),
-        "b".repeat(10),
+        sha,
+        "b".repeat(40),
       );
     },
     (data) => {
@@ -183,30 +180,45 @@ test("repair guard rejects missing, untrusted, stale and pre-request review evid
   }
 });
 
-test("repair guard rejects conflicting or duplicate receipt content", () => {
-  for (const change of [
-    (data) => (data.comments[1].body += "\nP1: unresolved issue"),
-    (data) =>
-      (data.comments[1].body = data.comments[1].body.replace(
-        "major issues.",
-        "major issues. P1: unresolved issue",
-      )),
-    (data) =>
-      (data.comments[1].body = data.comments[1].body.replace(
-        "major issues.",
-        "major issues. However, changes requested.",
-      )),
-    (data) => (data.comments[1].body += `\n**Reviewed commit:** \`${sha}\``),
-    (data) =>
-      (data.comments[1].body = `<!-- codex-review-receipt:v1 -->\n${data.comments[1].body}`),
-    (data) =>
-      (data.comments[1].body = data.comments[1].body.replace(
-        "Didn't find any major issues.",
-        "Review in progress.",
-      )),
+test("repair guard rejects non-clean, ambiguous and superseded native state", () => {
+  for (const review of [
+    { status: "running" },
+    { status: "failed" },
+    { has_any_findings: true },
+    { has_unresolved_findings: true },
+    { has_any_findings: null },
+    { has_unresolved_findings: "false" },
+    { has_any_findings: undefined },
+    { commit_sha: sha.slice(0, 10) },
   ]) {
     const data = fixture();
-    change(data);
-    assert.notEqual(runGuard(data).status, 0);
+    data.comments[1].body = nativeState(review);
+    assert.notEqual(runGuard(data).status, 0, JSON.stringify(review));
+  }
+  for (const body of [
+    nativeState().replace("state:v1", "state:v2"),
+    nativeState().replace('"code_review":', '"security_review":'),
+    nativeState() + "\n" + nativeState(),
+    nativeState().replace('"status":"completed"', '"status":'),
+    `<!-- codex-review-receipt:v1 -->\nCodex Review: Didn't find any major issues. Bravo.\n**Reviewed commit:** \`${sha}\``,
+    `Codex Review: Didn't find any major issues. A serious regression remains.\n**Reviewed commit:** \`${sha}\``,
+  ]) {
+    const data = fixture();
+    data.comments[1].body = body;
+    assert.notEqual(runGuard(data).status, 0, body);
+  }
+  for (const latest of [{ status: "running" }, { has_any_findings: true }]) {
+    const data = fixture();
+    data.comments.push({
+      ...data.comments[1],
+      id: 3,
+      updated_at: "2026-10-15T20:02:00Z",
+      body: nativeState(latest),
+    });
+    assert.notEqual(
+      runGuard(data).status,
+      0,
+      "Older clean state cannot override a newer result",
+    );
   }
 });

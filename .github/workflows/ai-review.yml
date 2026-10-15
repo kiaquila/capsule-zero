@@ -59,7 +59,6 @@ jobs:
           gh api --paginate --slurp "repos/$REPOSITORY/issues/$PR_NUMBER/comments?per_page=100" > "$RUNNER_TEMP/gate-repair-comments.json"
           node --input-type=module <<'JS'
           import { readFileSync } from "node:fs";
-          import { execFileSync } from "node:child_process";
           const { RUNNER_TEMP: tmp, GATE_SHA: sha, REPOSITORY: repository } = process.env;
           const pull = JSON.parse(readFileSync(`${tmp}/gate-repair-pr.json`, "utf8"));
           if (pull.state !== "open" || pull.draft || pull.head.sha !== sha ||
@@ -71,23 +70,21 @@ jobs:
             ["OWNER", "MEMBER", "COLLABORATOR"].includes(c.author_association) &&
             new RegExp(`@codex\\s+review\\s+${sha}(?![a-f0-9])`, "i").test(c.body || ""));
           const requested = Math.max(...requests.map(c => Date.parse(c.updated_at || c.created_at)));
-          const receipt = comments.some(c => {
-            const text = (c.body || "").trim().replace(/^<!-- codex-review-receipt:v1 -->\s*/, "");
-            const anchors = [...text.matchAll(/\*\*Reviewed commit:\*\*\s*`([a-f0-9]{10,40})`/gi)];
-            const anchor = anchors.length === 1 ? anchors[0][1] : null;
-            const content = text.split(/<details>/i)[0].trim();
-            const verdict = /^Codex Review: did(?: not|n't|n’t) find any major issues\.(?<praise>[^\r\n]*)\r?\n\s*\*\*Reviewed commit:\*\*\s*`[a-f0-9]{10,40}`\s*$/i.exec(content);
-            const conflicting = /\b(?:P[0-2]|unresolved|blocking|findings?|issues?|changes?|pending|running|incomplete|fail(?:ed|ure)?|but|however|except)\b/i.test(verdict?.groups.praise || "");
-            const positive = Boolean(verdict) && !conflicting;
-            const suffix = text.slice(content.length).trim();
-            const footer = !suffix || /^<details>\s*<summary>[^\n]*About Codex in GitHub[^\n]*<\/summary>[\s\S]*<\/details>$/i.test(suffix);
-            const markers = (c.body.match(/<!--\s*codex-review-receipt:/g) || []).length;
-            return c.user?.login === "chatgpt-codex-connector[bot]" &&
-              Date.parse(c.updated_at || c.created_at) > requested &&
-              positive && footer && markers <= 1 &&
-              anchor && sha.startsWith(anchor) && JSON.parse(execFileSync("gh", ["api", `repos/${repository}/commits/${anchor}`], {encoding:"utf8"})).sha === sha;
-          });
-          if (!requests.length || !receipt) throw new Error("Gate repair needs a prior native clean review of this SHA");
+          const summaries = comments.filter(c =>
+            c.user?.login === "chatgpt-codex-connector[bot]" &&
+            (c.body || "").trim().startsWith("<!-- codex-pull-request-review-summary -->") &&
+            Date.parse(c.updated_at || c.created_at) > requested)
+            .sort((a, b) => Date.parse(b.updated_at || b.created_at) - Date.parse(a.updated_at || a.created_at) || b.id - a.id);
+          const body = (summaries[0]?.body || "").trim();
+          const marker = body.match(/^<!-- codex-pull-request-review-summary -->\s*<!-- codex-review-state:v1\s+(\{[^\n]+\})\s*-->/);
+          const markers = (body.match(/<!--\s*codex-review-state:/g) || []).length;
+          let review;
+          try { review = JSON.parse(marker?.[1]).code_review; } catch {}
+          if (!requests.length || markers !== 1 || review?.commit_sha !== sha ||
+              review.status !== "completed" || review.has_any_findings !== false ||
+              review.has_unresolved_findings !== false) {
+            throw new Error("Gate repair needs the latest native completed, no-findings state for this full SHA");
+          }
           JS
           echo "gate_sha=$GATE_SHA" >> "$GITHUB_OUTPUT"
 
