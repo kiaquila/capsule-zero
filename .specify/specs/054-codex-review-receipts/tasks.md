@@ -15,6 +15,10 @@ checks and resolved threads. The post-merge Dependabot pilot is a separate live 
 
 ### Dead Ends
 
+- A fixed whitelist of praise rejected a real clean native receipt ending in
+  "Bravo.". Accept variable same-line praise while rejecting conflicting findings,
+  extra verdict paragraphs and duplicate anchors.
+
 - Rerunning the old default-branch gate cannot recognize the new native receipt.
 - A bare compound Bash test with `set -e` did not reliably stop invalid inputs in
   the local shell regression. Recovery uses an explicit conditional and `exit 1`.

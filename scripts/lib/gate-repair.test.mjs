@@ -72,8 +72,24 @@ function runGuard(data, overrides = {}) {
 }
 
 test("actual workflow repair guard accepts owner, exact head and prior native clean receipt", () => {
-  const result = runGuard(fixture());
-  assert.equal(result.status, 0, result.stderr);
+  // The native service varies its praise; the verdict and reviewed anchor stay fixed.
+  for (const praise of [
+    "",
+    " Bravo.",
+    " Chef's kiss.",
+    " :rocket:",
+    " Looks good!",
+  ]) {
+    const data = fixture();
+    data.comments[1].body = data.comments[1].body.replace(
+      "Didn't find any major issues.",
+      `Didn't find any major issues.${praise}`,
+    );
+    data.comments[1].body +=
+      "\n\n<details> <summary>ℹ️ About Codex in GitHub</summary>\nNative service information.\n</details>";
+    const result = runGuard(data);
+    assert.equal(result.status, 0, `${praise}: ${result.stderr}`);
+  }
   assert.equal(
     guard.if,
     "github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name == 'codex-gate-repair'",
@@ -170,6 +186,16 @@ test("repair guard rejects missing, untrusted, stale and pre-request review evid
 test("repair guard rejects conflicting or duplicate receipt content", () => {
   for (const change of [
     (data) => (data.comments[1].body += "\nP1: unresolved issue"),
+    (data) =>
+      (data.comments[1].body = data.comments[1].body.replace(
+        "major issues.",
+        "major issues. P1: unresolved issue",
+      )),
+    (data) =>
+      (data.comments[1].body = data.comments[1].body.replace(
+        "major issues.",
+        "major issues. However, changes requested.",
+      )),
     (data) => (data.comments[1].body += `\n**Reviewed commit:** \`${sha}\``),
     (data) =>
       (data.comments[1].body = `<!-- codex-review-receipt:v1 -->\n${data.comments[1].body}`),

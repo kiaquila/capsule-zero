@@ -76,7 +76,9 @@ jobs:
             const anchors = [...text.matchAll(/\*\*Reviewed commit:\*\*\s*`([a-f0-9]{10,40})`/gi)];
             const anchor = anchors.length === 1 ? anchors[0][1] : null;
             const content = text.split(/<details>/i)[0].trim();
-            const positive = /^Codex Review: did(?: not|n't|n’t) find any major issues\.(?:\s*(?::rocket:|🚀|Chef's kiss\.))?\s+\*\*Reviewed commit:\*\*\s*`[a-f0-9]{10,40}`\s*$/i.test(content);
+            const verdict = /^Codex Review: did(?: not|n't|n’t) find any major issues\.(?<praise>[^\r\n]*)\r?\n\s*\*\*Reviewed commit:\*\*\s*`[a-f0-9]{10,40}`\s*$/i.exec(content);
+            const conflicting = /\b(?:P[0-2]|unresolved|blocking|findings?|issues?|changes?|pending|running|incomplete|fail(?:ed|ure)?|but|however|except)\b/i.test(verdict?.groups.praise || "");
+            const positive = Boolean(verdict) && !conflicting;
             const suffix = text.slice(content.length).trim();
             const footer = !suffix || /^<details>\s*<summary>[^\n]*About Codex in GitHub[^\n]*<\/summary>[\s\S]*<\/details>$/i.test(suffix);
             const markers = (c.body.match(/<!--\s*codex-review-receipt:/g) || []).length;
