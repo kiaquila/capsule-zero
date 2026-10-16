@@ -20,8 +20,9 @@ Hub, and deployment or branch-protection bypasses.
 
 - **AC-001:** Node 22 Bookworm Slim and Go 1.26.6 Bookworm come from Docker's
   official `public.ecr.aws/docker/library` distribution. API runtime remains the
-  existing GCR distroless image. The required Go test toolchain uses the same ECR
-  Go version. No production-build source uses Docker Hub.
+  existing GCR distroless image. The required Go test toolchain uses the same Go
+  version from `api/go.mod`, installed directly through SHA-pinned `actions/setup-go`
+  after the spec 054 ECR-quota incident. No production-build source uses Docker Hub.
 - **AC-002:** CI and CD use Docker's embedded default BuildKit driver, with
   containerd enabled only on ephemeral Linux GitHub Actions runners. No builder
   container image is downloaded. Multi-stage cache export still works.
