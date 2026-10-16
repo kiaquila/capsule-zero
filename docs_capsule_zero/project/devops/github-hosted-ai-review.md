@@ -40,8 +40,9 @@ credential is part of this flow.
   collaborator, or an anchored Codex summary from the trusted bot. Submitted review
   events wake validation, but only trusted Codex evidence can satisfy the gate.
 - Reviewer evidence must identify the current PR head SHA.
-- After bootstrap, helper scripts are loaded from the trusted default branch so a PR
-  cannot weaken its own required gate.
+- Automatic PR validation loads helper scripts from the trusted default branch.
+- An owner-labeled gate repair can select an immutable, already-reviewed SHA
+  under the recovery procedure below. It receives the same read-only token.
 - The first-install fallback exists only while the helpers are absent from `main`;
   it receives no write-capable token.
 
@@ -63,6 +64,36 @@ The exact machine-readable rules live in
 4. A submitted Codex review starts a fresh PR-linked validation. An anchored summary
    comment starts the trusted wake-up, which reruns a failed or timed-out PR-linked
    check on the same head SHA.
-5. Manually dispatch `AI Review` only for first-install bootstrap or a failed GitHub
-   event delivery.
+5. Use manual dispatch only for diagnostics. Required checks must originate from
+   PR-evaluated events; recover an incompatible parser using the procedure below.
 6. Merge only after all required checks are green and all blocking threads are resolved.
+
+## Recovering an incompatible gate
+
+The native integration prefixes anchored no-findings receipts with
+`<!-- codex-review-receipt:v1 -->`. The parser strips only that exact leading
+marker; the trusted reviewer, reviewed-commit anchor and short-SHA uniqueness
+checks still apply. Unknown prefixes and running summary tables are not verdicts.
+
+When the old default-branch parser cannot validate its own repair PR:
+
+1. Review the repair diff and run `node --test scripts/lib/*.test.mjs`.
+2. Request `@codex review <full-head-sha>` once. Wait for the native bot's latest
+   structured summary on that full SHA: `code_review.status` must be `completed`
+   and both finding flags must be explicitly `false`. Resolve every blocking thread.
+3. As the repository owner, add the `codex-gate-repair` label to that repair PR.
+   This starts a `pull_request: labeled` run, whose checks GitHub evaluates for
+   branch rules. Manual `workflow_dispatch` checks cannot satisfy these rules.
+4. The workflow refuses any other actor, a changed PR/event head SHA, a fork,
+   a closed/draft PR, a missing trusted request, or a stale/running/ambiguous native
+   state. Unknown schemas, duplicate markers, missing flags and prose-only receipts
+   cannot authorize recovery. A newer non-clean state overrides an older clean one.
+   It then runs the repaired gate with a read-only token on GitHub-hosted runners.
+5. Merge after all five required checks pass. Rerun affected Dependabot PR
+   checks from the repaired default branch; review each new head after updating
+   the branch. Resume maintenance only after its post-merge audit and chat archive.
+
+This recovery does not change branch rules or grant a check bypass. Normal PR
+events continue to select default-branch helpers. The recovery label is consulted
+only on its owner-authored `labeled` event; leaving it on a PR does not authorize
+subsequent pushes.
