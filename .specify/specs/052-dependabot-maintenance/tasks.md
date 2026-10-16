@@ -38,6 +38,9 @@
 - [x] T025 Reject PR #154's isolated e2e Node 26 declarations and restore the verified
       Node 22 manifest and lockfile graph.
 - [ ] T026 Complete required GitHub checks and native Codex review for PR #154.
+- [x] T027 Verify PR #157's official action tags, signed commit pins, and unchanged
+      workflow permissions and triggers.
+- [ ] T028 Complete required GitHub checks and native Codex review for PR #157.
 
 ## Process Memory
 
@@ -48,6 +51,10 @@
 
 ### Decisions
 
+- PR #157 accepts the signed `actions/setup-node` v7.1.0 and
+  `actions/upload-artifact` v7.0.2 commits. The update changes only immutable action
+  pins and release comments; workflow permissions, triggers, inputs, and commands stay
+  unchanged.
 - PR #161 preserves Node 22 e2e declarations after clean install, lint and typecheck.
   Compiler success with Node 26 types cannot prove those APIs exist on Node 22.
   Gate compatibility is repaired separately in spec 054 / PR #163; the dependency
@@ -91,6 +98,7 @@
 
 ### Known Issues
 
+- PR #157 final-head required checks and native Codex review remain pending.
 - PR #154 required GitHub checks and native Codex review remain pending on the
   restored e2e Node 22 declaration graph.
 - The dev-only `braces` exception must be removed or renewed with fresh upstream
