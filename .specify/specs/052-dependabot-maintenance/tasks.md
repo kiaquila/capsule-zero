@@ -52,6 +52,9 @@
 - [x] T034 Reproduce PR #160's ESLint 10 peer conflict and restore the supported
       ESLint 9.39.4 manifest and lockfile graph on the sequential baseline.
 - [ ] T035 Complete required GitHub checks and native Codex review for PR #160.
+- [x] T036 Sync PR #162 with the sequential baseline and verify the coordinated AWS
+      SDK/Smithy patch graph through tidy, integrity verification, vet, and tests.
+- [ ] T037 Complete required GitHub checks and native Codex review for PR #162.
 
 ## Process Memory
 
@@ -62,6 +65,8 @@
 
 ### Decisions
 
+- PR #162 keeps the Dependabot-generated AWS SDK/Smithy patch set together because
+  the direct and transitive modules resolve as one tidy, verified, tested graph.
 - PR #160 keeps ESLint 9.39.4 because `eslint-plugin-jsx-a11y` 6.10.2 rejects
   ESLint 10.12.0; bypassing npm peer resolution would leave an unsupported lint graph.
 - PR #159 keeps app declarations on Node 22 because `app/Dockerfile` and the required
@@ -120,6 +125,7 @@
 
 ### Known Issues
 
+- PR #162 final-head required checks and native Codex review remain pending.
 - PR #160 final-head required checks and native Codex review remain pending.
 - PR #159 final-head required checks and native Codex review remain pending.
 - PR #158 final-head required checks and native Codex review remain pending.
