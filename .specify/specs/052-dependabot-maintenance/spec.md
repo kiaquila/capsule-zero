@@ -74,3 +74,6 @@ not apply. Existing repository checks provide regression coverage.
 - PR #157: GitHub Actions SHA pins advance to the signed `actions/setup-node` v7.1.0
   and `actions/upload-artifact` v7.0.2 release commits without changing workflow
   permissions, triggers, or behavior.
+- PR #158: eight supported npm minor/patch updates advance, with Next corrected to
+  the security-patched 16.4.1 release; the frozen Supabase graph stays identical to
+  `origin/main`, and Next/SWC Linux entries retain their `glibc`/`musl` selectors.
