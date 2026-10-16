@@ -15,7 +15,9 @@ const summaryBody = (reviewedCommit) =>
   [
     "Codex Review: Didn't find any major issues. Chef's kiss.",
     "",
-    ...(reviewedCommit ? [`**Reviewed commit:** \`${reviewedCommit}\``, ""] : []),
+    ...(reviewedCommit
+      ? [`**Reviewed commit:** \`${reviewedCommit}\``, ""]
+      : []),
     "<details> <summary>ℹ️ About Codex in GitHub</summary>",
     "</details>",
   ].join("\n");
@@ -29,7 +31,10 @@ const makeComment = (overrides = {}) => ({
 });
 
 test("extractCodexReviewedCommit reads the backticked abbreviated SHA", () => {
-  assert.equal(extractCodexReviewedCommit(summaryBody("72386ce1d1")), "72386ce1d1");
+  assert.equal(
+    extractCodexReviewedCommit(summaryBody("72386ce1d1")),
+    "72386ce1d1",
+  );
 });
 
 test("extractCodexReviewedCommit accepts a full unbackticked SHA and lowercases it", () => {
@@ -44,11 +49,17 @@ test("extractCodexReviewedCommit returns null without a reviewed-commit line", (
 });
 
 test("extractCodexReviewedCommit rejects anchors shorter than seven hex chars", () => {
-  assert.equal(extractCodexReviewedCommit("**Reviewed commit:** `abc12`"), null);
+  assert.equal(
+    extractCodexReviewedCommit("**Reviewed commit:** `abc12`"),
+    null,
+  );
 });
 
 test("matchesCodexSummaryComment requires trusted login and Codex Review prefix", () => {
-  assert.equal(matchesCodexSummaryComment(makeComment(), codexReviewerLogins), true);
+  assert.equal(
+    matchesCodexSummaryComment(makeComment(), codexReviewerLogins),
+    true,
+  );
   assert.equal(
     matchesCodexSummaryComment(
       makeComment({ user: { login: "mallory" } }),
@@ -137,8 +148,14 @@ test("verdict anchored to a different commit is rejected even when fresh", async
 });
 
 test("anchorless verdict is rejected regardless of recency", async () => {
-  const stale = makeComment({ body: summaryBody(null), created_at: "2026-07-01T21:58:41Z" });
-  const fresh = makeComment({ body: summaryBody(null), created_at: "2026-07-01T22:10:00Z" });
+  const stale = makeComment({
+    body: summaryBody(null),
+    created_at: "2026-07-01T21:58:41Z",
+  });
+  const fresh = makeComment({
+    body: summaryBody(null),
+    created_at: "2026-07-01T22:10:00Z",
+  });
 
   assert.equal(
     await pickLatestCodexSummaryComment({
@@ -169,8 +186,14 @@ test("untrusted author is rejected even with a matching anchor", async () => {
 });
 
 test("latest matching anchored summary comment wins", async () => {
-  const earlier = makeComment({ body: summaryBody(headSha), created_at: "2026-07-01T21:58:41Z" });
-  const later = makeComment({ body: summaryBody(headSha), created_at: "2026-07-01T22:15:37Z" });
+  const earlier = makeComment({
+    body: summaryBody(headSha),
+    created_at: "2026-07-01T21:58:41Z",
+  });
+  const later = makeComment({
+    body: summaryBody(headSha),
+    created_at: "2026-07-01T22:15:37Z",
+  });
   const picked = await pickLatestCodexSummaryComment({
     comments: [earlier, later],
     codexReviewerLogins,
@@ -178,4 +201,73 @@ test("latest matching anchored summary comment wins", async () => {
   });
 
   assert.equal(picked, later);
+});
+
+// Shape observed on PR #161, issuecomment-6202996463.
+const receiptBody = (sha) =>
+  `<!-- codex-review-receipt:v1 -->\n\n${summaryBody(sha)}`;
+
+test("native v1 service prefix preserves the anchored no-findings receipt", async () => {
+  const verdict = makeComment({ body: receiptBody(headSha) });
+  assert.equal(matchesCodexSummaryComment(verdict, codexReviewerLogins), true);
+  assert.equal(
+    await pickLatestCodexSummaryComment({
+      comments: [verdict],
+      codexReviewerLogins,
+      headSha,
+    }),
+    verdict,
+  );
+});
+
+test("native receipt abbreviated SHA still needs GitHub uniqueness validation", async () => {
+  const verdict = makeComment({ body: receiptBody(headSha.slice(0, 10)) });
+  assert.equal(
+    await pickLatestCodexSummaryComment({
+      comments: [verdict],
+      codexReviewerLogins,
+      headSha,
+    }),
+    null,
+  );
+  assert.equal(
+    await pickLatestCodexSummaryComment({
+      comments: [verdict],
+      codexReviewerLogins,
+      headSha,
+      validateReviewedCommitAnchor: async () => true,
+    }),
+    verdict,
+  );
+});
+
+test("prefixed receipts reject untrusted authors, stale SHAs and missing anchors", async () => {
+  for (const verdict of [
+    makeComment({ body: receiptBody(headSha), user: { login: "mallory" } }),
+    makeComment({ body: receiptBody("a".repeat(40)) }),
+    makeComment({ body: receiptBody(null) }),
+  ]) {
+    assert.equal(
+      await pickLatestCodexSummaryComment({
+        comments: [verdict],
+        codexReviewerLogins,
+        headSha,
+      }),
+      null,
+    );
+  }
+});
+
+test("unknown service versions, arbitrary prefixes and running summaries are rejected", () => {
+  for (const body of [
+    `<!-- codex-review-receipt:v2 -->\n${summaryBody(headSha)}`,
+    `<!-- arbitrary comment -->\n${summaryBody(headSha)}`,
+    `Quoted text\n${receiptBody(headSha)}`,
+    "<!-- codex-pull-request-review-summary -->\nCodex Review Summary: Running",
+  ]) {
+    assert.equal(
+      matchesCodexSummaryComment(makeComment({ body }), codexReviewerLogins),
+      false,
+    );
+  }
 });

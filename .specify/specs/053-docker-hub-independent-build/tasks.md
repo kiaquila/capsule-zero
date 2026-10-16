@@ -25,10 +25,15 @@
 
 ### Decisions
 
+- Spec 054 live validation hit ECR anonymous data limits in three consecutive
+  required Test attempts. Install the same exact `api/go.mod` toolchain through
+  SHA-pinned `actions/setup-go`; keep vet/package tests, and keep production image
+  bases on ECR. This supersedes only the test-image choice recorded below.
+
 - Keep Node/Go versions and base OS unchanged, using Docker Official Images on ECR
   Public. Keep the existing non-Hub distroless runtime.
 - Reuse search: `rg -n 'buildkit|registry.*mirror|NODE_VERSION|GO_VERSION|docker
-  buildx' .github scripts infra docs_capsule_zero/project/devops` found the existing
+buildx' .github scripts infra docs_capsule_zero/project/devops` found the existing
   CD setup step but no reusable runner setup; extract that responsibility once for
   CI and CD. Extend `scripts/check-repo-baseline.mjs` for regression detection.
 - Verification mode runs the same production steps with isolated tags/cache writes

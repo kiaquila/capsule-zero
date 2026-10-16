@@ -19,8 +19,10 @@ different commit, or an anchorless summary, is rejected.
 Codex may publish:
 
 - a GitHub pull-request review with inline findings;
-- or a top-level comment beginning with `Codex Review:` and containing the reviewed
-  commit anchor.
+- or a top-level comment beginning with `Codex Review:` after whitespace trimming
+  and optional removal of the exact leading `<!-- codex-review-receipt:v1 -->`
+  service marker, and containing the reviewed commit anchor. Unknown marker versions,
+  arbitrary prefixes and running summary tables are not accepted verdicts.
 
 ## Result Mapping
 
@@ -41,3 +43,20 @@ target an existing PR-linked `AI Review` run for the resolved head SHA; it never
 the default-branch event SHA and never creates a second status context with the same
 name. If the PR head changes between context resolution and validation, the gate fails
 closed instead of transferring evidence between commits.
+
+## Owner-Labeled Gate Repair
+
+Normal PR events use default-branch gate scripts. To recover an incompatible parser,
+the repository owner may add `codex-gate-repair` to an already-reviewed PR. The
+`pull_request: labeled` event provides the immutable SHA, which must equal the
+current open, non-draft, same-repository PR head. After a trusted full-SHA request,
+the latest native bot summary must contain exactly one `codex-review-state:v1`
+JSON marker with `code_review.commit_sha` equal to that full SHA, status
+`completed`, and both `has_any_findings` and `has_unresolved_findings` explicitly
+`false`. Receipt prose, unknown schemas, missing flags and older clean states
+cannot authorize recovery. The repaired gate then performs
+its normal evidence validation with a read-only token on GitHub-hosted runners.
+This PR-evaluated event can satisfy required ruleset checks; `workflow_dispatch`
+cannot. Subsequent pushes use the default gate even if the label remains present.
+All required checks and review-thread rules still apply. See the
+[recovery runbook](github-hosted-ai-review.md#recovering-an-incompatible-gate).

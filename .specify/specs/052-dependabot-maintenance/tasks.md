@@ -38,6 +38,12 @@
 - [x] T025 Reject PR #154's isolated e2e Node 26 declarations and restore the verified
       Node 22 manifest and lockfile graph.
 - [ ] T026 Complete required GitHub checks and native Codex review for PR #154.
+- [x] T027 Verify PR #157's official action tags, signed commit pins, and unchanged
+      workflow permissions and triggers.
+- [ ] T028 Complete required GitHub checks and native Codex review for PR #157.
+- [x] T029 Sync PR #158 with the sequential baseline, preserve the frozen Supabase
+      graph and Linux native selectors, and verify the supported npm updates.
+- [ ] T030 Complete required GitHub checks and native Codex review for PR #158.
 
 ## Process Memory
 
@@ -47,6 +53,20 @@
   guard also requires complete feature memory for any `/app` manifest change.
 
 ### Decisions
+
+- PR #158 accepts the supported Prettier, Next, React Hook Form, Zod,
+  `eslint-config-next`, Playwright, `eslint-plugin-playwright`, and
+  `typescript-eslint` updates. The complete Supabase graph remains at the
+  `origin/main` versions, and Linux Next/SWC packages retain their platform selectors.
+- PR #157 accepts the signed `actions/setup-node` v7.1.0 and
+  `actions/upload-artifact` v7.0.2 commits. The update changes only immutable action
+  pins and release comments; workflow permissions, triggers, inputs, and commands stay
+  unchanged.
+- PR #161 preserves Node 22 e2e declarations after clean install, lint and typecheck.
+  Compiler success with Node 26 types cannot prove those APIs exist on Node 22.
+  Gate compatibility is repaired separately in spec 054 / PR #163; the dependency
+  PR leaves gate code and merge checks intact. The controller enforces final-head
+  review, atomic SHA-conditional merge and a post-merge review-timestamp audit.
 
 - Dependency-only maintenance uses the existing repository checks instead of adding
   product tests or application behavior.
@@ -85,6 +105,8 @@
 
 ### Known Issues
 
+- PR #158 final-head required checks and native Codex review remain pending.
+- PR #157 final-head required checks and native Codex review remain pending.
 - PR #154 required GitHub checks and native Codex review remain pending on the
   restored e2e Node 22 declaration graph.
 - The dev-only `braces` exception must be removed or renewed with fresh upstream
