@@ -77,3 +77,8 @@ not apply. Existing repository checks provide regression coverage.
 - PR #158: eight supported npm minor/patch updates advance, with Next corrected to
   the security-patched 16.4.1 release; the frozen Supabase graph stays identical to
   `origin/main`, and Next/SWC Linux entries retain their `glibc`/`musl` selectors.
+- PR #159: app development types remain on `@types/node` 22.20.1 because the app
+  image and both required Node workflows still execute Node 22; Node 26 declarations
+  remain deferred until the executable runtime contract advances.
+- PR #160: app ESLint remains on 9.39.4 because `eslint-plugin-jsx-a11y` 6.10.2
+  rejects ESLint 10.12.0 during the repository-pinned clean npm install.

@@ -46,6 +46,12 @@
 - [x] T030 Address Codex P1 by advancing Next and its lint config to the security-fixed
       16.4.1 patch release while preserving the frozen and platform-specific graphs.
 - [ ] T031 Complete required GitHub checks and native Codex review for PR #158.
+- [x] T032 Reject PR #159's isolated app Node 26 declarations and restore the verified
+      Node 22 manifest and lockfile graph on the sequential baseline.
+- [ ] T033 Complete required GitHub checks and native Codex review for PR #159.
+- [x] T034 Reproduce PR #160's ESLint 10 peer conflict and restore the supported
+      ESLint 9.39.4 manifest and lockfile graph on the sequential baseline.
+- [ ] T035 Complete required GitHub checks and native Codex review for PR #160.
 
 ## Process Memory
 
@@ -56,6 +62,11 @@
 
 ### Decisions
 
+- PR #160 keeps ESLint 9.39.4 because `eslint-plugin-jsx-a11y` 6.10.2 rejects
+  ESLint 10.12.0; bypassing npm peer resolution would leave an unsupported lint graph.
+- PR #159 keeps app declarations on Node 22 because `app/Dockerfile` and the required
+  CI/test workflows still execute Node 22. Compiler success with Node 26 declarations
+  cannot prove those APIs exist in the deployed runtime.
 - PR #158 accepts the supported Prettier, Next, React Hook Form, Zod,
   `eslint-config-next`, Playwright, `eslint-plugin-playwright`, and
   `typescript-eslint` updates. Codex P1 and the official 2026-10-14 advisory require
@@ -109,6 +120,8 @@
 
 ### Known Issues
 
+- PR #160 final-head required checks and native Codex review remain pending.
+- PR #159 final-head required checks and native Codex review remain pending.
 - PR #158 final-head required checks and native Codex review remain pending.
 - PR #157 final-head required checks and native Codex review remain pending.
 - PR #154 required GitHub checks and native Codex review remain pending on the
