@@ -69,3 +69,8 @@ not apply. Existing repository checks provide regression coverage.
   production and required CI runtime contract remains Node 22.
 - PR #154: e2e development types remain on `@types/node` 22.20.1 because the e2e
   engine and required test workflow continue to execute Node 22.
+- PR #161: e2e development types remain on `@types/node` 22.20.1; accepting the
+  isolated 26.6.5 declaration update would expose APIs absent from required Node 22.
+- PR #157: GitHub Actions SHA pins advance to the signed `actions/setup-node` v7.1.0
+  and `actions/upload-artifact` v7.0.2 release commits without changing workflow
+  permissions, triggers, or behavior.
