@@ -37,6 +37,8 @@
 
 - Second native review identified English-only guest wardrobe names after RU save (RED `7f9abc3`). Localize the existing snapshot projection without changing the persistence or locale-free repository contract; cover all five wardrobe pages in the existing browser scenario (GREEN in Chromium and iPhone WebKit).
 
+- Third native review found a separate English-only dashboard mapper. Extend the existing RU scenario and profile mapper checks; localize dashboard recent names from the same trusted snapshot. Reuse scan also found guest records eligible for the legacy capsule picker; exclude them until capsule membership is durable, consistent with the earlier capability restriction.
+
 ### Known Issues
 
 - Other legacy wardrobe/capsule domains remain outside this slice. Guest favorite/status actions are durable; legacy name/edit/delete and formal capsule CRUD retain their existing adapters and are not claimed as migrated. Those unsupported controls are hidden or read-only for saved guest records; no local-only success is exposed.

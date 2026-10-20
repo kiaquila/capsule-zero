@@ -324,7 +324,10 @@ function sourceType(item: WardrobeEntry): CapsuleResultItemSource {
 }
 
 function isCapsulePickerEligible(item: WardrobeEntry): boolean {
-  return item.status === "active" || item.status === "uncapsulated";
+  return (
+    !item.guestPresetId &&
+    (item.status === "active" || item.status === "uncapsulated")
+  );
 }
 
 function categoryName(categoryId: string, locale: AppLocale): string {

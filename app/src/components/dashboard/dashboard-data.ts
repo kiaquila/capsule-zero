@@ -229,7 +229,7 @@ function buildRecentItems(
 
       return {
         id: item.id,
-        name: item.name,
+        name: item.guestPresetNames?.[locale] ?? item.name,
         category: categoryName(item.categoryId, locale),
         ...age,
         colorHex: item.colorPoints[0]?.hex ?? "#FFFFFF",
