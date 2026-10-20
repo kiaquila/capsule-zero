@@ -20,7 +20,11 @@ const steps = workflow.jobs.test.steps;
 const setup = steps.find((step) => step.uses?.startsWith("actions/setup-go@"));
 const check = steps.find((step) => step.name === "Go vet + test (api)");
 
-function runCheck(failVet = false, setupOutcome = "success") {
+function runCheck(
+  failVet = false,
+  setupOutcome = "success",
+  failIntegration = false,
+) {
   const directory = mkdtempSync(join(tmpdir(), "go-test-policy-"));
   try {
     const log = join(directory, "calls.jsonl");
@@ -32,7 +36,7 @@ function runCheck(failVet = false, setupOutcome = "success") {
     );
     writeFileSync(
       join(directory, "go"),
-      `#!${process.execPath}\nconst fs = require('node:fs');\nfs.appendFileSync(process.env.GO_POLICY_LOG, JSON.stringify({args:process.argv.slice(2),cwd:process.cwd(),toolchain:process.env.GOTOOLCHAIN})+'\\n');\nif (process.env.FAIL_VET === '1' && process.argv[2] === 'vet') process.exit(1);\n`,
+      `#!${process.execPath}\nconst fs = require('node:fs');\nfs.appendFileSync(process.env.GO_POLICY_LOG, JSON.stringify({args:process.argv.slice(2),cwd:process.cwd(),toolchain:process.env.GOTOOLCHAIN,database:process.env.TEST_DATABASE_URL})+'\\n');\nif (process.env.FAIL_VET === '1' && process.argv[2] === 'vet') process.exit(1);\nif (process.env.FAIL_INTEGRATION === '1' && process.argv.includes('-tags=integration')) process.exit(1);\n`,
       { mode: 0o700 },
     );
     const result = spawnSync("bash", ["-euo", "pipefail", "-c", check.run], {
@@ -46,6 +50,7 @@ function runCheck(failVet = false, setupOutcome = "success") {
         GO_POLICY_DOCKER_LOG: dockerLog,
         GO_SETUP_OUTCOME: setupOutcome,
         FAIL_VET: failVet ? "1" : "0",
+        FAIL_INTEGRATION: failIntegration ? "1" : "0",
       },
     });
     const calls = readFileSync(log, "utf8").trim().split("\n").map(JSON.parse);
@@ -78,6 +83,7 @@ test("required API checks use the exact module toolchain and execute vet plus te
     [
       ["vet", "./..."],
       ["test", "./..."],
+      ["test", "-race", "-tags=integration", "./internal/guest", "-count=1"],
     ],
   );
   assert.ok(
@@ -115,6 +121,24 @@ test("setup failure retains a real pinned ECR fallback that runs both checks", (
     [
       ["vet", "./..."],
       ["test", "./..."],
+      ["test", "-race", "-tags=integration", "./internal/guest", "-count=1"],
     ],
   );
+});
+
+test("guest integration runs against PostgreSQL and a failure blocks both paths", () => {
+  assert.equal(
+    workflow.jobs.test.services["guest-postgres"].image,
+    "public.ecr.aws/docker/library/postgres:16",
+  );
+  assert.match(check.env.TEST_DATABASE_URL, /^postgres:\/\//);
+  for (const outcome of ["success", "failure"]) {
+    const result = runCheck(false, outcome, true);
+    assert.notEqual(result.status, 0);
+    assert.equal(result.calls.at(-1).database, check.env.TEST_DATABASE_URL);
+    if (outcome === "failure") {
+      assert.ok(result.docker.includes("TEST_DATABASE_URL"));
+      assert.ok(result.docker.includes("host"));
+    }
+  }
 });

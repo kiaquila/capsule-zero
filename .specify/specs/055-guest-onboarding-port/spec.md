@@ -29,3 +29,5 @@ Empty/incompatible selection cannot open results; wrong-type or unknown stored I
 The user requested exact reference UI before a separate refinement PR. For this port the reference result shows up to three recommendations and all outfits before signup, signup is the existing modal, photo tiles are an interest-only paid concept with no checkout. This supersedes historical Stage-1 UI sequencing for this slice. The catalog studio surface and 24px reference chrome radius are preserved via explicit tokens. No automatic account-save backend is claimed complete.
 
 Native review P2 in PR #164 identified a reference defect: a complete-role, incompatible selection displayed an empty “Add …” hint. A minimal EN/RU replacement hint fixes that broken blocked state; no layout, counting or wider UX refinement is added. Regression test commit `16afdc2` precedes the fix.
+
+Follow-up: spec 056 implements account persistence in a separate PR. The original port limitations above describe spec 055 delivery only.

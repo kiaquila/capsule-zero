@@ -59,6 +59,16 @@ Tests stay beside their package so unexported helpers and boundaries can be
 tested without creating a parallel module. `tests/unit/` is reserved for a
 future cross-package suite only; see `tests/unit/README.md`.
 
+Guest transfer persistence also has a real PostgreSQL integration test (spec 056):
+
+```bash
+cd api
+TEST_DATABASE_URL='postgres://postgres:local-test-password@localhost:5432/postgres?sslmode=disable' \
+  go test -race -tags=integration ./internal/guest -count=1
+```
+
+Use a disposable local test database. The required `test` job provisions PostgreSQL 16 and runs this test in both Go-toolchain paths; missing local `TEST_DATABASE_URL` skips this opt-in test only. The required baseline Kratos smoke also exercises real authenticated guest save/read/retry/owner isolation over HTTP. Browser coverage is under `tests/e2e/specs/guest/` (signup, login, Google, new session, storage/network failure and owner isolation).
+
 ### `tests/mobile/` — Detox tests (stub)
 
 `detox test` against the React Native binary once the RN app lands. POM/Screen-Object discipline matches `tests/e2e/`. See `tests/mobile/README.md`.
@@ -131,7 +141,7 @@ callback-redirect fix):
   `.next-origin-guard/**/types` globs are pre-included in `app/tsconfig.json` so
   local guard builds do not rewrite the worktree.
 - **Assertion style**: these are request-level (`request.get(url, {
-  maxRedirects: 0 }`)) — no rendered UI, so no Page Object. Assert on the
+maxRedirects: 0 }`)) — no rendered UI, so no Page Object. Assert on the
   response status and headers.
 
 ## Adding a new e2e test
@@ -148,12 +158,14 @@ callback-redirect fix):
 
 ## Stable Selector Map
 
-| Contract                                  | Current value                                            |
-| ----------------------------------------- | -------------------------------------------------------- |
-| `playwright.config.ts` webServer          | `npm --prefix ../../app run dev`                         |
-| `pages/LandingPage.path`                  | `/en`                                                    |
-| `data-testid` attrs on landing components | keep stable when `/app/src/components/landing/*` changes |
-| origin-guard flag / spec suffix / port    | `E2E_ORIGIN_GUARD=1` · `*.standalone.spec.ts` · `3100`   |
+| Contract                                  | Current value                                                   |
+| ----------------------------------------- | --------------------------------------------------------------- |
+| `playwright.config.ts` webServer          | `npm --prefix ../../app run dev`                                |
+| `pages/LandingPage.path`                  | `/en`                                                           |
+| `data-testid` attrs on landing components | keep stable when `/app/src/components/landing/*` changes        |
+| origin-guard flag / spec suffix / port    | `E2E_ORIGIN_GUARD=1` · `*.standalone.spec.ts` · `3100`          |
 | origin-guard canary origin                | `fixtures/origin-guard.ts` (`https://origin-guard.canary.test`) |
 
 The POM classes should not change for markup-only rewrites.
+
+The required web test job installs Playwright browsers and system dependencies fresh. Browser binaries are distribution-specific; a Linux-only cache previously restored Ubuntu 24 WebKit on Ubuntu 26 and failed before test execution. This follows [Playwright CI guidance](https://playwright.dev/docs/ci#caching-browsers), which recommends avoiding browser binary caches.

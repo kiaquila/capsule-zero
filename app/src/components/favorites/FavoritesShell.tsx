@@ -9,6 +9,7 @@ import {
 } from "@/components/dashboard/DashboardNavigation";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import type { MyItemsEntry } from "@/components/my-items/my-items-data";
+import { useGuestItemMutation } from "@/components/wardrobe/useGuestItemMutation";
 import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
 import {
   WardrobeDetailField,
@@ -96,6 +97,8 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
   const [draft, setDraft] = useState<ItemDraftState | null>(null);
   const [errors, setErrors] = useState<DraftErrors>({});
   const [notice, setNotice] = useState<string | null>(null);
+  const { persistGuestItem, isGuestItemPending } =
+    useGuestItemMutation(setNotice);
   const [moreOpen, setMoreOpen] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const localPhotoUrlsRef = useRef(new Set<string>());
@@ -315,7 +318,8 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
     setNotice(t("notice.saved", { item: normalized.name }));
   };
 
-  const removeFavorite = (item: MyItemsEntry) => {
+  const removeFavorite = async (item: MyItemsEntry) => {
+    if (!(await persistGuestItem(item, { favorite: false }))) return;
     setItems((currentItems) =>
       currentItems.filter((currentItem) => currentItem.id !== item.id),
     );
@@ -328,7 +332,7 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
   };
 
   const addSelectedItemToCapsule = () => {
-    if (!selectedItem) {
+    if (!selectedItem || selectedItem.guestPresetId) {
       return;
     }
 
@@ -401,13 +405,14 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
     closeDetail();
   };
 
-  const moveSelectedItem = (
+  const moveSelectedItem = async (
     status: Extract<ItemStatus, "for_repair" | "for_sale">,
   ) => {
     if (!selectedItem) {
       return;
     }
 
+    if (!(await persistGuestItem(selectedItem, { status }))) return;
     setItems((currentItems) =>
       currentItems.map((item) =>
         item.id === selectedItem.id
@@ -727,6 +732,7 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
                     key={item.id}
                     mainClassName="favorites-card-main"
                     meta={item.brand ?? t(`sources.${item.sourceType}`)}
+                    favoriteDisabled={isGuestItemPending(item.id)}
                     onFavorite={() => removeFavorite(item)}
                     onOpen={() => openItem(item)}
                     renderHeartIcon={() => <FavoritesIcon name="heart" />}
@@ -836,6 +842,7 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
 
       {selectedItem && draft ? (
         <WardrobeItemDetailPanel
+          readOnly={Boolean(selectedItem?.guestPresetId)}
           categoryOptions={snapshot.categoryOptions}
           deleteAction={{
             className: "my-items-secondary-button favorites-delete-button",
@@ -911,14 +918,16 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
           renderIcon={(name) => <FavoritesIcon name={name} />}
           actionSlot={
             <>
-              <button
-                className="my-items-secondary-button"
-                onClick={addSelectedItemToCapsule}
-                type="button"
-              >
-                <FavoritesIcon name="capsules" />
-                <span>{t("detail.addToCapsule")}</span>
-              </button>
+              {!selectedItem.guestPresetId ? (
+                <button
+                  className="my-items-secondary-button"
+                  onClick={addSelectedItemToCapsule}
+                  type="button"
+                >
+                  <FavoritesIcon name="capsules" />
+                  <span>{t("detail.addToCapsule")}</span>
+                </button>
+              ) : null}
               <button
                 className="my-items-secondary-button"
                 onClick={() => moveSelectedItem("for_sale")}

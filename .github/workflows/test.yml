@@ -13,9 +13,19 @@ permissions:
 jobs:
   test:
     name: test
-    # Keep WebKit native libraries and its browser-cache platform aligned.
+    # Pin the WebKit test platform; install matching browsers and native libraries.
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    services:
+      guest-postgres:
+        image: public.ecr.aws/docker/library/postgres:16
+        env:
+          POSTGRES_PASSWORD: guest-ci-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
 
     steps:
       - name: Checkout
@@ -34,14 +44,16 @@ jobs:
         working-directory: api
         env:
           GOTOOLCHAIN: local
+          TEST_DATABASE_URL: postgres://postgres:guest-ci-only@localhost:5432/postgres?sslmode=disable
           GO_SETUP_OUTCOME: ${{ steps.go.outcome }}
         run: |
           if [[ "$GO_SETUP_OUTCOME" == "success" ]]; then
             go vet ./...
             go test ./...
+            go test -race -tags=integration ./internal/guest -count=1
           else
-            docker run --rm -e GOTOOLCHAIN=local -v "$PWD:/src" -w /src public.ecr.aws/docker/library/golang:1.26.6-bookworm \
-              sh -c 'go vet ./... && go test ./...'
+            docker run --rm --network host -e GOTOOLCHAIN=local -e TEST_DATABASE_URL -v "$PWD:/src" -w /src public.ecr.aws/docker/library/golang:1.26.6-bookworm \
+              sh -c 'go vet ./... && go test ./... && go test -race -tags=integration ./internal/guest -count=1'
           fi
 
       - name: Setup Node
@@ -69,20 +81,10 @@ jobs:
       - name: Typecheck e2e suite
         run: npm run typecheck:e2e
 
-      - name: Cache Playwright browsers
-        id: playwright-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ runner.arch }}-ubuntu-24.04-${{ hashFiles('tests/e2e/package-lock.json') }}
-
-      - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
+      # Browser binaries vary with the Linux distribution. An OS-only cache
+      # restored Ubuntu 24 WebKit on Ubuntu 26, which lacks ICU 74.
+      - name: Install Playwright browsers and system deps
         run: npx --prefix tests/e2e playwright install --with-deps chromium webkit
-
-      - name: Install Playwright system deps
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx --prefix tests/e2e playwright install-deps chromium webkit
 
       - name: Seed app env from example (CI stub credentials)
         run: cp app/.env.local.example app/.env.local

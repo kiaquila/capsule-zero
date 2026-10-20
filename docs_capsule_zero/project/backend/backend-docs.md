@@ -16,18 +16,18 @@
 
 Capsule Zero v0.1 backend is a **Go modular monolith** running behind nginx on a single Hetzner Cloud server (migrated from DigitalOcean 2026-07-02, spec 033). Every deployed v0.1 container is declared as a separate `services:` entry in one root `docker-compose.yml`. The current API contains the auth/profile, storage, and uploads packages; Redis and any queue consumer are deferred to a later spec-024 phase.
 
-| Layer                    | Choice                                                                                                              |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| API process              | Go monolith (`/api`) — single binary with bounded contexts                                                          |
-| Background worker        | Not landed; a future Redis consumer may run inside `/api`, while a standalone `/worker` remains deferred by ADR-007 |
-| API gateway / TLS        | Host-managed nginx 1.28 with Let's Encrypt certbot, rate-limit middleware, `auth_request` into Ory Kratos; nginx 1.31 container for rollback/local dev |
-| Auth                     | Ory Kratos email/password + Google sign-in (spec 037, native-flow OIDC); Apple Sign-In in Stage 2                                      |
-| Database                 | PostgreSQL 16 with Postgres FTS; API connects directly in v0.1 as the least-privilege `capsule_app` role (spec 034), PgBouncer and pgvector are deferred by ADR-007 |
-| Cache / sessions / queue | Redis 7 planned for a later spec-024 phase; no Redis service or queue consumer is active in the current slice       |
-| Object storage           | Hetzner Object Storage (S3-compatible; no built-in CDN in v0.1)                                                      |
-| Email                    | Resend SMTP courier for Kratos is provisioned; there is no `internal/email` transactional client in the current API |
-| Front-door               | Cloudflare proxy → Cloudflare-only origin firewall → host nginx; scoped edge rate limit + default WAF/DDoS controls (spec 047) |
-| Observability            | syslog file logs + OpenTelemetry trace export; Grafana dashboards deferred by ADR-007 (Sentry/Prometheus → Stage 2) |
+| Layer                    | Choice                                                                                                                                                                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API process              | Go monolith (`/api`) — single binary with bounded contexts                                                                                                                               |
+| Background worker        | Not landed; a future Redis consumer may run inside `/api`, while a standalone `/worker` remains deferred by ADR-007                                                                      |
+| API gateway / TLS        | Host-managed nginx 1.28 with Let's Encrypt certbot, rate-limit middleware, `auth_request` into Ory Kratos; nginx 1.31 container for rollback/local dev                                   |
+| Auth                     | Ory Kratos email/password + Google sign-in (spec 037, native-flow OIDC); Apple Sign-In in Stage 2                                                                                        |
+| Database                 | PostgreSQL 16 with Postgres FTS; API connects directly in v0.1 as the least-privilege `capsule_app` role (spec 034), PgBouncer and pgvector are deferred by ADR-007                      |
+| Cache / sessions / queue | Redis 7 planned for a later spec-024 phase; no Redis service or queue consumer is active in the current slice                                                                            |
+| Object storage           | Hetzner Object Storage (S3-compatible; no built-in CDN in v0.1)                                                                                                                          |
+| Email                    | Resend SMTP courier for Kratos is provisioned; there is no `internal/email` transactional client in the current API                                                                      |
+| Front-door               | Cloudflare proxy → Cloudflare-only origin firewall → host nginx; scoped edge rate limit + default WAF/DDoS controls (spec 047)                                                           |
+| Observability            | syslog file logs + OpenTelemetry trace export; Grafana dashboards deferred by ADR-007 (Sentry/Prometheus → Stage 2)                                                                      |
 | Migrations               | Embedded SQL migration files applied at API boot, serialized behind a `pg_advisory_lock` (spec 034); files from `0002` on must be runnable by the non-superuser `capsule_app` owner role |
 
 The Go monolith owns all business logic; the database has no RLS. Authorization is enforced in every Go handler against the Kratos session before any data access. The implemented auth, storage, and uploads boundaries accept narrow interfaces so package tests can substitute fakes per call site, but there is **no global mock mode** — production code wires the real clients (see ADR-006).
@@ -104,8 +104,8 @@ add them through new migrations.
 | Table         | Purpose                                                                                                                                            |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `profiles`    | App profile keyed by internal UUID, with `kratos_identity_id` unique reference, display name, avatar, language, country, city, cached coin balance |
-| `coin_ledger` | Planned append-only coin purchase/spend/refund log; not present in the current migrations                                                       |
-| `lava_events` | Planned processed Lava.top webhook event IDs for idempotency; not present in the current migrations                                             |
+| `coin_ledger` | Planned append-only coin purchase/spend/refund log; not present in the current migrations                                                          |
+| `lava_events` | Planned processed Lava.top webhook event IDs for idempotency; not present in the current migrations                                                |
 
 Canonical ownership column name is `user_id` (referencing `profiles.id`). The
 possible two-table shared-item ownership pattern remains design-only under Q8;
@@ -121,14 +121,14 @@ it must not be migrated before the compliance scheme and legal review.
 
 ### Items And Assets
 
-| Table                 | Purpose                                                                                                                        |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Table                 | Purpose                                                                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `items`               | Canonical durable item metadata; own-preset/private-item fields land separately, while merchant source/visibility/moderation fields remain Q8-blocked |
-| `wardrobe_entries`    | Per-user relationship to an item: active/uncapsulated/for_sale/for_repair, favorite, from catalog, user overrides              |
-| `item_assets`         | Currently only unattached private `original` asset metadata; other variants arrive in later slices                            |
-| `upload_jobs`         | Currently only owner-bound `photo_upload` rows with `queued` or `completed` status                                             |
-| `marketplace_imports` | **Q8-blocked design only:** no migration before the compliance-scheme spec and legal review                                      |
-| `moderation_queue`    | **Q8-blocked design only:** no migration or public-promotion flow before both gates                                              |
+| `wardrobe_entries`    | Per-user relationship to an item: active/uncapsulated/for_sale/for_repair, favorite, from catalog, user overrides                                     |
+| `item_assets`         | Currently only unattached private `original` asset metadata; other variants arrive in later slices                                                    |
+| `upload_jobs`         | Currently only owner-bound `photo_upload` rows with `queued` or `completed` status                                                                    |
+| `marketplace_imports` | **Q8-blocked design only:** no migration before the compliance-scheme spec and legal review                                                           |
+| `moderation_queue`    | **Q8-blocked design only:** no migration or public-promotion flow before both gates                                                                   |
 
 `item_embeddings` and shared-catalog FTS/hybrid search are blocked by Q8 in
 addition to ADR-007's pgvector deferral. Neither FTS-ready merchant text nor an
@@ -263,11 +263,11 @@ The v0.1 runtime is delivered by `.specify/specs/024-production-stack-runtime/`.
 | `kratos`    | `oryd/kratos`            | Identity provider                                                                                                | yes                                                                      |
 | `postgres`  | `postgres:16`            | Application database + Kratos database                                                                           | yes                                                                      |
 | `pgbouncer` | `edoburu/pgbouncer`      | Connection pool in front of Postgres                                                                             | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md)          |
-| `redis`     | `redis:7-alpine`         | Cache, sessions, job queue                                                                                       | pending — spec 024 Phase 3                                                |
-| `api`       | local build of `/api`    | Go monolith; no Redis worker goroutines in the current slice                                                      | yes                                                                      |
+| `redis`     | `redis:7-alpine`         | Cache, sessions, job queue                                                                                       | pending — spec 024 Phase 3                                               |
+| `api`       | local build of `/api`    | Go monolith; no Redis worker goroutines in the current slice                                                     | yes                                                                      |
 | `worker`    | local build of `/worker` | Background job consumer                                                                                          | folded into `api` — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md) |
 | `web`       | local build of `/app`    | Next.js App Router web frontend                                                                                  | yes                                                                      |
-| `imgproxy`  | `darthsim/imgproxy`      | On-the-fly image resize/WebP conversion for derived sizes                                                        | pending — spec 024 Phase 4; spec 040 stores originals only                |
+| `imgproxy`  | `darthsim/imgproxy`      | On-the-fly image resize/WebP conversion for derived sizes                                                        | pending — spec 024 Phase 4; spec 040 stores originals only               |
 | `grafana`   | `grafana/grafana`        | Dashboards over syslog and traces                                                                                | deferred — see [ADR-007](../../adr/adr-007-v01-slim-runtime.md)          |
 | `mailhog`   | `mailhog/mailhog`        | Dev-only; replaced by Resend in prod                                                                             | dev only                                                                 |
 
@@ -280,37 +280,37 @@ later-slice work.
 
 ## Environment Variables
 
-| Variable                      | Scope         | Purpose                                                                                               |
-| ----------------------------- | ------------- | ----------------------------------------------------------------------------------------------------- |
-| `POSTGRES_URL`                | server        | Direct Postgres connection string for v0.1 (PgBouncer DSN is introduced only after ADR-007 promotion) |
-| `CF_DNS_API_TOKEN`            | server        | Cloudflare DNS API token only if a future DNS-01 automation path replaces v0.1 HTTP-01 certbot        |
-| `REDIS_URL`                   | later phase   | Redis connection string once the Redis runtime slice lands                                             |
-| `KRATOS_PUBLIC_URL`           | server        | Kratos public API base URL                                                                            |
-| `KRATOS_ADMIN_URL`            | server        | Kratos admin API base URL                                                                             |
-| `AUTH_GOOGLE_ENABLED`         | server        | Gates `/api/auth/google/*` + the provider probe (spec 037); mirrors the Kratos OIDC env switch        |
-| `OBJECT_STORAGE_ENDPOINT`     | server        | Hetzner Object Storage S3 endpoint (for example `https://hel1.your-objectstorage.com`)                 |
-| `OBJECT_STORAGE_REGION`       | server        | Application Object Storage region (`hel1` in the provisioned production topology)                       |
-| `OBJECT_STORAGE_ACCESS_KEY_ID` | server        | Runtime key from bucketless key-only project `15302873`; access is granted cross-project by bucket policy |
-| `OBJECT_STORAGE_SECRET_ACCESS_KEY` | server   | Runtime key secret from bucketless key-only project `15302873`                                         |
-| `OBJECT_STORAGE_PRIVATE_BUCKET` | server      | Private assets bucket (avatars, item originals, approved processed variants; no merchant-import prefix before both Q8 gates) |
-| `OBJECT_STORAGE_UPLOADS_ENABLED` | server      | Default-off activation gate; key hardening is complete, but quota/cleanup/attachment still block enablement |
-| `OBJECT_STORAGE_PUBLIC_BUCKET` | server       | Public bucket for Capsule Zero-owned preset imagery; merchant imports remain Q8-blocked                |
-| `OBJECT_STORAGE_PUBLIC_BASE_URL` | server     | Native public object URL base until a separate catalog-CDN slice                                       |
-| `BACKUP_S3_ENDPOINT`          | host backup   | Isolated endpoint (`https://fsn1.your-objectstorage.com` in production)                                |
-| `BACKUP_S3_REGION`            | host backup   | Backup bucket region (`fsn1` in production)                                                           |
-| `BACKUP_S3_BUCKET`            | host backup   | Object-Locked bucket used by the active encrypted daily backup timer                                  |
-| `BACKUP_S3_ACCESS_KEY_ID`     | host backup   | Writer key from bucketless key-only project `15302925`; never passed to the API                        |
-| `BACKUP_S3_SECRET_ACCESS_KEY` | host backup   | Writer key secret from bucketless key-only project `15302925`; never passed to the API                 |
-| `KRATOS_SMTP_CONNECTION_URI`  | server        | Active Resend SMTP courier connection for Kratos                                                      |
-| `RESEND_API_KEY`              | later phase   | Future direct transactional-email client; Kratos currently uses SMTP                                  |
-| `RESEND_FROM`                 | later phase   | Future direct-client sender (for example `no-reply@capsulezero.app`)                                  |
-| `LAVA_API_KEY`                | server        | Lava.top API key (v0.2 — stubbed in v0.1)                                                             |
-| `LAVA_WEBHOOK_API_KEY`        | server        | Lava.top webhook auth header (v0.2 — stubbed in v0.1)                                                 |
-| `LAVA_API_URL`                | server        | Lava.top base URL (v0.2)                                                                              |
-| `APP_BASE_URL`                | server/web    | Public app URL (e.g. `https://capsulezero.app`)                                                       |
-| `MOBILE_DEEP_LINK_SCHEME`     | server/mobile | Mobile return URL scheme for auth callbacks (Stage 2)                                                 |
-| `EMBEDDING_PROVIDER`          | server        | Deferred provider switch; shared merchant search additionally requires both Q8 gates                   |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | server        | Trace exporter target                                                                                 |
+| Variable                           | Scope         | Purpose                                                                                                                      |
+| ---------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `POSTGRES_URL`                     | server        | Direct Postgres connection string for v0.1 (PgBouncer DSN is introduced only after ADR-007 promotion)                        |
+| `CF_DNS_API_TOKEN`                 | server        | Cloudflare DNS API token only if a future DNS-01 automation path replaces v0.1 HTTP-01 certbot                               |
+| `REDIS_URL`                        | later phase   | Redis connection string once the Redis runtime slice lands                                                                   |
+| `KRATOS_PUBLIC_URL`                | server        | Kratos public API base URL                                                                                                   |
+| `KRATOS_ADMIN_URL`                 | server        | Kratos admin API base URL                                                                                                    |
+| `AUTH_GOOGLE_ENABLED`              | server        | Gates `/api/auth/google/*` + the provider probe (spec 037); mirrors the Kratos OIDC env switch                               |
+| `OBJECT_STORAGE_ENDPOINT`          | server        | Hetzner Object Storage S3 endpoint (for example `https://hel1.your-objectstorage.com`)                                       |
+| `OBJECT_STORAGE_REGION`            | server        | Application Object Storage region (`hel1` in the provisioned production topology)                                            |
+| `OBJECT_STORAGE_ACCESS_KEY_ID`     | server        | Runtime key from bucketless key-only project `15302873`; access is granted cross-project by bucket policy                    |
+| `OBJECT_STORAGE_SECRET_ACCESS_KEY` | server        | Runtime key secret from bucketless key-only project `15302873`                                                               |
+| `OBJECT_STORAGE_PRIVATE_BUCKET`    | server        | Private assets bucket (avatars, item originals, approved processed variants; no merchant-import prefix before both Q8 gates) |
+| `OBJECT_STORAGE_UPLOADS_ENABLED`   | server        | Default-off activation gate; key hardening is complete, but quota/cleanup/attachment still block enablement                  |
+| `OBJECT_STORAGE_PUBLIC_BUCKET`     | server        | Public bucket for Capsule Zero-owned preset imagery; merchant imports remain Q8-blocked                                      |
+| `OBJECT_STORAGE_PUBLIC_BASE_URL`   | server        | Native public object URL base until a separate catalog-CDN slice                                                             |
+| `BACKUP_S3_ENDPOINT`               | host backup   | Isolated endpoint (`https://fsn1.your-objectstorage.com` in production)                                                      |
+| `BACKUP_S3_REGION`                 | host backup   | Backup bucket region (`fsn1` in production)                                                                                  |
+| `BACKUP_S3_BUCKET`                 | host backup   | Object-Locked bucket used by the active encrypted daily backup timer                                                         |
+| `BACKUP_S3_ACCESS_KEY_ID`          | host backup   | Writer key from bucketless key-only project `15302925`; never passed to the API                                              |
+| `BACKUP_S3_SECRET_ACCESS_KEY`      | host backup   | Writer key secret from bucketless key-only project `15302925`; never passed to the API                                       |
+| `KRATOS_SMTP_CONNECTION_URI`       | server        | Active Resend SMTP courier connection for Kratos                                                                             |
+| `RESEND_API_KEY`                   | later phase   | Future direct transactional-email client; Kratos currently uses SMTP                                                         |
+| `RESEND_FROM`                      | later phase   | Future direct-client sender (for example `no-reply@capsulezero.app`)                                                         |
+| `LAVA_API_KEY`                     | server        | Lava.top API key (v0.2 — stubbed in v0.1)                                                                                    |
+| `LAVA_WEBHOOK_API_KEY`             | server        | Lava.top webhook auth header (v0.2 — stubbed in v0.1)                                                                        |
+| `LAVA_API_URL`                     | server        | Lava.top base URL (v0.2)                                                                                                     |
+| `APP_BASE_URL`                     | server/web    | Public app URL (e.g. `https://capsulezero.app`)                                                                              |
+| `MOBILE_DEEP_LINK_SCHEME`          | server/mobile | Mobile return URL scheme for auth callbacks (Stage 2)                                                                        |
+| `EMBEDDING_PROVIDER`               | server        | Deferred provider switch; shared merchant search additionally requires both Q8 gates                                         |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`      | server        | Trace exporter target                                                                                                        |
 
 ## Local Development
 
@@ -389,3 +389,7 @@ Registration's optional `name` may be omitted. A supplied name must be a non-nul
 ### Optional profile location clearing (spec 056)
 
 `PATCH /api/profile` trims country/city and accepts `""` to clear either optional field. Omission leaves the stored field unchanged through the existing `COALESCE` update; explicit JSON `null` remains a validation error. Both fields retain an 80-rune maximum. Display name, locale and avatar constraints are unchanged. There is no value-based deletion/migration of old profile data. The auth API exposes whoami verification, without a device-session inventory.
+
+## Guest account persistence (spec 056)
+
+An explicit guest save continues existing email/Google authentication through `/account/guest/continue`; ordinary sign-in does not import abandoned browser drafts. `GuestProgressPort` is optional to leave the frozen Supabase provider untouched. Production uses authenticated `/api/guest-progress` routes, not fixture storage. The Go guest context commits an immutable owner-scoped guest-v1 snapshot and deduplicated uncapsulated wardrobe rows together in migration 0004. Existing wardrobe projections consume these records; status/favorite changes are persisted. Saved result routes reconstruct the unchanged evaluator from trusted attributes and dashboard lists owner-scoped saved sets. Input/ownership/idempotency limits are canonical in `docs_capsule_zero/adr/api-spec.md`. Other legacy wardrobe/capsule CRUD remains outside this slice.

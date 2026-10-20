@@ -132,10 +132,53 @@ export const legalNavigationCopy = {
 
 // Validation assertions read the active catalogs so EN/RU copy has one source.
 export const validationCopy = Object.fromEntries(
-  LOCALES.map((locale) => [locale, JSON.parse(readFileSync(
-    new URL(`../../../app/src/messages/${locale}.json`, import.meta.url), "utf8",
-  ))]),
-) as Record<Locale, {
-  auth: { invalidEmail: string; weakPassword: string; passwordsMismatch: string; passwordRequirements: string; errors: Record<string, string> };
-  profile: { notice: { saved: string }; validation: { firstName: string; lastName: string } };
-}>;
+  LOCALES.map((locale) => [
+    locale,
+    JSON.parse(
+      readFileSync(
+        new URL(`../../../app/src/messages/${locale}.json`, import.meta.url),
+        "utf8",
+      ),
+    ),
+  ]),
+) as Record<
+  Locale,
+  {
+    myItems: {
+      detail: Record<
+        | "name"
+        | "save"
+        | "delete"
+        | "changePhoto"
+        | "addColor"
+        | "moveSale"
+        | "moveRepair",
+        string
+      >;
+    };
+    forSale: { detail: { returnToMyItems: string } };
+    forRepair: { detail: { markFixed: string } };
+    uncapsulated: { actions: { addToCapsule: string } };
+    auth: {
+      invalidEmail: string;
+      weakPassword: string;
+      passwordsMismatch: string;
+      passwordRequirements: string;
+      errors: Record<string, string>;
+    };
+    profile: {
+      notice: { saved: string };
+      validation: { firstName: string; lastName: string };
+    };
+  }
+>;
+
+export const guestCatalogCopy = JSON.parse(
+  readFileSync(
+    new URL(
+      "../../../app/src/features/guest/catalog-data.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+) as Array<{ id: string; name: Record<Locale, string> }>;

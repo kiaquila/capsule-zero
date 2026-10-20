@@ -208,6 +208,36 @@ api_login=$(
 )
 test "$email" = "$(jq -er '.user.email' <<<"$api_login")"
 
+# Guest account-save must cross the real Kratos session boundary and durable API.
+guest_body='{"transferId":"05600000-0000-4000-8000-000000000001","wardrobe":"mixed","picked":["w-tee-white","m-trousers-black","m-sneakers-white"]}'
+guest_save() {
+  curl --fail-with-body --silent --show-error -H "Authorization: Bearer $registration_token" \
+    -H 'Content-Type: application/json' --data-binary "$guest_body" "$api_url/api/guest-progress"
+}
+guest_result=$(guest_save)
+guest_id=$(jq -er '.id' <<<"$guest_result")
+test 'guest-v1' = "$(jq -er '.algorithmVersion' <<<"$guest_result")"
+test 'w-tee-white,m-trousers-black,m-sneakers-white' = "$(jq -er '[.items[].id] | join(",")' <<<"$guest_result")"
+test "$guest_id" = "$(guest_save | jq -er '.id')"
+guest_items=$(curl --fail-with-body --silent --show-error -H "Authorization: Bearer $registration_token" \
+  "$api_url/api/guest-progress/items")
+test 3 = "$(jq -er 'length' <<<"$guest_items")"
+guest_item_id=$(jq -er '.[0].id' <<<"$guest_items")
+guest_item_update=$(curl --fail-with-body --silent --show-error -X PATCH \
+  -H "Authorization: Bearer $registration_token" -H 'Content-Type: application/json' \
+  --data-binary '{"favorite":true,"status":"for_sale"}' "$api_url/api/guest-progress/items/$guest_item_id")
+test true = "$(jq -er '.favorite' <<<"$guest_item_update")"
+test for_sale = "$(jq -er '.status' <<<"$guest_item_update")"
+
+foreign_token=$(jq -er '.session.token' <<<"$api_login")
+test 404 = "$(curl --silent --output /dev/null --write-out '%{http_code}' \
+  -H "Authorization: Bearer $foreign_token" "$api_url/api/guest-progress/$guest_id")"
+test 404 = "$(curl --silent --output /dev/null --write-out '%{http_code}' -X PATCH \
+  -H "Authorization: Bearer $foreign_token" -H 'Content-Type: application/json' \
+  --data-binary '{"favorite":false}' "$api_url/api/guest-progress/items/$guest_item_id")"
+test 401 = "$(curl --silent --output /dev/null --write-out '%{http_code}' "$api_url/api/guest-progress")"
+printf 'guest-account-save=ok exact-snapshot=ok retry=ok wardrobe=ok item-patch=ok owner-isolation=ok\n'
+
 kratos_image=$("${compose[@]}" config --images | awk '/^oryd\/kratos:/{ print; exit }')
 printf 'kratos-upgrade=%s->%s migrated-identity=ok repeat-migration=ok new-registration=ok recovery=ok login=ok whoami=ok\n' \
   "$old_image" "$kratos_image"

@@ -36,6 +36,19 @@ export class DashboardPage extends BasePage {
    * Sign out through whichever navigation the viewport shows: the desktop
    * sidebar button, or the mobile "More" sheet.
    */
+  get savedGuestLinks() {
+    return this.page.getByTestId(/^saved-guest-/);
+  }
+  get recentItemNames() {
+    return this.page.locator(".dashboard-recent-name");
+  }
+  get allRecentItems() {
+    return this.page
+      .locator(".dashboard-panel")
+      .filter({ has: this.page.locator(".dashboard-recent-item") })
+      .getByRole("link");
+  }
+
   async signOut(): Promise<void> {
     if (await this.signOutButton.isVisible()) {
       await this.signOutButton.click();

@@ -1,0 +1,354 @@
+[
+  {
+    "id": "w-tee-white",
+    "wardrobe": "female",
+    "role": "top",
+    "colorId": "A3",
+    "categoryId": "tshirt",
+    "name": {
+      "ru": "Белая футболка",
+      "en": "White T-shirt"
+    }
+  },
+  {
+    "id": "w-tee-black",
+    "wardrobe": "female",
+    "role": "top",
+    "colorId": "A1",
+    "categoryId": "tshirt",
+    "name": {
+      "ru": "Чёрная футболка",
+      "en": "Black T-shirt"
+    }
+  },
+  {
+    "id": "w-shirt-white",
+    "wardrobe": "female",
+    "role": "top",
+    "colorId": "A3",
+    "categoryId": "shirt",
+    "name": {
+      "ru": "Белая рубашка",
+      "en": "White shirt"
+    }
+  },
+  {
+    "id": "w-longsleeve-grey",
+    "wardrobe": "female",
+    "role": "top",
+    "colorId": "A2",
+    "categoryId": "longsleeve",
+    "name": {
+      "ru": "Серый лонгслив",
+      "en": "Grey longsleeve"
+    }
+  },
+  {
+    "id": "w-turtleneck-navy",
+    "wardrobe": "female",
+    "role": "top",
+    "colorId": "K9",
+    "categoryId": "turtleneck",
+    "name": {
+      "ru": "Тёмно-синяя водолазка",
+      "en": "Navy turtleneck"
+    }
+  },
+  {
+    "id": "w-blouse-blush",
+    "wardrobe": "female",
+    "role": "top",
+    "colorId": "P1",
+    "categoryId": "shirt",
+    "name": {
+      "ru": "Пудровая блузка",
+      "en": "Blush blouse"
+    }
+  },
+  {
+    "id": "w-jeans-blue",
+    "wardrobe": "female",
+    "role": "bottom",
+    "colorId": "D9",
+    "categoryId": "jeans",
+    "name": {
+      "ru": "Голубые джинсы",
+      "en": "Blue jeans"
+    }
+  },
+  {
+    "id": "w-trousers-black",
+    "wardrobe": "female",
+    "role": "bottom",
+    "colorId": "A1",
+    "categoryId": "trousers",
+    "name": {
+      "ru": "Чёрные брюки",
+      "en": "Black trousers"
+    }
+  },
+  {
+    "id": "w-trousers-sand",
+    "wardrobe": "female",
+    "role": "bottom",
+    "colorId": "D4",
+    "categoryId": "trousers",
+    "name": {
+      "ru": "Песочные брюки",
+      "en": "Sand trousers"
+    }
+  },
+  {
+    "id": "w-skirt-beige",
+    "wardrobe": "female",
+    "role": "bottom",
+    "colorId": "P3",
+    "categoryId": "skirt",
+    "name": {
+      "ru": "Бежевая юбка",
+      "en": "Beige skirt"
+    }
+  },
+  {
+    "id": "w-dress-black",
+    "wardrobe": "female",
+    "role": "dress",
+    "colorId": "A1",
+    "categoryId": "dress",
+    "name": {
+      "ru": "Чёрное платье",
+      "en": "Black dress"
+    }
+  },
+  {
+    "id": "w-dress-burgundy",
+    "wardrobe": "female",
+    "role": "dress",
+    "colorId": "K1",
+    "categoryId": "dress",
+    "name": {
+      "ru": "Бордовое платье",
+      "en": "Burgundy dress"
+    }
+  },
+  {
+    "id": "w-sneakers-white",
+    "wardrobe": "female",
+    "role": "shoes",
+    "colorId": "A3",
+    "categoryId": "sneakers",
+    "name": {
+      "ru": "Белые кеды",
+      "en": "White sneakers"
+    }
+  },
+  {
+    "id": "w-loafers-black",
+    "wardrobe": "female",
+    "role": "shoes",
+    "colorId": "A1",
+    "categoryId": "loafers",
+    "name": {
+      "ru": "Чёрные лоферы",
+      "en": "Black loafers"
+    }
+  },
+  {
+    "id": "w-boots-brown",
+    "wardrobe": "female",
+    "role": "shoes",
+    "colorId": "K2",
+    "categoryId": "ankle-boots",
+    "name": {
+      "ru": "Коричневые ботильоны",
+      "en": "Brown ankle boots"
+    }
+  },
+  {
+    "id": "w-flats-beige",
+    "wardrobe": "female",
+    "role": "shoes",
+    "colorId": "P3",
+    "categoryId": "flats",
+    "name": {
+      "ru": "Бежевые балетки",
+      "en": "Beige ballet flats"
+    }
+  },
+  {
+    "id": "w-tote-camel",
+    "wardrobe": "female",
+    "role": "bag",
+    "colorId": "D3",
+    "categoryId": "tote",
+    "name": {
+      "ru": "Сумка-тоут кэмел",
+      "en": "Camel tote"
+    }
+  },
+  {
+    "id": "w-bag-black",
+    "wardrobe": "female",
+    "role": "bag",
+    "colorId": "A1",
+    "categoryId": "crossbody",
+    "name": {
+      "ru": "Чёрная сумка",
+      "en": "Black shoulder bag"
+    }
+  },
+  {
+    "id": "w-bag-red",
+    "wardrobe": "female",
+    "role": "bag",
+    "colorId": "B1",
+    "categoryId": "crossbody",
+    "name": {
+      "ru": "Красная мини-сумка",
+      "en": "Red mini bag"
+    }
+  },
+  {
+    "id": "m-tee-white",
+    "wardrobe": "male",
+    "role": "top",
+    "colorId": "A3",
+    "categoryId": "tshirt",
+    "name": {
+      "ru": "Белая футболка",
+      "en": "White T-shirt"
+    }
+  },
+  {
+    "id": "m-tee-black",
+    "wardrobe": "male",
+    "role": "top",
+    "colorId": "A1",
+    "categoryId": "tshirt",
+    "name": {
+      "ru": "Чёрная футболка",
+      "en": "Black T-shirt"
+    }
+  },
+  {
+    "id": "m-shirt-sky",
+    "wardrobe": "male",
+    "role": "top",
+    "colorId": "P9",
+    "categoryId": "shirt",
+    "name": {
+      "ru": "Голубая рубашка",
+      "en": "Sky blue shirt"
+    }
+  },
+  {
+    "id": "m-polo-navy",
+    "wardrobe": "male",
+    "role": "top",
+    "colorId": "K9",
+    "categoryId": "polo",
+    "name": {
+      "ru": "Тёмно-синее поло",
+      "en": "Navy polo"
+    }
+  },
+  {
+    "id": "m-longsleeve-grey",
+    "wardrobe": "male",
+    "role": "top",
+    "colorId": "A2",
+    "categoryId": "longsleeve",
+    "name": {
+      "ru": "Серый лонгслив",
+      "en": "Grey longsleeve"
+    }
+  },
+  {
+    "id": "m-jeans-blue",
+    "wardrobe": "male",
+    "role": "bottom",
+    "colorId": "D9",
+    "categoryId": "jeans",
+    "name": {
+      "ru": "Синие джинсы",
+      "en": "Blue jeans"
+    }
+  },
+  {
+    "id": "m-chinos-sand",
+    "wardrobe": "male",
+    "role": "bottom",
+    "colorId": "D4",
+    "categoryId": "chinos",
+    "name": {
+      "ru": "Песочные чинос",
+      "en": "Sand chinos"
+    }
+  },
+  {
+    "id": "m-trousers-black",
+    "wardrobe": "male",
+    "role": "bottom",
+    "colorId": "A1",
+    "categoryId": "trousers",
+    "name": {
+      "ru": "Чёрные брюки",
+      "en": "Black trousers"
+    }
+  },
+  {
+    "id": "m-sneakers-white",
+    "wardrobe": "male",
+    "role": "shoes",
+    "colorId": "A3",
+    "categoryId": "sneakers",
+    "name": {
+      "ru": "Белые кеды",
+      "en": "White sneakers"
+    }
+  },
+  {
+    "id": "m-derby-brown",
+    "wardrobe": "male",
+    "role": "shoes",
+    "colorId": "K2",
+    "categoryId": "heels",
+    "name": {
+      "ru": "Коричневые дерби",
+      "en": "Brown derby shoes"
+    }
+  },
+  {
+    "id": "m-boots-black",
+    "wardrobe": "male",
+    "role": "shoes",
+    "colorId": "A1",
+    "categoryId": "boots",
+    "name": {
+      "ru": "Чёрные челси",
+      "en": "Black chelsea boots"
+    }
+  },
+  {
+    "id": "m-backpack-black",
+    "wardrobe": "male",
+    "role": "bag",
+    "colorId": "A1",
+    "categoryId": "backpack",
+    "name": {
+      "ru": "Чёрный рюкзак",
+      "en": "Black backpack"
+    }
+  },
+  {
+    "id": "m-bag-brown",
+    "wardrobe": "male",
+    "role": "bag",
+    "colorId": "K3",
+    "categoryId": "crossbody",
+    "name": {
+      "ru": "Коричневая сумка",
+      "en": "Brown messenger bag"
+    }
+  }
+]

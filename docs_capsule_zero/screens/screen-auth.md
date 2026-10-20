@@ -76,3 +76,7 @@ already editable. The panel header titles the active mode ("Log In" /
 ## Password feedback (spec 053)
 
 The registration password field links through `aria-describedby` to a visible EN/RU hint describing the eight-character minimum, allowed symbols (including `_`) and email-similarity rule. Field errors continue to explain invalid email, short password and confirmation mismatch. Known Kratos password-policy errors appear in the existing localized server-message area, with no upstream text or submitted values.
+
+## Guest result save (spec 056)
+
+The existing popup layout remains unchanged. When opened from the guest Save CTA, successful auth continues saving the explicit immutable request before showing `/account/guest/{id}`. A normal login remains a dashboard login and imports no abandoned draft. The continuation screen uses existing guest glass/CTA classes, an announced busy state, and error/retry while keeping local choices; an account mismatch offers returning to the guest flow instead of saving to the wrong account.

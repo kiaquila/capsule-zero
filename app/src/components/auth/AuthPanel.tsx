@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import {
   useEffect,
   useMemo,
@@ -57,6 +56,8 @@ const elevatedGlassStyle = {
 } satisfies CSSProperties;
 
 interface AuthPanelProps {
+  guestSave?: boolean;
+  guestTransferId?: string;
   initialMode?: AuthMode;
   /** Pre-bound recovery flow from /auth?flow=…&code=… URL params. */
   initialRecovery?: RecoveryDeepLink;
@@ -74,6 +75,8 @@ interface AuthPanelProps {
 }
 
 export function AuthPanel({
+  guestSave = false,
+  guestTransferId,
   initialMode = "signIn",
   initialRecovery,
   googleSignIn,
@@ -81,7 +84,6 @@ export function AuthPanel({
   onClose,
   variant = "standalone",
 }: AuthPanelProps) {
-  const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("auth");
   const landing = useTranslations("landing");
@@ -236,8 +238,9 @@ export function AuthPanel({
 
   const redirectToDashboard = () => {
     showInfo(t("successRedirect"));
-    router.push(`/${locale}/dashboard`);
-    router.refresh();
+    window.location.assign(
+      `/${locale}/${guestSave ? `account/guest/continue?transferId=${guestTransferId ?? ""}` : "dashboard"}`,
+    );
   };
 
   const onSignIn = signInForm.handleSubmit(async (values) => {
@@ -312,7 +315,11 @@ export function AuthPanel({
   const onGoogleSignIn = async () => {
     setServerMessage(null);
     setGoogleSubmitting(true);
-    const result = await startGoogleSignInAction({ locale });
+    const result = await startGoogleSignInAction({
+      locale,
+      guestSave,
+      guestTransferId,
+    });
     if (!result.ok || !result.redirectUrl) {
       setGoogleSubmitting(false);
       showFailure(result);

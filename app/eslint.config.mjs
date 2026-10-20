@@ -15,7 +15,13 @@ const eslintConfig = [
     },
   },
   {
-    ignores: [".next/**", "out/**", "build/**", "next-env.d.ts"],
+    ignores: [
+      ".next/**",
+      ".next-origin-guard/**",
+      "out/**",
+      "build/**",
+      "next-env.d.ts",
+    ],
   },
   {
     // Module-size discipline — soft gate (warnings, not CI failures; `eslint .`
@@ -24,8 +30,14 @@ const eslintConfig = [
     // Machine-authored clients are exempt.
     ignores: ["src/lib/api/generated/**"],
     rules: {
-      "max-lines": ["warn", { max: 300, skipBlankLines: true, skipComments: true }],
-      "max-lines-per-function": ["warn", { max: 60, skipBlankLines: true, skipComments: true }],
+      "max-lines": [
+        "warn",
+        { max: 300, skipBlankLines: true, skipComments: true },
+      ],
+      "max-lines-per-function": [
+        "warn",
+        { max: 60, skipBlankLines: true, skipComments: true },
+      ],
       complexity: ["warn", 15],
     },
   },

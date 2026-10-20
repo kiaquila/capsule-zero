@@ -1,3 +1,4 @@
+import type { GuestItem, GuestWardrobe } from "@/features/guest/catalog";
 import type {
   Capsule,
   CapsuleCategory,
@@ -16,16 +17,9 @@ export type ItemSourceType = "photo_upload" | "marketplace" | "catalog";
 export type ItemStatus = "active" | "uncapsulated" | "for_sale" | "for_repair";
 export type UploadJobType = "photo_upload" | "background_removal";
 export type UploadJobStatus =
-  | "queued"
-  | "processing"
-  | "succeeded"
-  | "failed"
-  | "timeout";
+  "queued" | "processing" | "succeeded" | "failed" | "timeout";
 export type MarketplaceImportStatus =
-  | "pending"
-  | "parsed"
-  | "failed"
-  | "confirmed";
+  "pending" | "parsed" | "failed" | "confirmed";
 /** @deprecated Superseded by PRODUCT-PLAN.md D2; retained only for legacy provider cleanup in Stage 4. */
 export type InvoiceStatus = "pending" | "paid" | "expired" | "failed";
 /** @deprecated Superseded by PRODUCT-PLAN.md D2; retained only for legacy provider cleanup in Stage 4. */
@@ -141,6 +135,8 @@ export interface ProfileRepository {
 }
 
 export interface WardrobeEntry extends ClothingItem {
+  guestPresetId?: string;
+  guestPresetNames?: GuestItem["name"];
   imageUrl?: string;
   sourceType: ItemSourceType;
   status: ItemStatus;
@@ -396,7 +392,46 @@ export interface ProviderHealth {
   integrations: Record<string, "mocked" | "pending-gate" | "configured">;
 }
 
+export interface GuestSaveInput {
+  transferId: string;
+  wardrobe: GuestWardrobe;
+  picked: string[];
+}
+
+export interface SavedGuest {
+  id: string;
+  transferId: string;
+  wardrobe: GuestWardrobe;
+  algorithmVersion: "guest-v1";
+  items: GuestItem[];
+  createdAt: string;
+}
+
+export interface SavedGuestItem {
+  id: string;
+  userId: string;
+  preset: GuestItem;
+  status: ItemStatus;
+  favorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GuestProgressPort {
+  save(userId: string, input: GuestSaveInput): Promise<SavedGuest>;
+  list(userId: string): Promise<SavedGuest[]>;
+  get(userId: string, id: string): Promise<SavedGuest | null>;
+  listItems(userId: string): Promise<SavedGuestItem[]>;
+  updateItem(
+    userId: string,
+    id: string,
+    input: { status?: ItemStatus; favorite?: boolean },
+  ): Promise<SavedGuestItem>;
+}
+
 export interface ProviderRegistry {
+  /** Optional while the frozen legacy provider is retired. */
+  guestProgress?: GuestProgressPort;
   mode: ProviderMode;
   auth: AuthPort;
   profiles: ProfileRepository;

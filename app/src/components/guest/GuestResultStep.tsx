@@ -7,6 +7,8 @@ import type { Evaluation, Recommendation } from "@/features/guest/outfits";
 import { OutfitCard } from "./OutfitCard";
 
 interface Props {
+  readOnly?: boolean;
+  saveBusy?: boolean;
   evaluation: Evaluation;
   pickedItems: GuestItem[];
   recommendations: Recommendation[];
@@ -18,8 +20,16 @@ interface Props {
 const FIRST = 6;
 
 export function GuestResultStep(props: Props) {
-  const { evaluation, pickedItems, recommendations, onAdd, onEdit, onSave } =
-    props;
+  const {
+    evaluation,
+    pickedItems,
+    recommendations,
+    onAdd,
+    onEdit,
+    onSave,
+    readOnly,
+    saveBusy,
+  } = props;
   const t = useTranslations("guest");
   const locale = useLocale() as "ru" | "en";
   const [all, setAll] = useState(false);
@@ -121,27 +131,37 @@ export function GuestResultStep(props: Props) {
         </div>
       ) : null}
 
-      <div className="guest-panel guest-save" data-testid="guest-save">
-        <h2 className="guest-panel-title">{t("saveTitle")}</h2>
-        <ul className="guest-save-list">
-          <li>{t("saveBullet1")}</li>
-          <li>{t("saveBullet2")}</li>
-          <li>{t("saveBullet3")}</li>
-        </ul>
-        <button
-          type="button"
-          className="guest-cta guest-cta-wide"
-          onClick={onSave}
-          data-testid="guest-save-cta"
-        >
-          {t("saveCta")}
-        </button>
-        <p className="guest-note">{t("saveNote")}</p>
-      </div>
+      {!readOnly ? (
+        <>
+          <div className="guest-panel guest-save" data-testid="guest-save">
+            <h2 className="guest-panel-title">{t("saveTitle")}</h2>
+            <ul className="guest-save-list">
+              <li>{t("saveBullet1")}</li>
+              <li>{t("saveBullet2")}</li>
+              <li>{t("saveBullet3")}</li>
+            </ul>
+            <button
+              type="button"
+              className="guest-cta guest-cta-wide"
+              disabled={saveBusy}
+              aria-busy={saveBusy}
+              onClick={onSave}
+              data-testid="guest-save-cta"
+            >
+              {t(saveBusy ? "saving" : "saveCta")}
+            </button>
+            <p className="guest-note">{t("saveNote")}</p>
+          </div>
 
-      <button type="button" className="guest-link guest-back" onClick={onEdit}>
-        {t("editItems")}
-      </button>
+          <button
+            type="button"
+            className="guest-link guest-back"
+            onClick={onEdit}
+          >
+            {t("editItems")}
+          </button>
+        </>
+      ) : null}
     </section>
   );
 }

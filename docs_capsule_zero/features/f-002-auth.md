@@ -32,16 +32,16 @@
 
 ## Interface States
 
-| State                 | Description               | What user sees                                     |
-| --------------------- | ------------------------- | -------------------------------------------------- |
-| Register              | Default registration form | Email, password, confirm-password fields (spec 048) |
-| Login                 | Login form                | Email, password fields + "Forgot password"         |
-| Validating            | Real-time field check     | Inline validation messages (not popups)            |
-| Submitting            | Form submitted            | Disabled button + loading indicator                |
-| Error                 | Validation/server error   | Inline error messages (signal red #FF5449 — Q4, 2026-07-16) |
-| Success               | Auth complete             | Redirect to Dashboard                              |
-| Recovery              | Forgot password           | Email input for password reset                     |
-| Social Auth           | Google sign-in (spec 037) | "Continue with Google" leads the form above an "or" divider (spec 048); failed callback lands on /auth with a localized error. Apple stays Stage 2 |
+| State       | Description               | What user sees                                                                                                                                     |
+| ----------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Register    | Default registration form | Email, password, confirm-password fields (spec 048)                                                                                                |
+| Login       | Login form                | Email, password fields + "Forgot password"                                                                                                         |
+| Validating  | Real-time field check     | Inline validation messages (not popups)                                                                                                            |
+| Submitting  | Form submitted            | Disabled button + loading indicator                                                                                                                |
+| Error       | Validation/server error   | Inline error messages (signal red #FF5449 — Q4, 2026-07-16)                                                                                        |
+| Success     | Auth complete             | Redirect to Dashboard                                                                                                                              |
+| Recovery    | Forgot password           | Email input for password reset                                                                                                                     |
+| Social Auth | Google sign-in (spec 037) | "Continue with Google" leads the form above an "or" divider (spec 048); failed callback lands on /auth with a localized error. Apple stays Stage 2 |
 
 ## Acceptance Criteria
 
@@ -79,3 +79,7 @@
 ## Validation contract (spec 053)
 
 Registration shows an accessible password-requirements hint: at least eight Unicode characters, all symbols including `_` allowed, and sufficient difference from the email identifier. Kratos remains authoritative for identifier similarity. Stable password error codes are localized in EN/RU; unknown/duplicate-identity failures stay generic and never echo raw upstream text. Credentials-only registration does not ask for a name. An optional API name may be omitted, but when supplied must be trimmed, nonblank and at most 80 Unicode characters.
+
+## Guest save continuation (spec 056)
+
+An explicit Save on the guest result creates a durable browser intent before opening AuthPanel. Password signup/login, recovery completion and Google success use the fixed `/account/guest/continue` path for that request; ordinary auth retains its dashboard destination. Google keeps continuation in an httpOnly same-site cookie across the existing exchange flow. Failed/canceled auth and email-confirmation-required preserve guest choices; owner binding and server session verification prevent replay into another account. Persistence failure offers retry without requesting registration again.

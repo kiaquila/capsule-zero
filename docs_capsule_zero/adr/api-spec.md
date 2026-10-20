@@ -40,7 +40,7 @@ Sprint 0 must create and verify these artifacts before Stage 1 product feature w
 | OpenAPI contract        | `docs_capsule_zero/adr/openapi.yaml`                                                                 | Authoritative REST path, auth, request, response, and error schemas    |
 | TypeScript client/types | `app/src/lib/api/generated/`                                                                         | Web client/server API types generated from OpenAPI                     |
 | React Native client     | deferred until the React Native scaffold defines `mobile/lib/api/generated/` or its replacement path | TypeScript client for the React Native app generated from OpenAPI      |
-| Go schema/handlers      | `api/internal/httpapi/` + `api/migrations/`                                                          | Typed Go handlers from OpenAPI and embedded SQL migration files            |
+| Go schema/handlers      | `api/internal/httpapi/` + `api/migrations/`                                                          | Typed Go handlers from OpenAPI and embedded SQL migration files        |
 | Contract tests          | `api/tests/contract/` or equivalent CI target                                                        | Auth/error conventions and representative endpoint schema verification |
 
 Endpoint names may change only with the OpenAPI contract, generated clients, and contract tests updated in the same PR.
@@ -115,28 +115,28 @@ The generator writes the canonical web client to `app/src/lib/api/generated/open
 
 Every REST operation returns the common `ErrorResponse` shape for failures. The OpenAPI contract is authoritative for operation-specific status codes, but the v0.1 taxonomy is:
 
-| HTTP | `ErrorResponse.error.code`   | Meaning                                                                                                    |
-| ---: | ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
-|  400 | `VALIDATION_ERROR`           | Request syntax, shape, enum, file metadata, or query validation failed                                     |
-|  400 | `INVALID_CODE`               | Recovery/verification one-time code is wrong, expired, or already used (spec 035)                          |
-|  400 | `INVALID_CURRENT_PASSWORD`   | Password change rejected because the presented current password is wrong (spec 035)                        |
-|  400 | `PASSWORD_TOO_SIMILAR` | Password is too similar to the email identifier (spec 053) |
-|  400 | `PASSWORD_TOO_SHORT` | Password has fewer than eight characters (spec 053) |
-|  400 | `PASSWORD_TOO_LONG` | Password exceeds the identity service's supported length (spec 053) |
-|  400 | `PASSWORD_COMPROMISED` | Password appears in known data breaches (spec 053) |
-|  400 | `PASSWORD_UNCHANGED` | New password must differ from the current password (spec 053) |
-|  400 | `PASSWORD_POLICY_REJECTED` | Another recognized password-policy rejection requires a different password (spec 053) |
-|  401 | `UNAUTHENTICATED`            | Kratos session is missing, expired, or invalid                                                             |
-|  403 | `FORBIDDEN`                  | Authenticated user cannot access the requested resource                                                     |
-|  404 | `NOT_FOUND`                  | Resource does not exist or is intentionally hidden by ownership rules                                      |
-|  409 | `IDEMPOTENCY_CONFLICT`       | Idempotency key, invoice, webhook replay, or optimistic version conflict                                   |
-|  409 | `UPLOAD_INCOMPLETE`          | Upload completion ran before the initialized object exists                                                  |
-|  409 | `UPLOAD_MISMATCH`            | Stored object size or content type does not match the initialized metadata                                  |
-|  422 | `SEMANTIC_VALIDATION_FAILED` | Capsule methodology, palette compatibility, basicity, target correlation, or status-transition rule failed |
-|  429 | `RATE_LIMITED`               | Per-client request budget is exhausted; the response includes `Retry-After`                                 |
-|  500 | `INTERNAL_ERROR`             | Unexpected application/database failure                                                                     |
-|  502 | `INTERNAL_ERROR`             | Upstream identity service is temporarily unavailable during authenticated session resolution                |
-|  503 | `FEATURE_UNAVAILABLE`        | Photo uploads are disabled until the operator explicitly enables the rollout                               |
+| HTTP | `ErrorResponse.error.code`   | Meaning                                                                                                       |
+| ---: | ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
+|  400 | `VALIDATION_ERROR`           | Request syntax, shape, enum, file metadata, or query validation failed                                        |
+|  400 | `INVALID_CODE`               | Recovery/verification one-time code is wrong, expired, or already used (spec 035)                             |
+|  400 | `INVALID_CURRENT_PASSWORD`   | Password change rejected because the presented current password is wrong (spec 035)                           |
+|  400 | `PASSWORD_TOO_SIMILAR`       | Password is too similar to the email identifier (spec 053)                                                    |
+|  400 | `PASSWORD_TOO_SHORT`         | Password has fewer than eight characters (spec 053)                                                           |
+|  400 | `PASSWORD_TOO_LONG`          | Password exceeds the identity service's supported length (spec 053)                                           |
+|  400 | `PASSWORD_COMPROMISED`       | Password appears in known data breaches (spec 053)                                                            |
+|  400 | `PASSWORD_UNCHANGED`         | New password must differ from the current password (spec 053)                                                 |
+|  400 | `PASSWORD_POLICY_REJECTED`   | Another recognized password-policy rejection requires a different password (spec 053)                         |
+|  401 | `UNAUTHENTICATED`            | Kratos session is missing, expired, or invalid                                                                |
+|  403 | `FORBIDDEN`                  | Authenticated user cannot access the requested resource                                                       |
+|  404 | `NOT_FOUND`                  | Resource does not exist or is intentionally hidden by ownership rules                                         |
+|  409 | `IDEMPOTENCY_CONFLICT`       | Idempotency key, invoice, webhook replay, or optimistic version conflict                                      |
+|  409 | `UPLOAD_INCOMPLETE`          | Upload completion ran before the initialized object exists                                                    |
+|  409 | `UPLOAD_MISMATCH`            | Stored object size or content type does not match the initialized metadata                                    |
+|  422 | `SEMANTIC_VALIDATION_FAILED` | Capsule methodology, palette compatibility, basicity, target correlation, or status-transition rule failed    |
+|  429 | `RATE_LIMITED`               | Per-client request budget is exhausted; the response includes `Retry-After`                                   |
+|  500 | `INTERNAL_ERROR`             | Unexpected application/database failure                                                                       |
+|  502 | `INTERNAL_ERROR`             | Upstream identity service is temporarily unavailable during authenticated session resolution                  |
+|  503 | `FEATURE_UNAVAILABLE`        | Photo uploads are disabled until the operator explicitly enables the rollout                                  |
 |  503 | `STORAGE_UNAVAILABLE`        | Object Storage is unreachable or signing/readiness failed; no upload target or partial completion is returned |
 
 Server logs may include safe provider error classifications, but must never include credentials, presigned URLs, or secret-bearing raw payloads. Client responses keep messages safe for end users; the only provider target returned by this slice is the explicit short-lived presigned URL capability.
@@ -152,26 +152,26 @@ are bound to their Kratos flow, so the start endpoints return a `flowId` the
 completion endpoints must reference. OAuth callbacks are kept in the contract
 as Stage 2 boundaries for Google OAuth and Apple Sign-In.
 
-| Route                    | Method | Auth   | Purpose                                                               |
-| ------------------------ | -----: | ------ | --------------------------------------------------------------------- |
-| `/api/auth/registration` |   POST | Public | Create a password account and return a session or email-confirm state |
-| `/api/auth/login`        |   POST | Public | Establish a password session                                          |
-| `/api/auth/whoami`       |    GET | Public | Resolve the presented session token, or return an empty auth response |
-| `/api/auth/recovery`     |   POST | Public | Start code-method recovery; returns the flow the code is bound to     |
-| `/api/auth/recovery/complete` | POST | Public | Exchange the emailed code, or a recovery continuation retry, for a new password and a session |
-| `/api/auth/verification` |   POST | Public | Start or resend a code-method email verification                      |
-| `/api/auth/verification/complete` | POST | Public | Confirm the address with the emailed code                    |
-| `/api/auth/password`     |   POST | User   | Change the password (current password required; re-auths internally)  |
-| `/api/auth/logout`       |   POST | Public | Revoke the presented session token; idempotent when absent            |
-| `/api/auth/providers`    |    GET | Public | Which social sign-in providers this deployment offers (spec 037)      |
-| `/api/auth/google/start` |   POST | Public | Begin the native Google OIDC flow; consent URL + exchange code        |
-| `/api/auth/google/complete` | POST | Public | Exchange the Google callback codes for an authenticated session      |
-| `/auth/callback`         |    GET | Public | Stage 2 web OAuth callback; exchanges code and redirects to dashboard |
-| `/auth/mobile-callback`  |    GET | Public | Stage 2 mobile OAuth callback; redirects into React Native deep link  |
-| `/api/profile`           |    GET | User   | Read current profile                                                  |
-| `/api/profile`           |  PATCH | User   | Update profile; empty country/city clears, omission preserves |
-| `/api/profile/avatar`    |   POST | User   | Upload or replace avatar metadata after storage upload                |
-| `/api/profile/avatar`    | DELETE | User   | Remove custom avatar                                                  |
+| Route                             | Method | Auth   | Purpose                                                                                       |
+| --------------------------------- | -----: | ------ | --------------------------------------------------------------------------------------------- |
+| `/api/auth/registration`          |   POST | Public | Create a password account and return a session or email-confirm state                         |
+| `/api/auth/login`                 |   POST | Public | Establish a password session                                                                  |
+| `/api/auth/whoami`                |    GET | Public | Resolve the presented session token, or return an empty auth response                         |
+| `/api/auth/recovery`              |   POST | Public | Start code-method recovery; returns the flow the code is bound to                             |
+| `/api/auth/recovery/complete`     |   POST | Public | Exchange the emailed code, or a recovery continuation retry, for a new password and a session |
+| `/api/auth/verification`          |   POST | Public | Start or resend a code-method email verification                                              |
+| `/api/auth/verification/complete` |   POST | Public | Confirm the address with the emailed code                                                     |
+| `/api/auth/password`              |   POST | User   | Change the password (current password required; re-auths internally)                          |
+| `/api/auth/logout`                |   POST | Public | Revoke the presented session token; idempotent when absent                                    |
+| `/api/auth/providers`             |    GET | Public | Which social sign-in providers this deployment offers (spec 037)                              |
+| `/api/auth/google/start`          |   POST | Public | Begin the native Google OIDC flow; consent URL + exchange code                                |
+| `/api/auth/google/complete`       |   POST | Public | Exchange the Google callback codes for an authenticated session                               |
+| `/auth/callback`                  |    GET | Public | Stage 2 web OAuth callback; exchanges code and redirects to dashboard                         |
+| `/auth/mobile-callback`           |    GET | Public | Stage 2 mobile OAuth callback; redirects into React Native deep link                          |
+| `/api/profile`                    |    GET | User   | Read current profile                                                                          |
+| `/api/profile`                    |  PATCH | User   | Update display name, locale, country/city (empty string clears), or avatar URL                |
+| `/api/profile/avatar`             |   POST | User   | Upload or replace avatar metadata after storage upload                                        |
+| `/api/profile/avatar`             | DELETE | User   | Remove custom avatar                                                                          |
 
 ## Journey
 
@@ -212,24 +212,24 @@ both outfit counts. The fixed cross-role priority is defined in `outfit-generati
 
 ## Wardrobe Items
 
-| Route                         | Method | Auth | Purpose                                                          |
-| ----------------------------- | -----: | ---- | ---------------------------------------------------------------- |
-| `/api/items`                  |    GET | User | List user's wardrobe entries with filters                        |
+| Route                         | Method | Auth | Purpose                                                            |
+| ----------------------------- | -----: | ---- | ------------------------------------------------------------------ |
+| `/api/items`                  |    GET | User | List user's wardrobe entries with filters                          |
 | `/api/items`                  |   POST | User | Create item metadata from a confirmed photo or owned-preset result |
-| `/api/items/:itemId`          |    GET | User | Read item detail                                                 |
-| `/api/items/:itemId`          |  PATCH | User | Edit name, category, colors, brand, material, price              |
-| `/api/items/:itemId`          | DELETE | User | Delete private item or remove user's wardrobe entry              |
-| `/api/items/:itemId/favorite` |   POST | User | Toggle favorite                                                  |
-| `/api/items/:itemId/status`   |  PATCH | User | Move to active, uncapsulated, for sale, or for repair            |
+| `/api/items/:itemId`          |    GET | User | Read item detail                                                   |
+| `/api/items/:itemId`          |  PATCH | User | Edit name, category, colors, brand, material, price                |
+| `/api/items/:itemId`          | DELETE | User | Delete private item or remove user's wardrobe entry                |
+| `/api/items/:itemId/favorite` |   POST | User | Toggle favorite                                                    |
+| `/api/items/:itemId/status`   |  PATCH | User | Move to active, uncapsulated, for sale, or for repair              |
 
 ## Uploads
 
-| Route                                    | Method | Auth | Purpose                                                                  |
-| ---------------------------------------- | -----: | ---- | ------------------------------------------------------------------------ |
-| `/api/uploads/photo/init`                |   POST | User | Validate original-photo metadata and return a presigned PUT contract      |
-| `/api/uploads/photo/complete`            |   POST | User | Verify the stored object and idempotently complete one original asset     |
-| `/api/uploads/:jobId/background-removal` |   POST | User | Start or retry background removal                                        |
-| `/api/uploads/:jobId`                    |    GET | User | Read processing status                                                   |
+| Route                                    | Method | Auth | Purpose                                                               |
+| ---------------------------------------- | -----: | ---- | --------------------------------------------------------------------- |
+| `/api/uploads/photo/init`                |   POST | User | Validate original-photo metadata and return a presigned PUT contract  |
+| `/api/uploads/photo/complete`            |   POST | User | Verify the stored object and idempotently complete one original asset |
+| `/api/uploads/:jobId/background-removal` |   POST | User | Start or retry background removal                                     |
+| `/api/uploads/:jobId`                    |    GET | User | Read processing status                                                |
 
 Spec 040 implements only unattached original wardrobe-photo assets. Init
 accepts a basename plus `image/jpeg`, `image/png`, or `image/webp` metadata and
@@ -266,17 +266,31 @@ fails if those paths or their request/response schemas are reintroduced early.
 
 ## Admin/Internal
 
-| Route                                 | Method | Auth   | Purpose                                    |
-| ------------------------------------- | -----: | ------ | ------------------------------------------ |
-| `/api/health`                         |    GET | Public | Build identity plus Postgres, Kratos, and private-storage readiness |
-| `/livez`                              |    GET | Public | Dependency-free container liveness (server operations only) |
+| Route         | Method | Auth   | Purpose                                                             |
+| ------------- | -----: | ------ | ------------------------------------------------------------------- |
+| `/api/health` |    GET | Public | Build identity plus Postgres, Kratos, and private-storage readiness |
+| `/livez`      |    GET | Public | Dependency-free container liveness (server operations only)         |
 
 ## Domain RPC Functions
 
-| Function                                                   | Purpose                                                   |
-| ---------------------------------------------------------- | --------------------------------------------------------- |
-| `validate_palette(color_ids text[])`                       | Enforce compatibility matrix and blocked color messaging  |
-| `validate_item_for_capsule(item_id uuid, capsule_id uuid)` | Block incompatible item additions                         |
-| `regenerate_capsule_outputs(capsule_id uuid)`              | Recompute outfits, OPR, gaps, and shopping list           |
-Search RPCs are not part of the accepted contract. Own-preset search is specified with P2; shared
-merchant-catalog FTS/hybrid search remains blocked by Q8 even after ADR-007 promotes pgvector.
+| Function                                                                                          | Purpose                                                  |
+| ------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `validate_palette(color_ids text[])`                                                              | Enforce compatibility matrix and blocked color messaging |
+| `validate_item_for_capsule(item_id uuid, capsule_id uuid)`                                        | Block incompatible item additions                        |
+| `regenerate_capsule_outputs(capsule_id uuid)`                                                     | Recompute outfits, OPR, gaps, and shopping list          |
+| Search RPCs are not part of the accepted contract. Own-preset search is specified with P2; shared |
+| merchant-catalog FTS/hybrid search remains blocked by Q8 even after ADR-007 promotes pgvector.    |
+
+## Guest account save (spec 056)
+
+| Route                           | Method | Behavior                                                                                         |
+| ------------------------------- | ------ | ------------------------------------------------------------------------------------------------ |
+| `/api/guest-progress`           | POST   | Session-owned atomic transfer of `{transferId, wardrobe, picked}`; returns immutable SavedGuest. |
+| `/api/guest-progress`           | GET    | List only the current owner's saved guest sets.                                                  |
+| `/api/guest-progress/:id`       | GET    | Current owner's immutable result snapshot; absent/foreign ID returns 404.                        |
+| `/api/guest-progress/items`     | GET    | Current owner's durable catalog wardrobe records.                                                |
+| `/api/guest-progress/items/:id` | PATCH  | Set status/favorite only; current owner's record or 404.                                         |
+
+All routes require the existing Kratos session and use the session rate limiter. POST is bounded to 8 KiB, 1–32 unique known preset IDs and a matching female/male/mixed wardrobe. Client counts, attributes, image URLs and owner IDs are rejected. PATCH is bounded to 2 KiB, rejects empty/unknown/null fields and trailing JSON. `transferId` is globally unique: same owner and exact ordered payload returns the original set; changed payload or another owner returns 409. Save and wardrobe append commit in one PostgreSQL transaction; `(user_id,preset_id)` deduplicates and preserves existing status/favorite. IDs belong to our own preset catalog, not merchant imagery.
+
+`algorithmVersion=guest-v1` and server-trusted ordered attribute snapshots reproduce the existing guest evaluation and gallery. A saved guest set is distinct from a canonical capsule: its items enter `uncapsulated`. Future evaluator changes must retain the guest-v1 reader or explicitly migrate snapshots. Auth cookies/tokens are never included in responses or evidence. The canonical preset JSON is in `app/src/features/guest/catalog-data.json`; the embedded Go copy is checked by `check:api-contract`.

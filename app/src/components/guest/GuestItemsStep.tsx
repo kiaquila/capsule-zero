@@ -32,7 +32,7 @@ function useDelta(count: number) {
     const diff = count - prev.current;
     prev.current = count;
     // Delta is derived from the previous rendered count for the reference animation.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+
     if (diff > 0) setDelta({ value: diff, key: Date.now() });
   }, [count]);
   return delta;

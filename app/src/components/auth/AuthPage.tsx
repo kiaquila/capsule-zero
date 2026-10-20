@@ -7,6 +7,8 @@ import { CookieBanner } from "@/components/landing/CookieBanner";
 import { PublicLegalFooter } from "@/components/legal/PublicLegalFooter";
 
 interface AuthPageProps {
+  guestSave?: boolean;
+  guestTransferId?: string;
   /** Recovery flow carried by /auth?flow=…&code=… URL params. */
   recovery?: RecoveryDeepLink;
   /** Whether this deployment offers Google sign-in (spec 037). */
@@ -16,6 +18,8 @@ interface AuthPageProps {
 }
 
 export function AuthPage({
+  guestSave,
+  guestTransferId,
   recovery,
   googleSignIn,
   googleError,
@@ -36,6 +40,8 @@ export function AuthPage({
 
       <main className="auth-page-main">
         <AuthPanel
+          guestSave={guestSave}
+          guestTransferId={guestTransferId}
           googleError={googleError}
           googleSignIn={googleSignIn}
           initialRecovery={recovery}

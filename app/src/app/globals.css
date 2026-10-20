@@ -2237,6 +2237,13 @@ textarea {
   -webkit-backdrop-filter: blur(20px);
 }
 
+.dashboard-saved-guest-link {
+  max-width: 100%;
+  padding-block: 10px;
+  text-align: center;
+  white-space: normal;
+}
+
 .dashboard-primary-action:hover {
   background: var(--btn-primary-hover-bg);
   transform: translateY(-1px);
@@ -4209,7 +4216,6 @@ textarea {
   }
 }
 
-
 .capsule-result-page {
   min-height: 100vh;
   color: var(--color-text-primary);
@@ -4682,11 +4688,7 @@ textarea {
   overflow: hidden;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   background:
-    linear-gradient(
-      135deg,
-      var(--input-focus-bg),
-      var(--color-white-a04)
-    ),
+    linear-gradient(135deg, var(--input-focus-bg), var(--color-white-a04)),
     var(--color-white-a06);
 }
 
@@ -6459,11 +6461,7 @@ textarea {
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
   background:
-    linear-gradient(
-      180deg,
-      var(--color-white-a16),
-      var(--input-bg)
-    ),
+    linear-gradient(180deg, var(--color-white-a16), var(--input-bg)),
     var(--color-chrome-glass);
   box-shadow: var(--shadow-modal);
   backdrop-filter: blur(44px);

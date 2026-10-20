@@ -8,6 +8,7 @@ import {
   type DashboardIconName,
 } from "@/components/dashboard/DashboardNavigation";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
+import { useGuestItemMutation } from "@/components/wardrobe/useGuestItemMutation";
 import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
 import { WardrobeItemDetailPanel } from "@/components/wardrobe/WardrobeItemDetailPanel";
 import { isWardrobeStatisticItem } from "@/components/wardrobe/wardrobe-statistics";
@@ -80,6 +81,8 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
   const [draft, setDraft] = useState<ItemDraftState | null>(null);
   const [errors, setErrors] = useState<DraftErrors>({});
   const [notice, setNotice] = useState<string | null>(null);
+  const { persistGuestItem, isGuestItemPending } =
+    useGuestItemMutation(setNotice);
   const [moreOpen, setMoreOpen] = useState(false);
 
   const wardrobeItems = useMemo(
@@ -321,7 +324,10 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
     }
   };
 
-  const toggleFavorite = (itemId: string) => {
+  const toggleFavorite = async (itemId: string) => {
+    const item = items.find((entry) => entry.id === itemId);
+    if (!item || !(await persistGuestItem(item, { favorite: !item.favorite })))
+      return;
     setItems((currentItems) =>
       currentItems.map((item) =>
         item.id === itemId ? { ...item, favorite: !item.favorite } : item,
@@ -329,14 +335,16 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
     );
   };
 
-  const moveSelectedItem = (
+  const moveSelectedItem = async (
     status: Extract<ItemStatus, "for_sale" | "for_repair">,
   ) => {
     if (!draft?.id) {
       return;
     }
 
-    const itemName = selectedItem?.name ?? draft.name;
+    if (!selectedItem || !(await persistGuestItem(selectedItem, { status })))
+      return;
+    const itemName = selectedItem.name;
     setItems((currentItems) =>
       currentItems.map((item) =>
         item.id === draft.id
@@ -611,6 +619,7 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
                     key={item.id}
                     meta={item.brand ?? t(`sources.${item.sourceType}`)}
                     onOpen={() => openExistingItem(item)}
+                    favoriteDisabled={isGuestItemPending(item.id)}
                     onFavorite={() => toggleFavorite(item.id)}
                     renderHeartIcon={() => <MyItemsIcon name="heart" />}
                   />
@@ -735,6 +744,7 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
 
       {draft ? (
         <WardrobeItemDetailPanel
+          readOnly={Boolean(selectedItem?.guestPresetId)}
           categoryOptions={snapshot.categoryOptions}
           deleteAction={
             selectedItem
