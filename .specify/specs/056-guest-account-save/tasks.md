@@ -19,6 +19,8 @@
 
 - The same CI run exposed a cold-route Turbopack `Unexpected end of JSON input` on parallel My Items requests. An isolated webpack dev experiment did not eliminate static-path JSON errors and slowed the suite; it was reverted. The merged main runner pins Ubuntu 24, and its proven Turbopack test setup, parallelism, assertions and standalone origin guard are retained.
 
+- The expanded RU dashboard + five wardrobe sections exhausted the 30-second test budget in CI (176 passed, one failure). Trace places the last click at 29.65 seconds with no hung operation. Split it into focused locale scenarios with the same shared setup and unchanged limits/assertions.
+
 ### Decisions
 
 - Reuse the exact guest evaluator/result; save a versioned immutable preset selection and attributes. A saved guest collection is distinct from a canonical capsule, respecting palette/category rules.
