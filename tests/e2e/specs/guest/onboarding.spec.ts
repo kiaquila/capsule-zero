@@ -55,11 +55,24 @@ test("reference women and men pools retain counts and the photo-interest sheet",
   await expect(guest.count).toHaveText("1");
 });
 
-test("incompatible colors cannot unlock a result", async ({ page }) => {
-  const guest = new GuestPage(page);
-  await guest.goto();
-  await guest.wardrobe("female").click();
-  await guest.select(["w-blouse-blush", "w-jeans-blue", "w-sneakers-white"]);
-  await expect(guest.count).toHaveText("0");
-  await expect(guest.next).toHaveCount(0);
-});
+for (const locale of ["en", "ru"] as const) {
+  test(`${locale}: incompatible colors explain a replacement without unlocking results`, async ({
+    page,
+  }) => {
+    const guest = new GuestPage(page, locale);
+    await guest.goto();
+    await guest.wardrobe("female").click();
+    await guest.select(["w-blouse-blush", "w-jeans-blue", "w-sneakers-white"]);
+    await expect(guest.count).toHaveText("0");
+    await expect(guest.next).toHaveCount(0);
+    await expect(guest.hint).toHaveText(
+      locale === "en"
+        ? "These colors don't form an outfit yet. Try a black, white or grey alternative."
+        : "Эти цвета пока не складываются в образ. Попробуй заменить одну вещь на чёрную, белую или серую.",
+    );
+    await guest.item("w-blouse-blush").click();
+    await guest.item("w-tee-white").click();
+    await expect(guest.count).toHaveText("1");
+    await expect(guest.next).toBeVisible();
+  });
+}

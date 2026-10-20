@@ -26,6 +26,9 @@ export class GuestPage extends BasePage {
   get count() {
     return this.page.getByTestId("guest-count");
   }
+  get hint() {
+    return this.page.locator(".guest-bar-hint");
+  }
   get resultCount() {
     return this.page.getByTestId("guest-result-count");
   }
