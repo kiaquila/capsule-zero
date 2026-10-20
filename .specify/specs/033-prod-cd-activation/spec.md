@@ -9,7 +9,7 @@
 ## Goal
 
 > **Build-source hardening (2026-10-12, spec 053):** Node/Go build bases now use
-> Docker Official Images with ECR Public FROM refs (spec 055 warms the identical pinned Go index from Google cache on the runner), and CI/CD use the runner's embedded Docker
+> Docker Official Images with ECR Public FROM refs (spec 055 warms the identical pinned Go/Node indexes from Google cache on the runner), and CI/CD use the runner's embedded Docker
 > builder with containerd caches. Manual `build_only` verifies builds without
 > deployment or production-tag/cache writes; server runtime configuration is unchanged.
 

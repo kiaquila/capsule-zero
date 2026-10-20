@@ -29,17 +29,28 @@ docker info --format '{{json .DriverStatus}}' \
 docker buildx use default
 docker buildx inspect default
 
-# ECR Public repeatedly rate-limits the Go manifest on shared runner IPs.
-# Warm the unchanged ECR FROM ref from Google's cache of the identical OCI index.
-# This digest is also the one in the ECR 429 response (spec 055 evidence).
-# No Docker Hub fallback, new credentials, or production daemon changes.
+# ECR Public rate-limits official base images on shared runner IPs.
+# Warm unchanged FROM refs from Google's cache of the identical OCI indexes.
+# Refresh pins with version bumps; failure must stop before tagging that image.
 repository_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+warm_image() {
+  local image="$1" target="$2" expected="$3" actual
+  shift 3
+  docker pull --platform linux/amd64 "$image"
+  actual=$(docker run --rm --platform linux/amd64 "$image" "$@")
+  if [ "$actual" != "$expected" ]; then
+    echo "setup-ci-docker-builder: update pinned mirror for $target (expected $expected, got $actual)" >&2
+    exit 1
+  fi
+  docker tag "$image" "$target"
+}
 go_version=$(sed -n 's/^go //p' "$repository_root/api/go.mod")
-go_mirror='mirror.gcr.io/library/golang@sha256:116d58cbd88c1297624acc6e967a060012422bacf9930927e23fb719189c6f36'
-docker pull --platform linux/amd64 "$go_mirror"
-actual_version=$(docker run --rm --platform linux/amd64 "$go_mirror" go env GOVERSION)
-if [ "$actual_version" != "go$go_version" ]; then
-  echo "setup-ci-docker-builder: update the pinned mirror digest for Go $go_version (got $actual_version)" >&2
-  exit 1
-fi
-docker tag "$go_mirror" "public.ecr.aws/docker/library/golang:${go_version}-bookworm"
+warm_image \
+  'mirror.gcr.io/library/golang@sha256:116d58cbd88c1297624acc6e967a060012422bacf9930927e23fb719189c6f36' \
+  "public.ecr.aws/docker/library/golang:${go_version}-bookworm" "go$go_version" \
+  go env GOVERSION
+node_version=$(sed -n 's/^ARG NODE_VERSION=//p' "$repository_root/app/Dockerfile")
+warm_image \
+  'mirror.gcr.io/library/node@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392' \
+  "public.ecr.aws/docker/library/node:$node_version" "${node_version%%-*}" \
+  node --eval 'process.stdout.write(process.versions.node.split(".")[0])'

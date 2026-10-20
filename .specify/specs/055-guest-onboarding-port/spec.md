@@ -6,7 +6,7 @@ Port the guest onboarding from alexey-golubtsov/krist-capsule at `8328dca30e2ee6
 
 ## Scope
 
-In: localized `/start`, landing CTA, all 32 own-image assets, selection/count/results/recommendations/local persistence/photo-interest sheet/existing signup panel; Mixed = union of women and men presets, as existing `categories.ts` permits. Update canonical plan and active agent/delivery docs. Delivery recovery: reuse the runner-only builder helper to warm the identical pinned Go OCI image from Google cache after three ECR quota failures, retaining the production FROM ref and all gates.
+In: localized `/start`, landing CTA, all 32 own-image assets, selection/count/results/recommendations/local persistence/photo-interest sheet/existing signup panel; Mixed = union of women and men presets, as existing `categories.ts` permits. Update canonical plan and active agent/delivery docs. Delivery recovery: reuse the runner-only builder helper to warm the identical pinned Go/Node OCI images from Google cache after repeated ECR quota failures, retaining the production FROM ref and all gates.
 Out: subsequent onboarding refinements (separate PR after user feedback), account import/save backend, real photo processing, payment integration, shared merchant-image pool, stack replacement, changing required checks.
 
 ## Acceptance Criteria
@@ -18,7 +18,7 @@ Out: subsequent onboarding refinements (separate PR after user feedback), accoun
 - AC5: Photo tiles keep the reference interest-only sheet; it never uploads or charges; the reference interest confirmation remains a local concept, not a server notification feature. Signup reuses real provider auth; browser progress is not misrepresented as an implemented account-save backend in delivery docs.
 - AC6: PRODUCT-PLAN and active agent/governance docs delegate reversible product/architecture/implementation decisions based on evidence, reuse and fastest maintainable MVP path. No routine founder gate, no bypass of CI or review, no implicit contracts/payments/security waivers.
 
-- AC7: CI/CD builder setup remains restricted to ephemeral Linux GitHub runners; Go cache warming uses an immutable digest matching the blocked official ECR index and validates `api/go.mod` version. Download/version failure fails before tagging; all image/container checks still run.
+- AC7: CI/CD builder setup remains restricted to ephemeral Linux GitHub runners; Go/Node cache warming uses immutable digests matching the blocked official ECR indexes and validates `api/go.mod` version plus Dockerfile Node major. Download/version failure fails before tagging; all image/container checks still run.
 
 ## Negative Scenarios
 

@@ -27,7 +27,7 @@ const args = process.argv.slice(2);
 fs.appendFileSync(process.env.BUILDER_TEST_LOG, JSON.stringify(args)+'\\n');
 if (args[0] === 'info') console.log(JSON.stringify([['driver-type','io.containerd.snapshotter.v1']]));
 if (args[0] === 'pull' && process.env.BUILDER_TEST_FAIL_PULL === '1') process.exit(1);
-if (args[0] === 'run') console.log(process.env.BUILDER_TEST_VERSION);
+if (args[0] === 'run') console.log(args.includes('go') ? process.env.BUILDER_TEST_VERSION : process.env.BUILDER_TEST_NODE_VERSION);
 `,
       { mode: 0o700 },
     );
@@ -49,6 +49,7 @@ if (args[0] === 'run') console.log(process.env.BUILDER_TEST_VERSION);
           BUILDER_TEST_VERSION: options.wrongVersion
             ? "go0.0.0"
             : `go${version}`,
+          BUILDER_TEST_NODE_VERSION: options.wrongNodeVersion ? "0" : "22",
           BUILDER_TEST_FAIL_PULL: options.failPull ? "1" : "0",
         },
       },
@@ -92,6 +93,30 @@ test("runner warms the exact digest, verifies Go, and preserves the production F
       pull.at(-1),
       `public.ecr.aws/docker/library/golang:${version}-bookworm`,
     ],
+  );
+});
+
+test("Node warming uses its pinned index and preserves the Dockerfile FROM ref", () => {
+  const result = runSetup();
+  assert.equal(result.status, 0, result.stderr);
+  const pull = result.calls.find(
+    (args) => args[0] === "pull" && args.at(-1).includes("/node@"),
+  );
+  assert.match(
+    pull.at(-1),
+    /^mirror\.gcr\.io\/library\/node@sha256:[a-f0-9]{64}$/,
+  );
+  assert.deepEqual(
+    result.calls.filter(([command]) => command === "tag").at(-1),
+    ["tag", pull.at(-1), "public.ecr.aws/docker/library/node:22-bookworm-slim"],
+  );
+  const mismatch = runSetup({ wrongNodeVersion: true });
+  assert.notEqual(mismatch.status, 0);
+  assert.equal(
+    mismatch.calls.some(
+      (args) => args[0] === "tag" && args.at(-1).includes("/node:"),
+    ),
+    false,
   );
 });
 
