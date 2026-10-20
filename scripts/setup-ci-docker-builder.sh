@@ -49,7 +49,15 @@ warm_image \
   'mirror.gcr.io/library/golang@sha256:116d58cbd88c1297624acc6e967a060012422bacf9930927e23fb719189c6f36' \
   "public.ecr.aws/docker/library/golang:${go_version}-bookworm" "go$go_version" \
   go env GOVERSION
+# Bind the digest to its full source tag, including distribution and variant.
+# A same-major Dockerfile change must refresh this mapping rather than alias Debian
+# as Alpine (or a different Debian variant).
+node_pinned_tag='22-bookworm-slim'
 node_version=$(sed -n 's/^ARG NODE_VERSION=//p' "$repository_root/app/Dockerfile")
+if [ "$node_version" != "$node_pinned_tag" ]; then
+  echo "setup-ci-docker-builder: update pinned Node tag/digest for $node_version" >&2
+  exit 1
+fi
 warm_image \
   'mirror.gcr.io/library/node@sha256:c3de60bf2f9dd0ac6370e6117950ff62d6e339527e7472301c9c78a017978392' \
   "public.ecr.aws/docker/library/node:$node_version" "${node_version%%-*}" \

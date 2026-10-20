@@ -32,7 +32,9 @@
 
 - Native Codex P2 found the reference empty-role hint on incompatible colors. Test-first repair (`16afdc2`) adds a localized neutral replacement path while preserving layout/counting. This correctness fix is recorded as the only behavior exception to the reference transfer.
 
-- Extend the existing runner builder helper to warm those same pinned Go/Node images through Google cache and verify the exact Go module version and Dockerfile Node major before tagging. The first warmed hosted run passed Go-dependent checks, then failed on the Node ECR quota; extend the same path to Node rather than rerunning the blocked registry. Preserve canonical FROM, tests/container smoke/build/cache export and the runner-only daemon boundary. A version bump requires refreshing the pinned digest; failure is explicit.
+- Extend the existing runner builder helper to warm those same pinned Go/Node images through Google cache and verify the exact Go module version and Dockerfile Node major/full tag/variant before tagging. The first warmed hosted run passed Go-dependent checks, then failed on the Node ECR quota; extend the same path to Node rather than rerunning the blocked registry. Preserve canonical FROM, tests/container smoke/build/cache export and the runner-only daemon boundary. A version bump requires refreshing the pinned digest; failure is explicit.
+
+- Native CI P2: same-major Node variant changes could alias the pinned Debian image under another tag. A failing fixture reproduced it; bind the digest mapping to the exact full Dockerfile tag and reject Alpine/other Debian/full variants before Node pull/tag.
 
 ### Known Issues
 

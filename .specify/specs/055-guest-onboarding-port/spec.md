@@ -18,7 +18,7 @@ Out: subsequent onboarding refinements (separate PR after user feedback), accoun
 - AC5: Photo tiles keep the reference interest-only sheet; it never uploads or charges; the reference interest confirmation remains a local concept, not a server notification feature. Signup reuses real provider auth; browser progress is not misrepresented as an implemented account-save backend in delivery docs.
 - AC6: PRODUCT-PLAN and active agent/governance docs delegate reversible product/architecture/implementation decisions based on evidence, reuse and fastest maintainable MVP path. No routine founder gate, no bypass of CI or review, no implicit contracts/payments/security waivers.
 
-- AC7: CI/CD builder setup remains restricted to ephemeral Linux GitHub runners; Go/Node cache warming uses immutable digests matching the blocked official ECR indexes and validates `api/go.mod` version plus Dockerfile Node major. Download/version failure fails before tagging; all image/container checks still run.
+- AC7: CI/CD builder setup remains restricted to ephemeral Linux GitHub runners; Go/Node cache warming uses immutable digests matching the blocked official ECR indexes and validates `api/go.mod` version plus Dockerfile Node major and full pinned tag/variant. Download/version failure fails before tagging; all image/container checks still run.
 
 ## Negative Scenarios
 

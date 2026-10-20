@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import {
   existsSync,
   mkdtempSync,
+  mkdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -35,9 +36,25 @@ if (args[0] === 'run') console.log(args.includes('go') ? process.env.BUILDER_TES
     writeFileSync(join(directory, "sudo"), "#!/bin/sh\nexit 99\n", {
       mode: 0o700,
     });
+    const fixtureRoot = join(directory, "repo");
+    for (const folder of ["scripts", "api", "app"]) {
+      mkdirSync(join(fixtureRoot, folder), { recursive: true });
+    }
+    writeFileSync(
+      join(fixtureRoot, "scripts/setup-ci-docker-builder.sh"),
+      readFileSync(join(root, "scripts/setup-ci-docker-builder.sh")),
+    );
+    writeFileSync(
+      join(fixtureRoot, "api/go.mod"),
+      `module fixture\ngo ${version}\n`,
+    );
+    writeFileSync(
+      join(fixtureRoot, "app/Dockerfile"),
+      `ARG NODE_VERSION=${options.nodeTag ?? "22-bookworm-slim"}\n`,
+    );
     const result = spawnSync(
       "bash",
-      [join(root, "scripts/setup-ci-docker-builder.sh")],
+      [join(fixtureRoot, "scripts/setup-ci-docker-builder.sh")],
       {
         encoding: "utf8",
         env: {
@@ -135,4 +152,20 @@ test("outside the authorized Linux runner no Docker operation is attempted", () 
   const result = runSetup({ outsideRunner: true });
   assert.notEqual(result.status, 0);
   assert.deepEqual(result.calls, []);
+});
+
+test("same-major Node distribution or variant changes fail before pulling or tagging Node", () => {
+  for (const nodeTag of ["22-alpine", "22-trixie-slim", "22-bookworm"]) {
+    const result = runSetup({ nodeTag });
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /pinned Node tag/);
+    assert.equal(
+      result.calls.some(
+        (args) =>
+          ["pull", "tag"].includes(args[0]) &&
+          args.some((arg) => arg.includes("/node")),
+      ),
+      false,
+    );
+  }
 });

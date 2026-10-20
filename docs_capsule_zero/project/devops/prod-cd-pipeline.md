@@ -111,7 +111,7 @@ The server's Docker daemon and GHCR login are unchanged. The required Go vet/tes
 workflow installs the exact `api/go.mod` version through SHA-pinned `actions/setup-go`
 with automatic toolchain switching disabled; its normal path does not pull an ECR image. If setup-go is unavailable,
 the same-version pinned ECR image remains an actual fallback running both checks.
-Production image builds retain the ECR FROM references. The runner helper warms the Go and Node bases from Google cache at the identical pinned OCI index digests (spec 055), checks `go env GOVERSION` against `api/go.mod` and Node major against `app/Dockerfile`, then tags the local images under those FROM refs. A failed pull or mismatched version stops the job before tagging; refresh the pinned digest when bumping Go or Node. ECR Public pulls
+Production image builds retain the ECR FROM references. The runner helper warms the Go and Node bases from Google cache at the identical pinned OCI index digests (spec 055), checks `go env GOVERSION` against `api/go.mod` and Node major against `app/Dockerfile`, requiring its full tag/distribution/variant to match the pinned digest mapping, then tags the local images under those FROM refs. A failed pull or mismatched version stops the job before tagging; refresh the pinned digest when bumping Go or Node. ECR Public pulls
 require no AWS account or new token. Registry unavailability fails the build; no Docker Hub
 fallback is configured. Docker Hub can still be used by Compose-service provisioning
 and container smoke checks; spec 053 covers web/API image builds, not every service.
