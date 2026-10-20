@@ -17,6 +17,7 @@ Searched `buildProfileSnapshot`, `saveProfileAction`, `mock-profile-preferences`
 | AC-003    | `real-profile-data.spec.ts` former-default equality and cross-user isolation + browser reload assertions pass.                                                                                                                                                                                                 |
 | AC-004    | `real-profile-data.spec.ts` captures explicit API PATCH blanks and cookie-free location reload. `go vet ./... && go test ./...` passes, including `TestValidateProfileUpdateAcceptsValidAndOmitted` and `TestApplyDistinguishesClearedAndOmittedLocation`; null/invalid/oversized negative handler cases pass. |
 | AC-005    | `real-profile-data.spec.ts` rejected API PATCH preserves previous cookie, returns `ok: false`.                                                                                                                                                                                                                 |
+| AC-006 | [Initial CI failure](https://github.com/kiaquila/capsule-zero/actions/runs/39429346899): Ubuntu 26.04 restored an OS-only cache containing a WebKit binary requiring ICU74. Pin `test` to Ubuntu 24.04 and scope cache by distro release/architecture/lockfile; YAML validation and all existing script tests pass. Final full CI rerun linked on PR #166. |
 | Delivery  | Pending required GitHub gates and native Codex review of final head                                                                                                                                                                                                                                            |
 
 ## TDD Evidence
@@ -26,3 +27,7 @@ Failing tests committed in `971f0ba` before implementation: Chromium EN/RU form 
 ## Local Checks
 
 `npm run check:api-contract`, app/e2e lint (warnings only), app/e2e typechecks pass. `npm run build`, `npm run check:repo`, feature-memory validation and CSS lint (existing warnings only) also pass. GitHub integration evidence is recorded on the PR. Existing large profile/mock modules are edited in place to remove behavior; splitting them is outside this focused fix.
+
+## Browser CI repair
+
+Reuse the existing `test.yml` runner/cache steps. [Playwright documents Ubuntu 24.04 support](https://playwright.dev/docs/docker). No browser project or required check is removed; no failure is ignored. Native review of the initial application head completed without findings; the final support-change head is reviewed again.

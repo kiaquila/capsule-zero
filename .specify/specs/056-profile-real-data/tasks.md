@@ -25,3 +25,9 @@ Fields outside the current API contract retain the existing user-bound browser c
 - Red: snapshot/action (3 failing assertions), EN/RU browser forms (2 failures), Go blank-location validator (1 failure), all for the intended missing behavior.
 - Green: 12 targeted Playwright cases across Chromium/WebKit and both locales; all Go vet/package tests; app/e2e typechecks and lint, generated API contract.
 - Sandbox prevents local httptest port binding; rerun with standard escalation passed. No product change was needed for that environment restriction.
+
+### CI environment repair
+
+- PR #166 initial native review completed with no findings; baseline, guard, OSV and AI Review passed.
+- [Initial test run](https://github.com/kiaquila/capsule-zero/actions/runs/39429346899) failed 54 WebKit launches. The job used Ubuntu 26.04 and restored `playwright-Linux-<lockhash>`; the cached browser required ICU74 but install-deps installed ICU78. Chromium and module regressions passed.
+- Pin only the test job to Ubuntu 24.04; include OS release and architecture in the cache key. Keep every browser project and gate required. The final-head rerun is the Linux execution evidence.

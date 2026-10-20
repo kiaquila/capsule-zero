@@ -50,7 +50,7 @@ PR reviewers (human and AI) reject PRs for specs `025` and onward that introduce
   npm run test:headed        # with visible browser
   npm run test:report        # open last HTML report
   ```
-- **Run in CI**: job `test` in `.github/workflows/test.yml` runs e2e lint, e2e typecheck, `/app` build, and Playwright. Required check on `main`.
+- **Run in CI**: job `test` in `.github/workflows/test.yml` runs e2e lint, e2e typecheck, `/app` build, and Playwright. Required check on `main`. The job pins `ubuntu-24.04`; the Playwright cache key includes that OS release, architecture and the lockfile so native WebKit binaries cannot cross Linux distribution releases.
 
 ### Go API unit tests — co-located under `api/**`
 
