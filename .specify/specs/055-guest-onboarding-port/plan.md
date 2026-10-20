@@ -16,4 +16,6 @@ TDD: failing-test commit `333dcaf` precedes implementation; `/en/start` returned
 
 The linked PR's current-head checks are the final merge evidence; screenshots and hashes above are committed raw artifacts. Application authentication/provider/deployment guards remain in force.
 
-Local full run initially had 120 pass / 12 full-stack skips / 4 timeouts. Two guest timeouts were the test awaiting off-screen lazy image decode in WebKit, fixed by scrolling each image into view. The other two were existing auth/productivity UI timeouts, isolated for recheck; final CI remains authoritative.
+Local full run initially had 120 pass / 12 full-stack skips / 4 timeouts. Two guest timeouts were the test awaiting off-screen lazy image decode in WebKit, fixed by scrolling each image into view. The productivity recheck passed; the auth test subsequently passed twice in isolation. Final CI remains authoritative.
+
+Review P2 regression: `16afdc2` failed in both EN and RU before the fix (`toHaveText` saw the empty-role prompt). The same localized scenarios also replace the incompatible top and assert count 1/result CTA, proving the offered alternative works. Final guest/landing matrix: 24 cases across Chromium/WebKit; linked PR checks verify the fixed head.

@@ -28,6 +28,8 @@
 - Visual review of source/port desktop/mobile items/photo/result/auth passed; exact result/auth pixel match. Store raw comparison and asset hashes alongside first-step screenshots.
 - Reference component/file size warnings are accepted for this transfer: splitting source markup in this PR would add review churn; no new framework/service is introduced.
 
+- Native Codex P2 found the reference empty-role hint on incompatible colors. Test-first repair (`16afdc2`) adds a localized neutral replacement path while preserving layout/counting. This correctness fix is recorded as the only behavior exception to the reference transfer.
+
 ### Known Issues
 
 - Reference signup does not attach guest selections to an account; browser data remains local. This follow-up is disclosed, not silently represented as shipped.

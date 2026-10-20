@@ -978,6 +978,7 @@
     "barCta": "See outfits",
     "hintStart": "Tick a top, a bottom and shoes — or a dress and shoes",
     "hintMissing": "Add {roles} to get your first outfit",
+    "hintConflict": "These colors don't form an outfit yet. Try a black, white or grey alternative.",
     "need": {
       "top": "a top",
       "bottom": "a bottom",

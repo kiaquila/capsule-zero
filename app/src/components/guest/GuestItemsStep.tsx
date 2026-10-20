@@ -178,9 +178,11 @@ export function GuestItemsStep(props: Props) {
           <p className="guest-bar-hint">
             {picked.length === 0
               ? t("hintStart")
-              : t("hintMissing", {
-                  roles: missing.map((r) => t(`need.${r}`)).join(", "),
-                })}
+              : missing.length > 0
+                ? t("hintMissing", {
+                    roles: missing.map((r) => t(`need.${r}`)).join(", "),
+                  })
+                : t("hintConflict")}
           </p>
         )}
       </div>
