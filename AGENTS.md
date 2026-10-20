@@ -20,6 +20,17 @@ git fetch --all --prune
 
 Then start from `origin/main` (or the named PR head). Local working state is untrusted until reconciled with `origin`. If the working tree has uncommitted changes that block a checkout, stash them with `git stash push -u -m "..."` — do not lose work, but do not let stale state contaminate analysis either.
 
+## Autonomous MVP Delivery
+
+The owner delegates reversible product, architecture and implementation decisions to the orchestrator.
+Follow `PRODUCT-PLAN.md` §0.1: current user instructions, accepted plan/methodology, research and market/UX evidence, existing code/ADRs, then current official docs. Prefer the smallest maintainable MVP implementation, reuse and the existing stack. Record the decision, evidence, assumptions, validation and revisit trigger in feature memory/ADR before implementing; do not turn routine choices into founder questions.
+
+Close open product questions using this contract. Q5 is delegated and resolved to rule-based basicity for MVP; select weights and validation in the Stage-2 spec. Ask only where authority is actually missing (new spend/contracts, unlicensed publication, irreversible data loss, security/access weakening or irreconcilable direct instructions). Continue independent work. Do not re-request an authorization already given.
+
+Drive each authorized slice through tests, current docs, native Codex review, fixes and honestly resolved threads to merge-ready. Trigger review from the connected owner account when authorized. Merge only under task-specific or standing owner authorization and its timing/green-gate conditions; otherwise hand off the ready PR. Never bypass required checks, forge review evidence or resolve an unfixed finding. Owner retains control of direction and authorization, without routine approval ceremonies.
+
+Guest reference port: `PRODUCT-PLAN.md` §0.2 and spec 055 supersede historical P1–P4 UI rollout requirements for this slice. The reference `/start` ships with female/male/mixed, 32 own-image presets, local browser progress, reference results/recommendations and existing signup modal. Account save is follow-up, not completed behavior. Subsequent onboarding refinements are a separate PR after the user's list.
+
 ## Current Phase & Status
 
 | Phase                         | Status                                                                                                                                                                             |
@@ -33,7 +44,7 @@ Then start from `origin/main` (or the named PR head). Local working state is unt
 | 6. QA & Soft Launch           | Upcoming                                                                                                                                                                           |
 | 7. Commercial Launch          | Upcoming                                                                                                                                                                           |
 
-**Product rebuild decision, 2026-07-16 ([`PRODUCT-PLAN.md`](PRODUCT-PLAN.md)):** product work is simplified around the outfit-combination algorithm (OPR) and re-sequenced into four stages: (1) selling landing + free pre-signup loop, (2) algorithm incl. garment cut/basicity, (3) simplification of the post-registration product, (4) unit economics and monetization. **Until MVP is done, `PRODUCT-PLAN.md` is canonical for product decisions** — where it and any other doc disagree on a product decision, the plan wins and the drift is fixed in the same change. Three consequences bind immediately: **first value is delivered before registration** (Duolingo pattern — guest onboarding, then a save-your-progress gate); **coins are cancelled as the monetization hypothesis** — do not design features, specs, schemas, API, codegen, env, provisioning, or UI around coins until Stage 4 decides the model; the active coin/Lava OpenAPI, generated-client, env, and provisioning surface was removed in Stage 0, while retained provider/runtime references are explicitly superseded legacy for Stage-4 deletion or replacement; **the algorithm must account for garment cut, not only colour** — the `basicity` score already defined in `capsule-methodology.md` §6 is currently unimplemented and must become a real algorithm input in Stage 2. The plan does not change the engineering contract (spec-kit, SENAR, TDD, PR gates), the stack, or AGENTS §8. Founder decisions Q1/Q2/Q3/Q6 that gated the start of Stage 1 are closed (2026-07-21). **Q5** (basicity, gates Stage 2) is the only open question. **Q7** (catalog art direction) closed 2026-07-24: invisible mannequin for body garments, flat presentation for trousers, three-quarter pair for shoes, flat-lay for bags and accessories, all as alpha cutouts on one shared background and light. **Q8** (shared user-import pool) closed 2026-07-24 as **option (б)** — the pool stays and is built on the Polyvore pattern; its two preconditions survive the closure and gate implementation: a compliance-scheme spec and an external legal review.
+**Product rebuild decision, 2026-07-16 ([`PRODUCT-PLAN.md`](PRODUCT-PLAN.md)):** product work is simplified around the outfit-combination algorithm (OPR) and re-sequenced into four stages: (1) selling landing + free pre-signup loop, (2) algorithm incl. garment cut/basicity, (3) simplification of the post-registration product, (4) unit economics and monetization. **Until MVP is done, `PRODUCT-PLAN.md` is canonical for product decisions** — where it and any other doc disagree on a product decision, the plan wins and the drift is fixed in the same change. Three consequences bind immediately: **first value is delivered before registration** (Duolingo pattern — guest onboarding, then a save-your-progress gate); **coins are cancelled as the monetization hypothesis** — do not design features, specs, schemas, API, codegen, env, provisioning, or UI around coins until Stage 4 decides the model; the active coin/Lava OpenAPI, generated-client, env, and provisioning surface was removed in Stage 0, while retained provider/runtime references are explicitly superseded legacy for Stage-4 deletion or replacement; **the algorithm must account for garment cut, not only colour** — the `basicity` score already defined in `capsule-methodology.md` §6 is currently unimplemented and must become a real algorithm input in Stage 2. The plan does not change the engineering contract (spec-kit, SENAR, TDD, PR gates), the stack, or AGENTS §8. Founder decisions Q1/Q2/Q3/Q6 that gated the start of Stage 1 are closed (2026-07-21). **Q5** is resolved under delegated autonomy (plan §0.1/§4): rule-based basicity for MVP; the orchestrator specifies parameters and validation. **Q7** (catalog art direction) closed 2026-07-24: invisible mannequin for body garments, flat presentation for trousers, three-quarter pair for shoes, flat-lay for bags and accessories, all as alpha cutouts on one shared background and light. **Q8** (shared user-import pool) closed 2026-07-24 as **option (б)** — the pool stays and is built on the Polyvore pattern; its two preconditions survive the closure and gate implementation: a compliance-scheme spec and an external legal review.
 
 **Locale scope decision, 2026-06-07:** Spanish / ES-AR is removed from active v0.1 scope and moved globally to v0.2. Keep Spanish source copy as future reference only; do not expose ES-AR in active routing, language switchers, profile language persistence, OpenAPI enums, generated clients, or launch acceptance criteria until v0.2 locale scope is reopened.
 
@@ -155,7 +166,7 @@ When you change an architecture or implementation decision, actualize **all** af
 
 | Document                                                               | Content                                                                                                        |
 | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| **`PRODUCT-PLAN.md`**                                                  | **Canonical product plan until MVP** — accepted decisions, open founder questions, four delivery stages, doc-debt table |
+| **`PRODUCT-PLAN.md`**                                                  | **Canonical product plan until MVP** — accepted decisions, delegated decision register, four delivery stages, doc-debt table |
 | `PRODUCT-RESEARCH.md`                                                  | Evidence base behind the plan — competitor/landing reference gallery, PLG conversion data, algorithm grounding |
 | `.specify/specs/001-capsule-zero-mvp/spec.md`                          | 25 user stories (24 MUST + 1 NICE), user flow, screen inventory                                                |
 | `docs_capsule_zero/project/methodology/capsule-methodology.md`         | Capsule methodology, compatibility rules, palette logic, limits                                                |
@@ -238,7 +249,7 @@ When assigned to implement a specific feature, read in this order:
 - `AI Review` runs on GitHub-hosted `ubuntu-latest` and validates native Codex review for the current PR head; it must never depend on a local or self-hosted runner.
 - Durable workflow docs live under `docs_capsule_zero/project/devops/`.
 - CI and branch-protection requirements are documented in `docs_capsule_zero/project/devops/github-ci-and-branch-protection.md`.
-- A human remains the final review and merge authority.
+- The orchestrator owns routine decisions and merge readiness; merge follows owner authorization under “Autonomous MVP Delivery”.
 
 ## Tests
 
@@ -313,7 +324,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 
 ### Required Sprint 0 follow-ups before Phase 5 production-stack runtime work
 
-- Founder approval on the rewritten Phase 4 ADRs.
+- Architecture decisions are recorded in ADRs and verified by the orchestrator; no additional founder approval step.
 - ~~DigitalOcean droplet upgrade to at least 4 GB RAM / 2 vCPU / 80 GB disk~~ — resolved 2026-07-02 by migrating to a Hetzner CX23 (2 vCPU / 4 GB / 40 GB; capacity budget verified in spec 033).
 - ~~Spaceship DNS pointed at Cloudflare; Cloudflare proxy enabled for `capsulezero.app`~~ — done 2026-07-22 (spec 047): apex + `www` proxied, Full (strict) TLS and DNSSEC active, origin web ports restricted to Cloudflare ranges, and real-IP restoration live.
 - ~~Resend account created and SPF/DKIM published on `capsulezero.app`~~ — done 2026-07-03: domain verified in Resend (eu-west-1), SPF/DKIM/DMARC live at Spaceship DNS, sending key installed on the prod host (`KRATOS_SMTP_CONNECTION_URI`, port 2465 — Hetzner blocks outbound 25/465).
@@ -336,7 +347,7 @@ Phase 4 was rerun on 2026-06-27 against new founder constraints: target high-loa
 - CI/CD pipeline set up (auto-build, preview deployments): ✅ baseline GitHub checks documented and configured
 - Local dev setup documented (env vars, seed data): ✅ documented in backend/frontend docs
 - Repository has linting configured: ✅ ESLint (`/app`) + module-size soft-gate lints (`app/eslint.config.mjs`, `api/.golangci.yml`); commit hooks pending Sprint 0 follow-up
-- Founder approval on the production-stack pivot: pending
+- Production-stack pivot is the accepted architecture; routine architecture decisions follow the autonomous-delivery contract above.
 
 ### Key constraints for architecture decisions
 

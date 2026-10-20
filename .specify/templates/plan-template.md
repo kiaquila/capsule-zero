@@ -38,7 +38,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 <!--
   Bind every acceptance criterion (AC-### or US#) from spec.md to concrete evidence:
   a command, a test name, a screenshot file, a diff link, or a manual check.
-  Reviewers and the human merge owner read this table to confirm work is done.
+  Reviewers and the merge owner or delegated orchestrator read this table to confirm work is done.
   An AI-written summary does NOT count as evidence.
 -->
 

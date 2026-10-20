@@ -1,5 +1,7 @@
 # Feature: Landing Page
 
+> **Update 2026-10-19:** The primary CTA now enters the reference guest `/start` before signup (spec 055, PRODUCT-PLAN §0.2). Historical interim signup routing below is superseded.
+
 > Source: US-001 (spec.md) + PRODUCT-PLAN Этап 1 (hero, 2026-07-16/17).
 > Prototype: `html-prototypes/landing-v2/v1c-final.html` (утверждён фаундером, спека 043).
 > Live implementation: спека 044 (`app/src/components/landing/LandingPage.tsx`).

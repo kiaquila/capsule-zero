@@ -1,5 +1,7 @@
 # GitHub-Hosted AI Review
 
+> An orchestrator may post the review command through the connected owner account when the user authorizes review in the task or standing instructions. Human-authored below identifies the GitHub actor required by the gate; it does not require the owner to manually type the comment. PRODUCT-PLAN §0.1 governs autonomous fixes and authorized merge.
+
 This runbook owns Capsule Zero's required `AI Review` check.
 
 ## Operating Model

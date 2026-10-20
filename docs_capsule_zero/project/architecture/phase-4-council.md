@@ -113,7 +113,7 @@ Custom Go services can be extracted out of the monolith later — the first natu
 
 ## Open Follow-Ups
 
-- Founder approval on the rewritten ADRs (`adr-001-stack.md`, `adr-002-auth.md`, `adr-003-storage.md`, `adr-006-mock-first-mvp-stage-one.md`).
+- Orchestrator verification of the accepted ADRs under PRODUCT-PLAN §0.1 (no separate founder gate) (`adr-001-stack.md`, `adr-002-auth.md`, `adr-003-storage.md`, `adr-006-mock-first-mvp-stage-one.md`).
 - DigitalOcean droplet upgrade to at least 4 GB / 2 vCPU / 80 GB. (Resolved 2026-07-02 by migrating to a Hetzner CX23 instead — spec 033.)
 - ~~Spaceship DNS pointed at Cloudflare nameservers; Cloudflare proxy enabled on `capsulezero.app`.~~ Completed 2026-07-22 with apex + `www`, Full (strict) TLS, DNSSEC, and Cloudflare-only origin ingress (spec 047).
 - ~~Resend account created and SPF/DKIM published.~~ Completed 2026-07-03.

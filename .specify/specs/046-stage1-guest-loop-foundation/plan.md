@@ -1,5 +1,7 @@
 # 046 — Plan & Verification
 
+> **Update 2026-10-19:** Current rollout: spec 055 ports the accepted reference UI under PRODUCT-PLAN §0.2. Historical P1–P4 staging below is superseded for that slice; account attachment and quality validation remain follow-up.
+
 Методологический слайс с generated OpenAPI projection и точечным runtime-alignment двух существующих
 экранов. Hand-written app scope добавлен после native Codex P1 и выполнен test-first: исходный
 красный e2e зафиксирован коммитом `69600a3`, исправленная structural-layer инварианта — RED-коммитом

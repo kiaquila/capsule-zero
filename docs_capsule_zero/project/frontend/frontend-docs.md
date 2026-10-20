@@ -1,5 +1,7 @@
 # Web Frontend Docs
 
+> **Update 2026-10-19:** Public `/[locale]/start` now hosts reference guest onboarding (spec 055): client-only localStorage state, 32 local image presets and browser calculation; no new server/provider surface. Existing real authentication is reused; attaching guest items to accounts is follow-up.
+
 > **Monetization freeze (2026-07-16):** Every coin, balance, Lava.top, billing, payment-product,
 > pricing, or purchase-flow statement below is superseded historical context under `PRODUCT-PLAN.md`
 > D2. Do not implement, provision, expose, test as a release gate, or use it for a new contract or

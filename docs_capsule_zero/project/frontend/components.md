@@ -1,5 +1,7 @@
 # Components Guide
 
+> **Update 2026-10-19:** Spec 055 adds the reference `components/guest/*` composition for `/start`, reusing AuthPanel, LanguageSwitcher, compatibility and tokens; it is separate from authenticated WardrobeItemCard. Mixed is the union of source presets. See `features/guest-onboarding.md`.
+
 ## Purpose
 
 This guide defines frontend component conventions for implementing the approved Capsule Zero prototypes in React while preserving the premium glassmorphism system.

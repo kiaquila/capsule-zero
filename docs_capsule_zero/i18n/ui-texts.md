@@ -1,5 +1,7 @@
 # UI Texts — Capsule Zero (i18n)
 
+> **Update 2026-10-19:** Current guest onboarding EN/RU copy is ported from reference commit 8328dca in spec 055; canonical runtime keys are `guest` in `app/src/messages/{en,ru}.json`, including `typeMixed`. Landing subtitle now describes ticking owned presets; primary CTA opens `/start`.
+
 > Exact UI text strings in documented product languages. Active implementation scope is governed by the locale decision below.
 > Source: Styling Guide v1.3, Section 7 + Phase 4 audit (2026-03-20).
 > Coverage: all 16 logical screens.

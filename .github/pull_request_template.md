@@ -27,7 +27,7 @@
 - [ ] `tasks.md` records the relevant dead ends, decisions, and known issues under `## Process Memory`.
 - [ ] **TDD evidence (specs ≥ 025)**: link to the commit that landed the failing test before the implementation that makes it pass — or a one-line waiver if the change is doc-only / infra-only and the `test` check does not apply.
 - [ ] Required checks (`baseline-checks`, `guard`, `AI Review`, `test`, and `osv-scan`) are green on the current head SHA.
-- [ ] Any remaining known issue is accepted by the human merge owner.
+- [ ] Any remaining known issue is accepted by the merge owner (or the orchestrator acting within delegated scope).
 
 ## Validation
 

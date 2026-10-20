@@ -1,5 +1,7 @@
 # Feature: Guided Journey (3-Step Capsule Creation)
 
+> **Update 2026-10-19:** The public guest flow is `/start`, separate from the authenticated guided journey. Its exact reference-port scope and limits are in `guest-onboarding.md` and PRODUCT-PLAN §0.2; account-save remains follow-up.
+
 > Source: US-008, US-009, US-010 (spec.md). Prototype: `html-prototypes/guided-journey.html`
 
 > **Q8 implementation gate (2026-07-24):** the three-method journey remains the target product

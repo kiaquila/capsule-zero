@@ -376,3 +376,13 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255,255,255,.35);
 }
+
+/* Spec 055: exact reference asset/chrome values; no new global UI surface. */
+:root {
+  --guest-reference-studio: rgba(244, 243, 240, 0.94);
+  --guest-reference-upload-border: rgba(255, 255, 255, 0.42);
+  --guest-reference-badge-border: rgba(255, 255, 255, 0.3);
+  --guest-reference-check-border: rgba(0, 0, 0, 0.22);
+  --guest-reference-outfit-shadow: rgba(0, 0, 0, 0.12);
+  --guest-reference-radius: 24px;
+}

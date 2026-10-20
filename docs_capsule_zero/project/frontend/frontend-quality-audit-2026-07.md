@@ -141,7 +141,7 @@ Tooling (the "auto-catch" controls), all **warnings-first** so CI stays green ag
 - **Fixed** the second live duplicate-override (`.dashboard-more-item-active`) and replaced the 5 solid hardcoded `#FFD600` literals with `var(--color-error)`.
 - Verified: `npm run ci:check` (lint + lint:css + typecheck + build) green.
 
-Deliberately deferred (own PRs / need input): the `error.tsx`/`loading.tsx` boundaries, the `WardrobeListShell` extraction, the CSS `@layer`/split, the `palette-compatibility.ts` unification, the auth a11y label fix (the auth form is being edited in the open auth-slice PR — avoid double-editing), the rgba error-tint alpha tokens, and the "honesty pass" on the fake flows (C1 + wardrobe mutations) which needs a founder decision.
+Deliberately deferred (own PRs / need input): the `error.tsx`/`loading.tsx` boundaries, the `WardrobeListShell` extraction, the CSS `@layer`/split, the `palette-compatibility.ts` unification, the auth a11y label fix (the auth form is being edited in the open auth-slice PR — avoid double-editing), the rgba error-tint alpha tokens, and the "honesty pass" on the fake flows (C1 + wardrobe mutations) which the orchestrator now decides from product evidence under PRODUCT-PLAN §0.1 (delegation, 2026-10-19).
 
 ## Open questions for the founder
 

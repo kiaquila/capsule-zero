@@ -1,0 +1,130 @@
+[
+  {
+    "path": "app/public/catalog/m-backpack-black.webp",
+    "sha256": "dd6cd37e43b98e1438bf0d5494d178133c1323f9edd15f5c55328ab78cf02ff7"
+  },
+  {
+    "path": "app/public/catalog/m-bag-brown.webp",
+    "sha256": "d49ab7f81c6e8acfa11efdfd2a05dd333c70db5a9fd3679df541502dc0f28719"
+  },
+  {
+    "path": "app/public/catalog/m-boots-black.webp",
+    "sha256": "068fac3031029c4ad86fc9d10e277b300080fccf954df5fc1faa4958ca460681"
+  },
+  {
+    "path": "app/public/catalog/m-chinos-sand.webp",
+    "sha256": "a0407a1094ea092b5f9636e43c4b6025beb4e2ce41fadee1b06d93e124118741"
+  },
+  {
+    "path": "app/public/catalog/m-derby-brown.webp",
+    "sha256": "05da226145109b49769736aff42b53b2f09b7e89814155d8e59a8ce023084017"
+  },
+  {
+    "path": "app/public/catalog/m-jeans-blue.webp",
+    "sha256": "d0f2d155b3e9166eda61db0f2005be31a63355de3a1a68b73e9d1d74815a4739"
+  },
+  {
+    "path": "app/public/catalog/m-longsleeve-grey.webp",
+    "sha256": "a7c08e713408648af809b4ce85678c5be85851025bfc434530460f037086c423"
+  },
+  {
+    "path": "app/public/catalog/m-polo-navy.webp",
+    "sha256": "8fd6eaa4775e8da78e92444c6d61e70c265c2359a7dfd12ef9f95dd41a47fa9f"
+  },
+  {
+    "path": "app/public/catalog/m-shirt-sky.webp",
+    "sha256": "28282fdac96d3d55622c54a2717cf17d0799d33065b4068a505c281dc5c4b9ab"
+  },
+  {
+    "path": "app/public/catalog/m-sneakers-white.webp",
+    "sha256": "06ee74afdc97458d7a7ab448977c4c630cba7aba95fb51849649f10653e14155"
+  },
+  {
+    "path": "app/public/catalog/m-tee-black.webp",
+    "sha256": "5593fe9d863fc6e57da28c8a0c3cc368782b918aaea12de70b2be000fe94771f"
+  },
+  {
+    "path": "app/public/catalog/m-tee-white.webp",
+    "sha256": "b571070c8cae8ea0265738f3b39d9024e2c3829ded4d999e10b1477e0b5f56bc"
+  },
+  {
+    "path": "app/public/catalog/m-trousers-black.webp",
+    "sha256": "e1c746164d235cbc3357fdb83e0c4ab5b3f00fc164e36f88ee5b38bbfbc01012"
+  },
+  {
+    "path": "app/public/catalog/w-bag-black.webp",
+    "sha256": "fa34a09aed1150ebf92233397d0a036dee68f2adf7c33bba0b604f2f1f0836f6"
+  },
+  {
+    "path": "app/public/catalog/w-bag-red.webp",
+    "sha256": "757a4fc696b2fb86ab923486009cad192d28d3ae641f19c49b4366cec3eff084"
+  },
+  {
+    "path": "app/public/catalog/w-blouse-blush.webp",
+    "sha256": "0a11d642905e000b6e742542f93d67e380c0dab99ce9f74446f5a3cc3cc0bc69"
+  },
+  {
+    "path": "app/public/catalog/w-boots-brown.webp",
+    "sha256": "45414d89e8e53d5640b501e882fe24bc765bb8eb602f2755e5b67d86d5e3ef98"
+  },
+  {
+    "path": "app/public/catalog/w-dress-black.webp",
+    "sha256": "716667012f3465820b97a0e9fbd60f4917ba466ccd4d532d344f902da99ba14a"
+  },
+  {
+    "path": "app/public/catalog/w-dress-burgundy.webp",
+    "sha256": "cff663e06d5abde92cf91185b02282f8fe7c793c8e828bdafbea8174a855259d"
+  },
+  {
+    "path": "app/public/catalog/w-flats-beige.webp",
+    "sha256": "2057bac810bb8d9297d29e77099d865eae5643ad1276a1088ae8975d2a2b513c"
+  },
+  {
+    "path": "app/public/catalog/w-jeans-blue.webp",
+    "sha256": "5118a2e5b7b535d1897c38d6a830afdc4d8bb62dd621d67696ca9674b90ec6e8"
+  },
+  {
+    "path": "app/public/catalog/w-loafers-black.webp",
+    "sha256": "51f304377da0cb6b2f6536e1e7916d4bffe905e56ad537d2de0c4dd4005dc475"
+  },
+  {
+    "path": "app/public/catalog/w-longsleeve-grey.webp",
+    "sha256": "88f25a4b927a223c3b0e3a9dc425de0502e5a1a577844f7c660d74d51ab71517"
+  },
+  {
+    "path": "app/public/catalog/w-shirt-white.webp",
+    "sha256": "cd3d680669ecb0a0f589743169994c695a7435cb0e267c2933cea3f6549554fe"
+  },
+  {
+    "path": "app/public/catalog/w-skirt-beige.webp",
+    "sha256": "f362de7ca4d7f760907fd8e6b67b1c512f96aa555c75a7c5c5d66ec5641c969e"
+  },
+  {
+    "path": "app/public/catalog/w-sneakers-white.webp",
+    "sha256": "1417966c6918a946b3717210be60b7150171dfdb492423d993cc4e8228b06b7d"
+  },
+  {
+    "path": "app/public/catalog/w-tee-black.webp",
+    "sha256": "551fbfd2785905025a9480bdc33468d7a79ae16ca334441ce9bcb105ecea36b5"
+  },
+  {
+    "path": "app/public/catalog/w-tee-white.webp",
+    "sha256": "6d8b07f3d9c4c823c579489726084bf09b7aa184e6970a3a94f03f4081efc25e"
+  },
+  {
+    "path": "app/public/catalog/w-tote-camel.webp",
+    "sha256": "ccd3a631c41ac118b253b7261d745f0e1e2af81e95afdad0c48f96567d7faf62"
+  },
+  {
+    "path": "app/public/catalog/w-trousers-black.webp",
+    "sha256": "94bb83a29517dcca8678de256b04e82eb9bc76d8aa3586674a69ea5e98c21cbe"
+  },
+  {
+    "path": "app/public/catalog/w-trousers-sand.webp",
+    "sha256": "8fe20ff9369b975e2a15d6ccf5e5419fc047a2d590ca0faa68bbbe70040b09f8"
+  },
+  {
+    "path": "app/public/catalog/w-turtleneck-navy.webp",
+    "sha256": "644661cc280f7fe6f2610fda1a33ef8f0c454b1553a33731def443ef314463a2"
+  }
+]

@@ -111,7 +111,7 @@ The server's Docker daemon and GHCR login are unchanged. The required Go vet/tes
 workflow installs the exact `api/go.mod` version through SHA-pinned `actions/setup-go`
 with automatic toolchain switching disabled; its normal path does not pull an ECR image. If setup-go is unavailable,
 the same-version pinned ECR image remains an actual fallback running both checks.
-Production image builds still use the pinned ECR bases. ECR Public pulls
+Production image builds retain the ECR FROM references. The runner helper warms the Go and Node bases from Google cache at the identical pinned OCI index digests (spec 055), checks `go env GOVERSION` against `api/go.mod` and Node major against `app/Dockerfile`, requiring its full tag/distribution/variant to match the pinned digest mapping, then tags the local images under those FROM refs. A failed pull or mismatched version stops the job before tagging; refresh the pinned digest when bumping Go or Node. ECR Public pulls
 require no AWS account or new token. Registry unavailability fails the build; no Docker Hub
 fallback is configured. Docker Hub can still be used by Compose-service provisioning
 and container smoke checks; spec 053 covers web/API image builds, not every service.
@@ -433,3 +433,5 @@ the wrapper's health smoke.
   freely without touching it. Nightly `pg_dump` backups land with spec 024 Phase 5.
 - Do not confuse the production pipeline with `docker-compose.dev.yml` — that override is
   laptop-only local development (mkcert, `capsulezero.local`, MailHog).
+
+Base-cache source: [Google cached public images](https://docs.cloud.google.com/artifact-registry/docs/pull-cached-dockerhub-images). The explicit digest prevents tag drift; cache availability is external and a missing blob fails closed. No daemon mirror/fallback is configured on production or developer hosts.

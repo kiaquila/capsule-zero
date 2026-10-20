@@ -1,5 +1,7 @@
 # Plan 053 — Docker Hub Independent Production Build
 
+> **Delivery recovery 2026-10-19 (spec 055):** after repeated ECR 429 failures for both Go and Node, the shared runner helper warms the identical immutable OCI indexes from Google mirror, verifies the module Go version and Dockerfile Node major and full pinned tag/variant, and tags them under the unchanged ECR FROM references. No direct Docker Hub fallback, gate removal, or production-daemon change. The immutable digest must be refreshed with a Go or Node version bump.
+
 ## Approach
 
 Reuse `app/Dockerfile`, `api/Dockerfile`, the CI image-build step and CD's existing

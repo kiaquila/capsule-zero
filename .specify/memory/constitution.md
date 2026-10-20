@@ -200,6 +200,10 @@ The platform guides the user through methodology without imposing. It suggests, 
 
 These principles govern _how_ product work is implemented and merged. They sit alongside (not above) the product principles in sections I–VI. Their full operational mapping lives in `docs_capsule_zero/project/devops/senar-mapping.md`.
 
+### Delegated Autonomous Decisions
+
+The owner delegates reversible product, architecture and implementation choices to the orchestrator under PRODUCT-PLAN §0.1 (2026-10-19). Choose the smallest maintainable MVP path using accepted methodology, product/marketing evidence, existing code and current official docs; record the decision, assumptions and verification in feature memory/ADR. Routine founder approval is not a gate. Missing authority for new spend/contracts, unlicensed publication, irreversible data loss or weakening protection still requires explicit authorization. Required tests, native review and green checks remain mandatory; merge follows task-specific or standing owner authorization. The reference guest UI scope in plan §0.2/spec 055 supersedes earlier rollout details for that slice, with account persistence explicitly unfinished.
+
 ### Supervised Verification
 
 Every product-code PR must name its goal, scope (in/out), acceptance criteria, **at least one negative scenario** (or an explicit waiver), and verification evidence before merge. Evidence means a command, test, screenshot, diff, or linked check tied to a specific acceptance criterion. **An AI-written summary of work done does not substitute for evidence.** The `## Verification` table in `plan.md` is where this binding lives; the SENAR Done Gate in the PR template is where the merge owner confirms it.
@@ -216,7 +220,9 @@ Every spec ≥ 025 must follow test-driven development **for application code**.
 
 These principles apply to every spec authored after the SENAR layer shipped. Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered and keep their original shape.
 
-**Version**: 1.6 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-07-21
+**Version**: 1.7 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-10-19
+
+> **v1.7 (2026-10-19)** — delegated autonomous MVP decisions and preauthorized delivery under PRODUCT-PLAN §0.1; reference guest UI scope clarified in §0.2/spec 055. Engineering checks, methodology and legal/security boundaries remain binding.
 
 > **v1.6 (2026-07-21)** — OPR counting-model clarified (PRODUCT-PLAN §4 Q1, spec 046). §II OPR
 > **formula** refined: denominator = core + accessory items; structural layers move to a separate
