@@ -136,6 +136,7 @@ export interface ProfileRepository {
 
 export interface WardrobeEntry extends ClothingItem {
   guestPresetId?: string;
+  guestPresetNames?: GuestItem["name"];
   imageUrl?: string;
   sourceType: ItemSourceType;
   status: ItemStatus;

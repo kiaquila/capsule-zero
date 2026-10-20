@@ -34,6 +34,8 @@
 
 - Native review identified local-only guest capsule membership. TDD `f0af52d` reproduced capsule/edit affordances; the shared detail panel now restricts guest records to persisted capabilities in all five shells. Capsule actions and handlers reject those records; catalog visibility and repair notes are also read-only.
 
+- Second native review identified English-only guest wardrobe names after RU save (RED `7f9abc3`). Localize the existing snapshot projection without changing the persistence or locale-free repository contract; cover all five wardrobe pages in the existing browser scenario (GREEN in Chromium and iPhone WebKit).
+
 ### Known Issues
 
 - Other legacy wardrobe/capsule domains remain outside this slice. Guest favorite/status actions are durable; legacy name/edit/delete and formal capsule CRUD retain their existing adapters and are not claimed as migrated. Those unsupported controls are hidden or read-only for saved guest records; no local-only success is exposed.

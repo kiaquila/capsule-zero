@@ -16,6 +16,7 @@ function project(item: SavedGuestItem): WardrobeEntry {
   return {
     id: item.id,
     guestPresetId: item.preset.id,
+    guestPresetNames: item.preset.name,
     userId: item.userId,
     name: item.preset.name.en,
     categoryId: item.preset.categoryId,

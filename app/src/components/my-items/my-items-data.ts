@@ -150,7 +150,7 @@ function buildItem(
   return {
     id: item.id,
     guestPresetId: item.guestPresetId,
-    name: item.name,
+    name: item.guestPresetNames?.[locale] ?? item.name,
     categoryId: item.categoryId,
     categoryLabel: categoryName(item.categoryId, locale),
     section: category?.section ?? "custom",
