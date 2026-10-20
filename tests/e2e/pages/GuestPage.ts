@@ -11,6 +11,27 @@ export class GuestPage extends BasePage {
     this.path = `/${locale}/start`;
     this.auth = new AuthPopup(page);
   }
+  get dashboardLink() {
+    return this.page.getByTestId("guest-account-dashboard");
+  }
+  resultImage(id: string) {
+    return this.resultStep.locator(`img[src="/catalog/${id}.webp"]`);
+  }
+  get ownerMismatch() {
+    return this.page.getByTestId("guest-save-owner-mismatch");
+  }
+  get saveRetry() {
+    return this.page.getByTestId("guest-save-retry");
+  }
+  get saveError() {
+    return this.page.getByTestId("guest-save-error");
+  }
+  get continuation() {
+    return this.page.getByTestId("guest-save-continuation");
+  }
+  get savedConfirmation() {
+    return this.page.getByTestId("guest-saved-confirmation");
+  }
   get typeStep() {
     return this.page.getByTestId("guest-step-type");
   }

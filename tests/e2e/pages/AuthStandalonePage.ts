@@ -14,6 +14,12 @@ export class AuthStandalonePage extends BasePage {
   /** Server-reported message area shared by every auth mode. */
   readonly serverMessage: Locator;
 
+  async signIn(email: string, password: string) {
+    await this.container.locator('input[name="email"]').fill(email);
+    await this.container.locator('input[name="password"]').fill(password);
+    await this.container.locator('button[type="submit"]').click();
+  }
+
   constructor(page: Page, locale: string = "en") {
     super(page);
     this.path = `/${locale}/auth`;

@@ -70,12 +70,21 @@ export class CapsuleResultPage extends BasePage {
     }
   }
 
-  /** Add a compatible candidate through the capsule item picker. */
+  /** Add once the picker opens; retry its idempotent opener during hydration. */
   async addItem(candidateName: string): Promise<void> {
-    await this.addItemButton.click();
-    await this.page
-      .getByRole("button", { name: new RegExp(candidateName, "i") })
-      .click();
+    const candidate = this.page.getByRole("button", {
+      name: new RegExp(candidateName, "i"),
+    });
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      await this.addItemButton.click();
+      try {
+        await candidate.waitFor({ state: "visible", timeout: 5_000 });
+        break;
+      } catch (error) {
+        if (attempt === 2) throw error;
+      }
+    }
+    await candidate.click();
   }
 
   /** Remove an item through its contextual action and confirmation dialog. */
