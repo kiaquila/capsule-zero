@@ -1,10 +1,15 @@
 import type { Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
+import { validationCopy, type Locale } from "../fixtures/locales";
 
 export class GuestWardrobePage extends BasePage {
-  readonly path = "/en/my-items";
-  constructor(page: Page) {
+  readonly path: string;
+  constructor(
+    page: Page,
+    private readonly locale: Locale = "en",
+  ) {
     super(page);
+    this.path = `/${locale}/my-items`;
   }
   async goto() {
     return this.page.goto(this.path, { waitUntil: "load" });
@@ -18,6 +23,9 @@ export class GuestWardrobePage extends BasePage {
   favorite(presetId: string) {
     return this.item(presetId).locator("button[aria-pressed]");
   }
+  itemName(presetId: string) {
+    return this.item(presetId).locator(".my-items-card-name");
+  }
   async open(presetId: string) {
     await this.page.waitForLoadState("load");
     await this.item(presetId).locator(".my-items-card-main").click();
@@ -26,10 +34,16 @@ export class GuestWardrobePage extends BasePage {
     return this.page.getByRole("tab").nth(1);
   }
   get moveToSale() {
-    return this.page.getByRole("button", { name: "Move to Sale", exact: true });
+    return this.page.getByRole("button", {
+      name: validationCopy[this.locale].myItems.detail.moveSale,
+      exact: true,
+    });
   }
   get returnToMyItems() {
-    return this.page.getByRole("button", { name: "To My Items", exact: true });
+    return this.page.getByRole("button", {
+      name: validationCopy[this.locale].forSale.detail.returnToMyItems,
+      exact: true,
+    });
   }
   get feedback() {
     return this.page.getByRole("status");
@@ -39,37 +53,54 @@ export class GuestWardrobePage extends BasePage {
   }
   get addToCapsule() {
     return this.detail.getByRole("button", {
-      name: "Add to Capsule",
+      name: validationCopy[this.locale].uncapsulated.actions.addToCapsule,
       exact: true,
     });
   }
   get saveMetadata() {
-    return this.detail.getByRole("button", { name: "Save", exact: true });
+    return this.detail.getByRole("button", {
+      name: validationCopy[this.locale].myItems.detail.save,
+      exact: true,
+    });
   }
   get deleteItem() {
-    return this.detail.getByRole("button", { name: "Delete", exact: true });
+    return this.detail.getByRole("button", {
+      name: validationCopy[this.locale].myItems.detail.delete,
+      exact: true,
+    });
   }
   get nameInput() {
-    return this.detail.getByRole("textbox", { name: "Name", exact: true });
+    return this.detail.getByRole("textbox", {
+      name: validationCopy[this.locale].myItems.detail.name,
+      exact: true,
+    });
   }
   get categoryInput() {
     return this.detail.getByRole("combobox");
   }
   get changePhoto() {
-    return this.detail.getByRole("button", { name: /Change photo/i });
+    return this.detail.getByRole("button", {
+      name: new RegExp(
+        validationCopy[this.locale].myItems.detail.changePhoto,
+        "i",
+      ),
+    });
   }
   get addColor() {
-    return this.detail.getByRole("button", { name: "Add color", exact: true });
+    return this.detail.getByRole("button", {
+      name: validationCopy[this.locale].myItems.detail.addColor,
+      exact: true,
+    });
   }
   get moveToRepair() {
     return this.detail.getByRole("button", {
-      name: "Move to Repair",
+      name: validationCopy[this.locale].myItems.detail.moveRepair,
       exact: true,
     });
   }
   get markFixed() {
     return this.detail.getByRole("button", {
-      name: "Mark as Fixed",
+      name: validationCopy[this.locale].forRepair.detail.markFixed,
       exact: true,
     });
   }

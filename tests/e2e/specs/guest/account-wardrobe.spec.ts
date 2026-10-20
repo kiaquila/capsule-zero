@@ -1,6 +1,7 @@
 import { test, expect } from "../../fixtures/base";
 import { GuestPage } from "../../pages/GuestPage";
 import { GuestWardrobePage } from "../../pages/GuestWardrobePage";
+import { guestCatalogCopy } from "../../fixtures/locales";
 
 const presetId = "w-tee-white";
 async function saveWardrobe(guest: GuestPage) {
@@ -124,16 +125,20 @@ test("saved guest items never offer unsupported capsule membership", async ({
   await expect(wardrobe.returnToMyItems).toBeVisible();
 });
 
-test("saved guest preset details expose only durable status actions", async ({
+test("RU saved guest preset names and durable actions agree across wardrobe pages", async ({
   page,
 }) => {
-  await saveWardrobe(new GuestPage(page));
-  const wardrobe = new GuestWardrobePage(page);
-  for (const path of ["/en/my-items", "/en/uncapsulated"]) {
+  await saveWardrobe(new GuestPage(page, "ru"));
+  const wardrobe = new GuestWardrobePage(page, "ru");
+  const expectedName = guestCatalogCopy.find((item) => item.id === presetId)!
+    .name.ru;
+  for (const path of ["/ru/my-items", "/ru/uncapsulated"]) {
     await page.goto(path, { waitUntil: "load" });
+    await expect(wardrobe.itemName(presetId)).toHaveText(expectedName);
     await wardrobe.open(presetId);
     await expect(wardrobe.detail).toBeVisible();
     await expect(wardrobe.nameInput).not.toBeEditable();
+    await expect(wardrobe.nameInput).toHaveValue(expectedName);
     await expect(wardrobe.categoryInput).toBeDisabled();
     await expect(wardrobe.saveMetadata).toBeHidden();
     await expect(wardrobe.deleteItem).toBeHidden();
@@ -141,11 +146,34 @@ test("saved guest preset details expose only durable status actions", async ({
     await expect(wardrobe.addColor).toBeHidden();
     await expect(wardrobe.moveToRepair).toBeVisible();
   }
+  await page.goto("/ru/uncapsulated", { waitUntil: "load" });
+  await wardrobe.favorite(presetId).click();
+  await expect(wardrobe.favorite(presetId)).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await page.goto("/ru/favorites", { waitUntil: "load" });
+  await wardrobe.catalogFavorites.click();
+  await expect(wardrobe.itemName(presetId)).toHaveText(expectedName);
+  await wardrobe.open(presetId);
+  await expect(wardrobe.nameInput).toHaveValue(expectedName);
+  await wardrobe.moveToSale.click();
+  await expect(wardrobe.feedback).toBeVisible();
+  await page.goto("/ru/for-sale", { waitUntil: "load" });
+  await expect(wardrobe.itemName(presetId)).toHaveText(expectedName);
+  await wardrobe.open(presetId);
+  await expect(wardrobe.nameInput).toHaveValue(expectedName);
+  await wardrobe.returnToMyItems.click();
+  await expect(wardrobe.feedback).toBeVisible();
+  await page.goto("/ru/uncapsulated", { waitUntil: "load" });
+  await wardrobe.open(presetId);
   await wardrobe.moveToRepair.click();
   await expect(wardrobe.feedback).toBeVisible();
-  await page.goto("/en/for-repair", { waitUntil: "load" });
+  await page.goto("/ru/for-repair", { waitUntil: "load" });
+  await expect(wardrobe.itemName(presetId)).toHaveText(expectedName);
   await wardrobe.open(presetId);
   await expect(wardrobe.nameInput).not.toBeEditable();
+  await expect(wardrobe.nameInput).toHaveValue(expectedName);
   await expect(wardrobe.saveMetadata).toBeHidden();
   await expect(wardrobe.deleteItem).toBeHidden();
   await expect(wardrobe.markFixed).toBeVisible();
