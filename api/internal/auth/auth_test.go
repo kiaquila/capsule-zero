@@ -435,8 +435,6 @@ func TestPatchProfileRejectsInvalidFields(t *testing.T) {
 		{"over-long display name", `{"displayName":"` + strings.Repeat("a", 81) + `"}`},
 		{"over-long country", `{"country":"` + strings.Repeat("a", 81) + `"}`},
 		{"over-long city", `{"city":"` + strings.Repeat("a", 81) + `"}`},
-		{"whitespace country", `{"country":"   "}`},
-		{"whitespace city", `{"city":"  "}`},
 		{"non-https avatar", `{"avatarUrl":"javascript:alert(1)"}`},
 		{"http avatar", `{"avatarUrl":"http://cdn.example.com/a.png"}`},
 		{"schemaless avatar", `{"avatarUrl":"cdn.example.com/a.png"}`},
@@ -483,12 +481,11 @@ func TestValidateProfileUpdateAcceptsValidAndOmitted(t *testing.T) {
 	if msg, ok := validateProfileUpdate(nil, nil, nil, nil, nil); !ok {
 		t.Fatalf("omitted-only update rejected: %q", msg)
 	}
-	// A provided-but-blank country/city/locale is rejected (set-or-leave has no
-	// clear semantics; a blank locale must not default a RU profile back to EN).
+	// Blank country/city clear optional values; blank locale remains invalid.
 	// The handler-level cases live in TestPatchProfileRejectsInvalidFields.
 	empty := ""
-	if _, ok := validateProfileUpdate(nil, &empty, nil, nil, nil); ok {
-		t.Fatal("blank country accepted, want rejection")
+	if msg, ok := validateProfileUpdate(nil, &empty, &empty, nil, nil); !ok {
+		t.Fatalf("location clear rejected: %s", msg)
 	}
 	if _, ok := validateProfileUpdate(nil, nil, nil, nil, &empty); ok {
 		t.Fatal("blank locale accepted, want rejection")
