@@ -635,7 +635,7 @@ function upsertProfileFromSession(
 ): void {
   const existing = profiles.get(session.user.id);
   profiles.set(session.user.id, {
-    ...(existing ?? MOCK_PROFILE),
+    ...ensureProfile(profiles, session.user.id, timestamp),
     userId: session.user.id,
     email: session.user.email,
     displayName: session.user.name ?? "",
@@ -805,6 +805,8 @@ function ensureProfile(
 
   const created: Profile = {
     ...MOCK_PROFILE,
+    country: undefined,
+    city: undefined,
     userId,
     email: userId === MOCK_USER.id ? MOCK_USER.email : `${userId}@mock.local`,
     displayName: "Stage 1 Mock User",

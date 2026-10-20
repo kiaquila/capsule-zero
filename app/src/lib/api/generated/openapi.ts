@@ -2059,13 +2059,13 @@ export const API_SCHEMAS = {
       },
       "country": {
         "type": "string",
-        "minLength": 1,
-        "maxLength": 80
+        "maxLength": 80,
+        "description": "Empty string clears the saved country; omission preserves it."
       },
       "city": {
         "type": "string",
-        "minLength": 1,
-        "maxLength": 80
+        "maxLength": 80,
+        "description": "Empty string clears the saved city; omission preserves it."
       },
       "avatarUrl": {
         "type": "string",

@@ -8,6 +8,19 @@ import type { Locale } from "../fixtures/locales";
  * the profile DOM directly.
  */
 export class ProfilePage extends BasePage {
+  readonly optionalFields: Record<
+    | "phone"
+    | "dateOfBirth"
+    | "country"
+    | "city"
+    | "shoeSize"
+    | "topSize"
+    | "bottomSize",
+    Locator
+  >;
+  readonly sessionRows: Locator;
+  readonly sessionsUnavailable: Locator;
+  readonly currentSessionBadge: Locator;
   readonly path: string;
   readonly changePasswordButton: Locator;
   readonly passwordForm: Locator;
@@ -26,6 +39,20 @@ export class ProfilePage extends BasePage {
 
   constructor(page: Page, locale: Locale = "en") {
     super(page);
+    this.optionalFields = Object.fromEntries(
+      [
+        "phone",
+        "dateOfBirth",
+        "country",
+        "city",
+        "shoeSize",
+        "topSize",
+        "bottomSize",
+      ].map((field) => [field, page.locator(`[name="${field}"]`)]),
+    ) as typeof this.optionalFields;
+    this.sessionRows = page.locator(".profile-session");
+    this.sessionsUnavailable = page.getByTestId("profile-sessions-unavailable");
+    this.currentSessionBadge = page.locator(".profile-sessions em");
     this.firstName = page.locator('input[name="firstName"]');
     this.lastName = page.locator('input[name="lastName"]');
     this.save = page.locator('button.profile-save-button[type="submit"]');
@@ -60,7 +87,6 @@ export class ProfilePage extends BasePage {
         }
       }
     }
-
   }
 
   /** Open the form and submit a password change. */

@@ -385,3 +385,7 @@ Seed data must include:
 Kratos UI IDs 4000031/32/33/34/39 and 4000005 map to `PASSWORD_TOO_SIMILAR`, `PASSWORD_TOO_SHORT`, `PASSWORD_TOO_LONG`, `PASSWORD_COMPROMISED`, `PASSWORD_UNCHANGED` and `PASSWORD_POLICY_REJECTED`. The adapter retains the stable classification across settings/recovery wrappers. HTTP messages are fixed safe strings; the web localizes codes. Unknown/duplicate registration errors remain generic. Recovery retry continuation details survive policy rejection. HIBP remains disabled in current config; the breach code handles deployments where it is enabled without changing policy.
 
 Registration's optional `name` may be omitted. A supplied name must be a non-null, trimmed nonblank string of 1–80 Unicode characters, matching OpenAPI and the Kratos identity schema. Profile PATCH keeps its existing nonblank 1–80 limit. Names have no three-character minimum; the profile username is a separate form-only constraint.
+
+### Optional profile location clearing (spec 056)
+
+`PATCH /api/profile` trims country/city and accepts `""` to clear either optional field. Omission leaves the stored field unchanged through the existing `COALESCE` update; explicit JSON `null` remains a validation error. Both fields retain an 80-rune maximum. Display name, locale and avatar constraints are unchanged. There is no value-based deletion/migration of old profile data. The auth API exposes whoami verification, without a device-session inventory.

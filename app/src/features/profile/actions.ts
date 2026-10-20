@@ -63,8 +63,8 @@ export async function saveProfileAction(
 
   try {
     await registry.profiles.updateProfile(session.userId, {
-      city: data.city || undefined,
-      country: data.country || undefined,
+      city: data.city,
+      country: data.country,
       displayName,
     });
   } catch (error) {
