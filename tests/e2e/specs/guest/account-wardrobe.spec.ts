@@ -94,12 +94,17 @@ test("failed saved item mutation preserves the previous favorite state", async (
   );
 });
 
-test("saved guest items never offer unsupported capsule membership", async ({ page }) => {
+test("saved guest items never offer unsupported capsule membership", async ({
+  page,
+}) => {
   await saveWardrobe(new GuestPage(page));
   const wardrobe = new GuestWardrobePage(page);
   await page.goto("/en/uncapsulated", { waitUntil: "load" });
   await wardrobe.favorite(presetId).click();
-  await expect(wardrobe.favorite(presetId)).toHaveAttribute("aria-pressed", "true");
+  await expect(wardrobe.favorite(presetId)).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
   await wardrobe.open(presetId);
   await expect(wardrobe.detail).toBeVisible();
   await expect(wardrobe.addToCapsule).toBeHidden();
@@ -119,7 +124,9 @@ test("saved guest items never offer unsupported capsule membership", async ({ pa
   await expect(wardrobe.returnToMyItems).toBeVisible();
 });
 
-test("saved guest preset details expose only durable status actions", async ({ page }) => {
+test("saved guest preset details expose only durable status actions", async ({
+  page,
+}) => {
   await saveWardrobe(new GuestPage(page));
   const wardrobe = new GuestWardrobePage(page);
   for (const path of ["/en/my-items", "/en/uncapsulated"]) {

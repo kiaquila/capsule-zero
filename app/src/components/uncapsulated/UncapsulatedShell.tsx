@@ -417,6 +417,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
   };
 
   const requestAddToCapsule = (item: MyItemsEntry) => {
+    if (item.guestPresetId) return;
     if (!snapshot.activeCapsule) {
       setNotice(t("notice.noCapsule"));
       return;
@@ -793,6 +794,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
 
       {selectedItem && draft ? (
         <WardrobeItemDetailPanel
+          readOnly={Boolean(selectedItem?.guestPresetId)}
           categoryOptions={snapshot.categoryOptions}
           deleteAction={{
             className: "my-items-secondary-button uncapsulated-delete-button",
@@ -843,14 +845,16 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
           renderIcon={(name) => <UncapsulatedIcon name={name} />}
           actionSlot={
             <>
-              <button
-                className="my-items-secondary-button"
-                onClick={() => requestAddToCapsule(selectedItem)}
-                type="button"
-              >
-                <UncapsulatedIcon name="capsules" />
-                <span>{t("actions.addToCapsule")}</span>
-              </button>
+              {!selectedItem.guestPresetId ? (
+                <button
+                  className="my-items-secondary-button"
+                  onClick={() => requestAddToCapsule(selectedItem)}
+                  type="button"
+                >
+                  <UncapsulatedIcon name="capsules" />
+                  <span>{t("actions.addToCapsule")}</span>
+                </button>
+              ) : null}
               <button
                 className="my-items-secondary-button"
                 onClick={() => moveToSale(selectedItem)}

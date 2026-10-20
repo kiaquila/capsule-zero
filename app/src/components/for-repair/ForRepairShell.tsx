@@ -756,6 +756,7 @@ export function ForRepairShell({ snapshot }: ForRepairShellProps) {
 
       {selectedItem && draft ? (
         <WardrobeItemDetailPanel
+          readOnly={Boolean(selectedItem?.guestPresetId)}
           categoryOptions={snapshot.categoryOptions}
           deleteAction={{
             className: "my-items-secondary-button for-repair-delete-button",
@@ -777,6 +778,7 @@ export function ForRepairShell({ snapshot }: ForRepairShellProps) {
               <label className="my-items-field for-repair-note-field">
                 <span>{t("detail.repairNotes")}</span>
                 <textarea
+                  readOnly={Boolean(selectedItem.guestPresetId)}
                   onChange={(event) =>
                     updateDraft({ repairNote: event.target.value })
                   }

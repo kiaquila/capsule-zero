@@ -332,7 +332,7 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
   };
 
   const addSelectedItemToCapsule = () => {
-    if (!selectedItem) {
+    if (!selectedItem || selectedItem.guestPresetId) {
       return;
     }
 
@@ -842,6 +842,7 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
 
       {selectedItem && draft ? (
         <WardrobeItemDetailPanel
+          readOnly={Boolean(selectedItem?.guestPresetId)}
           categoryOptions={snapshot.categoryOptions}
           deleteAction={{
             className: "my-items-secondary-button favorites-delete-button",
@@ -917,14 +918,16 @@ export function FavoritesShell({ snapshot }: FavoritesShellProps) {
           renderIcon={(name) => <FavoritesIcon name={name} />}
           actionSlot={
             <>
-              <button
-                className="my-items-secondary-button"
-                onClick={addSelectedItemToCapsule}
-                type="button"
-              >
-                <FavoritesIcon name="capsules" />
-                <span>{t("detail.addToCapsule")}</span>
-              </button>
+              {!selectedItem.guestPresetId ? (
+                <button
+                  className="my-items-secondary-button"
+                  onClick={addSelectedItemToCapsule}
+                  type="button"
+                >
+                  <FavoritesIcon name="capsules" />
+                  <span>{t("detail.addToCapsule")}</span>
+                </button>
+              ) : null}
               <button
                 className="my-items-secondary-button"
                 onClick={() => moveSelectedItem("for_sale")}

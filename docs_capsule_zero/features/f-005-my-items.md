@@ -71,3 +71,5 @@
 ## Saved guest presets (spec 056)
 
 Explicit account-save appends the selected own-image presets as durable `uncapsulated` wardrobe entries. Repeated or overlapping transfers deduplicate by account and preset without resetting prior status/favorite. My Items and status/favorite lists consume the existing wardrobe port projection; these entries and their status/favorite changes persist in PostgreSQL. This does not claim migration of the other fixture-backed wardrobe domains.
+
+Saved guest preset records expose durable favorite and status actions. Metadata/photo/color edits, deletion and formal capsule membership are unavailable for these records until the corresponding account domains persist them; the shared detail panel renders them read-only.

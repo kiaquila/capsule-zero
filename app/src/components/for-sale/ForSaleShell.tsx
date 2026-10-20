@@ -371,7 +371,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
   };
 
   const addSelectedItemToCapsule = () => {
-    if (!selectedItem) {
+    if (!selectedItem || selectedItem.guestPresetId) {
       return;
     }
 
@@ -821,6 +821,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
 
       {selectedItem && draft ? (
         <WardrobeItemDetailPanel
+          readOnly={Boolean(selectedItem?.guestPresetId)}
           categoryOptions={snapshot.categoryOptions}
           deleteAction={{
             className: "my-items-secondary-button for-sale-delete-button",
@@ -846,6 +847,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
                 </div>
                 <button
                   aria-label={t("detail.catalogVisible")}
+                  disabled={Boolean(selectedItem.guestPresetId)}
                   aria-pressed={draft.visibleInCatalog}
                   className={cn(
                     "for-sale-toggle",
@@ -895,14 +897,16 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
           renderIcon={(name) => <ForSaleIcon name={name} />}
           actionSlot={
             <>
-              <button
-                className="my-items-secondary-button"
-                onClick={addSelectedItemToCapsule}
-                type="button"
-              >
-                <ForSaleIcon name="capsules" />
-                <span>{t("detail.addToCapsule")}</span>
-              </button>
+              {!selectedItem.guestPresetId ? (
+                <button
+                  className="my-items-secondary-button"
+                  onClick={addSelectedItemToCapsule}
+                  type="button"
+                >
+                  <ForSaleIcon name="capsules" />
+                  <span>{t("detail.addToCapsule")}</span>
+                </button>
+              ) : null}
               <button
                 className="my-items-secondary-button"
                 onClick={() => returnToMyItems(selectedItem)}

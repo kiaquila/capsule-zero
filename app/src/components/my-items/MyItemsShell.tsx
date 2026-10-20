@@ -744,6 +744,7 @@ export function MyItemsShell({ snapshot }: MyItemsShellProps) {
 
       {draft ? (
         <WardrobeItemDetailPanel
+          readOnly={Boolean(selectedItem?.guestPresetId)}
           categoryOptions={snapshot.categoryOptions}
           deleteAction={
             selectedItem

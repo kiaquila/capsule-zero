@@ -22,7 +22,7 @@ In: PostgreSQL owner-scoped saved guest collections and selected wardrobe record
 3. Repeated/concurrent identical transfer saves return one collection and deduplicate owner preset wardrobe records. Changed payload or another owner with the same transfer returns conflict; existing account collections/items remain.
 4. All API reads/writes derive ownership from Kratos; unauthenticated access is rejected; cross-owner detail/patch is invisible. Unknown/out-of-pool/duplicate/empty or oversized input is rejected. Result statistics and metadata are derived from trusted preset snapshots, not client-submitted totals/URLs.
 5. Saving has accessible busy/error/retry states; storage failure/auth failure/network loss do not clear choices or force another signup. A completed transfer is not replayed into another account.
-6. The saved collection is reachable from the account dashboard; selected items appear in My Items/uncapsulated and retain status/favorite edits durably. Active docs/OpenAPI/client/feature memory describe the delivered scope.
+6. The saved collection is reachable from the account dashboard; selected items appear in My Items/uncapsulated and retain status/favorite edits durably. Unsupported metadata/delete/capsule actions are unavailable for guest-backed records until those domains migrate. Active docs/OpenAPI/client/feature memory describe the delivered scope.
 
 Negative scenarios are explicit in AC3–5; no waiver. Application TDD is required.
 

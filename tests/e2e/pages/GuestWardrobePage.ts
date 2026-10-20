@@ -38,7 +38,10 @@ export class GuestWardrobePage extends BasePage {
     return this.page.getByRole("dialog");
   }
   get addToCapsule() {
-    return this.detail.getByRole("button", { name: "Add to Capsule", exact: true });
+    return this.detail.getByRole("button", {
+      name: "Add to Capsule",
+      exact: true,
+    });
   }
   get saveMetadata() {
     return this.detail.getByRole("button", { name: "Save", exact: true });
@@ -59,9 +62,15 @@ export class GuestWardrobePage extends BasePage {
     return this.detail.getByRole("button", { name: "Add color", exact: true });
   }
   get moveToRepair() {
-    return this.detail.getByRole("button", { name: "Move to Repair", exact: true });
+    return this.detail.getByRole("button", {
+      name: "Move to Repair",
+      exact: true,
+    });
   }
   get markFixed() {
-    return this.detail.getByRole("button", { name: "Mark as Fixed", exact: true });
+    return this.detail.getByRole("button", {
+      name: "Mark as Fixed",
+      exact: true,
+    });
   }
 }

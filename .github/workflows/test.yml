@@ -80,20 +80,10 @@ jobs:
       - name: Typecheck e2e suite
         run: npm run typecheck:e2e
 
-      - name: Cache Playwright browsers
-        id: playwright-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('tests/e2e/package-lock.json') }}
-
-      - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
+      # Browser binaries vary with the Linux distribution. An OS-only cache
+      # restored Ubuntu 24 WebKit on Ubuntu 26, which lacks ICU 74.
+      - name: Install Playwright browsers and system deps
         run: npx --prefix tests/e2e playwright install --with-deps chromium webkit
-
-      - name: Install Playwright system deps
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx --prefix tests/e2e playwright install-deps chromium webkit
 
       - name: Seed app env from example (CI stub credentials)
         run: cp app/.env.local.example app/.env.local

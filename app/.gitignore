@@ -17,6 +17,7 @@
 /.next/
 # Isolated standalone build produced by the e2e origin-guard (NEXT_DIST_DIR).
 /.next-origin-guard/
+/.next-e2e-dev/
 /out/
 
 # production
