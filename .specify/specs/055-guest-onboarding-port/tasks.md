@@ -18,6 +18,8 @@
 
 - WebKit correctly defers off-screen lazy images. The image-integrity POM now scrolls each into view before decode; no application loading behavior changed. Guest/landing checks: 22 passed in Chromium and iPhone WebKit.
 
+- Final-head baseline failed on three fresh runners at the same ECR Go manifest with HTTP 429. Blind reruns stopped; Google cache returned the identical immutable OCI index and a real pull passed. Native review initially emitted an unbound receipt; re-request produced completed clean state on the full SHA.
+
 ### Decisions
 
 - Reference is a Capsule Zero fork sharing base `5492617`; port only guest app assets/behavior, retaining Capsule Zero CI, provider guards and process tooling.
@@ -29,6 +31,8 @@
 - Reference component/file size warnings are accepted for this transfer: splitting source markup in this PR would add review churn; no new framework/service is introduced.
 
 - Native Codex P2 found the reference empty-role hint on incompatible colors. Test-first repair (`16afdc2`) adds a localized neutral replacement path while preserving layout/counting. This correctness fix is recorded as the only behavior exception to the reference transfer.
+
+- Extend the existing runner builder helper to warm that same pinned Go image through Google cache and verify its exact module version before tagging. Preserve canonical FROM, tests/container smoke/build/cache export and the runner-only daemon boundary. A version bump requires refreshing the pinned digest; failure is explicit.
 
 ### Known Issues
 

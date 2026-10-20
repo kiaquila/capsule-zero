@@ -2,6 +2,8 @@
 
 Reuse check: inspected `GuidedJourneyShell`, `WardrobeItemCard`, `AuthPanel`, `categories.ts`, `color-compatibility.ts`, `outfit-productivity.ts` and `outfit-variation-selection.ts`. The authenticated journey/item card do not implement the approved reference guest grid/composition; port the dedicated guest components. Reuse AuthPanel, locale routing, canonical color compatibility, existing tokens and category membership. Source CSS geometry remains the reference; isolate styles to guest surface.
 
+Delivery reuse check: `rg setup-ci-docker-builder .github scripts` found the existing shared runner-only helper. Extend it instead of adding a second builder/bootstrap path; existing workflow tests do not exercise helper download/version failures, so add `ci-builder-cache.test.mjs`.
+
 ## Verification
 
 | Criterion        | Evidence                                                                                                                                                                                                                        | Result                                                                                                                                     |
@@ -19,3 +21,5 @@ The linked PR's current-head checks are the final merge evidence; screenshots an
 Local full run initially had 120 pass / 12 full-stack skips / 4 timeouts. Two guest timeouts were the test awaiting off-screen lazy image decode in WebKit, fixed by scrolling each image into view. The productivity recheck passed; the auth test subsequently passed twice in isolation. Final CI remains authoritative.
 
 Review P2 regression: `16afdc2` failed in both EN and RU before the fix (`toHaveText` saw the empty-role prompt). The same localized scenarios also replace the incompatible top and assert count 1/result CTA, proving the offered alternative works. Final guest/landing matrix: 24 cases across Chromium/WebKit; linked PR checks verify the fixed head.
+
+AC7: `bash -n scripts/setup-ci-docker-builder.sh`; `node --test scripts/lib/ci-builder-cache.test.mjs` (3 pass: pinned official image/version, fail-closed pull/version mismatch, outside-runner rejection). ECR attempts 1–3 in run 39346868087 returned 429 for OCI index `sha256:116d58cbd88c1297624acc6e967a060012422bacf9930927e23fb719189c6f36`; Google cache HEAD and real pull returned the identical index. The helper preloads it under the unchanged ECR FROM ref, with no Docker Hub fallback or new credentials. A real local Docker build using the unchanged ECR FROM and `RUN test "$(go env GOVERSION)" = go1.26.6` passed from the warmed image without an ECR pull. Final hosted image/container build remains required. Infrastructure TDD waiver: use syntax, negative probes and real builds; no application behavior changes.
