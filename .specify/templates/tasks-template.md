@@ -273,6 +273,6 @@ With multiple developers:
 
 ### Known Issues
 
-<!-- Accepted limitations, follow-ups, or risks. Acknowledged in PR by the human merge owner. -->
+<!-- Accepted limitations, follow-ups, or risks. Acknowledged in PR by the merge owner or delegated orchestrator. -->
 
 - [Accepted limitation, follow-up, or risk]

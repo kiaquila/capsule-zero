@@ -18,7 +18,7 @@ export class LandingPage extends BasePage {
   /** Hero H1 of the approved v1c hero (spec 044). */
   readonly heroTitle: Locator;
   readonly heroSubtitle: Locator;
-  /** Gold primary CTA — opens the auth popup in sign-up mode (interim, spec 044). */
+  /** Gold primary CTA — opens public guest onboarding (spec 055). */
   readonly heroCta: Locator;
   /** "How it works" placeholder section — must sit strictly below the fold. */
   readonly slidesStub: Locator;
@@ -86,7 +86,7 @@ export class LandingPage extends BasePage {
   }
 
   /**
-   * Open the auth popup in sign-up mode by clicking the hero CTA (spec 044).
+   * Enter the guest flow by clicking the hero CTA (spec 055).
    */
   async openHeroCta(): Promise<void> {
     await this.heroCta.click();

@@ -15,7 +15,7 @@ Out: subsequent onboarding refinements (separate PR after user feedback), accoun
 - AC2: Reference women/men flows retain their catalog, visual composition, counts, recommendations and result/signup sheet. All 32 images load locally.
 - AC3: First step also offers Mixed; mixed catalog includes both sets, including dresses/skirts and chinos; switching wardrobe clears selections from the previous type.
 - AC4: Selection/count/result persist on reload; restart/fresh reset; malformed stored data cannot crash or inject unknown selections. No result CTA exists without a wearable outfit.
-- AC5: Photo tiles keep the reference interest-only sheet; it never uploads, charges or promises server notifications. Signup reuses real provider auth; browser progress is not misrepresented as an implemented account-save backend in delivery docs.
+- AC5: Photo tiles keep the reference interest-only sheet; it never uploads or charges; the reference interest confirmation remains a local concept, not a server notification feature. Signup reuses real provider auth; browser progress is not misrepresented as an implemented account-save backend in delivery docs.
 - AC6: PRODUCT-PLAN and active agent/governance docs delegate reversible product/architecture/implementation decisions based on evidence, reuse and fastest maintainable MVP path. No routine founder gate, no bypass of CI or review, no implicit contracts/payments/security waivers.
 
 ## Negative Scenarios

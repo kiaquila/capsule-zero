@@ -1,5 +1,7 @@
 # 046 — Stage-1 Guest-Loop Foundation: закрытие Q1/Q2/Q3/Q6 + модель OPR/онбординга
 
+> **Update 2026-10-19:** Current implementation scope (2026-10-19): PRODUCT-PLAN §0.2/spec 055 supersede the historical disabled P1–P4 rollout for the reference guest UI. This document retains the target account-save/methodology contract; those backend behaviors are not completed by the UI port.
+
 **Feature Branch**: `feat/046-stage1-guest-loop-foundation`
 **Created**: 2026-07-21
 **Status**: Ready for merge

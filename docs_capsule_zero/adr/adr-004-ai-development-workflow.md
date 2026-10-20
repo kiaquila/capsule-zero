@@ -25,7 +25,7 @@ requirement.
 - Codex P0, P1, and P2 findings fail the gate; P3-only or no-findings reviews pass.
 - Missing, stale, or unverifiable reviewer evidence fails closed.
 - Known dependency vulnerabilities reported by `osv-scan` block merge.
-- Human review and merge authority remain final.
+- The owner delegates reversible decisions and authorized merge execution to the orchestrator under PRODUCT-PLAN §0.1. Required review/checks remain mandatory; authorization is never inferred from green CI alone.
 
 ## Consequences
 

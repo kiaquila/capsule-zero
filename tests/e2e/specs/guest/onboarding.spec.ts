@@ -54,3 +54,12 @@ test("reference women and men pools retain counts and the photo-interest sheet",
   await guest.select(["m-tee-white", "m-trousers-black", "m-sneakers-white"]);
   await expect(guest.count).toHaveText("1");
 });
+
+test("incompatible colors cannot unlock a result", async ({ page }) => {
+  const guest = new GuestPage(page);
+  await guest.goto();
+  await guest.wardrobe("female").click();
+  await guest.select(["w-blouse-blush", "w-jeans-blue", "w-sneakers-white"]);
+  await expect(guest.count).toHaveText("0");
+  await expect(guest.next).toHaveCount(0);
+});

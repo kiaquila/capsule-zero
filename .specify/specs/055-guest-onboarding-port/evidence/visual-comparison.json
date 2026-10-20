@@ -1,0 +1,73 @@
+{
+  "sourceCommit": "8328dca30e2ee6aa69d699aff8f67bc6701abab3",
+  "browser": "Chromium / repository-pinned Playwright",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "method": "Same browser, fonts and images decoded; reduced motion; nextjs dev portal hidden; differing RGB pixels with channel delta greater than 2. Type step intentionally differs by Mixed card.",
+  "results": [
+    {
+      "width": 1440,
+      "state": "items",
+      "differentPixelsOver2": 1984,
+      "percent": 0.13777777777777778,
+      "maxChannelDifference": 29
+    },
+    {
+      "width": 1440,
+      "state": "photo",
+      "differentPixelsOver2": 0,
+      "percent": 0,
+      "maxChannelDifference": 1
+    },
+    {
+      "width": 1440,
+      "state": "result",
+      "differentPixelsOver2": 0,
+      "percent": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "width": 1440,
+      "state": "auth",
+      "differentPixelsOver2": 0,
+      "percent": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "width": 390,
+      "state": "items",
+      "differentPixelsOver2": 0,
+      "percent": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "width": 390,
+      "state": "photo",
+      "differentPixelsOver2": 0,
+      "percent": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "width": 390,
+      "state": "result",
+      "differentPixelsOver2": 0,
+      "percent": 0,
+      "maxChannelDifference": 0
+    },
+    {
+      "width": 390,
+      "state": "auth",
+      "differentPixelsOver2": 0,
+      "percent": 0,
+      "maxChannelDifference": 0
+    }
+  ]
+}

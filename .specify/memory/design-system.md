@@ -1,5 +1,7 @@
 # Capsule Zero Design System
 
+> **Update 2026-10-19:** Spec 055 preserves the explicitly requested guest reference geometry and local translucent studio image backing. Exact source colors reuse tokens where equal; guest-only reference values live in tokens.css; two documented 24px chrome radius waivers preserve parity. Panels remain glass. See PRODUCT-PLAN §0.2.
+
 > Source: Styling Guide v1.3, `html-prototypes/design-system.html` prototype, MEMORY.md glass tokens
 
 ## 1. Color System
@@ -547,6 +549,5 @@ tokens (the gold/CTA family stays in `@theme static` — `--color-gold-450` has 
 and a plain `@theme` would tree-shake it, breaking the `design-tokens.spec.ts` guard); the gold
 logo (`--color-gold-500`) applies to every screen sharing `.landing-logo` (§9.11(a), auth/legal
 included), while the v1c header rhythm is scoped to `.landing-fold .landing-header` so auth/legal
-keep the shared base; RU hero copy stays «ты» (founder decision, spec 044); interim CTA route =
-auth popup in sign-up mode until the guest tool ships (PRODUCT-PLAN Этап 1 п.5). §9.5/§9.6/§9.7
+keep the shared base; RU hero copy stays «ты» (founder decision, spec 044); CTA route = `/{locale}/start` (spec 055, PRODUCT-PLAN §0.2); header sign-in remains a modal. The source reference subtitle now describes ticking owned presets. §9.5/§9.6/§9.7
 rules apply to it unchanged.

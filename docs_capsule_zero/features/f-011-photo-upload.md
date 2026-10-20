@@ -1,5 +1,7 @@
 # Feature: Photo Upload
 
+> **Update 2026-10-19:** Guest `/start` photo tiles are the reference local-interest concept only, with no upload or recognition (spec 055, PRODUCT-PLAN §0.2). This does not enable the authenticated upload routes or select a payment model.
+
 > Source: US-017 (spec.md). Prototype: `html-prototypes/guided-journey.html` Step 3
 
 > Personal-photo upload is separate from the Q8 shared merchant-image surface: originals remain

@@ -6,7 +6,7 @@ Enforcement is split across three layers:
 
 - **Structural completeness** of feature memory is enforced by `pr-guard.yml` (spec/plan/tasks must exist for product-root changes under `app/`, `api/`, `worker/`, `web/`, or `mobile/`).
 - **Behavioral verification** is enforced by the required GitHub check **`test`** (`.github/workflows/test.yml`), introduced by spec `025-e2e-tests`. The check runs the Playwright suite in `tests/e2e/` against the running web app. Every spec ≥ 025 must have at least one failing-then-passing test landed before the implementation that makes it green; the SENAR Done Gate row in the PR template binds that evidence to the merge decision.
-- **Done-Gate judgment** (negative-scenario waiver, accepted known issues, process memory quality) is enforced by the human merge owner.
+- **Done-Gate judgment** (negative-scenario waiver, accepted known issues, process memory quality) is enforced by the merge owner (or the orchestrator acting within delegated scope).
 
 The SENAR rollout did not change `pr-guard.yml`, `ci.yml`, `osv-scan.yml`, or branch-protection approvals. Its only new automated gate was `test`. Separately, on 2026-07-22, `osv-scan` was promoted from an advisory security signal to a required branch-ruleset gate.
 
@@ -37,7 +37,7 @@ A PR is merge-ready only when **all** of the following are true on the current h
 - Every acceptance criterion has evidence in the PR diff, in `plan.md`, or in a linked check.
 - At least one negative scenario is covered, or the spec explicitly waives the negative-scenario requirement with a one-line reason.
 - `tasks.md` records the relevant dead ends, decisions, and known issues.
-- Any remaining known issue is accepted by the human merge owner.
+- Any remaining known issue is accepted by the merge owner (or the orchestrator acting within delegated scope).
 - The standard merge-ready conditions also hold: green required checks (`baseline-checks`, `guard`, `AI Review`, `test`, `osv-scan`), no blocking review findings on the head SHA, no merge conflicts.
 
 This gate is mirrored as a checklist in `.github/pull_request_template.md` so the merge owner can confirm it without leaving the PR view.
@@ -53,6 +53,6 @@ This gate is mirrored as a checklist in `.github/pull_request_template.md` so th
 The SENAR Done Gate has both objective and judgment-shaped parts. The split reflects that:
 
 - **Objective**: "does the acceptance criterion actually hold against the running app?" — that is now enforced automatically by the `test` GitHub check on every PR. Specs ≥ 025 introduce a failing-then-passing test for each acceptance criterion; the gate is green only when the suite passes on the head SHA.
-- **Judgment**: waiving a negative scenario, accepting a known issue, and grading the quality of process memory remain human calls. They are confirmed via the SENAR Done Gate checklist in the PR template, not via regex parsing in CI.
+- **Judgment**: waiving a negative scenario, accepting a known issue, and grading the quality of process memory are made by the merge owner or delegated orchestrator within PRODUCT-PLAN §0.1; new security/legal/spend risks still need owner authorization. They are confirmed via the SENAR Done Gate checklist in the PR template, not via regex parsing in CI.
 
 If `test` proves stable, additional structural enforcement (e.g. SENAR-field parsing in `check-feature-memory.mjs`) can still be added later as a follow-up.

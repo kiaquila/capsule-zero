@@ -66,14 +66,13 @@ export function LandingPage() {
             <p className="landing-hero-subtitle" data-testid="hero-subtitle">
               {t("subtitle")}
             </p>
-            <button
+            <a
               className="landing-hero-cta"
-              onClick={() => setAuthMode("signUp")}
-              type="button"
+              href={`/${locale}/start`}
               data-testid="hero-cta"
             >
               {t("heroCta")}
-            </button>
+            </a>
             <span
               className="landing-scroll-cue"
               aria-hidden="true"

@@ -1,11 +1,6 @@
 import { expect, test } from "../../fixtures/base";
 
-/**
- * Spec 044 — Landing Hero Live. Contract: html-prototypes/landing-v2/v1c-final.html
- * + design-system.md §9.11(d). The hero CTA opens the existing auth popup in
- * sign-up mode (interim route until the guest tool ships); the ghost login
- * keeps the sign-in popup covered by auth-popup.spec.ts.
- */
+/** Spec 044 hero geometry + spec 055 guest entry; header login stays covered separately. */
 test.describe("Landing — hero", () => {
   test.beforeEach(async ({ landing }) => {
     await landing.goto();

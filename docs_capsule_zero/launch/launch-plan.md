@@ -92,7 +92,7 @@
 
 | Sprint                            | Days            | Focus                                                                                                                                                                             | Result                                                                               |
 | --------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| 0: Readiness Gate                 | D1-5 (W5)       | OpenAPI contract, Go monolith migrations + tests, React Native scaffold, docker-compose runtime on the server, active Cloudflare anti-DDoS/origin isolation + Tailscale-only SSH (spec 047), Resend setup, lint/hooks, founder approval. | Phase 5 entrance checklist complete (`.specify/specs/024-production-stack-runtime/`) |
+| 0: Readiness Gate                 | D1-5 (W5)       | OpenAPI contract, Go monolith migrations + tests, React Native scaffold, docker-compose runtime on the server, active Cloudflare anti-DDoS/origin isolation + Tailscale-only SSH (spec 047), Resend setup, lint/hooks, recorded architecture verification. | Phase 5 entrance checklist complete (`.specify/specs/024-production-stack-runtime/`) |
 | 1: Foundation                     | D6-10 (W6)      | Landing pixel-perfect, navigation, mobile-first layout system, shared tokens, Go API auth + profile slice.                                                                        | Landing + backend foundation on staging                                              |
 | 2: Shared Contract + Mobile Shell | D11-15 (W7)     | Auth, profile, generated clients from OpenAPI, React Native routing, deep links, shared domain models.                                                                            | Web auth + React Native shell                                                        |
 | 3: Onboarding                     | D16-20 (W8)     | Guided journey (wardrobe type, categories, colors + items), profile, transitions across web and mobile.                                                                           | Onboarding on staging/internal mobile build                                          |
@@ -135,7 +135,7 @@
 - Lighthouse: Performance 90+, Accessibility 95+
 - Beta users: first impression 4.5+/5
 - 60%+ beta users complete full flow
-- Founder — written approval
+- Orchestrator records release-readiness evidence; owner authorization applies to new commercial commitments and launch outreach
 - Legal requirements met (privacy, terms)
 - Analytics and error tracking working
 - Internal mobile builds install and complete auth/onboarding/upload smoke flow
@@ -200,27 +200,24 @@ Principle: structured documents, not conversations. Every artifact is self-conta
 - Phase 4 → ADR + API → Phase 5
 - Phases 5-7 → from accumulated artifacts
 
-### Founder Role Across All Phases
+### Owner and orchestrator roles
 
-The founder operates as creative director and final decision-maker. Taste, intuition, and founder vision override AI recommendations in case of conflict.
-
-- Phase 0: Primary information source (3 structured sessions)
-- Phase 1: Validates research based on personal market intuition
-- Phase 2: Approves PRD and feature prioritization
-- Phase 3: Creative director — reviews each design stage, final approval
-- Phase 4: Approves stack with scalability in mind
-- Phase 5: Weekly demo, decisions on trade-offs
-- Phase 6: Final quality control, recruits beta testers, approves launch
-- Phase 7: Public face of launch, outreach, community
+The owner sets direction and may override it with explicit instructions. The orchestrator autonomously
+chooses reversible product, design, architecture and implementation details under PRODUCT-PLAN §0.1,
+using research, methodology, existing code and verification. No phase requires routine founder sign-off.
+Record decisions, validate quality gates, resolve review findings and deliver authorized work through PRs.
+New contracts/spend, unlicensed publication, destructive data actions and security weakening still need
+explicit authority. Public outreach must be expressly authorized. Merge follows task-specific or standing
+owner authorization; green CI alone does not create it.
 
 ## Quality Gates — Summary
 
 | Phase           | Gate                        | Criteria                                                                                                                                                 | Approvers                    |
 | --------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| 3 (Design)      | Premium design              | 3+ states per screen. Consistent typography. Palette confirmed by AI stylist. "Aesop/Notion" test. Founder approved.                                     | Designer + Stylist + Founder |
+| 3 (Design)      | Premium design              | 3+ states per screen. Consistent typography. Palette confirmed by AI stylist. "Aesop/Notion" test. Decision and verification recorded.                                     | Designer + Stylist + Orchestrator |
 | 5 (Development) | Implementation completeness | Screens = design to 2px. Animations per spec. < 2 sec load. Mobile-first web + React Native phone smoke tests. Guided journey content correct. 0 errors. | QA + Designer                |
-| 6 (QA)          | Release candidate           | 0 critical/major. Lighthouse 90+/95+. Beta 4.5+/5. 60%+ completion. Founder approved. Legal.                                                             | QA + Founder                 |
-| 7 (Launch)      | Go-Live                     | Lava.top web purchases tested. Mobile purchase CTAs absent unless later policy approval exists. Analytics working. Monitoring 2 hours. Legal pages.      | DevOps + Founder             |
+| 6 (QA)          | Release candidate           | 0 critical/major. Lighthouse 90+/95+. Beta 4.5+/5. 60%+ completion. Decision and verification recorded. Legal.                                                             | QA + Orchestrator                 |
+| 7 (Launch)      | Go-Live                     | Lava.top web purchases tested. Mobile purchase CTAs absent unless later policy approval exists. Analytics working. Monitoring 2 hours. Legal pages.      | DevOps + Orchestrator             |
 
 > **The premium test across all phases:** "Will the target user screenshot this screen and send it to a friend?" If the answer is not a confident "yes" — back to revision.
 

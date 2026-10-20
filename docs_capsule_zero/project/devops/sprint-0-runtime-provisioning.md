@@ -222,7 +222,7 @@ Run these only when the corresponding product slice opens.
 - Bring up the model training/inference container as a new service in compose (`image-model`).
 - Add the `background_removal` job consumer to the worker.
 - Run a latency/quality spike against at least 10 representative wardrobe photos. P99 latency must be ≤ 5 seconds at v0.1 droplet size.
-- Enable the model for real users only after founder review approves visual quality.
+- Enable the model only after the orchestrator records latency, visual-quality and cost evidence against the feature acceptance criteria (PRODUCT-PLAN §0.1). New spend still requires authorization.
 
 ## Evidence Template
 

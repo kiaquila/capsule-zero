@@ -1,4 +1,6 @@
 # Screen: Landing Page
+
+> **Update 2026-10-19:** Current guest entry: the primary CTA links to `/{locale}/start` (spec 055); header login retains the existing modal. PRODUCT-PLAN §0.2 supersedes historical interim signup-CTA instructions below.
 URL: /
 Feature: features/f-001-landing.md
 Prototype: `html-prototypes/landing-v2/v1c-final.html` (утверждён фаундером, спека 043; контракт: `design-system.md` §9.11(d)). Реализовано в живом `/app` спекой 044.
