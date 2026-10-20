@@ -175,3 +175,32 @@ func (q *sequenceQueryer) QueryRow(_ context.Context, _ string, _ ...any) pgx.Ro
 	q.calls++
 	return row
 }
+
+func TestApplyDistinguishesClearedAndOmittedLocation(t *testing.T) {
+	q := &capturingQueryer{row: fakeProfileRow{}}
+	repo := &Repo{pool: q}
+	empty := ""
+	if _, err := repo.Apply(context.Background(), "u1", Update{Country: &empty, City: &empty}); err != nil {
+		t.Fatal(err)
+	}
+	for _, i := range []int{3, 4} {
+		value, ok := q.args[i].(*string)
+		if !ok || value == nil || *value != "" {
+			t.Fatalf("arg %d = %#v; want explicit empty string", i, q.args[i])
+		}
+	}
+	if _, err := repo.Apply(context.Background(), "u1", Update{}); err != nil {
+		t.Fatal(err)
+	}
+	for _, i := range []int{3, 4} {
+		value := q.args[i].(*string)
+		if value != nil {
+			t.Fatalf("omitted arg %d = %#v", i, value)
+		}
+	}
+	for _, fragment := range []string{"country      = COALESCE($4, country)", "city         = COALESCE($5, city)"} {
+		if !strings.Contains(q.sql, fragment) {
+			t.Fatalf("missing omission-preserving SQL %s", fragment)
+		}
+	}
+}

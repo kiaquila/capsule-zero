@@ -50,7 +50,7 @@ PR reviewers (human and AI) reject PRs for specs `025` and onward that introduce
   npm run test:headed        # with visible browser
   npm run test:report        # open last HTML report
   ```
-- **Run in CI**: job `test` in `.github/workflows/test.yml` runs e2e lint, e2e typecheck, `/app` build, and Playwright. Required check on `main`.
+- **Run in CI**: job `test` in `.github/workflows/test.yml` runs e2e lint, e2e typecheck, `/app` build, and Playwright. Required check on `main`. The job pins `ubuntu-24.04`; the Playwright cache key includes that OS release, architecture and the lockfile so native WebKit binaries cannot cross Linux distribution releases.
 
 ### Go API unit tests — co-located under `api/**`
 
@@ -169,5 +169,3 @@ maxRedirects: 0 }`)) — no rendered UI, so no Page Object. Assert on the
 The POM classes should not change for markup-only rewrites.
 
 The required web test job installs Playwright browsers and system dependencies fresh. Browser binaries are distribution-specific; a Linux-only cache previously restored Ubuntu 24 WebKit on Ubuntu 26 and failed before test execution. This follows [Playwright CI guidance](https://playwright.dev/docs/ci#caching-browsers), which recommends avoiding browser binary caches.
-
-The local browser suite uses `next dev --webpack` in the isolated `.next-e2e-dev` directory, matching the production compiler without mixing production/dev output. CI exposed a Turbopack runtime JSON parse failure when parallel tests first compiled My Items; tests retain their existing concurrency and assertions. The standalone production-origin guard remains enabled in CI.

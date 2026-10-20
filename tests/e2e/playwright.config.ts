@@ -1,8 +1,4 @@
-import {
-  defineConfig,
-  devices,
-  type PlaywrightTestConfig,
-} from "@playwright/test";
+import { defineConfig, devices, type PlaywrightTestConfig } from "@playwright/test";
 import {
   ORIGIN_GUARD_CANARY_ORIGIN,
   ORIGIN_GUARD_PORT,
@@ -51,10 +47,7 @@ const originGuardWebServer = {
 };
 
 const devWebServer = {
-  // Match the production webpack compiler. Concurrent cold Turbopack routes
-  // produced a runtime JSON parse error in the required CI suite.
-  command:
-    "NEXT_DIST_DIR=.next-e2e-dev npm --prefix ../../app run dev -- --webpack",
+  command: "npm --prefix ../../app run dev",
   url: baseURL,
   reuseExistingServer: !isCI,
   timeout: 180_000,

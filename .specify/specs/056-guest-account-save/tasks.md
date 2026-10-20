@@ -10,13 +10,14 @@
 
 ### Dead Ends
 
+- Concurrent profile PR #166 advanced main to d292592 while reviews ran. Merged its profile/API changes, retained the Ubuntu 24 runner pin, and extended its strict profile fetch fixture for the now-real empty guest wardrobe endpoint.
 - Primary checkout contains unrelated unresolved conflicts; isolated worktree starts from fresh origin/main 4f4c205.
 - Context7 monthly quota exceeded; bundled current Next.js docs are available.
 - Existing API wardrobe is fixture-backed and cannot honestly satisfy durable account save.
 
 - First CI run restored Ubuntu 24 WebKit binaries on the Ubuntu 26 runner from a Linux-only cache; all WebKit launches failed on missing ICU 74. Removed the browser cache and always install matching binaries/dependencies, following the Playwright CI recommendation.
 
-- The same CI run exposed a cold-route Turbopack `Unexpected end of JSON input` on parallel My Items requests. The browser dev server now uses the production webpack compiler in an isolated `.next-e2e-dev` directory; parallelism, assertions and the standalone origin guard remain intact.
+- The same CI run exposed a cold-route Turbopack `Unexpected end of JSON input` on parallel My Items requests. An isolated webpack dev experiment did not eliminate static-path JSON errors and slowed the suite; it was reverted. The merged main runner pins Ubuntu 24, and its proven Turbopack test setup, parallelism, assertions and standalone origin guard are retained.
 
 ### Decisions
 

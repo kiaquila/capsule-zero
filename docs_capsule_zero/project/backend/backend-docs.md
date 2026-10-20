@@ -386,6 +386,10 @@ Kratos UI IDs 4000031/32/33/34/39 and 4000005 map to `PASSWORD_TOO_SIMILAR`, `PA
 
 Registration's optional `name` may be omitted. A supplied name must be a non-null, trimmed nonblank string of 1–80 Unicode characters, matching OpenAPI and the Kratos identity schema. Profile PATCH keeps its existing nonblank 1–80 limit. Names have no three-character minimum; the profile username is a separate form-only constraint.
 
+### Optional profile location clearing (spec 056)
+
+`PATCH /api/profile` trims country/city and accepts `""` to clear either optional field. Omission leaves the stored field unchanged through the existing `COALESCE` update; explicit JSON `null` remains a validation error. Both fields retain an 80-rune maximum. Display name, locale and avatar constraints are unchanged. There is no value-based deletion/migration of old profile data. The auth API exposes whoami verification, without a device-session inventory.
+
 ## Guest account persistence (spec 056)
 
 An explicit guest save continues existing email/Google authentication through `/account/guest/continue`; ordinary sign-in does not import abandoned browser drafts. `GuestProgressPort` is optional to leave the frozen Supabase provider untouched. Production uses authenticated `/api/guest-progress` routes, not fixture storage. The Go guest context commits an immutable owner-scoped guest-v1 snapshot and deduplicated uncapsulated wardrobe rows together in migration 0004. Existing wardrobe projections consume these records; status/favorite changes are persisted. Saved result routes reconstruct the unchanged evaluator from trusted attributes and dashboard lists owner-scoped saved sets. Input/ownership/idempotency limits are canonical in `docs_capsule_zero/adr/api-spec.md`. Other legacy wardrobe/capsule CRUD remains outside this slice.

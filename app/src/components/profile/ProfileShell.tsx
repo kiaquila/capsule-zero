@@ -465,21 +465,12 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
 
             <h3 className="profile-session-title">{t("account.sessions")}</h3>
             <div className="profile-sessions">
-              {snapshot.account.sessions.map((session) => (
-                <div className="profile-session" key={session.id}>
-                  <span className="profile-session-icon">
-                    <ProfileIcon name={sessionIcon(session.type)} />
-                  </span>
-                  <span className="profile-session-copy">
-                    <strong>{t(`sessions.${session.id}.device`)}</strong>
-                    <small>
-                      {session.location} ·{" "}
-                      {t(`sessions.${session.id}.lastSeen`)}
-                    </small>
-                  </span>
-                  {session.current ? <em>{t("account.current")}</em> : null}
-                </div>
-              ))}
+              <p
+                className="profile-session-copy"
+                data-testid="profile-sessions-unavailable"
+              >
+                {t("account.sessionsUnavailable")}
+              </p>
             </div>
           </section>
         </form>
@@ -582,20 +573,6 @@ function ToggleRow({
 
 function formatUsername(username: string) {
   return username.startsWith("@") ? username : `@${username}`;
-}
-
-function sessionIcon(
-  type: ProfileSnapshot["account"]["sessions"][number]["type"],
-): IconName {
-  if (type === "mobile") {
-    return "mobile";
-  }
-
-  if (type === "tablet") {
-    return "tablet";
-  }
-
-  return "desktop";
 }
 
 function ProfileIcon({ name }: { name: IconName }) {

@@ -169,7 +169,7 @@ as Stage 2 boundaries for Google OAuth and Apple Sign-In.
 | `/auth/callback`                  |    GET | Public | Stage 2 web OAuth callback; exchanges code and redirects to dashboard                         |
 | `/auth/mobile-callback`           |    GET | Public | Stage 2 mobile OAuth callback; redirects into React Native deep link                          |
 | `/api/profile`                    |    GET | User   | Read current profile                                                                          |
-| `/api/profile`                    |  PATCH | User   | Update display name, locale, country, city, or avatar URL                                     |
+| `/api/profile`                    |  PATCH | User   | Update display name, locale, country/city (empty string clears), or avatar URL                |
 | `/api/profile/avatar`             |   POST | User   | Upload or replace avatar metadata after storage upload                                        |
 | `/api/profile/avatar`             | DELETE | User   | Remove custom avatar                                                                          |
 

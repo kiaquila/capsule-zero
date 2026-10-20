@@ -255,21 +255,7 @@
     "account": {
       "userId": "ID пользователя",
       "sessions": "Активные сессии",
-      "current": "Текущая"
-    },
-    "sessions": {
-      "macbook-chrome": {
-        "device": "MacBook Pro - Chrome",
-        "lastSeen": "2 мин назад"
-      },
-      "iphone-app": {
-        "device": "iPhone 15 Pro - Capsule Zero App",
-        "lastSeen": "3 часа назад"
-      },
-      "ipad-safari": {
-        "device": "iPad Air - Safari",
-        "lastSeen": "2 дня назад"
-      }
+      "sessionsUnavailable": "Сведения о сессиях пока недоступны."
     },
     "buttons": {
       "save": "Сохранить",

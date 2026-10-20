@@ -13,7 +13,8 @@ permissions:
 jobs:
   test:
     name: test
-    runs-on: ubuntu-latest
+    # Pin the WebKit test platform; install matching browsers and native libraries.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     services:
       guest-postgres:

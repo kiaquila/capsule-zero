@@ -275,6 +275,14 @@
 
 Personal-name min(1) and existing required-name messages remain unchanged; EN/RU are the only active locales. Unknown auth codes continue to use the generic localized message.
 
+### Profile session availability (spec 056)
+
+| Key                                 | EN                                         | RU                                  |
+| ----------------------------------- | ------------------------------------------ | ----------------------------------- |
+| profile.account.sessionsUnavailable | Session details are currently unavailable. | Сведения о сессиях пока недоступны. |
+
+The profile session sample devices/activity strings are retired; the current auth contract exposes no session inventory.
+
 ## Guest account save (spec 056)
 
 Active EN/RU copy is in `app/src/messages/{en,ru}.json`, namespace `guest`: saving/wait, preserved selection, save failure/retry, owner mismatch/no intent, saved confirmation and account/dashboard links. The save continuation announces busy/error states and disables the initiating CTA while busy. No price, payment or new registration pitch is added after authentication. ES-AR remains deferred.

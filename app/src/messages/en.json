@@ -255,21 +255,7 @@
     "account": {
       "userId": "User ID",
       "sessions": "Active Sessions",
-      "current": "Current"
-    },
-    "sessions": {
-      "macbook-chrome": {
-        "device": "MacBook Pro - Chrome",
-        "lastSeen": "2 min ago"
-      },
-      "iphone-app": {
-        "device": "iPhone 15 Pro - Capsule Zero App",
-        "lastSeen": "3 hours ago"
-      },
-      "ipad-safari": {
-        "device": "iPad Air - Safari",
-        "lastSeen": "2 days ago"
-      }
+      "sessionsUnavailable": "Session details are currently unavailable."
     },
     "buttons": {
       "save": "Save",

@@ -30,8 +30,6 @@
     ".next/dev/types/**/*.ts",
     ".next-origin-guard/types/**/*.ts",
     ".next-origin-guard/dev/types/**/*.ts",
-    ".next-e2e-dev/types/**/*.ts",
-    ".next-e2e-dev/dev/types/**/*.ts",
     "**/*.mts"
   ],
   "exclude": ["node_modules"]

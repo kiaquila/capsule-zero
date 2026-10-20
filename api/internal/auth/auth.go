@@ -473,7 +473,7 @@ func (h *Handler) PatchProfile(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Malformed request body.")
 		return
 	}
-	// ProfileUpdateRequest is set-or-leave and does not accept null, but
+	// ProfileUpdateRequest does not accept null, but
 	// encoding/json decodes an explicit null into the same nil pointer as an
 	// omitted field — without this check {"country":null} would skip validation
 	// and no-op with 200 instead of the contract's validation error.
@@ -489,7 +489,7 @@ func (h *Handler) PatchProfile(w http.ResponseWriter, r *http.Request) {
 	// stored verbatim nor able to slip past the blank/length checks, then enforce
 	// the ProfileUpdateRequest contract before persisting: the repository only
 	// normalizes locale, so a non-web API client could otherwise store an empty
-	// display name, a blank/over-long country/city, or a non-https avatar URL as
+	// display name, an over-long country/city, or a non-https avatar URL as
 	// a "successful" update.
 	displayName := trimOptional(in.DisplayName)
 	country := trimOptional(in.Country)
@@ -642,17 +642,11 @@ func validateProfileUpdate(displayName, country, city, avatarURL, locale *string
 		}
 	}
 	if country != nil {
-		if *country == "" {
-			return "Country cannot be blank; omit the field to keep the stored value.", false
-		}
 		if utf8.RuneCountInString(*country) > maxProfileFieldRunes {
 			return "Country must be 80 characters or fewer.", false
 		}
 	}
 	if city != nil {
-		if *city == "" {
-			return "City cannot be blank; omit the field to keep the stored value.", false
-		}
 		if utf8.RuneCountInString(*city) > maxProfileFieldRunes {
 			return "City must be 80 characters or fewer.", false
 		}

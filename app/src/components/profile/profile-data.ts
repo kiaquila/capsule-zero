@@ -33,14 +33,8 @@ export interface ProfileSnapshot {
   };
   account: {
     userIdLabel: string;
-    sessions: Array<{
-      id: string;
-      device: string;
-      location: string;
-      lastSeen: string;
-      current?: boolean;
-      type: "desktop" | "mobile" | "tablet";
-    }>;
+    // The current auth contract verifies login but exposes no session inventory.
+    sessions: [];
   };
   navigation: DashboardSnapshot["navigation"];
   options: {
@@ -55,12 +49,6 @@ interface BuildProfileSnapshotOptions {
   session: PersistedMockSession;
   locale: AppLocale;
 }
-
-const DEFAULT_DATE_OF_BIRTH = "1992-06-15";
-const DEFAULT_PHONE = "";
-const DEFAULT_SHOE_SIZE = "37";
-const DEFAULT_TOP_SIZE = "S";
-const DEFAULT_BOTTOM_SIZE = "S";
 
 export async function buildProfileSnapshot({
   registry,
@@ -97,13 +85,13 @@ export async function buildProfileSnapshot({
       username,
       email,
       initials: buildInitials(displayName || email),
-      phone: savedPreferences?.phone ?? DEFAULT_PHONE,
-      dateOfBirth: savedPreferences?.dateOfBirth ?? DEFAULT_DATE_OF_BIRTH,
-      country: savedPreferences?.country ?? providerProfile.country ?? "AR",
-      city: savedPreferences?.city ?? providerProfile.city ?? "Buenos Aires",
-      shoeSize: savedPreferences?.shoeSize ?? DEFAULT_SHOE_SIZE,
-      topSize: savedPreferences?.topSize ?? DEFAULT_TOP_SIZE,
-      bottomSize: savedPreferences?.bottomSize ?? DEFAULT_BOTTOM_SIZE,
+      phone: savedPreferences?.phone ?? "",
+      dateOfBirth: savedPreferences?.dateOfBirth ?? "",
+      country: savedPreferences?.country ?? providerProfile.country ?? "",
+      city: savedPreferences?.city ?? providerProfile.city ?? "",
+      shoeSize: savedPreferences?.shoeSize ?? "",
+      topSize: savedPreferences?.topSize ?? "",
+      bottomSize: savedPreferences?.bottomSize ?? "",
       avatarUrl: providerProfile.avatarUrl,
       coinBalance: providerProfile.coinBalance,
     },
@@ -115,30 +103,7 @@ export async function buildProfileSnapshot({
     },
     account: {
       userIdLabel: buildUserIdLabel(session.userId),
-      sessions: [
-        {
-          id: "macbook-chrome",
-          device: "MacBook Pro - Chrome",
-          location: "Buenos Aires, AR",
-          lastSeen: "2 min ago",
-          current: true,
-          type: "desktop",
-        },
-        {
-          id: "iphone-app",
-          device: "iPhone 15 Pro - Capsule Zero App",
-          location: "Buenos Aires, AR",
-          lastSeen: "3 hours ago",
-          type: "mobile",
-        },
-        {
-          id: "ipad-safari",
-          device: "iPad Air - Safari",
-          location: "Buenos Aires, AR",
-          lastSeen: "2 days ago",
-          type: "tablet",
-        },
-      ],
+      sessions: [],
     },
     navigation: dashboardSnapshot.navigation,
     options: {
