@@ -50,3 +50,9 @@
 ## Personal-name validation (spec 053)
 
 First name and surname accept 1–40 Unicode characters after trimming, including `Ян` and a one-character name; the joined display name is limited to 80 characters. Empty/whitespace values are rejected. The separate Latin username remains 3–30 letters, digits or underscores; its localized error explicitly says "username"/"nickname" to avoid implying a minimum for personal names. The shared schema validates both the form and server action; Go accepts a nonblank display name of 1–80 Unicode characters.
+
+## Honest personal data and sessions (spec 056)
+
+A profile with no saved values leaves phone, date of birth, country, city and sizes empty. There are no sample defaults. Existing user-bound preferences are preserved, even when equal to former sample values; no value-based cleanup is permitted. The existing cookie stores fields outside the profile API and is scoped to its user ID. Country/city also persist through the profile API; blank strings clear them, while omitted fields preserve them and JSON null is rejected. API errors leave cookie preferences untouched and show the existing save error.
+
+The current auth integration verifies the signed-in user but has no session inventory or reliable device/location/activity metadata. The account section shows localized session-details-unavailable copy, with no device entries or inferred current badge. Real session inventory is a separate auth capability.

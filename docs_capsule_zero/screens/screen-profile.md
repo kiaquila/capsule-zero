@@ -59,3 +59,7 @@ Prototype: `html-prototypes/profile.html`
 ## Name validation (spec 053)
 
 Personal name fields accept short Unicode names, including `Ян`, with trim + 1–40-character bounds and an 80-character joined display-name limit. Empty/whitespace values show the existing localized field errors. The independent 3–30-character username rule remains; its message names the username explicitly.
+
+## Empty fields and session availability (spec 056)
+
+Unset optional personal fields render empty; saving another field does not populate them. Clearing an optional field stays cleared after save/reload. Preserve all existing saved values regardless of equality to old sample defaults. Active sessions show “Session details are currently unavailable.” (RU: “Сведения о сессиях пока недоступны.”) until the auth integration exposes a real inventory; no fabricated device, location, activity or current badge is displayed.

@@ -6,6 +6,7 @@ import { ProfilePage } from "../../pages/ProfilePage";
 for (const locale of LOCALES) {
   test.describe(`Optional profile fields (${locale})`, () => {
     test.use({ appLocale: locale });
+
     test("starts empty, preserves explicit values and supports clearing", async ({
       page,
       landing,

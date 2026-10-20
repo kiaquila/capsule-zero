@@ -274,3 +274,11 @@
 | profile.validation.usernameLength | Username must be 3–30 characters. | Никнейм должен содержать от 3 до 30 символов. |
 
 Personal-name min(1) and existing required-name messages remain unchanged; EN/RU are the only active locales. Unknown auth codes continue to use the generic localized message.
+
+### Profile session availability (spec 056)
+
+| Key | EN | RU |
+| --- | --- | --- |
+| profile.account.sessionsUnavailable | Session details are currently unavailable. | Сведения о сессиях пока недоступны. |
+
+The profile session sample devices/activity strings are retired; the current auth contract exposes no session inventory.

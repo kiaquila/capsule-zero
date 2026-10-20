@@ -234,12 +234,7 @@ components:
     LayeringCoverage:
       type: object
       required:
-        [
-          score,
-          baseLookCount,
-          midCoveredLookCount,
-          outerCoveredLookCount,
-        ]
+        [score, baseLookCount, midCoveredLookCount, outerCoveredLookCount]
       properties:
         score:
           type: [number, "null"]
@@ -256,8 +251,7 @@ components:
           minimum: 0
     Category:
       type: object
-      required:
-        [id, name, wardrobeTypes, layer, algorithmRole, accessorySlot]
+      required: [id, name, wardrobeTypes, layer, algorithmRole, accessorySlot]
       properties:
         id:
           type: string
@@ -496,8 +490,7 @@ components:
           type: boolean
     Profile:
       type: object
-      required:
-        [userId, email, displayName, locale, createdAt, updatedAt]
+      required: [userId, email, displayName, locale, createdAt, updatedAt]
       properties:
         userId:
           type: string
@@ -530,19 +523,16 @@ components:
           maxLength: 80
         locale:
           $ref: "#/components/schemas/Locale"
-        # Set-or-leave semantics: an omitted field keeps the stored value. `null`
-        # is intentionally not accepted — the Go handler treats a missing pointer
-        # as "leave unchanged" (COALESCE), so advertising a nullable "clear" that
-        # the API silently ignores would mislead clients. Clearing a saved field
-        # is a deferred feature (see spec 024 Known Issues).
+        # Omission keeps the stored value; null is rejected. Empty strings clear
+        # optional country/city after trimming. Avatar clearing remains deferred.
         country:
           type: string
-          minLength: 1
           maxLength: 80
+          description: Empty string clears the saved country; omission preserves it.
         city:
           type: string
-          minLength: 1
           maxLength: 80
+          description: Empty string clears the saved city; omission preserves it.
         avatarUrl:
           type: string
           format: uri

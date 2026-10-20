@@ -19,3 +19,7 @@ Reuse the profile snapshot, form, cookie preferences, API provider, Go profile h
 ## Negative Scenarios
 
 Unknown session inventory must never become invented devices. Empty saves must not persist defaults. Cross-user cookies must be ignored. Null, invalid locale, oversized fields and invalid avatar URLs remain rejected.
+
+## Implementation boundary
+
+New mock identities also leave location unset instead of inheriting the demo fixture. The original demo identity remains a deliberate local fixture; production uses the API provider.
