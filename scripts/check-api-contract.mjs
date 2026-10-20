@@ -20,6 +20,22 @@ const openApi = YAML.parse(readFileSync(openApiPath, "utf8"));
 const providerContracts = readFileSync(providerContractsPath, "utf8");
 const supabaseProvider = readFileSync(supabaseProviderPath, "utf8");
 const errors = [];
+const guestCatalog = readFileSync(
+  resolve(root, "app/src/features/guest/catalog-data.json"),
+  "utf8",
+);
+const guestAllowlist = readFileSync(
+  resolve(root, "api/internal/guest/catalog-data.json"),
+  "utf8",
+);
+if (
+  JSON.stringify(JSON.parse(guestCatalog)) !==
+  JSON.stringify(JSON.parse(guestAllowlist))
+) {
+  errors.push(
+    "Guest catalog differs from Go allowlist: copy canonical app/src/features/guest/catalog-data.json to api/internal/guest/catalog-data.json.",
+  );
+}
 
 const requiredErrorCodes = [
   "VALIDATION_ERROR",

@@ -9,6 +9,7 @@ import {
 } from "@/components/dashboard/DashboardNavigation";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import type { MyItemsEntry } from "@/components/my-items/my-items-data";
+import { useGuestItemMutation } from "@/components/wardrobe/useGuestItemMutation";
 import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
 import {
   WardrobeDetailField,
@@ -100,6 +101,8 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
   const [draft, setDraft] = useState<ItemDraftState | null>(null);
   const [errors, setErrors] = useState<DraftErrors>({});
   const [notice, setNotice] = useState<string | null>(null);
+  const { persistGuestItem, isGuestItemPending } =
+    useGuestItemMutation(setNotice);
   const [moreOpen, setMoreOpen] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const localPhotoUrlsRef = useRef(new Set<string>());
@@ -313,7 +316,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
     setNotice(t("notice.saved", { item: normalized.name }));
   };
 
-  const toggleFavorite = (itemId: string) => {
+  const toggleFavorite = async (itemId: string) => {
     const item = items.find((currentItem) => currentItem.id === itemId);
 
     if (!item) {
@@ -321,6 +324,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
     }
 
     const nextFavorite = !item.favorite;
+    if (!(await persistGuestItem(item, { favorite: nextFavorite }))) return;
     setItems((currentItems) =>
       currentItems.map((currentItem) =>
         currentItem.id === itemId
@@ -341,7 +345,8 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
     }));
   };
 
-  const returnToMyItems = (item: MyItemsEntry) => {
+  const returnToMyItems = async (item: MyItemsEntry) => {
+    if (!(await persistGuestItem(item, { status: "uncapsulated" }))) return;
     setItems((currentItems) =>
       currentItems.filter((currentItem) => currentItem.id !== item.id),
     );
@@ -704,6 +709,7 @@ export function ForSaleShell({ snapshot }: ForSaleShellProps) {
                     itemColorsLabel={t("itemColors")}
                     key={item.id}
                     meta={item.brand ?? t(`sources.${item.sourceType}`)}
+                    favoriteDisabled={isGuestItemPending(item.id)}
                     onFavorite={() => toggleFavorite(item.id)}
                     onOpen={() => openItem(item)}
                     renderHeartIcon={() => <ForSaleIcon name="heart" />}

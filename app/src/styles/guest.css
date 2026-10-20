@@ -504,6 +504,11 @@
   margin: 32px auto 0;
 }
 
+.guest-account-link {
+  display: flex;
+  text-decoration: none;
+}
+
 /* --- Шаг 3: результат --- */
 .guest-hero {
   text-align: center;

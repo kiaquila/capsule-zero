@@ -16,6 +16,7 @@ import (
 	"github.com/kiaquila/capsule-zero/api/internal/auth"
 	"github.com/kiaquila/capsule-zero/api/internal/config"
 	"github.com/kiaquila/capsule-zero/api/internal/db"
+	"github.com/kiaquila/capsule-zero/api/internal/guest"
 	"github.com/kiaquila/capsule-zero/api/internal/httpx"
 	"github.com/kiaquila/capsule-zero/api/internal/kratos"
 	"github.com/kiaquila/capsule-zero/api/internal/profiles"
@@ -126,7 +127,7 @@ func run() error {
 	defer stopCleanup()
 	go runLimiterCleanup(cleanupCtx, authLimiter, sessionLimiter)
 
-	mux := newMux(authHandler, authLimiter, sessionLimiter)
+	mux := newMux(authHandler, authLimiter, sessionLimiter, &guest.Handler{Repo: guest.NewRepo(pool), UserID: auth.UserID})
 	registerUploadRoutes(mux, authHandler, uploadHandler, sessionLimiter)
 	mux.HandleFunc("GET /api/health", healthHandler(pool, kratosClient, storageClient))
 
@@ -154,7 +155,7 @@ func run() error {
 // newMux wires the auth/profile routes behind their rate-limit buckets: public
 // auth writes keep the strict edge-mirroring bucket, and the session-validation
 // surface shares one independent, roomier bucket (spec 034 acceptance 1).
-func newMux(handler *auth.Handler, authLimiter, sessionLimiter *ratelimit.Limiter) *http.ServeMux {
+func newMux(handler *auth.Handler, authLimiter, sessionLimiter *ratelimit.Limiter, guestHandlers ...*guest.Handler) *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /livez", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
@@ -178,6 +179,15 @@ func newMux(handler *auth.Handler, authLimiter, sessionLimiter *ratelimit.Limite
 	mux.HandleFunc("POST /api/auth/logout", sessionLimiter.Middleware(handler.Logout))
 	mux.HandleFunc("GET /api/profile", sessionLimiter.Middleware(handler.RequireSession(handler.GetProfile)))
 	mux.HandleFunc("PATCH /api/profile", sessionLimiter.Middleware(handler.RequireSession(handler.PatchProfile)))
+	guestHandler := &guest.Handler{UserID: auth.UserID}
+	if len(guestHandlers) > 0 {
+		guestHandler = guestHandlers[0]
+	}
+	mux.HandleFunc("POST /api/guest-progress", sessionLimiter.Middleware(handler.RequireSession(guestHandler.Save)))
+	mux.HandleFunc("GET /api/guest-progress", sessionLimiter.Middleware(handler.RequireSession(guestHandler.List)))
+	mux.HandleFunc("GET /api/guest-progress/items", sessionLimiter.Middleware(handler.RequireSession(guestHandler.Items)))
+	mux.HandleFunc("GET /api/guest-progress/{id}", sessionLimiter.Middleware(handler.RequireSession(guestHandler.Get)))
+	mux.HandleFunc("PATCH /api/guest-progress/items/{id}", sessionLimiter.Middleware(handler.RequireSession(guestHandler.Update)))
 	return mux
 }
 

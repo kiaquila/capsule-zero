@@ -8,6 +8,7 @@ import {
   type DashboardIconName,
 } from "@/components/dashboard/DashboardNavigation";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
+import { useGuestItemMutation } from "@/components/wardrobe/useGuestItemMutation";
 import { WardrobeItemCard } from "@/components/wardrobe/WardrobeItemCard";
 import {
   WardrobeDetailField,
@@ -102,6 +103,8 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     null,
   );
   const [notice, setNotice] = useState<string | null>(null);
+  const { persistGuestItem, isGuestItemPending } =
+    useGuestItemMutation(setNotice);
   const [moreOpen, setMoreOpen] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
   const localPhotoUrlsRef = useRef(new Set<string>());
@@ -328,7 +331,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     setNotice(t("notice.deleted", { item: itemName }));
   };
 
-  const toggleFavorite = (itemId: string) => {
+  const toggleFavorite = async (itemId: string) => {
     const item = items.find((currentItem) => currentItem.id === itemId);
 
     if (!item) {
@@ -336,6 +339,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     }
 
     const nextFavorite = !item.favorite;
+    if (!(await persistGuestItem(item, { favorite: nextFavorite }))) return;
     setItems((currentItems) =>
       currentItems.map((currentItem) =>
         currentItem.id === itemId
@@ -438,13 +442,15 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
     closeDetail();
   };
 
-  const moveToSale = (item: MyItemsEntry) => {
+  const moveToSale = async (item: MyItemsEntry) => {
+    if (!(await persistGuestItem(item, { status: "for_sale" }))) return;
     completeDecision(item, "sale");
     setNotice(t("notice.movedSale", { item: item.name }));
     closeDetail();
   };
 
-  const moveToRepair = (item: MyItemsEntry) => {
+  const moveToRepair = async (item: MyItemsEntry) => {
+    if (!(await persistGuestItem(item, { status: "for_repair" }))) return;
     completeDecision(item, "repair");
     setNotice(t("notice.movedRepair", { item: item.name }));
     closeDetail();
@@ -675,6 +681,7 @@ export function UncapsulatedShell({ snapshot }: UncapsulatedShellProps) {
                     itemColorsLabel={t("itemColors")}
                     key={item.id}
                     meta={item.brand ?? t(`sources.${item.sourceType}`)}
+                    favoriteDisabled={isGuestItemPending(item.id)}
                     onFavorite={() => toggleFavorite(item.id)}
                     onOpen={() => openItem(item)}
                     renderHeartIcon={() => <UncapsulatedIcon name="heart" />}

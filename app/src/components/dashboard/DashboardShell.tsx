@@ -1,5 +1,7 @@
 "use client";
 
+import type { SavedGuest } from "@/lib/providers";
+import { evaluate } from "@/features/guest/outfits";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
@@ -17,12 +19,18 @@ import type { DashboardSnapshot } from "./dashboard-data";
 
 interface DashboardShellProps {
   snapshot: DashboardSnapshot;
+  guestCollections?: SavedGuest[];
   /** Present while the signed-in user's email is unverified (spec 035). */
   verifyEmail?: { email: string; flowId?: string };
 }
 
-export function DashboardShell({ snapshot, verifyEmail }: DashboardShellProps) {
+export function DashboardShell({
+  snapshot,
+  verifyEmail,
+  guestCollections = [],
+}: DashboardShellProps) {
   const t = useTranslations("dashboard");
+  const guest = useTranslations("guest");
   const locale = useLocale();
   const router = useRouter();
 
@@ -67,6 +75,32 @@ export function DashboardShell({ snapshot, verifyEmail }: DashboardShellProps) {
               email={verifyEmail.email}
               initialFlowId={verifyEmail.flowId}
             />
+          ) : null}
+          {guestCollections.length ? (
+            <section
+              className="dashboard-glass dashboard-capsule-card"
+              data-testid="dashboard-saved-guest"
+            >
+              <div className="dashboard-capsule-body">
+                <h2>{guest("savedWardrobes")}</h2>
+                {guestCollections.map((saved) => (
+                  <p key={saved.id}>
+                    <Link
+                      className="dashboard-primary-action dashboard-saved-guest-link"
+                      data-testid={`saved-guest-${saved.id}`}
+                      href={`/account/guest/${saved.id}`}
+                    >
+                      {guest("savedWardrobeOpen")} ·{" "}
+                      {guest("barItems", { count: saved.items.length })} ·{" "}
+                      {evaluate(saved.items).count}{" "}
+                      {guest("barOutfits", {
+                        count: evaluate(saved.items).count,
+                      })}
+                    </Link>
+                  </p>
+                ))}
+              </div>
+            </section>
           ) : null}
           {snapshot.activeCapsule ? (
             <section className="dashboard-glass dashboard-capsule-card">

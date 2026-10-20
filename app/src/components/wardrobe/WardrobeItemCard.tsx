@@ -18,6 +18,7 @@ interface WardrobeItemCardProps {
   badges: string[];
   className?: string;
   favoriteActive?: boolean;
+  favoriteDisabled?: boolean;
   favoriteLabel: string;
   item: MyItemsEntry;
   itemColorsLabel: string;
@@ -37,6 +38,7 @@ export function WardrobeItemCard({
   badges,
   className,
   favoriteActive,
+  favoriteDisabled,
   favoriteLabel,
   item,
   itemColorsLabel,
@@ -50,8 +52,12 @@ export function WardrobeItemCard({
   const isFavorite = favoriteActive ?? item.favorite;
 
   return (
-    <article className={cn("my-items-card", className)}>
+    <article
+      className={cn("my-items-card", className)}
+      data-guest-preset={item.guestPresetId}
+    >
       <button
+        disabled={favoriteDisabled}
         aria-label={favoriteLabel}
         aria-pressed={isFavorite}
         className={cn("my-items-fav", isFavorite && "my-items-fav-active")}
@@ -60,7 +66,11 @@ export function WardrobeItemCard({
       >
         {renderHeartIcon()}
       </button>
-      <button className={cn("my-items-card-main", mainClassName)} onClick={onOpen} type="button">
+      <button
+        className={cn("my-items-card-main", mainClassName)}
+        onClick={onOpen}
+        type="button"
+      >
         <span className="my-items-thumb">
           {item.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -113,10 +123,19 @@ export function WardrobeItemCard({
 export function WardrobeItemFallbackIcon({ colorHex }: { colorHex: string }) {
   // Dot-ring contract (design-system.md §9.1): SVG presentation attributes
   // cannot resolve var(), so the stroke is applied via style (inherited).
-  const stroke = isColorDark(colorHex) ? "var(--color-white-a44)" : "var(--color-dot-ring-dark)";
+  const stroke = isColorDark(colorHex)
+    ? "var(--color-white-a44)"
+    : "var(--color-dot-ring-dark)";
 
   return (
-    <svg aria-hidden fill="none" height="44" style={{ stroke }} viewBox="0 0 44 44" width="44">
+    <svg
+      aria-hidden
+      fill="none"
+      height="44"
+      style={{ stroke }}
+      viewBox="0 0 44 44"
+      width="44"
+    >
       <path
         d="M22 8s-6.8 4.2-6.8 10.3L7 22.8V36h30V22.8l-8.2-4.5C28.8 12.2 22 8 22 8Z"
         fill={`${colorHex}22`}

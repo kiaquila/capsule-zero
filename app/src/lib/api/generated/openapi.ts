@@ -160,6 +160,41 @@ export const API_OPERATIONS = [
   },
   {
     "method": "GET",
+    "path": "/api/guest-progress",
+    "operationId": "listGuestProgress",
+    "auth": "session",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "POST",
+    "path": "/api/guest-progress",
+    "operationId": "saveGuestProgress",
+    "auth": "session",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "GET",
+    "path": "/api/guest-progress/{id}",
+    "operationId": "getGuestProgress",
+    "auth": "session",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "GET",
+    "path": "/api/guest-progress/items",
+    "operationId": "listGuestWardrobeItems",
+    "auth": "session",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/guest-progress/items/{id}",
+    "operationId": "updateGuestWardrobeItem",
+    "auth": "session",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "GET",
     "path": "/api/health",
     "operationId": "getHealth",
     "auth": "public",
@@ -693,6 +728,48 @@ export type HealthResponse = {
 export type IdResponse = {
   id: string;
 };
+
+export type GuestPreset = {
+  id: string;
+  wardrobe: "female" | "male" | "mixed";
+  role: "top" | "bottom" | "dress" | "shoes" | "bag";
+  colorId: string;
+  categoryId: string;
+  name: {
+    en: string;
+    ru: string;
+  };
+};
+
+export type GuestSaveInput = {
+  transferId: string;
+  wardrobe: "female" | "male" | "mixed";
+  picked: Array<string>;
+};
+
+export type SavedGuest = {
+  id: string;
+  transferId: string;
+  wardrobe: "female" | "male" | "mixed";
+  algorithmVersion: "guest-v1";
+  items: Array<GuestPreset>;
+  createdAt: string;
+};
+
+export type SavedGuestItem = {
+  id: string;
+  userId: string;
+  preset: GuestPreset;
+  status: ItemStatus;
+  favorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type GuestItemPatch = {
+  status?: ItemStatus;
+  favorite?: boolean;
+};
 export interface ApiOperationPayloads {
   completeGoogleSignIn: {
     path: CompleteGoogleSignInPathParams;
@@ -869,6 +946,46 @@ export interface ApiOperationPayloads {
     cookie: GetCurrentCapsuleCookieParams;
     request: GetCurrentCapsuleRequestBody;
     response: GetCurrentCapsuleResponseBody;
+  };
+  listGuestProgress: {
+    path: ListGuestProgressPathParams;
+    query: ListGuestProgressQueryParams;
+    header: ListGuestProgressHeaderParams;
+    cookie: ListGuestProgressCookieParams;
+    request: ListGuestProgressRequestBody;
+    response: ListGuestProgressResponseBody;
+  };
+  saveGuestProgress: {
+    path: SaveGuestProgressPathParams;
+    query: SaveGuestProgressQueryParams;
+    header: SaveGuestProgressHeaderParams;
+    cookie: SaveGuestProgressCookieParams;
+    request: SaveGuestProgressRequestBody;
+    response: SaveGuestProgressResponseBody;
+  };
+  getGuestProgress: {
+    path: GetGuestProgressPathParams;
+    query: GetGuestProgressQueryParams;
+    header: GetGuestProgressHeaderParams;
+    cookie: GetGuestProgressCookieParams;
+    request: GetGuestProgressRequestBody;
+    response: GetGuestProgressResponseBody;
+  };
+  listGuestWardrobeItems: {
+    path: ListGuestWardrobeItemsPathParams;
+    query: ListGuestWardrobeItemsQueryParams;
+    header: ListGuestWardrobeItemsHeaderParams;
+    cookie: ListGuestWardrobeItemsCookieParams;
+    request: ListGuestWardrobeItemsRequestBody;
+    response: ListGuestWardrobeItemsResponseBody;
+  };
+  updateGuestWardrobeItem: {
+    path: UpdateGuestWardrobeItemPathParams;
+    query: UpdateGuestWardrobeItemQueryParams;
+    header: UpdateGuestWardrobeItemHeaderParams;
+    cookie: UpdateGuestWardrobeItemCookieParams;
+    request: UpdateGuestWardrobeItemRequestBody;
+    response: UpdateGuestWardrobeItemResponseBody;
   };
   getHealth: {
     path: GetHealthPathParams;
@@ -1227,6 +1344,45 @@ export type GetCurrentCapsuleRequestBody = never;
 export type GetCurrentCapsuleResponseBody = {
   capsule: Capsule | null;
 };
+
+export type ListGuestProgressPathParams = Record<string, never>;
+export type ListGuestProgressQueryParams = Record<string, never>;
+export type ListGuestProgressHeaderParams = Record<string, never>;
+export type ListGuestProgressCookieParams = Record<string, never>;
+export type ListGuestProgressRequestBody = never;
+export type ListGuestProgressResponseBody = Array<SavedGuest>;
+
+export type SaveGuestProgressPathParams = Record<string, never>;
+export type SaveGuestProgressQueryParams = Record<string, never>;
+export type SaveGuestProgressHeaderParams = Record<string, never>;
+export type SaveGuestProgressCookieParams = Record<string, never>;
+export type SaveGuestProgressRequestBody = GuestSaveInput;
+export type SaveGuestProgressResponseBody = SavedGuest;
+
+export type GetGuestProgressPathParams = {
+  id: string;
+};
+export type GetGuestProgressQueryParams = Record<string, never>;
+export type GetGuestProgressHeaderParams = Record<string, never>;
+export type GetGuestProgressCookieParams = Record<string, never>;
+export type GetGuestProgressRequestBody = never;
+export type GetGuestProgressResponseBody = SavedGuest;
+
+export type ListGuestWardrobeItemsPathParams = Record<string, never>;
+export type ListGuestWardrobeItemsQueryParams = Record<string, never>;
+export type ListGuestWardrobeItemsHeaderParams = Record<string, never>;
+export type ListGuestWardrobeItemsCookieParams = Record<string, never>;
+export type ListGuestWardrobeItemsRequestBody = never;
+export type ListGuestWardrobeItemsResponseBody = Array<SavedGuestItem>;
+
+export type UpdateGuestWardrobeItemPathParams = {
+  id: string;
+};
+export type UpdateGuestWardrobeItemQueryParams = Record<string, never>;
+export type UpdateGuestWardrobeItemHeaderParams = Record<string, never>;
+export type UpdateGuestWardrobeItemCookieParams = Record<string, never>;
+export type UpdateGuestWardrobeItemRequestBody = GuestItemPatch;
+export type UpdateGuestWardrobeItemResponseBody = SavedGuestItem;
 
 export type GetHealthPathParams = Record<string, never>;
 export type GetHealthQueryParams = Record<string, never>;
@@ -2804,6 +2960,195 @@ export const API_SCHEMAS = {
         "format": "uuid"
       }
     }
+  },
+  "GuestPreset": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "wardrobe",
+      "role",
+      "colorId",
+      "categoryId",
+      "name"
+    ],
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "wardrobe": {
+        "type": "string",
+        "enum": [
+          "female",
+          "male",
+          "mixed"
+        ]
+      },
+      "role": {
+        "type": "string",
+        "enum": [
+          "top",
+          "bottom",
+          "dress",
+          "shoes",
+          "bag"
+        ]
+      },
+      "colorId": {
+        "type": "string"
+      },
+      "categoryId": {
+        "type": "string"
+      },
+      "name": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "en",
+          "ru"
+        ],
+        "properties": {
+          "en": {
+            "type": "string"
+          },
+          "ru": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "GuestSaveInput": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "transferId",
+      "wardrobe",
+      "picked"
+    ],
+    "properties": {
+      "transferId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "wardrobe": {
+        "type": "string",
+        "enum": [
+          "female",
+          "male",
+          "mixed"
+        ]
+      },
+      "picked": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 32,
+        "uniqueItems": true,
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "SavedGuest": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "transferId",
+      "wardrobe",
+      "algorithmVersion",
+      "items",
+      "createdAt"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "transferId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "wardrobe": {
+        "type": "string",
+        "enum": [
+          "female",
+          "male",
+          "mixed"
+        ]
+      },
+      "algorithmVersion": {
+        "type": "string",
+        "enum": [
+          "guest-v1"
+        ]
+      },
+      "items": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/GuestPreset"
+        }
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "SavedGuestItem": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "userId",
+      "preset",
+      "status",
+      "favorite",
+      "createdAt",
+      "updatedAt"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "userId": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "preset": {
+        "$ref": "#/components/schemas/GuestPreset"
+      },
+      "status": {
+        "$ref": "#/components/schemas/ItemStatus"
+      },
+      "favorite": {
+        "type": "boolean"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "GuestItemPatch": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [],
+    "properties": {
+      "status": {
+        "$ref": "#/components/schemas/ItemStatus"
+      },
+      "favorite": {
+        "type": "boolean"
+      }
+    },
+    "minProperties": 1
   }
 } as const;
 
@@ -3289,6 +3634,110 @@ export const API_OPERATION_PAYLOADS = {
       }
     ],
     "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "listGuestProgress": {
+    "requestRequired": false,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": null,
+    "responseSchemas": [
+      {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/SavedGuest"
+        }
+      }
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "saveGuestProgress": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "GuestSaveInput",
+    "responseSchemas": [
+      "SavedGuest"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "getGuestProgress": {
+    "requestRequired": false,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": null,
+    "responseSchemas": [
+      "SavedGuest"
+    ],
+    "pathParameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "style": null,
+        "explode": null
+      }
+    ],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "listGuestWardrobeItems": {
+    "requestRequired": false,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": null,
+    "responseSchemas": [
+      {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/SavedGuestItem"
+        }
+      }
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "updateGuestWardrobeItem": {
+    "requestRequired": true,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": "GuestItemPatch",
+    "responseSchemas": [
+      "SavedGuestItem"
+    ],
+    "pathParameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "style": null,
+        "explode": null
+      }
+    ],
     "queryParameters": [],
     "headerParameters": [],
     "cookieParameters": []

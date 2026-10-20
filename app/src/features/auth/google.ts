@@ -8,6 +8,7 @@ import { createProviderRegistry } from "@/lib/providers";
 // httpOnly cookie that carries the session-token exchange (init) code across
 // the consent-screen round-trip. The callback route consumes the cookie.
 
+const GOOGLE_GUEST_COOKIE = "capsule_zero_google_guest_save";
 const GOOGLE_EXCHANGE_COOKIE = "capsule_zero_google_exchange";
 // Matches the Kratos login-flow lifespan (10m) — the exchange code dies with
 // the flow, so a longer cookie would only linger uselessly.
@@ -52,8 +53,24 @@ export async function appOrigin(): Promise<string> {
   return `${proto}://${host}`;
 }
 
-export async function storeGoogleExchangeCode(code: string): Promise<void> {
+export async function storeGoogleExchangeCode(
+  code: string,
+  guestTransferId?: string,
+): Promise<void> {
   const cookieStore = await cookies();
+  cookieStore.set(
+    GOOGLE_GUEST_COOKIE,
+    guestTransferId && /^[0-9a-f-]{36}$/i.test(guestTransferId)
+      ? guestTransferId
+      : "",
+    {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: EXCHANGE_MAX_AGE_SECONDS,
+    },
+  );
   cookieStore.set(GOOGLE_EXCHANGE_COOKIE, code, {
     httpOnly: true,
     sameSite: "lax",
@@ -70,5 +87,13 @@ export async function takeGoogleExchangeCode(): Promise<string | null> {
   if (value !== null) {
     cookieStore.delete(GOOGLE_EXCHANGE_COOKIE);
   }
+  return value;
+}
+
+export async function takeGoogleGuestSave(): Promise<string | null> {
+  const store = await cookies();
+  const raw = store.get(GOOGLE_GUEST_COOKIE)?.value;
+  const value = raw && /^[0-9a-f-]{36}$/i.test(raw) ? raw : null;
+  store.delete(GOOGLE_GUEST_COOKIE);
   return value;
 }

@@ -38,5 +38,14 @@ export default async function DashboardRoute({ params }: DashboardRouteProps) {
       ? { email: session.email, flowId: session.verificationFlowId }
       : undefined;
 
-  return <DashboardShell snapshot={snapshot} verifyEmail={verifyEmail} />;
+  const guestCollections = registry.guestProgress
+    ? await registry.guestProgress.list(session.userId)
+    : [];
+  return (
+    <DashboardShell
+      snapshot={snapshot}
+      verifyEmail={verifyEmail}
+      guestCollections={guestCollections}
+    />
+  );
 }

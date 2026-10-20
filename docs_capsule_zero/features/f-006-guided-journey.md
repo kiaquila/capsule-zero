@@ -1,6 +1,6 @@
 # Feature: Guided Journey (3-Step Capsule Creation)
 
-> **Update 2026-10-19:** The public guest flow is `/start`, separate from the authenticated guided journey. Its exact reference-port scope and limits are in `guest-onboarding.md` and PRODUCT-PLAN §0.2; account-save remains follow-up.
+> **Update 2026-10-19:** The public guest flow is `/start`, separate from the authenticated guided journey. Its exact reference-port scope and limits are in `guest-onboarding.md` and PRODUCT-PLAN §0.2; spec 056 adds explicit auth continuation and durable account save (immutable guest sets, uncapsulated wardrobe items).
 
 > Source: US-008, US-009, US-010 (spec.md). Prototype: `html-prototypes/guided-journey.html`
 
@@ -11,6 +11,7 @@
 > migration, generated-client, or live-tab implementation of that blocked surface.
 
 ## Overview
+
 - **Purpose:** 3-step capsule creation flow — the core product experience
 - **User:** Authenticated user creating a capsule
 - **Entry point:** `/journey` (from Dashboard CTA or Capsules section)
@@ -19,12 +20,14 @@
 ## Step 1/3 — Wardrobe Type
 
 ### User Flow
+
 1. Three large visual cards: Women's / Men's / Mixed
 2. User selects one
 3. Choice locks, proceeds to Step 2
 4. Can go back from Step 2 to change
 
 ### Acceptance Criteria
+
 - Three large visual cards (Women's / Men's / Mixed)
 - Selection locks, proceed to Step 2
 - Ability to go back from Step 2
@@ -33,6 +36,7 @@
 ## Step 2/3 — Category Checklist
 
 ### User Flow
+
 1. Textual category checklist (no visuals) with quantity steppers
 2. Categories filtered by gender (from Step 1)
 3. User selects categories and sets quantities (default 1, min 0 per category, no cap)
@@ -40,6 +44,7 @@
 5. Minimum 8 categories required before proceeding
 
 ### Acceptance Criteria
+
 - Textual checklist with quantity steppers
 - Categories filtered by wardrobe type from Step 1
 - Min 8 categories validated before proceeding
@@ -50,6 +55,7 @@
 ## Step 3/3 — Colors & Items
 
 ### User Flow
+
 1. **Items first:** user adds garments via the own-preset picker and any currently enabled methods;
    Upload Photos / Paste Links / Search Catalog remain the final three-method design, with link
    import and shared merchant search gated by Q8
@@ -60,6 +66,7 @@
 6. "Create capsule" → capsule generated, redirect to Capsule Result
 
 ### Acceptance Criteria
+
 - Achromatic colors appear first in the palette UI but remain optional
 - User can select up to 15 compatible colors
 - Incompatible colors are blocked based on same-group or Desaturated↔Dark compatibility
@@ -69,19 +76,20 @@
 
 ## Interface States
 
-| State | Description | What user sees |
-|-------|------------|----------------|
-| Step 1 default | Type selection | Three visual cards |
-| Step 2 default | Category selection | Checklist with steppers |
-| Step 2 min warning | < 8 categories | Warning: "Select at least 8 categories" |
-| Step 2 custom error | Invalid custom category | Error: "This doesn't look like a basic item..." |
-| Step 3 palette | Color selection | Single grid with achromats first |
-| Step 3 compatibility state | Incompatible color | Blocked/unavailable color options |
-| Step 3 items | Adding items | Own-preset picker; gated methods are absent or clearly unavailable |
-| Creating | Capsule generating | Loading animation |
-| Complete | Capsule created | Redirect to Capsule Result |
+| State                      | Description             | What user sees                                                     |
+| -------------------------- | ----------------------- | ------------------------------------------------------------------ |
+| Step 1 default             | Type selection          | Three visual cards                                                 |
+| Step 2 default             | Category selection      | Checklist with steppers                                            |
+| Step 2 min warning         | < 8 categories          | Warning: "Select at least 8 categories"                            |
+| Step 2 custom error        | Invalid custom category | Error: "This doesn't look like a basic item..."                    |
+| Step 3 palette             | Color selection         | Single grid with achromats first                                   |
+| Step 3 compatibility state | Incompatible color      | Blocked/unavailable color options                                  |
+| Step 3 items               | Adding items            | Own-preset picker; gated methods are absent or clearly unavailable |
+| Creating                   | Capsule generating      | Loading animation                                                  |
+| Complete                   | Capsule created         | Redirect to Capsule Result                                         |
 
 ## Key Components
+
 - **JourneyProgress** — step indicator (1/3, 2/3, 3/3)
 - **WardrobeTypeCards** — three selectable cards with icons
 - **CategoryChecklist** — scrollable list with toggles + quantity steppers
@@ -91,6 +99,7 @@
   not receive live handlers before both Q8 gates close
 
 ## Validation Rules
+
 - Achromatics are optional and shown first in the palette
 - Palette cap: 15 total colors / 12 chromatic colors
 - Min 8 categories
@@ -100,12 +109,14 @@
 - Color compatibility rule: a color is allowed if it matches the current palette by same group, is achromatic, or forms the Desaturated↔Dark cross-pair
 
 ## Edge Cases
+
 - Fully achromatic capsule → valid, no accent colors needed
 - Custom category rejected → error + suggestion of similar basic category
 - Empty capsule (categories set, no items) → valid "plan" state
 - User wants to change palette after creation → not possible in v0.1, create new capsule
 
 ## Related Features
+
 - f-007-marketplace-import.md — "Paste Links" tab
 - f-008-semantic-search.md — "Search Catalog" tab
 - f-011-photo-upload.md — "Upload Photos" tab

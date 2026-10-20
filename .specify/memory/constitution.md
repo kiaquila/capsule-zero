@@ -14,7 +14,7 @@
 
 **Business model (v0.1): UNDER REVIEW — amended 2026-07-16 by [`PRODUCT-PLAN.md`](../../PRODUCT-PLAN.md) D2.** Coins are **cancelled** as the monetization hypothesis; the model and its unit economics are reworked from scratch in plan Stage 4. Until Stage 4 decides, no feature, spec, schema, or API may be designed around coins, and the "1 free capsule, more for coins" limit is not implemented. The free tier keeping full core value (wardrobe, outfits, OPR) is unchanged. B2B brand commission in Product v2.0 is unaffected by this review.
 
-*Superseded text (kept for context until Stage 4 rewrites this section):* "Freemium + coins. No subscription. Free tier includes all basic features + 1 capsule. Revenue streams: (1) coins — each additional capsule (2+) costs coins, editorial photo enhancement costs coins; (2) brand commission from a separate brand platform in Product v2.0. Coins are architecturally planned from Day 1."
+_Superseded text (kept for context until Stage 4 rewrites this section):_ "Freemium + coins. No subscription. Free tier includes all basic features + 1 capsule. Revenue streams: (1) coins — each additional capsule (2+) costs coins, editorial photo enhancement costs coins; (2) brand commission from a separate brand platform in Product v2.0. Coins are architecturally planned from Day 1."
 
 **Psychotype:** "New money mindset meets old money taste" — affluent but rational. Not luxury for show, but comfort and aesthetics. Slow fashion, sustainability as natural outcome.
 
@@ -202,7 +202,7 @@ These principles govern _how_ product work is implemented and merged. They sit a
 
 ### Delegated Autonomous Decisions
 
-The owner delegates reversible product, architecture and implementation choices to the orchestrator under PRODUCT-PLAN §0.1 (2026-10-19). Choose the smallest maintainable MVP path using accepted methodology, product/marketing evidence, existing code and current official docs; record the decision, assumptions and verification in feature memory/ADR. Routine founder approval is not a gate. Missing authority for new spend/contracts, unlicensed publication, irreversible data loss or weakening protection still requires explicit authorization. Required tests, native review and green checks remain mandatory; merge follows task-specific or standing owner authorization. The reference guest UI scope in plan §0.2/spec 055 supersedes earlier rollout details for that slice, with account persistence explicitly unfinished.
+The owner delegates reversible product, architecture and implementation choices to the orchestrator under PRODUCT-PLAN §0.1 (2026-10-19). Choose the smallest maintainable MVP path using accepted methodology, product/marketing evidence, existing code and current official docs; record the decision, assumptions and verification in feature memory/ADR. Routine founder approval is not a gate. Missing authority for new spend/contracts, unlicensed publication, irreversible data loss or weakening protection still requires explicit authorization. Required tests, native review and green checks remain mandatory; merge follows task-specific or standing owner authorization. The reference guest UI scope in plan §0.2/spec 055 supersedes earlier rollout details for that slice, with account persistence delivered separately under spec 056 as owner-scoped immutable guest snapshots and uncapsulated items, preserving canonical capsule rules.
 
 ### Supervised Verification
 

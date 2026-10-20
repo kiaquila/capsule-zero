@@ -234,12 +234,7 @@ components:
     LayeringCoverage:
       type: object
       required:
-        [
-          score,
-          baseLookCount,
-          midCoveredLookCount,
-          outerCoveredLookCount,
-        ]
+        [score, baseLookCount, midCoveredLookCount, outerCoveredLookCount]
       properties:
         score:
           type: [number, "null"]
@@ -256,8 +251,7 @@ components:
           minimum: 0
     Category:
       type: object
-      required:
-        [id, name, wardrobeTypes, layer, algorithmRole, accessorySlot]
+      required: [id, name, wardrobeTypes, layer, algorithmRole, accessorySlot]
       properties:
         id:
           type: string
@@ -496,8 +490,7 @@ components:
           type: boolean
     Profile:
       type: object
-      required:
-        [userId, email, displayName, locale, createdAt, updatedAt]
+      required: [userId, email, displayName, locale, createdAt, updatedAt]
       properties:
         userId:
           type: string
@@ -970,6 +963,136 @@ components:
         id:
           type: string
           format: uuid
+    GuestPreset:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - wardrobe
+        - role
+        - colorId
+        - categoryId
+        - name
+      properties:
+        id: &a1
+          type: string
+        wardrobe:
+          type: string
+          enum:
+            - female
+            - male
+            - mixed
+        role:
+          type: string
+          enum:
+            - top
+            - bottom
+            - dress
+            - shoes
+            - bag
+        colorId: *a1
+        categoryId: *a1
+        name:
+          type: object
+          additionalProperties: false
+          required:
+            - en
+            - ru
+          properties:
+            en: *a1
+            ru: *a1
+    GuestSaveInput:
+      type: object
+      additionalProperties: false
+      required:
+        - transferId
+        - wardrobe
+        - picked
+      properties:
+        transferId:
+          type: string
+          format: uuid
+        wardrobe:
+          type: string
+          enum:
+            - female
+            - male
+            - mixed
+        picked:
+          type: array
+          minItems: 1
+          maxItems: 32
+          uniqueItems: true
+          items:
+            type: string
+    SavedGuest:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - transferId
+        - wardrobe
+        - algorithmVersion
+        - items
+        - createdAt
+      properties:
+        id: &a2
+          type: string
+          format: uuid
+        transferId: *a2
+        wardrobe:
+          type: string
+          enum:
+            - female
+            - male
+            - mixed
+        algorithmVersion:
+          type: string
+          enum:
+            - guest-v1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/GuestPreset"
+        createdAt:
+          type: string
+          format: date-time
+    SavedGuestItem:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - userId
+        - preset
+        - status
+        - favorite
+        - createdAt
+        - updatedAt
+      properties:
+        id: &a3
+          type: string
+          format: uuid
+        userId: *a3
+        preset:
+          $ref: "#/components/schemas/GuestPreset"
+        status:
+          $ref: "#/components/schemas/ItemStatus"
+        favorite:
+          type: boolean
+        createdAt: &a4
+          type: string
+          format: date-time
+        updatedAt: *a4
+    GuestItemPatch:
+      type: object
+      additionalProperties: false
+      required: []
+      properties:
+        status:
+          $ref: "#/components/schemas/ItemStatus"
+        favorite:
+          type: boolean
+      minProperties: 1
 paths:
   /api/auth/registration:
     post:
@@ -1983,3 +2106,158 @@ paths:
           description: The API HTTP process is serving.
         "400":
           $ref: "#/components/responses/BadRequest"
+
+  /api/guest-progress:
+    post:
+      tags:
+        - Items
+      operationId: saveGuestProgress
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuestSaveInput"
+      responses:
+        "200":
+          description: Owner-scoped guest progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedGuest"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        default:
+          $ref: "#/components/responses/InternalServerError"
+      x-auth: session
+    get:
+      tags:
+        - Items
+      operationId: listGuestProgress
+      responses:
+        "200":
+          description: Owner-scoped guest progress
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SavedGuest"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        default:
+          $ref: "#/components/responses/InternalServerError"
+      x-auth: session
+  /api/guest-progress/{id}:
+    get:
+      tags:
+        - Items
+      operationId: getGuestProgress
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Owner-scoped guest progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedGuest"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        default:
+          $ref: "#/components/responses/InternalServerError"
+      x-auth: session
+  /api/guest-progress/items:
+    get:
+      tags:
+        - Items
+      operationId: listGuestWardrobeItems
+      responses:
+        "200":
+          description: Owner-scoped guest progress
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SavedGuestItem"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        default:
+          $ref: "#/components/responses/InternalServerError"
+      x-auth: session
+  /api/guest-progress/items/{id}:
+    patch:
+      tags:
+        - Items
+      operationId: updateGuestWardrobeItem
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuestItemPatch"
+      responses:
+        "200":
+          description: Owner-scoped guest progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedGuestItem"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        default:
+          $ref: "#/components/responses/InternalServerError"
+      x-auth: session

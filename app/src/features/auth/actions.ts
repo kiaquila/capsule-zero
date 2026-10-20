@@ -66,6 +66,8 @@ export async function googleSignInAvailableAction(): Promise<boolean> {
  * short-lived httpOnly cookie for the callback route to consume.
  */
 export async function startGoogleSignInAction(input: {
+  guestSave?: boolean;
+  guestTransferId?: string;
   locale?: string;
 }): Promise<AuthActionResult> {
   const providers = createProviderRegistry();
@@ -80,7 +82,10 @@ export async function startGoogleSignInAction(input: {
       await providers.auth.startGoogleSignIn(
         `${origin}/${locale}/auth/google/callback`,
       );
-    await storeGoogleExchangeCode(exchangeCode);
+    await storeGoogleExchangeCode(
+      exchangeCode,
+      input.guestSave === true ? input.guestTransferId : undefined,
+    );
     return { ok: true, redirectUrl };
   } catch (error) {
     return { ok: false, ...authActionFailure(error) };

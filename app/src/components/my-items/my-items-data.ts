@@ -18,6 +18,7 @@ export interface MyItemsCapsuleMembership {
 }
 
 export interface MyItemsEntry {
+  guestPresetId?: string;
   id: string;
   name: string;
   categoryId: string;
@@ -89,7 +90,10 @@ export async function buildMyItemsSnapshot({
         id: capsule.id,
         name: capsule.name,
         active: true,
-        palette: [...capsule.palette.achromaticColors, ...capsule.palette.selectedColors],
+        palette: [
+          ...capsule.palette.achromaticColors,
+          ...capsule.palette.selectedColors,
+        ],
       }
     : null;
   const mappedItems = items.map((item) =>
@@ -97,15 +101,23 @@ export async function buildMyItemsSnapshot({
   );
   const wardrobeStatisticItems = mappedItems.filter(isWardrobeStatisticItem);
   const favorites = mappedItems.filter((item) => item.favorite).length;
-  const forSale = mappedItems.filter((item) => item.status === "for_sale").length;
-  const forRepair = mappedItems.filter((item) => item.status === "for_repair").length;
-  const uncapsulated = mappedItems.filter((item) => item.status === "uncapsulated").length;
+  const forSale = mappedItems.filter(
+    (item) => item.status === "for_sale",
+  ).length;
+  const forRepair = mappedItems.filter(
+    (item) => item.status === "for_repair",
+  ).length;
+  const uncapsulated = mappedItems.filter(
+    (item) => item.status === "uncapsulated",
+  ).length;
 
   return {
     profile: {
       displayName: session.name ?? profile.displayName,
       email: session.email,
-      initials: buildInitials(session.name ?? profile.displayName ?? session.email),
+      initials: buildInitials(
+        session.name ?? profile.displayName ?? session.email,
+      ),
     },
     items: mappedItems,
     categories: buildCategories(wardrobeStatisticItems),
@@ -137,6 +149,7 @@ function buildItem(
 
   return {
     id: item.id,
+    guestPresetId: item.guestPresetId,
     name: item.name,
     categoryId: item.categoryId,
     categoryLabel: categoryName(item.categoryId, locale),
@@ -174,7 +187,9 @@ function buildCategories(items: MyItemsEntry[]): MyItemsSnapshot["categories"] {
     .sort((a, b) => a.label.localeCompare(b.label));
 }
 
-function buildCategoryOptions(locale: AppLocale): MyItemsSnapshot["categoryOptions"] {
+function buildCategoryOptions(
+  locale: AppLocale,
+): MyItemsSnapshot["categoryOptions"] {
   return CATEGORIES.map((category) => ({
     id: category.id,
     label: locale === "ru" ? category.nameRu : category.nameEn,
@@ -196,7 +211,9 @@ function buildColors(items: MyItemsEntry[]): MyItemsSnapshot["colors"] {
     });
   });
 
-  return [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  return [...counts.values()].sort(
+    (a, b) => b.count - a.count || a.name.localeCompare(b.name),
+  );
 }
 
 function categoryName(categoryId: string, locale: AppLocale): string {

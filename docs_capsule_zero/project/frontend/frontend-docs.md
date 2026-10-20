@@ -139,3 +139,7 @@ The web app owns Lava.top purchase entrypoints (v0.2 integration; stubbed in v0.
 ## Quality Follow-Up
 
 The repository already has CI and PR gates. Before Phase 5 product-code PRs, configure linting and local commit hooks so the Phase 4 quality gate is fully closed.
+
+## Guest account persistence (spec 056)
+
+An explicit guest save continues existing email/Google authentication through `/account/guest/continue`; ordinary sign-in does not import abandoned browser drafts. `GuestProgressPort` is optional to leave the frozen Supabase provider untouched. Production uses authenticated `/api/guest-progress` routes, not fixture storage. The Go guest context commits an immutable owner-scoped guest-v1 snapshot and deduplicated uncapsulated wardrobe rows together in migration 0004. Existing wardrobe projections consume these records; status/favorite changes are persisted. Saved result routes reconstruct the unchanged evaluator from trusted attributes and dashboard lists owner-scoped saved sets. Input/ownership/idempotency limits are canonical in `docs_capsule_zero/adr/api-spec.md`. Other legacy wardrobe/capsule CRUD remains outside this slice.

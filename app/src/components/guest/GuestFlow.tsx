@@ -1,14 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { createGuestIntent, clearGuestIntent } from "@/features/guest/intent";
+import { guestSaveSessionAction } from "@/features/guest/actions";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
-import {
-  type GuestWardrobe,
-  catalogFor,
-  findItem,
-} from "@/features/guest/catalog";
+import { catalogFor, findItem } from "@/features/guest/catalog";
 import { evaluate, recommend } from "@/features/guest/outfits";
 import { GuestItemsStep } from "./GuestItemsStep";
 import { GuestResultStep } from "./GuestResultStep";
@@ -19,8 +18,42 @@ import { EMPTY, loadGuestState, type Step } from "@/features/guest/state";
 export function GuestFlow() {
   const t = useTranslations("guest");
   const locale = useLocale();
+  const router = useRouter();
+  const [saveError, setSaveError] = useState(false);
+  const [saveBusy, setSaveBusy] = useState(false);
+  const closeAuth = () => {
+    setAuthOpen(false);
+    try {
+      clearGuestIntent();
+    } catch {
+      /* original result remains */
+    }
+  };
+  const save = async () => {
+    if (!state.wardrobe || saveBusy) return;
+    setSaveBusy(true);
+    setSaveError(false);
+    try {
+      const intent = createGuestIntent({
+        wardrobe: state.wardrobe,
+        picked: state.picked,
+      });
+      setGuestTransferId(intent.transferId);
+      const session = await guestSaveSessionAction();
+      if (session)
+        router.push(
+          `/${locale}/account/guest/continue?transferId=${intent.transferId}`,
+        );
+      else setAuthOpen(true);
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaveBusy(false);
+    }
+  };
   const [state, setState] = useState(loadGuestState);
   const [paywall, setPaywall] = useState<PaywallKind | null>(null);
+  const [guestTransferId, setGuestTransferId] = useState<string>();
   const [authOpen, setAuthOpen] = useState(false);
 
   useEffect(() => {
@@ -36,7 +69,14 @@ export function GuestFlow() {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const close = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setAuthOpen(false);
+      if (event.key === "Escape") {
+        setAuthOpen(false);
+        try {
+          clearGuestIntent();
+        } catch {
+          /* preserve original draft */
+        }
+      }
     };
     window.addEventListener("keydown", close);
     return () => {
@@ -78,6 +118,11 @@ export function GuestFlow() {
       s.picked.includes(id) ? s : { ...s, picked: [...s.picked, id] },
     );
   const restart = () => {
+    try {
+      clearGuestIntent();
+    } catch {
+      /* restart remains available without persistence */
+    }
     setState(EMPTY);
     window.scrollTo({ top: 0 });
   };
@@ -189,9 +234,24 @@ export function GuestFlow() {
             recommendations={recommendations}
             onAdd={add}
             onEdit={() => go("items")}
-            onSave={() => setAuthOpen(true)}
+            saveBusy={saveBusy}
+            onSave={() => void save()}
           />
         )}
+        {saveBusy ? (
+          <p className="guest-note" role="status">
+            {t("saving")}
+          </p>
+        ) : null}
+        {saveError ? (
+          <p
+            className="guest-conflict"
+            role="alert"
+            data-testid="guest-save-error"
+          >
+            {t("saveError")} {t("savePreserved")}
+          </p>
+        ) : null}
       </main>
 
       {paywall ? (
@@ -202,12 +262,14 @@ export function GuestFlow() {
         <div
           className="guest-auth-backdrop"
           data-testid="auth-popover"
-          onClick={() => setAuthOpen(false)}
+          onClick={closeAuth}
         >
           <div className="guest-auth-box" onClick={(e) => e.stopPropagation()}>
             <AuthPanel
               initialMode="signUp"
-              onClose={() => setAuthOpen(false)}
+              guestTransferId={guestTransferId}
+              guestSave
+              onClose={closeAuth}
               variant="popup"
             />
           </div>

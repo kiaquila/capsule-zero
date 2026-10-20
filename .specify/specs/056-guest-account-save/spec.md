@@ -25,3 +25,5 @@ In: PostgreSQL owner-scoped saved guest collections and selected wardrobe record
 6. The saved collection is reachable from the account dashboard; selected items appear in My Items/uncapsulated and retain status/favorite edits durably. Active docs/OpenAPI/client/feature memory describe the delivered scope.
 
 Negative scenarios are explicit in AC3–5; no waiver. Application TDD is required.
+
+Production save uses migration 0004 and an optional guest progress port, leaving frozen Supabase untouched. Native API smoke is part of the existing Kratos container check; PostgreSQL concurrency/isolation integration runs in the required `test` check.

@@ -1,7 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { routing, type AppLocale } from "@/i18n/routing";
 import { persistAppSession } from "@/features/auth/session";
-import { appOrigin, takeGoogleExchangeCode } from "@/features/auth/google";
+import {
+  appOrigin,
+  takeGoogleExchangeCode,
+  takeGoogleGuestSave,
+} from "@/features/auth/google";
 import { createProviderRegistry } from "@/lib/providers";
 
 // Google OIDC callback landing (spec 037). Kratos redirects the browser here
@@ -31,7 +35,13 @@ export async function GET(
     ? (locale as AppLocale)
     : routing.defaultLocale;
   const origin = await appOrigin();
+  const guestSave = await takeGoogleGuestSave();
   const failure = new URL(`/${activeLocale}/auth?googleError=1`, origin);
+
+  if (guestSave) {
+    failure.searchParams.set("guestSave", "1");
+    failure.searchParams.set("guestTransferId", guestSave);
+  }
 
   // Consume the parked cookie on every path, including failures — the code
   // pair is single-use, so a stale cookie only lingers uselessly otherwise.
@@ -58,5 +68,10 @@ export async function GET(
     return NextResponse.redirect(failure);
   }
 
-  return NextResponse.redirect(new URL(`/${activeLocale}/dashboard`, origin));
+  return NextResponse.redirect(
+    new URL(
+      `/${activeLocale}/${guestSave ? `account/guest/continue?transferId=${guestSave}` : "dashboard"}`,
+      origin,
+    ),
+  );
 }

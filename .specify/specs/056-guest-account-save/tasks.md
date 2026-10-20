@@ -1,9 +1,9 @@
 # Tasks
 
 - [x] Commit failing application tests before implementation (browser registration reaches dashboard; all five guest API routes return 404).
-- [ ] Durable guest save and owner-scoped wardrobe records.
-- [ ] Auth continuation, error/retry and account result access.
-- [ ] Validation, docs/contracts and designer live review.
+- [x] Durable guest save and owner-scoped wardrobe records; real PostgreSQL race/integration and Go suite passed.
+- [x] Explicit email/Google/direct continuation, error/retry and account result/dashboard access. Transfer ID stays bound across auth; another tab cannot silently replace the request.
+- [x] Docs/contracts and designer live review; final application build, lint and typechecks passed. Local full browser run and targeted fixes recorded in plan.md; current-head PR gates follow.
 - [ ] PR, green required gates/native review, resolve findings, wait two minutes and merge.
 
 ## Process Memory
@@ -20,6 +20,15 @@
 - Persist explicit save intent across email/Google navigation and use globally unique immutable transfer IDs; never import unrelated local draft on ordinary login.
 - Keep source design and add only required saving/error/retry/account access states; designer provided the scenario contract before implementation.
 
+- Real Kratos/API/PostgreSQL container smoke passed exact snapshot/retry/ownership and durable favorite/status PATCH probes plus existing registration/recovery/login flows.
+- Test-only commit `12e96a9` exposed favorite loss on reload before wiring shared guest-only mutations into existing wardrobe shells. No optimistic success is shown on transport failure.
+- Designer live review passed error/retry, saved result and dashboard at 1440×1000 and 390×844; screenshot evidence is under `.runtime/guest-account-save-visual/`.
+
+- API contract and generated clients cover all five routes; embedded preset metadata is parity checked. Shared fetch/httpx/auth/profile boundaries reused.
+
+- Test-only commit `beb1f9e` records interrupted continuation and new-session reopening. Full document navigation after awaited auth and durable save eliminates overlapping App Router transitions into a consumed intent. Final Google continuation: 6/6 first-attempt passes across Chromium/WebKit.
+
 ### Known Issues
 
-- Other legacy wardrobe/capsule domains remain outside this slice; this change must not claim they are all migrated.
+- Other legacy wardrobe/capsule domains remain outside this slice. Guest favorite/status actions are durable; legacy name/edit/delete and formal capsule CRUD retain their existing adapters and are not claimed as migrated.
+- Existing lint size/complexity warnings remain non-blocking. `readGuestIntent` checks untrusted/corrupted browser data in one parser (complexity 18); the atomic Go save transaction intentionally stays together. Extended existing UI shells retain their established layout responsibilities.

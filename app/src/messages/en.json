@@ -1014,6 +1014,19 @@
     "payWant": "I want it — tell me when it's ready",
     "payNoted": "Noted — we'll let you know.",
     "payBack": "Tick from the catalogue",
-    "typeMixed": "Mixed"
+    "typeMixed": "Mixed",
+    "saving": "Saving your wardrobe…",
+    "saveWait": "Your selection is being saved to your account.",
+    "saveError": "We couldn’t save your wardrobe.",
+    "savePreserved": "Your selection is still on this device.",
+    "saveRetry": "Try again",
+    "saveBack": "Back to your selection",
+    "saveOwnerMismatch": "This save belongs to a different account.",
+    "saveNoIntent": "There is no wardrobe waiting to be saved.",
+    "savedInAccount": "Your wardrobe and result are saved in your account.",
+    "accountDashboard": "Go to my account",
+    "savedWardrobes": "Your saved wardrobes",
+    "savedWardrobeOpen": "Open saved wardrobe",
+    "itemUpdateError": "Could not update this item. Please try again."
   }
 }

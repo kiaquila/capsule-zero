@@ -1,4 +1,6 @@
 import "server-only";
+import { createMockGuestProgress } from "./guest-progress";
+import { withGuestWardrobe } from "../guest-wardrobe";
 
 import { createHash } from "node:crypto";
 
@@ -64,6 +66,7 @@ const MOCK_GOOGLE_EMAIL = "google.user@capsulezero.app";
 const MOCK_GOOGLE_NAME = "Google User";
 
 interface MockProviderOptions {
+  guestProgress?: boolean;
   now?: () => Date;
 }
 
@@ -414,7 +417,10 @@ export function createMockProviderRegistry(
     },
   };
 
+  const guestProgress =
+    options.guestProgress === false ? undefined : createMockGuestProgress();
   const registry: ProviderRegistry = {
+    guestProgress,
     mode: "mock",
     auth: {
       async getCurrentSession() {
@@ -531,7 +537,9 @@ export function createMockProviderRegistry(
       },
     },
     profiles: profileRepository,
-    wardrobe: wardrobeRepository,
+    wardrobe: guestProgress
+      ? withGuestWardrobe(wardrobeRepository, guestProgress)
+      : wardrobeRepository,
     storage: storagePort,
     imageProcessing: imageProcessingPort,
     catalogSearch: catalogSearchPort,
@@ -555,12 +563,14 @@ export function createMockProviderRegistry(
 
             const category = getCategoryById(item.categoryId);
             const dominantColor = item.colorPoints[0];
-            return [{
-              itemId,
-              algorithmRole: category?.algorithmRole ?? null,
-              accessorySlot: category?.accessorySlot ?? null,
-              ...(dominantColor ? { dominantColor } : {}),
-            }];
+            return [
+              {
+                itemId,
+                algorithmRole: category?.algorithmRole ?? null,
+                accessorySlot: category?.accessorySlot ?? null,
+                ...(dominantColor ? { dominantColor } : {}),
+              },
+            ];
           }),
         );
         const capsule: Capsule = {

@@ -1,4 +1,6 @@
 import "server-only";
+import { createApiGuestProgress } from "./guest-progress";
+import { withGuestWardrobe } from "../guest-wardrobe";
 
 import { headers as requestHeaders } from "next/headers";
 import type { Capsule, User } from "@/types";
@@ -131,7 +133,9 @@ function providerError(
   fallbackMessage: string,
 ): Error {
   const code = errorCode(data) ?? fallbackCode;
-  const error = new Error(`${code}: ${errorMessage(data, fallbackMessage)}`) as ApiError;
+  const error = new Error(
+    `${code}: ${errorMessage(data, fallbackMessage)}`,
+  ) as ApiError;
   error.details = errorDetails(data);
   return error;
 }
@@ -171,10 +175,13 @@ function buildAuthPort(): AuthPort {
       if (!token) {
         return null;
       }
-      const { status, data } = await apiFetch<AuthResponse>("/api/auth/whoami", {
-        method: "GET",
-        token,
-      });
+      const { status, data } = await apiFetch<AuthResponse>(
+        "/api/auth/whoami",
+        {
+          method: "GET",
+          token,
+        },
+      );
       if (status >= 400) {
         throw providerError(
           data,
@@ -480,18 +487,16 @@ function buildFixtureBackedWardrobe(
         if (!fixtureItem) {
           throw error;
         }
-        const updated = await base.setFavorite(
-          MOCK_USER.id,
-          itemId,
-          favorite,
-        );
+        const updated = await base.setFavorite(MOCK_USER.id, itemId, favorite);
         return rebindWardrobeItem(updated, userId);
       }
     },
   };
 }
 
-function buildFixtureBackedCapsules(base: CapsuleRepository): CapsuleRepository {
+function buildFixtureBackedCapsules(
+  base: CapsuleRepository,
+): CapsuleRepository {
   return {
     async getCurrentCapsule(userId) {
       const ownedCapsule = await base.getCurrentCapsule(userId);
@@ -537,13 +542,32 @@ async function apiHealth(): Promise<ProviderHealth> {
 // and inherits the not-yet-migrated domains from the mock registry until each
 // is replaced by its own `api` slice.
 export function createApiProviderRegistry(): ProviderRegistry {
-  const base = createMockProviderRegistry();
+  const base = createMockProviderRegistry({ guestProgress: false });
+  const guestProgress = createApiGuestProgress(
+    async <T>(path: string, init: RequestInit = {}) => {
+      const { status, data } = await apiFetch<T>(path, {
+        ...init,
+        token: await sessionToken(),
+      });
+      if (status >= 400)
+        throw providerError(
+          data,
+          "GUEST_SAVE_FAILED",
+          "Could not save wardrobe.",
+        );
+      return data;
+    },
+  );
   return {
     ...base,
+    guestProgress,
     mode: "api",
     auth: buildAuthPort(),
     profiles: buildProfileRepository(),
-    wardrobe: buildFixtureBackedWardrobe(base.wardrobe),
+    wardrobe: withGuestWardrobe(
+      buildFixtureBackedWardrobe(base.wardrobe),
+      guestProgress,
+    ),
     capsules: buildFixtureBackedCapsules(base.capsules),
     health: apiHealth,
   };
