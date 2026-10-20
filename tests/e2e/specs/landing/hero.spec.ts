@@ -28,16 +28,14 @@ test.describe("Landing — hero", () => {
       .toMatch(/linear-gradient.*rgb\(239, 191, 4\)/);
   });
 
-  test("hero CTA opens the auth popup in sign-up mode", async ({ landing }) => {
-    // Negative pre-condition: popup must not be rendered before the click.
+  test("hero CTA opens guest onboarding before signup", async ({
+    landing,
+    page,
+  }) => {
     await expect(landing.authPopover).toHaveCount(0);
-
     await landing.openHeroCta();
-
-    await expect(landing.authPopover).toBeVisible();
-    await expect(landing.auth.signUpForm).toBeVisible();
-    // Negative: the sign-in form must not be in DOM when opened from the hero CTA.
-    await expect(landing.auth.signInForm).toHaveCount(0);
+    await expect(page).toHaveURL(/\/en\/start$/);
+    await expect(landing.authPopover).toHaveCount(0);
   });
 
   test("slides stub stays strictly below the first viewport", async ({
@@ -58,8 +56,6 @@ test.describe("Landing — hero", () => {
 
     // Negative: the decorative cue must not keep translating indefinitely
     // for visitors who explicitly request reduced motion.
-    await expect
-      .poll(() => landing.scrollCueAnimationName())
-      .toBe("none");
+    await expect.poll(() => landing.scrollCueAnimationName()).toBe("none");
   });
 });
