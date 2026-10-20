@@ -68,14 +68,16 @@ export class GuestPage extends BasePage {
     for (const id of ids) await this.item(id).click();
   }
   async brokenImages() {
-    return this.items.locator("img").evaluateAll(async (images) => {
-      await Promise.all(
-        images.map((image) =>
-          (image as HTMLImageElement).decode().catch(() => {}),
-        ),
-      );
-      return images.filter((image) => !(image as HTMLImageElement).naturalWidth)
-        .length;
-    });
+    // WebKit does not fetch off-screen lazy images until the user reaches them.
+    let broken = 0;
+    for (const image of await this.items.locator("img").all()) {
+      await image.scrollIntoViewIfNeeded();
+      broken += await image.evaluate(async (element) => {
+        const img = element as HTMLImageElement;
+        await img.decode().catch(() => {});
+        return img.naturalWidth ? 0 : 1;
+      });
+    }
+    return broken;
   }
 }

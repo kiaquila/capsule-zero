@@ -3,7 +3,8 @@
 - [x] Commit failing guest/landing tests (`333dcaf` before implementation).
 - [x] Port reference; add Mixed and validate browser state.
 - [x] Update active product and agent decision contract.
-- [ ] Verify visuals, functional checks and native Codex review; resolve findings.
+- [x] Verify visuals and guest functional checks (22 passed, Chromium/WebKit); request native Codex review on PR #164.
+- [ ] Final-head GitHub checks and review: linked PR #164 is authoritative; fix and resolve every finding before merge.
 - [ ] Wait two minutes after current head is merge-ready; recheck and merge as explicitly authorized.
 
 ## Process Memory
@@ -14,6 +15,8 @@
 - Context7 returned monthly quota exceeded; read bundled Next.js 16 lazy-loading docs instead.
 
 - Initial browser run used 127.0.0.1, which Next.js dev blocked for resource requests. Use localhost for local browser verification; no product-origin relaxation needed.
+
+- WebKit correctly defers off-screen lazy images. The image-integrity POM now scrolls each into view before decode; no application loading behavior changed. Guest/landing checks: 22 passed in Chromium and iPhone WebKit.
 
 ### Decisions
 
