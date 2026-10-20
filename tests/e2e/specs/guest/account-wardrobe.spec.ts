@@ -93,3 +93,53 @@ test("failed saved item mutation preserves the previous favorite state", async (
     "false",
   );
 });
+
+test("saved guest items never offer unsupported capsule membership", async ({ page }) => {
+  await saveWardrobe(new GuestPage(page));
+  const wardrobe = new GuestWardrobePage(page);
+  await page.goto("/en/uncapsulated", { waitUntil: "load" });
+  await wardrobe.favorite(presetId).click();
+  await expect(wardrobe.favorite(presetId)).toHaveAttribute("aria-pressed", "true");
+  await wardrobe.open(presetId);
+  await expect(wardrobe.detail).toBeVisible();
+  await expect(wardrobe.addToCapsule).toBeHidden();
+  await expect(wardrobe.moveToSale).toBeVisible();
+
+  await page.goto("/en/favorites", { waitUntil: "load" });
+  await wardrobe.catalogFavorites.click();
+  await wardrobe.open(presetId);
+  await expect(wardrobe.detail).toBeVisible();
+  await expect(wardrobe.addToCapsule).toBeHidden();
+  await wardrobe.moveToSale.click();
+  await expect(wardrobe.feedback).toBeVisible();
+  await page.goto("/en/for-sale", { waitUntil: "load" });
+  await wardrobe.open(presetId);
+  await expect(wardrobe.detail).toBeVisible();
+  await expect(wardrobe.addToCapsule).toBeHidden();
+  await expect(wardrobe.returnToMyItems).toBeVisible();
+});
+
+test("saved guest preset details expose only durable status actions", async ({ page }) => {
+  await saveWardrobe(new GuestPage(page));
+  const wardrobe = new GuestWardrobePage(page);
+  for (const path of ["/en/my-items", "/en/uncapsulated"]) {
+    await page.goto(path, { waitUntil: "load" });
+    await wardrobe.open(presetId);
+    await expect(wardrobe.detail).toBeVisible();
+    await expect(wardrobe.nameInput).not.toBeEditable();
+    await expect(wardrobe.categoryInput).toBeDisabled();
+    await expect(wardrobe.saveMetadata).toBeHidden();
+    await expect(wardrobe.deleteItem).toBeHidden();
+    await expect(wardrobe.changePhoto).toBeHidden();
+    await expect(wardrobe.addColor).toBeHidden();
+    await expect(wardrobe.moveToRepair).toBeVisible();
+  }
+  await wardrobe.moveToRepair.click();
+  await expect(wardrobe.feedback).toBeVisible();
+  await page.goto("/en/for-repair", { waitUntil: "load" });
+  await wardrobe.open(presetId);
+  await expect(wardrobe.nameInput).not.toBeEditable();
+  await expect(wardrobe.saveMetadata).toBeHidden();
+  await expect(wardrobe.deleteItem).toBeHidden();
+  await expect(wardrobe.markFixed).toBeVisible();
+});

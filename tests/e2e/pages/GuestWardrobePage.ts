@@ -34,4 +34,34 @@ export class GuestWardrobePage extends BasePage {
   get feedback() {
     return this.page.getByRole("status");
   }
+  get detail() {
+    return this.page.getByRole("dialog");
+  }
+  get addToCapsule() {
+    return this.detail.getByRole("button", { name: "Add to Capsule", exact: true });
+  }
+  get saveMetadata() {
+    return this.detail.getByRole("button", { name: "Save", exact: true });
+  }
+  get deleteItem() {
+    return this.detail.getByRole("button", { name: "Delete", exact: true });
+  }
+  get nameInput() {
+    return this.detail.getByRole("textbox", { name: "Name", exact: true });
+  }
+  get categoryInput() {
+    return this.detail.getByRole("combobox");
+  }
+  get changePhoto() {
+    return this.detail.getByRole("button", { name: /Change photo/i });
+  }
+  get addColor() {
+    return this.detail.getByRole("button", { name: "Add color", exact: true });
+  }
+  get moveToRepair() {
+    return this.detail.getByRole("button", { name: "Move to Repair", exact: true });
+  }
+  get markFixed() {
+    return this.detail.getByRole("button", { name: "Mark as Fixed", exact: true });
+  }
 }
