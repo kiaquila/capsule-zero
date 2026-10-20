@@ -2,6 +2,7 @@ import { test, expect } from "../../fixtures/base";
 import { GuestPage } from "../../pages/GuestPage";
 import { GuestWardrobePage } from "../../pages/GuestWardrobePage";
 import { guestCatalogCopy } from "../../fixtures/locales";
+import { DashboardPage } from "../../pages/DashboardPage";
 
 const presetId = "w-tee-white";
 async function saveWardrobe(guest: GuestPage) {
@@ -132,6 +133,12 @@ test("RU saved guest preset names and durable actions agree across wardrobe page
   const wardrobe = new GuestWardrobePage(page, "ru");
   const expectedName = guestCatalogCopy.find((item) => item.id === presetId)!
     .name.ru;
+  const dashboard = new DashboardPage(page, "ru");
+  await dashboard.goto();
+  await expect(dashboard.recentItemNames).toContainText([expectedName]);
+  await dashboard.allRecentItems.click();
+  await wardrobe.open(presetId);
+  await expect(wardrobe.nameInput).toHaveValue(expectedName);
   for (const path of ["/ru/my-items", "/ru/uncapsulated"]) {
     await page.goto(path, { waitUntil: "load" });
     await expect(wardrobe.itemName(presetId)).toHaveText(expectedName);

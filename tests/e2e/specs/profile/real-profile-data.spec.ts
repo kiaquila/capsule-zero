@@ -17,6 +17,7 @@ interface ProfileSnapshot {
   account: { sessions: unknown[] };
 }
 import { expect, test } from "../../fixtures/base";
+import { guestCatalogCopy, type Locale } from "../../fixtures/locales";
 
 const appRoot = path.resolve(process.cwd(), "../../app");
 const loader = createJiti(import.meta.url, {
@@ -186,4 +187,61 @@ test("provider rejection never persists the edited cookie", async () => {
     await save({ ...form(await snapshot()), city: "Unsaved" }),
   ).toMatchObject({ ok: false });
   expect(cookieValues.get("capsule_zero_mock_profile")).toBe(previous);
+});
+
+test("saved guest snapshots localize dashboard and stay outside legacy capsule candidates", async () => {
+  const preset = guestCatalogCopy.find((item) => item.id === "w-tee-white")!;
+  const fetchEmpty = globalThis.fetch;
+  globalThis.fetch = async (input, init) =>
+    String(input).endsWith("/api/guest-progress/items")
+      ? Response.json([
+          {
+            id: "saved-guest-item",
+            userId: session.userId,
+            preset: {
+              ...preset,
+              wardrobe: "female",
+              role: "top",
+              categoryId: "t-shirt",
+              colorId: "A3",
+            },
+            status: "uncapsulated",
+            favorite: false,
+            createdAt: "2026-10-20T00:00:00Z",
+            updatedAt: "2026-10-20T00:00:00Z",
+          },
+        ])
+      : fetchEmpty(input, init);
+  type Options = {
+    registry: ProviderRegistry;
+    session: typeof session;
+    locale: Locale;
+  };
+  type NamedItem = { id: string; name: string };
+  const { buildDashboardSnapshot } = (await loader.import(
+    "../../../../app/src/components/dashboard/dashboard-data.ts",
+  )) as {
+    buildDashboardSnapshot(
+      options: Options,
+    ): Promise<{ recentItems: NamedItem[] }>;
+  };
+  const { buildCapsuleResultSnapshot } = (await loader.import(
+    "../../../../app/src/components/capsule-result/capsule-result-data.ts",
+  )) as {
+    buildCapsuleResultSnapshot(
+      options: Options,
+    ): Promise<{ availableItems: NamedItem[] }>;
+  };
+  for (const locale of ["ru", "en"] as const) {
+    const options = { registry, session, locale };
+    const capsule = await buildCapsuleResultSnapshot(options);
+    expect(
+      capsule.availableItems.find((item) => item.id === "saved-guest-item"),
+    ).toBeUndefined();
+    const dashboard = await buildDashboardSnapshot(options);
+    expect(
+      dashboard.recentItems.find((item) => item.id === "saved-guest-item")
+        ?.name,
+    ).toBe(preset.name[locale]);
+  }
 });
