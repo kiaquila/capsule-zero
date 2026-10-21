@@ -69,6 +69,8 @@ assert all(term in outfit for term in ['entire look', 'all pairs alone is insuff
 assert 'ОБЯЗАТЕЛЬНО ДЛЯ MVP' in plan and 'принятия MVP' in plan
 assert 'guarantees universal combinability' not in method
 assert 'colour only (does' not in outfit
+assert 'Equal gain alone does not make different cuts interchangeable' in outfit
+assert 'all max-scoring color options for the winning category' not in outfit
 assert 'future implementation work, not shipped UI' in (root / 'docs_capsule_zero/screens/screen-my-items.md').read_text()
 assert 'low simplicity alone' in (root / 'docs_capsule_zero/project/methodology/categories.md').read_text().lower()
 journey = (root / 'docs_capsule_zero/features/f-006-guided-journey.md').read_text()

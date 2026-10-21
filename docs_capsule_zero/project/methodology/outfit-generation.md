@@ -146,7 +146,10 @@ preference to alter gain or these priorities. Sorting, rule IDs and keys are ide
 Required parity examples: colour-valid/table-pass simple-current → `pass`; the same item tagged
 simple-dated → `fail/DATED_CUT`; otherwise identical current owned 50/0 looks both pass only with
 reviewed whole-look rules, with 50 displayed first; unknown review → `unreviewed` and zero gain;
-a 50/dated preset never enters the new-item candidate pool. Each failed/unreviewed case contributes
+a 50/dated preset never enters the new-item candidate pool. If equal-gain presets in one category
+have different cut signatures, only the canonical winning cut’s equivalent colour variants are
+returned; a colour unique to another signature is excluded even though its gain ties.
+Each failed/unreviewed case contributes
 zero to the affected count/coverage/gain even when saving the item remains allowed.
 
 **Implementation evidence required before MVP release:** a finite category-specific attribute
@@ -287,9 +290,14 @@ fixed priority and does not merge unlike scales into one score:
   enrich the _display_ of existing looks but are never the single "add this next" answer in v0.
 - **Color affects feasibility, not taste-ranking in v0.** In the guest state, derived colors can span
   incompatible groups, so candidate color can change Δcore or Layering Coverage and MUST participate
-  in that calculation. The output names all max-scoring color options for the winning category; when
-  their impact ties, v0 does not invent a preferred color. Stage 2 may add a separate color-gap /
-  preference score to rank those ties.
+  in that calculation. For the completed MVP, first select the winning reviewed cut/preset using
+  §2.5 after the tier/gain/layer/category priorities above. Return only max-gain colour options whose
+  reviewed cut signature and guidance are equivalent to that winner, ordered by canonical colour ID.
+  Equal gain alone does not make different cuts interchangeable: exclude colours available only on
+  another cut signature. Do not add a taste preference among the retained equivalent colours.
+  The shipped colour-only guest-v1 returned all max-scoring colours in the winning category; that is
+  historical baseline behaviour, superseded for new MVP results. A separate colour-gap/taste score
+  is optional later work and cannot replace this deterministic MVP tie-break.
 
 ## 5. Generation Trigger
 

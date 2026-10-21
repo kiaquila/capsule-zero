@@ -24,6 +24,8 @@
 
 ### Decisions
 
+- Native P2 follow-up PRRT_kwDORvfoks6u3PEK: reconcile §4 colour options with §2.5. Apply tier/gain/layer/category priorities, canonical cut/preset tie-break, then expose only equal-gain colours with equivalent winning-cut guidance. A colour unique to another cut is excluded despite equal gain. Align PRODUCT-PLAN/research; colour-only all-max behaviour remains historical guest-v1, taste scoring is optional later work.
+
 - Native P2 follow-ups PRRT_kwDORvfoks6u23sl / PRRT_kwDORvfoks6u23su: align ShoppingListRow, result feature/screen, MVP acceptance/prototype map, backend target and emotion-map row with reviewed suitable cut/rule reason; update example/handoff too. Replace diversity display ranking with canonical §2.5 simplicity order; retain §3 selection/caps. Historical 014 gets supersession headers only.
 
 - Concurrent PR #170 advanced main during the final review. Merge its session-revocation changes unchanged; recheck the documentation-only diff, baseline, feature memory, updated API/client parity (52 operations/26 Go registrations) and existing gate-script tests before requesting review of the resulting head.
