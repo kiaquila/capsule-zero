@@ -24,6 +24,8 @@
 
 ### Decisions
 
+- Concurrent PR #170 advanced main during the final review. Merge its session-revocation changes unchanged; recheck the documentation-only diff, baseline, feature memory, updated API/client parity (52 operations/26 Go registrations) and existing gate-script tests before requesting review of the resulting head.
+
 - Native P2 follow-up PRRT_kwDORvfoks6u2e1l: remove the last active guided-journey acceptance/state/edge-case instructions that reject a non-basic item. All three now clarify only an unmappable category/role and preserve owned items regardless of low simplicity; audit the entire feature for the retired phrases.
 
 - Native follow-ups PRRT_kwDORvfoks6u1yyc / PRRT_kwDORvfoks6u1yyj (P2): state that Stage 2 must add the cut-review controls/states to existing item details; do not claim they ship today. Complete accessory identity with category, construction and derived basicity as well as all other reviewed tags; a 50/100 construction example cannot collapse by item ID.

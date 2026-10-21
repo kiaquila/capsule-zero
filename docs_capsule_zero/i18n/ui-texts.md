@@ -275,7 +275,7 @@
 
 Personal-name min(1) and existing required-name messages remain unchanged; EN/RU are the only active locales. Unknown auth codes continue to use the generic localized message.
 
-### Profile sessions (specs 056/057)
+### Profile sessions (specs 056/057/058)
 
 | Key                                 | EN                                         | RU                                  |
 | ----------------------------------- | ------------------------------------------ | ----------------------------------- |
@@ -286,6 +286,13 @@ Personal-name min(1) and existing required-name messages remain unchanged; EN/RU
 | profile.account.current | Current | Текущая |
 | profile.account.signedIn | Signed in: | Вход: |
 | profile.account.expires | Expires: | Действует до: |
+
+| profile.account.endSession | End session | Завершить сессию |
+| profile.account.endOthers | End all other sessions | Завершить все остальные сессии |
+| profile.account.ending | Ending… | Завершаем… |
+| profile.account.ended | Sessions ended. This session is still active. | Сессии завершены. Текущая сессия остаётся активной. |
+| profile.account.endFailed | Could not end sessions. Try again. | Не удалось завершить сессии. Попробуйте ещё раз. |
+| profile.account.signInAgain | Your session has expired. Sign in again. | Сессия истекла. Войдите снова. |
 
 Actual Kratos inventory replaces sample devices/activity. The current marker matches the authenticated session ID. Authentication and expiry dates are localized and explicitly labelled UTC. The unavailable copy remains for upstream failures and unsupported providers; it differs from successfully loaded empty inventory.
 

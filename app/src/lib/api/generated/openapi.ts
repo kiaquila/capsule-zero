@@ -68,9 +68,23 @@ export const API_OPERATIONS = [
     "clientAvailability": "web-mobile"
   },
   {
+    "method": "DELETE",
+    "path": "/api/auth/sessions",
+    "operationId": "revokeOtherSessions",
+    "auth": "user",
+    "clientAvailability": "web-mobile"
+  },
+  {
     "method": "GET",
     "path": "/api/auth/sessions",
     "operationId": "listSessions",
+    "auth": "user",
+    "clientAvailability": "web-mobile"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/auth/sessions/{id}",
+    "operationId": "revokeSession",
     "auth": "user",
     "clientAvailability": "web-mobile"
   },
@@ -857,6 +871,14 @@ export interface ApiOperationPayloads {
     request: RegisterWithPasswordRequestBody;
     response: RegisterWithPasswordResponseBody;
   };
+  revokeOtherSessions: {
+    path: RevokeOtherSessionsPathParams;
+    query: RevokeOtherSessionsQueryParams;
+    header: RevokeOtherSessionsHeaderParams;
+    cookie: RevokeOtherSessionsCookieParams;
+    request: RevokeOtherSessionsRequestBody;
+    response: RevokeOtherSessionsResponseBody;
+  };
   listSessions: {
     path: ListSessionsPathParams;
     query: ListSessionsQueryParams;
@@ -864,6 +886,14 @@ export interface ApiOperationPayloads {
     cookie: ListSessionsCookieParams;
     request: ListSessionsRequestBody;
     response: ListSessionsResponseBody;
+  };
+  revokeSession: {
+    path: RevokeSessionPathParams;
+    query: RevokeSessionQueryParams;
+    header: RevokeSessionHeaderParams;
+    cookie: RevokeSessionCookieParams;
+    request: RevokeSessionRequestBody;
+    response: RevokeSessionResponseBody;
   };
   startEmailVerification: {
     path: StartEmailVerificationPathParams;
@@ -1250,12 +1280,28 @@ export type RegisterWithPasswordCookieParams = Record<string, never>;
 export type RegisterWithPasswordRequestBody = AuthRegistrationRequest;
 export type RegisterWithPasswordResponseBody = AuthResponse;
 
+export type RevokeOtherSessionsPathParams = Record<string, never>;
+export type RevokeOtherSessionsQueryParams = Record<string, never>;
+export type RevokeOtherSessionsHeaderParams = Record<string, never>;
+export type RevokeOtherSessionsCookieParams = Record<string, never>;
+export type RevokeOtherSessionsRequestBody = never;
+export type RevokeOtherSessionsResponseBody = void;
+
 export type ListSessionsPathParams = Record<string, never>;
 export type ListSessionsQueryParams = Record<string, never>;
 export type ListSessionsHeaderParams = Record<string, never>;
 export type ListSessionsCookieParams = Record<string, never>;
 export type ListSessionsRequestBody = never;
 export type ListSessionsResponseBody = Array<AccountSession>;
+
+export type RevokeSessionPathParams = {
+  id: string;
+};
+export type RevokeSessionQueryParams = Record<string, never>;
+export type RevokeSessionHeaderParams = Record<string, never>;
+export type RevokeSessionCookieParams = Record<string, never>;
+export type RevokeSessionRequestBody = never;
+export type RevokeSessionResponseBody = void;
 
 export type StartEmailVerificationPathParams = Record<string, never>;
 export type StartEmailVerificationQueryParams = Record<string, never>;
@@ -3339,6 +3385,18 @@ export const API_OPERATION_PAYLOADS = {
     "headerParameters": [],
     "cookieParameters": []
   },
+  "revokeOtherSessions": {
+    "requestRequired": false,
+    "successStatusCodes": [
+      "204"
+    ],
+    "requestSchema": null,
+    "responseSchemas": [],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
   "listSessions": {
     "requestRequired": false,
     "successStatusCodes": [
@@ -3354,6 +3412,30 @@ export const API_OPERATION_PAYLOADS = {
       }
     ],
     "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "revokeSession": {
+    "requestRequired": false,
+    "successStatusCodes": [
+      "204"
+    ],
+    "requestSchema": null,
+    "responseSchemas": [],
+    "pathParameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "style": null,
+        "explode": null
+      }
+    ],
     "queryParameters": [],
     "headerParameters": [],
     "cookieParameters": []

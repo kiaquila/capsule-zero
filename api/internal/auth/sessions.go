@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/kiaquila/capsule-zero/api/internal/httpx"
@@ -79,4 +81,62 @@ func sessionSummary(session kratos.SessionInfo, current bool) sessionInfoDTO {
 		result.AuthenticatedAt = &session.AuthenticatedAt
 	}
 	return result
+}
+
+var sessionIDPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+
+func (h *Handler) RevokeSession(w http.ResponseWriter, r *http.Request) {
+	h.revokeSessions(w, r, false)
+}
+
+func (h *Handler) RevokeOtherSessions(w http.ResponseWriter, r *http.Request) {
+	h.revokeSessions(w, r, true)
+}
+
+func (h *Handler) revokeSessions(w http.ResponseWriter, r *http.Request, bulk bool) {
+	w.Header().Set("Cache-Control", "private, no-store")
+	token := bearerToken(r)
+	if token == "" {
+		writeSessionRevocationError(w, kratos.ErrInvalidCredentials)
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+	current, err := h.Kratos.WhoAmI(ctx, token)
+	if err != nil {
+		writeSessionRevocationError(w, err)
+		return
+	}
+	if current == nil || current.Info.ID == "" || !current.Info.ExpiresAt.After(time.Now()) {
+		writeSessionRevocationError(w, fmt.Errorf("kratos current metadata missing"))
+		return
+	}
+	if bulk {
+		err = h.Kratos.RevokeOtherSessions(ctx, token)
+	} else {
+		id := r.PathValue("id")
+		if !sessionIDPattern.MatchString(id) || strings.EqualFold(id, current.Info.ID) {
+			writeSessionRevocationError(w, kratos.ErrSessionTargetInvalid)
+			return
+		}
+		err = h.Kratos.RevokeSession(ctx, token, id)
+	}
+	if err != nil {
+		writeSessionRevocationError(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func writeSessionRevocationError(w http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, kratos.ErrInvalidCredentials):
+		httpx.WriteError(w, http.StatusUnauthorized, "UNAUTHENTICATED", "Sign in required.")
+	case errors.Is(err, kratos.ErrSessionTargetInvalid):
+		httpx.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Choose another session. Use sign out to end the current session.")
+	case errors.Is(err, kratos.ErrSessionNotFound):
+		httpx.WriteError(w, http.StatusNotFound, "NOT_FOUND", "Session not found.")
+	default:
+		httpx.WriteError(w, http.StatusBadGateway, "INTERNAL_ERROR", "Session could not be ended. Try again.")
+	}
 }

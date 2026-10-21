@@ -18,6 +18,10 @@ export class ProfilePage extends BasePage {
     | "bottomSize",
     Locator
   >;
+  readonly revokeSession: Locator;
+  readonly revokeOthers: Locator;
+  readonly sessionFeedback: Locator;
+  readonly sessionPanel: Locator;
   readonly sessionRows: Locator;
   readonly sessionsUnavailable: Locator;
   readonly sessionsEmpty: Locator;
@@ -52,7 +56,13 @@ export class ProfilePage extends BasePage {
         "bottomSize",
       ].map((field) => [field, page.locator(`[name="${field}"]`)]),
     ) as typeof this.optionalFields;
+    this.revokeSession = page.getByTestId("profile-revoke-session");
+    this.revokeOthers = page.getByTestId("profile-revoke-others");
+    this.sessionFeedback = page.getByTestId("profile-session-feedback");
     this.sessionRows = page.getByTestId("profile-session");
+    this.sessionPanel = page
+      .locator("section.profile-card")
+      .filter({ has: this.sessionRows });
     this.sessionsUnavailable = page.getByTestId("profile-sessions-unavailable");
     this.sessionsEmpty = page.getByTestId("profile-sessions-empty");
     this.sessionDates = page.getByTestId("profile-session-date");

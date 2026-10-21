@@ -48,7 +48,7 @@ Prototype: `html-prototypes/profile.html`
 - **Avatar:** Circular photo with Change/Remove options
 - **Fields:** Name, email, language, location
 - **Language dropdown:** EN / RU in v0.1; ES-AR deferred to v0.2
-- **Advanced sections in prototype:** Notifications, additional security settings and delete account remain future-state design; password change and read-only active sessions are implemented.
+- **Advanced sections in prototype:** Notifications, additional security settings and delete account remain future-state design; password change and active session inventory and revocation are implemented.
 - **Save:** Glass primary button
 
 ## Interactivity
@@ -69,4 +69,4 @@ Unset optional personal fields render empty; saving another field does not popul
 
 ## Active sessions (spec 057)
 
-The account card uses existing glass rows for actual Kratos sessions. Current appears first with a localized badge based on its exact ID. Each row shows authentication time when available and expiry, formatted in EN/RU and labelled UTC; neither date represents last activity. No device/location guess, sample row or revoke control. No active records shows the empty message; failed inventory or unsupported providers shows the unavailable message, without breaking profile editing.
+The account card uses existing glass rows for actual Kratos sessions. Current appears first with a localized badge based on its exact ID. Each row shows authentication time when available and expiry, formatted in EN/RU and labelled UTC; neither date represents last activity. No device/location guess or sample row. Spec 058 adds existing glass-button controls to end each other session and all others; the current row keeps its badge without a revoke control. Pending disables every revoke button. Failure retains rows and displays localized feedback; success removes confirmed targets. Controls use type=button inside the existing profile form and never save unrelated edits. No active records shows the empty message; failed inventory or unsupported providers shows the unavailable message, without breaking profile editing.

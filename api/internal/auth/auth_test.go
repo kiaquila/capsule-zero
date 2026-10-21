@@ -574,3 +574,6 @@ func (f fakeIdentityClient) OIDCExchange(context.Context, string, string) (*krat
 func (f fakeIdentityClient) ListSessions(context.Context, string) ([]kratos.SessionInfo, error) {
 	return nil, nil
 }
+
+func (fakeIdentityClient) RevokeSession(context.Context, string, string) error { return nil }
+func (fakeIdentityClient) RevokeOtherSessions(context.Context, string) error   { return nil }
