@@ -111,7 +111,7 @@ localized display name.
 | **Accessory · belt**      | Belt                                                                                                 | Yes             | Slot `belt`                                                   |
 | **Accessory · eyewear**   | Sunglasses                                                                                           | Yes             | Slot `eyewear`                                                |
 
-**Custom categories:** basicity validation must also assign exactly one algorithm role and, for an
+**Custom categories:** category mapping must assign exactly one algorithm role and, for an
 Accessory, one existing slot. A custom category without an unambiguous assignment remains a wardrobe
 item but is excluded from OPR/Layering Coverage with an explanation until the user chooses the closest
 supported category. Implementations must not infer counting role from the coarse API `layer` alone.
