@@ -19,6 +19,9 @@ func TestSessionRevocationNeverFollowsRedirect(t *testing.T) {
 	}))
 	defer source.Close()
 	client := New(source.URL, "")
+	if _, err := client.WhoAmI(context.Background(), "owner"); err == nil {
+		t.Error("redirected authentication reported success")
+	}
 	if err := client.RevokeSession(context.Background(), "owner", "22222222-2222-4222-8222-222222222222"); err == nil {
 		t.Error("redirect reported success")
 	}
