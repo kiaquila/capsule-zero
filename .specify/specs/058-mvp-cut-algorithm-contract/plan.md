@@ -13,9 +13,16 @@ authorities; add only this required feature-memory folder, not a new domain abst
 | AC2   | `git diff -- docs_capsule_zero/project/methodology/ docs_capsule_zero/glossary.md .specify/memory/design-system.md`                                                                                 | Separate signals, 100/50/0 simplicity/unknown rule, dated six-month currentness review, whole-look verdicts, owned-item preservation and updated accessory style identity. |
 | AC3   | `git diff -- docs_capsule_zero/features/ docs_capsule_zero/screens/ docs_capsule_zero/i18n/ docs_capsule_zero/adr/api-spec.md docs_capsule_zero/project/{frontend,backend,mobile}/ .specify/specs/` | Active consumer obligations and historical scope supersession; actual OpenAPI/client/storage remain unchanged.                                                             |
 | AC4   | `git diff -- PRODUCT-RESEARCH.md docs_capsule_zero/launch/launch-plan.md docs_capsule_zero/project/methodology/outfit-generation.md`                                                                | Paper §3/table 4 attribution, full-MVP validation requirements, no inferred modernity/quality/optimality guarantee.                                                        |
-| AC1–4 | Documentation audit below; `git diff --check`                                                                                                                                                       | PASS: 60 Markdown files, 119 added local links; documentation audit and diff whitespace checks passed.                                                                     |
+| AC1–4 | Documentation audit below; `git diff --check`                                                                                                                                                       | PASS: 61 Markdown files, 121 added local links; documentation audit and diff whitespace checks passed.                                                                     |
 | AC5   | `node scripts/check-repo-baseline.mjs`; `node scripts/check-feature-memory.mjs --worktree`; `npm run check:api-contract`; `node --test scripts/lib/*.test.mjs`                                      | PASS: baseline and feature-memory; API/client parity (50 operations, 24 Go route registrations); all 42 gate-script tests passed.                                          |
 | AC5   | Current-head PR required checks and native Codex review linked from this PR                                                                                                                         | Final evidence is the linked PR current-head checks and trusted Codex verdict; required before merge. This does not imply cut-engine implementation or MVP completion.     |
+
+CI recovery evidence: test run `39619285862` failed twice during service initialization with ECR
+`Data limit exceeded`. Google cache manifest lookup for PostgreSQL 16 returned HTTP 200 and OCI
+index digest `sha256:a902560563d3a5661228585f53474c5065e7f273b21ffd77e555a8b5682c5690`.
+The existing workflow tests retain real PostgreSQL integration, health checks and both execution-path
+failure assertions. All 42 gate-script tests passed after changing the service image reference.
+No application or actual OpenAPI/storage contract changes.
 
 ### Reproducible documentation audit
 
@@ -28,9 +35,11 @@ import re, subprocess
 root = Path.cwd()
 changed = set(subprocess.check_output(['git', 'diff', '--name-only', 'origin/main'], text=True).splitlines())
 changed.update(subprocess.check_output(['git', 'ls-files', '--others', '--exclude-standard'], text=True).splitlines())
-assert changed and all(p.endswith('.md') for p in changed), 'Docs-only scope violated'
+ci_support = {'.github/workflows/test.yml', 'scripts/lib/go-test-workflow.test.mjs'}
+assert changed and all(p.endswith('.md') or p in ci_support for p in changed), 'Approved scope violated'
+markdown = {p for p in changed if p.endswith('.md')}
 new_links = 0
-for name in sorted(changed):
+for name in sorted(markdown):
     text = (root / name).read_text()
     assert not re.search(r'^(<<<<<<<|=======|>>>>>>>)', text, re.M), name
     # Check local Markdown links added by this contract, not older unresolved prototype references.
@@ -51,11 +60,11 @@ assert 'ОБЯЗАТЕЛЬНО ДЛЯ MVP' in plan and 'принятия MVP' in
 assert 'guarantees universal combinability' not in method
 assert 'colour only (does' not in outfit
 assert 'low simplicity alone' in (root / 'docs_capsule_zero/project/methodology/categories.md').read_text().lower()
-print(f'PASS: {len(changed)} Markdown files; {new_links} added local links; scope, conflict markers and canonical contract assertions')
+print(f'PASS: {len(markdown)} Markdown files; {new_links} added local links; scope, conflict markers and canonical contract assertions')
 PY
 ```
 
 The baseline repository already has npm tooling; no framework/library behaviour is changed, so
 Context7 is not needed for this documentation scope. Remote CI runs the full unchanged application,
-container, browser, security and native-review gates. Local command evidence is docs integrity and
+container, browser, security and native-review gates. Local command evidence is docs integrity, unchanged CI failure semantics, and
 contract parity, not a claim that the target cut engine is implemented.

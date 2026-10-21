@@ -4,13 +4,16 @@
 - [x] Reuse existing basicity/item-tagging and generation docs; inspect actual guest evaluate/recommend/snapshot boundaries.
 - [x] Update PRODUCT-PLAN D4/Q5, canonical methodology and release gate for a complete pre-MVP algorithm.
 - [x] Align active product/technical docs, custom-category guidance, research and old-slice supersession.
-- [x] Local documentation audit (60 Markdown files/119 added links), whitespace, baseline, feature-memory, API/client parity and 42 gate-script tests passed.
+- [x] Local documentation audit (61 Markdown files/121 added links), whitespace, baseline, feature-memory, API/client parity and 42 gate-script tests passed.
+- [x] Recover required test service initialization after repeated ECR data-limit failures using the identical digest-pinned official PostgreSQL 16 image from Google cache; preserve every test and health check.
 - [ ] Current-head required GitHub checks/native review; final evidence is the linked PR checks.
 - [ ] Address review findings, resolve threads, wait two minutes after all readiness conditions and merge under owner authorization.
 
 ## Process Memory
 
 ### Dead Ends
+
+- Test run 39619285862 failed twice before checkout because ECR returned `toomanyrequests: Data limit exceeded` for PostgreSQL 16. Retrying did not recover it. Google cache returned the official OCI index with digest `sha256:a902560563d3a5661228585f53474c5065e7f273b21ffd77e555a8b5682c5690`; use that pinned reference for the CI service only.
 
 - Primary checkout has unrelated unresolved conflicts. Do not stash, reset or reuse it; clean
   `worktrees/cut-compatibility-mvp` starts from freshly fetched origin/main `85cfa6b`.

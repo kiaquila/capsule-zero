@@ -15,6 +15,10 @@ explicit supersession notes. Define manually labelled presets and deterministic 
 
 Out: application code, catalog re-labelling, implementation of compatibility tables, schema/migrations,
 OpenAPI/generated-client changes, new ML/services, UI redesign, merchant-image enablement or new spend.
+CI recovery only: the required test job uses the identical official PostgreSQL 16 image from the
+digest-pinned Google cache after two ECR quota failures, with its existing workflow test and CI
+runbook updated. This is infrastructure/support scope, not an application implementation.
+
 This PR completes the **documentation** contract only. Stage 2 must implement and validate it before
 MVP acceptance; a docs merge cannot imply the currently shipped guest-v1 satisfies that gate.
 
@@ -56,7 +60,7 @@ MVP acceptance; a docs merge cannot imply the currently shipped guest-v1 satisfi
   baseline/held-out FITB and stylist review with predeclared numeric gates and version/client parity.
   No guaranteed 80–150 floor is advertised after cut filtering. Research distinguishes evidence from
   the selected product approach and does not import unproven mathematical guarantees.
-- **AC5:** Scope is documentation-only; repository/feature-memory/API parity checks and the required
+- **AC5:** Scope is documentation plus the narrow PostgreSQL CI recovery above; repository/feature-memory/API parity checks and the required
   GitHub baseline-checks, guard, AI Review, test and osv-scan pass for the final head. Native Codex
   review is requested from the owner's account, findings are addressed and all threads resolved.
 
@@ -68,5 +72,5 @@ gain/coverage/count, brand-based exclusion, deletion/rejection of favourite owne
 recalculation of guest-v1 snapshots. These are implementation test requirements, not tests claimed
 as executed by this docs PR.
 
-TDD waiver: documentation-only; no application behaviour or executable API/schema is changed.
+TDD waiver: documentation and CI infrastructure/support only; no application behaviour or executable API/schema is changed.
 Required remote checks remain mandatory and are not waived.

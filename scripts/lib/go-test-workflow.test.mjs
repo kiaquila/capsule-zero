@@ -129,7 +129,7 @@ test("setup failure retains a real pinned ECR fallback that runs both checks", (
 test("guest integration runs against PostgreSQL and a failure blocks both paths", () => {
   assert.equal(
     workflow.jobs.test.services["guest-postgres"].image,
-    "public.ecr.aws/docker/library/postgres:16",
+    "mirror.gcr.io/library/postgres:16@sha256:a902560563d3a5661228585f53474c5065e7f273b21ffd77e555a8b5682c5690",
   );
   assert.match(check.env.TEST_DATABASE_URL, /^postgres:\/\//);
   for (const outcome of ["success", "failure"]) {

@@ -18,7 +18,9 @@ jobs:
     timeout-minutes: 20
     services:
       guest-postgres:
-        image: public.ecr.aws/docker/library/postgres:16
+        # Identical official PostgreSQL 16 index, pinned via Google cache: ECR
+        # quotas can fail service initialization before any test step executes.
+        image: mirror.gcr.io/library/postgres:16@sha256:a902560563d3a5661228585f53474c5065e7f273b21ffd77e555a8b5682c5690
         env:
           POSTGRES_PASSWORD: guest-ci-only
         ports:
