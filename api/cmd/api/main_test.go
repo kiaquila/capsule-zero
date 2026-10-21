@@ -70,6 +70,7 @@ func TestSessionEndpointsThrottled(t *testing.T) {
 	// Logout and both profile methods share the session bucket, so they are
 	// throttled too once it is empty (middleware answers before the handler).
 	for _, probe := range []struct{ method, path string }{
+		{http.MethodGet, "/api/auth/sessions"},
 		{http.MethodPost, "/api/auth/logout"},
 		{http.MethodGet, "/api/profile"},
 		{http.MethodPatch, "/api/profile"},

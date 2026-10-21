@@ -14,7 +14,7 @@ interface ProfileSnapshot {
     | "googleAuthenticator"
     | "pushSecondFactor"
   >;
-  account: { sessions: unknown[] };
+  account: { sessions: unknown[]; sessionsStatus: string };
 }
 import { expect, test } from "../../fixtures/base";
 import { guestCatalogCopy, type Locale } from "../../fixtures/locales";
@@ -90,6 +90,7 @@ test.beforeEach(async () => {
   rejectPatch = false;
   globalThis.fetch = async (input, init) => {
     const url = String(input);
+    if (url.endsWith("/api/auth/sessions")) return Response.json([]);
     if (url.endsWith("/api/guest-progress/items")) return Response.json([]);
     if (url.endsWith("/api/auth/whoami")) {
       return Response.json({
@@ -130,6 +131,38 @@ test("new profile and unrelated save never invent optional data or sessions", as
   for (const field of optionalFields)
     expect(initial.profile[field], field).toBe("");
   expect(initial.account.sessions).toEqual([]);
+  expect(initial.account.sessionsStatus).toBe("available");
+  const normalFetch = globalThis.fetch;
+  const inventory = [
+    {
+      id: "real-current",
+      current: true,
+      authenticatedAt: "2026-10-21T10:00:00Z",
+      expiresAt: session.expiresAt,
+    },
+  ];
+  globalThis.fetch = async (input, init) => {
+    if (!String(input).endsWith("/api/auth/sessions"))
+      return normalFetch(input, init);
+    expect(new Headers(init?.headers).get("Authorization")).toBe(
+      `Bearer ${session.accessToken}`,
+    );
+    expect(init?.cache).toBe("no-store");
+    return Response.json(inventory);
+  };
+  expect((await snapshot()).account).toMatchObject({
+    sessions: inventory,
+    sessionsStatus: "available",
+  });
+  globalThis.fetch = async (input, init) =>
+    String(input).endsWith("/api/auth/sessions")
+      ? Response.json({}, { status: 502 })
+      : normalFetch(input, init);
+  expect((await snapshot()).account).toMatchObject({
+    sessions: [],
+    sessionsStatus: "unavailable",
+  });
+  globalThis.fetch = normalFetch;
   expect(await save(form(initial))).toMatchObject({ ok: true });
   expect(patches).toEqual([
     { displayName: session.name, country: "", city: "" },
