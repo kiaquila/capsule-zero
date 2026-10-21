@@ -31,3 +31,6 @@ Fields outside the current API contract retain the existing user-bound browser c
 - PR #166 initial native review completed with no findings; baseline, guard, OSV and AI Review passed.
 - [Initial test run](https://github.com/kiaquila/capsule-zero/actions/runs/39429346899) failed 54 WebKit launches. The job used Ubuntu 26.04 and restored `playwright-Linux-<lockhash>`; the cached browser required ICU74 but install-deps installed ICU78. Chromium and module regressions passed.
 - Pin only the test job to Ubuntu 24.04; include OS release and architecture in the cache key. Keep every browser project and gate required. The final-head rerun is the Linux execution evidence.
+
+
+Follow-up: spec 057 adds real Kratos session inventory; spec 056 unavailable behavior remains only for unsupported providers or inventory failures.

@@ -255,7 +255,12 @@
     "account": {
       "userId": "ID пользователя",
       "sessions": "Активные сессии",
-      "sessionsUnavailable": "Сведения о сессиях пока недоступны."
+      "sessionsUnavailable": "Сведения о сессиях пока недоступны.",
+      "sessionsEmpty": "Активных сессий нет.",
+      "session": "Сессия",
+      "current": "Текущая",
+      "signedIn": "Вход:",
+      "expires": "Действует до:"
     },
     "buttons": {
       "save": "Сохранить",

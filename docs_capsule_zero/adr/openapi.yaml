@@ -312,6 +312,24 @@ components:
         expiresAt:
           type: string
           format: date-time
+    AccountSession:
+      type: object
+      additionalProperties: false
+      required: [id, current, expiresAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        current:
+          type: boolean
+          description: True only when this ID matches the authenticated Kratos session.
+        authenticatedAt:
+          type: string
+          format: date-time
+          description: Authentication time when provided by Kratos; not last activity.
+        expiresAt:
+          type: string
+          format: date-time
     AuthResponse:
       type: object
       required: [requiresEmailConfirmation]
@@ -1161,6 +1179,33 @@ paths:
                 $ref: "#/components/schemas/AuthResponse"
         "500":
           $ref: "#/components/responses/InternalServerError"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        default:
+          $ref: "#/components/responses/InternalServerError"
+  /api/auth/sessions:
+    get:
+      tags: [Auth]
+      operationId: listSessions
+      x-auth: user
+      summary: List the signed-in user's active Kratos sessions, current first.
+      description: >-
+        Read-only token-scoped inventory. Combines WhoAmI with all pages of other
+        active sessions. Returns only IDs, current markers and real timestamps;
+        no credentials, identity traits or inferred device/location/activity.
+        Uses Cache-Control private, no-store. No identity selector is accepted.
+        An incomplete upstream inventory fails rather than returning partial data.
+      responses:
+        "200":
+          description: Complete active session inventory.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AccountSession"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "502":
           $ref: "#/components/responses/BadGateway"
         default:

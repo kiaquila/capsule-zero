@@ -25,3 +25,9 @@ Sources: [versioned OpenAPI](https://github.com/ory/kratos/blob/v26.2.0/spec/api
 ## Negative Scenarios
 
 Invalid token, failed later page, pagination cycle/budget, untrusted next-link host, duplicate/inactive/expired records, unavailable inventory and empty inventory are covered. Device/location/activity fabrication and cross-account query selection are forbidden.
+
+## Presentation
+
+Dates use the selected EN/RU locale with explicit UTC to keep server/client rendering deterministic. Empty and unavailable are distinct read states; unsupported providers expose no inventory.
+
+Real Kratos v26.2.0 smoke found that a zero-total empty list still carries an optimistic next Link. Regression committed in `c56784a`; only an empty decoded page AND explicit `X-Total-Count: 0` stops this traversal. Other empty pages continue following Link.

@@ -7,6 +7,7 @@ import type { Locale } from "../../fixtures/locales";
 
 const appRoot = path.resolve(process.cwd(), "../../app");
 const loader = createJiti(import.meta.url, {
+  jsx: { runtime: "automatic" },
   alias: { "@": path.join(appRoot, "src") },
 });
 type Inventory = {
@@ -74,6 +75,7 @@ for (const locale of ["en", "ru"] as const) {
     );
   });
 }
+
 test("loaded-empty and unavailable never fabricate rows or current badges", async ({
   page,
 }) => {

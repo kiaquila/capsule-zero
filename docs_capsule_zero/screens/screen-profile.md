@@ -1,4 +1,5 @@
 # Screen: Profile
+
 URL: /profile
 Feature: features/f-004-profile.md
 Prototype: `html-prototypes/profile.html`
@@ -43,13 +44,15 @@ Prototype: `html-prototypes/profile.html`
 ```
 
 ## Elements
+
 - **Avatar:** Circular photo with Change/Remove options
 - **Fields:** Name, email, language, location
 - **Language dropdown:** EN / RU in v0.1; ES-AR deferred to v0.2
-- **Advanced sections in prototype:** Notifications, security, sessions, and delete account are future-state design only
+- **Advanced sections in prototype:** Notifications, additional security settings and delete account remain future-state design; password change and read-only active sessions are implemented.
 - **Save:** Glass primary button
 
 ## Interactivity
+
 - Click [Change] avatar → file picker (JPEG/PNG)
 - Click [Remove] avatar → revert to default
 - Change language → instant UI update (no page reload)
@@ -62,4 +65,8 @@ Personal name fields accept short Unicode names, including `Ян`, with trim + 1
 
 ## Empty fields and session availability (spec 056)
 
-Unset optional personal fields render empty; saving another field does not populate them. Clearing an optional field stays cleared after save/reload. Preserve all existing saved values regardless of equality to old sample defaults. Active sessions show “Session details are currently unavailable.” (RU: “Сведения о сессиях пока недоступны.”) until the auth integration exposes a real inventory; no fabricated device, location, activity or current badge is displayed.
+Unset optional personal fields render empty; saving another field does not populate them. Clearing an optional field stays cleared after save/reload. Preserve all existing saved values regardless of equality to old sample defaults.
+
+## Active sessions (spec 057)
+
+The account card uses existing glass rows for actual Kratos sessions. Current appears first with a localized badge based on its exact ID. Each row shows authentication time when available and expiry, formatted in EN/RU and labelled UTC; neither date represents last activity. No device/location guess, sample row or revoke control. No active records shows the empty message; failed inventory or unsupported providers shows the unavailable message, without breaking profile editing.

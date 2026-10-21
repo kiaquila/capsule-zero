@@ -176,6 +176,7 @@ func newMux(handler *auth.Handler, authLimiter, sessionLimiter *ratelimit.Limite
 	mux.HandleFunc("POST /api/auth/google/complete", authLimiter.Middleware(handler.GoogleComplete))
 	mux.HandleFunc("GET /api/auth/providers", sessionLimiter.Middleware(handler.Providers))
 	mux.HandleFunc("GET /api/auth/whoami", sessionLimiter.Middleware(handler.WhoAmI))
+	mux.HandleFunc("GET /api/auth/sessions", sessionLimiter.Middleware(handler.Sessions))
 	mux.HandleFunc("POST /api/auth/logout", sessionLimiter.Middleware(handler.Logout))
 	mux.HandleFunc("GET /api/profile", sessionLimiter.Middleware(handler.RequireSession(handler.GetProfile)))
 	mux.HandleFunc("PATCH /api/profile", sessionLimiter.Middleware(handler.RequireSession(handler.PatchProfile)))

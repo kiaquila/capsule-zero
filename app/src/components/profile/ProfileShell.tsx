@@ -11,6 +11,7 @@ import { LanguageSwitcher } from "@/components/landing/LanguageSwitcher";
 import { signOutAction } from "@/features/auth/actions";
 import { saveProfileAction } from "@/features/profile/actions";
 import { ProfilePasswordForm } from "./ProfilePasswordForm";
+import { ProfileSessions } from "./ProfileSessions";
 import {
   createProfileFormSchema,
   type ProfileFormInput,
@@ -463,15 +464,7 @@ export function ProfileShell({ snapshot }: ProfileShellProps) {
 
             <div className="profile-divider" />
 
-            <h3 className="profile-session-title">{t("account.sessions")}</h3>
-            <div className="profile-sessions">
-              <p
-                className="profile-session-copy"
-                data-testid="profile-sessions-unavailable"
-              >
-                {t("account.sessionsUnavailable")}
-              </p>
-            </div>
+            <ProfileSessions account={snapshot.account} />
           </section>
         </form>
         <div className="profile-delete-zone">

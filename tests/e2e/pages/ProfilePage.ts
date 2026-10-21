@@ -52,7 +52,7 @@ export class ProfilePage extends BasePage {
         "bottomSize",
       ].map((field) => [field, page.locator(`[name="${field}"]`)]),
     ) as typeof this.optionalFields;
-    this.sessionRows = page.locator(".profile-session");
+    this.sessionRows = page.getByTestId("profile-session");
     this.sessionsUnavailable = page.getByTestId("profile-sessions-unavailable");
     this.sessionsEmpty = page.getByTestId("profile-sessions-empty");
     this.sessionDates = page.getByTestId("profile-session-date");

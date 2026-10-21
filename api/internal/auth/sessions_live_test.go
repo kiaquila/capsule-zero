@@ -58,15 +58,7 @@ func TestSessionsLiveKratos(t *testing.T) {
 		rec := httptest.NewRecorder()
 		h.Sessions(rec, req)
 		if rec.Code != 200 {
-			_, fetchErr := client.ListSessions(ctx, token)
-			probe, _ := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+"/sessions?per_page=100", nil)
-			probe.Header.Set("X-Session-Token", token)
-			response, probeErr := http.DefaultClient.Do(probe)
-			if probeErr == nil {
-				t.Logf("pagination links: %s; total: %s", response.Header.Get("Link"), response.Header.Get("X-Total-Count"))
-				response.Body.Close()
-			}
-			t.Fatalf("inventory status = %d; fetch error = %v", rec.Code, fetchErr)
+			t.Fatalf("inventory status = %d", rec.Code)
 		}
 		var result []sessionInfoDTO
 		if err := json.Unmarshal(rec.Body.Bytes(), &result); err != nil {
