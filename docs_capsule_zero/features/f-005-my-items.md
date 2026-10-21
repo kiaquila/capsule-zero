@@ -4,6 +4,8 @@
 
 Keep owned complex/decorated/dated items and favourites. Low simplicity alone must not prevent saving or capsule membership under existing palette rules. Required cut tags and review state remain independent of the image; missing tags offer confirmation/review or a reviewed preset alternative, without claiming compatibility.
 
+Owned-item cut review is actionable: separate owner-guided reference comparison, ambiguous-item request to the designated catalog reviewer, persisted evidence/outcome, then shared recalculation. Follow methodology §6.1; no blind “mark current” override or permanent preset-only dead end.
+
 Authority: [PRODUCT-PLAN D4/Q5](../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../project/methodology/capsule-methodology.md);
 whole-look, counting, versioning and quality rules: [outfit generation §2.5](../project/methodology/outfit-generation.md).
 

@@ -34,6 +34,7 @@ MVP acceptance; a docs merge cannot imply the currently shipped guest-v1 satisfi
 - Start with manually reviewed own-image presets; no ML requirement for MVP. Owned non-basic/dated
   pieces and favourites remain; low simplicity alone is not a save or capsule-membership rejection.
 - Dated looks deterministically fail DATED_CUT; unknown remains unreviewed unless a known failure dominates. Owned-current 0/50 items can pass reviewed whole-look rules; simplicity orders display results by the canonical tuple, not counts. New-item candidates require 100/current; canonical cut/preset keys resolve otherwise equal recommendation ties.
+- Owned-item review has an explicit owner-guided reference action and designated catalog-reviewer fallback with persisted states/evidence, authorized completion, invalidation and recomputation. Personal pieces need not be replaced by presets to enter verified results.
 - Whole-look rules return pass/fail/unreviewed with a reason. Only passes affect verified counts,
   coverage and gains. Keep existing OPR denominator, accessory cap, roles and recommendation priorities;
   extend accessory dedup identity with the reviewed style signature so different silhouettes survive.

@@ -24,6 +24,8 @@
 
 ### Decisions
 
+- Additional native findings PRRT_kwDORvfoks6u0wvw (P1) and PRRT_kwDORvfoks6u0wv4 (P2): define owned-item currentness transitions, actors and evidence in §6.1 with a curator fallback; restore historical 013 FR-006 verbatim and retain only the superseding header. Correct all supersession headers to feature 059 after the numbering collision.
+
 - Concurrent PR #169 merged feature 058 while this PR was under review. Renumber this unmerged documentation feature to 059, retain the existing shipped 058 folder, and merge fresh main without undoing its empty-account fix.
 
 - Native Codex finding PRRT_kwDORvfoks6u0pX9 (P1) identified unspecified signal effects. Fixed §2.5 with dated→fail, unknown→unreviewed/fail precedence, 100/current candidate eligibility, explicit owned-current 0/50 display ordering, canonical recommendation tie-breaks and expected parity outcomes; aligned PRODUCT-PLAN, item rules, API/MVP contract and copy.

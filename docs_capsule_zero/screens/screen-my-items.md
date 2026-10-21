@@ -4,6 +4,8 @@
 
 Item review uses separate simplicity/currentness and applicable cut tags. Keep owned unusual/dated pieces and favourites; uncertain tags remain editable/unreviewed. Reuse existing detail surfaces for neutral guidance, without exposing the internal basicity number.
 
+The existing item-detail surface offers “Review cut” with category reference comparisons and “Request review” for ambiguity. Show request/needs-details/outcome, retain the item, and recalculate after a reviewed outcome; exact transitions and actors are in methodology §6.1.
+
 Authority: [PRODUCT-PLAN D4/Q5](../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../project/methodology/capsule-methodology.md);
 whole-look, counting, versioning and quality rules: [outfit generation §2.5](../project/methodology/outfit-generation.md).
 URL: /my-items

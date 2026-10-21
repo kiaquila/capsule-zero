@@ -150,6 +150,45 @@ attribute confirmation or a reviewed preset alternative, and exclude unverified 
 the verified outfit count. Confirming factual tags does not by itself certify currentness; that
 verdict needs the dated reference review.
 
+#### Owned-item currentness review (required MVP path)
+
+Personal items need a path to a verdict, not permanent replacement by a preset. Reuse the existing
+item-detail review surface and the same dated category references used for catalog approval:
+
+1. **Intake:** a personal photo/import or changed silhouette starts `unreviewed`. Keep the item,
+   confirmed factual tags and ownership; photo/import availability still follows its existing gates.
+2. **Owner-guided reference review:** the owner opens “Review cut”, compares the actual item with
+   the current/dated category reference cards, and records the applicable silhouette/length/volume,
+   construction and decor comparisons. This is a separate review action, not a generic tag-confirm
+   checkbox or an unrestricted “mark current” switch. When those answers match one unambiguous
+   reviewed reference rule, that rule assigns `current` or `dated`; the owner cannot choose the
+   outcome independently of the rule. Record owner actor, `owner-reference` provenance, reference
+   IDs, rule/version, timestamp and the item's attribute/image revision. This explicit reference
+   comparison is the dated-reference review required above; factual tag confirmation alone is not.
+3. **Ambiguous/no match:** keep `unreviewed`, offer better-photo/details correction and “Request
+   review”. The designated catalog cut reviewer (founder/operator performing the same manual
+   catalog review) owns that request. They compare the actual item with the category references,
+   record the evidence/reason and assign `current` or `dated`; if references cannot decide, they
+   review/add a category reference first. Insufficient evidence returns a concrete request for
+   photo/details, not a fabricated pass. Record reviewer actor and `curator-reference` provenance.
+4. **Completion:** `unreviewed → current|dated` is persisted with review evidence, then the shared
+   evaluator recomputes new results and gains. A current owned item with a reviewed compatible tuple
+   can now contribute without buying or substituting a preset. A dated result remains saved with
+   an alternative and may request a new reference review, never a blind override.
+5. **Refresh:** required attribute/silhouette changes, expired review or changed reference rules
+   move the live review back to `unreviewed`; retain prior evidence and immutable historical results.
+   Run the same owner-guided/curator path again. Do not transfer a preset's approval merely because
+   its category or colour matches the personal item.
+
+The implementation spec must deliver this review action, owner-scoped durable request/evidence
+states (`unreviewed`, `review-requested`, `needs-details`, `current`, `dated`), authorized reviewer
+completion, feedback to the owner and parity/negative tests before MVP acceptance. The first three
+states all map to evaluator `unreviewed`; a request is never an approval. Reuse item-review and
+catalog-reference responsibilities; no new ML service or merchant-image permission is implied.
+Test a successful owned-photo reference review through counted outfit/gain, an ambiguous item
+through reviewer completion, unauthorized review attempts, changed-item invalidation and insufficient
+evidence remaining unreviewed. The manual reviewer must be assigned operationally before launch.
+
 ### 6.2 MVP quality and delivery gate
 
 One versioned ruleset must drive generation, OPR, Layering Coverage, gaps and recommendation gains

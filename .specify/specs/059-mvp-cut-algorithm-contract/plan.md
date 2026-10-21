@@ -21,6 +21,9 @@ Review-fix evidence: `outfit-generation.md` §2.5 now defines a verdict table, f
 100/current candidate eligibility, exact display/recommendation ordering and expected 100-dated,
 50/0-current and unknown parity outcomes. This addresses native Codex thread `PRRT_kwDORvfoks6u0pX9`;
 PRODUCT-PLAN, item attributes, MVP/API target and copy use the same semantics.
+Additional review fixes: methodology §6.1 provides the owner-reference → curator-reference workflow,
+durable states and invalidation/recalculation; My Items/API targets consume it. Historical 013 FR-006
+is restored verbatim from main, with only its dated supersession header carrying the new target.
 
 CI recovery evidence: test run `39619285862` failed twice during service initialization with ECR
 `Data limit exceeded`. Google cache manifest lookup for PostgreSQL 16 returned HTTP 200 and OCI
@@ -59,7 +62,7 @@ for name in sorted(markdown):
 method = (root / 'docs_capsule_zero/project/methodology/capsule-methodology.md').read_text()
 outfit = (root / 'docs_capsule_zero/project/methodology/outfit-generation.md').read_text()
 plan = (root / 'PRODUCT-PLAN.md').read_text()
-assert all(term in method for term in ['simple', 'current', 'unreviewed', 'excessive', 'six months'])
+assert all(term in method for term in ['simple', 'current', 'unreviewed', 'excessive', 'six months', 'owner-reference', 'curator-reference', 'review-requested'])
 outfit = ' '.join(outfit.split())
 assert all(term in outfit for term in ['entire look', 'all pairs alone is insufficient', 'FITB', 'guest-v1', 'implementation spec', 'DATED_CUT', 'number of items with basicity <100', 'canonical preset ID'])
 assert 'ОБЯЗАТЕЛЬНО ДЛЯ MVP' in plan and 'принятия MVP' in plan

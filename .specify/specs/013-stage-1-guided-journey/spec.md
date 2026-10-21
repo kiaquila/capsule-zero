@@ -6,7 +6,7 @@ Historical delivery scope/evidence below remains a record of this slice. Its col
 cut deferral, simple-category rejection or exact-reference counting cannot waive the updated MVP gate.
 [PRODUCT-PLAN D4/Q5](../../../PRODUCT-PLAN.md) now requires separate simplicity/currentness and whole-outfit checks
 before MVP acceptance, including the guest/account path. Canonical rules: [methodology §6.1](../../../docs_capsule_zero/project/methodology/capsule-methodology.md)
-and [outfit generation §2.5](../../../docs_capsule_zero/project/methodology/outfit-generation.md). Spec 058 aligns documentation only; application implementation
+and [outfit generation §2.5](../../../docs_capsule_zero/project/methodology/outfit-generation.md). Spec 059 aligns documentation only; application implementation
 and quality validation remain outstanding. Preserve immutable guest-v1 results under their original
 version; do not silently recalculate historic snapshots or rewrite this slice's old verification results.
 
@@ -121,7 +121,7 @@ As a user, I want unavailable colors to be blocked with a clear explanation so I
 - **FR-003**: Step 1 MUST present Women's, Men's, and Mixed wardrobe type cards and advance after selection.
 - **FR-004**: Step 2 MUST render categories filtered by wardrobe type with checkboxes and quantity steppers.
 - **FR-005**: Step 2 MUST block Step 3 until at least eight categories are selected.
-- **FR-006**: Step 2 MUST support custom category entry, clarify unsupported category/role mapping and offer a supported alternative. Low simplicity alone MUST NOT reject an owned item; separate simplicity/currentness and whole-look checks follow PRODUCT-PLAN D4/Q5.
+- **FR-006**: Step 2 MUST support custom category entry and reject non-basic categories with an explanation and suggestion.
 - **FR-007**: Step 3 MUST expose Upload Photos, Paste Links, and Search Catalog tabs.
 - **FR-008**: Step 3 MUST keep item acquisition local/mock-only and display added item previews.
 - **FR-009**: Step 3 MUST render achromatic colors first, followed by all chromatic colors in one continuous picker.

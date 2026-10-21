@@ -114,12 +114,12 @@ The MVP pipeline is deterministic and uses manually reviewed preset attributes a
 
 **Deterministic signal semantics (generation and recommendation):**
 
-| Input for any item in the full look                                                  | Expected result                                                                                                                                                        |
-| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `currentness=dated`, even with basicity 100 and compatible proportions               | `fail` with `DATED_CUT`; zero verified count, coverage and recommendation gain for this look. Keep the item/favourite/capsule membership under existing palette rules. |
-| Missing simplicity/cut attributes, `currentness=unreviewed`, or overdue review       | `unreviewed`, unless another known rule already fails; zero verified count/coverage/gain. Unknown is not `dated`.                                                      |
-| Every item is `current`, all required attributes known, owned item has basicity 0/50 | No automatic simplicity failure: use the whole-look construction/decor/proportion table. `pass` only when that full tuple matches a reviewed pass rule.                |
-| Every item is simple (100) and `current`                                             | Still require the full-look table; simple/current never overrides a cut failure or missing rule.                                                                       |
+| Input for any item in the full look                                                  | Expected result                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `currentness=dated`, even with basicity 100 and compatible proportions               | `fail` with `DATED_CUT`; zero verified count, coverage and recommendation gain for this look. Keep the item/favourite/capsule membership under existing palette rules.             |
+| Missing simplicity/cut attributes, `currentness=unreviewed`, or overdue review       | `unreviewed`, unless another known rule already fails; zero verified count/coverage/gain. Unknown is not `dated`; use the owned-item review path in `capsule-methodology.md` §6.1. |
+| Every item is `current`, all required attributes known, owned item has basicity 0/50 | No automatic simplicity failure: use the whole-look construction/decor/proportion table. `pass` only when that full tuple matches a reviewed pass rule.                            |
+| Every item is simple (100) and `current`                                             | Still require the full-look table; simple/current never overrides a cut failure or missing rule.                                                                                   |
 
 A known failure takes precedence over uncertainty: any definite colour/currentness/cut failure means
 `fail`; otherwise any missing required value or unmatched/unreviewed rule means `unreviewed`;
