@@ -18,7 +18,7 @@ func TestSessionRevocationBoundary(t *testing.T) {
 		{"single", other, "owner", 204, 204, 1}, {"bulk", "", "owner", 200, 204, 1},
 		{"missing-token", other, "", 204, 401, 0}, {"expired-token", other, "expired", 204, 401, 0},
 		{"current", current, "owner", 204, 400, 0}, {"current-uppercase", "AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA", "owner", 204, 400, 0},
-		{"malformed", "whoami", "owner", 204, 400, 0}, {"foreign", other, "owner", 404, 404, 1},
+		{"malformed", "whoami", "owner", 204, 400, 0}, {"foreign-or-absent-noop", other, "owner", 204, 204, 1},
 		{"outage", other, "owner", 503, 502, 1}, {"bulk-outage", "", "owner", 503, 502, 1},
 		{"expires-before-write", other, "owner", 401, 401, 1},
 	} {

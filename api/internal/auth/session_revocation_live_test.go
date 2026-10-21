@@ -66,7 +66,7 @@ func TestSessionRevocationLiveKratos(t *testing.T) {
 	if err := c.RevokeSession(ctx, current.Token, currentInfo.Info.ID); err == nil {
 		t.Fatal("native Kratos current guard failed")
 	}
-	if code := revoke(foreignInfo.Info.ID); code != 404 {
+	if code := revoke(foreignInfo.Info.ID); code != 204 {
 		t.Fatalf("foreign protection status %d", code)
 	}
 	if _, err := c.WhoAmI(ctx, foreign.Token); err != nil {

@@ -55,6 +55,7 @@ test.beforeEach(async () => {
     "../../../../app/src/features/profile/actions.ts",
   )) as { revokeSessionAction: typeof revoke });
 });
+
 test.afterEach(() => {
   globalThis.fetch = originalFetch;
   delete process.env.CAPSULE_PROVIDER_MODE;
@@ -66,6 +67,7 @@ test("signed-token single and bulk actions use only their intended endpoints", a
   expect(await revoke(null)).toEqual({ ok: true });
   expect(calls).toEqual([`/api/auth/sessions/${other}`, "/api/auth/sessions"]);
 });
+
 test("invalid input, missing session and unsupported provider never mutate", async () => {
   expect(await revoke("../sessions")).toMatchObject({ ok: false });
   expect(calls).toEqual([]);
@@ -79,6 +81,7 @@ test("invalid input, missing session and unsupported provider never mutate", asy
   expect(await revoke(null)).toMatchObject({ ok: false });
   expect(calls).toEqual([]);
 });
+
 test("upstream rejection or network failure never becomes successful revocation", async () => {
   upstreamStatus = 401;
   expect(await revoke(other)).toMatchObject({
