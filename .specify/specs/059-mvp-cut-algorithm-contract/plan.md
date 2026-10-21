@@ -67,6 +67,9 @@ assert all(term in method for term in ['simple', 'current', 'unreviewed', 'exces
 outfit = ' '.join(outfit.split())
 assert all(term in outfit for term in ['entire look', 'all pairs alone is insufficient', 'FITB', 'guest-v1', 'implementation spec', 'DATED_CUT', 'number of items with basicity <100', 'canonical preset ID', 'cut/fit/volume/length/construction/decor', 'same-colour/slot/cut/volume/length/decor'])
 assert 'ОБЯЗАТЕЛЬНО ДЛЯ MVP' in plan and 'принятия MVP' in plan
+assert 'Равные варианты цвета' in plan
+assert 'Цвет другого фасона не включается по одному равному impact' in plan
+assert 'без сигнала варианты остаются равноценными' not in plan
 assert 'guarantees universal combinability' not in method
 assert 'colour only (does' not in outfit
 assert 'Equal gain alone does not make different cuts interchangeable' in outfit
