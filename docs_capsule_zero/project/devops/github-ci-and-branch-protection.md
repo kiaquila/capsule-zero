@@ -73,3 +73,5 @@ allow deletions: false
 ```
 
 The repository can keep required human approvals at `0` for solo-owner velocity, but the checks above and conversation resolution must remain required. Operational details and the review evidence contract live in `github-hosted-ai-review.md` and `review-contract.md`.
+
+The required `test` job also runs spec 058 session controls with an isolated API-provider loopback fixture in Chromium/WebKit (one worker). This covers real Server Action clicks, pending/error/single/bulk behavior, current-session preservation in the UI, unsaved profile edits and date hydration. Real Kratos ownership semantics are verified separately by the opt-in Go integration smoke against a disposable runtime.

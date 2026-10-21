@@ -166,6 +166,21 @@ function mapSession(payload: AuthResponse): Session {
   };
 }
 
+async function revokeAccountSession(id?: string): Promise<void> {
+  const token = await sessionToken();
+  if (!token) throw new Error("UNAUTHENTICATED: Sign in required.");
+  const path =
+    id === undefined
+      ? "/api/auth/sessions"
+      : `/api/auth/sessions/${encodeURIComponent(id)}`;
+  const { status, data } = await apiFetch<unknown>(path, {
+    method: "DELETE",
+    token,
+  });
+  if (status !== 204)
+    throw providerError(data, "INTERNAL_ERROR", "Session could not be ended.");
+}
+
 function buildAuthPort(): AuthPort {
   return {
     async getCurrentSession() {
@@ -189,6 +204,9 @@ function buildAuthPort(): AuthPort {
       }
       return data.session && data.user ? mapSession(data) : null;
     },
+
+    revokeSession: (id) => revokeAccountSession(id),
+    revokeOtherSessions: () => revokeAccountSession(),
 
     async listSessions() {
       const token = await sessionToken();

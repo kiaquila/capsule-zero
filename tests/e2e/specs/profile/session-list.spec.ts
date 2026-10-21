@@ -8,7 +8,11 @@ import type { Locale } from "../../fixtures/locales";
 const appRoot = path.resolve(process.cwd(), "../../app");
 const loader = createJiti(import.meta.url, {
   jsx: { runtime: "automatic" },
-  alias: { "@": path.join(appRoot, "src") },
+  alias: {
+    "@": path.join(appRoot, "src"),
+    "server-only": path.join(appRoot, "node_modules/server-only/empty.js"),
+    "next/headers": path.resolve("support/empty-next-headers.ts"),
+  },
 });
 type Inventory = {
   sessions: {
@@ -18,6 +22,7 @@ type Inventory = {
     expiresAt: string;
   }[];
   sessionsStatus: "available" | "unavailable";
+  sessionsRevocable?: boolean;
 };
 async function render(account: Inventory, locale: Locale) {
   const { createElement } = (await loader.import(
@@ -42,7 +47,16 @@ async function render(account: Inventory, locale: Locale) {
     createElement(
       NextIntlClientProvider,
       { locale, messages, timeZone: "UTC" },
-      createElement(ProfileSessions, { account }),
+      createElement(ProfileSessions, {
+        account: {
+          ...account,
+          sessions: account.sessions.map((session) => ({
+            ...session,
+            authenticatedAtLabel: session.authenticatedAt,
+            expiresAtLabel: session.expiresAt,
+          })),
+        },
+      }),
     ),
   );
 }
@@ -52,6 +66,7 @@ for (const locale of ["en", "ru"] as const) {
   }) => {
     const account: Inventory = {
       sessionsStatus: "available",
+      sessionsRevocable: true,
       sessions: [
         {
           id: "current",
@@ -65,6 +80,10 @@ for (const locale of ["en", "ru"] as const) {
     await page.setContent(await render(account, locale));
     const profile = new ProfilePage(page, locale);
     await expect(profile.sessionRows).toHaveCount(2);
+    await expect(profile.revokeSession).toHaveCount(1);
+    await expect(profile.revokeOthers).toHaveCount(1);
+    await expect(profile.revokeSession).toHaveAttribute("type", "button");
+    await expect(profile.revokeOthers).toHaveAttribute("type", "button");
     await expect(profile.currentSessionBadge).toHaveCount(1);
     await expect(profile.sessionsUnavailable).toHaveCount(0);
     await expect(profile.sessionsEmpty).toHaveCount(0);
@@ -83,6 +102,8 @@ test("loaded-empty and unavailable never fabricate rows or current badges", asyn
   for (const sessionsStatus of ["available", "unavailable"] as const) {
     await page.setContent(await render({ sessions: [], sessionsStatus }, "en"));
     await expect(profile.sessionRows).toHaveCount(0);
+    await expect(profile.revokeSession).toHaveCount(0);
+    await expect(profile.revokeOthers).toHaveCount(0);
     await expect(profile.currentSessionBadge).toHaveCount(0);
     await expect(
       sessionsStatus === "available"

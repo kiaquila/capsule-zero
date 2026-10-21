@@ -105,10 +105,23 @@ jobs:
           E2E_ORIGIN_GUARD: "1"
         run: npm --prefix tests/e2e test
 
+      - name: Session controls with isolated API provider
+        env:
+          CI: "true"
+          CAPSULE_PROVIDER_MODE: api
+          CAPSULE_API_BASE_URL: http://127.0.0.1:34488
+          E2E_SESSION_REVOCATION: "1"
+          SESSION_SIGNING_SECRET: session-revocation-ci-only
+          PORT: "3215"
+          E2E_BASE_URL: http://localhost:3215
+        run: npm --prefix tests/e2e test -- specs/profile/session-controls-browser.spec.ts --workers=1 --reporter=line
+
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: playwright-report
-          path: tests/e2e/playwright-report
+          path: |
+            tests/e2e/playwright-report
+            tests/e2e/test-results
           retention-days: 14

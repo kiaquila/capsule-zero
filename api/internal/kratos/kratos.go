@@ -296,14 +296,7 @@ func (c *Client) Login(ctx context.Context, email, password string) (*Session, e
 
 // WhoAmI validates a session token and returns the identity plus expiry.
 func (c *Client) WhoAmI(ctx context.Context, token string) (*Session, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.publicURL+"/sessions/whoami", nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("X-Session-Token", token)
-	req.Header.Set("Accept", "application/json")
-
-	resp, err := c.http.Do(req)
+	resp, err := c.sessionRequest(ctx, http.MethodGet, "/sessions/whoami", token)
 	if err != nil {
 		return nil, err
 	}

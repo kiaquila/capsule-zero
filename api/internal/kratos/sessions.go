@@ -3,6 +3,7 @@ package kratos
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -45,16 +46,7 @@ func (c *Client) ListSessions(ctx context.Context, token string) ([]SessionInfo,
 }
 
 func (c *Client) sessionPage(ctx context.Context, token, query string) ([]SessionInfo, string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.publicURL+"/sessions?"+query, nil)
-	if err != nil {
-		return nil, "", err
-	}
-	req.Header.Set("X-Session-Token", token)
-	req.Header.Set("Accept", "application/json")
-	// Never forward the credential through a redirect, even on the fixed endpoint.
-	client := *c.http
-	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
-	resp, err := client.Do(req)
+	resp, err := c.sessionRequest(ctx, http.MethodGet, "/sessions?"+query, token)
 	if err != nil {
 		return nil, "", err
 	}
@@ -117,4 +109,52 @@ func nextSessionPage(headers []string) (string, error) {
 		return params.Encode(), nil
 	}
 	return "", nil
+}
+
+var (
+	ErrSessionNotFound      = errors.New("kratos session not found")
+	ErrSessionTargetInvalid = errors.New("kratos session target invalid")
+)
+
+// RevokeSession uses the public, caller-owned endpoint which rejects current.
+func (c *Client) RevokeSession(ctx context.Context, token, id string) error {
+	return c.deleteSession(ctx, token, "/sessions/"+url.PathEscape(id), http.StatusNoContent)
+}
+
+// RevokeOtherSessions atomically preserves the authenticating session in Kratos.
+func (c *Client) RevokeOtherSessions(ctx context.Context, token string) error {
+	return c.deleteSession(ctx, token, "/sessions", http.StatusOK)
+}
+
+func (c *Client) deleteSession(ctx context.Context, token, path string, expected int) error {
+	resp, err := c.sessionRequest(ctx, http.MethodDelete, path, token)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	switch resp.StatusCode {
+	case expected:
+		return nil
+	case http.StatusUnauthorized:
+		return ErrInvalidCredentials
+	case http.StatusNotFound:
+		return ErrSessionNotFound
+	case http.StatusBadRequest:
+		return ErrSessionTargetInvalid
+	default:
+		return fmt.Errorf("kratos session revocation: status %d", resp.StatusCode)
+	}
+}
+
+func (c *Client) sessionRequest(ctx context.Context, method, path, token string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, method, c.publicURL+path, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("X-Session-Token", token)
+	req.Header.Set("Accept", "application/json")
+	// Copy the shared client; never follow a redirect carrying the credential.
+	client := *c.http
+	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	return client.Do(req)
 }

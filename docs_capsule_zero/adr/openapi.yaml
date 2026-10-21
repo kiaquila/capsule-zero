@@ -1210,6 +1210,54 @@ paths:
           $ref: "#/components/responses/BadGateway"
         default:
           $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags: [Auth]
+      operationId: revokeOtherSessions
+      x-auth: user
+      summary: End all other sessions while preserving the current session.
+      description: >-
+        Uses Kratos public DELETE /sessions with the authenticating token.
+        Current-session exclusion is atomic in Kratos. No identity selector.
+        Responses use Cache-Control private, no-store.
+      responses:
+        "204":
+          description: Other sessions ended; current remains active, including an empty retry.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        default:
+          $ref: "#/components/responses/InternalServerError"
+  /api/auth/sessions/{id}:
+    delete:
+      tags: [Auth]
+      operationId: revokeSession
+      x-auth: user
+      summary: End one other session belonging to the signed-in user.
+      description: >-
+        Uses Kratos public DELETE /sessions/{id}; current session is rejected.
+        Invalid UUIDs fail 400. Foreign and absent sessions are successful no-ops without
+        affecting another identity (Kratos v26.2.0). Responses use Cache-Control private, no-store.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Owned session ended or target absent from caller; current remains active.
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        default:
+          $ref: "#/components/responses/InternalServerError"
   /api/auth/recovery:
     post:
       tags: [Auth]
