@@ -92,6 +92,18 @@ for target in ['docs_capsule_zero/features/f-009-capsule-result.md', 'docs_capsu
 historical = ' .specify/specs/013-stage-1-guided-journey/spec.md'.strip()
 original = subprocess.check_output(['git', 'show', 'origin/main:' + historical], text=True)
 assert (root / historical).read_text().split('**Feature Branch**', 1)[1] == original.split('**Feature Branch**', 1)[1], 'Historical 013 body changed'
+for folder in ['013-stage-1-guided-journey', '014-stage-1-capsule-result', '042-product-rebuild-plan', '046-stage1-guest-loop-foundation', '055-guest-onboarding-port', '056-guest-account-save']:
+    for name in ['spec', 'plan', 'tasks']:
+        target = f'.specify/specs/{folder}/{name}.md'
+        original = subprocess.check_output(['git', 'show', 'origin/main:' + target], text=True)
+        body = original.split('\n\n', 1)[1]
+        current = (root / target).read_text()
+        assert current.endswith(body), ('Historical body changed', target)
+research = (root / 'PRODUCT-RESEARCH.md').read_text()
+pre_signup = research.split('### 3.3 ', 1)[1].split('### 3.4 ', 1)[0]
+assert 'Целевой MVP: N проверенных целых образов' in pre_signup and 'канонический крой/пресет' in pre_signup
+copy = (root / 'docs_capsule_zero/i18n/ui-texts.md').read_text()
+assert 'Esto no parece una prenda básica' not in copy and 'No pudimos identificar esta categoría' in copy
 print(f'PASS: {len(markdown)} Markdown files; {new_links} added local links; scope, conflict markers and canonical contract assertions')
 PY
 ```

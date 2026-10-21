@@ -24,6 +24,8 @@
 
 ### Decisions
 
+- Native P2 follow-ups PRRT_kwDORvfoks6u3reD / PRRT_kwDORvfoks6u3reJ: restore every superseded historical slice body (013/014/042/046/055/056, all spec/plan/tasks) verbatim from main, keeping only the dated supersession headers; never run the formatter over preserved evidence. This restores regex alternation and the wildcard exclusion glob. Audit byte-equality of every original body. PRRT_kwDORvfoks6u3reP / PRRT_kwDORvfoks6u3reY: align the pre-signup research table with full-MVP cut ordering and translate the non-rejecting category clarification into retained ES-AR reference copy without activating that locale.
+
 - Native P2 follow-up PRRT_kwDORvfoks6u3hTP: add human-readable evaluator reasons to the gap tab content, GapAnalysisList contract and every mock gap row; align the MVP summary/entity too. Preserve visible cut/reason text on mobile. Also clarify that an unused palette colour has no guaranteed gain without a full reviewed-preset pass; ItemDetail’s cut-review controls remain an explicit future Stage-2 requirement.
 
 - Native P2 follow-up PRRT_kwDORvfoks6u3YtU: align the separate Stage-2 item 2 (not just the Stage-1 baseline paragraph) with the same winning-cut colour grouping. Equal impact never merges distinct cut signatures; canonical colour IDs order retained variants. Taste scoring requires a separate future decision/version, and explanatory copy cannot assume it exists. Audit Russian equivalent/tie wording as well as English.

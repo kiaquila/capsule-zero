@@ -19,13 +19,13 @@
 
 ## Guided Journey — Step 2: Category Checklist
 
-| Element               | EN                                                                              | ES-AR                                                                                         | RU                                                                           |
-| --------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Title                 | What's in your capsule?                                                         | ¿Qué hay en tu cápsula?                                                                       | Что бы ты хотел включить в свою капсулу?                                     |
-| Subtitle              | Select garment types and set quantity                                           | Seleccioná tipos de prendas y definí la cantidad                                              | Выбери типы вещей и укажи количество                                         |
-| Add custom CTA        | + Add your own category                                                         | + Agregar tu categoría                                                                        | + Добавить свою категорию                                                    |
-| Custom category error | We couldn’t match this category. Choose a similar category or clarify the item. | Esto no parece una prenda básica. Las piezas básicas tienen cortes simples y colores sólidos. | Не удалось определить категорию. Выбери похожую или уточни, что это за вещь. |
-| Min warning           | Select at least 8 categories                                                    | Seleccioná al menos 8 categorías                                                              | Выбери минимум 8 категорий                                                   |
+| Element               | EN                                                                              | ES-AR                                                                                      | RU                                                                           |
+| --------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| Title                 | What's in your capsule?                                                         | ¿Qué hay en tu cápsula?                                                                    | Что бы ты хотел включить в свою капсулу?                                     |
+| Subtitle              | Select garment types and set quantity                                           | Seleccioná tipos de prendas y definí la cantidad                                           | Выбери типы вещей и укажи количество                                         |
+| Add custom CTA        | + Add your own category                                                         | + Agregar tu categoría                                                                     | + Добавить свою категорию                                                    |
+| Custom category error | We couldn’t match this category. Choose a similar category or clarify the item. | No pudimos identificar esta categoría. Elegí una categoría similar o aclará qué prenda es. | Не удалось определить категорию. Выбери похожую или уточни, что это за вещь. |
+| Min warning           | Select at least 8 categories                                                    | Seleccioná al menos 8 categorías                                                           | Выбери минимум 8 категорий                                                   |
 
 ## Guided Journey — Step 3: Colors & Items
 
