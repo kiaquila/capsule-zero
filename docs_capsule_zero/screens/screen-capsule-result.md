@@ -82,8 +82,11 @@ cannot replace this order or change verified counts.
 │  ────────────────────────────────────────────────────   │
 │                                                         │
 │  (!) Ankle boots — Black                                │
+│    Cut: simple ankle shaft · Why: clearance with selected hems │
 │  (!) Cardigan — Beige or Camel                          │
+│    Cut: regular volume · Why: reviewed room over selected tops │
 │  (i) Scarf — Grey                                       │
+│    Cut: simple, low volume · Why: verified accessory variant │
 │                                                         │
 │  — or if complete: —                                    │
 │  ✓ Your capsule is complete!                            │
@@ -116,6 +119,7 @@ cannot replace this order or change verified counts.
 - **Tab Bar:** 4 tabs — Items / Outfits / What's missing / Shopping list
 - **Item Cards:** Photo + name + color dots + favorite heart + actions menu (⋯)
 - **Actions Menu (⋯):** Remove from capsule / Replace item
+- **GapAnalysisList:** Each row shows category, colour, reviewed suitable cut and human-readable evaluator rule reason (stable shared rule IDs). Keep cut/reason visible on mobile; icons alone are insufficient.
 - **Shopping List Row:** Category, color, reviewed suitable cut, human-readable rule reason, priority and role-specific verified impact. Cut/reason remain visible on mobile; do not hide them in a tooltip.
 - **Add Item Card:** "+" card at end of grid
 

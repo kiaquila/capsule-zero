@@ -31,7 +31,7 @@ whole-look, counting, versioning and quality rules: [outfit generation §2.5](..
 
 ### Tab 3: Gap Analysis ("What's Missing")
 
-- Text-based list: category + colour + suitable reviewed cut of missing items
+- Text-based list: category + colour + reviewed suitable cut + human-readable evaluator rule reason for missing items
 - Four gap rules: structural, color, combinability, layer balance
 - Empty state: "Your capsule is complete!"
 
@@ -67,7 +67,7 @@ whole-look, counting, versioning and quality rules: [outfit generation §2.5](..
 - **CapsuleHeader** — capsule name + OPR metric + delta + separate Layering Coverage diagnostics
 - **ItemGrid** — responsive grid of capsule items
 - **OutfitGrid** — generated outfit combination cards
-- **GapAnalysisList** — text list of missing items with icons
+- **GapAnalysisList** — text rows with category, colour, reviewed suitable cut and the same human-readable evaluator rule reason; icons supplement the text and never replace the explanation
 - **ShoppingList** — rows with category, color, reviewed suitable cut, human-readable rule reason, priority and verified impact; reuse ShoppingListRow
 - **TabBar** — Items / Outfits / What's Missing / Shopping List
 

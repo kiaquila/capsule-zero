@@ -81,6 +81,11 @@ assert all(phrase not in journey for phrase in ["doesn't look like a basic item"
 assert 'Step 2 category clarification' in journey and 'Unmappable category/role' in journey
 result_feature = (root / 'docs_capsule_zero/features/f-009-capsule-result.md').read_text()
 assert 'Ranked by diversity' not in result_feature and 'canonical simplicity order' in result_feature
+assert 'human-readable evaluator rule reason for missing items' in result_feature
+assert 'same human-readable evaluator rule reason' in result_feature
+screen = (root / 'docs_capsule_zero/screens/screen-capsule-result.md').read_text()
+gap_mock = screen.split('## Tab: What', 1)[1].split('## Tab: Shopping', 1)[0]
+assert gap_mock.count('Why:') == 3 and gap_mock.count('Cut:') == 3, 'Gap mock needs cut and reason per row'
 for target in ['docs_capsule_zero/features/f-009-capsule-result.md', 'docs_capsule_zero/screens/screen-capsule-result.md', 'docs_capsule_zero/project/frontend/components.md']:
     contract = (root / target).read_text().lower()
     assert 'reviewed suitable cut' in contract and 'rule reason' in contract, target

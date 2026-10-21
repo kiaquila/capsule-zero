@@ -30,7 +30,7 @@ OPR/gain exclusions. Implementation and quality evidence remain required; these 
 **Key decisions (v1.1):**
 
 - Outfits are view-only (no drag-and-drop)
-- Gap analysis is text-based (category + color)
+- Gap analysis is text-based (category + colour + reviewed suitable cut + human-readable evaluator rule reason)
 - Capsule color palette is immutable (change = new capsule)
 - Item addition/replacement validated against palette compatibility
 - 1 free capsule per user (additional in v0.2)
@@ -502,7 +502,7 @@ As a system, I want imported marketplace items to populate the shared database f
 - **Item**: Name, photo(s), category, color dots (1-3), brand, material, price, source URL, capsule membership, simplicity/basicity score, separate currentness review, applicable category/fit/length/volume/decor attributes
 - **Outfit**: Generated combination following layer/colour rules and the full cut/proportion checks; versioned pass/fail/unreviewed verdict with explanation
 - **Palette**: User-selected achromatic and chromatic colors, ordered with achromats first in UI, governed by same-group or Desaturated↔Dark compatibility rules
-- **Shopping List Item**: Category, recommended colour and reviewed suitable cut/preset, priority, role-specific verified impact (core base looks or Layering Coverage)
+- **Shopping List Item**: Category, recommended colour and reviewed suitable cut/preset, human-readable evaluator rule reason, priority, role-specific verified impact (core base looks or Layering Coverage)
 
 ## Success Criteria
 

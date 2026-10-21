@@ -129,10 +129,11 @@ Push `use client` as low as possible. Route pages should stay server-rendered un
 | `PaletteSelector` | Enforces achromats-first display and compatibility disabled state                                                                                                                         |
 | `CategoryStepper` | Used in Journey Step 2                                                                                                                                                                    |
 | `ItemCard`        | Photo, name, color dots, capsule membership, status/favorite controls                                                                                                                     |
-| `ItemDetail`      | View/edit state for name, category, colors, brand, material, price                                                                                                                        |
+| `ItemDetail`      | View/edit state for name, category, colors, brand, material, price; Stage 2 must add the owned-item cut-review workflow from methodology §6.1 (future UI, not already shipped)            |
 | `UploadTabs`      | Final Photos / Links / Search design. Before both PRODUCT-PLAN Q8 gates close, Links and shared merchant Search have no live handlers; P2 may ship the separate own-imagery preset picker |
 | `OPRDisplay`      | Formatted wearable outfits ÷ (core + accessory items) with delta; renders Layering Coverage as a separate labelled secondary value with mid/outer diagnostics and `N/A` zero-base state   |
 | `ShoppingListRow` | Category, color, reviewed suitable cut, human-readable rule reason, priority and role-specific verified impact; shared evaluator rule IDs remain stable                                   |
+| `GapAnalysisList` | Category, colour, reviewed suitable cut and human-readable evaluator rule reason per row; icons supplement the text; preserve shared rule IDs                                             |
 | `BottomNav`       | Primary mobile navigation                                                                                                                                                                 |
 
 ## Accessibility

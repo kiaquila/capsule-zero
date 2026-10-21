@@ -24,6 +24,8 @@
 
 ### Decisions
 
+- Native P2 follow-up PRRT_kwDORvfoks6u3hTP: add human-readable evaluator reasons to the gap tab content, GapAnalysisList contract and every mock gap row; align the MVP summary/entity too. Preserve visible cut/reason text on mobile. Also clarify that an unused palette colour has no guaranteed gain without a full reviewed-preset pass; ItemDetail’s cut-review controls remain an explicit future Stage-2 requirement.
+
 - Native P2 follow-up PRRT_kwDORvfoks6u3YtU: align the separate Stage-2 item 2 (not just the Stage-1 baseline paragraph) with the same winning-cut colour grouping. Equal impact never merges distinct cut signatures; canonical colour IDs order retained variants. Taste scoring requires a separate future decision/version, and explanatory copy cannot assume it exists. Audit Russian equivalent/tie wording as well as English.
 
 - Native P2 follow-up PRRT_kwDORvfoks6u3PEK: reconcile §4 colour options with §2.5. Apply tier/gain/layer/category priorities, canonical cut/preset tie-break, then expose only equal-gain colours with equivalent winning-cut guidance. A colour unique to another cut is excluded despite equal gain. Align PRODUCT-PLAN/research; colour-only all-max behaviour remains historical guest-v1, taste scoring is optional later work.

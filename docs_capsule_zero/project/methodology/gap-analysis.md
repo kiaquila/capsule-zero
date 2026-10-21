@@ -23,13 +23,13 @@ A fundamental layer is missing from the capsule.
 The palette contains colors that have no items assigned to them.
 
 - Example: palette includes Navy but no Navy items exist
-- Filling these gaps adds combinations without changing the palette
+- Filling a colour gap preserves the palette but adds combinations only when a reviewed preset produces a verified gain under the full evaluator; an unused colour alone never proves wearability or positive impact
 
 ### Rule 3: Combinability Gaps
 
 Adding one item would significantly increase the number of possible outfits.
 
-- For Core categories, the system calculates which missing category+color combination would yield
+- For Core categories, the system calculates which reviewed preset (category + colour + cut) would yield
   the most new **verified** core base looks using colour and whole-outfit cut checks; Layering candidates are scored in verified covered looks / percentage points
 - Example: adding a grey Core top would unlock +12 **core base looks**. A cardigan changes Layering
   Coverage, not outfit count.
