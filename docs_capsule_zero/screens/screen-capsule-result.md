@@ -54,6 +54,10 @@ Prototype: `html-prototypes/capsule-result.html`
 
 ## Tab: Outfits
 
+Verified looks use the canonical §2.5 simplicity display order (non-100 item count ascending,
+basicity sum descending, sorted canonical item IDs ascending). The §3 diversity selection/caps
+cannot replace this order or change verified counts.
+
 ```
 │  [Items]  [Outfits]  [What's missing]  [Shopping list]  │
 │  ────────────────────────────────────────────────────   │
@@ -94,11 +98,16 @@ Prototype: `html-prototypes/capsule-result.html`
 │  Category          Color              Priority  Impact  │
 │  ─────────────────────────────────────────────────────  │
 │  Trousers          Navy / charcoal    High     +12 core looks │
+│    Cut: straight, regular length · Why: balanced proportions │
 │  Ankle boots       Black              High     +8 core looks  │
+│    Cut: simple ankle shaft · Why: clearance with selected hems │
 │  Cardigan          Beige / camel      Medium   +12 covered looks (+50 pp) │
+│    Cut: regular volume · Why: reviewed room over selected tops │
 │  Coat              Charcoal grey      Medium   +12 covered looks (+50 pp) │
+│    Cut: straight, roomy · Why: reviewed length/volume with layers │
 │                                                         │
-│  Click row → search in catalog                          │
+│  Reasons and gains come from the same reviewed evaluator │
+│  Click row → matching own presets; merchant search Q8-gated │
 ```
 
 ## Elements
@@ -107,6 +116,7 @@ Prototype: `html-prototypes/capsule-result.html`
 - **Tab Bar:** 4 tabs — Items / Outfits / What's missing / Shopping list
 - **Item Cards:** Photo + name + color dots + favorite heart + actions menu (⋯)
 - **Actions Menu (⋯):** Remove from capsule / Replace item
+- **Shopping List Row:** Category, color, reviewed suitable cut, human-readable rule reason, priority and role-specific verified impact. Cut/reason remain visible on mobile; do not hide them in a tooltip.
 - **Add Item Card:** "+" card at end of grid
 
 ## Interactivity
@@ -117,7 +127,7 @@ Prototype: `html-prototypes/capsule-result.html`
 - Click [⋯] → actions: Remove / Replace
 - Click [+ Add item] → item picker (My Items / owned Presets / Upload); shared merchant Catalog
   remains Q8-gated
-- Click shopping list row → owned-preset suggestions when Stage 2 lands; shared merchant search
+- Click shopping list row → owned-preset suggestions filtered by category, color and reviewed suitable-cut signature when Stage 2 lands; shared merchant search
   only after both Q8 gates
 - Incompatible replacement → blocked with message
 

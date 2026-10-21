@@ -1,5 +1,14 @@
 # Implementation Plan: Stage 1 Capsule Result
 
+## Scope supersession — MVP cut contract (2026-10-21)
+
+Historical scope and evidence below describe this delivered slice. Before MVP acceptance,
+[PRODUCT-PLAN D4/Q5](../../../PRODUCT-PLAN.md) supersedes its colour/category-only results:
+verified looks use canonical simplicity display ordering, and every gap/shopping row includes
+reviewed suitable cut and rule reason as well as category, colour, priority and verified impact.
+Spec 059 aligns the target documentation; Stage 2 must implement and validate it. Preserve this
+slice’s original evidence and immutable historical result versions.
+
 **Branch**: `codex/stage-1-capsule-result` | **Date**: 2026-06-09 | **Spec**: `.specify/specs/014-stage-1-capsule-result/spec.md`
 
 ## Summary

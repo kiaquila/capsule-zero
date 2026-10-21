@@ -4,7 +4,7 @@
 - [x] Reuse existing basicity/item-tagging and generation docs; inspect actual guest evaluate/recommend/snapshot boundaries.
 - [x] Update PRODUCT-PLAN D4/Q5, canonical methodology and release gate for a complete pre-MVP algorithm.
 - [x] Align active product/technical docs, custom-category guidance, research and old-slice supersession.
-- [x] Local documentation audit (61 Markdown files/121 added links), whitespace, baseline, feature-memory, API/client parity and 42 gate-script tests passed.
+- [x] Local documentation audit (65 Markdown files/121 added links), whitespace, baseline, feature-memory, API/client parity and 42 gate-script tests passed.
 - [x] Recover required test service initialization after repeated ECR data-limit failures using the identical digest-pinned official PostgreSQL 16 image from Google cache; preserve every test and health check.
 - [ ] Current-head required GitHub checks/native review; final evidence is the linked PR checks.
 - [ ] Address review findings, resolve threads, wait two minutes after all readiness conditions and merge under owner authorization.
@@ -23,6 +23,8 @@
   would misstate delivery; old evidence is retained with explicit supersession notes.
 
 ### Decisions
+
+- Native P2 follow-ups PRRT_kwDORvfoks6u23sl / PRRT_kwDORvfoks6u23su: align ShoppingListRow, result feature/screen, MVP acceptance/prototype map, backend target and emotion-map row with reviewed suitable cut/rule reason; update example/handoff too. Replace diversity display ranking with canonical §2.5 simplicity order; retain §3 selection/caps. Historical 014 gets supersession headers only.
 
 - Concurrent PR #170 advanced main during the final review. Merge its session-revocation changes unchanged; recheck the documentation-only diff, baseline, feature memory, updated API/client parity (52 operations/26 Go registrations) and existing gate-script tests before requesting review of the resulting head.
 

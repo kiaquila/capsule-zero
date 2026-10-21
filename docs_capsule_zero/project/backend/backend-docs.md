@@ -143,15 +143,15 @@ embedding migration belongs to v0.1 before both product gates close.
 
 ### Capsules
 
-| Table                      | Purpose                                                                   |
-| -------------------------- | ------------------------------------------------------------------------- |
-| `capsules`                 | User capsule: wardrobe type, locked palette flag, item/outfit counts, OPR |
-| `capsule_palette_colors`   | Selected immutable color IDs per capsule                                  |
-| `capsule_category_targets` | Selected category targets and quantities from Journey Step 2              |
-| `capsule_items`            | Wardrobe entries included in a capsule                                    |
-| `outfits`                  | Generated static outfit combinations                                      |
-| `outfit_items`             | Items included in each generated outfit                                   |
-| `gap_recommendations`      | Category/color/priority/impact recommendations                            |
+| Table                      | Purpose                                                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `capsules`                 | User capsule: wardrobe type, locked palette flag, item/outfit counts, OPR                                                 |
+| `capsule_palette_colors`   | Selected immutable color IDs per capsule                                                                                  |
+| `capsule_category_targets` | Selected category targets and quantities from Journey Step 2                                                              |
+| `capsule_items`            | Wardrobe entries included in a capsule                                                                                    |
+| `outfits`                  | Generated static outfit combinations                                                                                      |
+| `outfit_items`             | Items included in each generated outfit                                                                                   |
+| `gap_recommendations`      | MVP target: category/color/reviewed suitable cut/rule reason/priority/verified impact; concrete contract added in Stage 2 |
 
 ## Authorization Model
 

@@ -72,7 +72,7 @@
 ### `html-prototypes/capsule-result.html` — Capsule Result
 
 - **Spec sections:** US-013 (Result), US-014 (Remove from capsule), US-015 (Replace item), US-016 (Add item)
-- **Content:** Item grid with color dots, outfit combinations (static), gap analysis (text: category + color), shopping list (category + color + priority + impact), OPR prominently displayed
+- **Content:** Item grid with color dots, verified outfit combinations (static, canonical simplicity order), gap analysis (text: category + color + reviewed suitable cut/reason), shopping list (category + color + reviewed suitable cut/reason + priority + verified impact), OPR prominently displayed
 - **Key interactions:** Remove/Replace/Add item actions, all trigger recomputation of outfits and gap analysis
 
 ### `html-prototypes/my-items.html` — My Items

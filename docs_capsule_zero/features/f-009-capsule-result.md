@@ -27,7 +27,7 @@ whole-look, counting, versioning and quality rules: [outfit generation §2.5](..
 
 - Static outfit combinations (view-only in v0.1, no drag-and-drop)
 - Generated algorithmically following 7-layer, colour and whole-outfit cut/proportion rules
-- Ranked by diversity
+- Display verified looks in the canonical simplicity order from outfit-generation §2.5: fewer items below basicity 100, then higher basicity sum, then sorted canonical item IDs. Diversity selection/caps in §3 do not override this display order or change counted looks.
 
 ### Tab 3: Gap Analysis ("What's Missing")
 
@@ -37,8 +37,8 @@ whole-look, counting, versioning and quality rules: [outfit generation §2.5](..
 
 ### Tab 4: Shopping List
 
-- Text list: category + color + priority (High/Medium/Low) + role-specific impact
-- Click on row → opens Search from Catalog pre-filtered
+- Text list: category + color + reviewed suitable cut + human-readable rule reason + priority (High/Medium/Low) + role-specific verified impact
+- Click on row → owned-preset suggestions filtered by category, color and reviewed suitable-cut signature; shared merchant search stays Q8-gated
 
 ## Interface States
 
@@ -55,9 +55,9 @@ whole-look, counting, versioning and quality rules: [outfit generation §2.5](..
 ## Acceptance Criteria
 
 1. Visual grid of items with color dots
-2. Outfits tab: static outfit combinations (view-only)
-3. Gap analysis tab: text-based list (category + color)
-4. Shopping list tab: category + color + priority + role-specific impact (core base looks or Layering Coverage)
+2. Outfits tab: verified static outfit combinations (view-only), displayed in canonical §2.5 simplicity order across web/API/mobile
+3. Gap analysis tab: text-based list (category + color + reviewed suitable cut and rule reason)
+4. Shopping list tab: category + color + reviewed suitable cut + rule reason + priority + role-specific verified impact (core base looks or Layering Coverage)
 5. All data uses categories, palette, separate simplicity/currentness and whole-look cut rules from the shared evaluator
 6. OPR prominently displayed (see f-015-opr.md)
 7. Layering Coverage displayed as a separate secondary score with `mid x/B` and `outer y/B` diagnostics; never folded into OPR
@@ -68,7 +68,7 @@ whole-look, counting, versioning and quality rules: [outfit generation §2.5](..
 - **ItemGrid** — responsive grid of capsule items
 - **OutfitGrid** — generated outfit combination cards
 - **GapAnalysisList** — text list of missing items with icons
-- **ShoppingList** — table with category, color, priority, impact columns
+- **ShoppingList** — rows with category, color, reviewed suitable cut, human-readable rule reason, priority and verified impact; reuse ShoppingListRow
 - **TabBar** — Items / Outfits / What's Missing / Shopping List
 
 ## Edge Cases

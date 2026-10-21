@@ -132,7 +132,7 @@ Push `use client` as low as possible. Route pages should stay server-rendered un
 | `ItemDetail`      | View/edit state for name, category, colors, brand, material, price                                                                                                                        |
 | `UploadTabs`      | Final Photos / Links / Search design. Before both PRODUCT-PLAN Q8 gates close, Links and shared merchant Search have no live handlers; P2 may ship the separate own-imagery preset picker |
 | `OPRDisplay`      | Formatted wearable outfits ÷ (core + accessory items) with delta; renders Layering Coverage as a separate labelled secondary value with mid/outer diagnostics and `N/A` zero-base state   |
-| `ShoppingListRow` | Category, color, priority, impact                                                                                                                                                         |
+| `ShoppingListRow` | Category, color, reviewed suitable cut, human-readable rule reason, priority and role-specific verified impact; shared evaluator rule IDs remain stable                                   |
 | `BottomNav`       | Primary mobile navigation                                                                                                                                                                 |
 
 ## Accessibility

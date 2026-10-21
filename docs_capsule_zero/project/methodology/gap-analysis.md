@@ -70,12 +70,12 @@ The shopping list is the actionable output of gap analysis. Each row represents 
 
 ### Example Shopping List
 
-| Category    | Recommended Color     | Priority | Impact                                            |
-| ----------- | --------------------- | -------- | ------------------------------------------------- |
-| Trousers    | Navy or charcoal grey | High     | +12 core base looks                               |
-| Ankle boots | Black                 | High     | +8 core base looks                                |
-| Cardigan    | Beige or camel        | Medium   | +12 covered base looks (+50 pp Layering Coverage) |
-| Coat        | Charcoal grey         | Medium   | +12 covered base looks (+50 pp Layering Coverage) |
+| Category    | Recommended Color     | Reviewed suitable cut / rule reason                                      | Priority | Impact                                            |
+| ----------- | --------------------- | ------------------------------------------------------------------------ | -------- | ------------------------------------------------- |
+| Trousers    | Navy or charcoal grey | Straight, regular length; passes this capsule’s proportion rules         | High     | +12 core base looks                               |
+| Ankle boots | Black                 | Simple ankle shaft; reviewed clearance with the selected hems            | High     | +8 core base looks                                |
+| Cardigan    | Beige or camel        | Regular volume; reviewed clearance over the selected tops                | Medium   | +12 covered base looks (+50 pp Layering Coverage) |
+| Coat        | Charcoal grey         | Straight, roomy enough for selected layers; reviewed length/volume tuple | Medium   | +12 covered base looks (+50 pp Layering Coverage) |
 
 The +50 pp examples assume the proposed layer passes §2.5 with **every** existing base look.
 Palette compatibility alone cannot establish this, even in a strict capsule. Completed MVP may give
@@ -87,8 +87,8 @@ actual gain; the numbers above are conditional illustrations, not category-level
 Shopping list items are linked to the catalog search (US-012):
 
 - Users can find matching items directly from the shopping list
-- Click on a shopping list row → opens Search from Catalog pre-filtered by category and color
-- Items from the shared database that match the recommendation are shown first
+- Stage 2 row handoff opens own-preset suggestions filtered by category, colour and the reviewed suitable-cut signature, carrying the same human-readable rule reason and verified gain. Category/colour alone cannot match a recommendation.
+- Shared merchant search remains unavailable until both PRODUCT-PLAN Q8 gates close; its future handoff must preserve the same cut filters and evaluator verdicts.
 
 ## 4. Empty Gap Analysis
 

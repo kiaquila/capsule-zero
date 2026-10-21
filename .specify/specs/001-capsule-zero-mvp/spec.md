@@ -280,9 +280,9 @@ As a user, I want to see my completed capsule with outfits, gap analysis, and sh
 **Acceptance Scenarios:**
 
 1. **Given** the result, **When** loaded, **Then** visual grid of items with color dots displayed
-2. **Given** outfits tab, **When** viewed, **Then** static outfit combinations shown (view-only)
-3. **Given** gap analysis tab, **When** viewed, **Then** text-based list: category + color of missing items
-4. **Given** shopping list tab, **When** viewed, **Then** text list: category + color + priority + role-specific impact (core base looks or Layering Coverage)
+2. **Given** outfits tab, **When** viewed, **Then** verified static outfit combinations shown (view-only) in canonical simplicity order from outfit-generation §2.5
+3. **Given** gap analysis tab, **When** viewed, **Then** text-based list: category + color + reviewed suitable cut and rule reason for missing items
+4. **Given** shopping list tab, **When** viewed, **Then** text list: category + color + reviewed suitable cut + rule reason + priority + role-specific verified impact (core base looks or Layering Coverage)
 5. **Given** data, **When** generated, **Then** all based on categories, palette, and item auto-tagging
 
 ---

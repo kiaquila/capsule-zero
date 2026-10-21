@@ -13,7 +13,7 @@ authorities; add only this required feature-memory folder, not a new domain abst
 | AC2   | `git diff -- docs_capsule_zero/project/methodology/ docs_capsule_zero/glossary.md .specify/memory/design-system.md`                                                                                 | Separate signals, 100/50/0 simplicity/unknown rule, dated six-month currentness review, whole-look verdicts, owned-item preservation and updated accessory style identity. |
 | AC3   | `git diff -- docs_capsule_zero/features/ docs_capsule_zero/screens/ docs_capsule_zero/i18n/ docs_capsule_zero/adr/api-spec.md docs_capsule_zero/project/{frontend,backend,mobile}/ .specify/specs/` | Active consumer obligations and historical scope supersession; actual OpenAPI/client/storage remain unchanged.                                                             |
 | AC4   | `git diff -- PRODUCT-RESEARCH.md docs_capsule_zero/launch/launch-plan.md docs_capsule_zero/project/methodology/outfit-generation.md`                                                                | Paper §3/table 4 attribution, full-MVP validation requirements, no inferred modernity/quality/optimality guarantee.                                                        |
-| AC1–4 | Documentation audit below; `git diff --check`                                                                                                                                                       | PASS: 61 Markdown files, 121 added local links; documentation audit and diff whitespace checks passed.                                                                     |
+| AC1–4 | Documentation audit below; `git diff --check`                                                                                                                                                       | PASS: 65 Markdown files, 124 added local links; documentation audit and diff whitespace checks passed.                                                                     |
 | AC5   | `node scripts/check-repo-baseline.mjs`; `node scripts/check-feature-memory.mjs --worktree`; `npm run check:api-contract`; `node --test scripts/lib/*.test.mjs`                                      | PASS: baseline and feature-memory; API/client parity (52 operations, 26 Go route registrations); all 42 gate-script tests passed.                                          |
 | AC5   | Current-head PR required checks and native Codex review linked from this PR                                                                                                                         | Final evidence is the linked PR current-head checks and trusted Codex verdict; required before merge. This does not imply cut-engine implementation or MVP completion.     |
 
@@ -74,6 +74,11 @@ assert 'low simplicity alone' in (root / 'docs_capsule_zero/project/methodology/
 journey = (root / 'docs_capsule_zero/features/f-006-guided-journey.md').read_text()
 assert all(phrase not in journey for phrase in ["doesn't look like a basic item", 'similar basic category', 'Custom category rejection']), 'Retired active journey rejection'
 assert 'Step 2 category clarification' in journey and 'Unmappable category/role' in journey
+result_feature = (root / 'docs_capsule_zero/features/f-009-capsule-result.md').read_text()
+assert 'Ranked by diversity' not in result_feature and 'canonical simplicity order' in result_feature
+for target in ['docs_capsule_zero/features/f-009-capsule-result.md', 'docs_capsule_zero/screens/screen-capsule-result.md', 'docs_capsule_zero/project/frontend/components.md']:
+    contract = (root / target).read_text().lower()
+    assert 'reviewed suitable cut' in contract and 'rule reason' in contract, target
 historical = ' .specify/specs/013-stage-1-guided-journey/spec.md'.strip()
 original = subprocess.check_output(['git', 'show', 'origin/main:' + historical], text=True)
 assert (root / historical).read_text().split('**Feature Branch**', 1)[1] == original.split('**Feature Branch**', 1)[1], 'Historical 013 body changed'
