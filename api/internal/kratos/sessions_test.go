@@ -75,3 +75,19 @@ func TestListSessionsNeverReturnsPartialInventory(t *testing.T) {
 		})
 	}
 }
+
+// v26.2.0 sends an optimistic next Link even when X-Total-Count is zero.
+func TestListSessionsStopsAtConfirmedEmptyInventory(t *testing.T) {
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.Header().Set("X-Total-Count", "0")
+		w.Header().Set("Link", fmt.Sprintf(`</sessions?page=%d&per_page=100>; rel="next"`, calls))
+		fmt.Fprint(w, `[]`)
+	}))
+	defer server.Close()
+	sessions, err := New(server.URL, "").ListSessions(context.Background(), "token")
+	if err != nil || len(sessions) != 0 || calls != 1 {
+		t.Fatalf("empty inventory: calls=%d err=%v", calls, err)
+	}
+}
