@@ -14,6 +14,8 @@ Production smoke on PR #165 found four demo garments appended to actual guest sa
 
 Reuse search: `createApiProviderRegistry`, `buildFixtureBackedWardrobe`, `buildFixtureBackedCapsules`, mock `listItems`/`getItem`/`getCurrentCapsule`, `withGuestWardrobe`, and the existing profile API provider tests. Existing repositories already enforce ownership, so no new runtime abstraction is needed.
 
+Regression commit `3a43b94` fails three scenarios on the original provider: empty wardrobe contains fixture items, guessed demo ID returns an item, and saved guest contents include extra fixture IDs. The explicit mock/outage guard already passes.
+
 ## Acceptance Criteria
 
 - AC-001: An API account without saved garments has an empty wardrobe and no current capsule; dashboard statistics, recent items and shopping suggestions contain no demo data.

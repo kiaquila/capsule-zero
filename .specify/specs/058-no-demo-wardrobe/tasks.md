@@ -1,7 +1,7 @@
 # Tasks
 
-- [ ] Commit regression tests while the fixture fallback still fails them.
-- [ ] Remove fallback adapters and update affected active docs.
+- [x] Commit regression tests while the fixture fallback still fails them (`3a43b94`, three failures).
+- [x] Remove fallback adapters and update affected active docs.
 - [ ] Run focused checks and all required CI/native review gates.
 - [ ] Resolve addressed review findings, wait two minutes, recheck and merge.
 - [ ] Verify production empty account and saved desktop/mobile guest accounts.
@@ -11,6 +11,8 @@
 ### Dead Ends
 
 None. No production DB deletion is needed: extra garments are projected demo fixtures, not guest rows.
+
+The initial test type imported the whole dashboard implementation into the stricter e2e TypeScript project and exposed unrelated unchecked-index diagnostics. Followed the existing profile test’s structural snapshot type instead; runtime dashboard behavior is still exercised. No compiler flags or product behavior were changed to accommodate the test.
 
 ### Decisions
 

@@ -1,6 +1,6 @@
 # Web Frontend Docs
 
-> **Update 2026-10-19:** Public `/[locale]/start` now hosts reference guest onboarding (spec 055): client-only localStorage state, 32 local image presets and browser calculation; no new server/provider surface. Existing real authentication is reused; attaching guest items to accounts is follow-up.
+> **Update 2026-10-21:** Public `/[locale]/start` hosts reference guest onboarding (spec 055): local browser progress, 32 own-image presets and browser calculation. Explicit account save uses the real Go/PostgreSQL guest context (spec 056). API accounts have no demo wardrobe or demo capsule fallback (spec 058); an account without saved garments starts empty.
 
 > **Monetization freeze (2026-07-16):** Every coin, balance, Lava.top, billing, payment-product,
 > pricing, or purchase-flow statement below is superseded historical context under `PRODUCT-PLAN.md`
@@ -143,3 +143,5 @@ The repository already has CI and PR gates. Before Phase 5 product-code PRs, con
 ## Guest account persistence (spec 056)
 
 An explicit guest save continues existing email/Google authentication through `/account/guest/continue`; ordinary sign-in does not import abandoned browser drafts. `GuestProgressPort` is optional to leave the frozen Supabase provider untouched. Production uses authenticated `/api/guest-progress` routes, not fixture storage. The Go guest context commits an immutable owner-scoped guest-v1 snapshot and deduplicated uncapsulated wardrobe rows together in migration 0004. Existing wardrobe projections consume these records; status/favorite changes are persisted. Saved result routes reconstruct the unchanged evaluator from trusted attributes and dashboard lists owner-scoped saved sets. Input/ownership/idempotency limits are canonical in `docs_capsule_zero/adr/api-spec.md`. Other legacy wardrobe/capsule CRUD remains outside this slice.
+
+Spec 058 removes the API provider's demo-owner relabeling for wardrobe reads/mutations and the current capsule. The existing owner-filtered base repositories remain; `withGuestWardrobe` adds only authenticated saved guest records. New accounts show zero owned garments/capsules until they save their own data. Knowing a fixture ID does not grant access. Explicit local/CI mock fixtures are unchanged. This is a projection correction, with no database deletion or migration and no claim that legacy CRUD is durable.
