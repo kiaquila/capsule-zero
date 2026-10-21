@@ -35,3 +35,5 @@ Go vet/full tests passed before the final shared-transport change; targeted/full
 Final full Go vet/tests and both live Kratos integration cases passed after the shared transport change; the disposable container was removed. Final API-provider browser smoke with the CI signing-secret environment: 4/4 EN/RU Chromium/WebKit cases passed, including no page errors before/after reload. App/e2e typechecks and e2e lint passed (existing skips/conditional warnings only).
 
 Final focused profile suite: 26/26 Chromium/WebKit cases passed; app lint, CSS lint and production build passed after all product changes. Soft size/style/skip warnings remain non-blocking and the retained component/provider size is justified in the PR. Final repository/API/feature-memory checks passed.
+
+After merging main PR #169: app typecheck, repository baseline and feature-memory gates passed; combined session/provider/no-demo suite passed 20/20 and actual API-provider browser controls passed 4/4 (EN/RU, Chromium/WebKit). Both feature documentation additions and owner-filtered wardrobe behavior are retained. Final exact-head CI/native review receipts supersede the initial head receipts.

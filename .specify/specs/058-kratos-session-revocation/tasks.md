@@ -16,6 +16,8 @@ Context7 monthly quota exhausted; use pinned official Kratos source and bundled 
 
 ### Decisions
 
+Main advanced through PR #169 while the initial head was being reviewed. Merge origin/main, retain its owner-filtered API wardrobe/capsule behavior and both documentation additions; rerun provider/session regressions and all exact-head review gates. The only textual conflict was the frontend documentation append.
+
 The complete authentication-before-revocation path now reuses non-redirecting session transport. Regression ffd6e80 demonstrated that default WhoAmI HTTP redirect behavior forwarded the custom token header; no token-bearing session request follows redirects.
 
 Browser smoke exposed server/WebKit ICU punctuation differences in EN timestamps. Regression e2a17b1 fails on pageerror before the fix. Serialize localized UTC labels from the existing server snapshot; keep ISO datetime attributes and API DTO unchanged. Wait for the existing password-form hydration signal before editing fields. Add the isolated browser smoke to the required test workflow.
