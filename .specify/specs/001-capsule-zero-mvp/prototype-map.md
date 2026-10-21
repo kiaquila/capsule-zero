@@ -1,5 +1,7 @@
 # Prototype Map — Capsule Zero MVP v0.1
 
+> **MVP algorithm update (2026-10-21):** Prototypes are visual references, not algorithm evidence. US-009/010/013/015/016/017/023 now also follow PRODUCT-PLAN D4/Q5: separate simplicity/currentness and whole-outfit cut checks required before MVP acceptance. See spec.md FR-021–023 and `docs_capsule_zero/project/methodology/outfit-generation.md` §2.5. Historical colour-only counts do not satisfy this gate.
+
 > Maps each HTML prototype to its corresponding spec sections, user stories, and screens.
 >
 > Landing authority was updated on 2026-07-17 by specs 043/044. The original
@@ -12,26 +14,26 @@
 
 ## Screen Inventory
 
-| #   | Screen                       | HTML Prototype                                                     | User Stories                   | States                                    | Emotional Phase    |
-| --- | ---------------------------- | ------------------------------------------------------------------ | ------------------------------ | ----------------------------------------- | ------------------ |
-| 1   | Landing Page                 | `html-prototypes/landing-v2/v1c-final.html`                        | US-001                         | Hero, Auth sign-up/sign-in, Below fold    | ATTRACTION         |
-| 2   | Registration / Login         | `html-prototypes/auth.html` + live `LandingPage`/`AuthPanel` popup | US-002, US-003                 | Default, Loading, Error, Success          | TRUST              |
-| 3   | Dashboard (Personal Cabinet) | `html-prototypes/dashboard.html`                                   | US-004, US-023                 | Active capsule, Summary, Quick access     | TRUST → CREATIVITY |
-| 4   | My Items (Grid)              | `html-prototypes/my-items.html`                                    | US-006, US-007                 | Empty, Filled, Filter active              | SATISFACTION       |
-| 5   | Item Detail Card             | `html-prototypes/my-items.html` (modal/detail)                     | US-007                         | View, Edit                                | SATISFACTION       |
-| 6   | Guided Journey Step 1/3      | `html-prototypes/guided-journey.html`                              | US-008                         | Default, Selected                         | CREATIVITY         |
-| 7   | Guided Journey Step 2/3      | `html-prototypes/guided-journey.html`                              | US-009                         | Default, Validation error                 | CREATIVITY         |
+| #   | Screen                       | HTML Prototype                                                     | User Stories                   | States                                      | Emotional Phase    |
+| --- | ---------------------------- | ------------------------------------------------------------------ | ------------------------------ | ------------------------------------------- | ------------------ |
+| 1   | Landing Page                 | `html-prototypes/landing-v2/v1c-final.html`                        | US-001                         | Hero, Auth sign-up/sign-in, Below fold      | ATTRACTION         |
+| 2   | Registration / Login         | `html-prototypes/auth.html` + live `LandingPage`/`AuthPanel` popup | US-002, US-003                 | Default, Loading, Error, Success            | TRUST              |
+| 3   | Dashboard (Personal Cabinet) | `html-prototypes/dashboard.html`                                   | US-004, US-023                 | Active capsule, Summary, Quick access       | TRUST → CREATIVITY |
+| 4   | My Items (Grid)              | `html-prototypes/my-items.html`                                    | US-006, US-007                 | Empty, Filled, Filter active                | SATISFACTION       |
+| 5   | Item Detail Card             | `html-prototypes/my-items.html` (modal/detail)                     | US-007                         | View, Edit                                  | SATISFACTION       |
+| 6   | Guided Journey Step 1/3      | `html-prototypes/guided-journey.html`                              | US-008                         | Default, Selected                           | CREATIVITY         |
+| 7   | Guided Journey Step 2/3      | `html-prototypes/guided-journey.html`                              | US-009                         | Default, Validation error                   | CREATIVITY         |
 | 8   | Guided Journey Step 3/3      | `html-prototypes/guided-journey.html`                              | US-010, US-011, US-012, US-017 | Default, Upload; Parsing/Search gated by Q8 | CREATIVITY         |
-| 9   | Import by Links              | `html-prototypes/guided-journey.html` (tab "Paste Links")          | US-011                         | Design-only until both Q8 gates close      | CREATIVITY         |
-| 10  | Search from Catalog          | `html-prototypes/guided-journey.html` (tab "Search Catalog")       | US-012                         | Own-preset design; shared corpus Q8-gated  | CREATIVITY         |
-| 11  | Capsule Result               | `html-prototypes/capsule-result.html`                              | US-013, US-014, US-015, US-016 | Default, Editing                          | SATISFACTION       |
-| 12  | Uncapsulated                 | `html-prototypes/uncapsulated.html`                                | US-020                         | Empty, Filled                             | —                  |
-| 13  | Favorites                    | `html-prototypes/favorites.html`                                   | US-019                         | Empty, Filled (My / From catalogs)        | —                  |
-| 14  | Shopping List                | `html-prototypes/capsule-result.html` (tab)                        | US-013                         | Empty, Filled                             | SATISFACTION       |
-| 15  | For Sale                     | `html-prototypes/for-sale.html`                                    | US-021                         | Empty, Filled                             | —                  |
-| 16  | For Repair                   | `html-prototypes/for-repair.html`                                  | US-024                         | Empty, Filled                             | —                  |
-| —   | Profile                      | `html-prototypes/profile.html`                                     | US-005, US-018                 | View, Edit                                | TRUST              |
-| —   | Design System                | `html-prototypes/design-system.html`                               | —                              | —                                         | —                  |
+| 9   | Import by Links              | `html-prototypes/guided-journey.html` (tab "Paste Links")          | US-011                         | Design-only until both Q8 gates close       | CREATIVITY         |
+| 10  | Search from Catalog          | `html-prototypes/guided-journey.html` (tab "Search Catalog")       | US-012                         | Own-preset design; shared corpus Q8-gated   | CREATIVITY         |
+| 11  | Capsule Result               | `html-prototypes/capsule-result.html`                              | US-013, US-014, US-015, US-016 | Default, Editing                            | SATISFACTION       |
+| 12  | Uncapsulated                 | `html-prototypes/uncapsulated.html`                                | US-020                         | Empty, Filled                               | —                  |
+| 13  | Favorites                    | `html-prototypes/favorites.html`                                   | US-019                         | Empty, Filled (My / From catalogs)          | —                  |
+| 14  | Shopping List                | `html-prototypes/capsule-result.html` (tab)                        | US-013                         | Empty, Filled                               | SATISFACTION       |
+| 15  | For Sale                     | `html-prototypes/for-sale.html`                                    | US-021                         | Empty, Filled                               | —                  |
+| 16  | For Repair                   | `html-prototypes/for-repair.html`                                  | US-024                         | Empty, Filled                               | —                  |
+| —   | Profile                      | `html-prototypes/profile.html`                                     | US-005, US-018                 | View, Edit                                  | TRUST              |
+| —   | Design System                | `html-prototypes/design-system.html`                               | —                              | —                                           | —                  |
 
 ## Prototype Details
 

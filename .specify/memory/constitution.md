@@ -52,18 +52,17 @@ Capsule Zero proprietary color circle methodology.
 (structural layers tracked as a separate **Layering Coverage** score, not in the denominator).
 Detailed counting model: `docs_capsule_zero/project/methodology/outfit-generation.md` §3 (ratified
 2026-07-21, PRODUCT-PLAN §4 Q1).
-A good capsule of 30 items yields 80–150+ **core base looks** (the accessorised hero total is higher —
-bounded, at most a small constant factor above core — and fixed by algorithm-v0 validation). OPR is the
+The historical “80–150+ core base looks from 30 items” illustration is not a guaranteed minimum after wearability filtering. Core and bounded accessory counts must be validated with the complete MVP evaluator before marketing claims. OPR is the
 hero metric displayed on capsule cards in the dashboard. Updated on every capsule change. Shows delta:
 "+0.3 from last change".
 
 ### Item Categories
 
-Only **basic cuts** — simple, non-designer, guaranteeing universal combinability. Three wardrobe types: Women's (F), Men's (M), Mixed. TypeScript enum: `FEMALE | MALE | MIXED`. Min 8 categories to create a capsule. No upper limit. Category system with 7 groups: Tops, Dresses & Skirts, Bottoms, Outerwear, Shoes, Bags, Accessories.
+Default suggestions use **simple cuts without complex construction or excessive decoration**, independent of brand/price. **Currentness is reviewed separately**; simplicity does not guarantee it or universal combinability. Completed MVP applies colour, simplicity, currentness and whole-outfit cut/proportion checks together, including before registration. Owned unusual/dated pieces remain saveable; low simplicity alone never blocks a favourite or capsule membership under existing palette rules. Only verified wearable combinations feed OPR, coverage and recommendation gains. Canonical rules: `docs_capsule_zero/project/methodology/capsule-methodology.md` §6.1 and `outfit-generation.md` §2.5. This is a mandatory pre-MVP Stage-2 gate; shipped `guest-v1` remains interim until implementation/quality validation. Three wardrobe types: Women's (F), Men's (M), Mixed. TypeScript enum: `FEMALE | MALE | MIXED`. Min 8 categories to create a capsule. No upper limit. Category system with 7 groups: Tops, Dresses & Skirts, Bottoms, Outerwear, Shoes, Bags, Accessories.
 
 ### Auto-tagging
 
-Every item must have: name, category, color palette (color dots). Auto-tagging is AI-generated on addition, user-editable. Extended fields (brand, material/composition, source URL) parsed automatically on import. Basis for capsule assembly, compatibility validation, gap analysis, and recommendations.
+Every item must have: name, category, color palette (color dots), separate simplicity/currentness signals and applicable cut/proportion tags. MVP presets are manually labelled/reviewed; future auto-tagging suggestions are user-correctable, with uncertain values left unreviewed. Extended fields (brand, material/composition, source URL) parsed automatically on import. Basis for capsule assembly, compatibility validation, gap analysis, and recommendations.
 
 ## III. Design Principles
 
@@ -220,7 +219,9 @@ Every spec ≥ 025 must follow test-driven development **for application code**.
 
 These principles apply to every spec authored after the SENAR layer shipped. Specs `001-capsule-zero-mvp`, `002-pipeline-hardening`, and `003-sprint-0-foundation` are grandfathered and keep their original shape.
 
-**Version**: 1.7 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-10-19
+**Version**: 1.8 | **Ratified**: 2026-03-17 | **Last Amended**: 2026-10-21
+
+> **v1.8 (2026-10-21)** — owner requires separate simplicity/currentness and whole-outfit cut checks, rule-based and validated throughout the MVP guest/account loop; no brand ban or blanket low-basicity item rejection. Stage 2 is required before MVP acceptance.
 
 > **v1.7 (2026-10-19)** — delegated autonomous MVP decisions and preauthorized delivery under PRODUCT-PLAN §0.1; reference guest UI scope clarified in §0.2/spec 055. Engineering checks, methodology and legal/security boundaries remain binding.
 

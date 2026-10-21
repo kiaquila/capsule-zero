@@ -1,5 +1,15 @@
 # Feature Spec: Stage 1 Guided Journey
 
+## Scope supersession — MVP cut contract (2026-10-21)
+
+Historical delivery scope/evidence below remains a record of this slice. Its colour-only baseline,
+cut deferral, simple-category rejection or exact-reference counting cannot waive the updated MVP gate.
+[PRODUCT-PLAN D4/Q5](../../../PRODUCT-PLAN.md) now requires separate simplicity/currentness and whole-outfit checks
+before MVP acceptance, including the guest/account path. Canonical rules: [methodology §6.1](../../../docs_capsule_zero/project/methodology/capsule-methodology.md)
+and [outfit generation §2.5](../../../docs_capsule_zero/project/methodology/outfit-generation.md). Spec 058 aligns documentation only; application implementation
+and quality validation remain outstanding. Preserve immutable guest-v1 results under their original
+version; do not silently recalculate historic snapshots or rewrite this slice's old verification results.
+
 **Feature Branch**: `codex/stage-1-guided-journey`
 **Created**: 2026-06-08
 **Status**: Local review
@@ -82,7 +92,7 @@ As a user, I want unavailable colors to be blocked with a clear explanation so I
 - A user opens `/en/guided-journey` without a mock session.
 - A user switches between EN and RU on the journey route.
 - A user selects categories, goes back to Step 1, and changes wardrobe type.
-- A custom category is too decorative or non-basic.
+- A custom category cannot be mapped to a supported category/role. Low simplicity alone does not reject an owned item.
 - RU users add multiple valid Cyrillic custom categories in one journey.
 - A user uploads an unsupported file type or file over the local mock limit.
 - A marketplace URL is malformed, duplicated, intentionally unparseable, or shares a host with another distinct URL.
@@ -111,7 +121,7 @@ As a user, I want unavailable colors to be blocked with a clear explanation so I
 - **FR-003**: Step 1 MUST present Women's, Men's, and Mixed wardrobe type cards and advance after selection.
 - **FR-004**: Step 2 MUST render categories filtered by wardrobe type with checkboxes and quantity steppers.
 - **FR-005**: Step 2 MUST block Step 3 until at least eight categories are selected.
-- **FR-006**: Step 2 MUST support custom category entry and reject non-basic categories with an explanation and suggestion.
+- **FR-006**: Step 2 MUST support custom category entry, clarify unsupported category/role mapping and offer a supported alternative. Low simplicity alone MUST NOT reject an owned item; separate simplicity/currentness and whole-look checks follow PRODUCT-PLAN D4/Q5.
 - **FR-007**: Step 3 MUST expose Upload Photos, Paste Links, and Search Catalog tabs.
 - **FR-008**: Step 3 MUST keep item acquisition local/mock-only and display added item previews.
 - **FR-009**: Step 3 MUST render achromatic colors first, followed by all chromatic colors in one continuous picker.

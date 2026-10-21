@@ -1,4 +1,11 @@
 # Screen: Capsule Result
+
+## MVP algorithm contract — required before release (2026-10-21)
+
+Render shared evaluator outputs and rule reasons; do not show colour-valid/cut-failed or unreviewed combinations as verified looks. Shopping guidance includes a suitable cut as well as category/colour. Reuse existing panels/cards and EN/RU explanations; numeric basicity remains internal.
+
+Authority: [PRODUCT-PLAN D4/Q5](../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../project/methodology/capsule-methodology.md);
+whole-look, counting, versioning and quality rules: [outfit generation §2.5](../project/methodology/outfit-generation.md).
 URL: /capsule/[id]
 Feature: features/f-009-capsule-result.md
 Prototype: `html-prototypes/capsule-result.html`
@@ -95,6 +102,7 @@ Prototype: `html-prototypes/capsule-result.html`
 ```
 
 ## Elements
+
 - **Capsule Header:** Name, OPR (large), delta, item/outfit counts, palette strip; secondary Layering Coverage with `mid x/B · outer y/B`
 - **Tab Bar:** 4 tabs — Items / Outfits / What's missing / Shopping list
 - **Item Cards:** Photo + name + color dots + favorite heart + actions menu (⋯)
@@ -102,6 +110,7 @@ Prototype: `html-prototypes/capsule-result.html`
 - **Add Item Card:** "+" card at end of grid
 
 ## Interactivity
+
 - Click tab → switch content (no page reload)
 - Click item card → detail view
 - Click [♡] → toggle favorite
@@ -113,6 +122,7 @@ Prototype: `html-prototypes/capsule-result.html`
 - Incompatible replacement → blocked with message
 
 ## Responsive
+
 - Mobile: 2-column item grid, tabs scroll horizontally
 - Tablet: 3-column grid
 - Desktop: 4-column grid

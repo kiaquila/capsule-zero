@@ -1,5 +1,12 @@
 # Backend Docs
 
+## MVP algorithm contract — required before release (2026-10-21)
+
+The target methodology domain must support separate simplicity/currentness, applicable cut tags and complete-look verdicts used by OPR/coverage/gaps/gains. Reuse existing item/guest snapshot structures and update OpenAPI, generated clients, migrations and parity fixtures together when implementing. Current storage does not yet contain these new attributes; spec 058 is documentation only. Retain old guest-v1 snapshot/evaluator semantics.
+
+Authority: [PRODUCT-PLAN D4/Q5](../../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../methodology/capsule-methodology.md);
+whole-look, counting, versioning and quality rules: [outfit generation §2.5](../methodology/outfit-generation.md).
+
 > **Monetization freeze (2026-07-16):** Every coin, balance, Lava.top, billing, payment-product,
 > pricing, or purchase-flow statement below is superseded historical context under `PRODUCT-PLAN.md`
 > D2. Do not implement, provision, expose, test as a release gate, or use it for a new contract or

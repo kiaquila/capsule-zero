@@ -1,5 +1,12 @@
 # API Spec
 
+## MVP algorithm contract — required before release (2026-10-21)
+
+The target MVP item contract needs separate simplicity/currentness review and applicable cut/proportion metadata; result/recommendation contracts need versioned whole-look verdicts/reasons and suitable-cut guidance. These fields are conceptual requirements, not present in the current OpenAPI/client or implemented by this docs PR. Implement the concrete schema, generated clients, ownership validation, snapshot versioning and client parity together before MVP acceptance. A 422 is not justified by low simplicity alone; unsupported category/colour and actual semantic failures remain explicit.
+
+Authority: [PRODUCT-PLAN D4/Q5](../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../project/methodology/capsule-methodology.md);
+whole-look, counting, versioning and quality rules: [outfit generation §2.5](../project/methodology/outfit-generation.md).
+
 ## Status
 
 Accepted implementation contract for v0.1. The authoritative machine-readable
@@ -184,12 +191,12 @@ as synonymous with Core. Built-in seed rows persist the mapping, so a UUID resol
 name-based lookup. Custom-category validation returns a nullable role/slot pair (`null` when rejected)
 before that category can participate in either metric.
 
-| Route                                   | Method | Auth | Purpose                                               |
-| --------------------------------------- | -----: | ---- | ----------------------------------------------------- |
-| `/api/journey/categories`               |    GET | User | List categories filtered by wardrobe type             |
-| `/api/journey/custom-category/validate` |   POST | User | Validate custom category basicity                     |
-| `/api/palette/validate`                 |   POST | User | Validate selected color IDs and return blocked colors |
-| `/api/capsules`                         |   POST | User | Create capsule from journey selections                |
+| Route                                   | Method | Auth | Purpose                                                                   |
+| --------------------------------------- | -----: | ---- | ------------------------------------------------------------------------- |
+| `/api/journey/categories`               |    GET | User | List categories filtered by wardrobe type                                 |
+| `/api/journey/custom-category/validate` |   POST | User | Resolve supported custom category/role; provide non-blocking cut guidance |
+| `/api/palette/validate`                 |   POST | User | Validate selected color IDs and return blocked colors                     |
+| `/api/capsules`                         |   POST | User | Create capsule from journey selections                                    |
 
 ## Capsules
 

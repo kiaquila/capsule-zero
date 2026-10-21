@@ -19,13 +19,13 @@
 
 ## Guided Journey — Step 2: Category Checklist
 
-| Element               | EN                                                                                   | ES-AR                                                                                         | RU                                                                                 |
-| --------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Title                 | What's in your capsule?                                                              | ¿Qué hay en tu cápsula?                                                                       | Что бы ты хотел включить в свою капсулу?                                           |
-| Subtitle              | Select garment types and set quantity                                                | Seleccioná tipos de prendas y definí la cantidad                                              | Выбери типы вещей и укажи количество                                               |
-| Add custom CTA        | + Add your own category                                                              | + Agregar tu categoría                                                                        | + Добавить свою категорию                                                          |
-| Custom category error | This doesn't look like a basic item. Basic pieces have simple cuts and solid colors. | Esto no parece una prenda básica. Las piezas básicas tienen cortes simples y colores sólidos. | Это не похоже на базовую вещь. Базовые вещи имеют простой крой и однотонные цвета. |
-| Min warning           | Select at least 8 categories                                                         | Seleccioná al menos 8 categorías                                                              | Выбери минимум 8 категорий                                                         |
+| Element               | EN                                                                              | ES-AR                                                                                         | RU                                                                           |
+| --------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Title                 | What's in your capsule?                                                         | ¿Qué hay en tu cápsula?                                                                       | Что бы ты хотел включить в свою капсулу?                                     |
+| Subtitle              | Select garment types and set quantity                                           | Seleccioná tipos de prendas y definí la cantidad                                              | Выбери типы вещей и укажи количество                                         |
+| Add custom CTA        | + Add your own category                                                         | + Agregar tu categoría                                                                        | + Добавить свою категорию                                                    |
+| Custom category error | We couldn’t match this category. Choose a similar category or clarify the item. | Esto no parece una prenda básica. Las piezas básicas tienen cortes simples y colores sólidos. | Не удалось определить категорию. Выбери похожую или уточни, что это за вещь. |
+| Min warning           | Select at least 8 categories                                                    | Seleccioná al menos 8 categorías                                                              | Выбери минимум 8 категорий                                                   |
 
 ## Guided Journey — Step 3: Colors & Items
 
@@ -260,18 +260,18 @@
 
 ## Validation additions — spec 053
 
-| Key                                  | EN                                                                                                                 | RU                                                                                                         |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| auth.passwordRequirements            | Use at least 8 characters. Symbols, including _, are allowed. Choose a password that is different from your email. | Минимум 8 символов. Можно использовать любые символы, включая _. Пароль не должен быть похож на ваш email. |
-| auth.errors.PASSWORD_TOO_SIMILAR     | Choose a password that is different from your email address.                                                       | Пароль слишком похож на ваш email. Придумайте другой пароль.                                               |
-| auth.errors.PASSWORD_TOO_SHORT       | Password must be at least 8 characters.                                                                            | Пароль должен содержать минимум 8 символов.                                                                |
-| auth.errors.PASSWORD_TOO_LONG        | Choose a shorter password.                                                                                         | Выберите более короткий пароль.                                                                            |
-| auth.errors.PASSWORD_COMPROMISED     | This password has appeared in a data breach. Choose another password.                                              | Этот пароль найден в утечках данных. Придумайте другой пароль.                                             |
-| auth.errors.PASSWORD_UNCHANGED       | Choose a password different from your current password.                                                            | Новый пароль должен отличаться от текущего.                                                                |
-| auth.errors.PASSWORD_POLICY_REJECTED | This password does not meet the security requirements. Choose another password.                                    | Этот пароль не соответствует требованиям безопасности. Придумайте другой пароль.                           |
-| auth.errors.INVALID_EMAIL            | Please enter a valid email.                                                                                        | Введите корректный email.                                                                                  |
-| auth.errors.PASSWORDS_MISMATCH       | Passwords don't match.                                                                                             | Пароли не совпадают.                                                                                       |
-| profile.validation.usernameLength    | Username must be 3–30 characters.                                                                                  | Никнейм должен содержать от 3 до 30 символов.                                                              |
+| Key                                  | EN                                                                                                                  | RU                                                                                                          |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| auth.passwordRequirements            | Use at least 8 characters. Symbols, including \_, are allowed. Choose a password that is different from your email. | Минимум 8 символов. Можно использовать любые символы, включая \_. Пароль не должен быть похож на ваш email. |
+| auth.errors.PASSWORD_TOO_SIMILAR     | Choose a password that is different from your email address.                                                        | Пароль слишком похож на ваш email. Придумайте другой пароль.                                                |
+| auth.errors.PASSWORD_TOO_SHORT       | Password must be at least 8 characters.                                                                             | Пароль должен содержать минимум 8 символов.                                                                 |
+| auth.errors.PASSWORD_TOO_LONG        | Choose a shorter password.                                                                                          | Выберите более короткий пароль.                                                                             |
+| auth.errors.PASSWORD_COMPROMISED     | This password has appeared in a data breach. Choose another password.                                               | Этот пароль найден в утечках данных. Придумайте другой пароль.                                              |
+| auth.errors.PASSWORD_UNCHANGED       | Choose a password different from your current password.                                                             | Новый пароль должен отличаться от текущего.                                                                 |
+| auth.errors.PASSWORD_POLICY_REJECTED | This password does not meet the security requirements. Choose another password.                                     | Этот пароль не соответствует требованиям безопасности. Придумайте другой пароль.                            |
+| auth.errors.INVALID_EMAIL            | Please enter a valid email.                                                                                         | Введите корректный email.                                                                                   |
+| auth.errors.PASSWORDS_MISMATCH       | Passwords don't match.                                                                                              | Пароли не совпадают.                                                                                        |
+| profile.validation.usernameLength    | Username must be 3–30 characters.                                                                                   | Никнейм должен содержать от 3 до 30 символов.                                                               |
 
 Personal-name min(1) and existing required-name messages remain unchanged; EN/RU are the only active locales. Unknown auth codes continue to use the generic localized message.
 
@@ -292,3 +292,21 @@ Actual Kratos inventory replaces sample devices/activity. The current marker mat
 ## Guest account save (spec 056)
 
 Active EN/RU copy is in `app/src/messages/{en,ru}.json`, namespace `guest`: saving/wait, preserved selection, save failure/retry, owner mismatch/no intent, saved confirmation and account/dashboard links. The save continuation announces busy/error states and disables the initiating CTA while busy. No price, payment or new registration pitch is added after authentication. ES-AR remains deferred.
+
+## MVP cut guidance — target EN/RU copy (2026-10-21)
+
+Required by PRODUCT-PLAN D4/Q5; implement with the existing EN/RU message catalog and shared UI
+in the application PR. These are target strings, not already shipped UI. Numeric basicity stays
+internal. Spanish remains reference-only. Unknown does not imply an item is dated or bad.
+
+| Situation           | EN                                                                                                         | RU                                                                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Missing tags/review | We need to check this cut. Confirm the details or choose a reviewed alternative.                           | Этот крой ещё нужно проверить. Уточни детали вещи или выбери проверенную замену.                                     |
+| Whole-look conflict | This knit is too bulky for this fitted blazer. Try a roomier layer.                                        | Этот свитер слишком объёмный для приталенного пиджака. Попробуй более свободный слой.                                |
+| Currentness review  | This cut differs from our current examples. Keep the item and explore alternatives.                        | Этот крой отличается от наших актуальных примеров. Вещь можно оставить и посмотреть другие варианты.                 |
+| Saved old result    | This result uses an earlier algorithm. Recalculate to check cuts; your saved result will remain available. | Этот результат рассчитан прежним алгоритмом. Пересчитай его с учётом кроя; сохранённый результат останется доступен. |
+| No verified look    | No verified outfit yet. Review the highlighted details or try a suggested replacement.                     | Пока нет проверенного образа. Уточни отмеченные детали или попробуй предложенную замену.                             |
+
+Canonical meanings and review rules: `project/methodology/capsule-methodology.md` §6.1 and
+`project/methodology/outfit-generation.md` §2.5. Guidance must use the actual failed rule, never a
+blanket judgement about the user's taste, designer brands or price.

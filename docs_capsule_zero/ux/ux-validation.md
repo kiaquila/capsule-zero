@@ -13,6 +13,7 @@
 Analysis of user reviews across Cladwell, Whering, Indyx, Stylebook, Acloset, and CAPSULE (ApS), combined with expert reviews from fashion bloggers and UX analysts.
 
 **Five universal pain points across all competitors:**
+
 1. Wardrobe upload friction is the #1 adoption killer
 2. AI-generated outfits consistently disappoint
 3. Color/auto-tagging accuracy frustrates users
@@ -27,13 +28,13 @@ Analysis of user reviews across Cladwell, Whering, Indyx, Stylebook, Acloset, an
 
 Users consistently cite photographing, uploading, and tagging as the #1 reason they abandon wardrobe apps. This is a fundamental onboarding design problem.
 
-| Competitor | Upload Issue | Severity |
-|------------|-------------|----------|
-| Cladwell | Generic stock images instead of real photos. Background removal unreliable. Encourages pre-built capsules over real wardrobe. | High |
-| Whering | Auto-tagging often wrong (colors "random and very different from actual"). Tags duplicate when trying to delete. One item at a time. | Medium |
-| Indyx | Can only add items one at a time. No bulk upload. No import from online stores. Slow process forces incremental approach. | Medium |
-| Stylebook | Manual background removal tool is "fussy". No AI assistance. No automatic tagging. Pure manual labor. | High |
-| Acloset | Photo uploading "glitchy, may require more than one attempt". Slow process. Ad interruptions during upload on free tier. | High |
+| Competitor | Upload Issue                                                                                                                         | Severity |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| Cladwell   | Generic stock images instead of real photos. Background removal unreliable. Encourages pre-built capsules over real wardrobe.        | High     |
+| Whering    | Auto-tagging often wrong (colors "random and very different from actual"). Tags duplicate when trying to delete. One item at a time. | Medium   |
+| Indyx      | Can only add items one at a time. No bulk upload. No import from online stores. Slow process forces incremental approach.            | Medium   |
+| Stylebook  | Manual background removal tool is "fussy". No AI assistance. No automatic tagging. Pure manual labor.                                | High     |
+| Acloset    | Photo uploading "glitchy, may require more than one attempt". Slow process. Ad interruptions during upload on free tier.             | High     |
 
 > **CZ Implication:** Three upload methods remain the target. The own-imagery preset catalog removes
 > initial friction now; link import and shared merchant search remain differentiated future paths
@@ -43,7 +44,7 @@ Users consistently cite photographing, uploading, and tagging as the #1 reason t
 
 User feedback is overwhelmingly negative. The algorithm described as "atrocious" (Cladwell App Store), producing weather-inappropriate suggestions, ignoring wardrobe items entirely, and generating repetitive combinations. Whering's shuffle feature produces random combinations without styling logic. Acloset's AI receives mixed reviews.
 
-> **CZ Implication:** Methodology-first approach (group-based color compatibility) generates outfits algorithmically with guaranteed color harmony. No AI guesswork — the methodology itself ensures quality. Every combination within a properly built capsule is valid by definition.
+> **CZ Implication (updated 2026-10-21):** Group-based compatibility guarantees colour validity only. Completed MVP also needs separate simplicity/currentness and whole-outfit cut/proportion checks (`project/methodology/outfit-generation.md` §2.5). Only verified looks count; quality needs held-out FITB and stylist wearability evidence. A palette alone does not prove that every combination is wearable.
 
 ### 2.3 Color & Auto-Tagging Accuracy
 
@@ -53,13 +54,13 @@ Multiple apps attempt automatic color detection. Results are consistently frustr
 
 ### 2.4 Paywall Frustration & Unclear Pricing
 
-| Competitor | Pricing Issue |
-|------------|--------------|
-| Cladwell | Highly restrictive free tier (1 outfit/day, 7-day limit, no stats). Hidden limitations. |
-| Acloset | Limits free users to 100 items with intrusive ads. |
-| Indyx | $119.99 AUD/year perceived as expensive ("the cost is steep"). |
-| Whering | VIP at £6.99/week is the most expensive in the market. |
-| Stylebook | One-time $4.99 praised as fair. |
+| Competitor | Pricing Issue                                                                           |
+| ---------- | --------------------------------------------------------------------------------------- |
+| Cladwell   | Highly restrictive free tier (1 outfit/day, 7-day limit, no stats). Hidden limitations. |
+| Acloset    | Limits free users to 100 items with intrusive ads.                                      |
+| Indyx      | $119.99 AUD/year perceived as expensive ("the cost is steep").                          |
+| Whering    | VIP at £6.99/week is the most expensive in the market.                                  |
+| Stylebook  | One-time $4.99 praised as fair.                                                         |
 
 > **CZ Implication:** The 1 free capsule model with transparent Pro upgrade is well-positioned. Free tier must deliver real, complete value (full journey, working capsule, outfits). No hidden limits.
 
@@ -71,74 +72,86 @@ No competitor achieves fashion-editorial visual standards. Cladwell is "dated" a
 
 ## 3. UX Benchmark — Best-in-Class Features
 
-| Feature | Best-in-Class | What Works | CZ Adaptation |
-|---------|--------------|------------|---------------|
-| Onboarding speed | Cladwell | Pre-built capsule templates. Time-to-value under 2 min. | Guided Journey with own-imagery presets; shared merchant search follows only after Q8 gates. |
-| Background removal | Whering / Indyx | Automatic bg removal on upload. Whering's is faster, Indyx has better quality. | Optional bg removal (checkbox, off by default). Quality must match Indyx level. Processing < 5 sec. |
-| Auto-tagging | Whering | Detects category, colors, style, fit, neckline, sleeve, pattern, occasion. | Auto-tag name, category, color points. More focused (3 fields vs 8) but more accurate. Easy manual correction. |
-| Wardrobe analytics | Whering / Indyx | Cost-per-wear tracking, wear frequency, wardrobe composition charts. | OPR (Outfit Productivity Ratio) as the hero metric. Cost per wear as NICE-TO-HAVE. Unique angle: productivity, not guilt. |
-| Social / community | Whering / CAPSULE | Friends can style your wardrobe. Community feed. Outfit sharing. | Explicitly out of scope for v0.1. Validated as nice-to-have, not essential for capsule-building. |
-| Sustainability framing | Whering | 60-day no-buy challenges. Repair services. Donation links. Conscious consumption positioning. | Sustainability as natural outcome of capsule methodology, not marketing message. "Fewer, better" is inherently sustainable. |
-| Stylist access | Indyx | Human stylists create custom lookbooks ($150+). High satisfaction. | AI Stylist methodology replaces human stylists. Methodology-driven results at scale. |
-| Item import | Indyx | Forward shopping receipts or paste product links. Chrome extension for desktop. | Retained differentiator, but parser/copy/link-back behavior must be accepted by the Q8 compliance and legal gates first. |
+| Feature                | Best-in-Class     | What Works                                                                                    | CZ Adaptation                                                                                                               |
+| ---------------------- | ----------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Onboarding speed       | Cladwell          | Pre-built capsule templates. Time-to-value under 2 min.                                       | Guided Journey with own-imagery presets; shared merchant search follows only after Q8 gates.                                |
+| Background removal     | Whering / Indyx   | Automatic bg removal on upload. Whering's is faster, Indyx has better quality.                | Optional bg removal (checkbox, off by default). Quality must match Indyx level. Processing < 5 sec.                         |
+| Auto-tagging           | Whering           | Detects category, colors, style, fit, neckline, sleeve, pattern, occasion.                    | Auto-tag name, category, color points. More focused (3 fields vs 8) but more accurate. Easy manual correction.              |
+| Wardrobe analytics     | Whering / Indyx   | Cost-per-wear tracking, wear frequency, wardrobe composition charts.                          | OPR (Outfit Productivity Ratio) as the hero metric. Cost per wear as NICE-TO-HAVE. Unique angle: productivity, not guilt.   |
+| Social / community     | Whering / CAPSULE | Friends can style your wardrobe. Community feed. Outfit sharing.                              | Explicitly out of scope for v0.1. Validated as nice-to-have, not essential for capsule-building.                            |
+| Sustainability framing | Whering           | 60-day no-buy challenges. Repair services. Donation links. Conscious consumption positioning. | Sustainability as natural outcome of capsule methodology, not marketing message. "Fewer, better" is inherently sustainable. |
+| Stylist access         | Indyx             | Human stylists create custom lookbooks ($150+). High satisfaction.                            | AI Stylist methodology replaces human stylists. Methodology-driven results at scale.                                        |
+| Item import            | Indyx             | Forward shopping receipts or paste product links. Chrome extension for desktop.               | Retained differentiator, but parser/copy/link-back behavior must be accepted by the Q8 compliance and legal gates first.    |
 
 ## 4. Competitor UX Scorecard
 
 Scale: 1-5 (1 = poor, 5 = excellent). Weighted by importance to CZ's positioning.
 
-| Dimension | Cladwell | Whering | Indyx | Stylebook | Acloset | CAPSULE | CZ Target |
-|-----------|---------|---------|-------|-----------|---------|---------|-----------|
-| Visual design quality | 2 | 3.5 | 4 | 2 | 2.5 | 3 | **5** |
-| Onboarding clarity | 3.5 | 3 | 3 | 2.5 | 3 | 3 | **4.5** |
-| Upload experience | 3 | 3.5 | 3 | 2 | 2.5 | 3 | **4.5** |
-| Capsule methodology | 2.5 | 1 | 1 | 1 | 1.5 | 1 | **5** |
-| Outfit quality | 1.5 | 2.5 | 3.5 | 3 | 2 | 2.5 | **4.5** |
-| Color system | 2 | 2.5 | 2 | 2 | 2 | 2 | **5** |
-| Free tier value | 2 | 4 | 3.5 | 4 | 2.5 | 3.5 | **4** |
-| Premium feel | 2 | 3 | 3.5 | 2 | 2 | 2.5 | **5** |
+| Dimension             | Cladwell | Whering | Indyx | Stylebook | Acloset | CAPSULE | CZ Target |
+| --------------------- | -------- | ------- | ----- | --------- | ------- | ------- | --------- |
+| Visual design quality | 2        | 3.5     | 4     | 2         | 2.5     | 3       | **5**     |
+| Onboarding clarity    | 3.5      | 3       | 3     | 2.5       | 3       | 3       | **4.5**   |
+| Upload experience     | 3        | 3.5     | 3     | 2         | 2.5     | 3       | **4.5**   |
+| Capsule methodology   | 2.5      | 1       | 1     | 1         | 1.5     | 1       | **5**     |
+| Outfit quality        | 1.5      | 2.5     | 3.5   | 3         | 2       | 2.5     | **4.5**   |
+| Color system          | 2        | 2.5     | 2     | 2         | 2       | 2       | **5**     |
+| Free tier value       | 2        | 4       | 3.5   | 4         | 2.5     | 3.5     | **4**     |
+| Premium feel          | 2        | 3       | 3.5   | 2         | 2       | 2.5     | **5**     |
 
 > **Key takeaway:** No competitor scores above 4 on any dimension. The highest is Indyx at 4.0 for visual design. CZ's targets of 4.5-5.0 across methodology, color system, and premium feel represent genuinely unoccupied territory.
 
 ## 5. Critical UX Insights
 
 ### Insight #1: Time-to-first-value determines retention
+
 Users who don't see value within 5-10 minutes abandon permanently. CZ's Guided Journey must reach the result screen (capsule + outfits + gap analysis) within a single focused session. The own-imagery preset catalog lets users build a capsule plan without photos; shared merchant search is not required for first value.
+
 > **Target:** First capsule result within 10 minutes of registration.
 
 ### Insight #2: Photo quality drives emotional engagement
+
 Users report that e-commerce images make the wardrobe "look much better" and increases engagement. The visual quality of item photos directly correlates with return visits. Messy phone photos feel depressing, not inspiring.
+
 > **Target:** Capsule Zero-owned presets provide editorial-quality item cards by default. A future
 > marketplace import must preserve lawful source/link behavior from the Q8 compliance scheme;
 > photo upload with optional background removal maintains clean aesthetics.
 
 ### Insight #3: Users want guidance, not freedom
+
 Open-ended apps produce "where do I even start?" paralysis. Cladwell's templates and Indyx's Style Workshop succeed because they provide structure. Users consistently praise guided experiences over blank-canvas approaches.
+
 > **Target:** Guided Journey with 3 clear steps. Methodology provides the framework. User curates within guardrails.
 
 ### Insight #4: Outfit generation must have visible logic
+
 AI outfit suggestions fail because users can't understand WHY items were paired. Methodology-based pairing (colors combine when they share a group, are achromatic, or form the Desaturated↔Dark cross-pair) provides transparent, explainable logic.
+
 > **Target:** Every generated outfit follows capsule color rules. No "magic" — users understand the system.
 
 ### Insight #5: The "aha moment" is seeing hidden potential
+
 The most positive reviews describe the moment users realize they have more outfit combinations than they thought. Cladwell's "possible outfits" counter and Whering's "Dress Me" shuffle both trigger this.
+
 > **Target:** OPR prominently displayed. Outfit count shows capsule's combinatorial power.
 
 ### Insight #6: Color is underserved across the entire market
+
 No competitor has sophisticated color logic. Whering detects colors but gets them wrong. Cladwell shows color palette statistics but doesn't use them for styling. Users want to understand their color preferences and use that knowledge for shopping decisions.
+
 > **Target:** Color system is CZ's deepest moat. Group harmony + achromatic connectors + warm/cool display metadata are unique in market.
 
 ## 6. First-Impression Design Audit
 
 Analysis of first 30 seconds of each competitor's user experience.
 
-| App | First Impression | Emotional Response | Screenshot Test |
-|-----|-----------------|-------------------|-----------------|
-| Cladwell | Utilitarian. Immediately asks for address/location. Pushes subscription. Pre-built capsule grid feels generic. | "This is a tool, not an experience" | Fail |
-| Whering | Friendly, colorful, youthful. "Clueless wardrobe" vibe. Playful UI with stacked carousel. Fun but not premium. | "Cute app, let me try it" | Maybe |
-| Indyx | Clean, modern, professional. Best-designed competitor. White space, good typography. But lacks editorial drama. | "This looks legitimate" | Close |
-| Stylebook | Basic, functional, dated. iOS-only feel. No visual ambition. Gets the job done without inspiring. | "Spreadsheet energy" | Fail |
-| Acloset | Cluttered. Social feed and marketplace prominent. Feels "junky" with other people's items mixed in. Ads intrusive on free tier. | "Too much happening" | Fail |
-| CAPSULE | Women-focused, social-first. Community wardrobe sharing. Cute, approachable. Limited styling logic. | "Social media for clothes" | Maybe |
+| App       | First Impression                                                                                                                | Emotional Response                  | Screenshot Test |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | --------------- |
+| Cladwell  | Utilitarian. Immediately asks for address/location. Pushes subscription. Pre-built capsule grid feels generic.                  | "This is a tool, not an experience" | Fail            |
+| Whering   | Friendly, colorful, youthful. "Clueless wardrobe" vibe. Playful UI with stacked carousel. Fun but not premium.                  | "Cute app, let me try it"           | Maybe           |
+| Indyx     | Clean, modern, professional. Best-designed competitor. White space, good typography. But lacks editorial drama.                 | "This looks legitimate"             | Close           |
+| Stylebook | Basic, functional, dated. iOS-only feel. No visual ambition. Gets the job done without inspiring.                               | "Spreadsheet energy"                | Fail            |
+| Acloset   | Cluttered. Social feed and marketplace prominent. Feels "junky" with other people's items mixed in. Ads intrusive on free tier. | "Too much happening"                | Fail            |
+| CAPSULE   | Women-focused, social-first. Community wardrobe sharing. Cute, approachable. Limited styling logic.                             | "Social media for clothes"          | Maybe           |
 
 > **CZ target first impression (updated by specs 043/044):** One-viewport B&W editorial wallpaper,
 > gold logo, a concise product-value headline with supporting copy, and one gold primary CTA; Log In

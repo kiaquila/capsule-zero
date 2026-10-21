@@ -31,7 +31,7 @@ Slice work modifies packages inside `/api/internal/`:
 - `profile` — profiles, language, avatar metadata
 - `wardrobe` — items, wardrobe_entries, favorites, statuses
 - `capsule` — capsules, palette, members, outputs
-- `methodology` — color compatibility, OPR, gap analysis (pure logic)
+- `methodology` — colour, separate simplicity/currentness, whole-outfit cut checks, OPR, coverage and gap/recommendation evaluation (pure versioned logic; required before MVP)
 - `upload` — signed PUT URLs, upload_jobs, asset attach
 - `marketplace` — link parser adapters, import jobs
 - `catalog` — FTS-first search and public reads; pgvector upgrades in slice 11
@@ -173,14 +173,17 @@ Tests first:
 
 ## Slice 08 — Capsule Algorithm Engine
 
-Spec: `.specify/specs/030-capsule-algorithm-engine/`
+Spec: implementation spec to allocate from the next free ID; the historical `030-capsule-algorithm-engine` path was never created and is not an implementation artifact. Documentation contract: `.specify/specs/058-mvp-cut-algorithm-contract/`.
 
-Goal: implement compatibility, outfit generation, OPR, gap analysis, shopping list in `internal/methodology` as pure Go logic.
+Goal: deliver the complete PRODUCT-PLAN D4/Q5 MVP algorithm: colour, separate simplicity/currentness and whole-look cut rules reused by generation, OPR, Layering Coverage, gaps and shopping gains. This is a pre-MVP requirement including guest/account outputs, not post-MVP polish.
 
 Tests first:
 
 - Unit tests for color compatibility against `colors.md` matrix.
-- Unit tests for 7-layer outfit construction from `outfit-generation.md`.
+- Unit tests for 7-layer outfit construction and full-look cut/proportion rules from `outfit-generation.md` §2.5; pairwise-only checks cannot satisfy the gate.
+- Simple-but-dated/current fixtures; same colours/different cuts; bulky knit/fitted blazer; excessive decor; missing/overdue reviews; favourite/save preservation and fail/unreviewed combinations contributing no count/gain/coverage.
+- Predeclared held-out four-choice FITB + stylist wearability thresholds; record dataset sizes, false positives and all supported category coverage before release.
+- Versioned browser/API/mobile parity fixtures; immutable guest-v1 replay and explicit new-version recalculation without overwriting historic snapshots.
 - OPR formula tested on zero-item, single-item, full-capsule.
 - Gap rules from `gap-analysis.md`: structural, color, combinability, layer balance.
 - Integration test: compatibility blocks incompatible add with explanation + alternative.
@@ -188,7 +191,7 @@ Tests first:
 
 Implementation:
 
-- `internal/methodology` holds the algorithm; `internal/capsule` orchestrates DB writes around it. No SQL RPC.
+- Reuse the existing guest evaluate/recommend and colour logic; implement shared versioned rules/data and identical parity fixtures across browser and target `internal/methodology`, with capsule services orchestrating persistence. Do not create a divergent calculator. Hand-labelled own-image presets suffice; no new ML service. This plan is a target, not a claim that the Go methodology package or new cut schema already exists.
 
 ## Slice 09 — Capsule Management Mutations
 

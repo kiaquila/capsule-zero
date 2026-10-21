@@ -1,5 +1,15 @@
 # 046 — Tasks
 
+## Scope supersession — MVP cut contract (2026-10-21)
+
+Historical delivery scope/evidence below remains a record of this slice. Its colour-only baseline,
+cut deferral, simple-category rejection or exact-reference counting cannot waive the updated MVP gate.
+[PRODUCT-PLAN D4/Q5](../../../PRODUCT-PLAN.md) now requires separate simplicity/currentness and whole-outfit checks
+before MVP acceptance, including the guest/account path. Canonical rules: [methodology §6.1](../../../docs_capsule_zero/project/methodology/capsule-methodology.md)
+and [outfit generation §2.5](../../../docs_capsule_zero/project/methodology/outfit-generation.md). Spec 058 aligns documentation only; application implementation
+and quality validation remain outstanding. Preserve immutable guest-v1 results under their original
+version; do not silently recalculate historic snapshots or rewrite this slice's old verification results.
+
 - [x] T001 Сбор решений фаундера Q1/Q2/Q3/Q6 (квиз, сессия 2026-07-21) + проверка матчасти (OPR-модель, colors.md vs прототип)
 - [x] T002 `outfit-generation.md` — модель OPR §3, accessory ruleset §2.3, Layering Coverage §3.4, basicity-хук §2.5
 - [x] T003 `capsule-methodology.md` §1/§3/§7.1 + `gap-analysis.md` §5/Rule-note + `colors.md` canonical-блок
@@ -8,51 +18,51 @@
 - [x] T006 Adversarial-review (4 линзы: OPR-math, кросс-док, SENAR, drift/regression) — 12 находок; major-фиксы применены (см. Decisions/Dead Ends)
 - [x] T007 Заполнить evidence-статусы в `plan.md` фактическими прогонами и обновить PR-head evidence
 - [x] T008 Merge-readiness review: native Codex P2 + две независимые локальные дорожки; устранить
-  OPR drift, category-role ambiguity, guest/capsule invariant gap, accessory-cap/math drift,
-  gap/recommendation inconsistency и production CTA dead-end
+      OPR drift, category-role ambiguity, guest/capsule invariant gap, accessory-cap/math drift,
+      gap/recommendation inconsistency и production CTA dead-end
 - [x] T009 Native Codex P1 runtime alignment: test-first перевести Dashboard и Capsule Result на
-  единый Core+Accessory denominator, вывести отдельные Layering Coverage diagnostics и закрепить
-  zero-base `N/A` и `(slot, colorId)` accessory dedup функциональным e2e + desktop/mobile visual baseline
+      единый Core+Accessory denominator, вывести отдельные Layering Coverage diagnostics и закрепить
+      zero-base `N/A` и `(slot, colorId)` accessory dedup функциональным e2e + desktop/mobile visual baseline
 - [x] T010 Native Codex P1 category completeness: RED-коммитом `ec099a8` доказать runtime gap
-  31/48, затем добавить все 17 отсутствовавших built-in категорий в общий `CATEGORIES` role/slot
-  catalog; заодно сделать прямые app-module imports e2e совместимыми с чистым CI package boundary
+      31/48, затем добавить все 17 отсутствовавших built-in категорий в общий `CATEGORIES` role/slot
+      catalog; заодно сделать прямые app-module imports e2e совместимыми с чистым CI package boundary
 - [x] T011 Independent code-review category projection: RED-коммитом `154bcf6` закрепить полную
-  category/gender/role/slot матрицу и provider-scoped Journey; исправить canonical mixed-gender
-  semantics и не расширять frozen Supabase provider новыми глобальными IDs
+      category/gender/role/slot матрицу и provider-scoped Journey; исправить canonical mixed-gender
+      semantics и не расширять frozen Supabase provider новыми глобальными IDs
 - [x] T012 Final test-efficacy review: заменить helper-only provider assertion на прямой
-  `buildGuidedJourneySnapshot` regression со stub-provider; mutation proof удалением `supportedIds`
-  падает с 127 лишними IDs, восстановленная реализация даёт focused Chromium `5 passed`
+      `buildGuidedJourneySnapshot` regression со stub-provider; mutation proof удалением `supportedIds`
+      падает с 127 лишними IDs, восстановленная реализация даёт focused Chromium `5 passed`
 - [x] T013 Native Codex P2 persisted numerator: RED-коммитом `69529ee` доказать legacy result
-  `4` для capsule без shoes; mock/API-backed `createCapsule` перевести на общий role/color-aware
-  `calculatePreviewOutfitProductivity` и закрепить invalid `0` / valid base `1`
+      `4` для capsule без shoes; mock/API-backed `createCapsule` перевести на общий role/color-aware
+      `calculatePreviewOutfitProductivity` и закрепить invalid `0` / valid base `1`
 - [x] T014 Final persisted-ID test efficacy: добавить duplicate shirt/shoes IDs в valid draft,
-  проверить сохранённый unique `itemIds`; mutation proof удалением `Set` даёт `4` вместо `1`
+      проверить сохранённый unique `itemIds`; mutation proof удалением `Set` даёт `4` вместо `1`
 - [x] T015 CI Node-20 portability: воспроизвести падение run `29944207430` локально на Node
-  `20.20.2`, заменить неявный Node-25 type stripping на явный `jiti` app-module loader и получить
-  focused Chromium `6 passed` на той же версии Node, что использует CI
+      `20.20.2`, заменить неявный Node-25 type stripping на явный `jiti` app-module loader и получить
+      focused Chromium `6 passed` на той же версии Node, что использует CI
 - [x] T016 Native Codex P2 deterministic selection: RED-коммитами `375c327` и `74cfe9a` потребовать
-  canonical farthest-first representatives при candidates > `A_max`, lowest-itemId dedup и
-  color-aware distance; вынести enumeration/dedup/selection в `outfit-variation-selection.ts`,
-  вернуть selected keys/item IDs в preview и доказать три независимые mutation failures
+      canonical farthest-first representatives при candidates > `A_max`, lowest-itemId dedup и
+      color-aware distance; вынести enumeration/dedup/selection в `outfit-variation-selection.ts`,
+      вернуть selected keys/item IDs в preview и доказать три независимые mutation failures
 - [x] T017 Native Codex P2 contract-example drift: дополнить Capsule JSON в `api-spec.md` обязательным
-  `layeringCoverage` object и сверить все четыре поля с authoritative OpenAPI schema
+      `layeringCoverage` object и сверить все четыре поля с authoritative OpenAPI schema
 - [x] T018 Native Codex P2 renderer drift: RED-коммитом `b32be17` зафиксировать exact item IDs
-  counted cards; заменить section-first `buildOutfits` на renderer из `previewBaseLooks` и selected
-  representative IDs, включая base-only card
+      counted cards; заменить section-first `buildOutfits` на renderer из `previewBaseLooks` и selected
+      representative IDs, включая base-only card
 - [x] T019 OSV gate: заменить уязвимые transitive `fast-uri@3.1.3` и `sharp@0.34.5` точечными
-  npm overrides на `3.1.4` / `0.35.3`, обновить app lockfile и подтвердить zero findings тем же
-  `osv-scanner-action:v2.3.5`, app CI-check и production Docker build
+      npm overrides на `3.1.4` / `0.35.3`, обновить app lockfile и подтвердить zero findings тем же
+      `osv-scanner-action:v2.3.5`, app CI-check и production Docker build
 - [x] T020 OSV follow-up 2026-07-24: обновить `postcss` до `8.5.18` и совместимую
-  `brace-expansion@5.x` цепочку до `5.0.8`; для dev-only `brace-expansion@1.1.16`, у которого нет
-  patched 1.x, добавить точные app/e2e package overrides до 2026-08-08 и подтвердить zero findings
-  тем же scanner-action image
+      `brace-expansion@5.x` цепочку до `5.0.8`; для dev-only `brace-expansion@1.1.16`, у которого нет
+      patched 1.x, добавить точные app/e2e package overrides до 2026-08-08 и подтвердить zero findings
+      тем же scanner-action image
 - [x] T021 Q8 contract sweep: сохранить US-011/US-012/US-025 как gated design, удалить
-  merchant-import/shared-search/moderation surface из authoritative OpenAPI/generated client,
-  добавить negative contract guard, убрать marketplace port и работающую mock/UI import-реализацию,
-  retired Supabase catalog-search path отсоединить от shared records, оставить Links tab disabled
-  без формы/handler с локализованным объяснением и upload/preset alternatives, привести live
-  Terms/Privacy к conditional/no-processing статусу, прогнать canonical manual list + inventory и
-  актуализировать active decision docs без schema/migration/runtime реализации
+      merchant-import/shared-search/moderation surface из authoritative OpenAPI/generated client,
+      добавить negative contract guard, убрать marketplace port и работающую mock/UI import-реализацию,
+      retired Supabase catalog-search path отсоединить от shared records, оставить Links tab disabled
+      без формы/handler с локализованным объяснением и upload/preset alternatives, привести live
+      Terms/Privacy к conditional/no-processing статусу, прогнать canonical manual list + inventory и
+      актуализировать active decision docs без schema/migration/runtime реализации
 
 ## Process Memory
 

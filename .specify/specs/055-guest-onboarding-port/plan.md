@@ -1,5 +1,15 @@
 # Implementation plan
 
+## Scope supersession — MVP cut contract (2026-10-21)
+
+Historical delivery scope/evidence below remains a record of this slice. Its colour-only baseline,
+cut deferral, simple-category rejection or exact-reference counting cannot waive the updated MVP gate.
+[PRODUCT-PLAN D4/Q5](../../../PRODUCT-PLAN.md) now requires separate simplicity/currentness and whole-outfit checks
+before MVP acceptance, including the guest/account path. Canonical rules: [methodology §6.1](../../../docs_capsule_zero/project/methodology/capsule-methodology.md)
+and [outfit generation §2.5](../../../docs_capsule_zero/project/methodology/outfit-generation.md). Spec 058 aligns documentation only; application implementation
+and quality validation remain outstanding. Preserve immutable guest-v1 results under their original
+version; do not silently recalculate historic snapshots or rewrite this slice's old verification results.
+
 Reuse check: inspected `GuidedJourneyShell`, `WardrobeItemCard`, `AuthPanel`, `categories.ts`, `color-compatibility.ts`, `outfit-productivity.ts` and `outfit-variation-selection.ts`. The authenticated journey/item card do not implement the approved reference guest grid/composition; port the dedicated guest components. Reuse AuthPanel, locale routing, canonical color compatibility, existing tokens and category membership. Source CSS geometry remains the reference; isolate styles to guest surface.
 
 Delivery reuse check: `rg setup-ci-docker-builder .github scripts` found the existing shared runner-only helper. Extend it instead of adding a second builder/bootstrap path; existing workflow tests do not exercise helper download/version failures, so add `ci-builder-cache.test.mjs`.
