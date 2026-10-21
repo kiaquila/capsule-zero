@@ -93,6 +93,9 @@ export interface AuthPort {
   getCurrentSession(): Promise<Session | null>;
   /** Optional to leave frozen providers unchanged; no synthetic inventory. */
   listSessions?(): Promise<AccountSession[]>;
+  /** Caller-owned public Kratos writes; current is always preserved. */
+  revokeSession?(id: string): Promise<void>;
+  revokeOtherSessions?(): Promise<void>;
   signUpWithPassword(credentials: PasswordCredentials): Promise<Session | null>;
   signInWithPassword(credentials: PasswordCredentials): Promise<Session>;
   requestPasswordRecovery(email: string): Promise<PasswordRecoveryRequest>;

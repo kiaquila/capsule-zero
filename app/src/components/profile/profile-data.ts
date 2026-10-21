@@ -33,8 +33,14 @@ export interface ProfileSnapshot {
   };
   account: {
     userIdLabel: string;
-    sessions: AccountSession[];
+    sessions: Array<
+      AccountSession & {
+        authenticatedAtLabel?: string;
+        expiresAtLabel: string;
+      }
+    >;
     sessionsStatus: "available" | "unavailable";
+    sessionsRevocable: boolean;
   };
   navigation: DashboardSnapshot["navigation"];
   options: {
@@ -85,6 +91,12 @@ export async function buildProfileSnapshot({
   const username =
     savedPreferences?.username ?? buildDefaultUsername(email, displayName);
 
+  const sessionDateFormat = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "UTC",
+  });
+
   return {
     profile: {
       userId: session.userId,
@@ -112,7 +124,18 @@ export async function buildProfileSnapshot({
     },
     account: {
       userIdLabel: buildUserIdLabel(session.userId),
+      sessionsRevocable: Boolean(
+        registry.auth.revokeSession && registry.auth.revokeOtherSessions,
+      ),
       ...inventory,
+      // Serialize display labels once: server/browser ICU punctuation differs.
+      sessions: inventory.sessions.map((entry) => ({
+        ...entry,
+        authenticatedAtLabel: entry.authenticatedAt
+          ? sessionDateFormat.format(new Date(entry.authenticatedAt))
+          : undefined,
+        expiresAtLabel: sessionDateFormat.format(new Date(entry.expiresAt)),
+      })),
     },
     navigation: dashboardSnapshot.navigation,
     options: {

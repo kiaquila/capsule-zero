@@ -1,5 +1,7 @@
 "use server";
 
+import { z } from "zod";
+import { authActionFailure } from "@/features/auth/error-codes";
 import { readMockSession } from "@/features/auth/session";
 import { createProviderRegistry } from "@/lib/providers";
 import {
@@ -111,4 +113,23 @@ function buildInitials(value: string) {
       .join("")
       .slice(0, 2) || "CZ"
   );
+}
+
+/** null explicitly means all others; malformed/missing IDs never mean bulk. */
+export async function revokeSessionAction(
+  id: string | null,
+): Promise<{ ok: boolean; code?: string }> {
+  if (id !== null && !z.string().uuid().safeParse(id).success) {
+    return { ok: false, code: "VALIDATION_ERROR" };
+  }
+  const { auth } = createProviderRegistry();
+  if (!auth.revokeSession || !auth.revokeOtherSessions)
+    return { ok: false, code: "UNAVAILABLE" };
+  try {
+    if (id === null) await auth.revokeOtherSessions();
+    else await auth.revokeSession(id);
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, code: authActionFailure(error).code };
+  }
 }

@@ -169,3 +169,16 @@ maxRedirects: 0 }`)) — no rendered UI, so no Page Object. Assert on the
 The POM classes should not change for markup-only rewrites.
 
 The required web test job installs Playwright browsers and system dependencies fresh. Browser binaries are distribution-specific; a Linux-only cache previously restored Ubuntu 24 WebKit on Ubuntu 26 and failed before test execution. This follows [Playwright CI guidance](https://playwright.dev/docs/ci#caching-browsers), which recommends avoiding browser binary caches.
+
+### Session controls with the API provider (spec 058)
+
+The required `test` job runs the isolated browser smoke separately from the default mock-provider suite. It starts an in-process loopback API fixture on 34488, uses a throwaway signed session, and exercises actual profile Server Actions in EN/RU on Chromium/WebKit. The fixture is never a production target. Run with one worker (the loopback port is exclusive):
+
+```bash
+E2E_SESSION_REVOCATION=1 CAPSULE_PROVIDER_MODE=api \
+CAPSULE_API_BASE_URL=http://127.0.0.1:34488 \
+PORT=3215 E2E_BASE_URL=http://localhost:3215 \
+npm --prefix tests/e2e test -- specs/profile/session-controls-browser.spec.ts --workers=1
+```
+
+This verifies pending/error/single/bulk UI, no accidental profile save, preserved unsaved edits, reload and absence of date hydration errors. Real Kratos owner/current preservation is tested separately with `TEST_KRATOS_PUBLIC_URL` and `go -C api test -tags=integration ./internal/auth -run 'TestSession.*LiveKratos' -count=1` against an explicitly disposable runtime.

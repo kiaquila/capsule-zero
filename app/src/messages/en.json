@@ -260,7 +260,13 @@
       "session": "Session",
       "current": "Current",
       "signedIn": "Signed in:",
-      "expires": "Expires:"
+      "expires": "Expires:",
+      "endSession": "End session",
+      "endOthers": "End all other sessions",
+      "ending": "Ending…",
+      "ended": "Sessions ended. This session is still active.",
+      "endFailed": "Could not end sessions. Try again.",
+      "signInAgain": "Your session has expired. Sign in again."
     },
     "buttons": {
       "save": "Save",

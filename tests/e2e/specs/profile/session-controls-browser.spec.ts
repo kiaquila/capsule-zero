@@ -29,6 +29,10 @@ let release: (() => void) | undefined;
 let received: number;
 let profileWrites: number;
 
+function releaseWrite() {
+  release?.();
+}
+
 test.beforeAll(async () => {
   server = createServer(async (req, res) => {
     const pathname = new URL(req.url!, "http://localhost").pathname;
@@ -101,7 +105,7 @@ test.beforeAll(async () => {
 });
 
 test.afterAll(async () => {
-  release?.();
+  releaseWrite();
   server?.closeAllConnections();
   if (server)
     await new Promise<void>((resolve) => server.close(() => resolve()));
@@ -110,7 +114,7 @@ test.afterAll(async () => {
 for (const locale of ["en", "ru"] as const) {
   test(`${locale}: pending and failed writes retain rows; single and bulk preserve current and edits`, async ({
     page,
-  }) => {
+  }, testInfo) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
     active = [...ids];
@@ -124,20 +128,22 @@ for (const locale of ["en", "ru"] as const) {
       path.join(appRoot, "src/features/auth/session-codec.ts"),
     )) as { serializeSignedSession(value: typeof session): Promise<string> };
     const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3000";
-    await page
-      .context()
-      .addCookies([
-        {
-          name: "capsule_zero_session",
-          value: await serializeSignedSession(session),
-          url: baseURL,
-        },
-      ]);
+    await page.context().addCookies([
+      {
+        name: "capsule_zero_session",
+        value: await serializeSignedSession(session),
+        url: baseURL,
+      },
+    ]);
     const profile = new ProfilePage(page, locale);
     await profile.goto();
     await expect(profile.revokeSession).toHaveCount(2);
     await profile.openPasswordForm();
     expect(pageErrors).toEqual([]);
+    await testInfo.attach("session-controls", {
+      body: await profile.sessionPanel.screenshot({ animations: "disabled" }),
+      contentType: "image/png",
+    });
     await profile.firstName.fill("Unsaved");
     try {
       await profile.revokeSession.first().click();
@@ -147,7 +153,7 @@ for (const locale of ["en", "ru"] as const) {
       await expect(profile.revokeOthers).toBeDisabled();
       await expect(profile.sessionRows).toHaveCount(3);
     } finally {
-      release?.();
+      releaseWrite();
     }
     await expect(profile.sessionFeedback).toHaveAttribute("role", "alert");
     await expect(profile.sessionRows).toHaveCount(3);
@@ -164,5 +170,6 @@ for (const locale of ["en", "ru"] as const) {
     await page.reload();
     await expect(profile.sessionRows).toHaveCount(1);
     await expect(profile.currentSessionBadge).toHaveCount(1);
+    expect(pageErrors).toEqual([]);
   });
 }

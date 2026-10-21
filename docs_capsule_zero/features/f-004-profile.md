@@ -33,7 +33,7 @@
 4. Replace or delete (revert to default) options available
 5. Avatar appears in navigation and profile
 6. Language preference saved in profile (see f-012-i18n.md)
-7. Advanced security/settings sections shown in the prototype remain design-only except implemented password change and read-only active sessions (spec 057).
+7. Advanced security/settings sections shown in the prototype remain design-only except implemented password change and active session inventory and revocation (specs 057–058).
 
 ## Key Components
 
@@ -65,4 +65,4 @@ A profile with no saved values leaves phone, date of birth, country, city and si
 
 The API auth provider lists the signed-in user's actual active Kratos sessions through `GET /api/auth/sessions`. The current session comes from WhoAmI; all other pages come from token-scoped GET /sessions. Current is first and identified by exact session ID; revoked, expired and duplicate rows are excluded. Rows show real authentication and expiry timestamps in the selected locale, explicitly in UTC. Missing authentication time stays absent. No device, location or last-activity values are inferred from server connections.
 
-Loaded-empty uses localized no-active-sessions copy. Missing provider capability, failed or incomplete inventory uses localized unavailable copy while preserving the rest of the profile. This is read-only; revocation is outside scope. No token, identity traits, IP address or raw user agent enters the profile inventory.
+Loaded-empty uses localized no-active-sessions copy. Missing provider capability, failed or incomplete inventory uses localized unavailable copy while preserving the rest of the profile. Spec 058 adds ending a single other session and all others while keeping the current login. Controls are available only when the provider supports the real writes. Pending disables all revoke controls; confirmed success removes the affected rows, while errors preserve rows and show localized feedback. Current has only its badge and can be ended through the existing sign-out flow. No token, identity traits, IP address or raw user agent enters the profile inventory.

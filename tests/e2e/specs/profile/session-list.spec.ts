@@ -47,7 +47,16 @@ async function render(account: Inventory, locale: Locale) {
     createElement(
       NextIntlClientProvider,
       { locale, messages, timeZone: "UTC" },
-      createElement(ProfileSessions, { account }),
+      createElement(ProfileSessions, {
+        account: {
+          ...account,
+          sessions: account.sessions.map((session) => ({
+            ...session,
+            authenticatedAtLabel: session.authenticatedAt,
+            expiresAtLabel: session.expiresAt,
+          })),
+        },
+      }),
     ),
   );
 }

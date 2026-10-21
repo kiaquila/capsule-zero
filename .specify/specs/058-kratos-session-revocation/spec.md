@@ -11,7 +11,7 @@ Extend the existing session inventory, public Kratos client, Go auth routes, API
 ## Acceptance Criteria
 
 - AC-001: DELETE /api/auth/sessions/{id} ends only a session owned by the authenticated identity; UUID validation and exact current-session protection happen before mutation. DELETE /api/auth/sessions ends all other sessions through Kratos's native atomic exclusion.
-- AC-002: Missing/expired authentication fails 401, invalid/current targets fail 400, foreign/missing targets fail safely, outages fail 502. No redirects forward credentials; responses are private/no-store and share the session rate limiter.
+- AC-002: Missing/expired authentication fails 401, invalid/current targets fail 400, foreign/missing targets are safe 204 no-ops, outages fail 502. No redirects forward credentials; responses are private/no-store and share the session rate limiter.
 - AC-003: Signed-token API provider and server action expose optional revocation capability, validate target input, propagate failures, and never report success for unsupported providers or failed writes.
 - AC-004: EN/RU controls exist only for other sessions when supported. Pending disables all revoke controls, failures preserve rows with localized feedback, successful single/bulk actions remove confirmed targets while current remains. Buttons never submit the surrounding profile form.
 - AC-005: Verify real Kratos v26.2.0 single/bulk revocation, current preservation and owner isolation; complete native review, five green gates, >=120s stable readiness, normal merge and production CD with matching live SHA.
