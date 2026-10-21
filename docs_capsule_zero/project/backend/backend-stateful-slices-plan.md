@@ -173,7 +173,7 @@ Tests first:
 
 ## Slice 08 — Capsule Algorithm Engine
 
-Spec: implementation spec to allocate from the next free ID; the historical `030-capsule-algorithm-engine` path was never created and is not an implementation artifact. Documentation contract: `.specify/specs/058-mvp-cut-algorithm-contract/`.
+Spec: implementation spec to allocate from the next free ID; the historical `030-capsule-algorithm-engine` path was never created and is not an implementation artifact. Documentation contract: `.specify/specs/059-mvp-cut-algorithm-contract/`.
 
 Goal: deliver the complete PRODUCT-PLAN D4/Q5 MVP algorithm: colour, separate simplicity/currentness and whole-look cut rules reused by generation, OPR, Layering Coverage, gaps and shopping gains. This is a pre-MVP requirement including guest/account outputs, not post-MVP polish.
 

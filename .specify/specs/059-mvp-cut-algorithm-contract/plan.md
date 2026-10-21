@@ -51,6 +51,7 @@ new_links = 0
 for name in sorted(markdown):
     text = (root / name).read_text()
     assert not re.search(r'^(<<<<<<<|=======|>>>>>>>)', text, re.M), name
+    assert ('058-' + 'mvp-cut-algorithm-contract') not in text, ('Stale cut-contract path', name)
     # Check local Markdown links added by this contract, not older unresolved prototype references.
     diff = subprocess.check_output(['git', 'diff', '--unified=0', base, '--', name], text=True)
     added = '\n'.join(line[1:] for line in diff.splitlines() if line.startswith('+') and not line.startswith('+++'))
@@ -69,6 +70,9 @@ assert 'ОБЯЗАТЕЛЬНО ДЛЯ MVP' in plan and 'принятия MVP' in
 assert 'guarantees universal combinability' not in method
 assert 'colour only (does' not in outfit
 assert 'low simplicity alone' in (root / 'docs_capsule_zero/project/methodology/categories.md').read_text().lower()
+historical = ' .specify/specs/013-stage-1-guided-journey/spec.md'.strip()
+original = subprocess.check_output(['git', 'show', 'origin/main:' + historical], text=True)
+assert (root / historical).read_text().split('**Feature Branch**', 1)[1] == original.split('**Feature Branch**', 1)[1], 'Historical 013 body changed'
 print(f'PASS: {len(markdown)} Markdown files; {new_links} added local links; scope, conflict markers and canonical contract assertions')
 PY
 ```

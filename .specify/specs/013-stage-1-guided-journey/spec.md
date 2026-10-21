@@ -92,7 +92,7 @@ As a user, I want unavailable colors to be blocked with a clear explanation so I
 - A user opens `/en/guided-journey` without a mock session.
 - A user switches between EN and RU on the journey route.
 - A user selects categories, goes back to Step 1, and changes wardrobe type.
-- A custom category cannot be mapped to a supported category/role. Low simplicity alone does not reject an owned item.
+- A custom category is too decorative or non-basic.
 - RU users add multiple valid Cyrillic custom categories in one journey.
 - A user uploads an unsupported file type or file over the local mock limit.
 - A marketplace URL is malformed, duplicated, intentionally unparseable, or shares a host with another distinct URL.
