@@ -1,5 +1,12 @@
 # Feature: Guided Journey (3-Step Capsule Creation)
 
+## MVP algorithm contract — required before release (2026-10-21)
+
+MVP must apply separate simplicity/currentness and whole-look cut checks before guest and account results. Default new-item candidates are manually reviewed simple/current presets; numeric basicity is internal. Mapping a category is not proof of currentness or combinability. Show neutral reasons and alternatives for failed/unreviewed looks.
+
+Authority: [PRODUCT-PLAN D4/Q5](../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../project/methodology/capsule-methodology.md);
+whole-look, counting, versioning and quality rules: [outfit generation §2.5](../project/methodology/outfit-generation.md).
+
 > **Update 2026-10-19:** The public guest flow is `/start`, separate from the authenticated guided journey. Its exact reference-port scope and limits are in `guest-onboarding.md` and PRODUCT-PLAN §0.2; spec 056 adds explicit auth continuation and durable account save (immutable guest sets, uncapsulated wardrobe items).
 
 > Source: US-008, US-009, US-010 (spec.md). Prototype: `html-prototypes/guided-journey.html`
@@ -40,7 +47,7 @@
 1. Textual category checklist (no visuals) with quantity steppers
 2. Categories filtered by gender (from Step 1)
 3. User selects categories and sets quantities (default 1, min 0 per category, no cap)
-4. Optional: "Add your own category" → system validates basicity
+4. Optional: "Add your own category" → system resolves a supported category/role and records separate cut attributes
 5. Minimum 8 categories required before proceeding
 
 ### Acceptance Criteria
@@ -48,9 +55,9 @@
 - Textual checklist with quantity steppers
 - Categories filtered by wardrobe type from Step 1
 - Min 8 categories validated before proceeding
-- "Add your own category" with basicity validation
+- "Add your own category" with category/role mapping and non-blocking cut guidance
 - Progress shows 2/3, capsule size label displayed (Basic / Large / Very Large)
-- Custom category rejection shows explanation + similar suggestion
+- An unmappable custom category asks for clarification and suggests a supported category; low simplicity alone does not reject an owned item
 
 ## Step 3/3 — Colors & Items
 
@@ -76,24 +83,24 @@
 
 ## Interface States
 
-| State                      | Description             | What user sees                                                     |
-| -------------------------- | ----------------------- | ------------------------------------------------------------------ |
-| Step 1 default             | Type selection          | Three visual cards                                                 |
-| Step 2 default             | Category selection      | Checklist with steppers                                            |
-| Step 2 min warning         | < 8 categories          | Warning: "Select at least 8 categories"                            |
-| Step 2 custom error        | Invalid custom category | Error: "This doesn't look like a basic item..."                    |
-| Step 3 palette             | Color selection         | Single grid with achromats first                                   |
-| Step 3 compatibility state | Incompatible color      | Blocked/unavailable color options                                  |
-| Step 3 items               | Adding items            | Own-preset picker; gated methods are absent or clearly unavailable |
-| Creating                   | Capsule generating      | Loading animation                                                  |
-| Complete                   | Capsule created         | Redirect to Capsule Result                                         |
+| State                         | Description              | What user sees                                                                    |
+| ----------------------------- | ------------------------ | --------------------------------------------------------------------------------- |
+| Step 1 default                | Type selection           | Three visual cards                                                                |
+| Step 2 default                | Category selection       | Checklist with steppers                                                           |
+| Step 2 min warning            | < 8 categories           | Warning: "Select at least 8 categories"                                           |
+| Step 2 category clarification | Unmappable category/role | "We couldn’t match this category. Choose a similar category or clarify the item." |
+| Step 3 palette                | Color selection          | Single grid with achromats first                                                  |
+| Step 3 compatibility state    | Incompatible color       | Blocked/unavailable color options                                                 |
+| Step 3 items                  | Adding items             | Own-preset picker; gated methods are absent or clearly unavailable                |
+| Creating                      | Capsule generating       | Loading animation                                                                 |
+| Complete                      | Capsule created          | Redirect to Capsule Result                                                        |
 
 ## Key Components
 
 - **JourneyProgress** — step indicator (1/3, 2/3, 3/3)
 - **WardrobeTypeCards** — three selectable cards with icons
 - **CategoryChecklist** — scrollable list with toggles + quantity steppers
-- **CustomCategoryInput** — text input with basicity validation
+- **CustomCategoryInput** — text input with category/role mapping and non-blocking cut guidance
 - **PaletteSelector** — single grid with achromats first
 - **ItemUploadTabs** — final three-tab design (Photos / Links / Search); Links and shared Search do
   not receive live handlers before both Q8 gates close
@@ -105,13 +112,13 @@
 - Min 8 categories
 - Items per category: min 0, default 1, no hard cap (stepper)
 - Total items in capsule: min 7 to create; warning at 40; hard limit 50 → suggest creating new capsule
-- Custom category: basicity algorithm validation
+- Custom category: supported category/role mapping; low simplicity alone is not a saving rejection
 - Color compatibility rule: a color is allowed if it matches the current palette by same group, is achromatic, or forms the Desaturated↔Dark cross-pair
 
 ## Edge Cases
 
 - Fully achromatic capsule → valid, no accent colors needed
-- Custom category rejected → error + suggestion of similar basic category
+- Custom category/role cannot be mapped → ask for clarification and suggest a supported category; do not reject an owned item for low simplicity alone
 - Empty capsule (categories set, no items) → valid "plan" state
 - User wants to change palette after creation → not possible in v0.1, create new capsule
 

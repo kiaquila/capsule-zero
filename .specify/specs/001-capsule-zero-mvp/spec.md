@@ -1,5 +1,15 @@
 # Feature Specification: Capsule Zero MVP v0.1
 
+## Binding MVP algorithm acceptance (2026-10-21)
+
+[../../../PRODUCT-PLAN.md D4/Q5](../../../PRODUCT-PLAN.md) requires colour, separate simplicity/currentness and whole-outfit cut
+compatibility throughout the guest/account MVP. Canonical attributes: [../../../docs_capsule_zero/project/methodology/capsule-methodology.md §6.1](../../../docs_capsule_zero/project/methodology/capsule-methodology.md);
+counting, recommendation, unknown/version handling and quality gate: [../../../docs_capsule_zero/project/methodology/outfit-generation.md §2.5](../../../docs_capsule_zero/project/methodology/outfit-generation.md).
+This extends US-009/010/013/015/016/017/023 and FR-021–023; colour-only counts are interim.
+Acceptance includes same-colour/different-cut failures, simple-but-dated versus simple-current,
+all-pairs-pass/full-look-fail, layer clearance, unknown review, favourite preservation and consistent
+OPR/gain exclusions. Implementation and quality evidence remain required; these docs do not supply it.
+
 **Feature Branch**: `001-capsule-zero-mvp`
 **Created**: 2026-03-17
 **Status**: Ready for Development
@@ -20,7 +30,7 @@
 **Key decisions (v1.1):**
 
 - Outfits are view-only (no drag-and-drop)
-- Gap analysis is text-based (category + color)
+- Gap analysis is text-based (category + colour + reviewed suitable cut + human-readable evaluator rule reason)
 - Capsule color palette is immutable (change = new capsule)
 - Item addition/replacement validated against palette compatibility
 - 1 free capsule per user (additional in v0.2)
@@ -196,7 +206,7 @@ As a user, I want to select garment categories from a checklist to define my cap
 1. **Given** Step 2, **When** displayed, **Then** textual category checklist (no visuals) with quantity steppers
 2. **Given** wardrobe type, **When** selected in Step 1, **Then** categories filtered by gender
 3. **Given** selections, **When** fewer than 8, **Then** min 8 categories validated before proceeding
-4. **Given** the checklist, **When** user wants custom category, **Then** "Add your own category" button available (system validates basicity)
+4. **Given** the checklist, **When** user wants custom category, **Then** "Add your own category" button available (system resolves a supported category/role; low simplicity alone does not reject owned items)
 5. **Given** the step, **When** viewed, **Then** progress shows 2/3, capsule size label displayed
 
 ---
@@ -270,9 +280,9 @@ As a user, I want to see my completed capsule with outfits, gap analysis, and sh
 **Acceptance Scenarios:**
 
 1. **Given** the result, **When** loaded, **Then** visual grid of items with color dots displayed
-2. **Given** outfits tab, **When** viewed, **Then** static outfit combinations shown (view-only)
-3. **Given** gap analysis tab, **When** viewed, **Then** text-based list: category + color of missing items
-4. **Given** shopping list tab, **When** viewed, **Then** text list: category + color + priority + role-specific impact (core base looks or Layering Coverage)
+2. **Given** outfits tab, **When** viewed, **Then** verified static outfit combinations shown (view-only) in canonical simplicity order from outfit-generation §2.5
+3. **Given** gap analysis tab, **When** viewed, **Then** text-based list: category + color + reviewed suitable cut and rule reason for missing items
+4. **Given** shopping list tab, **When** viewed, **Then** text list: category + color + reviewed suitable cut + rule reason + priority + role-specific verified impact (core base looks or Layering Coverage)
 5. **Given** data, **When** generated, **Then** all based on categories, palette, and item auto-tagging
 
 ---
@@ -451,7 +461,7 @@ As a system, I want imported marketplace items to populate the shared database f
 
 - Fully achromatic capsule → Valid. No accent colors needed.
 - Incompatible item color → NOT added. Block with recommendation for separate capsule.
-- Custom category rejected → Error with explanation + suggestion of similar basic category.
+- Unmappable custom category → Ask for clarification and suggest a supported category. Low simplicity alone does not reject owned items.
 - Item with multiple colors → Primary color (largest area) used for validation. All dots preserved.
 - Empty capsule (categories set, no items) → Valid "plan" state. Gap analysis = all gaps.
 - Incorrect import auto-tagging → User can edit all fields.
@@ -476,20 +486,23 @@ As a system, I want imported marketplace items to populate the shared database f
 - **FR-013**: System MUST parse marketplace URLs using a best-effort generic parser, with retailer-specific adapters where needed for higher accuracy
 - **FR-014**: System MUST provide semantic search from shared item database
 - **FR-015**: System MUST support photo upload with optional background removal
-- **FR-016**: System MUST auto-tag items (name, category, color dots) on upload/import
+- **FR-016**: System MUST retain name/category/colour and separate simplicity, currentness review and applicable cut tags. MVP own-image presets are manually labelled/reviewed; future upload/import suggestions are correctable and unknown values remain unreviewed. Existing upload/merchant implementation gates still apply
 - **FR-017**: System MUST support i18n (EN and RU in MVP v1, ES-AR deferred to MVP v2) with runtime switching
 - **FR-018**: System MUST be responsive (375px, 768px, 1280px+)
 - **FR-019**: System MUST implement favorites with "My" and "From Catalogs" sub-sections
 - **FR-020**: System MUST track items across sections (My Items, Uncapsulated, For Sale, For Repair)
+- **FR-021**: Completed MVP MUST apply colour, separate simplicity/currentness and whole-outfit cut/proportion rules in the guest and account evaluator. OPR, coverage, gaps and recommendation gains MUST reuse the same verified verdicts (`outfit-generation.md` §2.5). Stage 1/guest-v1 alone cannot satisfy this requirement.
+- **FR-022**: Owned unusual/dated items MUST remain saveable/favouritable; low simplicity alone MUST NOT reject capsule membership under existing palette rules. Default new-item recommendations MUST use reviewed simple/current presets. Dated looks MUST fail `DATED_CUT`; unreviewed looks MUST contribute zero verified count/coverage/gain. Known-current owned 0/50 pieces MAY pass only through reviewed whole-look rules; their simplicity affects deterministic display order, not counts. Apply §2.5 eligibility and tie-breaks identically across clients.
+- **FR-023**: Algorithm/rules/reference versions MUST preserve immutable guest-v1 snapshots and introduce explicit recalculation without silently changing past results. Application TDD, held-out FITB, stylist review and client parity MUST pass the implementation spec's predeclared numeric gates before MVP acceptance.
 
 ### Key Entities
 
 - **User**: Profile, avatar, language preference, coin balance
 - **Capsule**: Name, wardrobe type, color palette (locked), categories, items, OPR
-- **Item**: Name, photo(s), category, color dots (1-3), brand, material, price, source URL, capsule membership, basicity score
-- **Outfit**: Generated combination of items following layer rules and color harmony
+- **Item**: Name, photo(s), category, color dots (1-3), brand, material, price, source URL, capsule membership, simplicity/basicity score, separate currentness review, applicable category/fit/length/volume/decor attributes
+- **Outfit**: Generated combination following layer/colour rules and the full cut/proportion checks; versioned pass/fail/unreviewed verdict with explanation
 - **Palette**: User-selected achromatic and chromatic colors, ordered with achromats first in UI, governed by same-group or Desaturated↔Dark compatibility rules
-- **Shopping List Item**: Category, recommended color, priority, role-specific impact (core base looks or Layering Coverage)
+- **Shopping List Item**: Category, recommended colour and reviewed suitable cut/preset, human-readable evaluator rule reason, priority, role-specific verified impact (core base looks or Layering Coverage)
 
 ## Success Criteria
 

@@ -1,5 +1,12 @@
 # Components Guide
 
+## MVP algorithm contract — required before release (2026-10-21)
+
+Reuse existing item details, status text, outfit cards and metric displays for separate cut review and rule reasons. No new token/brand warning palette or exposed basicity number. The same versioned evaluator verdicts drive rendered outfits and counts; EN/RU unknown/conflict states offer confirmation or approved alternatives.
+
+Authority: [PRODUCT-PLAN D4/Q5](../../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../methodology/capsule-methodology.md);
+whole-look, counting, versioning and quality rules: [outfit generation §2.5](../methodology/outfit-generation.md).
+
 > **Update 2026-10-19:** Spec 055 adds the reference `components/guest/*` composition for `/start`, reusing AuthPanel, LanguageSwitcher, compatibility and tokens; it is separate from authenticated WardrobeItemCard. Mixed is the union of source presets. See `features/guest-onboarding.md`.
 
 ## Purpose
@@ -49,13 +56,13 @@ app/src/
 
 All containers that visually behave as panels, sheets, nav, menus, cards, or modals must use glass surfaces. Do not replace them with opaque solid backgrounds.
 
-| Component | Variant | Notes |
-|---|---|---|
-| `GlassPanel` | main | Main content panels, blur 40px/44px depending prototype |
-| `GlassSheet` | sheet | Bottom sheets and modal sheets |
-| `GlassNav` | nav | Header, bottom nav, floating navigation |
-| `GlassInput` | input | Text fields, URL textareas, search fields |
-| `GlassButton` | primary/social/ghost | CTA, OAuth, secondary actions |
+| Component     | Variant              | Notes                                                   |
+| ------------- | -------------------- | ------------------------------------------------------- |
+| `GlassPanel`  | main                 | Main content panels, blur 40px/44px depending prototype |
+| `GlassSheet`  | sheet                | Bottom sheets and modal sheets                          |
+| `GlassNav`    | nav                  | Header, bottom nav, floating navigation                 |
+| `GlassInput`  | input                | Text fields, URL textareas, search fields               |
+| `GlassButton` | primary/social/ghost | CTA, OAuth, secondary actions                           |
 
 ## Achromatic UI Rule
 
@@ -115,18 +122,19 @@ Push `use client` as low as possible. Route pages should stay server-rendered un
 
 ## Domain Components
 
-| Component | Notes |
-|---|---|
-| `ColorDot` | Renders one color from `color_catalog`; not an interface accent |
-| `ColorDotStrip` | Used on item cards, capsule cards, palette preview |
-| `PaletteSelector` | Enforces achromats-first display and compatibility disabled state |
-| `CategoryStepper` | Used in Journey Step 2 |
-| `ItemCard` | Photo, name, color dots, capsule membership, status/favorite controls |
-| `ItemDetail` | View/edit state for name, category, colors, brand, material, price |
-| `UploadTabs` | Final Photos / Links / Search design. Before both PRODUCT-PLAN Q8 gates close, Links and shared merchant Search have no live handlers; P2 may ship the separate own-imagery preset picker |
-| `OPRDisplay` | Formatted wearable outfits ÷ (core + accessory items) with delta; renders Layering Coverage as a separate labelled secondary value with mid/outer diagnostics and `N/A` zero-base state |
-| `ShoppingListRow` | Category, color, priority, impact |
-| `BottomNav` | Primary mobile navigation |
+| Component         | Notes                                                                                                                                                                                     |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ColorDot`        | Renders one color from `color_catalog`; not an interface accent                                                                                                                           |
+| `ColorDotStrip`   | Used on item cards, capsule cards, palette preview                                                                                                                                        |
+| `PaletteSelector` | Enforces achromats-first display and compatibility disabled state                                                                                                                         |
+| `CategoryStepper` | Used in Journey Step 2                                                                                                                                                                    |
+| `ItemCard`        | Photo, name, color dots, capsule membership, status/favorite controls                                                                                                                     |
+| `ItemDetail`      | View/edit state for name, category, colors, brand, material, price; Stage 2 must add the owned-item cut-review workflow from methodology §6.1 (future UI, not already shipped)            |
+| `UploadTabs`      | Final Photos / Links / Search design. Before both PRODUCT-PLAN Q8 gates close, Links and shared merchant Search have no live handlers; P2 may ship the separate own-imagery preset picker |
+| `OPRDisplay`      | Formatted wearable outfits ÷ (core + accessory items) with delta; renders Layering Coverage as a separate labelled secondary value with mid/outer diagnostics and `N/A` zero-base state   |
+| `ShoppingListRow` | Category, color, reviewed suitable cut, human-readable rule reason, priority and role-specific verified impact; shared evaluator rule IDs remain stable                                   |
+| `GapAnalysisList` | Category, colour, reviewed suitable cut and human-readable evaluator rule reason per row; icons supplement the text; preserve shared rule IDs                                             |
+| `BottomNav`       | Primary mobile navigation                                                                                                                                                                 |
 
 ## Accessibility
 

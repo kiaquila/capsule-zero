@@ -10,15 +10,15 @@
 
 ## 1. Outfit Structure (7 Layers)
 
-| Layer | Categories | Rule | Counting role |
-|-------|-----------|------|---------------|
-| **1: Basic top** | All `categories.md` Core-top categories | Mandatory (unless dress) | **Core** |
-| **1 alt: Dress** | Any dress category | Replaces layers 1+2 | **Core** |
-| **2: Bottom** | All `categories.md` Core-bottom categories | Mandatory (unless dress) | **Core** |
-| **3: Mid layer** | Crew neck sweater, cardigan, bomber, blazer | Optional — adds variety | **Layering** (separate coverage score) |
-| **4: Outerwear** | All `categories.md` Outerwear categories | Optional — contextual | **Layering** (separate coverage score) |
-| **5: Shoes** | Any shoes category | 1 pair per outfit | **Core** |
-| **6: Bag** | Any bags category | Optional, 0–1 | **Accessory** (folds into OPR, capped) |
+| Layer              | Categories                                       | Rule                                  | Counting role                          |
+| ------------------ | ------------------------------------------------ | ------------------------------------- | -------------------------------------- |
+| **1: Basic top**   | All `categories.md` Core-top categories          | Mandatory (unless dress)              | **Core**                               |
+| **1 alt: Dress**   | Any dress category                               | Replaces layers 1+2                   | **Core**                               |
+| **2: Bottom**      | All `categories.md` Core-bottom categories       | Mandatory (unless dress)              | **Core**                               |
+| **3: Mid layer**   | Crew neck sweater, cardigan, bomber, blazer      | Optional — adds variety               | **Layering** (separate coverage score) |
+| **4: Outerwear**   | All `categories.md` Outerwear categories         | Optional — contextual                 | **Layering** (separate coverage score) |
+| **5: Shoes**       | Any shoes category                               | 1 pair per outfit                     | **Core**                               |
+| **6: Bag**         | Any bags category                                | Optional, 0–1                         | **Accessory** (folds into OPR, capped) |
 | **7: Accessories** | Headwear, neckwear, jewelry/watch, belt, eyewear | Optional; total accessory cap in §2.3 | **Accessory** (folds into OPR, capped) |
 
 Three counting roles drive OPR (§3): **Core**, **Layering**, **Accessory**. The exhaustive category
@@ -29,6 +29,7 @@ aha-screen). UI/API sections are presentation metadata, not algorithm roles.
 ## 2. Combination Rules
 
 ### 2.1 Color Harmony
+
 All items in a properly assembled capsule match by color by definition — the palette guarantees
 compatibility through group-based matching, with achromats always allowed and Desaturated/Dark
 allowed as a cross-pair. No limit on the number of colors per outfit beyond the capsule palette
@@ -38,12 +39,15 @@ matrix (achromatic + any · same chromatic group · Desaturated↔Darks · every
 canonical since Q6 was closed 2026-07-21.
 
 ### 2.2 Category Logic
+
 Some categories don't combine:
+
 - Two bottoms in one outfit
 - Dress + separate top/bottom (dress replaces layers 1+2)
 - Two coats / two mid-layers stacked (one layering piece of each kind per outfit)
 
 ### 2.3 Accessory-Combination Ruleset _(ratified 2026-07-21; new)_
+
 Accessories count toward OPR (§3), so — like category logic — they need explicit combination rules
 so each **individual outfit** stays realistic (a person does not wear two bags). These are
 **per-outfit** rules; the **aggregate** bound that stops accessories from dominating OPR is separate
@@ -55,34 +59,128 @@ and lives in §3.1. Per outfit:
 2. **Accessory compatibility.** Every accessory must be color-compatible with every Core item in
    the base look; accessories in the same variation must also be mutually color-compatible. v0.1
    uses the same `colors.md` matrix for both checks and requires different slots (scarf + hat =
-   allowed; two head pieces = not). The richer "which accessory pairs are stylistically compatible"
-   table is a v0.1 stub to be extended in Stage 2.
+   allowed; two head pieces = not). Completed MVP also checks the complete accessorised look under
+   §2.5; the colour/slot checks alone do not certify stylistic compatibility.
 3. **Per-outfit cap.** At most **3 accessory items total, including any bag**, one per slot and all
    mutually compatible. This is the founder-approved `≤3/outfit` cap; it is distinct from `A_max`,
    which caps how many accessorised variants of one base look enter the OPR numerator (§3.1).
 4. **Deduplication.** Outfits that differ only by an accessory that does not change the look
    (e.g. swapping one grey scarf for another grey scarf) collapse to one counted outfit. Before
    bounded selection, candidate variations are deduplicated by `(base look, sorted set of
-   (slot, colorId))`; the lowest canonical `itemId` is retained only as the rendering representative.
+(slot, colorId, reviewed style signature))`; the lowest canonical `itemId` is retained only as the rendering representative. The style signature contains the canonical category ID, every applicable cut/fit/volume/length/construction/decor tag used by §2.5, and the basicity derived from construction/decor under the active ruleset. Use the same canonical attribute order/IDs and explicit not-applicable values across clients; inconsistent stored basicity must be corrected/reviewed, never trusted as an override. Retain only verified candidates before deduplication. For example, same-colour/slot/cut/volume/length/decor accessories with complex construction (50) and simple construction (100) have different identities; neither is discarded solely because its item ID is larger. Only identical complete signatures can share a lowest-ID representative, whose simplicity is then identical. Preserve these cases in parity tests. Historically v0 used `(slot, colorId)` alone, which cannot distinguish different silhouettes of the same colour.
 
 ### 2.4 Formality
-In v0.1 simplified: all basic items are considered neutral. Formality scoring in v0.2.
 
-### 2.5 Basicity / cut eligibility _(hook — activated Stage 2, Q5)_
-Every item passes an **eligibility filter before it enters combination**. In v0.1 the filter checks
-colour only (does the item's colour group fit the palette). The filter is the designed insertion
-point for **basicity** (`capsule-methodology.md` §6 — cut/silhouette score, currently unimplemented):
-Stage 2 adds a basicity gate here so over-designed / dated cuts are down-weighted or excluded **before**
-outfits are generated, without reworking the generation pipeline. Stage 1 must not hard-code the
-filter to colour-only in a way that blocks this.
+Advanced occasion/season/formality scoring remains v0.2 scope. It must not defer MVP cut/proportion
+checks: being a basic item does not make every combination stylistically neutral or wearable.
+
+### 2.5 Simplicity, currentness and whole-outfit compatibility _(required for MVP)_
+
+PRODUCT-PLAN D4/Q5 and `capsule-methodology.md` §6.1 define **two independent item signals**:
+simple construction without excessive decoration, and reviewed currentness. Reuse `basicity` for
+simplicity only. Both signals enter generation and recommendation; neither replaces outfit checks.
+Stage 2 delivers the complete path before MVP acceptance, including guest results. The existing
+`guest-v1` colour/category evaluator remains an interim implementation until that work passes validation.
+
+The MVP pipeline is deterministic and uses manually reviewed preset attributes and rule tables:
+
+1. **Read attributes and version.** Resolve concrete category/role, colours, construction/decor,
+   currentness review and category-appropriate fit, volume and length. Unknown required values stay
+   unknown. Use one dated, versioned ruleset for every output, not separate ad hoc UI filters.
+2. **Build candidates.** Enforce `colors.md`, category roles and accessory-slot/cap rules. Default
+   new-item suggestions use simple + current approved presets. Personal items are retained; low
+   simplicity alone does not prohibit an owned item. Apply the deterministic signal rules below.
+3. **Validate the entire look.** A reviewed table keyed by category/fit/volume/length and applicable construction/decor combinations
+   returns `pass`, `fail` or `unreviewed`, with a rule ID and a plain-language reason. Evaluate
+   top+bottom+shoes or dress+shoes as a complete tuple; passing all pairs alone is insufficient.
+   Evaluate the whole composition again when adding a bag/accessory or a structural layer. Check
+   layering clearance (e.g. bulky knit inside a fitted blazer), lengths and balanced proportions.
+   Two oversized pieces are not automatically invalid; a supported tuple needs a reviewed example.
+   This table covers the supported MVP catalog, not all imaginable clothes. An explicitly approved
+   current personal-item combination may pass despite a known low basicity score; preference cannot turn fail or
+   unreviewed into pass.
+4. **Count and recommend from the same verdicts.** Only `pass` base looks and accessory variants
+   enter OPR. Only `pass` extended looks earn Layering Coverage. Deduplicate after validation using
+   the style signature (§2.3), then apply the existing variation cap. Compute every candidate's
+   gain by running this same evaluator after addition/replacement; never use the raw Cartesian
+   product or a separate colour-only shortcut. Preserve §4's feasibility → layering → core-growth
+   priorities and their distinct units. Currentness eligibility and new-preset simplicity eligibility
+   are applied before gains; owned-item simplicity only orders verified display results as specified
+   below. Neither signal is added to OPR as points.
+5. **Explain failures and uncertainty.** Return the rule reason and an alternative using an existing
+   item or approved preset. No verified base look means a zero-result state; unreviewed combinations
+   are labelled as such, not claimed wearable or silently assigned perfect attributes. The item
+   remains available for correction/review without being deleted or judging the owner's taste.
+
+**Deterministic signal semantics (generation and recommendation):**
+
+| Input for any item in the full look                                                  | Expected result                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `currentness=dated`, even with basicity 100 and compatible proportions               | `fail` with `DATED_CUT`; zero verified count, coverage and recommendation gain for this look. Keep the item/favourite/capsule membership under existing palette rules.             |
+| Missing simplicity/cut attributes, `currentness=unreviewed`, or overdue review       | `unreviewed`, unless another known rule already fails; zero verified count/coverage/gain. Unknown is not `dated`; use the owned-item review path in `capsule-methodology.md` §6.1. |
+| Every item is `current`, all required attributes known, owned item has basicity 0/50 | No automatic simplicity failure: use the whole-look construction/decor/proportion table. `pass` only when that full tuple matches a reviewed pass rule.                            |
+| Every item is simple (100) and `current`                                             | Still require the full-look table; simple/current never overrides a cut failure or missing rule.                                                                                   |
+
+A known failure takes precedence over uncertainty: any definite colour/currentness/cut failure means
+`fail`; otherwise any missing required value or unmatched/unreviewed rule means `unreviewed`;
+otherwise all required checks must pass. Return all applicable reasons sorted by stable rule ID,
+using the first as the primary reason. User tag confirmation or an override cannot turn a reviewed
+`dated` verdict into `current`; only a new reference review can do that.
+
+**Simplicity ordering is explicit and does not change counts.** After verified generation, accessory
+selection/caps and deduplication, order displayed looks by `(number of items with basicity <100
+ascending, sum of item basicities descending, sorted canonical item IDs ascending)`; include every
+item of the displayed composition. Thus an otherwise equivalent owned-item look with 50 ranks above
+one with 0, and an all-100 look ranks above either. This ordering never changes the set of counted
+looks, the OPR denominator, the §3 farthest-first selection or coverage. There is no arbitrary
+simplicity weight and no `dated` penalty that could be traded for more gain: dated looks already fail.
+
+**New-item eligibility and ties are explicit.** A recommendation candidate must itself have basicity
+100, current review and all required cut tags; 0/50, dated or unreviewed presets are ineligible for
+new-item suggestions. Re-run the same full-look evaluator for each eligible candidate, then apply
+§4's existing tier/gain/layer/category priorities. Within that complete tie, choose the smallest
+canonical reviewed cut-signature key, then the smallest canonical preset ID; expose equally valid
+colours only when verified gain and cut guidance are equivalent. Do not use owned-item display
+preference to alter gain or these priorities. Sorting, rule IDs and keys are identical in web/API/mobile.
+
+Required parity examples: colour-valid/table-pass simple-current → `pass`; the same item tagged
+simple-dated → `fail/DATED_CUT`; otherwise identical current owned 50/0 looks both pass only with
+reviewed whole-look rules, with 50 displayed first; unknown review → `unreviewed` and zero gain;
+a 50/dated preset never enters the new-item candidate pool. If equal-gain presets in one category
+have different cut signatures, only the canonical winning cut’s equivalent colour variants are
+returned; a colour unique to another signature is excluded even though its gain ties.
+Each failed/unreviewed case contributes
+zero to the affected count/coverage/gain even when saving the item remains allowed.
+
+**Implementation evidence required before MVP release:** a finite category-specific attribute
+vocabulary, dated current/dated reference examples, a reviewed compatibility table covering all
+offered preset combinations and supported layer/accessory extensions (each tuple either explicitly
+reviewed or matched by a reviewed rule), deterministic rule IDs/reasons, and application TDD before
+implementation. Test at least: simple-but-dated versus simple-current; same colours/different cut;
+all-pairs-pass but full-tuple-fail; bulky knit/fitted blazer; excessive decoration; unknown attributes;
+favourite preservation; and excluded combinations contributing zero gain/coverage/count.
+
+Validate on a held-out stylist-labelled set with compatible and incompatible examples: four-choice
+FITB accuracy and human wearability review against the frozen colour-only baseline. Report both,
+including false positives, set sizes and coverage of every supported category. The implementation
+spec fixes the dataset, sample sizes and numeric pass thresholds **before** tuning/running; inability
+to meet them blocks MVP release. This documentation PR does not claim measured quality or delivery.
+
+**Versioning:** version the evaluator, cut rules and currentness reference set together. Preserve
+immutable saved `guest-v1` results with their original evaluator; do not reinterpret those totals as
+MVP-verified. Introduce an explicitly versioned recalculation path and explain changed totals, retaining
+the old snapshot. A ruleset/catalog review update must recompute new results consistently, including
+recommendation deltas, while historic snapshots remain reproducible. OpenAPI/storage changes and
+frontend/backend/mobile parity fixtures belong to the implementation PR, not this doc-only change.
 
 ## 3. Outfit Productivity Ratio (OPR)
 
 **Hero OPR = wearable outfits ÷ wardrobe pieces that build them.**
 
 ### 3.1 Numerator — wearable outfits
+
 1. **Base look** = one valid **Core** combination: `top × bottom × shoes` **or** `dress × shoes`,
-   colour-valid per §2.1. Base looks are the backbone of the count.
+   colour-valid per §2.1 and verified by the whole-outfit checks in §2.5. Base looks are the backbone of the count.
 2. **Accessorised variations (bounded per base look).** A base look counts once bare, plus **at most
    `A_max` accessorised variants** (**v0 fixed value: `A_max = 3`**), chosen deterministically under
    the §2.3 ruleset. It is **not** the full power set of accessory
@@ -97,37 +195,38 @@ filter to colour-only in a way that blocks this.
      and yield `Σ(k=0..3) C(5,k) × 3^k = 376` valid accessory sets per base look. Full enumeration
      would report `8 × 376 = 3,008` outfits / 21 items ≈ **OPR 143.2** for the same small core. That is
      the combinatorial explosion the model rejects.
-   - **Deterministic v0 selection.** Enumerate non-empty candidates that pass §2.3, deduplicate them
-     by their sorted `(slot, colorId)` tuples, then select at most three with farthest-first traversal:
+   - **Deterministic MVP selection (cut extension, 2026-10-21).** Enumerate non-empty candidates that pass §2.3, deduplicate them
+     by their sorted `(slot, colorId, reviewed style signature)` tuples, then select at most three with farthest-first traversal:
      start with the candidate
      having the most occupied slots (tie → lexicographically smallest tuple key); each next candidate
      maximises its minimum Hamming distance from already selected candidates across slot occupancy and
-     color ID (tie → lexicographically smallest key). Rendering uses the canonical representative
+     color ID and reviewed style signature (tie → lexicographically smallest key). Rendering uses the canonical representative
      retained by §2.3.4. Fewer than three valid candidates means use all of them. `A_max = 3` and this
-     rule form the **engineering v0 contract (2026-07-22)** within the founder-approved Q1 bounds;
-     they are not attributed as an additional founder decision. Quality validation may version them
-     later but does not leave Q1 or Stage 1 blocked.
+     rule retain the **engineering v0 cap/selection approach (2026-07-22)** within the founder-approved Q1 bounds; the reviewed style signature and full-look filtering are the required 2026-10-21 MVP extension. This is not a claim that the extension shipped in July. Quality validation must pass before MVP release.
 3. **Structural layers (mid-layer, outerwear) do NOT create new counted outfits.** A base look worn
-   with or without a cardigan is the *same* outfit for OPR — layering is variety / context, not a new
+   with or without a cardigan is the _same_ outfit for OPR — layering is variety / context, not a new
    look. Their value is reported by the separate **Layering Coverage** score (§3.4).
 
 ### 3.2 Denominator — items that build the count
+
 Only items whose category **feeds the numerator**: **Core items** (tops, bottoms, dresses, shoes) +
 **Accessory items** in the six canonical slots (bag, headwear, neckwear, jewelry/watch, belt,
 eyewear; exact categories in `categories.md`). **Structural-layer items are excluded
-from the OPR denominator** — they are surfaced through Layering Coverage instead. This keeps the
-metric consistent: a category is in *both* numerator and denominator, or in *neither* (and then in a
+from the OPR denominator** — they are surfaced through Layering Coverage instead. All selected Core/Accessory items stay in the denominator even when none of their combinations pass cut checks; do not hide an item from the denominator to inflate OPR. This keeps the
+metric consistent: a category is in _both_ numerator and denominator, or in _neither_ (and then in a
 separate score). The forbidden hybrid — counting a category's items in the denominator while refusing
 its contribution to the numerator (which would penalise owning a cardigan) — is not used.
 
 ### 3.3 Consistency guarantee (why this is not the forbidden hybrid)
-| Counting role | In numerator? | In OPR denominator? | Where its value shows |
-|---|---|---|---|
-| Core (top/bottom/dress/shoes) | Yes (base looks) | Yes | Hero OPR |
-| Accessory (all six canonical slots) | Yes (bounded variations) | Yes | Hero OPR |
-| Layering (mid-layer/outerwear) | No | No | Layering Coverage score |
+
+| Counting role                       | In numerator?            | In OPR denominator? | Where its value shows   |
+| ----------------------------------- | ------------------------ | ------------------- | ----------------------- |
+| Core (top/bottom/dress/shoes)       | Yes (base looks)         | Yes                 | Hero OPR                |
+| Accessory (all six canonical slots) | Yes (bounded variations) | Yes                 | Hero OPR                |
+| Layering (mid-layer/outerwear)      | No                       | No                  | Layering Coverage score |
 
 ### 3.4 Layering Coverage (separate score)
+
 For each valid base look, compute two flags: `midCovered = 1` when at least one eligible/color-compatible
 mid-layer can be worn with every Core item in that look, and `outerCovered = 1` under the same rule for
 outerwear. For `B > 0` base looks:
@@ -136,43 +235,49 @@ outerwear. For `B > 0` base looks:
 
 Round only for display and show the two diagnostics (`mid: x/B`, `outer: y/B`) so the recommendation is
 explainable. When `B = 0`, the score is **N/A**, not zero: the core-feasibility recommendation runs
-first (§4). v0 eligibility is colour-only (§2.5); Stage 2 can add cut/formality/context filters without
-changing the formula. This is where a cardigan or coat earns its keep without inflating or deflating
+first (§4). Completed MVP eligibility includes whole-look cut checks (§2.5), even when all colours
+match; this does not change the formula. Advanced occasion/season scoring remains separate scope.
+This is where a cardigan or coat earns its keep without inflating or deflating
 hero OPR. Never merge the score into the hero number.
 
 ### 3.5 Display & delta
+
 - Hero OPR is shown on the Capsule Result screen and on the capsule card in the Dashboard.
 - Updated on every capsule change (add / remove / replace item). Shows delta ("+0.3 from last
   change"). No "good/bad" verdict — just the number.
 - Accessorised count and Layering Coverage are shown as clearly-labelled secondary figures, never
-  silently folded into the hero number's *meaning*.
+  silently folded into the hero number's _meaning_.
 
 ### 3.6 Illustrative magnitude
+
 The methodology's classic figure — "a good capsule of 30 items yields 80–150+ unique outfits" — refers
 to **Core base looks** (top×bottom×shoes) before accessories. With the bounded accessory increment
 (§3.1, ≤ `1 + A_max` per base look) the hero number sits **above** that core figure by **at most a
 small constant factor**, not multiplicatively; the exact ranges are pending validation in the
-algorithm-v0 baseline layer (FITB + human panel, PRODUCT-PLAN §5 Stage 1 P3); Stage 2 repeats quality
-validation after basicity is active. Do **not** pin a hero number in marketing copy or acceptance
-criteria until the baseline validation fixes it — the "80–150" line is a floor for the core count,
-not the accessorised hero total.
+interim baseline layer (FITB + human panel, PRODUCT-PLAN §5 Stage 1 P3). Stage 2 must validate the
+complete cut-aware MVP before release. Do **not** pin a hero number or promise a minimum count in
+marketing/acceptance until that complete validation fixes it: "80–150" is a historical core-only
+illustration, not a guaranteed floor after wearability filtering or the accessorised hero total.
 
 ## 4. Recommendation Signal (one next item)
 
-The free-loop "add one item" recommendation evaluates **category+color candidates**, then collapses
-equal winners to one category recommendation with its equally valid color options. It uses a reachable
+The free-loop "add one item" recommendation evaluates **reviewed preset candidates with category,
+colour and cut attributes** using §2.5, then collapses equal winners only when their verified impact
+and cut guidance are equivalent. Show the winning category, suitable cut and equally valid colours.
+It uses a reachable
 fixed priority and does not merge unlike scales into one score:
 
 1. **Core feasibility:** when there is no valid base look, recommend the missing/replacement Core
-   category+color candidate that creates the most valid base looks (minimum one). This includes a
-   compatible-color alternative when all required categories exist but their colours cannot form a
-   look.
+   reviewed preset candidate that creates the most verified base looks (minimum one). This includes a
+   compatible-colour or cut alternative when all required categories exist but cannot form a
+   verified look. If no reviewed candidate restores a look, explain the missing review/conflict;
+   do not invent a positive gain.
 2. **Layering structure:** once a valid base look exists, if Layering Coverage is below 100%, recommend
-   the mid/outer category+color candidate that adds the most newly covered base looks (tie: mid before
+   the reviewed mid/outer preset candidate that adds the most newly covered base looks (tie: mid before
    outer, then canonical category order). Report impact as covered looks / percentage points, never
    as outfits.
 3. **Core growth:** when both layering dimensions cover every current base look, recommend the Core
-   category+color candidate with maximum **Δcore** (new deduplicated base looks; tie: canonical
+   reviewed preset candidate with maximum **Δcore** (new deduplicated base looks; tie: canonical
    category order).
 
 - **Core categories** therefore rank by **Δcore**, while **Layering** ranks by coverage gain; the fixed
@@ -182,19 +287,24 @@ fixed priority and does not merge unlike scales into one score:
   that grows the wardrobe's **base looks** or fills a structural/layering gap (`gap-analysis.md`
   shopping list prioritises structural gaps). Accessories are bounded contributors and styling
   refinements, not the primary growth lever — recommending "buy a 4th scarf" would be noise. They may
-  enrich the *display* of existing looks but are never the single "add this next" answer in v0.
+  enrich the _display_ of existing looks but are never the single "add this next" answer in v0.
 - **Color affects feasibility, not taste-ranking in v0.** In the guest state, derived colors can span
   incompatible groups, so candidate color can change Δcore or Layering Coverage and MUST participate
-  in that calculation. The output names all max-scoring color options for the winning category; when
-  their impact ties, v0 does not invent a preferred color. Stage 2 may add a separate color-gap /
-  preference score to rank those ties.
+  in that calculation. For the completed MVP, first select the winning reviewed cut/preset using
+  §2.5 after the tier/gain/layer/category priorities above. Return only max-gain colour options whose
+  reviewed cut signature and guidance are equivalent to that winner, ordered by canonical colour ID.
+  Equal gain alone does not make different cuts interchangeable: exclude colours available only on
+  another cut signature. Do not add a taste preference among the retained equivalent colours.
+  The shipped colour-only guest-v1 returned all max-scoring colours in the winning category; that is
+  historical baseline behaviour, superseded for new MVP results. A separate colour-gap/taste score
+  is optional later work and cannot replace this deterministic MVP tie-break.
 
 ## 5. Generation Trigger
 
 Outfits are regenerated when the capsule is first created (after Journey Step 3) or when an item is
 added / removed / replaced. In v0.1: static generation (batch), not real-time — the user sees a
 pre-generated outfit grid. In the **guest loop** (pre-signup) the same generation runs entirely in
-the browser once the guest has at least one **mutually color-compatible** combination of ≥1 top + ≥1
-bottom + ≥1 pair shoes (or ≥1 dress + ≥1 pair shoes). Category presence without a color-valid
-combination is a zero-result state with explained add/replace alternatives, not an OPR result
+the browser once the guest has at least one **verified wearable** combination of ≥1 top + ≥1
+bottom + ≥1 pair shoes (or ≥1 dress + ≥1 pair shoes). Category/colour presence without a §2.5 pass
+is a zero-result state with explained add/replace/review alternatives, not a positive OPR result
 (`capsule-methodology.md` §7.1); guest items never leave the device before signup.

@@ -1,5 +1,12 @@
 # API Spec
 
+## MVP algorithm contract — required before release (2026-10-21)
+
+The target MVP item contract needs separate simplicity/currentness review and applicable cut/proportion metadata; result/recommendation contracts need versioned whole-look verdicts/reasons and suitable-cut guidance. These fields are conceptual requirements, not present in the current OpenAPI/client or implemented by this docs PR. Implement the concrete schema, generated clients, ownership validation, snapshot versioning and client parity together before MVP acceptance. Owned-item review needs owner-guided reference decisions, durable review-request/evidence states and authorized catalog-reviewer completion per methodology §6.1; unreviewed/requested/needs-details remain evaluator-unreviewed. Verdict/reason semantics and deterministic ordering must match outfit-generation §2.5: dated looks fail `DATED_CUT`, unknown remains unreviewed, and owned-current simplicity changes display order only. New suggestions require basicity 100/current and canonical tie-breaks. A 422 is not justified by low simplicity alone; unsupported category/colour and actual semantic failures remain explicit.
+
+Authority: [PRODUCT-PLAN D4/Q5](../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../project/methodology/capsule-methodology.md);
+whole-look, counting, versioning and quality rules: [outfit generation §2.5](../project/methodology/outfit-generation.md).
+
 ## Status
 
 Accepted implementation contract for v0.1. The authoritative machine-readable
@@ -115,29 +122,29 @@ The generator writes the canonical web client to `app/src/lib/api/generated/open
 
 Every REST operation returns the common `ErrorResponse` shape for failures. The OpenAPI contract is authoritative for operation-specific status codes, but the v0.1 taxonomy is:
 
-| HTTP | `ErrorResponse.error.code`   | Meaning                                                                                                       |
-| ---: | ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
-|  400 | `VALIDATION_ERROR`           | Request syntax, shape, enum, file metadata, or query validation failed                                        |
-|  400 | `INVALID_CODE`               | Recovery/verification one-time code is wrong, expired, or already used (spec 035)                             |
-|  400 | `INVALID_CURRENT_PASSWORD`   | Password change rejected because the presented current password is wrong (spec 035)                           |
-|  400 | `PASSWORD_TOO_SIMILAR`       | Password is too similar to the email identifier (spec 053)                                                    |
-|  400 | `PASSWORD_TOO_SHORT`         | Password has fewer than eight characters (spec 053)                                                           |
-|  400 | `PASSWORD_TOO_LONG`          | Password exceeds the identity service's supported length (spec 053)                                           |
-|  400 | `PASSWORD_COMPROMISED`       | Password appears in known data breaches (spec 053)                                                            |
-|  400 | `PASSWORD_UNCHANGED`         | New password must differ from the current password (spec 053)                                                 |
-|  400 | `PASSWORD_POLICY_REJECTED`   | Another recognized password-policy rejection requires a different password (spec 053)                         |
-|  401 | `UNAUTHENTICATED`            | Kratos session is missing, expired, or invalid                                                                |
-|  403 | `FORBIDDEN`                  | Authenticated user cannot access the requested resource                                                       |
-|  404 | `NOT_FOUND`                  | Resource does not exist or is intentionally hidden by ownership rules                                         |
-|  409 | `IDEMPOTENCY_CONFLICT`       | Idempotency key, invoice, webhook replay, or optimistic version conflict                                      |
-|  409 | `UPLOAD_INCOMPLETE`          | Upload completion ran before the initialized object exists                                                    |
-|  409 | `UPLOAD_MISMATCH`            | Stored object size or content type does not match the initialized metadata                                    |
-|  422 | `SEMANTIC_VALIDATION_FAILED` | Capsule methodology, palette compatibility, basicity, target correlation, or status-transition rule failed    |
-|  429 | `RATE_LIMITED`               | Per-client request budget is exhausted; the response includes `Retry-After`                                   |
-|  500 | `INTERNAL_ERROR`             | Unexpected application/database failure                                                                       |
-|  502 | `INTERNAL_ERROR`             | Upstream identity service is temporarily unavailable during authenticated session resolution                  |
-|  503 | `FEATURE_UNAVAILABLE`        | Photo uploads are disabled until the operator explicitly enables the rollout                                  |
-|  503 | `STORAGE_UNAVAILABLE`        | Object Storage is unreachable or signing/readiness failed; no upload target or partial completion is returned |
+| HTTP | `ErrorResponse.error.code`   | Meaning                                                                                                                                            |
+| ---: | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+|  400 | `VALIDATION_ERROR`           | Request syntax, shape, enum, file metadata, or query validation failed                                                                             |
+|  400 | `INVALID_CODE`               | Recovery/verification one-time code is wrong, expired, or already used (spec 035)                                                                  |
+|  400 | `INVALID_CURRENT_PASSWORD`   | Password change rejected because the presented current password is wrong (spec 035)                                                                |
+|  400 | `PASSWORD_TOO_SIMILAR`       | Password is too similar to the email identifier (spec 053)                                                                                         |
+|  400 | `PASSWORD_TOO_SHORT`         | Password has fewer than eight characters (spec 053)                                                                                                |
+|  400 | `PASSWORD_TOO_LONG`          | Password exceeds the identity service's supported length (spec 053)                                                                                |
+|  400 | `PASSWORD_COMPROMISED`       | Password appears in known data breaches (spec 053)                                                                                                 |
+|  400 | `PASSWORD_UNCHANGED`         | New password must differ from the current password (spec 053)                                                                                      |
+|  400 | `PASSWORD_POLICY_REJECTED`   | Another recognized password-policy rejection requires a different password (spec 053)                                                              |
+|  401 | `UNAUTHENTICATED`            | Kratos session is missing, expired, or invalid                                                                                                     |
+|  403 | `FORBIDDEN`                  | Authenticated user cannot access the requested resource                                                                                            |
+|  404 | `NOT_FOUND`                  | Resource does not exist or is intentionally hidden by ownership rules                                                                              |
+|  409 | `IDEMPOTENCY_CONFLICT`       | Idempotency key, invoice, webhook replay, or optimistic version conflict                                                                           |
+|  409 | `UPLOAD_INCOMPLETE`          | Upload completion ran before the initialized object exists                                                                                         |
+|  409 | `UPLOAD_MISMATCH`            | Stored object size or content type does not match the initialized metadata                                                                         |
+|  422 | `SEMANTIC_VALIDATION_FAILED` | Capsule methodology, palette compatibility, target correlation, or status-transition rule failed; low simplicity alone never rejects an owned item |
+|  429 | `RATE_LIMITED`               | Per-client request budget is exhausted; the response includes `Retry-After`                                                                        |
+|  500 | `INTERNAL_ERROR`             | Unexpected application/database failure                                                                                                            |
+|  502 | `INTERNAL_ERROR`             | Upstream identity service is temporarily unavailable during authenticated session resolution                                                       |
+|  503 | `FEATURE_UNAVAILABLE`        | Photo uploads are disabled until the operator explicitly enables the rollout                                                                       |
+|  503 | `STORAGE_UNAVAILABLE`        | Object Storage is unreachable or signing/readiness failed; no upload target or partial completion is returned                                      |
 
 Server logs may include safe provider error classifications, but must never include credentials, presigned URLs, or secret-bearing raw payloads. Client responses keep messages safe for end users; the only provider target returned by this slice is the explicit short-lived presigned URL capability.
 
@@ -186,12 +193,12 @@ as synonymous with Core. Built-in seed rows persist the mapping, so a UUID resol
 name-based lookup. Custom-category validation returns a nullable role/slot pair (`null` when rejected)
 before that category can participate in either metric.
 
-| Route                                   | Method | Auth | Purpose                                               |
-| --------------------------------------- | -----: | ---- | ----------------------------------------------------- |
-| `/api/journey/categories`               |    GET | User | List categories filtered by wardrobe type             |
-| `/api/journey/custom-category/validate` |   POST | User | Validate custom category basicity                     |
-| `/api/palette/validate`                 |   POST | User | Validate selected color IDs and return blocked colors |
-| `/api/capsules`                         |   POST | User | Create capsule from journey selections                |
+| Route                                   | Method | Auth | Purpose                                                                   |
+| --------------------------------------- | -----: | ---- | ------------------------------------------------------------------------- |
+| `/api/journey/categories`               |    GET | User | List categories filtered by wardrobe type                                 |
+| `/api/journey/custom-category/validate` |   POST | User | Resolve supported custom category/role; provide non-blocking cut guidance |
+| `/api/palette/validate`                 |   POST | User | Validate selected color IDs and return blocked colors                     |
+| `/api/capsules`                         |   POST | User | Create capsule from journey selections                                    |
 
 ## Capsules
 

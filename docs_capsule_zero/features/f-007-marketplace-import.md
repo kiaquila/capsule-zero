@@ -1,5 +1,12 @@
 # Feature: Marketplace Link Import
 
+## MVP algorithm contract — required before release (2026-10-21)
+
+When this legally gated surface is implemented, imported attributes must distinguish simplicity/currentness and cut proportions; unreviewed imports are not certified wearable. Low simplicity alone cannot reject saving. This algorithm requirement does not enable merchant imports or waive Q8/legal/storage gates.
+
+Authority: [PRODUCT-PLAN D4/Q5](../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../project/methodology/capsule-methodology.md);
+whole-look, counting, versioning and quality rules: [outfit generation §2.5](../project/methodology/outfit-generation.md).
+
 > Source: US-011 (spec.md). Prototype: `html-prototypes/guided-journey.html` (tab "Paste Links")
 
 > **Retained design, blocked implementation (2026-07-24):** `PRODUCT-PLAN.md` Q8 chose option (б),
@@ -10,12 +17,14 @@
 > scheme. The flow below is design input for that future spec, not a current runtime contract.
 
 ## Overview
+
 - **Purpose:** Paste marketplace URLs → system parses item data automatically (killer feature)
 - **User:** User adding items during Journey Step 3 or from My Items
 - **Entry point:** "Paste Links" tab in Journey Step 3
 - **Emotional target:** CREATIVITY — "I pasted links — and items are already here. Magic!"
 
 ## User Flow
+
 1. User pastes one or multiple marketplace URLs
 2. System parses each URL: name, category, colors, all photos, brand, material/composition, source URL
 3. For each parsed item: minimalist interface to choose one photo from several
@@ -23,22 +32,24 @@
 5. Save → items added to wardrobe / capsule
 
 ## Parsing Strategy (v0.1)
+
 Deferred behind the Q8 gates. A later compliance-scheme spec must decide whether best-effort parsing
 and retailer adapters can satisfy the no-extra-copy and source-link requirements before any adapter
 is implemented.
 
 ## Interface States
 
-| State | Description | What user sees |
-|-------|------------|----------------|
-| Default | Empty input | Text area with placeholder "Paste product URLs..." |
-| Parsing | URLs submitted | Loading state with progress indicator, cards appear one-by-one |
-| Parsed | Items extracted | Item cards with photo selector + auto-tagged fields |
-| Editing | User correcting | Editable fields: name, category, color dots |
-| Error | URL not recognized | Error state: "URL not recognized" per failed link |
-| Saved | Items confirmed | Items added to capsule/wardrobe |
+| State   | Description        | What user sees                                                 |
+| ------- | ------------------ | -------------------------------------------------------------- |
+| Default | Empty input        | Text area with placeholder "Paste product URLs..."             |
+| Parsing | URLs submitted     | Loading state with progress indicator, cards appear one-by-one |
+| Parsed  | Items extracted    | Item cards with photo selector + auto-tagged fields            |
+| Editing | User correcting    | Editable fields: name, category, color dots                    |
+| Error   | URL not recognized | Error state: "URL not recognized" per failed link              |
+| Saved   | Items confirmed    | Items added to capsule/wardrobe                                |
 
 ## Acceptance Criteria
+
 1. One or multiple URLs accepted
 2. System parses: name, category, colors, all photos, brand, material/composition, source URL
 3. Minimalist interface — choose one photo from several
@@ -48,12 +59,14 @@ is implemented.
 7. Generic product URLs are accepted; unsupported or non-product pages return a clear parsing error
 
 ## Key Components
+
 - **LinkInput** — textarea for pasting URLs (multi-line support)
 - **ParseProgress** — animated progress per URL
 - **ParsedItemCard** — photo carousel + auto-tagged fields (editable)
 - **PhotoSelector** — horizontal gallery to pick one from multiple parsed photos
 
 ## Edge Cases
+
 - Unsupported or non-product page → clear error per URL
 - URL leads to unavailable product → error with explanation
 - Multiple URLs (batch) → parse sequentially, show progress
@@ -61,6 +74,7 @@ is implemented.
 - Very slow connection → timeout with retry option
 
 ## Related Features
+
 - f-006-guided-journey.md — Parent flow (Step 3)
 - f-005-my-items.md — Items appear in My Items grid after save
 - f-015-opr.md — Imported items contribute to capsule's OPR

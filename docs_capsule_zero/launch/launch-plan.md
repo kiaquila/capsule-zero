@@ -1,5 +1,12 @@
 # Launch Plan — Capsule Zero v0.1
 
+## MVP algorithm contract — required before release (2026-10-21)
+
+Release blocker: Stage 2 must deliver colour, separate simplicity/currentness and complete-look cut compatibility in guest/account generation, OPR, coverage, gaps and recommendations. Manually reviewed own-image presets and deterministic rules are sufficient; new ML is not required. Current guest-v1 is an interim release, not full MVP. Require application TDD, version/client parity and predeclared held-out FITB + stylist wearability thresholds; a colour-only demo or this documentation PR cannot close the release gate.
+
+Authority: [PRODUCT-PLAN D4/Q5](../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../project/methodology/capsule-methodology.md);
+whole-look, counting, versioning and quality rules: [outfit generation §2.5](../project/methodology/outfit-generation.md).
+
 > **Monetization freeze (2026-07-16):** Every coin, balance, Lava.top, billing, payment-product,
 > pricing, or purchase-flow statement below is superseded historical context under `PRODUCT-PLAN.md`
 > D2. Do not implement, provision, expose, test as a release gate, or use it for a new contract or
@@ -76,13 +83,13 @@
 **Timeline:** Weeks 4-5, parallel with Phase 3 (5 days)
 **AI roles:** Tech Architect AI (lead), Programmer AI (setup), DevOps Consultant, Mobile Architect AI
 
-| Task              | Days | Description                                                                                                                                                                          | Result         |
-| ----------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------- |
+| Task              | Days | Description                                                                                                                                                                                                               | Result         |
+| ----------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
 | Stack selection   | D1-2 | Web (Next.js/React), mobile (React Native), Go backend, plain Postgres in v0.1 (pgvector deferred), Hetzner Object Storage, active Cloudflare application front-door/CDN, monetization frozen until PRODUCT-PLAN Stage 4. | ADR            |
-| Repository        | D2-3 | Mono/multi-repo. Linting, formatting, commit hooks, folder structure.                                                                                                                | Clean repo     |
-| CI/CD             | D3-4 | Auto-tests, build, deploy. Staging. Preview deployments.                                                                                                                             | CI/CD pipeline |
-| API design        | D4-5 | Shared web/mobile backend contract, REST/RPC endpoints, schemas, authentication, Lava.top webhook contract.                                                                          | API spec       |
-| Dev documentation | D5   | Env variables, local DB, seed data, tests.                                                                                                                                           | Setup guide    |
+| Repository        | D2-3 | Mono/multi-repo. Linting, formatting, commit hooks, folder structure.                                                                                                                                                     | Clean repo     |
+| CI/CD             | D3-4 | Auto-tests, build, deploy. Staging. Preview deployments.                                                                                                                                                                  | CI/CD pipeline |
+| API design        | D4-5 | Shared web/mobile backend contract, REST/RPC endpoints, schemas, authentication, Lava.top webhook contract.                                                                                                               | API spec       |
+| Dev documentation | D5   | Env variables, local DB, seed data, tests.                                                                                                                                                                                | Setup guide    |
 
 ## Phase 5 — Development Sprint
 
@@ -90,14 +97,14 @@
 **Timeline:** Weeks 5-11 (30 working days)
 **AI roles:** Programmer AI (lead), Mobile Engineer AI, Tech Architect (review), QA AI, UX/UI Designer, AI Stylist-Consultant
 
-| Sprint                            | Days            | Focus                                                                                                                                                                             | Result                                                                               |
-| --------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Sprint                            | Days            | Focus                                                                                                                                                                                                                                                      | Result                                                                               |
+| --------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | 0: Readiness Gate                 | D1-5 (W5)       | OpenAPI contract, Go monolith migrations + tests, React Native scaffold, docker-compose runtime on the server, active Cloudflare anti-DDoS/origin isolation + Tailscale-only SSH (spec 047), Resend setup, lint/hooks, recorded architecture verification. | Phase 5 entrance checklist complete (`.specify/specs/024-production-stack-runtime/`) |
-| 1: Foundation                     | D6-10 (W6)      | Landing pixel-perfect, navigation, mobile-first layout system, shared tokens, Go API auth + profile slice.                                                                        | Landing + backend foundation on staging                                              |
-| 2: Shared Contract + Mobile Shell | D11-15 (W7)     | Auth, profile, generated clients from OpenAPI, React Native routing, deep links, shared domain models.                                                                            | Web auth + React Native shell                                                        |
-| 3: Onboarding                     | D16-20 (W8)     | Guided journey (wardrobe type, categories, colors + items), profile, transitions across web and mobile.                                                                           | Onboarding on staging/internal mobile build                                          |
-| 4: Core Wardrobe                  | D21-25 (W9-10)  | Photo upload, background removal, auto-categorization, grid, filtering, mobile camera/gallery flow.                                                                               | Upload + grid across clients                                                         |
-| 5: Capsule + Web Payments         | D26-30 (W10-11) | Capsule result, dashboard, shopping list, favorites, wardrobe states, Lava.top stub (live in v0.2), mobile balance display, all animations.                                       | Full v0.1 on staging/TestFlight/internal testing                                     |
+| 1: Foundation                     | D6-10 (W6)      | Landing pixel-perfect, navigation, mobile-first layout system, shared tokens, Go API auth + profile slice.                                                                                                                                                 | Landing + backend foundation on staging                                              |
+| 2: Shared Contract + Mobile Shell | D11-15 (W7)     | Auth, profile, generated clients from OpenAPI, React Native routing, deep links, shared domain models.                                                                                                                                                     | Web auth + React Native shell                                                        |
+| 3: Onboarding                     | D16-20 (W8)     | Guided journey (wardrobe type, categories, colors + items), profile, transitions across web and mobile.                                                                                                                                                    | Onboarding on staging/internal mobile build                                          |
+| 4: Core Wardrobe                  | D21-25 (W9-10)  | Photo upload, background removal, auto-categorization, grid, filtering, mobile camera/gallery flow.                                                                                                                                                        | Upload + grid across clients                                                         |
+| 5: Capsule + Web Payments         | D26-30 (W10-11) | Capsule result, dashboard, shopping list, favorites, wardrobe states, Lava.top stub (live in v0.2), mobile balance display, all animations.                                                                                                                | Full v0.1 on staging/TestFlight/internal testing                                     |
 
 ### Quality Gate: Implementation Completeness
 
@@ -183,10 +190,10 @@
 
 ### Tool Mapping
 
-| Tool                    | Roles                                                                                                  | Best For                                              |
-| ----------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| Claude.ai (Opus/Sonnet) | Product AI, Marketing, UX/UI Researcher, UX/UI Designer (specs), Tech Architect, AI Stylist-Consultant | Strategy, research, specifications, styling expertise |
-| Claude Code             | Programmer AI, QA AI, DevOps                                                                           | Code, testing, CI/CD, deploy, optimization            |
+| Tool                    | Roles                                                                                                                | Best For                                              |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Claude.ai (Opus/Sonnet) | Product AI, Marketing, UX/UI Researcher, UX/UI Designer (specs), Tech Architect, AI Stylist-Consultant               | Strategy, research, specifications, styling expertise |
+| Claude Code             | Programmer AI, QA AI, DevOps                                                                                         | Code, testing, CI/CD, deploy, optimization            |
 | External APIs           | Hetzner Object Storage, Resend, active Cloudflare front door; monetization provider deferred to PRODUCT-PLAN Stage 4 | Specialized services                                  |
 
 ### Artifact Handoff Protocol
@@ -212,11 +219,11 @@ owner authorization; green CI alone does not create it.
 
 ## Quality Gates — Summary
 
-| Phase           | Gate                        | Criteria                                                                                                                                                 | Approvers                    |
-| --------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| 3 (Design)      | Premium design              | 3+ states per screen. Consistent typography. Palette confirmed by AI stylist. "Aesop/Notion" test. Decision and verification recorded.                                     | Designer + Stylist + Orchestrator |
-| 5 (Development) | Implementation completeness | Screens = design to 2px. Animations per spec. < 2 sec load. Mobile-first web + React Native phone smoke tests. Guided journey content correct. 0 errors. | QA + Designer                |
-| 6 (QA)          | Release candidate           | 0 critical/major. Lighthouse 90+/95+. Beta 4.5+/5. 60%+ completion. Decision and verification recorded. Legal.                                                             | QA + Orchestrator                 |
+| Phase           | Gate                        | Criteria                                                                                                                                                 | Approvers                         |
+| --------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| 3 (Design)      | Premium design              | 3+ states per screen. Consistent typography. Palette confirmed by AI stylist. "Aesop/Notion" test. Decision and verification recorded.                   | Designer + Stylist + Orchestrator |
+| 5 (Development) | Implementation completeness | Screens = design to 2px. Animations per spec. < 2 sec load. Mobile-first web + React Native phone smoke tests. Guided journey content correct. 0 errors. | QA + Designer                     |
+| 6 (QA)          | Release candidate           | 0 critical/major. Lighthouse 90+/95+. Beta 4.5+/5. 60%+ completion. Decision and verification recorded. Legal.                                           | QA + Orchestrator                 |
 | 7 (Launch)      | Go-Live                     | Lava.top web purchases tested. Mobile purchase CTAs absent unless later policy approval exists. Analytics working. Monitoring 2 hours. Legal pages.      | DevOps + Orchestrator             |
 
 > **The premium test across all phases:** "Will the target user screenshot this screen and send it to a friend?" If the answer is not a confident "yes" — back to revision.

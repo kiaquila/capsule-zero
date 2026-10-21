@@ -1,4 +1,11 @@
 # Screen: Guided Journey (3 Steps)
+
+## MVP algorithm contract — required before release (2026-10-21)
+
+Apply the full evaluator before guest/account results: colour, separate simplicity/currentness and whole-outfit cut checks. No verified core look means an explained zero-result/review state with approved alternatives. Keep owned items; low simplicity alone is not a save error.
+
+Authority: [PRODUCT-PLAN D4/Q5](../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../project/methodology/capsule-methodology.md);
+whole-look, counting, versioning and quality rules: [outfit generation §2.5](../project/methodology/outfit-generation.md).
 URL: /journey
 Feature: features/f-006-guided-journey.md
 Prototype: `html-prototypes/guided-journey.html`
@@ -100,6 +107,7 @@ Prototype: `html-prototypes/guided-journey.html`
 ```
 
 ## Elements
+
 - **Progress indicator:** 3-dot stepper (● active, ○ inactive)
 - **Type cards (Step 1):** Large glass cards with icons
 - **Category checklist (Step 2):** Scrollable list, toggles + quantity steppers
@@ -109,6 +117,7 @@ Prototype: `html-prototypes/guided-journey.html`
 - **Blocked state:** incompatible colors are unavailable for selection
 
 ## Interactivity
+
 - Step 1: Click card → select type, auto-advance to Step 2
 - Step 2: Toggle categories, adjust quantities, validate min 8
 - Step 3: add personal photos through the active flow; activate link import and shared
@@ -118,6 +127,7 @@ Prototype: `html-prototypes/guided-journey.html`
 - [← Back] → navigate to previous step
 
 ## Responsive
+
 - Mobile: Steps stack vertically, cards in 1-column, full-width inputs
 - Tablet: 2-column for type cards, wider checklist
 - Desktop: 3-column type cards, spacious layout

@@ -1,5 +1,12 @@
 # Web Frontend Docs
 
+## MVP algorithm contract — required before release (2026-10-21)
+
+Extend/reuse guest outfits.ts evaluate/recommend and colour helpers rather than add a second outfit calculator. Completed MVP browser and authenticated outputs need the same versioned colour/cut rules, including recommendation gains. Preserve immutable guest-v1 results with the old evaluator; implement explicit versioned recalculation and parity fixtures in the application PR.
+
+Authority: [PRODUCT-PLAN D4/Q5](../../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../methodology/capsule-methodology.md);
+whole-look, counting, versioning and quality rules: [outfit generation §2.5](../methodology/outfit-generation.md).
+
 > **Update 2026-10-21:** Public `/[locale]/start` hosts reference guest onboarding (spec 055): local browser progress, 32 own-image presets and browser calculation. Explicit account save uses the real Go/PostgreSQL guest context (spec 056). API accounts have no demo wardrobe or demo capsule fallback (spec 058); an account without saved garments starts empty.
 
 > **Monetization freeze (2026-07-16):** Every coin, balance, Lava.top, billing, payment-product,

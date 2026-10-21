@@ -1,5 +1,15 @@
 # 046 — Tasks
 
+## Scope supersession — MVP cut contract (2026-10-21)
+
+Historical delivery scope/evidence below remains a record of this slice. Its colour-only baseline,
+cut deferral, simple-category rejection or exact-reference counting cannot waive the updated MVP gate.
+[PRODUCT-PLAN D4/Q5](../../../PRODUCT-PLAN.md) now requires separate simplicity/currentness and whole-outfit checks
+before MVP acceptance, including the guest/account path. Canonical rules: [methodology §6.1](../../../docs_capsule_zero/project/methodology/capsule-methodology.md)
+and [outfit generation §2.5](../../../docs_capsule_zero/project/methodology/outfit-generation.md). Spec 059 aligns documentation only; application implementation
+and quality validation remain outstanding. Preserve immutable guest-v1 results under their original
+version; do not silently recalculate historic snapshots or rewrite this slice's old verification results.
+
 - [x] T001 Сбор решений фаундера Q1/Q2/Q3/Q6 (квиз, сессия 2026-07-21) + проверка матчасти (OPR-модель, colors.md vs прототип)
 - [x] T002 `outfit-generation.md` — модель OPR §3, accessory ruleset §2.3, Layering Coverage §3.4, basicity-хук §2.5
 - [x] T003 `capsule-methodology.md` §1/§3/§7.1 + `gap-analysis.md` §5/Rule-note + `colors.md` canonical-блок

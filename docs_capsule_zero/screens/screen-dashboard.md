@@ -1,4 +1,11 @@
 # Screen: Dashboard / Personal Cabinet
+
+## MVP algorithm contract — required before release (2026-10-21)
+
+Use the same versioned verified counts/coverage as Capsule Result. Old saved guest-v1 totals remain reproducible interim snapshots; explicit new-version recalculation explains any changed total. No client-side colour-only reconstruction of the metric.
+
+Authority: [PRODUCT-PLAN D4/Q5](../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../project/methodology/capsule-methodology.md);
+whole-look, counting, versioning and quality rules: [outfit generation §2.5](../project/methodology/outfit-generation.md).
 URL: /dashboard
 Feature: features/f-003-dashboard.md
 Prototype: `html-prototypes/dashboard.html`
@@ -61,6 +68,7 @@ Prototype: `html-prototypes/dashboard.html`
 ```
 
 ## Elements
+
 - **Capsule Card:** Glass panel with capsule name, OPR, separately labelled Layering Coverage (or `N/A`), item/outfit/category counts, palette dots, direct actions
 - **Stats Row:** Total Items, Total Outfits, Uncapsulated
 - **Preview Panels:** Shopping List and Recently Added
@@ -68,12 +76,14 @@ Prototype: `html-prototypes/dashboard.html`
 - **Navigation:** Bottom nav plus More sheet with Outfits, Shopping List, For Sale, For Repair, Profile, Settings
 
 ## Interactivity
+
 - Click section card → navigate to corresponding screen
 - Click capsule card → navigate to Capsule Result
 - Click [Create Your First Capsule] → navigate to Guided Journey
 - Each section shows live count
 
 ## Responsive
+
 - Mobile: 2-column grid for section cards, capsule card full-width
 - Tablet: 3-column grid
 - Desktop: 3-column grid with larger cards

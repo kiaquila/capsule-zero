@@ -1,5 +1,12 @@
 # Backend Docs
 
+## MVP algorithm contract — required before release (2026-10-21)
+
+The target methodology domain must support separate simplicity/currentness, applicable cut tags and complete-look verdicts used by OPR/coverage/gaps/gains. Reuse existing item/guest snapshot structures and update OpenAPI, generated clients, migrations and parity fixtures together when implementing. Current storage does not yet contain these new attributes; spec 059 is documentation only. Retain old guest-v1 snapshot/evaluator semantics.
+
+Authority: [PRODUCT-PLAN D4/Q5](../../../PRODUCT-PLAN.md); attributes: [methodology §6.1](../methodology/capsule-methodology.md);
+whole-look, counting, versioning and quality rules: [outfit generation §2.5](../methodology/outfit-generation.md).
+
 > **Monetization freeze (2026-07-16):** Every coin, balance, Lava.top, billing, payment-product,
 > pricing, or purchase-flow statement below is superseded historical context under `PRODUCT-PLAN.md`
 > D2. Do not implement, provision, expose, test as a release gate, or use it for a new contract or
@@ -136,15 +143,15 @@ embedding migration belongs to v0.1 before both product gates close.
 
 ### Capsules
 
-| Table                      | Purpose                                                                   |
-| -------------------------- | ------------------------------------------------------------------------- |
-| `capsules`                 | User capsule: wardrobe type, locked palette flag, item/outfit counts, OPR |
-| `capsule_palette_colors`   | Selected immutable color IDs per capsule                                  |
-| `capsule_category_targets` | Selected category targets and quantities from Journey Step 2              |
-| `capsule_items`            | Wardrobe entries included in a capsule                                    |
-| `outfits`                  | Generated static outfit combinations                                      |
-| `outfit_items`             | Items included in each generated outfit                                   |
-| `gap_recommendations`      | Category/color/priority/impact recommendations                            |
+| Table                      | Purpose                                                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `capsules`                 | User capsule: wardrobe type, locked palette flag, item/outfit counts, OPR                                                 |
+| `capsule_palette_colors`   | Selected immutable color IDs per capsule                                                                                  |
+| `capsule_category_targets` | Selected category targets and quantities from Journey Step 2                                                              |
+| `capsule_items`            | Wardrobe entries included in a capsule                                                                                    |
+| `outfits`                  | Generated static outfit combinations                                                                                      |
+| `outfit_items`             | Items included in each generated outfit                                                                                   |
+| `gap_recommendations`      | MVP target: category/color/reviewed suitable cut/rule reason/priority/verified impact; concrete contract added in Stage 2 |
 
 ## Authorization Model
 
