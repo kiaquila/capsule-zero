@@ -24,6 +24,8 @@
 
 ### Decisions
 
+- Native follow-ups PRRT_kwDORvfoks6u1yyc / PRRT_kwDORvfoks6u1yyj (P2): state that Stage 2 must add the cut-review controls/states to existing item details; do not claim they ship today. Complete accessory identity with category, construction and derived basicity as well as all other reviewed tags; a 50/100 construction example cannot collapse by item ID.
+
 - Native P2 follow-ups PRRT_kwDORvfoks6u1PM5/PRRT_kwDORvfoks6u1PNC: audit every tracked Markdown 058 mention; replace only cut-contract references (preserve shipped no-demo 058). Restore the complete historical 013 spec body from main, not just FR-006. Add reproducible regression assertions for both documentation errors.
 
 - Additional native findings PRRT_kwDORvfoks6u0wvw (P1) and PRRT_kwDORvfoks6u0wv4 (P2): define owned-item currentness transitions, actors and evidence in §6.1 with a curator fallback; restore historical 013 FR-006 verbatim and retain only the superseding header. Correct all supersession headers to feature 059 after the numbering collision.

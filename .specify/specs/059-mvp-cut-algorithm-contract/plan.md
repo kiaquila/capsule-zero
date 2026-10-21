@@ -65,10 +65,11 @@ outfit = (root / 'docs_capsule_zero/project/methodology/outfit-generation.md').r
 plan = (root / 'PRODUCT-PLAN.md').read_text()
 assert all(term in method for term in ['simple', 'current', 'unreviewed', 'excessive', 'six months', 'owner-reference', 'curator-reference', 'review-requested'])
 outfit = ' '.join(outfit.split())
-assert all(term in outfit for term in ['entire look', 'all pairs alone is insufficient', 'FITB', 'guest-v1', 'implementation spec', 'DATED_CUT', 'number of items with basicity <100', 'canonical preset ID'])
+assert all(term in outfit for term in ['entire look', 'all pairs alone is insufficient', 'FITB', 'guest-v1', 'implementation spec', 'DATED_CUT', 'number of items with basicity <100', 'canonical preset ID', 'cut/fit/volume/length/construction/decor', 'same-colour/slot/cut/volume/length/decor'])
 assert 'ОБЯЗАТЕЛЬНО ДЛЯ MVP' in plan and 'принятия MVP' in plan
 assert 'guarantees universal combinability' not in method
 assert 'colour only (does' not in outfit
+assert 'future implementation work, not shipped UI' in (root / 'docs_capsule_zero/screens/screen-my-items.md').read_text()
 assert 'low simplicity alone' in (root / 'docs_capsule_zero/project/methodology/categories.md').read_text().lower()
 historical = ' .specify/specs/013-stage-1-guided-journey/spec.md'.strip()
 original = subprocess.check_output(['git', 'show', 'origin/main:' + historical], text=True)

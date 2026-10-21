@@ -37,7 +37,7 @@ MVP acceptance; a docs merge cannot imply the currently shipped guest-v1 satisfi
 - Owned-item review has an explicit owner-guided reference action and designated catalog-reviewer fallback with persisted states/evidence, authorized completion, invalidation and recomputation. Personal pieces need not be replaced by presets to enter verified results.
 - Whole-look rules return pass/fail/unreviewed with a reason. Only passes affect verified counts,
   coverage and gains. Keep existing OPR denominator, accessory cap, roles and recommendation priorities;
-  extend accessory dedup identity with the reviewed style signature so different silhouettes survive.
+  extend accessory dedup identity with canonical category and all reviewed construction/decor/cut tags plus derived basicity, so different silhouettes and simplicity levels survive.
 - Guest-v1 remains an interim immutable version. Future cut-aware recalculation is explicit and
   versioned, preserving the original snapshot. The implementation PR updates actual contracts and
   storage as needed, with browser/API/mobile parity and TDD.

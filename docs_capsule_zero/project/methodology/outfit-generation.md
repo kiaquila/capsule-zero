@@ -67,7 +67,7 @@ and lives in §3.1. Per outfit:
 4. **Deduplication.** Outfits that differ only by an accessory that does not change the look
    (e.g. swapping one grey scarf for another grey scarf) collapse to one counted outfit. Before
    bounded selection, candidate variations are deduplicated by `(base look, sorted set of
-(slot, colorId, reviewed style signature))`; the lowest canonical `itemId` is retained only as the rendering representative. The style signature comprises the applicable cut/volume/length/decor tags used by §2.5; retain only verified candidates before deduplication. Historically v0 used `(slot, colorId)` alone, which cannot distinguish different silhouettes of the same colour.
+(slot, colorId, reviewed style signature))`; the lowest canonical `itemId` is retained only as the rendering representative. The style signature contains the canonical category ID, every applicable cut/fit/volume/length/construction/decor tag used by §2.5, and the basicity derived from construction/decor under the active ruleset. Use the same canonical attribute order/IDs and explicit not-applicable values across clients; inconsistent stored basicity must be corrected/reviewed, never trusted as an override. Retain only verified candidates before deduplication. For example, same-colour/slot/cut/volume/length/decor accessories with complex construction (50) and simple construction (100) have different identities; neither is discarded solely because its item ID is larger. Only identical complete signatures can share a lowest-ID representative, whose simplicity is then identical. Preserve these cases in parity tests. Historically v0 used `(slot, colorId)` alone, which cannot distinguish different silhouettes of the same colour.
 
 ### 2.4 Formality
 
