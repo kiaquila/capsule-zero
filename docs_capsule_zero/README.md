@@ -2,7 +2,7 @@
 
 ## MVP algorithm contract — required before release (2026-10-21)
 
-The algorithm source of truth separates item simplicity, cut currentness and complete-look compatibility. Colour harmony alone does not certify wearability. Start from the canonical methodology below; spec 058 records the documentation alignment, with implementation still required before MVP acceptance.
+The algorithm source of truth separates item simplicity, cut currentness and complete-look compatibility. Colour harmony alone does not certify wearability. Start from the canonical methodology below; spec 059 records the documentation alignment, with implementation still required before MVP acceptance.
 
 Authority: [PRODUCT-PLAN D4/Q5](../PRODUCT-PLAN.md); attributes: [methodology §6.1](project/methodology/capsule-methodology.md);
 whole-look, counting, versioning and quality rules: [outfit generation §2.5](project/methodology/outfit-generation.md).

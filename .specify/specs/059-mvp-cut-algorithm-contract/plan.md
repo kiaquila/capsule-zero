@@ -17,6 +17,11 @@ authorities; add only this required feature-memory folder, not a new domain abst
 | AC5   | `node scripts/check-repo-baseline.mjs`; `node scripts/check-feature-memory.mjs --worktree`; `npm run check:api-contract`; `node --test scripts/lib/*.test.mjs`                                      | PASS: baseline and feature-memory; API/client parity (50 operations, 24 Go route registrations); all 42 gate-script tests passed.                                          |
 | AC5   | Current-head PR required checks and native Codex review linked from this PR                                                                                                                         | Final evidence is the linked PR current-head checks and trusted Codex verdict; required before merge. This does not imply cut-engine implementation or MVP completion.     |
 
+Review-fix evidence: `outfit-generation.md` §2.5 now defines a verdict table, failure precedence,
+100/current candidate eligibility, exact display/recommendation ordering and expected 100-dated,
+50/0-current and unknown parity outcomes. This addresses native Codex thread `PRRT_kwDORvfoks6u0pX9`;
+PRODUCT-PLAN, item attributes, MVP/API target and copy use the same semantics.
+
 CI recovery evidence: test run `39619285862` failed twice during service initialization with ECR
 `Data limit exceeded`. Google cache manifest lookup for PostgreSQL 16 returned HTTP 200 and OCI
 index digest `sha256:a902560563d3a5661228585f53474c5065e7f273b21ffd77e555a8b5682c5690`.
@@ -33,7 +38,8 @@ python3 - <<'PY'
 from pathlib import Path
 import re, subprocess
 root = Path.cwd()
-changed = set(subprocess.check_output(['git', 'diff', '--name-only', 'origin/main'], text=True).splitlines())
+base = subprocess.check_output(['git', 'merge-base', 'origin/main', 'HEAD'], text=True).strip()
+changed = set(subprocess.check_output(['git', 'diff', '--name-only', base], text=True).splitlines())
 changed.update(subprocess.check_output(['git', 'ls-files', '--others', '--exclude-standard'], text=True).splitlines())
 ci_support = {'.github/workflows/test.yml', 'scripts/lib/go-test-workflow.test.mjs'}
 assert changed and all(p.endswith('.md') or p in ci_support for p in changed), 'Approved scope violated'
@@ -43,7 +49,7 @@ for name in sorted(markdown):
     text = (root / name).read_text()
     assert not re.search(r'^(<<<<<<<|=======|>>>>>>>)', text, re.M), name
     # Check local Markdown links added by this contract, not older unresolved prototype references.
-    diff = subprocess.check_output(['git', 'diff', '--unified=0', 'origin/main', '--', name], text=True)
+    diff = subprocess.check_output(['git', 'diff', '--unified=0', base, '--', name], text=True)
     added = '\n'.join(line[1:] for line in diff.splitlines() if line.startswith('+') and not line.startswith('+++'))
     if not diff: added = text
     for target in re.findall(r'\]\(([^)]+)\)', added):
@@ -55,7 +61,7 @@ outfit = (root / 'docs_capsule_zero/project/methodology/outfit-generation.md').r
 plan = (root / 'PRODUCT-PLAN.md').read_text()
 assert all(term in method for term in ['simple', 'current', 'unreviewed', 'excessive', 'six months'])
 outfit = ' '.join(outfit.split())
-assert all(term in outfit for term in ['entire look', 'all pairs alone is insufficient', 'FITB', 'guest-v1', 'implementation spec'])
+assert all(term in outfit for term in ['entire look', 'all pairs alone is insufficient', 'FITB', 'guest-v1', 'implementation spec', 'DATED_CUT', 'number of items with basicity <100', 'canonical preset ID'])
 assert 'ОБЯЗАТЕЛЬНО ДЛЯ MVP' in plan and 'принятия MVP' in plan
 assert 'guarantees universal combinability' not in method
 assert 'colour only (does' not in outfit

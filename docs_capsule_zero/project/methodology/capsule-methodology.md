@@ -139,8 +139,12 @@ concrete category vocabularies and reviewed examples before application code is 
 
 User-owned complex, decorated or dated items remain in the wardrobe and may be saved/favourited.
 A low simplicity score alone never blocks saving, capsule membership (subject to existing palette
-rules) or a favourite. It lowers styling preference, with a neutral reason; automatic new-item
-suggestions still use the approved pool. Actual wearability is a **whole-outfit** decision (§2.5),
+rules) or a favourite. For known current owned pieces it deterministically lowers display preference,
+without changing the count of reviewed passing looks; automatic new-item suggestions require basicity
+100 and current review. A dated item stays saved but its looks fail `DATED_CUT` and do not contribute
+to verified counts, coverage or gains. Unknown required attributes/review stay unreviewed unless a
+known failure takes precedence. Exact ordering, thresholds, tie-breaks and expected examples are in
+`outfit-generation.md` §2.5. Actual wearability is a **whole-outfit** decision (§2.5),
 not a blanket ban on a user's item. Missing attributes are shown as unreviewed: keep the item, offer
 attribute confirmation or a reviewed preset alternative, and exclude unverified combinations from
 the verified outfit count. Confirming factual tags does not by itself certify currentness; that

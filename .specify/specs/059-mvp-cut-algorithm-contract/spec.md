@@ -1,4 +1,4 @@
-# 058 — Complete MVP cut algorithm: documentation contract
+# 059 — Complete MVP cut algorithm: documentation contract
 
 ## Goal
 
@@ -33,6 +33,7 @@ MVP acceptance; a docs merge cannot imply the currently shipped guest-v1 satisfi
   review; price, designer brand, purchase age and fashion popularity are not cut judgements.
 - Start with manually reviewed own-image presets; no ML requirement for MVP. Owned non-basic/dated
   pieces and favourites remain; low simplicity alone is not a save or capsule-membership rejection.
+- Dated looks deterministically fail DATED_CUT; unknown remains unreviewed unless a known failure dominates. Owned-current 0/50 items can pass reviewed whole-look rules; simplicity orders display results by the canonical tuple, not counts. New-item candidates require 100/current; canonical cut/preset keys resolve otherwise equal recommendation ties.
 - Whole-look rules return pass/fail/unreviewed with a reason. Only passes affect verified counts,
   coverage and gains. Keep existing OPR denominator, accessory cap, roles and recommendation priorities;
   extend accessory dedup identity with the reviewed style signature so different silhouettes survive.
@@ -52,7 +53,7 @@ MVP acceptance; a docs merge cannot imply the currently shipped guest-v1 satisfi
   guest/account generation, OPR, Layering Coverage, gaps and recommendation gains. Stage 1 is interim.
 - **AC2:** Canonical docs distinguish simplicity, currentness and whole-look compatibility with
   implementable manual tags, review cadence, explainable/versioned rules, unknown handling and owned
-  favourite preservation. No brand/price ban or claim of universal combinability remains active.
+  favourite preservation. Explicit verdict precedence, 100/current new-preset eligibility, owned-item display ordering and recommendation tie-breaks are specified with expected parity examples. No brand/price ban or claim of universal combinability remains active.
 - **AC3:** Features, screens, copy, taxonomy and technical target contracts consume the same canonical
   rules. Colour-only shortcuts, the 70%-of-categories criterion and low-basicity-only rejection are
   superseded. Historical snapshots/verification are preserved; actual API/schema changes are not claimed.

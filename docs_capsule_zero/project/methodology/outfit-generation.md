@@ -89,27 +89,65 @@ The MVP pipeline is deterministic and uses manually reviewed preset attributes a
    unknown. Use one dated, versioned ruleset for every output, not separate ad hoc UI filters.
 2. **Build candidates.** Enforce `colors.md`, category roles and accessory-slot/cap rules. Default
    new-item suggestions use simple + current approved presets. Personal items are retained; low
-   simplicity alone is a preference penalty, not an item-level prohibition.
-3. **Validate the entire look.** A reviewed table keyed by category/fit/volume/length combinations
+   simplicity alone does not prohibit an owned item. Apply the deterministic signal rules below.
+3. **Validate the entire look.** A reviewed table keyed by category/fit/volume/length and applicable construction/decor combinations
    returns `pass`, `fail` or `unreviewed`, with a rule ID and a plain-language reason. Evaluate
    top+bottom+shoes or dress+shoes as a complete tuple; passing all pairs alone is insufficient.
    Evaluate the whole composition again when adding a bag/accessory or a structural layer. Check
    layering clearance (e.g. bulky knit inside a fitted blazer), lengths and balanced proportions.
    Two oversized pieces are not automatically invalid; a supported tuple needs a reviewed example.
    This table covers the supported MVP catalog, not all imaginable clothes. An explicitly approved
-   personal-item combination may pass despite a low basicity score; preference cannot turn fail or
+   current personal-item combination may pass despite a known low basicity score; preference cannot turn fail or
    unreviewed into pass.
 4. **Count and recommend from the same verdicts.** Only `pass` base looks and accessory variants
    enter OPR. Only `pass` extended looks earn Layering Coverage. Deduplicate after validation using
    the style signature (§2.3), then apply the existing variation cap. Compute every candidate's
    gain by running this same evaluator after addition/replacement; never use the raw Cartesian
    product or a separate colour-only shortcut. Preserve §4's feasibility → layering → core-growth
-   priorities and their distinct units. Simplicity/currentness preference is subordinate to
-   feasibility and verified gains, and is never added to OPR as points.
+   priorities and their distinct units. Currentness eligibility and new-preset simplicity eligibility
+   are applied before gains; owned-item simplicity only orders verified display results as specified
+   below. Neither signal is added to OPR as points.
 5. **Explain failures and uncertainty.** Return the rule reason and an alternative using an existing
    item or approved preset. No verified base look means a zero-result state; unreviewed combinations
    are labelled as such, not claimed wearable or silently assigned perfect attributes. The item
    remains available for correction/review without being deleted or judging the owner's taste.
+
+**Deterministic signal semantics (generation and recommendation):**
+
+| Input for any item in the full look                                                  | Expected result                                                                                                                                                        |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `currentness=dated`, even with basicity 100 and compatible proportions               | `fail` with `DATED_CUT`; zero verified count, coverage and recommendation gain for this look. Keep the item/favourite/capsule membership under existing palette rules. |
+| Missing simplicity/cut attributes, `currentness=unreviewed`, or overdue review       | `unreviewed`, unless another known rule already fails; zero verified count/coverage/gain. Unknown is not `dated`.                                                      |
+| Every item is `current`, all required attributes known, owned item has basicity 0/50 | No automatic simplicity failure: use the whole-look construction/decor/proportion table. `pass` only when that full tuple matches a reviewed pass rule.                |
+| Every item is simple (100) and `current`                                             | Still require the full-look table; simple/current never overrides a cut failure or missing rule.                                                                       |
+
+A known failure takes precedence over uncertainty: any definite colour/currentness/cut failure means
+`fail`; otherwise any missing required value or unmatched/unreviewed rule means `unreviewed`;
+otherwise all required checks must pass. Return all applicable reasons sorted by stable rule ID,
+using the first as the primary reason. User tag confirmation or an override cannot turn a reviewed
+`dated` verdict into `current`; only a new reference review can do that.
+
+**Simplicity ordering is explicit and does not change counts.** After verified generation, accessory
+selection/caps and deduplication, order displayed looks by `(number of items with basicity <100
+ascending, sum of item basicities descending, sorted canonical item IDs ascending)`; include every
+item of the displayed composition. Thus an otherwise equivalent owned-item look with 50 ranks above
+one with 0, and an all-100 look ranks above either. This ordering never changes the set of counted
+looks, the OPR denominator, the §3 farthest-first selection or coverage. There is no arbitrary
+simplicity weight and no `dated` penalty that could be traded for more gain: dated looks already fail.
+
+**New-item eligibility and ties are explicit.** A recommendation candidate must itself have basicity
+100, current review and all required cut tags; 0/50, dated or unreviewed presets are ineligible for
+new-item suggestions. Re-run the same full-look evaluator for each eligible candidate, then apply
+§4's existing tier/gain/layer/category priorities. Within that complete tie, choose the smallest
+canonical reviewed cut-signature key, then the smallest canonical preset ID; expose equally valid
+colours only when verified gain and cut guidance are equivalent. Do not use owned-item display
+preference to alter gain or these priorities. Sorting, rule IDs and keys are identical in web/API/mobile.
+
+Required parity examples: colour-valid/table-pass simple-current → `pass`; the same item tagged
+simple-dated → `fail/DATED_CUT`; otherwise identical current owned 50/0 looks both pass only with
+reviewed whole-look rules, with 50 displayed first; unknown review → `unreviewed` and zero gain;
+a 50/dated preset never enters the new-item candidate pool. Each failed/unreviewed case contributes
+zero to the affected count/coverage/gain even when saving the item remains allowed.
 
 **Implementation evidence required before MVP release:** a finite category-specific attribute
 vocabulary, dated current/dated reference examples, a reviewed compatibility table covering all

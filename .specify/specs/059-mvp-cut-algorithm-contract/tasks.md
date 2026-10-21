@@ -24,6 +24,10 @@
 
 ### Decisions
 
+- Concurrent PR #169 merged feature 058 while this PR was under review. Renumber this unmerged documentation feature to 059, retain the existing shipped 058 folder, and merge fresh main without undoing its empty-account fix.
+
+- Native Codex finding PRRT_kwDORvfoks6u0pX9 (P1) identified unspecified signal effects. Fixed §2.5 with dated→fail, unknown→unreviewed/fail precedence, 100/current candidate eligibility, explicit owned-current 0/50 display ordering, canonical recommendation tie-breaks and expected parity outcomes; aligned PRODUCT-PLAN, item rules, API/MVP contract and copy.
+
 - Owner explicitly requests all documentation aligned, a ready PR, native Codex review from her
   account, all gates green and all threads resolved, then a two-minute wait before merge.
 - Simplicity/currentness are independent; whole-look compatibility is a third check beyond colour.
