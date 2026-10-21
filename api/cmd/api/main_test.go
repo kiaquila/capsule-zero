@@ -71,6 +71,8 @@ func TestSessionEndpointsThrottled(t *testing.T) {
 	// throttled too once it is empty (middleware answers before the handler).
 	for _, probe := range []struct{ method, path string }{
 		{http.MethodGet, "/api/auth/sessions"},
+		{http.MethodDelete, "/api/auth/sessions"},
+		{http.MethodDelete, "/api/auth/sessions/22222222-2222-4222-8222-222222222222"},
 		{http.MethodPost, "/api/auth/logout"},
 		{http.MethodGet, "/api/profile"},
 		{http.MethodPatch, "/api/profile"},
