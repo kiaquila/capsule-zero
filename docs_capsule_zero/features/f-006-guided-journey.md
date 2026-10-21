@@ -57,7 +57,7 @@ whole-look, counting, versioning and quality rules: [outfit generation §2.5](..
 - Min 8 categories validated before proceeding
 - "Add your own category" with category/role mapping and non-blocking cut guidance
 - Progress shows 2/3, capsule size label displayed (Basic / Large / Very Large)
-- Custom category rejection shows explanation + similar suggestion
+- An unmappable custom category asks for clarification and suggests a supported category; low simplicity alone does not reject an owned item
 
 ## Step 3/3 — Colors & Items
 
@@ -83,17 +83,17 @@ whole-look, counting, versioning and quality rules: [outfit generation §2.5](..
 
 ## Interface States
 
-| State                      | Description             | What user sees                                                     |
-| -------------------------- | ----------------------- | ------------------------------------------------------------------ |
-| Step 1 default             | Type selection          | Three visual cards                                                 |
-| Step 2 default             | Category selection      | Checklist with steppers                                            |
-| Step 2 min warning         | < 8 categories          | Warning: "Select at least 8 categories"                            |
-| Step 2 custom error        | Invalid custom category | Error: "This doesn't look like a basic item..."                    |
-| Step 3 palette             | Color selection         | Single grid with achromats first                                   |
-| Step 3 compatibility state | Incompatible color      | Blocked/unavailable color options                                  |
-| Step 3 items               | Adding items            | Own-preset picker; gated methods are absent or clearly unavailable |
-| Creating                   | Capsule generating      | Loading animation                                                  |
-| Complete                   | Capsule created         | Redirect to Capsule Result                                         |
+| State                         | Description              | What user sees                                                                    |
+| ----------------------------- | ------------------------ | --------------------------------------------------------------------------------- |
+| Step 1 default                | Type selection           | Three visual cards                                                                |
+| Step 2 default                | Category selection       | Checklist with steppers                                                           |
+| Step 2 min warning            | < 8 categories           | Warning: "Select at least 8 categories"                                           |
+| Step 2 category clarification | Unmappable category/role | "We couldn’t match this category. Choose a similar category or clarify the item." |
+| Step 3 palette                | Color selection          | Single grid with achromats first                                                  |
+| Step 3 compatibility state    | Incompatible color       | Blocked/unavailable color options                                                 |
+| Step 3 items                  | Adding items             | Own-preset picker; gated methods are absent or clearly unavailable                |
+| Creating                      | Capsule generating       | Loading animation                                                                 |
+| Complete                      | Capsule created          | Redirect to Capsule Result                                                        |
 
 ## Key Components
 
@@ -118,7 +118,7 @@ whole-look, counting, versioning and quality rules: [outfit generation §2.5](..
 ## Edge Cases
 
 - Fully achromatic capsule → valid, no accent colors needed
-- Custom category rejected → error + suggestion of similar basic category
+- Custom category/role cannot be mapped → ask for clarification and suggest a supported category; do not reject an owned item for low simplicity alone
 - Empty capsule (categories set, no items) → valid "plan" state
 - User wants to change palette after creation → not possible in v0.1, create new capsule
 

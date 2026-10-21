@@ -71,6 +71,9 @@ assert 'guarantees universal combinability' not in method
 assert 'colour only (does' not in outfit
 assert 'future implementation work, not shipped UI' in (root / 'docs_capsule_zero/screens/screen-my-items.md').read_text()
 assert 'low simplicity alone' in (root / 'docs_capsule_zero/project/methodology/categories.md').read_text().lower()
+journey = (root / 'docs_capsule_zero/features/f-006-guided-journey.md').read_text()
+assert all(phrase not in journey for phrase in ["doesn't look like a basic item", 'similar basic category', 'Custom category rejection']), 'Retired active journey rejection'
+assert 'Step 2 category clarification' in journey and 'Unmappable category/role' in journey
 historical = ' .specify/specs/013-stage-1-guided-journey/spec.md'.strip()
 original = subprocess.check_output(['git', 'show', 'origin/main:' + historical], text=True)
 assert (root / historical).read_text().split('**Feature Branch**', 1)[1] == original.split('**Feature Branch**', 1)[1], 'Historical 013 body changed'

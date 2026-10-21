@@ -24,6 +24,8 @@
 
 ### Decisions
 
+- Native P2 follow-up PRRT_kwDORvfoks6u2e1l: remove the last active guided-journey acceptance/state/edge-case instructions that reject a non-basic item. All three now clarify only an unmappable category/role and preserve owned items regardless of low simplicity; audit the entire feature for the retired phrases.
+
 - Native follow-ups PRRT_kwDORvfoks6u1yyc / PRRT_kwDORvfoks6u1yyj (P2): state that Stage 2 must add the cut-review controls/states to existing item details; do not claim they ship today. Complete accessory identity with category, construction and derived basicity as well as all other reviewed tags; a 50/100 construction example cannot collapse by item ID.
 
 - Native P2 follow-ups PRRT_kwDORvfoks6u1PM5/PRRT_kwDORvfoks6u1PNC: audit every tracked Markdown 058 mention; replace only cut-contract references (preserve shipped no-demo 058). Restore the complete historical 013 spec body from main, not just FR-006. Add reproducible regression assertions for both documentation errors.
