@@ -42,6 +42,8 @@ Drive each authorized slice through tests, current docs, native Codex review, fi
 
 Guest reference port: `PRODUCT-PLAN.md` §0.2 and spec 055 supersede historical P1–P4 UI rollout requirements for this slice. The reference `/start` ships with female/male/mixed, 32 own-image presets, local browser progress, reference results/recommendations and existing signup modal. Account save follows spec 056: explicit auth continuation, PostgreSQL-owned immutable guest-v1 sets, deduplicated uncapsulated items and dashboard access; saved sets are distinct from canonical capsules. Subsequent onboarding refinements are a separate PR after the user's list.
 
+Account ownership boundary (spec 058): API accounts never inherit demo-owner garments or capsules. Keep empty accounts empty and project only their own saved guest rows plus owner-filtered legacy records. Explicit local/CI mock fixtures stay available; do not restore fixture-owner fallback to fill account screens.
+
 ## Current Phase & Status
 
 | Phase                         | Status                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
