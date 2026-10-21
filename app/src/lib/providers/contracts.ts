@@ -1,3 +1,5 @@
+import type { AccountSession } from "@/lib/api/generated/openapi";
+export type { AccountSession } from "@/lib/api/generated/openapi";
 import type { GuestItem, GuestWardrobe } from "@/features/guest/catalog";
 import type {
   Capsule,
@@ -89,6 +91,8 @@ export interface GoogleSignInCompletion {
 
 export interface AuthPort {
   getCurrentSession(): Promise<Session | null>;
+  /** Optional to leave frozen providers unchanged; no synthetic inventory. */
+  listSessions?(): Promise<AccountSession[]>;
   signUpWithPassword(credentials: PasswordCredentials): Promise<Session | null>;
   signInWithPassword(credentials: PasswordCredentials): Promise<Session>;
   requestPasswordRecovery(email: string): Promise<PasswordRecoveryRequest>;

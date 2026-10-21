@@ -9,6 +9,7 @@ import { createMockProviderRegistry } from "../mock";
 import { MOCK_USER } from "../mock/fixtures";
 import type {
   AuthPort,
+  AccountSession,
   CapsuleRepository,
   PasswordCredentials,
   Profile,
@@ -190,6 +191,38 @@ function buildAuthPort(): AuthPort {
         );
       }
       return data.session && data.user ? mapSession(data) : null;
+    },
+
+    async listSessions() {
+      const token = await sessionToken();
+      if (!token) throw new Error("UNAUTHENTICATED: Sign in required.");
+      const { status, data } = await apiFetch<AccountSession[]>(
+        "/api/auth/sessions",
+        { method: "GET", token },
+      );
+      if (
+        status >= 400 ||
+        !Array.isArray(data) ||
+        !data.every(
+          (session) =>
+            session &&
+            typeof session.id === "string" &&
+            session.id.length > 0 &&
+            typeof session.current === "boolean" &&
+            typeof session.expiresAt === "string" &&
+            Number.isFinite(Date.parse(session.expiresAt)) &&
+            (session.authenticatedAt === undefined ||
+              (typeof session.authenticatedAt === "string" &&
+                Number.isFinite(Date.parse(session.authenticatedAt)))),
+        )
+      ) {
+        throw providerError(
+          data,
+          "INTERNAL_ERROR",
+          "Session list is temporarily unavailable.",
+        );
+      }
+      return data;
     },
 
     async signUpWithPassword(credentials: PasswordCredentials) {

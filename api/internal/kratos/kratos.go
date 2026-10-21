@@ -172,6 +172,7 @@ func (i Identity) EmailVerified() bool {
 
 // Session is the result of a successful registration or login.
 type Session struct {
+	Info      SessionInfo
 	Token     string
 	Identity  Identity
 	ExpiresAt time.Time
@@ -316,13 +317,13 @@ func (c *Client) WhoAmI(ctx context.Context, token string) (*Session, error) {
 	}
 
 	var out struct {
-		Identity  Identity  `json:"identity"`
-		ExpiresAt time.Time `json:"expires_at"`
+		SessionInfo
+		Identity Identity `json:"identity"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
 		return nil, err
 	}
-	return &Session{Token: token, Identity: out.Identity, ExpiresAt: out.ExpiresAt}, nil
+	return &Session{Info: out.SessionInfo, Token: token, Identity: out.Identity, ExpiresAt: out.ExpiresAt}, nil
 }
 
 // RecoveryStart begins a code-method recovery flow for the given email and

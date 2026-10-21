@@ -255,7 +255,12 @@
     "account": {
       "userId": "User ID",
       "sessions": "Active Sessions",
-      "sessionsUnavailable": "Session details are currently unavailable."
+      "sessionsUnavailable": "Session details are currently unavailable.",
+      "sessionsEmpty": "No active sessions found.",
+      "session": "Session",
+      "current": "Current",
+      "signedIn": "Signed in:",
+      "expires": "Expires:"
     },
     "buttons": {
       "save": "Save",

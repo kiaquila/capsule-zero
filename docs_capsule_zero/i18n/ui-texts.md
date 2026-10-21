@@ -275,13 +275,19 @@
 
 Personal-name min(1) and existing required-name messages remain unchanged; EN/RU are the only active locales. Unknown auth codes continue to use the generic localized message.
 
-### Profile session availability (spec 056)
+### Profile sessions (specs 056/057)
 
 | Key                                 | EN                                         | RU                                  |
 | ----------------------------------- | ------------------------------------------ | ----------------------------------- |
 | profile.account.sessionsUnavailable | Session details are currently unavailable. | Сведения о сессиях пока недоступны. |
 
-The profile session sample devices/activity strings are retired; the current auth contract exposes no session inventory.
+| profile.account.sessionsEmpty | No active sessions found. | Активных сессий нет. |
+| profile.account.session | Session | Сессия |
+| profile.account.current | Current | Текущая |
+| profile.account.signedIn | Signed in: | Вход: |
+| profile.account.expires | Expires: | Действует до: |
+
+Actual Kratos inventory replaces sample devices/activity. The current marker matches the authenticated session ID. Authentication and expiry dates are localized and explicitly labelled UTC. The unavailable copy remains for upstream failures and unsupported providers; it differs from successfully loaded empty inventory.
 
 ## Guest account save (spec 056)
 

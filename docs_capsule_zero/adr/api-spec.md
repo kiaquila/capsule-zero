@@ -157,6 +157,7 @@ as Stage 2 boundaries for Google OAuth and Apple Sign-In.
 | `/api/auth/registration`          |   POST | Public | Create a password account and return a session or email-confirm state                         |
 | `/api/auth/login`                 |   POST | Public | Establish a password session                                                                  |
 | `/api/auth/whoami`                |    GET | Public | Resolve the presented session token, or return an empty auth response                         |
+| `/api/auth/sessions`              |    GET | User   | Read current and other active Kratos sessions; timestamps only, no credentials                |
 | `/api/auth/recovery`              |   POST | Public | Start code-method recovery; returns the flow the code is bound to                             |
 | `/api/auth/recovery/complete`     |   POST | Public | Exchange the emailed code, or a recovery continuation retry, for a new password and a session |
 | `/api/auth/verification`          |   POST | Public | Start or resend a code-method email verification                                              |

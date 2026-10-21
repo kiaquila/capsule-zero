@@ -68,6 +68,13 @@ export const API_OPERATIONS = [
     "clientAvailability": "web-mobile"
   },
   {
+    "method": "GET",
+    "path": "/api/auth/sessions",
+    "operationId": "listSessions",
+    "auth": "user",
+    "clientAvailability": "web-mobile"
+  },
+  {
     "method": "POST",
     "path": "/api/auth/verification",
     "operationId": "startEmailVerification",
@@ -447,6 +454,13 @@ export type AuthUser = {
 
 export type AuthSession = {
   token: string;
+  expiresAt: string;
+};
+
+export type AccountSession = {
+  id: string;
+  current: boolean;
+  authenticatedAt?: string;
   expiresAt: string;
 };
 
@@ -843,6 +857,14 @@ export interface ApiOperationPayloads {
     request: RegisterWithPasswordRequestBody;
     response: RegisterWithPasswordResponseBody;
   };
+  listSessions: {
+    path: ListSessionsPathParams;
+    query: ListSessionsQueryParams;
+    header: ListSessionsHeaderParams;
+    cookie: ListSessionsCookieParams;
+    request: ListSessionsRequestBody;
+    response: ListSessionsResponseBody;
+  };
   startEmailVerification: {
     path: StartEmailVerificationPathParams;
     query: StartEmailVerificationQueryParams;
@@ -1227,6 +1249,13 @@ export type RegisterWithPasswordHeaderParams = Record<string, never>;
 export type RegisterWithPasswordCookieParams = Record<string, never>;
 export type RegisterWithPasswordRequestBody = AuthRegistrationRequest;
 export type RegisterWithPasswordResponseBody = AuthResponse;
+
+export type ListSessionsPathParams = Record<string, never>;
+export type ListSessionsQueryParams = Record<string, never>;
+export type ListSessionsHeaderParams = Record<string, never>;
+export type ListSessionsCookieParams = Record<string, never>;
+export type ListSessionsRequestBody = never;
+export type ListSessionsResponseBody = Array<AccountSession>;
 
 export type StartEmailVerificationPathParams = Record<string, never>;
 export type StartEmailVerificationQueryParams = Record<string, never>;
@@ -1876,6 +1905,34 @@ export const API_SCHEMAS = {
     "properties": {
       "token": {
         "type": "string"
+      },
+      "expiresAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "AccountSession": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "current",
+      "expiresAt"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "current": {
+        "type": "boolean",
+        "description": "True only when this ID matches the authenticated Kratos session."
+      },
+      "authenticatedAt": {
+        "type": "string",
+        "format": "date-time",
+        "description": "Authentication time when provided by Kratos; not last activity."
       },
       "expiresAt": {
         "type": "string",
@@ -3276,6 +3333,25 @@ export const API_OPERATION_PAYLOADS = {
     "requestSchema": "AuthRegistrationRequest",
     "responseSchemas": [
       "AuthResponse"
+    ],
+    "pathParameters": [],
+    "queryParameters": [],
+    "headerParameters": [],
+    "cookieParameters": []
+  },
+  "listSessions": {
+    "requestRequired": false,
+    "successStatusCodes": [
+      "200"
+    ],
+    "requestSchema": null,
+    "responseSchemas": [
+      {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AccountSession"
+        }
+      }
     ],
     "pathParameters": [],
     "queryParameters": [],

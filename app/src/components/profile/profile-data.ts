@@ -1,6 +1,6 @@
 import type { PersistedMockSession } from "@/features/auth/session";
 import type { AppLocale } from "@/i18n/routing";
-import type { ProviderRegistry } from "@/lib/providers";
+import type { AccountSession, ProviderRegistry } from "@/lib/providers";
 import type { DashboardSnapshot } from "@/components/dashboard/dashboard-data";
 import { buildDashboardSnapshot } from "@/components/dashboard/dashboard-data";
 import { splitDisplayName } from "@/features/profile/display-name";
@@ -33,8 +33,8 @@ export interface ProfileSnapshot {
   };
   account: {
     userIdLabel: string;
-    // The current auth contract verifies login but exposes no session inventory.
-    sessions: [];
+    sessions: AccountSession[];
+    sessionsStatus: "available" | "unavailable";
   };
   navigation: DashboardSnapshot["navigation"];
   options: {
@@ -55,11 +55,20 @@ export async function buildProfileSnapshot({
   session,
   locale,
 }: BuildProfileSnapshotOptions): Promise<ProfileSnapshot> {
-  const [dashboardSnapshot, providerProfile, savedPreferences] =
+  const [dashboardSnapshot, providerProfile, savedPreferences, inventory] =
     await Promise.all([
       buildDashboardSnapshot({ registry, session, locale }),
       registry.profiles.getProfile(session.userId),
       readMockProfilePreferences(session.userId),
+      registry.auth.listSessions
+        ? registry.auth.listSessions().then(
+            (sessions) => ({ sessions, sessionsStatus: "available" as const }),
+            () => ({ sessions: [], sessionsStatus: "unavailable" as const }),
+          )
+        : Promise.resolve({
+            sessions: [],
+            sessionsStatus: "unavailable" as const,
+          }),
     ]);
   const fallbackNames = splitDisplayName(
     session.email ?? providerProfile.email,
@@ -103,7 +112,7 @@ export async function buildProfileSnapshot({
     },
     account: {
       userIdLabel: buildUserIdLabel(session.userId),
-      sessions: [],
+      ...inventory,
     },
     navigation: dashboardSnapshot.navigation,
     options: {

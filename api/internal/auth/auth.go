@@ -44,6 +44,7 @@ type identityClient interface {
 	Register(context.Context, string, string, string, string) (*kratos.Session, error)
 	Login(context.Context, string, string) (*kratos.Session, error)
 	WhoAmI(context.Context, string) (*kratos.Session, error)
+	ListSessions(context.Context, string) ([]kratos.SessionInfo, error)
 	RecoveryStart(context.Context, string) (string, error)
 	RecoveryComplete(ctx context.Context, flowID, code, newPassword string) (*kratos.Session, error)
 	VerificationStart(context.Context, string) (string, error)

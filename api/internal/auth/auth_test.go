@@ -570,3 +570,7 @@ func (f fakeIdentityClient) OIDCStart(context.Context, string, string) (string, 
 func (f fakeIdentityClient) OIDCExchange(context.Context, string, string) (*kratos.Session, error) {
 	return f.oidcExchangeSession, f.oidcExchangeErr
 }
+
+func (f fakeIdentityClient) ListSessions(context.Context, string) ([]kratos.SessionInfo, error) {
+	return nil, nil
+}
