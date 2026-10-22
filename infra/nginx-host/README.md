@@ -35,8 +35,17 @@ migration — every merge to `main` deploys straight to production via
 ## Install / update
 
 Routine updates are applied automatically by the deploy wrapper
-(`infra/scripts/capsule-zero-deploy`) whenever `infra/nginx-host/**` changed since the last
-successful sync. Manual install:
+(`infra/scripts/capsule-zero-deploy`) on **every forward deploy**, including same-SHA retries.
+The complete managed files/site links are reconciled; Git diff and the former sync marker
+are not trusted as evidence of installed state. Existing backup/TLS/`nginx -t`/reload/smoke
+validation applies every time, with restoration on failure and retained backup if recovery
+fails. The forward smoke requires token-free DELETE `/api/auth/sessions` to return 401, so
+a stale method map cannot hide behind a successful GET health check. Explicit image rollback
+keeps the installed configuration and skips that newer-route probe.
+
+CD first checks the root-owned installed wrapper checksum against its workflow checkout.
+Wrapper updates require operator provisioning from the reviewed merged source (runbook §2);
+CI cannot install privileged scripts. Manual configuration install:
 
 ```bash
 sudo install -d -m 755 /etc/nginx/snippets

@@ -301,6 +301,14 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
 
+          expected_wrapper="$(sha256sum infra/scripts/capsule-zero-deploy)"
+          installed_wrapper="$(ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "$SSH_USER@$SSH_HOST" \
+            sha256sum /usr/local/sbin/capsule-zero-deploy)"
+          if [ "${installed_wrapper%% *}" != "${expected_wrapper%% *}" ]; then
+            echo "::error::Installed deployment wrapper differs from this release. An operator must install the reviewed root-owned wrapper before CD can proceed."
+            exit 1
+          fi
+
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "$SSH_USER@$SSH_HOST" \
             sudo /usr/local/sbin/capsule-zero-deploy "$IMAGE_WEB_REF" "$IMAGE_API_REF" "$DEPLOY_SHA" "$SYNC_HOST_NGINX"
 

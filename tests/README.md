@@ -33,6 +33,15 @@ PR reviewers (human and AI) reject PRs for specs `025` and onward that introduce
 
 ## What lives where
 
+### Delivery regression simulations
+
+`node --test scripts/lib/*.test.mjs` runs in the required `baseline-checks` job.
+`nginx-deploy.test.mjs` executes the deployment wrapper against temporary paths with
+stubbed root/network/service commands: stale installed files with a current Git marker,
+same-SHA repair, transactional failures, retained recovery backup and image rollback.
+`cd-prod-tags.test.mjs` also executes the SSH step against current/stale/unreadable
+installed-wrapper fixtures. These never connect to production or use real credentials.
+
 ### `tests/e2e/` — Playwright web tests
 
 - **Language**: TypeScript, strict mode.
