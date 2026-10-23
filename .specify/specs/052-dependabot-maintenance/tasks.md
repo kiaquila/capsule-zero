@@ -55,6 +55,9 @@
 - [x] T036 Sync PR #162 with the sequential baseline and verify the coordinated AWS
       SDK/Smithy patch graph through tidy, integrity verification, vet, and tests.
 - [ ] T037 Complete required GitHub checks and native Codex review for PR #162.
+- [x] T038 Preserve PR #172's supported app/e2e updates while restoring the frozen
+      Supabase manifest and all seven lockfile records from `origin/main`.
+- [ ] T039 Complete required GitHub checks and native Codex review for PR #172.
 
 ## Process Memory
 
@@ -65,6 +68,10 @@
 
 ### Decisions
 
+- PR #172 accepts the supported resolver, Next, React, Zod, Next lint config,
+  Playwright, ESLint, and typescript-eslint maintenance updates. The complete frozen
+  Supabase graph remains byte-for-byte equal to `origin/main`, and Next/SWC Linux
+  package records retain their `glibc`/`musl` selectors.
 - PR #162 keeps the Dependabot-generated AWS SDK/Smithy patch set together because
   the direct and transitive modules resolve as one tidy, verified, tested graph.
 - PR #160 keeps ESLint 9.39.4 because `eslint-plugin-jsx-a11y` 6.10.2 rejects
@@ -125,6 +132,7 @@
 
 ### Known Issues
 
+- PR #172 final-head required checks and native Codex review remain pending.
 - PR #162 final-head required checks and native Codex review remain pending.
 - PR #160 final-head required checks and native Codex review remain pending.
 - PR #159 final-head required checks and native Codex review remain pending.
