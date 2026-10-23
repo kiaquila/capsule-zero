@@ -58,6 +58,9 @@
 - [x] T038 Preserve PR #172's supported app/e2e updates while restoring the frozen
       Supabase manifest and all seven lockfile records from `origin/main`.
 - [ ] T039 Complete required GitHub checks and native Codex review for PR #172.
+- [x] T040 Reject PR #173's isolated app Node 26 declarations and restore the verified
+      Node 22 manifest and lockfile graph on the current sequential baseline.
+- [ ] T041 Complete required GitHub checks and native Codex review for PR #173.
 
 ## Process Memory
 
@@ -68,6 +71,9 @@
 
 ### Decisions
 
+- PR #173 keeps app declarations on Node 22 because `app/Dockerfile` and the required
+  CI/test workflows still execute Node 22. Compiler success with Node 26 declarations
+  cannot prove those APIs exist in the deployed runtime.
 - PR #172 accepts the supported resolver, Next, React, Zod, Next lint config,
   Playwright, ESLint, and typescript-eslint maintenance updates. The complete frozen
   Supabase graph remains byte-for-byte equal to `origin/main`, and Next/SWC Linux
@@ -132,6 +138,7 @@
 
 ### Known Issues
 
+- PR #173 final-head required checks and native Codex review remain pending.
 - PR #172 final-head required checks and native Codex review remain pending.
 - PR #162 final-head required checks and native Codex review remain pending.
 - PR #160 final-head required checks and native Codex review remain pending.
