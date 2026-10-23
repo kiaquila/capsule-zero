@@ -85,3 +85,6 @@ not apply. Existing repository checks provide regression coverage.
 - PR #162: the API accepts the coordinated AWS SDK/Smithy patch group after the
   resolved module graph passes tidy, integrity verification, vet, package tests,
   and the required security scan.
+- PR #172: nine supported app/e2e minor and patch updates advance while the frozen
+  `@supabase/*` provider graph stays identical to `origin/main`; Next/SWC Linux
+  packages retain their `glibc`/`musl` selectors.
