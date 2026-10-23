@@ -64,6 +64,9 @@
 - [x] T042 Reproduce PR #174's ESLint 10 peer conflict and restore the supported
       ESLint 9.39.4 manifest and lockfile graph on the current sequential baseline.
 - [ ] T043 Complete required GitHub checks and native Codex review for PR #174.
+- [x] T044 Reject PR #175's isolated e2e Node 26 declarations and restore the verified
+      Node 22 manifest and lockfile graph on the current sequential baseline.
+- [ ] T045 Complete required GitHub checks and native Codex review for PR #175.
 
 ## Process Memory
 
@@ -74,6 +77,9 @@
 
 ### Decisions
 
+- PR #175 keeps e2e declarations on Node 22 because its engine and required test
+  workflow still execute Node 22. Compiler success with Node 26 declarations cannot
+  prove those APIs exist in the runner; revisit when the executable runtime advances.
 - PR #174 keeps ESLint 9.39.4 because the latest `eslint-plugin-jsx-a11y` 6.10.2
   rejects ESLint 10.13.0; bypassing peer resolution would leave an unsupported lint
   graph. Revisit after that required plugin declares ESLint 10 support.
@@ -144,6 +150,7 @@
 
 ### Known Issues
 
+- PR #175 final-head required checks and native Codex review remain pending.
 - PR #174 final-head required checks and native Codex review remain pending.
 - PR #173 final-head required checks and native Codex review remain pending.
 - PR #172 final-head required checks and native Codex review remain pending.
