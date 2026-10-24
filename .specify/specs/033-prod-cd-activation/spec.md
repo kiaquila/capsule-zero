@@ -91,6 +91,10 @@ environment is reintroduced.
   wrapper dumps service logs and exits non-zero — the workflow run goes red.
 - **Bad nginx sync self-heals.** If the synced host-nginx config fails `nginx -t` or the
   post-reload smoke, the wrapper restores the previous config and reloads it.
+  Spec 060 applies the complete nginx transaction on every forward deploy, including
+  same-SHA retries, and rejects a stale installed wrapper before sudo. A failed restoration
+  retains its backup and does not reload invalid config. Explicit image rollback still
+  leaves nginx unchanged; the former Git sync marker no longer controls reconciliation.
 - **Missing secret fails fast.** The compose `${VAR:?…}` contract aborts boot when a
   required secret is absent from `/opt/capsule-zero/.env`.
 
