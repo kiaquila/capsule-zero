@@ -18,6 +18,8 @@ Searched `capsule-zero-deploy` backup_nginx_config/apply_host_nginx_config/resto
 | AC-004    | Executed actual workflow SSH step with current/stale/unreadable wrapper: only the matching checksum reaches sudo. Installed production checksum will be verified after merged-script provisioning.                                                                  |
 | AC-005    | Pending: PR exact-head review/checks/readiness and production CD/deployment/live SHA receipts                                                                                                                                                                       |
 
+| AC-006    | OSV run [40574593908](https://github.com/kiaquila/capsule-zero/actions/runs/40574593908) reports fast-uri 3.1.8 affected by GHSA-333x-w4r6-6crp, GHSA-w74x-v6f9-j3xg, GHSA-wjr9-j795-jxcr and GHSA-xhq7-xmqj-769h; all list 3.1.9 as fixed. Existing override and only the fast-uri lock record updated. Node 22.22.1/npm 10.9.2 clean install resolved 3.1.9; lint (0 errors, 117 existing warnings), typecheck, repository baseline, feature-memory and diff checks passed. Structural assertions preserve every other lock record including frozen Supabase and native libc selectors. Required final-head security/regression checks remain the merge condition. |
+
 ## Delivery
 
 Install the reviewed wrapper on the production host after merge and before the deploy job invokes it; checksum preflight fails closed if provisioning is missed. Preserve the previous root-owned script for rollback. Never read production env or emit credentials. After CD succeeds, compare the managed files and enabled-site targets to the deployed checkout, then verify public health and auth routes. Record final operational receipts in the PR.

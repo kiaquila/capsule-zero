@@ -6,7 +6,7 @@ Every forward production deploy installs the nginx configuration from its verifi
 
 ## Scope
 
-Extend the existing root-owned deployment wrapper and SSH delivery step; retain argument validation, same-runtime image rollback, TLS verification, backup/restore and least-privilege sudo. Update delivery documentation and exercise real wrapper control flow in isolated temporary files. No application, dependency, auth, TLS, firewall or credential changes.
+Extend the existing root-owned deployment wrapper and SSH delivery step; retain argument validation, same-runtime image rollback, TLS verification, backup/restore and least-privilege sudo. Update delivery documentation and exercise real wrapper control flow in isolated temporary files. No application, auth, TLS, firewall or credential changes. The merge-readiness follow-up updates the existing dev-tooling `fast-uri` override/lock entry from 3.1.8 to patched 3.1.9 after the required OSV scan reported four fixable advisories.
 
 ## Acceptance Criteria
 
@@ -15,6 +15,8 @@ Extend the existing root-owned deployment wrapper and SSH delivery step; retain 
 - AC-003: Forward smoke includes unauthenticated DELETE `/api/auth/sessions`, expecting 401 through host TLS nginx. A stale method map returning 405 fails delivery. Image rollback leaves nginx untouched and skips this newer-route probe.
 - AC-004: CD compares SHA-256 of the installed root-owned wrapper with the workflow checkout and fails before sudo on mismatch or read failure. Provision the reviewed installed wrapper as an operator without extending CI sudo rights.
 - AC-005: Native exact-head review, required checks, >=120-second stable readiness, normal merge and successful production CD precede completion. Production managed files/links match the merged checkout; live health SHA and protected GET/DELETE routes are verified.
+
+- AC-006: The existing `fast-uri` override and resolved lock entry use patched 3.1.9; clean npm 10 installation and required security/regression gates pass without advisory suppression or unrelated dependency changes.
 
 ## Negative Scenarios
 
