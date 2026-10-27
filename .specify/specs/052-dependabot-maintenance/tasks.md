@@ -55,6 +55,18 @@
 - [x] T036 Sync PR #162 with the sequential baseline and verify the coordinated AWS
       SDK/Smithy patch graph through tidy, integrity verification, vet, and tests.
 - [ ] T037 Complete required GitHub checks and native Codex review for PR #162.
+- [x] T038 Preserve PR #172's supported app/e2e updates while restoring the frozen
+      Supabase manifest and all seven lockfile records from `origin/main`.
+- [ ] T039 Complete required GitHub checks and native Codex review for PR #172.
+- [x] T040 Reject PR #173's isolated app Node 26 declarations and restore the verified
+      Node 22 manifest and lockfile graph on the current sequential baseline.
+- [ ] T041 Complete required GitHub checks and native Codex review for PR #173.
+- [x] T042 Reproduce PR #174's ESLint 10 peer conflict and restore the supported
+      ESLint 9.39.4 manifest and lockfile graph on the current sequential baseline.
+- [ ] T043 Complete required GitHub checks and native Codex review for PR #174.
+- [x] T044 Reject PR #175's isolated e2e Node 26 declarations and restore the verified
+      Node 22 manifest and lockfile graph on the current sequential baseline.
+- [ ] T045 Complete required GitHub checks and native Codex review for PR #175.
 
 ## Process Memory
 
@@ -65,6 +77,19 @@
 
 ### Decisions
 
+- PR #175 keeps e2e declarations on Node 22 because its engine and required test
+  workflow still execute Node 22. Compiler success with Node 26 declarations cannot
+  prove those APIs exist in the runner; revisit when the executable runtime advances.
+- PR #174 keeps ESLint 9.39.4 because the latest `eslint-plugin-jsx-a11y` 6.10.2
+  rejects ESLint 10.13.0; bypassing peer resolution would leave an unsupported lint
+  graph. Revisit after that required plugin declares ESLint 10 support.
+- PR #173 keeps app declarations on Node 22 because `app/Dockerfile` and the required
+  CI/test workflows still execute Node 22. Compiler success with Node 26 declarations
+  cannot prove those APIs exist in the deployed runtime.
+- PR #172 accepts the supported resolver, Next, React, Zod, Next lint config,
+  Playwright, ESLint, and typescript-eslint maintenance updates. The complete frozen
+  Supabase graph remains byte-for-byte equal to `origin/main`, and Next/SWC Linux
+  package records retain their `glibc`/`musl` selectors.
 - PR #162 keeps the Dependabot-generated AWS SDK/Smithy patch set together because
   the direct and transitive modules resolve as one tidy, verified, tested graph.
 - PR #160 keeps ESLint 9.39.4 because `eslint-plugin-jsx-a11y` 6.10.2 rejects
@@ -125,6 +150,10 @@
 
 ### Known Issues
 
+- PR #175 final-head required checks and native Codex review remain pending.
+- PR #174 final-head required checks and native Codex review remain pending.
+- PR #173 final-head required checks and native Codex review remain pending.
+- PR #172 final-head required checks and native Codex review remain pending.
 - PR #162 final-head required checks and native Codex review remain pending.
 - PR #160 final-head required checks and native Codex review remain pending.
 - PR #159 final-head required checks and native Codex review remain pending.

@@ -85,3 +85,15 @@ not apply. Existing repository checks provide regression coverage.
 - PR #162: the API accepts the coordinated AWS SDK/Smithy patch group after the
   resolved module graph passes tidy, integrity verification, vet, package tests,
   and the required security scan.
+- PR #172: nine supported app/e2e minor and patch updates advance while the frozen
+  `@supabase/*` provider graph stays identical to `origin/main`; Next/SWC Linux
+  packages retain their `glibc`/`musl` selectors.
+- PR #173: app development types remain on `@types/node` 22.20.1 because the app
+  image and both required Node workflows still execute Node 22; Node 26 declarations
+  remain deferred until the executable runtime contract advances.
+- PR #174: app ESLint remains on 9.39.4 because the latest
+  `eslint-plugin-jsx-a11y` 6.10.2 accepts ESLint only through 9.x and rejects
+  ESLint 10.13.0 during clean npm resolution.
+- PR #175: e2e development types remain on `@types/node` 22.20.1 because its
+  engine and the required test workflow still execute Node 22; Node 26 declarations
+  remain deferred until the executable runtime contract advances.
