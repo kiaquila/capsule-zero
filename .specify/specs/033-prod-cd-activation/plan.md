@@ -22,7 +22,10 @@ The pipeline reuses the proven spec-026 security posture unchanged: the CI SSH i
 an unprivileged `deploy` user whose sudo grant covers exactly one root-owned wrapper; the
 wrapper validates every argument against immutable-ref patterns before touching state; the
 checkout and env file are root-owned so a leaked CI key cannot alter what the wrapper
-executes; host-nginx syncs are marker-based with automatic backup/rollback.
+executes. Spec 060 supersedes marker-based nginx sync: every forward deploy reconciles
+the complete managed configuration with automatic backup/rollback and a token-free DELETE
+smoke. CD verifies the installed wrapper checksum before sudo; image rollback keeps its
+nginx exemption. Current verification belongs to spec 060 and its delivery receipts.
 
 Deliberate differences from the dev pipeline:
 

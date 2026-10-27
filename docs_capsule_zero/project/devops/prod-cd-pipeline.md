@@ -35,7 +35,8 @@ compose project `capsule-zero` (root docker-compose.yml):
 ```
 
 Host nginx vhosts are version-controlled in `infra/nginx-host/` and synced by the deploy
-wrapper when they change. The in-repo Docker nginx (`infra/nginx/`) stays a profile-gated
+wrapper on every forward deploy, including a same-SHA retry (spec 060). Git history or
+the former sync marker cannot prove installed-file state. The in-repo Docker nginx (`infra/nginx/`) stays a profile-gated
 rollback path (`--profile docker-edge`) and is not used in normal operation.
 
 ## How the pipeline works
@@ -61,16 +62,27 @@ infra/** docker-compose.yml`, lockfiles, the workflow itself and
    GitHub OIDC, joins as `tag:ci`, and is permitted to reach only `cz:22`. It then connects
    over SSH as the unprivileged `deploy` user and runs the root-owned wrapper
    `/usr/local/sbin/capsule-zero-deploy <web-image> <api-image> <sha> <sync-nginx>`.
+   Before sudo, the SSH step compares the installed wrapper's SHA-256 with this workflow
+   checkout. A mismatch or read failure stops deployment; an operator must provision the
+   reviewed root-owned wrapper using §2. CI gains no installer or additional sudo grant.
    The wrapper validates the immutable image refs and SHA, updates the root-owned
    `/opt/capsule-zero` checkout, runs
    `docker compose --env-file .env -p capsule-zero -f docker-compose.yml pull web api &&
 up -d --no-build` (never builds on the server), waits for `api` and `web` healthchecks
    (generous timeouts — first boot runs Postgres init + Kratos migrations), installs/reloads
-   host nginx only when `infra/nginx-host/**` changed since the last successful sync marker
-   (`/var/lib/capsule-zero/last-host-nginx-sync-sha`), rolls nginx back to its previous
-   config if the post-reload smoke fails, and reports success only after
+   the complete managed host nginx configuration on every forward deploy, regardless of
+   Git changes or `/var/lib/capsule-zero/last-host-nginx-sync-sha` (now ignored). It backs up
+   file contents, absent paths and site symlinks; verifies both TLS hostnames; installs,
+   validates and gracefully reloads nginx. Certificate/install/syntax/reload/smoke failure
+   restores the previous configuration and fails deployment. A failed restoration retains
+   its backup path for operator recovery and does not reload invalid configuration.
+   Deployment reports success only after
    `http://127.0.0.1:3000/en`, `https://capsulezero.app/en`, and
-   `https://capsulezero.app/api/health` all pass.
+   `https://capsulezero.app/api/health` all pass. Forward deploys additionally require a
+   token-free `DELETE /api/auth/sessions` through host TLS nginx to return **401**; this
+   catches a stale method allowlist that healthy GET requests miss. Explicit image rollback
+   still skips nginx replacement and this newer-route probe, preserving older runtime
+   compatibility; normal web/health smoke remains mandatory.
 5. **verify (spec 036)** — the `deploy` job runs under a job-level
    `environment: production`, so GitHub records a **Deployment** for the merged commit
    (visible in the repo's Environments widget and the **Deployments** page). A final
@@ -180,7 +192,12 @@ visudo -cf /etc/sudoers.d/capsule-zero-deploy
 ```
 
 When either deployment script changes in a future PR, update both root-owned installed
-copies as shown above before relying on that change in CD.
+copies from the reviewed merged commit as shown above before relying on that change in CD.
+Keep a root-owned backup of the previous scripts, run `bash -n`, install with owner/group
+`root:root` and mode `755`, and compare installed/source SHA-256. The SSH checksum preflight
+fails closed if provisioning was missed. When the merge automatically starts CD, provision
+before its deploy job runs; if the preflight has already failed, provision and rerun the
+failed job. Do not add broader sudo rights or a self-updater to bypass this boundary.
 
 ### 3. Root-owned checkout + GHCR pull auth + runtime env
 

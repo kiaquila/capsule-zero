@@ -5,8 +5,6 @@ app_dir="/opt/capsule-zero"
 compose_project="capsule-zero"
 compose_file="docker-compose.yml"
 env_file=".env"
-state_dir="/var/lib/capsule-zero"
-nginx_sync_marker="$state_dir/last-host-nginx-sync-sha"
 host_tls_certificate="/etc/letsencrypt/live/capsulezero.app/cert.pem"
 host_tls_chain="/etc/letsencrypt/live/capsulezero.app/chain.pem"
 host_tls_ca_path="/etc/ssl/certs"
@@ -85,21 +83,6 @@ if [ "$sync_host_nginx" = "false" ]; then
     || die "rollback crosses the active Kratos runtime/schema boundary"
 fi
 
-install -d -m 755 "$state_dir"
-host_nginx_changed=false
-if [ "$sync_host_nginx" = "true" ]; then
-  last_nginx_sync_sha="$(cat "$nginx_sync_marker" 2>/dev/null || true)"
-  if [ -z "$last_nginx_sync_sha" ] \
-    || [[ ! "$last_nginx_sync_sha" =~ ^[0-9a-f]{40}$ ]] \
-    || ! git cat-file -e "${last_nginx_sync_sha}^{commit}" 2>/dev/null; then
-    host_nginx_changed=true
-  elif [ -n "$(git diff --name-only "$last_nginx_sync_sha" "$deploy_sha" -- infra/nginx-host/)" ]; then
-    host_nginx_changed=true
-  fi
-else
-  echo "host nginx config sync skipped for image rollback"
-fi
-
 git checkout --force "$deploy_sha"
 
 export CAPSULE_WEB_IMAGE="$web_image_ref"
@@ -157,14 +140,14 @@ restore_nginx_config() {
   for path in "${nginx_paths[@]}"; do
     safe_path="${path#/}"
     source_path="$backup_dir/$safe_path"
-    rm -rf "$path"
+    rm -rf "$path" || return
     if grep -Fxq "$path" "$present_file"; then
-      mkdir -p "$(dirname "$path")"
-      cp -a "$source_path" "$path"
+      mkdir -p "$(dirname "$path")" || return
+      cp -a "$source_path" "$path" || return
     fi
   done
-  nginx -t
-  systemctl reload nginx
+  nginx -t || return
+  systemctl reload nginx || return
 }
 
 verify_host_certificate() {
@@ -208,28 +191,40 @@ smoke_prod_edge() {
   curl -fsS -o /dev/null http://127.0.0.1:3000/en || return
   curl -fsS -o /dev/null --resolve capsulezero.app:443:127.0.0.1 https://capsulezero.app/en || return
   curl -fsS -o /dev/null --resolve capsulezero.app:443:127.0.0.1 https://capsulezero.app/api/health || return
+  if [ "$sync_host_nginx" = "true" ]; then
+    # A stale method allowlist can pass GET health checks but block API writes.
+    # No token is sent, so this never revokes a real session. Older rollback
+    # images may predate this route and therefore skip this forward-only probe.
+    local status
+    status="$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE \
+      --resolve capsulezero.app:443:127.0.0.1 \
+      https://capsulezero.app/api/auth/sessions)" || return
+    [ "$status" = "401" ] || {
+      echo "unauthenticated session DELETE returned $status, expected 401" >&2
+      return 1
+    }
+  fi
 }
 
-if [ "$host_nginx_changed" = "true" ]; then
-  echo "host nginx config changed; installing and reloading"
+if [ "$sync_host_nginx" = "true" ]; then
+  # Git history cannot prove installed files are current. Reconcile the complete
+  # managed set on every forward deploy, including same-SHA retries.
+  echo "reconciling host nginx config from deployed checkout"
   backup_nginx_config
   if ! apply_host_nginx_config || ! smoke_prod_edge; then
     echo "host nginx update or smoke failed; restoring previous config" >&2
     if ! restore_nginx_config; then
-      echo "failed to restore previous host nginx config; manual intervention required" >&2
+      echo "failed to restore previous host nginx config; backup retained at $backup_dir; manual intervention required" >&2
+      exit 1
     fi
     rm -rf "$backup_dir"
     exit 1
   fi
   rm -rf "$backup_dir"
 else
-  echo "host nginx config unchanged"
+  echo "host nginx config sync skipped for image rollback"
   smoke_prod_edge
 fi
 
 echo "smoke ok"
 "${compose[@]}" ps
-
-if [ "$sync_host_nginx" = "true" ]; then
-  printf '%s\n' "$deploy_sha" > "$nginx_sync_marker"
-fi
