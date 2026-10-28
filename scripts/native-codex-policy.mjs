@@ -2,7 +2,10 @@ import {
   classifyCodexSummaryComment,
   pickAuthoritativeCodexSkipModeComment,
 } from "./codex-comment-evidence.mjs";
-import { hasCodexNegativeHistory } from "./codex-review-state.mjs";
+import {
+  hasCodexNegativeHistory,
+  hasCodexPendingSecurityHistory,
+} from "./codex-review-state.mjs";
 
 const bot = (entry) =>
   entry?.user?.login === "chatgpt-codex-connector[bot]" &&
@@ -95,20 +98,28 @@ export function evaluateNativeEvidence({
     ],
     issueComments: eligible.filter(bot),
   });
-  const approvalTime =
-    decision?.classification.outcome === "pass"
-      ? decision.classification.evidenceTimestamp
-      : 0;
-  if (hasCodexNegativeHistory(eligible, head, bot, approvalTime))
+  if (hasCodexNegativeHistory(eligible, head, bot))
     blocking.push(
       "Native findings history is not cleared by a newer valid completion",
+    );
+  if (hasCodexPendingSecurityHistory(eligible, head, bot))
+    blocking.push(
+      "Current-head security review has no later canonical clean completion",
     );
   const approved = nativeReviews.some(
     (review) =>
       (review.commit_id || review.commit?.oid) === head &&
       review.state === "APPROVED" &&
       Date.parse(review.submitted_at || review.submittedAt || "") >
-        stamp(request),
+        stamp(request) &&
+      isNativeCleanComment(
+        {
+          ...review,
+          created_at: review.submitted_at || review.submittedAt,
+          updated_at: review.submitted_at || review.submittedAt,
+        },
+        head,
+      ),
   );
   const reviewed = decision
     ? decision.classification.outcome === "pass"
