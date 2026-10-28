@@ -8,12 +8,18 @@ import { fetchWithRetry } from "./lib/github-fetch.mjs";
 const token = process.env.GITHUB_TOKEN;
 const repository = process.env.GITHUB_REPOSITORY;
 const eventPath = process.env.GITHUB_EVENT_PATH;
-const selectedAgent = (process.env.AI_REVIEW_AGENT || "codex").trim().toLowerCase();
+const selectedAgent = (process.env.AI_REVIEW_AGENT || "codex")
+  .trim()
+  .toLowerCase();
 const explicitPrNumber = process.env.AI_REVIEW_PR_NUMBER;
-const expectedHeadSha = (process.env.AI_REVIEW_HEAD_SHA || "").trim().toLowerCase();
+const expectedHeadSha = (process.env.AI_REVIEW_HEAD_SHA || "")
+  .trim()
+  .toLowerCase();
 const maxWaitMs = Number(process.env.AI_REVIEW_WAIT_MS || 900000);
 const pollIntervalMs = Number(process.env.AI_REVIEW_POLL_MS || 15000);
-const triggerMode = (process.env.AI_REVIEW_TRIGGER_MODE || "comment").trim().toLowerCase();
+const triggerMode = (process.env.AI_REVIEW_TRIGGER_MODE || "comment")
+  .trim()
+  .toLowerCase();
 const triggeredAt = process.env.AI_REVIEW_TRIGGERED_AT;
 const outputPath = process.env.GITHUB_OUTPUT;
 const summaryPath = process.env.GITHUB_STEP_SUMMARY;
@@ -79,7 +85,9 @@ const request = async (path, init = {}) => {
 
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`${init.method || "GET"} ${path} failed: ${response.status} ${body}`);
+    throw new Error(
+      `${init.method || "GET"} ${path} failed: ${response.status} ${body}`,
+    );
   }
 
   if (response.status === 204) {
@@ -112,7 +120,9 @@ const listPaginated = async (path) => {
 
     const link = response.headers.get("link") || "";
     const nextMatch = link.match(/<([^>]+)>;\s*rel="next"/);
-    nextPath = nextMatch ? new URL(nextMatch[1]).pathname + new URL(nextMatch[1]).search : "";
+    nextPath = nextMatch
+      ? new URL(nextMatch[1]).pathname + new URL(nextMatch[1]).search
+      : "";
   }
 
   return items;
@@ -125,7 +135,9 @@ const prNumber =
   "";
 
 if (!prNumber) {
-  throw new Error("AI Review gate requires a pull request context or AI_REVIEW_PR_NUMBER");
+  throw new Error(
+    "AI Review gate requires a pull request context or AI_REVIEW_PR_NUMBER",
+  );
 }
 
 const pull = await request(`/repos/${owner}/${repo}/pulls/${prNumber}`);
@@ -136,6 +148,26 @@ if (expectedHeadSha && expectedHeadSha !== headSha) {
     `PR head changed while AI Review was starting: expected ${expectedHeadSha}, current ${headSha}`,
   );
 }
+// Native Codex uses the shared read-only evidence engine; it never invokes an audit task.
+if (selectedAgent === "codex") {
+  const { spawnSync } = await import("node:child_process");
+  const result = spawnSync(
+    process.execPath,
+    [new URL("./check-codex-review.mjs", import.meta.url).pathname],
+    {
+      stdio: "inherit",
+      env: {
+        ...process.env,
+        CODEX_REVIEW_PR_NUMBER: String(prNumber),
+        CODEX_REVIEW_HEAD_SHA: headSha,
+        CODEX_REVIEW_WAIT_MS: String(maxWaitMs),
+        CODEX_REVIEW_POLL_MS: String(pollIntervalMs),
+      },
+    },
+  );
+  process.exit(result.status ?? 1);
+}
+
 const markerAgentLine = `AI_REVIEW_AGENT: ${selectedAgent}`;
 const markerShaLine = `AI_REVIEW_SHA: ${headSha}`;
 const metadataMarker = `<!-- ai-review-gate:agent=${selectedAgent};sha=${headSha} -->`;
@@ -174,7 +206,10 @@ const findExistingTriggerComment = async () => {
     `/repos/${owner}/${repo}/issues/${prNumber}/comments?per_page=100`,
   );
 
-  return comments.find((comment) => (comment.body || "").includes(metadataMarker)) || null;
+  return (
+    comments.find((comment) => (comment.body || "").includes(metadataMarker)) ||
+    null
+  );
 };
 
 const ensureTriggerComment = async () => {
@@ -207,13 +242,18 @@ const matchesCodexReview = (review) =>
   codexReviewerLogins.has(review.user?.login || "") &&
   (review.body || "").includes("Codex Review");
 
-const validateCodexReviewedCommitAnchor = async (reviewedCommit, currentHeadSha) => {
+const validateCodexReviewedCommitAnchor = async (
+  reviewedCommit,
+  currentHeadSha,
+) => {
   if (!currentHeadSha.startsWith(reviewedCommit)) {
     return false;
   }
 
   try {
-    const commit = await request(`/repos/${owner}/${repo}/commits/${reviewedCommit}`);
+    const commit = await request(
+      `/repos/${owner}/${repo}/commits/${reviewedCommit}`,
+    );
     return (commit.sha || "").toLowerCase() === currentHeadSha;
   } catch (error) {
     console.warn(
@@ -248,7 +288,8 @@ const pickLatestMatchingReview = (reviews) =>
     .filter((review) => review.submitted_at && matchesMarker(review))
     .sort(
       (left, right) =>
-        new Date(right.submitted_at).getTime() - new Date(left.submitted_at).getTime(),
+        new Date(right.submitted_at).getTime() -
+        new Date(left.submitted_at).getTime(),
     )[0] || null;
 
 const pickLatestCodexReview = (reviews) =>
@@ -256,7 +297,8 @@ const pickLatestCodexReview = (reviews) =>
     .filter((review) => review.submitted_at && matchesCodexReview(review))
     .sort(
       (left, right) =>
-        new Date(right.submitted_at).getTime() - new Date(left.submitted_at).getTime(),
+        new Date(right.submitted_at).getTime() -
+        new Date(left.submitted_at).getTime(),
     )[0] || null;
 
 const pickLatestClaudeComment = (comments) =>
@@ -305,7 +347,8 @@ const classifyCodexSummaryComment = (comment) => {
 
   return {
     outcome: "pending",
-    reason: "Codex summary comment did not match a recognized no-findings reply.",
+    reason:
+      "Codex summary comment did not match a recognized no-findings reply.",
     details: [comment.html_url],
   };
 };
@@ -417,7 +460,8 @@ const classifyClaudeComment = (comment) => {
     default:
       return {
         outcome: "pending",
-        reason: "Claude comment did not include a valid AI_REVIEW_OUTCOME marker.",
+        reason:
+          "Claude comment did not include a valid AI_REVIEW_OUTCOME marker.",
         details: [comment.html_url],
       };
   }
@@ -471,7 +515,8 @@ while (Date.now() < deadline) {
           new Date(comment.updated_at || 0).getTime(),
         ) >= triggerTime,
     );
-    const candidateComments = triggerMode === "skip" ? issueComments : recentComments;
+    const candidateComments =
+      triggerMode === "skip" ? issueComments : recentComments;
     const recentMatchingComment = pickLatestClaudeComment(candidateComments);
 
     if (recentMatchingComment) {
@@ -479,7 +524,10 @@ while (Date.now() < deadline) {
 
       if (mapped.outcome !== "pending") {
         setOutput("review_agent", selectedAgent);
-        setOutput("review_state", extractClaudeOutcome(recentMatchingComment.body || ""));
+        setOutput(
+          "review_state",
+          extractClaudeOutcome(recentMatchingComment.body || ""),
+        );
         setOutput("review_url", recentMatchingComment.html_url);
         setOutput("review_id", recentMatchingComment.id);
 
@@ -488,7 +536,9 @@ while (Date.now() < deadline) {
           "",
           `- Selected reviewer: \`${selectedAgent}\``,
           `- Trigger source: ${
-            triggerComment ? triggerComment.html_url : "inline native workflow invocation"
+            triggerComment
+              ? triggerComment.html_url
+              : "inline native workflow invocation"
           }`,
           `- Matched reviewer comment: ${recentMatchingComment.html_url}`,
           `- Review state: \`${extractClaudeOutcome(recentMatchingComment.body || "")}\``,
@@ -531,7 +581,9 @@ while (Date.now() < deadline) {
           "",
           `- Selected reviewer: \`${selectedAgent}\``,
           `- Trigger source: ${
-            triggerComment ? triggerComment.html_url : "inline native workflow invocation"
+            triggerComment
+              ? triggerComment.html_url
+              : "inline native workflow invocation"
           }`,
           `- Matched review: ${matchedReview.html_url}`,
           `- Review state: \`${matchedReview.state}\``,
@@ -574,7 +626,9 @@ while (Date.now() < deadline) {
           "",
           `- Selected reviewer: \`${selectedAgent}\``,
           `- Trigger source: ${
-            triggerComment ? triggerComment.html_url : "inline native workflow invocation"
+            triggerComment
+              ? triggerComment.html_url
+              : "inline native workflow invocation"
           }`,
           `- Matched reviewer comment: ${summaryComment.html_url}`,
           "- Review state: `COMMENTED_NO_FINDINGS`",
@@ -603,7 +657,8 @@ while (Date.now() < deadline) {
         )
         .sort(
           (left, right) =>
-            new Date(right.created_at).getTime() - new Date(left.created_at).getTime(),
+            new Date(right.created_at).getTime() -
+            new Date(left.created_at).getTime(),
         )
         .map((comment) => ({
           comment,
@@ -624,7 +679,9 @@ while (Date.now() < deadline) {
         "",
         `- Selected reviewer: \`${selectedAgent}\``,
         `- Trigger source: ${
-          triggerComment ? triggerComment.html_url : "inline native workflow invocation"
+          triggerComment
+            ? triggerComment.html_url
+            : "inline native workflow invocation"
         }`,
         `- Connector reply: ${comment.html_url}`,
         `- Review state: \`SETUP_REQUIRED\``,
@@ -643,7 +700,9 @@ appendSummary([
   "",
   `- Selected reviewer: \`${selectedAgent}\``,
   `- Trigger source: ${
-    triggerComment ? triggerComment.html_url : "inline native workflow invocation"
+    triggerComment
+      ? triggerComment.html_url
+      : "inline native workflow invocation"
   }`,
   `- Head SHA: \`${headSha}\``,
   "- Result: no valid selected-reviewer output was detected before the timeout.",
