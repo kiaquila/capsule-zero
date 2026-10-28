@@ -87,14 +87,34 @@ export function evaluateNativeEvidence({
       blocking.push("Current-head native review still requests changes");
   }
   if (!request) return { head, reviewed: false, blocking };
-  const eligible = normalized
-    .filter((entry) => bot(entry) || entry === request)
-    .sort((a, b) => stamp(a) - stamp(b) || Number(a.id) - Number(b.id));
+  // Formal and comment verdicts share one ordered evidence stream. A full
+  // later approval can supersede an older comment, while later unknown or
+  // negative evidence still vetoes it. Review state alone never grants approval.
+  const formalApprovals = nativeReviews
+    .filter(
+      (review) =>
+        review.state === "APPROVED" &&
+        (review.commit_id || review.commit?.oid) === head,
+    )
+    .map((review) => ({
+      ...review,
+      id: `review-${review.id}`,
+      nativeFormalApproval: true,
+      created_at: review.submitted_at || review.submittedAt,
+      updated_at: review.submitted_at || review.submittedAt,
+    }));
+  const eligible = [
+    ...normalized.filter((entry) => bot(entry) || entry === request),
+    ...formalApprovals,
+  ].sort((a, b) => stamp(a) - stamp(b) || Number(a.id) - Number(b.id));
   const decision = pickAuthoritativeCodexSkipModeComment({
     headSha: head,
+    // Separate API connections do not prove same-second cross-type order.
+    // Formal evidence stays outside the issue-comment timeline; its missing
+    // timeline position makes mixed ties retain every unknown/negative veto.
     timelineEvents: [
       { event: "committed", sha: head, created_at: request.created_at },
-      ...eligible,
+      ...eligible.filter((entry) => !entry.nativeFormalApproval),
     ],
     issueComments: eligible.filter(bot),
   });
@@ -102,27 +122,12 @@ export function evaluateNativeEvidence({
     blocking.push(
       "Native findings history is not cleared by a newer valid completion",
     );
-  if (hasCodexPendingSecurityHistory(eligible, head, bot))
-    blocking.push(
-      "Current-head security review has no later canonical clean completion",
-    );
-  const approved = nativeReviews.some(
-    (review) =>
-      (review.commit_id || review.commit?.oid) === head &&
-      review.state === "APPROVED" &&
-      Date.parse(review.submitted_at || review.submittedAt || "") >
-        stamp(request) &&
-      isNativeCleanComment(
-        {
-          ...review,
-          created_at: review.submitted_at || review.submittedAt,
-          updated_at: review.submitted_at || review.submittedAt,
-        },
-        head,
-      ),
-  );
-  const reviewed = decision
-    ? decision.classification.outcome === "pass"
-    : approved;
-  return { head, reviewed: reviewed && blocking.length === 0, blocking };
+  const pendingSecurity = hasCodexPendingSecurityHistory(eligible, head, bot);
+  const reviewed = decision?.classification.outcome === "pass";
+  return {
+    head,
+    reviewed: reviewed && blocking.length === 0 && !pendingSecurity,
+    blocking,
+    pendingSecurity,
+  };
 }
