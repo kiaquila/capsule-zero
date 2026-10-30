@@ -78,7 +78,10 @@
 - [x] T051 Complete required GitHub checks and native Codex review for PR #179.
 - [x] T052 Reject PR #180's unsupported ESLint 10 graph and restore the verified
       ESLint 9 manifest and lockfile from the sequential baseline.
-- [ ] T053 Complete required GitHub checks and native Codex review for PR #180.
+- [x] T053 Complete required GitHub checks and native Codex review for PR #180.
+- [x] T054 Reject PR #181's isolated e2e Node 26 declarations and restore the verified
+      Node 22 manifest and lockfile graph on the sequential baseline.
+- [ ] T055 Complete required GitHub checks and native Codex review for PR #181.
 
 ## Process Memory
 
@@ -89,6 +92,9 @@
 
 ### Decisions
 
+- PR #181 keeps e2e declarations on Node 22 because its engine and required test
+  workflow still execute Node 22. Compiler success with Node 26 declarations cannot
+  prove those APIs exist in the runner; revisit when the executable runtime advances.
 - PR #180 keeps ESLint 9.39.4 because `eslint-plugin-jsx-a11y` 6.10.2 rejects
   ESLint 10.13.0. Peer overrides are not an acceptable compatibility strategy;
   revisit when that required accessibility plugin declares ESLint 10 support.
@@ -174,7 +180,7 @@
 
 ### Known Issues
 
-- PR #180 final-head required checks and native Codex review remain pending.
+- PR #181 final-head required checks and native Codex review remain pending.
 - PR #173 final-head required checks and native Codex review remain pending.
 - PR #172 final-head required checks and native Codex review remain pending.
 - PR #162 final-head required checks and native Codex review remain pending.
