@@ -100,3 +100,6 @@ not apply. Existing repository checks provide regression coverage.
 - PR #177: supported npm minor and patch updates advance while the frozen
   `@supabase/*` provider graph remains identical to the sequential `origin/main`
   baseline and Next/SWC Linux packages retain their platform selectors.
+- PR #178: app development types remain on `@types/node` 22.20.1 because the app
+  image and required Node workflows still execute Node 22; Node 26 declarations
+  remain deferred until the executable runtime contract advances.
