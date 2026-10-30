@@ -103,3 +103,6 @@ not apply. Existing repository checks provide regression coverage.
 - PR #178: app development types remain on `@types/node` 22.20.1 because the app
   image and required Node workflows still execute Node 22; Node 26 declarations
   remain deferred until the executable runtime contract advances.
+- PR #179: `@hookform/resolvers` advances to 6.0.1 because the only documented
+  breaking change affects the unused Effect resolver; the app uses only `zodResolver`
+  with supported React Hook Form 7 and Zod 4 peers.
