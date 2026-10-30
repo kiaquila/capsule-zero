@@ -42,6 +42,7 @@ green.
 | PR #177 npm maintenance | Preserve the supported Next, React Hook Form, Zustand, Next lint-config, and TypeScript ESLint updates while restoring the frozen Supabase manifest and lockfile graph from `origin/main`; verify platform selectors, clean installs, repository checks, and final-head GitHub gates. |
 | PR #178 app Node type compatibility | `app/Dockerfile`, `ci.yml`, and `test.yml` remain on Node 22. Restore the app manifest and lockfile byte-for-byte from the sequential `origin/main` baseline; verify clean npm 10.9.2 install, selected versions, app checks, feature-memory guard, and final-head GitHub gates. |
 | PR #179 resolver major compatibility | The official 6.0.0 release limits its breaking change to the Effect v4 resolver, while 6.0.1 removes an unrelated TypeSchema peer. Repository search confirms the app uses only `zodResolver`; clean install, peer resolution, app checks, feature-memory guard, and final-head GitHub gates verify the update. |
+| PR #180 ESLint compatibility | The proposed clean install emits the expected peer-resolution conflict because `eslint-plugin-jsx-a11y` 6.10.2 supports ESLint only through 9.x. Restore the app manifest and lockfile byte-for-byte from sequential `origin/main`, then verify the supported ESLint 9 graph, app checks, feature-memory guard, and final-head GitHub gates. |
 
 ## Reuse Check
 

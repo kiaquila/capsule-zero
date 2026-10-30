@@ -106,3 +106,6 @@ not apply. Existing repository checks provide regression coverage.
 - PR #179: `@hookform/resolvers` advances to 6.0.1 because the only documented
   breaking change affects the unused Effect resolver; the app uses only `zodResolver`
   with supported React Hook Form 7 and Zod 4 peers.
+- PR #180: app ESLint remains on 9.39.4 because the latest
+  `eslint-plugin-jsx-a11y` 6.10.2 accepts ESLint only through 9.x and rejects
+  ESLint 10.13.0 during clean npm resolution.

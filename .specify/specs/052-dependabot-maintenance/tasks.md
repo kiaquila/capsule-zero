@@ -75,7 +75,10 @@
 - [x] T049 Complete required GitHub checks and native Codex review for PR #178.
 - [x] T050 Verify PR #179's resolver major against upstream release notes, repository
       usage, peer requirements, clean install, and app regression checks.
-- [ ] T051 Complete required GitHub checks and native Codex review for PR #179.
+- [x] T051 Complete required GitHub checks and native Codex review for PR #179.
+- [x] T052 Reject PR #180's unsupported ESLint 10 graph and restore the verified
+      ESLint 9 manifest and lockfile from the sequential baseline.
+- [ ] T053 Complete required GitHub checks and native Codex review for PR #180.
 
 ## Process Memory
 
@@ -86,6 +89,9 @@
 
 ### Decisions
 
+- PR #180 keeps ESLint 9.39.4 because `eslint-plugin-jsx-a11y` 6.10.2 rejects
+  ESLint 10.13.0. Peer overrides are not an acceptable compatibility strategy;
+  revisit when that required accessibility plugin declares ESLint 10 support.
 - PR #179 accepts `@hookform/resolvers` 6.0.1. The upstream major breaks only the
   Effect resolver by requiring Effect 4; Capsule Zero uses `zodResolver` exclusively,
   and its React Hook Form 7 and Zod 4 versions satisfy the published peer ranges.
@@ -168,7 +174,7 @@
 
 ### Known Issues
 
-- PR #179 final-head required checks and native Codex review remain pending.
+- PR #180 final-head required checks and native Codex review remain pending.
 - PR #173 final-head required checks and native Codex review remain pending.
 - PR #172 final-head required checks and native Codex review remain pending.
 - PR #162 final-head required checks and native Codex review remain pending.
