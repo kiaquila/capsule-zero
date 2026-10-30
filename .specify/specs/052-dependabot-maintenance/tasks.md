@@ -67,6 +67,9 @@
 - [x] T044 Reject PR #175's isolated e2e Node 26 declarations and restore the verified
       Node 22 manifest and lockfile graph on the current sequential baseline.
 - [ ] T045 Complete required GitHub checks and native Codex review for PR #175.
+- [x] T046 Preserve PR #177's supported app/e2e updates while restoring the frozen
+      Supabase manifest and lockfile graph from the sequential baseline.
+- [ ] T047 Complete required GitHub checks and native Codex review for PR #177.
 
 ## Process Memory
 
@@ -77,6 +80,9 @@
 
 ### Decisions
 
+- PR #177 accepts the supported Next, React Hook Form, Zustand, Next lint-config,
+  and TypeScript ESLint maintenance updates. The frozen Supabase provider graph stays
+  on the sequential baseline, and Next/SWC native records retain platform selectors.
 - PR #175 keeps e2e declarations on Node 22 because its engine and required test
   workflow still execute Node 22. Compiler success with Node 26 declarations cannot
   prove those APIs exist in the runner; revisit when the executable runtime advances.
@@ -150,6 +156,7 @@
 
 ### Known Issues
 
+- PR #177 final-head required checks and native Codex review remain pending.
 - PR #175 final-head required checks and native Codex review remain pending.
 - PR #174 final-head required checks and native Codex review remain pending.
 - PR #173 final-head required checks and native Codex review remain pending.

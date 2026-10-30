@@ -97,3 +97,6 @@ not apply. Existing repository checks provide regression coverage.
 - PR #175: e2e development types remain on `@types/node` 22.20.1 because its
   engine and the required test workflow still execute Node 22; Node 26 declarations
   remain deferred until the executable runtime contract advances.
+- PR #177: supported npm minor and patch updates advance while the frozen
+  `@supabase/*` provider graph remains identical to the sequential `origin/main`
+  baseline and Next/SWC Linux packages retain their platform selectors.
