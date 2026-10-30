@@ -81,7 +81,10 @@
 - [x] T053 Complete required GitHub checks and native Codex review for PR #180.
 - [x] T054 Reject PR #181's isolated e2e Node 26 declarations and restore the verified
       Node 22 manifest and lockfile graph on the sequential baseline.
-- [ ] T055 Complete required GitHub checks and native Codex review for PR #181.
+- [x] T055 Complete required GitHub checks and native Codex review for PR #181.
+- [x] T056 Verify PR #182's coordinated AWS SDK and Smithy patch graph with tidy,
+      module integrity, vet, and the full API package test suite.
+- [ ] T057 Complete required GitHub checks and native Codex review for PR #182.
 
 ## Process Memory
 
@@ -92,6 +95,9 @@
 
 ### Decisions
 
+- PR #182 accepts the coordinated AWS SDK and Smithy patch group. Go resolves the
+  matching direct and transitive modules as one tidy, verified, vetted, and tested
+  graph; no application-code adaptation is required.
 - PR #181 keeps e2e declarations on Node 22 because its engine and required test
   workflow still execute Node 22. Compiler success with Node 26 declarations cannot
   prove those APIs exist in the runner; revisit when the executable runtime advances.
@@ -180,7 +186,7 @@
 
 ### Known Issues
 
-- PR #181 final-head required checks and native Codex review remain pending.
+- PR #182 final-head required checks and native Codex review remain pending.
 - PR #173 final-head required checks and native Codex review remain pending.
 - PR #172 final-head required checks and native Codex review remain pending.
 - PR #162 final-head required checks and native Codex review remain pending.

@@ -44,6 +44,7 @@ green.
 | PR #179 resolver major compatibility | The official 6.0.0 release limits its breaking change to the Effect v4 resolver, while 6.0.1 removes an unrelated TypeSchema peer. Repository search confirms the app uses only `zodResolver`; clean install, peer resolution, app checks, feature-memory guard, and final-head GitHub gates verify the update. |
 | PR #180 ESLint compatibility | The proposed clean install emits the expected peer-resolution conflict because `eslint-plugin-jsx-a11y` 6.10.2 supports ESLint only through 9.x. Restore the app manifest and lockfile byte-for-byte from sequential `origin/main`, then verify the supported ESLint 9 graph, app checks, feature-memory guard, and final-head GitHub gates. |
 | PR #181 e2e Node type compatibility | The e2e engine and required `test` workflow remain on Node 22. Restore the e2e manifest and lockfile byte-for-byte from sequential `origin/main`; verify clean install, selected Node 22 declarations, e2e lint/typecheck, repository checks, and final-head GitHub gates. |
+| PR #182 Go AWS patch group | Keep the Dependabot-generated AWS SDK and Smithy patch set together; run `go mod tidy`, module integrity verification, `go vet ./...`, full API package tests, repository checks, and final-head GitHub gates. |
 
 ## Reuse Check
 
