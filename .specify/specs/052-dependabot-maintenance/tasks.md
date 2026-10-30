@@ -69,7 +69,13 @@
 - [ ] T045 Complete required GitHub checks and native Codex review for PR #175.
 - [x] T046 Preserve PR #177's supported app/e2e updates while restoring the frozen
       Supabase manifest and lockfile graph from the sequential baseline.
-- [ ] T047 Complete required GitHub checks and native Codex review for PR #177.
+- [x] T047 Complete required GitHub checks and native Codex review for PR #177.
+- [x] T048 Reject PR #178's isolated app Node 26 declarations and restore the verified
+      Node 22 manifest and lockfile graph on the sequential baseline.
+- [x] T049 Complete required GitHub checks and native Codex review for PR #178.
+- [x] T050 Verify PR #179's resolver major against upstream release notes, repository
+      usage, peer requirements, clean install, and app regression checks.
+- [ ] T051 Complete required GitHub checks and native Codex review for PR #179.
 
 ## Process Memory
 
@@ -80,6 +86,12 @@
 
 ### Decisions
 
+- PR #179 accepts `@hookform/resolvers` 6.0.1. The upstream major breaks only the
+  Effect resolver by requiring Effect 4; Capsule Zero uses `zodResolver` exclusively,
+  and its React Hook Form 7 and Zod 4 versions satisfy the published peer ranges.
+- PR #178 keeps app declarations on Node 22 because `app/Dockerfile` and the required
+  CI/test workflows still execute Node 22. Compiler success with Node 26 declarations
+  cannot prove those APIs exist in the deployed runtime.
 - PR #177 accepts the supported Next, React Hook Form, Zustand, Next lint-config,
   and TypeScript ESLint maintenance updates. The frozen Supabase provider graph stays
   on the sequential baseline, and Next/SWC native records retain platform selectors.
@@ -156,9 +168,7 @@
 
 ### Known Issues
 
-- PR #177 final-head required checks and native Codex review remain pending.
-- PR #175 final-head required checks and native Codex review remain pending.
-- PR #174 final-head required checks and native Codex review remain pending.
+- PR #179 final-head required checks and native Codex review remain pending.
 - PR #173 final-head required checks and native Codex review remain pending.
 - PR #172 final-head required checks and native Codex review remain pending.
 - PR #162 final-head required checks and native Codex review remain pending.
