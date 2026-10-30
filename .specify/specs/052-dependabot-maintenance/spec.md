@@ -112,3 +112,6 @@ not apply. Existing repository checks provide regression coverage.
 - PR #181: e2e development types remain on `@types/node` 22.20.1 because its
   engine and the required test workflow still execute Node 22; Node 26 declarations
   remain deferred until the executable runtime contract advances.
+- PR #182: the API accepts the coordinated AWS SDK and Smithy patch group after
+  the resolved module graph passes tidy, integrity verification, vet, and all package
+  tests without requiring application-code changes.
